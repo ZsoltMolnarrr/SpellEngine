@@ -1,0 +1,32 @@
+{
+  "combatspells.mod_name" : "Combat Roll",
+
+  "keybinds.combatspells.roll" : "Сделать кувырок",
+
+  "gui.combatspells.config_menu" : "Меню Combat Roll",
+  "gui.combatspells.close" : "Закрыть",
+  "gui.combatspells.settings" : "Настройки",
+  "gui.combatspells.hud" : "Расположение HUD",
+  "gui.combatspells.corner" : "Угол положения HUD",
+  "gui.combatspells.reset" : "Сбросить",
+
+  "enchantment.combatspells.longfooted" : "Акробатика",
+  "enchantment.combatspells.longfooted.desc" : "Повышает дальность кувырка",
+  "enchantment.combatspells.acrobat_chest" : "Акробатская кираса",
+  "enchantment.combatspells.acrobat_chest.desc" : "Уменьшает время перезарядки кувырка",
+  "enchantment.combatspells.acrobat_legs" : "Акробатские поножи",
+  "enchantment.combatspells.acrobat_legs.desc" : "Уменьшает время перезарядки кувырка",
+  "enchantment.combatspells.multi_roll" : "Повторные кувырки",
+  "enchantment.combatspells.multi_roll.desc" : "Предоставляет дополнительный кувырок",
+
+  "attribute.name.combat_roll.distance" : "Дальность кувырка",
+  "attribute.name.combat_roll.count" : "Дополнитеьный кувырок",
+  "attribute.name.combat_roll.recharge" : "Перезарядка кувырка",
+
+  "text.autoconfig.combatspells.title": "Combat Roll",
+  "text.autoconfig.combatspells.option.client.playCooldownSound" : "Проигрывать звук полной перезарядки",
+  "text.autoconfig.combatspells.option.client.playCooldownFlash": "Мигание элементов HUD при полной перезарядке",
+  "text.autoconfig.combatspells.option.client.playRollSound" : "Проигрывать звук кувырка",
+  "text.autoconfig.combatspells.option.client.hudArrowColor" : "Цвет интерфейса",
+  "text.autoconfig.combatspells.option.client.hudBackgroundOpacity" : "Прозрачность интерфейса"
+}

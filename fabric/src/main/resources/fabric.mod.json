@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "combatspells",
+  "version": "${version}",
+  "name": "Combat Spells",
+  "description": "Spell casting core",
+  "authors": [
+    "Daedelus"
+  ],
+  "contact": {
+    "repo": "https://github.com/ZsoltMolnarrr/CombatSpells",
+    "issues": "https://github.com/ZsoltMolnarrr/CombatSpells/issues"
+  },
+  "license": "GPL-3.0",
+  "icon": "icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "net.combatspells.fabric.client.FabricClientMod"
+    ],
+    "main": [
+      "net.combatspells.fabric.FabricMod"
+    ],
+    "modmenu": [
+      "net.combatspells.fabric.client.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "combatspells.mixins.json"
+  ],
+  "depends": {
+    "minecraft": "1.19.X",
+    "fabricloader": ">=0.14.0",
+    "fabric": "*",
+    "cloth-config": ">=8.0.0",
+    "player-animator": ">=0.3.5"
+  },
+  "breaks": {
+    "bettercombat": "<1.4.0"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/KN9b3pjFTM"
+      }
+    }
+  }
+}

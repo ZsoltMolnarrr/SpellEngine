@@ -1,0 +1,33 @@
+{
+  "combatspells.mod_name" : "Combat Roll",
+
+  "keybinds.combatspells.roll" : "Roll",
+
+  "gui.combatspells.config_menu" : "Combat Roll config",
+  "gui.combatspells.close" : "Close",
+  "gui.combatspells.settings" : "Settings",
+  "gui.combatspells.hud" : "Move the arrow",
+  "gui.combatspells.corner" : "Corner",
+  "gui.combatspells.reset" : "Reset",
+
+  "enchantment.combatspells.longfooted" : "Longfooted",
+  "enchantment.combatspells.longfooted.desc" : "Increases the distance of your rolls",
+  "enchantment.combatspells.acrobat_chest" : "Acrobat's Shirt",
+  "enchantment.combatspells.acrobat_chest.desc" : "Reduces the cooldown time between your rolls",
+  "enchantment.combatspells.acrobat_legs" : "Acrobat's Pants",
+  "enchantment.combatspells.acrobat_legs.desc" : "Reduces the cooldown time between your rolls",
+  "enchantment.combatspells.multi_roll" : "Multi-Roll",
+  "enchantment.combatspells.multi_roll.desc" : "Grants extra rolls",
+
+  "attribute.name.combat_roll.distance" : "Roll Distance",
+  "attribute.name.combat_roll.count" : "Extra Roll",
+  "attribute.name.combat_roll.recharge" : "Roll Recharge",
+
+  "text.autoconfig.combatspells.title": "Combat Roll",
+  "text.autoconfig.combatspells.option.client.playCooldownSound" : "Play cooldown ready sound",
+  "text.autoconfig.combatspells.option.client.playCooldownFlash": "Flash arrow when cooldown ready",
+  "text.autoconfig.combatspells.option.client.playRollSound" : "Play roll sound",
+  "text.autoconfig.combatspells.option.client.hudArrowColor" : "Arrow color",
+  "text.autoconfig.combatspells.option.client.hudBackgroundOpacity" : "Arrow background opacity",
+  "text.autoconfig.combatspells.option.client.showHUDInCreative" : "Show Arrow in Creative mode"
+}

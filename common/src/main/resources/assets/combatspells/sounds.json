@@ -1,0 +1,12 @@
+{
+  "roll": {
+    "sounds": [
+      "combatspells:roll"
+    ]
+  },
+  "roll_cooldown_ready": {
+    "sounds": [
+      "combatspells:roll_cooldown_ready"
+    ]
+  }
+}

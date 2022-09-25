@@ -1,0 +1,32 @@
+{
+  "combatspells.mod_name" : "Voltereta de combate",
+
+  "keybinds.combatspells.roll" : "Dar la vuelta",
+
+  "gui.combatspells.config_menu" : "Menú de ajustes",
+  "gui.combatspells.close" : "Cerrar",
+  "gui.combatspells.settings" : "Ajustes",
+  "gui.combatspells.hud" : "Mover HUD",
+  "gui.combatspells.corner" : "Posición",
+  "gui.combatspells.reset" : "Resetear",
+  
+  "enchantment.combatspells.longfooted" : "Piernas largas",
+  "enchantment.combatspells.longfooted.desc" : "Aumenta la distancia de volteretas",
+  "enchantment.combatspells.acrobat_chest" : "Camisa de acróbata",
+  "enchantment.combatspells.acrobat_chest.desc" : "Reduce recarga entre volteretas",
+  "enchantment.combatspells.acrobat_legs" : "Pantalones de acróbata",
+  "enchantment.combatspells.acrobat_legs.desc" : "Reduce recarga entre volteretas",
+  "enchantment.combatspells.multi_roll" : "Multi-Voltereta",
+  "enchantment.combatspells.multi_roll.desc" : "Permite volteretas extras",
+
+  "attribute.name.combat_roll.distance" : "Distancia de voltereta",
+  "attribute.name.combat_roll.count" : "Volteretas extras",
+  "attribute.name.combat_roll.recharge" : "Voltereta recarga",
+
+  "text.autoconfig.combatspells.title": "Voltereta de combate",
+  "text.autoconfig.combatspells.option.client.playCooldownSound" : "Hacer sonido de recarga completa",
+  "text.autoconfig.combatspells.option.client.playCooldownFlash": "Hacer destello de HUD en recarga completa",
+  "text.autoconfig.combatspells.option.client.playRollSound" : "Hacer sonido de voltereta",
+  "text.autoconfig.combatspells.option.client.hudArrowColor" : "Color de HUD",
+  "text.autoconfig.combatspells.option.client.hudBackgroundOpacity" : "Opacidad de HUD"
+}
