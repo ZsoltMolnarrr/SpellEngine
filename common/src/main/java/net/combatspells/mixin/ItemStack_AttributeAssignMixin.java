@@ -16,7 +16,6 @@ import static net.minecraft.entity.EquipmentSlot.MAINHAND;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStack_AttributeAssignMixin {
-
     @Shadow public abstract Item getItem();
 
     private boolean applied = false;
@@ -24,18 +23,24 @@ public abstract class ItemStack_AttributeAssignMixin {
     @Inject(method = "updateEmptyState", at = @At("TAIL"))
     public void updateEmptyState_TAIL(CallbackInfo ci) {
         if (!applied) {
+
+            // This will be applied multiple times (between relaunches) :D
+
             var item = getItem();
             var id = Registry.ITEM.getId(item);
             var additionalAttributes = AttributeAssigner.assignemnts.get(id);
             if (additionalAttributes != null) {
                 var itemStack = (ItemStack) ((Object)this);
-                ItemAttributeApplier.applyModifiersForItemStack(
-                        new EquipmentSlot[]{ EquipmentSlot.MAINHAND },
-                        id.toString(),
-                        itemStack,
-                        additionalAttributes);
+                var alreadyAppliedTag = "additional_attributes_applied";
+                if (!itemStack.getNbt().contains(alreadyAppliedTag)) {
+                    ItemAttributeApplier.applyModifiersForItemStack(
+                            new EquipmentSlot[]{ EquipmentSlot.MAINHAND },
+                            id.toString(),
+                            itemStack,
+                            additionalAttributes);
+                    itemStack.getNbt().putBoolean(alreadyAppliedTag, true);
+                }
             }
-
 
             applied = true;
         }

@@ -2,21 +2,24 @@ package net.combatspells.attribute_assigner;
 
 import java.util.Random;
 
-public class AdditionalAttributes {
+public class ItemAttributeModifier {
     public String attribute;
     public Operation operation = Operation.MULTIPLY;
-    public float randomness = 0;
+    public Float randomness = null;
     public float value = 1;
 
-    public AdditionalAttributes() {}
+    public ItemAttributeModifier() {}
 
-    public AdditionalAttributes(String attribute, float value) {
+    public ItemAttributeModifier(String attribute, float value) {
         this.attribute = attribute;
         this.value = value;
     }
 
     private static Random rng = new Random();
     public float randomizedValue() {
+        if (randomness == null) {
+            return value;
+        }
         return (randomness > 0)
                 ?  rng.nextFloat(value - randomness, value + randomness)
                 : value;

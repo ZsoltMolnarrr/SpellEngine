@@ -26,7 +26,7 @@ public class ItemAttributeApplier {
         }
     }
 
-    public static void applyModifiersForItemStack(EquipmentSlot[] slots, String itemId, ItemStack itemStack, List<AdditionalAttributes> modifiers) {
+    public static void applyModifiersForItemStack(EquipmentSlot[] slots, String itemId, ItemStack itemStack, List<ItemAttributeModifier> modifiers) {
         copyItemAttributesToNBT(itemStack); // We need to do this, to avoid unscaled attributes vanishing
         for (int i = 0; i < modifiers.size(); ++i) {
             var modifier = modifiers.get(i);
