@@ -3,6 +3,7 @@ package net.combatspells;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
+import net.combatspells.attribute_assigner.AttributeAssigner;
 import net.combatspells.config.ServerConfig;
 import net.combatspells.config.ServerConfigWrapper;
 import net.combatspells.internals.SpellRegistry;
@@ -22,6 +23,7 @@ public class CombatSpells {
         config = AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
 
         SpellRegistry.initialize();
+        AttributeAssigner.initialize();
 
         ServerNetwork.initializeHandlers();
     }

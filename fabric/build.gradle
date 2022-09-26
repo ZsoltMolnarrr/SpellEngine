@@ -46,6 +46,7 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
     shadowCommon(implementation ("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}"))
+    modImplementation(files("./run/mods/spelldamage-fabric-1.0-SNAPSHOT+1.19.jar"))
 
     modCompileOnly("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }
     modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-fabric")

@@ -4,6 +4,7 @@
   "package": "net.combatspells.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "ItemStack_AttributeAssignMixin",
     "ItemStackMixin"
   ],
   "client": [
