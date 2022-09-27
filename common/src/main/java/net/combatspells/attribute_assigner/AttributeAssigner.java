@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 
@@ -15,7 +16,7 @@ import java.util.Map;
 
 public class AttributeAssigner {
 
-    public static Map<Identifier, List<ItemAttributeModifier>> assignemnts = new HashMap();
+    public static Map<Identifier, Assignment> assignments = new HashMap();
 
     public static void initialize() {
         // This might need to be replaced to something that is called earlier if unstable
@@ -25,13 +26,14 @@ public class AttributeAssigner {
         });
     }
 
-    public static class FileFormat {
-        ItemAttributeModifier[] attributes;
+    public static class Assignment {
+        public EquipmentSlot[] slots;
+        public ItemAttributeModifier[] attributes;
     }
 
     private static void load(ResourceManager resourceManager) {
-        Map<Identifier, FileFormat> containers = new HashMap();
-        Type jsonTypeToken = new TypeToken<FileFormat>() {}.getType();
+        Map<Identifier, Assignment> containers = new HashMap();
+        Type jsonTypeToken = new TypeToken<Assignment>() {}.getType();
         var directory = "item_attribute_assignment";
         // Reading all attribute files
         for (var entry : resourceManager.findResources(directory, fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
@@ -41,7 +43,7 @@ public class AttributeAssigner {
                 // System.out.println("Checking resource: " + identifier);
                 JsonReader reader = new JsonReader(new InputStreamReader(resource.getInputStream()));
                 var gson = new Gson();
-                FileFormat container = gson.fromJson(reader, jsonTypeToken);
+                Assignment container = gson.fromJson(reader, jsonTypeToken);
 
                 var id = identifier
                         .toString().replace(directory + "/", "");
@@ -56,12 +58,11 @@ public class AttributeAssigner {
         process(containers);
     }
 
-    private static void process(Map<Identifier, FileFormat> containers) {
+    private static void process(Map<Identifier, Assignment> containers) {
         for(var entry: containers.entrySet()) {
             var array = entry.getValue().attributes;
             if (array != null && array.length > 0) {
-                var list = List.of(array);
-                assignemnts.put(entry.getKey(), list);
+                assignments.put(entry.getKey(), entry.getValue());
             }
         }
     }
