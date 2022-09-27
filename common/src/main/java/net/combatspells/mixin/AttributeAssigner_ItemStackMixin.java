@@ -12,10 +12,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static net.minecraft.entity.EquipmentSlot.MAINHAND;
-
 @Mixin(ItemStack.class)
-public abstract class ItemStack_AttributeAssignMixin {
+public abstract class AttributeAssigner_ItemStackMixin {
     @Shadow public abstract Item getItem();
 
     private boolean applied = false;

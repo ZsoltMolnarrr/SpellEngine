@@ -42,7 +42,7 @@ public class ItemAttributeApplier {
                 if (modifier.attribute == null) {
                     continue;
                 }
-                var modifierValue = modifier.randomizedValue();
+                var modifierValue = modifier.value;
                 debug("Starting to applying " + modifier.attribute + " to " + itemId);
 
                 // The attribute we want to modify
