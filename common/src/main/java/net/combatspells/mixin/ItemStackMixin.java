@@ -1,5 +1,8 @@
 package net.combatspells.mixin;
 
+import net.combatspells.api.Spell;
+import net.combatspells.api.SpellHelper;
+import net.combatspells.internals.SpellCasterEntity;
 import net.combatspells.internals.SpellRegistry;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -27,7 +30,7 @@ public abstract class ItemStackMixin {
     }
 
     @Nullable
-    private String spell() {
+    private Spell spell() {
         var item = getItem();
         var id = Registry.ITEM.getId(item);
         return SpellRegistry.spells.get(id);
@@ -45,7 +48,7 @@ public abstract class ItemStackMixin {
     @Inject(method = "getMaxUseTime", at = @At("HEAD"), cancellable = true)
     private void getMaxUseTime_HEAD(CallbackInfoReturnable<Integer> cir) {
         if (spell() == null) { return; }
-        cir.setReturnValue(72000);
+        cir.setReturnValue(SpellHelper.maximumUseTicks);
         cir.cancel();
     }
 
@@ -61,10 +64,15 @@ public abstract class ItemStackMixin {
     // Can use item?
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
     private void use_HEAD(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
+        var spell = spell();
         if (spell() == null) { return; }
 
 //        cir.setReturnValue(TypedActionResult.success(itemStack(), false));
-        user.setCurrentHand(hand);
+
+        if (user instanceof SpellCasterEntity caster) {
+            caster.setCurrentSpell(spell());
+            user.setCurrentHand(hand); // Set item in use
+        }
         cir.setReturnValue(TypedActionResult.consume(itemStack()));
         cir.cancel();
         // Nothing to do?
@@ -75,9 +83,12 @@ public abstract class ItemStackMixin {
 
     @Inject(method = "usageTick", at = @At("HEAD"), cancellable = true)
     private void usageTick_HEAD(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
-        if (spell() == null) { return; }
+        var spell = spell();
+        if (spell == null) { return; }
 
-        System.out.println("Spell tick - Tick");
+        var progress = SpellHelper.getCastProgress(remainingUseTicks, spell.cast_duration);
+        System.out.println("Spell tick - Tick: " + progress);
+
         ci.cancel();
     }
 
@@ -87,9 +98,12 @@ public abstract class ItemStackMixin {
 
     @Inject(method = "onStoppedUsing", at = @At("HEAD"), cancellable = true)
     private void onStoppedUsing_HEAD(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
-        if (spell() == null) { return; }
+        var spell = spell();
+        if (spell == null) { return; }
 
-        System.out.println("Spell release - Release");
+        var progress = SpellHelper.getCastProgress(remainingUseTicks, spell.cast_duration);
+        System.out.println("Spell release - Release: " + progress);
+
         ci.cancel();
     }
 }
