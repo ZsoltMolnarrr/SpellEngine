@@ -1,10 +1,10 @@
 package net.combatspells.attribute_assigner;
 
-import java.util.Random;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 
 public class ItemAttributeModifier {
     public String attribute;
-    public Operation operation = Operation.MULTIPLY;
+    public EntityAttributeModifier.Operation operation = EntityAttributeModifier.Operation.ADDITION;
     public float value = 1;
 
     public ItemAttributeModifier() {}
@@ -13,6 +13,4 @@ public class ItemAttributeModifier {
         this.attribute = attribute;
         this.value = value;
     }
-
-    public enum Operation { ADD, MULTIPLY }
 }

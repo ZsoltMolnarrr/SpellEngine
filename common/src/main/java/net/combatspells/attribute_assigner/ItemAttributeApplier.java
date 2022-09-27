@@ -76,12 +76,14 @@ public class ItemAttributeApplier {
                                 + " current: " + valueSummary + " to be modified to:" + modifier.operation + " " + modifierValue);
                     }
                     switch (modifier.operation) {
-                        case ADD -> {
+                        case ADDITION -> {
                             valueSummary += modifierValue;
                         }
-                        case MULTIPLY -> {
-                            debug("Multiplying: " + valueSummary + " * " + modifierValue);
-                            valueSummary *= modifierValue;
+                        case MULTIPLY_BASE -> {
+                            valueSummary = modifierValue;
+                        }
+                        case MULTIPLY_TOTAL -> {
+                            valueSummary = modifierValue;
                         }
                     }
                     debug("Value summary updated to: " + valueSummary);
@@ -102,7 +104,7 @@ public class ItemAttributeApplier {
                                         attribute,
                                         "Scaled attribute modifier",
                                         valueSummary,
-                                        EntityAttributeModifier.Operation.ADDITION
+                                        modifier.operation
                                 ),
                                 slot
                         );
