@@ -39,7 +39,8 @@ public class SpellHelper {
         var y  = caster.getEyeY();
         var z  = caster.getZ();
         var projectile = new SpellProjectile(world, caster, x, y, z);
-        projectile.setVelocity(caster.getRotationVector().normalize());
+        // projectile.setVelocity(caster.getRotationVector().normalize());
+        projectile.setVelocity(caster, caster.getPitch(), caster.getYaw(), caster.getRoll(), projectileData.velocity, projectileData.divergence);
         world.spawnEntity(projectile);
 
         System.out.println("Spawning projectile");

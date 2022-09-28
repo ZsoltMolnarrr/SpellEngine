@@ -15,6 +15,8 @@ public class Spell {
     }
 
     public static class ProjectileData {
+        public float velocity = 1F;
+        public float divergence = 0;
         public String texture;
     }
 }
