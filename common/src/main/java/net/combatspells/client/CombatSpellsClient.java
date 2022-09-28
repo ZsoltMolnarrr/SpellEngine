@@ -9,7 +9,7 @@ import net.combatspells.client.animation.AnimationRegistry;
 import net.combatspells.config.ClientConfig;
 import net.combatspells.config.ClientConfigWrapper;
 
-public class CombatRollClient {
+public class CombatSpellsClient {
     public static ClientConfig config;
     public static void initialize() {
         AutoConfig.register(ClientConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));

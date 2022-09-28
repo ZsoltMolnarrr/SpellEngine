@@ -16,6 +16,7 @@ public class SpellRegistry {
         fireBall.cast_duration = 2;
         fireBall.on_release = new Spell.Release();
         fireBall.on_release.action = Spell.Release.Action.SHOOT_PROJECTILE;
+        fireBall.on_release.projectile = new Spell.ProjectileData();
 
         spells.put(new Identifier("minecraft", "wooden_sword"), fireBall);
     }

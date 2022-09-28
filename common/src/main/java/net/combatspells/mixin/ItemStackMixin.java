@@ -103,6 +103,7 @@ public abstract class ItemStackMixin {
 
         var progress = SpellHelper.getCastProgress(remainingUseTicks, spell.cast_duration);
         System.out.println("Spell release - Release: " + progress);
+        SpellHelper.castRelease(world, user, spell, remainingUseTicks);
 
         ci.cancel();
     }

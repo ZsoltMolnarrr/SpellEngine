@@ -30,9 +30,6 @@ public abstract class AttributeAssigner_ItemStackMixin {
     @Inject(method = "updateEmptyState", at = @At("TAIL"))
     public void updateEmptyState_TAIL(CallbackInfo ci) {
         if (!applied) {
-
-            // This will be applied multiple times (between relaunches) :D
-
             var item = getItem();
             var id = Registry.ITEM.getId(item);
             var assignment = AttributeAssigner.assignments.get(id);
@@ -49,7 +46,6 @@ public abstract class AttributeAssigner_ItemStackMixin {
                     itemStack.getNbt().putBoolean(alreadyAppliedTag, true);
                 }
             }
-
             applied = true;
         }
     }

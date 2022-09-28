@@ -10,7 +10,7 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.combatspells.CombatSpells;
-import net.combatspells.client.CombatRollClient;
+import net.combatspells.client.CombatSpellsClient;
 
 @Mod.EventBusSubscriber(modid = CombatSpells.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ForgeClientModEvents {
@@ -21,7 +21,7 @@ public class ForgeClientModEvents {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event){
-        CombatRollClient.initialize();
+        CombatSpellsClient.initialize();
         ClientLifecycleEvents.onClientStarted.forEach((action) -> action.onClientStarted(MinecraftClient.getInstance()));
         ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> {
             return new ConfigScreenHandler.ConfigScreenFactory((minecraft, screen) -> {
