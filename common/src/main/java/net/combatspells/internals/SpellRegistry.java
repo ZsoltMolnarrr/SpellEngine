@@ -19,9 +19,12 @@ public class SpellRegistry {
         fireBall.on_release.action = Spell.Release.Action.SHOOT_PROJECTILE;
         fireBall.on_release.projectile = new Spell.ProjectileData();
         fireBall.on_release.projectile.client_data = new Spell.ProjectileData.Client(
-                new Spell.ParticleEffect(
-                    "flame", Spell.ParticleEffect.Shape.CIRCLE, 3, 0.1F
-                ),
+                new Spell.ParticleBatch[] {
+                        new Spell.ParticleBatch("flame", Spell.ParticleBatch.Shape.CIRCLE, 3, 0, 0.1F)
+                },
+                new Spell.ParticleBatch[] {
+                        new Spell.ParticleBatch("lava", Spell.ParticleBatch.Shape.CIRCLE, 30, 0.5F, 3F)
+                },
                 "fire_charge"
         );
 

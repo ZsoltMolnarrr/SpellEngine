@@ -12,32 +12,32 @@ import java.util.Random;
 public class ParticleHelper {
     private static Random rng = new Random();
 
-    public static void play(World world, Vec3d origin, Spell.ParticleEffect effect) {
+    public static void play(World world, Vec3d origin, Spell.ParticleBatch effect) {
         play(world, origin, 0, 0, effect);
     }
 
-    public static void play(World world, Vec3d origin, float yaw, float pitch, Spell.ParticleEffect effect) {
+    public static void play(World world, Vec3d origin, float yaw, float pitch, Spell.ParticleBatch batch) {
         try {
-            var id = new Identifier(effect.id);
+            var id = new Identifier(batch.particle_id);
             var particle = (ParticleEffect) Registry.PARTICLE_TYPE.get(id);
-            for(int i = 0; i < effect.count; ++i) {
-                var direction = direction(effect, yaw, pitch);
+            for(int i = 0; i < batch.count; ++i) {
+                var direction = direction(batch, yaw, pitch);
                 world.addParticle(particle, true,
                         origin.x, origin.y, origin.z,
                         direction.x, direction.y, direction.z);
             }
         } catch (Exception e) {
-            System.err.println("Failed to play particle effect");
+            System.err.println("Failed to play particle batch");
         }
     }
 
-    private static Vec3d direction(Spell.ParticleEffect effect, float yaw, float pitch) {
-        switch (effect.shape) {
+    private static Vec3d direction(Spell.ParticleBatch batch, float yaw, float pitch) {
+        switch (batch.shape) {
             case CIRCLE -> {
-                var expand = effect.speed;
-                var randX = rng.nextFloat() * (expand * 2) - expand;
-                var randY = rng.nextFloat() * (expand * 2) - expand;
-                var direction = new Vec3d(randX, randY, 0);
+                var speedRange = batch.max_speed - batch.min_speed;
+                var randZ = batch.min_speed + ((rng.nextFloat() - 0.5F) * 2F) * speedRange;
+                var randX = batch.min_speed + ((rng.nextFloat() - 0.5F) * 2F) * speedRange;
+                var direction = new Vec3d(randX, 0, randZ);
                 if (yaw != 0) {
                     direction = direction.rotateY(yaw);
                 }

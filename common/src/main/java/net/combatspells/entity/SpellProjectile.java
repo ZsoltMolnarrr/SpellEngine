@@ -3,7 +3,10 @@ package net.combatspells.entity;
 import com.google.gson.Gson;
 import net.combatspells.CombatSpells;
 import net.combatspells.api.Spell;
+import net.combatspells.network.Packets;
 import net.combatspells.utils.ParticleHelper;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.FlyingItemEntity;
@@ -120,7 +123,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
                 var clientData = clientData();
                 if (clientData != null) {
                     var origin = this.getPos().add(0, this.getHeight() / 2F, 0);
-                    ParticleHelper.play(world, origin, getYaw(), getPitch() + 90, clientData.travel_particles);
+                    for(var travel_particles: clientData.travel_particles) {
+                        ParticleHelper.play(world, origin, getYaw(), getPitch() + 90, travel_particles);
+                    }
                 }
             }
 
@@ -137,6 +142,29 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
 
     @Override
     protected void onEntityHit(EntityHitResult entityHitResult) {
+//        for(var travel_particles: clientData.travel_particles) {
+//            ParticleHelper.play(world, origin, getYaw(), getPitch() + 90, travel_particles);
+//        }
+
+        if (!world.isClient) {
+            var position = this.getPos();
+            var entity = entityHitResult.getEntity();
+            if (entity != null) {
+                position = entity.getPos().add(0, entity.getHeight() / 2F, 0);
+            }
+
+            var packet = new Packets.ParticleBatches(position, projectileData.client_data.impact_particles).write();
+            PlayerLookup.tracking(this).forEach(serverPlayer -> {
+                try {
+                    if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleBatches.ID)) {
+                        ServerPlayNetworking.send(serverPlayer, Packets.ParticleBatches.ID, packet);
+                    }
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            });
+        }
+
         this.kill();
     }
 
