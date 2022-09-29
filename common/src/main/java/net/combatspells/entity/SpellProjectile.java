@@ -14,7 +14,6 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.particle.ParticleTypes;
@@ -94,11 +93,6 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
         }
         if (this.world.isClient || (entity == null || !entity.isRemoved()) && this.world.isChunkLoaded(this.getBlockPos())) {
             super.tick();
-//            if (this.isBurning()) {
-//                this.setOnFireFor(1);
-//            }
-
-            System.out.println("Spell projectile " + (this.world.isClient ? "Client" : "Server") + " ticks " + age);
 
             HitResult hitResult = ProjectileUtil.getCollision(this, this::canHit);
             if (hitResult.getType() != HitResult.Type.MISS) {
@@ -122,15 +116,16 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
             }
             // this.setVelocity(vec3d.add(this.powerX, this.powerY, this.powerZ).multiply((double)g));
 
-            this.setPosition(d, e, f);
-            this.distanceTraveled += velocity.length();
             if (world.isClient) {
                 var clientData = clientData();
                 if (clientData != null) {
                     var origin = this.getPos().add(0, this.getHeight() / 2F, 0);
-                    ParticleHelper.play(world, origin, clientData.travel_particles);
+                    ParticleHelper.play(world, origin, getYaw(), getPitch() + 90, clientData.travel_particles);
                 }
             }
+
+            this.setPosition(d, e, f);
+            this.distanceTraveled += velocity.length();
         } else {
             this.discard();
         }
