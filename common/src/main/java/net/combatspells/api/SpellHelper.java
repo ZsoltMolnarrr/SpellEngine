@@ -21,28 +21,25 @@ public class SpellHelper {
             switch (spell.on_release.action) {
                 case SHOOT_PROJECTILE -> {
 
-                    shootProjectile(world, caster, spell.on_release.projectile);
+                    shootProjectile(world, caster, spell.range, spell.on_release.projectile);
                 }
             }
         }
     }
 
-    private static void shootProjectile(World world, LivingEntity caster, Spell.ProjectileData projectileData) {
+    private static void shootProjectile(World world, LivingEntity caster, float range, Spell.ProjectileData projectileData) {
         // Send target packet
-
         if (world.isClient) {
             return;
         }
 
-
         var x = caster.getX();
         var y  = caster.getEyeY();
         var z  = caster.getZ();
-        var projectile = new SpellProjectile(world, caster, x, y, z);
-        // projectile.setVelocity(caster.getRotationVector().normalize());
-        projectile.setVelocity(caster, caster.getPitch(), caster.getYaw(), caster.getRoll(), projectileData.velocity, projectileData.divergence);
-        world.spawnEntity(projectile);
+        var projectile = new SpellProjectile(world, caster, x, y, z, projectileData);
+        projectile.range = range;
 
+        world.spawnEntity(projectile);
         System.out.println("Spawning projectile");
     }
 }

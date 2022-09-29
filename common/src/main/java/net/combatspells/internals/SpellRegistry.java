@@ -14,9 +14,16 @@ public class SpellRegistry {
 
         var fireBall = new Spell();
         fireBall.cast_duration = 2;
+        fireBall.range = 64;
         fireBall.on_release = new Spell.Release();
         fireBall.on_release.action = Spell.Release.Action.SHOOT_PROJECTILE;
         fireBall.on_release.projectile = new Spell.ProjectileData();
+        fireBall.on_release.projectile.client_data = new Spell.ProjectileData.Client(
+                new Spell.ParticleEffect(
+                    "flame", Spell.ParticleEffect.Shape.CIRCLE, 3, 0.1F
+                ),
+                "fire_charge"
+        );
 
         spells.put(new Identifier("minecraft", "wooden_sword"), fireBall);
     }

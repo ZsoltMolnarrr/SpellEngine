@@ -7,14 +7,11 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin implements SpellCasterEntity {
-
     private Spell currentSpell;
-
     @Override
     public Spell getCurrentSpell() {
         return currentSpell;
     }
-
     @Override
     public void setCurrentSpell(Spell spell) {
         currentSpell = spell;
