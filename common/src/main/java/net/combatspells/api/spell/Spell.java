@@ -57,6 +57,8 @@ public class Spell {
             public StatusEffect statusEffect;
             public static class StatusEffect { public StatusEffect() { }
                 public float duration = 0;
+                public int amplifier = 0;
+                public String effect_id;
             }
         }
 

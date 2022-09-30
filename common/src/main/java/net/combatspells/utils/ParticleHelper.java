@@ -16,6 +16,10 @@ import java.util.Random;
 public class ParticleHelper {
     private static Random rng = new Random();
 
+    public static void sendBatches(Entity trackedEntity, ParticleBatch[] batches) {
+        sendBatches(trackedEntity, trackedEntity.getPos().add(0, trackedEntity.getHeight() / 2F, 0), batches);
+    }
+
     public static void sendBatches(Entity trackedEntity, Vec3d position, ParticleBatch[] batches) {
         if (batches == null || batches.length == 0) {
             return;
