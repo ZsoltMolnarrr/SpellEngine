@@ -1,6 +1,10 @@
 package net.combatspells.utils;
 
-import net.combatspells.api.Spell;
+import net.combatspells.api.spell.ParticleBatch;
+import net.combatspells.network.Packets;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.Entity;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
@@ -12,11 +16,27 @@ import java.util.Random;
 public class ParticleHelper {
     private static Random rng = new Random();
 
-    public static void play(World world, Vec3d origin, Spell.ParticleBatch effect) {
+    public static void sendBatches(Entity trackedEntity, Vec3d position, ParticleBatch[] batches) {
+        if (batches == null || batches.length == 0) {
+            return;
+        }
+        var packet = new Packets.ParticleBatches(position, batches).write();
+        PlayerLookup.tracking(trackedEntity).forEach(serverPlayer -> {
+            try {
+                if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleBatches.ID)) {
+                    ServerPlayNetworking.send(serverPlayer, Packets.ParticleBatches.ID, packet);
+                }
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public static void play(World world, Vec3d origin, ParticleBatch effect) {
         play(world, origin, 0, 0, effect);
     }
 
-    public static void play(World world, Vec3d origin, float yaw, float pitch, Spell.ParticleBatch batch) {
+    public static void play(World world, Vec3d origin, float yaw, float pitch, ParticleBatch batch) {
         try {
             var id = new Identifier(batch.particle_id);
             var particle = (ParticleEffect) Registry.PARTICLE_TYPE.get(id);
@@ -31,7 +51,7 @@ public class ParticleHelper {
         }
     }
 
-    private static Vec3d direction(Spell.ParticleBatch batch, float yaw, float pitch) {
+    private static Vec3d direction(ParticleBatch batch, float yaw, float pitch) {
         switch (batch.shape) {
             case CIRCLE -> {
                 var speedRange = batch.max_speed - batch.min_speed;
