@@ -2,8 +2,9 @@ package net.combatspells.mixin;
 
 import net.combatspells.api.spell.Spell;
 import net.combatspells.api.SpellHelper;
-import net.combatspells.internals.SpellCasterEntity;
+import net.combatspells.internals.SpellCasterClient;
 import net.combatspells.internals.SpellRegistry;
+import net.combatspells.utils.TargetHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -67,12 +68,13 @@ public abstract class ItemStackMixin {
         var spell = spell();
         if (spell() == null) { return; }
 
-//        cir.setReturnValue(TypedActionResult.success(itemStack(), false));
-
-        if (user instanceof SpellCasterEntity caster) {
-            caster.setCurrentSpell(spell());
-            user.setCurrentHand(hand); // Set item in use
+        if (world.isClient) {
+            if (user instanceof SpellCasterClient caster) {
+                caster.castStart(spell);
+            }
         }
+
+        user.setCurrentHand(hand); // Set item in use
         cir.setReturnValue(TypedActionResult.consume(itemStack()));
         cir.cancel();
         // Nothing to do?
@@ -86,8 +88,13 @@ public abstract class ItemStackMixin {
         var spell = spell();
         if (spell == null) { return; }
 
+        if (world.isClient) {
+            var target = TargetHelper.raycastForTarget(user, spell.range);
+            System.out.println("Targeting " + (target != null ? target.getEntityName() : "nothing" ) );
+        }
+
         var progress = SpellHelper.getCastProgress(remainingUseTicks, spell.cast_duration);
-        System.out.println("Spell tick - Tick: " + progress);
+//        System.out.println("Spell tick - Tick: " + progress);
 
         ci.cancel();
     }
@@ -101,9 +108,11 @@ public abstract class ItemStackMixin {
         var spell = spell();
         if (spell == null) { return; }
 
-        var progress = SpellHelper.getCastProgress(remainingUseTicks, spell.cast_duration);
-        System.out.println("Spell release - Release: " + progress);
-        SpellHelper.castRelease(world, user, spell, remainingUseTicks);
+        if (world.isClient) {
+            if (user instanceof SpellCasterClient caster) {
+                caster.castRelease(remainingUseTicks);
+            }
+        }
 
         ci.cancel();
     }

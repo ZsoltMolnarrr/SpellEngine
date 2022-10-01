@@ -12,6 +12,21 @@ import net.minecraft.util.math.Vec3d;
 import java.util.ArrayList;
 
 public class Packets {
+    public record ReleaseRequest(String spellId, int[] targets) {
+        public static Identifier ID = new Identifier(CombatSpells.MOD_ID, "release_request");
+        public PacketByteBuf write() {
+            PacketByteBuf buffer = PacketByteBufs.create();
+            buffer.writeString(spellId);
+            buffer.writeIntArray(targets);
+            return buffer;
+        }
+        public static ReleaseRequest read(PacketByteBuf buffer) {
+            var spellId = buffer.readString();
+            var targets = buffer.readIntArray();
+            return new ReleaseRequest(spellId, targets);
+        }
+    }
+
     public record ParticleBatches(Vec3d origin, ParticleBatch[] batches) {
         public static Identifier ID = new Identifier(CombatSpells.MOD_ID, "particle_effects");
         public PacketByteBuf write() {
