@@ -34,10 +34,6 @@ public class Spell {
 
     public Impact on_impact;
     public static class Impact { public Impact() { }
-        public TargetAcceptance target_only = TargetAcceptance.AUTOMATIC;
-        public enum TargetAcceptance {
-            FRIEND, FOE, AUTOMATIC
-        }
         public Action action;
         public static class Action { public Action() { }
             public Type type;

@@ -4,6 +4,7 @@ import net.combatspells.api.spell.Spell;
 import net.combatspells.entity.SpellProjectile;
 import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.SoundHelper;
+import net.combatspells.utils.TargetHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -67,11 +68,14 @@ public class SpellHelper {
         if (!target.isAttackable()) {
             return false;
         }
+        var success = false;
         try {
-            var success = false;
+            var relation = TargetHelper.getRelation(caster, target);
             switch (impact.action.type) {
                 case DAMAGE -> {
-                    // if (world.friend)
+                    if(!TargetHelper.actionAllowed(false, relation)) {
+                        return false;
+                    }
                     var damageData = impact.action.damage;
                     var attributeId = new Identifier(damageData.attribute);
                     var school = MagicSchool.fromAttributeId(attributeId);
@@ -95,6 +99,9 @@ public class SpellHelper {
                     success = true;
                 }
                 case HEAL -> {
+                    if(!TargetHelper.actionAllowed(true, relation)) {
+                        return false;
+                    }
                     if (target instanceof LivingEntity livingTarget) {
                         var healData = impact.action.heal;
                         var attributeId = new Identifier(healData.attribute);
@@ -116,6 +123,9 @@ public class SpellHelper {
                         var data = impact.action.statusEffect;
                         var id = new Identifier(data.effect_id);
                         var effect = Registry.STATUS_EFFECT.get(id);
+                        if(!TargetHelper.actionAllowed(effect.isBeneficial(), relation)) {
+                            return false;
+                        }
                         var duration = Math.round(data.duration * 20F);
                         var amplifier = data.amplifier;
                         livingTarget.addStatusEffect(
@@ -133,6 +143,6 @@ public class SpellHelper {
             System.err.println("Failed to perform impact effect");
             System.err.println(e.getMessage());
         }
-        return false;
+        return success;
     }
 }
