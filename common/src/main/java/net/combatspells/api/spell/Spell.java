@@ -1,7 +1,5 @@
 package net.combatspells.api.spell;
 
-import java.util.Objects;
-
 public class Spell {
     // Structure
     public float cast_duration = 0;
@@ -19,7 +17,7 @@ public class Spell {
 //    }
 
     public Release on_release;
-    public static class Release {
+    public static class Release { public Release() { }
         public Action action;
         public static class Action { public Action() { }
             public Type type;
@@ -32,7 +30,7 @@ public class Spell {
         public Sound sound;
     }
 
-    public Impact on_impact;
+    public Impact[] on_impact;
     public static class Impact { public Impact() { }
         public Action action;
         public static class Action { public Action() { }
@@ -50,7 +48,7 @@ public class Spell {
                 public float multiplier = 1;
                 public String attribute;
             }
-            public StatusEffect statusEffect;
+            public StatusEffect status_effect;
             public static class StatusEffect { public StatusEffect() { }
                 public float duration = 0;
                 public int amplifier = 0;
@@ -62,7 +60,7 @@ public class Spell {
         public Sound sound;
     }
 
-    public static class ProjectileData {
+    public static class ProjectileData { public ProjectileData() { }
         public float velocity = 1F;
         public float divergence = 0;
         public boolean inherit_shooter_velocity = false;

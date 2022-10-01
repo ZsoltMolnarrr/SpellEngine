@@ -48,7 +48,7 @@ public class SpellHelper {
     }
 
     private static void shootProjectile(World world, LivingEntity caster, float range,
-                                        Spell.ProjectileData projectileData, Spell.Impact impact) {
+                                        Spell.ProjectileData projectileData, Spell.Impact[] impact) {
         // Send target packet
         if (world.isClient) {
             return;
@@ -120,7 +120,7 @@ public class SpellHelper {
                 }
                 case STATUS_EFFECT -> {
                     if (target instanceof LivingEntity livingTarget) {
-                        var data = impact.action.statusEffect;
+                        var data = impact.action.status_effect;
                         var id = new Identifier(data.effect_id);
                         var effect = Registry.STATUS_EFFECT.get(id);
                         if(!TargetHelper.actionAllowed(effect.isBeneficial(), relation)) {

@@ -30,7 +30,7 @@ import net.minecraft.world.World;
 public class SpellProjectile extends ProjectileEntity implements FlyingItemEntity {
     public float range = 128;
     private Spell.ProjectileData projectileData;
-    private Spell.Impact impactData;
+    private Spell.Impact[] impactData;
 
     public SpellProjectile(EntityType<? extends ProjectileEntity> entityType, World world) {
         super(entityType, world);
@@ -42,7 +42,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
     }
 
     public SpellProjectile(World world, LivingEntity caster, double x, double y, double z,
-                           Spell.ProjectileData projectileData, Spell.Impact impactData) {
+                           Spell.ProjectileData projectileData, Spell.Impact[] impactData) {
         this(world, caster);
         this.setPosition(x, y, z);
         this.projectileData = projectileData;
@@ -151,11 +151,16 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
             var position = this.getPos();
             var target = entityHitResult.getEntity();
             if (target != null && this.getOwner() instanceof LivingEntity caster) {
-                SpellHelper.performImpact(world, caster, target, impactData);
+                var performed = false;
+                for (var impact: impactData) {
+                    var result = SpellHelper.performImpact(world, caster, target, impact);
+                    performed = performed || result;
+                }
+                if (performed) {
+                    this.kill();
+                }
             }
         }
-
-        this.kill();
     }
 
     private static String NBT_PROJECTILE_DATA = "Spell.ProjectileData";
@@ -180,7 +185,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
             try {
                 var gson = new Gson();
                 this.projectileData = gson.fromJson(nbt.getString(NBT_PROJECTILE_DATA), Spell.ProjectileData.class);
-                this.impactData = gson.fromJson(nbt.getString(NBT_IMPACT_DATA), Spell.Impact.class);
+                this.impactData = gson.fromJson(nbt.getString(NBT_IMPACT_DATA), Spell.Impact[].class);
             } catch (Exception e) {
                 System.err.println("SpellProjectile - Failed to read projectileData from NBT");
             }
