@@ -22,7 +22,7 @@ public class SpellRegistry {
         fireBall.on_release.action.projectile = new Spell.ProjectileData();
         fireBall.on_release.action.projectile.client_data = new Spell.ProjectileData.Client(
                 new ParticleBatch[] {
-                        new ParticleBatch("flame", ParticleBatch.Shape.CIRCLE, 3, 0, 0.1F)
+                        new ParticleBatch("flame", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 3, 0, 0.1F)
                 },
                 "fire_charge"
         );
@@ -32,7 +32,7 @@ public class SpellRegistry {
         firballImpact.action.damage = new Spell.Impact.Action.Damage();
         firballImpact.action.damage.attribute = "spelldamage:fire";
         firballImpact.particles = new ParticleBatch[] {
-                new ParticleBatch("lava", ParticleBatch.Shape.CIRCLE, 30, 0.5F, 3F)
+                new ParticleBatch("lava", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 30, 0.5F, 3F)
         };
         fireBall.on_impact = new Spell.Impact[] { firballImpact };
         spells.put(new Identifier("minecraft", "wooden_sword"), fireBall);
@@ -46,7 +46,7 @@ public class SpellRegistry {
         frostbolt.on_release.action.projectile = new Spell.ProjectileData();
         frostbolt.on_release.action.projectile.client_data = new Spell.ProjectileData.Client(
                 new ParticleBatch[] {
-                        new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, 3, 0, 0.1F)
+                        new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 3, 0, 0.1F)
                 },
                 "snowball"
         );
@@ -56,7 +56,7 @@ public class SpellRegistry {
         frostboltDamage.action.damage = new Spell.Impact.Action.Damage();
         frostboltDamage.action.damage.attribute = "spelldamage:frost";
         frostboltDamage.particles = new ParticleBatch[] {
-                new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, 30, 0.5F, 3F)
+                new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET, 30, 0.5F, 3F)
         };
 
         var frostboltSlow = new Spell.Impact();

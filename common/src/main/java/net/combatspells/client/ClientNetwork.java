@@ -15,8 +15,9 @@ public class ClientNetwork {
         ClientPlayNetworking.registerGlobalReceiver(Packets.ParticleBatches.ID, (client, handler, buf, responseSender) -> {
             var packet = Packets.ParticleBatches.read(buf);
             client.execute(() -> {
+                var source = client.world.getEntityById(packet.sourceEntityId());
                 for(var batch: packet.batches()) {
-                    ParticleHelper.play(client.world, packet.origin(), batch);
+                    ParticleHelper.play(client.world, source, batch);
                 }
             });
         });

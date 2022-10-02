@@ -123,9 +123,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
             if (world.isClient) {
                 var clientData = clientData();
                 if (clientData != null) {
-                    var origin = this.getPos().add(0, this.getHeight() / 2F, 0);
                     for(var travel_particles: clientData.travel_particles) {
-                        ParticleHelper.play(world, origin, getYaw(), getPitch() + 90, travel_particles);
+                        ParticleHelper.play(world, this, getYaw(), getPitch() + 90, travel_particles);
                     }
                 }
             }
