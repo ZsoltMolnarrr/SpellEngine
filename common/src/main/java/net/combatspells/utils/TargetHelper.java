@@ -55,7 +55,7 @@ public class TargetHelper {
         Box searchAABB = caster.getBoundingBox().expand(range, range, range);
         var hitResult = ProjectileUtil.raycast(caster, start, end, searchAABB, (target) -> {
             return !target.isSpectator() && target.canHit();
-        }, range);
+        }, range*range); // `range*range` is provided for squared distance comparison
         if (hitResult != null) {
             return hitResult.getEntity();
         }
