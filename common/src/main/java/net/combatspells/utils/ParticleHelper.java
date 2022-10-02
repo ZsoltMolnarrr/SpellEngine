@@ -5,12 +5,16 @@ import net.combatspells.network.Packets;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleEffect;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class ParticleHelper {
@@ -21,15 +25,22 @@ public class ParticleHelper {
             return;
         }
         var packet = new Packets.ParticleBatches(trackedEntity.getId(), batches).write();
+        if (trackedEntity instanceof ServerPlayerEntity serverPlayer) {
+            sendWrittenBatchesToPlayer(serverPlayer, packet);
+        }
         PlayerLookup.tracking(trackedEntity).forEach(serverPlayer -> {
-            try {
-                if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleBatches.ID)) {
-                    ServerPlayNetworking.send(serverPlayer, Packets.ParticleBatches.ID, packet);
-                }
-            } catch (Exception e){
-                e.printStackTrace();
-            }
+            sendWrittenBatchesToPlayer(serverPlayer, packet);
         });
+    }
+
+    private static void sendWrittenBatchesToPlayer(ServerPlayerEntity serverPlayer, PacketByteBuf packet) {
+        try {
+            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleBatches.ID)) {
+                ServerPlayNetworking.send(serverPlayer, Packets.ParticleBatches.ID, packet);
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public static void play(World world, Entity source, ParticleBatch effect) {
@@ -38,10 +49,8 @@ public class ParticleHelper {
 
     public static void play(World world, Entity source, float yaw, float pitch, ParticleBatch batch) {
         try {
-
-            var origin = origin(source, batch.origin);
-
             var id = new Identifier(batch.particle_id);
+            var origin = origin(source, batch.origin);
             var particle = (ParticleEffect) Registry.PARTICLE_TYPE.get(id);
             for(int i = 0; i < batch.count; ++i) {
                 var direction = direction(batch, yaw, pitch);
@@ -51,6 +60,36 @@ public class ParticleHelper {
             }
         } catch (Exception e) {
             System.err.println("Failed to play particle batch");
+        }
+    }
+
+    public static List<SpawnInstruction> convertToInstructions(Entity source, float pitch, float yaw, ParticleBatch[] batches) {
+        var instructions = new ArrayList<SpawnInstruction>();
+        for(var batch: batches) {
+            var id = new Identifier(batch.particle_id);
+            var origin = origin(source, batch.origin);
+            var particle = (ParticleEffect) Registry.PARTICLE_TYPE.get(id);
+            for(int i = 0; i < batch.count; ++i) {
+                var direction = direction(batch, yaw, pitch);
+                instructions.add(new SpawnInstruction(particle,
+                        origin.x, origin.y, origin.z,
+                        direction.x, direction.y, direction.z));
+            }
+        }
+        return instructions;
+    }
+
+    public record SpawnInstruction(ParticleEffect particle,
+                                   double positionX, double positionY, double positionZ,
+                                   double velocityX, double velocityY, double velocityZ) {
+        public void perform(World world) {
+            try {
+                world.addParticle(particle, true,
+                        positionX, positionY, positionZ,
+                        velocityX, velocityY, velocityZ);
+            } catch (Exception e) {
+                System.err.println("Failed to perform particle SpawnInstruction");
+            }
         }
     }
 

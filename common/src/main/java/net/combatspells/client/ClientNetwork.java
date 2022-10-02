@@ -14,10 +14,11 @@ public class ClientNetwork {
 
         ClientPlayNetworking.registerGlobalReceiver(Packets.ParticleBatches.ID, (client, handler, buf, responseSender) -> {
             var packet = Packets.ParticleBatches.read(buf);
+            var source = client.world.getEntityById(packet.sourceEntityId());
+            var instructions = ParticleHelper.convertToInstructions(source,0, 0, packet.batches());
             client.execute(() -> {
-                var source = client.world.getEntityById(packet.sourceEntityId());
-                for(var batch: packet.batches()) {
-                    ParticleHelper.play(client.world, source, batch);
+                for(var instruction: instructions) {
+                    instruction.perform(client.world);
                 }
             });
         });

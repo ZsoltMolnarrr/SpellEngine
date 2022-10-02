@@ -65,12 +65,12 @@ public class SpellRegistry {
         frostNova.on_release.target.type = Spell.Release.Target.Type.AREA;
         frostNova.on_release.target.area = new Spell.Release.Target.Area();
         frostNova.on_release.target.area.vertical_range_multiplier = 0.3F;
-//        frostNova.on_release.target.projectile.client_data = new Spell.ProjectileData.Client(
-//                new ParticleBatch[] {
-//                        new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 3, 0, 0.1F)
-//                },
-//                "snowball"
-//        );
+        frostNova.on_release.particles = new ParticleBatch[] {
+                new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET, 50, 0.2F, 0.2F),
+                new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET, 50, 0.4F, 0.4F),
+                new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET, 50, 0.6F, 0.6F),
+                new ParticleBatch("soul_fire_flame", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET, 30, 0.0F, 0.4F),
+        };
 
         var frostDamage = new Spell.Impact();
         frostDamage.action = new Spell.Impact.Action();
