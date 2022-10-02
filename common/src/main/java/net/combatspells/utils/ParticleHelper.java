@@ -74,10 +74,9 @@ public class ParticleHelper {
     private static Vec3d direction(ParticleBatch batch, float yaw, float pitch) {
         switch (batch.shape) {
             case CIRCLE -> {
-                var speedRange = batch.max_speed - batch.min_speed;
-                var randZ = batch.min_speed + ((rng.nextFloat() - 0.5F) * 2F) * speedRange;
-                var randX = batch.min_speed + ((rng.nextFloat() - 0.5F) * 2F) * speedRange;
-                var direction = new Vec3d(randX, 0, randZ);
+                var angle = (float) Math.toRadians(rng.nextFloat() * 360F);
+//                var randX = randomSignedInRange(batch.min_speed, batch.max_speed);
+                var direction = new Vec3d(randomInRange(batch.min_speed, batch.max_speed), 0, 0).rotateY(angle);
                 if (yaw != 0) {
                     direction = direction.rotateY((float) Math.toRadians(yaw));
                 }
@@ -92,5 +91,19 @@ public class ParticleHelper {
         }
         assert true;
         return Vec3d.ZERO;
+    }
+
+    private static float randomInRange(float min, float max) {
+        float range = max - min;
+        return min + (range * rng.nextFloat());
+    }
+
+    private static float randomSignedInRange(float min, float max) {
+        var rand = rng.nextFloat();
+        var range = max - min;
+        float sign = (rand > 0.5F) ? 1 : (-1);
+        var base = sign * min;
+        var varied = sign * range * rand;
+        return base + varied;
     }
 }

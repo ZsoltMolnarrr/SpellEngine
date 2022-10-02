@@ -51,7 +51,7 @@ public class SpellRegistry {
         scorchDamage.action.damage = new Spell.Impact.Action.Damage();
         scorchDamage.action.damage.attribute = "spelldamage:fire";
         scorchDamage.particles = new ParticleBatch[] {
-                new ParticleBatch("small_flame", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 30, 0.05F, 0.2F)
+                new ParticleBatch("small_flame", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 30, 0.2F, 0.2F)
         };
         scorch.on_impact = new Spell.Impact[] { scorchDamage };
         spells.put(new Identifier("minecraft", "golden_sword"), scorch);
