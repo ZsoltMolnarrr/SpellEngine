@@ -8,6 +8,7 @@ import net.combatspells.utils.TargetHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(ClientPlayerEntity.class)
@@ -43,9 +44,10 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     @Override
-    public void castRelease(int remainingUseTicks) {
+    public void castRelease(ItemStack itemStack, int remainingUseTicks) {
         var progress = SpellHelper.getCastProgress(remainingUseTicks, currentSpell.cast_duration);
         if (progress >= 1) {
+            var slot = player().getInventory().indexOf(itemStack);
             var action = currentSpell.on_release.action;
             switch (action.type) {
                 case SHOOT_PROJECTILE -> {
@@ -56,7 +58,7 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
                     }
                     ClientPlayNetworking.send(
                             Packets.ReleaseRequest.ID,
-                            new Packets.ReleaseRequest("currentSpell.id", targets).write());
+                            new Packets.ReleaseRequest(slot, remainingUseTicks, targets).write());
                 }
             }
             // Lookup target by target mode

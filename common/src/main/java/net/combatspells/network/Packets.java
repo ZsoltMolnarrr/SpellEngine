@@ -12,18 +12,20 @@ import net.minecraft.util.math.Vec3d;
 import java.util.ArrayList;
 
 public class Packets {
-    public record ReleaseRequest(String spellId, int[] targets) {
+    public record ReleaseRequest(int slot, int remainingUseTicks, int[] targets) {
         public static Identifier ID = new Identifier(CombatSpells.MOD_ID, "release_request");
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();
-            buffer.writeString(spellId);
+            buffer.writeInt(slot);
+            buffer.writeInt(remainingUseTicks);
             buffer.writeIntArray(targets);
             return buffer;
         }
         public static ReleaseRequest read(PacketByteBuf buffer) {
-            var spellId = buffer.readString();
+            var slot = buffer.readInt();
+            var remainingUseTicks = buffer.readInt();
             var targets = buffer.readIntArray();
-            return new ReleaseRequest(spellId, targets);
+            return new ReleaseRequest(slot, remainingUseTicks, targets);
         }
     }
 

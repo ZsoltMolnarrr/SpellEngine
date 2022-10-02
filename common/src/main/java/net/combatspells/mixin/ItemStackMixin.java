@@ -110,7 +110,7 @@ public abstract class ItemStackMixin {
 
         if (world.isClient) {
             if (user instanceof SpellCasterClient caster) {
-                caster.castRelease(remainingUseTicks);
+                caster.castRelease(itemStack(), remainingUseTicks);
             }
         }
 

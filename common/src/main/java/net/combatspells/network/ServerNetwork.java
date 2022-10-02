@@ -32,7 +32,7 @@ public class ServerNetwork {
             }
             var packet = Packets.ReleaseRequest.read(buf);
             world.getServer().executeSync(() -> {
-                var stack = player.getMainHandStack(); // FIXME
+                var stack = player.getInventory().getStack(packet.slot());
                 var item = stack.getItem();
                 var id = Registry.ITEM.getId(item);
                 var spell = SpellRegistry.spells.get(id);
@@ -45,7 +45,7 @@ public class ServerNetwork {
                         System.out.println("Server release on entity: " + entity.getName());
                     }
                 }
-                SpellHelper.castRelease(world, player, spell, 70000); // FIXME
+                SpellHelper.castRelease(world, player, spell, packet.remainingUseTicks());
             });
         });
     }
