@@ -2,6 +2,7 @@ package net.combatspells.api;
 
 import net.combatspells.api.spell.Spell;
 import net.combatspells.entity.SpellProjectile;
+import net.combatspells.internals.SpellRegistry;
 import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.SoundHelper;
 import net.combatspells.utils.TargetHelper;
@@ -10,6 +11,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -30,7 +32,9 @@ public class SpellHelper {
         return Math.min(((float)elapsedTicks) / (duration * 20F), 1F);
     }
 
-    public static void castRelease(World world, LivingEntity caster, List<Entity> targets, Spell spell, int remainingUseTicks) {
+    public static void castRelease(World world, LivingEntity caster, List<Entity> targets, ItemStack itemStack, int remainingUseTicks) {
+        var item = itemStack.getItem();
+        var spell = SpellRegistry.spells.get(Registry.ITEM.getId(item));
         var progress = getCastProgress(remainingUseTicks, spell.cast_duration);
         if (progress >= 1) {
             var action = spell.on_release.target;
@@ -55,6 +59,11 @@ public class SpellHelper {
             if (success) {
                 ParticleHelper.sendBatches(caster, spell.on_release.particles);
                 SoundHelper.playSound(world, caster, spell.on_release.sound);
+                if (caster instanceof PlayerEntity player) {
+                    if (spell.cooldown_duration > 0) {
+                        player.getItemCooldownManager().set(item, Math.round(spell.cooldown_duration * 20F));
+                    }
+                }
             }
         }
     }

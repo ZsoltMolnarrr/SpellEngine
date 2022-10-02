@@ -96,7 +96,7 @@ public class ParticleHelper {
     private static Vec3d origin(Entity entity, ParticleBatch.Origin origin) {
         switch (origin) {
             case FEET -> {
-                return entity.getPos();
+                return entity.getPos().add(0, entity.getHeight() * 0.1F, 0);
             }
             case CENTER -> {
                 return entity.getPos().add(0, entity.getHeight() / 2F, 0);

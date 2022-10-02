@@ -33,10 +33,6 @@ public class ServerNetwork {
             var packet = Packets.ReleaseRequest.read(buf);
             world.getServer().executeSync(() -> {
                 var stack = player.getInventory().getStack(packet.slot());
-                var item = stack.getItem();
-                var id = Registry.ITEM.getId(item);
-                var spell = SpellRegistry.spells.get(id);
-
                 List<Entity> targets = new ArrayList<>();
                 for (var targetId: packet.targets()) {
                     var entity = world.getEntityById(targetId);
@@ -45,7 +41,7 @@ public class ServerNetwork {
                         // System.out.println("Server release on entity: " + entity.getName());
                     }
                 }
-                SpellHelper.castRelease(world, player, targets, spell, packet.remainingUseTicks());
+                SpellHelper.castRelease(world, player, targets, stack, packet.remainingUseTicks());
             });
         });
     }

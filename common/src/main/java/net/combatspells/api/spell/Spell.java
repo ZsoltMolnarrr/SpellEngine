@@ -4,6 +4,7 @@ public class Spell {
     // Structure
     public float cast_duration = 0;
     public float range = 50;
+    public float cooldown_duration = 0;
 
 //    public Cast cast;
 //    public static class Cast { public Cast() { }
