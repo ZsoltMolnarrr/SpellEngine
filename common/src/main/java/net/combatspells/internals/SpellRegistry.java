@@ -37,6 +37,26 @@ public class SpellRegistry {
         fireBall.on_impact = new Spell.Impact[] { firballImpact };
         spells.put(new Identifier("minecraft", "wooden_sword"), fireBall);
 
+
+        var scorch = new Spell();
+        scorch.cast_duration = 0.5F;
+        scorch.range = 32;
+        scorch.on_release = new Spell.Release();
+        scorch.on_release.target = new Spell.Release.Target();
+        scorch.on_release.target.type = Spell.Release.Target.Type.CURSOR;
+        scorch.on_release.target.cursor = new Spell.Release.Target.Cursor();
+        var scorchDamage = new Spell.Impact();
+        scorchDamage.action = new Spell.Impact.Action();
+        scorchDamage.action.type = Spell.Impact.Action.Type.DAMAGE;
+        scorchDamage.action.damage = new Spell.Impact.Action.Damage();
+        scorchDamage.action.damage.attribute = "spelldamage:fire";
+        scorchDamage.particles = new ParticleBatch[] {
+                new ParticleBatch("small_flame", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 30, 0.05F, 0.2F)
+        };
+        scorch.on_impact = new Spell.Impact[] { scorchDamage };
+        spells.put(new Identifier("minecraft", "golden_sword"), scorch);
+
+
         var frostNova = new Spell();
         frostNova.cast_duration = 2;
         frostNova.range = 10;

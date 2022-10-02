@@ -51,7 +51,7 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
             var slot = caster.getInventory().indexOf(itemStack);
             var action = currentSpell.on_release.target;
             switch (action.type) {
-                case PROJECTILE -> {
+                case PROJECTILE, CURSOR -> {
                     updateTarget();
                     var targets = new int[]{ };
                     if (target != null) {
@@ -60,8 +60,6 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
                     ClientPlayNetworking.send(
                             Packets.ReleaseRequest.ID,
                             new Packets.ReleaseRequest(slot, remainingUseTicks, targets).write());
-                }
-                case CURSOR -> {
                 }
                 case AREA -> {
                     var targets = TargetHelper.targetsFromArea(caster, currentSpell.range, currentSpell.on_release.target.area);
@@ -82,6 +80,16 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     private void updateTarget() {
+        var caster = player();
         target = TargetHelper.targetFromRaycast(player(), currentSpell.range);
+        switch (currentSpell.on_release.target.type) {
+            case CURSOR -> {
+                var cursor = currentSpell.on_release.target.cursor;
+                if (target == null && cursor.use_caster_as_fallback) {
+                    target = caster;
+                }
+            }
+            default -> { }
+        }
     }
 }

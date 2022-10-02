@@ -41,18 +41,26 @@ public class SpellHelper {
                     success = true;
                 }
                 case CURSOR -> {
+                    var target = targets.stream().findFirst();
+                    if (target.isPresent()) {
+                        directImpact(world, caster, target.get(), spell);
+                        success = true;
+                    }
                 }
                 case AREA -> {
                     areaImpact(world, caster, targets, spell);
                     success = true;
                 }
             }
-
             if (success) {
                 ParticleHelper.sendBatches(caster, spell.on_release.particles);
                 SoundHelper.playSound(world, caster, spell.on_release.sound);
             }
         }
+    }
+
+    private static void directImpact(World world, LivingEntity caster, Entity target, Spell spell) {
+        performImpacts(world, caster, target, spell.on_impact);
     }
 
     private static void areaImpact(World world, LivingEntity caster, List<Entity> targets, Spell spell) {
