@@ -46,11 +46,12 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
     @Override
     public void castRelease(ItemStack itemStack, int remainingUseTicks) {
         var progress = SpellHelper.getCastProgress(remainingUseTicks, currentSpell.cast_duration);
+        var caster = player();
         if (progress >= 1) {
-            var slot = player().getInventory().indexOf(itemStack);
-            var action = currentSpell.on_release.action;
+            var slot = caster.getInventory().indexOf(itemStack);
+            var action = currentSpell.on_release.target;
             switch (action.type) {
-                case SHOOT_PROJECTILE -> {
+                case PROJECTILE -> {
                     updateTarget();
                     var targets = new int[]{ };
                     if (target != null) {
@@ -60,6 +61,20 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
                             Packets.ReleaseRequest.ID,
                             new Packets.ReleaseRequest(slot, remainingUseTicks, targets).write());
                 }
+                case CURSOR -> {
+                }
+                case AREA -> {
+                    var targets = TargetHelper.targetsFromArea(caster, currentSpell.range, currentSpell.on_release.target.area);
+                    var targetIDs = new int[targets.size()];
+                    int i = 0;
+                    for (var target: targets) {
+                        targetIDs[i] = target.getId();
+                        i += 1;
+                    }
+                    ClientPlayNetworking.send(
+                            Packets.ReleaseRequest.ID,
+                            new Packets.ReleaseRequest(slot, remainingUseTicks, targetIDs).write());
+                }
             }
             // Lookup target by target mode
         }
@@ -67,7 +82,6 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     private void updateTarget() {
-        target = TargetHelper.raycastForTarget(player(), currentSpell.range);
-        System.out.println("Targeting " + (target != null ? target.getEntityName() : "nothing" ) );
+        target = TargetHelper.targetFromRaycast(player(), currentSpell.range);
     }
 }

@@ -18,13 +18,22 @@ public class Spell {
 
     public Release on_release;
     public static class Release { public Release() { }
-        public Action action;
-        public static class Action { public Action() { }
+        public Target target;
+        public static class Target { public Target() { }
             public Type type;
             public enum Type {
-                SHOOT_PROJECTILE
+                PROJECTILE, CURSOR, AREA
             }
             public ProjectileData projectile;
+            public Cursor cursor;
+            public static class Cursor { public Cursor() { }
+                public boolean use_caster_as_fallback = false;
+            }
+            public Area area;
+            public static class Area { public Area() { }
+                public float horizontal_range_multiplier = 1F;
+                public float vertical_range_multiplier = 1F;
+            }
         }
         public ParticleBatch[] particles;
         public Sound sound;

@@ -64,7 +64,8 @@ public class ParticleHelper {
                 return entity.getPos().add(0, entity.getHeight() / 2F, 0);
             }
             case HANDS -> {
-                return entity.getPos();
+                // TODO: Calculate hand positions using animation library
+                return entity.getPos().add(0, entity.getHeight(), 0);
             }
         }
         assert true;

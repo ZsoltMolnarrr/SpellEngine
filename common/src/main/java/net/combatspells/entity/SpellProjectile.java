@@ -142,19 +142,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
 
     @Override
     protected void onEntityHit(EntityHitResult entityHitResult) {
-//        for(var travel_particles: clientData.travel_particles) {
-//            ParticleHelper.play(world, origin, getYaw(), getPitch() + 90, travel_particles);
-//        }
-
         if (!world.isClient) {
-            var position = this.getPos();
             var target = entityHitResult.getEntity();
             if (target != null && this.getOwner() instanceof LivingEntity caster) {
-                var performed = false;
-                for (var impact: impactData) {
-                    var result = SpellHelper.performImpact(world, caster, target, impact);
-                    performed = performed || result;
-                }
+                var performed = SpellHelper.performImpacts(world, caster, target, impactData);
                 if (performed) {
                     this.kill();
                 }

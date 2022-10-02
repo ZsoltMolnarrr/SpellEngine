@@ -1,12 +1,18 @@
 package net.combatspells.utils;
 
+import net.combatspells.api.spell.Spell;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
+
+import java.util.List;
 
 public class TargetHelper {
     public enum Relation {
@@ -46,7 +52,7 @@ public class TargetHelper {
         return true;
     }
 
-    public static Entity raycastForTarget(Entity caster, double range) {
+    public static Entity targetFromRaycast(Entity caster, float range) {
         Vec3d start = caster.getEyePos();
         Vec3d look = caster.getRotationVec(1.0F)
                 .normalize()
@@ -60,5 +66,29 @@ public class TargetHelper {
             return hitResult.getEntity();
         }
         return null;
+    }
+
+    public static List<Entity> targetsFromArea(Entity caster, float range, Spell.Release.Target.Area area) {
+        var horizontal = range * area.horizontal_range_multiplier;
+        var vertical = range * area.vertical_range_multiplier;
+        var box = caster.getBoundingBox().expand(
+                horizontal,
+                vertical,
+                horizontal);
+        var squaredDistance = range * range;
+        var raycastStart = caster.getEyePos();
+        var entities = caster.world.getOtherEntities(caster, box, (target) -> {
+            return !target.isSpectator() && target.canHit()
+                    && target.squaredDistanceTo(caster) <= squaredDistance
+                    && raycastObstacleFree(raycastStart, target.getPos().add(0, target.getHeight() / 2F, 0));
+        });
+        return entities;
+    }
+
+    private static boolean raycastObstacleFree(Vec3d start, Vec3d end) {
+        var client = MinecraftClient.getInstance();
+        var world = client.world;
+        var hit = client.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, client.player));
+        return hit.getType() != HitResult.Type.BLOCK;
     }
 }

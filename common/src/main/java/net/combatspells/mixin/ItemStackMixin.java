@@ -89,7 +89,7 @@ public abstract class ItemStackMixin {
         if (spell == null) { return; }
 
         if (world.isClient) {
-            var target = TargetHelper.raycastForTarget(user, spell.range);
+            var target = TargetHelper.targetFromRaycast(user, spell.range);
             System.out.println("Targeting " + (target != null ? target.getEntityName() : "nothing" ) );
         }
 

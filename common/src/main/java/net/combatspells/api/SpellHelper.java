@@ -15,7 +15,9 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spelldamage.api.MagicSchool;
 import net.spelldamage.api.SpellDamageHelper;
-import net.spelldamage.api.SpellDamageSource;;
+import net.spelldamage.api.SpellDamageSource;
+
+import java.util.List;
 
 public class SpellHelper {
     public static int maximumUseTicks = 72000;
@@ -28,14 +30,20 @@ public class SpellHelper {
         return Math.min(((float)elapsedTicks) / (duration * 20F), 1F);
     }
 
-    public static void castRelease(World world, LivingEntity caster, Spell spell, int remainingUseTicks) {
+    public static void castRelease(World world, LivingEntity caster, List<Entity> targets, Spell spell, int remainingUseTicks) {
         var progress = getCastProgress(remainingUseTicks, spell.cast_duration);
         if (progress >= 1) {
-            var action = spell.on_release.action;
+            var action = spell.on_release.target;
             boolean success = false;
             switch (action.type) {
-                case SHOOT_PROJECTILE -> {
+                case PROJECTILE -> {
                     shootProjectile(world, caster, spell.range, action.projectile, spell.on_impact);
+                    success = true;
+                }
+                case CURSOR -> {
+                }
+                case AREA -> {
+                    areaImpact(world, caster, targets, spell);
                     success = true;
                 }
             }
@@ -44,6 +52,12 @@ public class SpellHelper {
                 ParticleHelper.sendBatches(caster, spell.on_release.particles);
                 SoundHelper.playSound(world, caster, spell.on_release.sound);
             }
+        }
+    }
+
+    private static void areaImpact(World world, LivingEntity caster, List<Entity> targets, Spell spell) {
+        for(var target: targets) {
+            performImpacts(world, caster, target, spell.on_impact);
         }
     }
 
@@ -62,6 +76,15 @@ public class SpellHelper {
 
         world.spawnEntity(projectile);
         System.out.println("Spawning projectile");
+    }
+
+    public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell.Impact[] impacts) {
+        var performed = false;
+        for (var impact: impacts) {
+            var result = performImpact(world, caster, target, impact);
+            performed = performed || result;
+        }
+        return performed;
     }
 
     public static boolean performImpact(World world, LivingEntity caster, Entity target, Spell.Impact impact) {

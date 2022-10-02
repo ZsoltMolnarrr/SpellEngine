@@ -37,15 +37,15 @@ public class ServerNetwork {
                 var id = Registry.ITEM.getId(item);
                 var spell = SpellRegistry.spells.get(id);
 
-                List<Entity> entities = new ArrayList<>();
+                List<Entity> targets = new ArrayList<>();
                 for (var targetId: packet.targets()) {
                     var entity = world.getEntityById(targetId);
                     if (entity != null) {
-                        entities.add(entity);
-                        System.out.println("Server release on entity: " + entity.getName());
+                        targets.add(entity);
+                        // System.out.println("Server release on entity: " + entity.getName());
                     }
                 }
-                SpellHelper.castRelease(world, player, spell, packet.remainingUseTicks());
+                SpellHelper.castRelease(world, player, targets, spell, packet.remainingUseTicks());
             });
         });
     }

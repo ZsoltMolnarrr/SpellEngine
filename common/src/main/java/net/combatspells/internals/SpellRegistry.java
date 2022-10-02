@@ -17,10 +17,10 @@ public class SpellRegistry {
         fireBall.cast_duration = 2;
         fireBall.range = 64;
         fireBall.on_release = new Spell.Release();
-        fireBall.on_release.action = new Spell.Release.Action();
-        fireBall.on_release.action.type = Spell.Release.Action.Type.SHOOT_PROJECTILE;
-        fireBall.on_release.action.projectile = new Spell.ProjectileData();
-        fireBall.on_release.action.projectile.client_data = new Spell.ProjectileData.Client(
+        fireBall.on_release.target = new Spell.Release.Target();
+        fireBall.on_release.target.type = Spell.Release.Target.Type.PROJECTILE;
+        fireBall.on_release.target.projectile = new Spell.ProjectileData();
+        fireBall.on_release.target.projectile.client_data = new Spell.ProjectileData.Client(
                 new ParticleBatch[] {
                         new ParticleBatch("flame", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 3, 0, 0.1F)
                 },
@@ -37,40 +37,41 @@ public class SpellRegistry {
         fireBall.on_impact = new Spell.Impact[] { firballImpact };
         spells.put(new Identifier("minecraft", "wooden_sword"), fireBall);
 
-        var frostbolt = new Spell();
-        frostbolt.cast_duration = 2;
-        frostbolt.range = 64;
-        frostbolt.on_release = new Spell.Release();
-        frostbolt.on_release.action = new Spell.Release.Action();
-        frostbolt.on_release.action.type = Spell.Release.Action.Type.SHOOT_PROJECTILE;
-        frostbolt.on_release.action.projectile = new Spell.ProjectileData();
-        frostbolt.on_release.action.projectile.client_data = new Spell.ProjectileData.Client(
-                new ParticleBatch[] {
-                        new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 3, 0, 0.1F)
-                },
-                "snowball"
-        );
-        var frostboltDamage = new Spell.Impact();
-        frostboltDamage.action = new Spell.Impact.Action();
-        frostboltDamage.action.type = Spell.Impact.Action.Type.DAMAGE;
-        frostboltDamage.action.damage = new Spell.Impact.Action.Damage();
-        frostboltDamage.action.damage.attribute = "spelldamage:frost";
-        frostboltDamage.particles = new ParticleBatch[] {
+        var frostNova = new Spell();
+        frostNova.cast_duration = 2;
+        frostNova.range = 10;
+        frostNova.on_release = new Spell.Release();
+        frostNova.on_release.target = new Spell.Release.Target();
+        frostNova.on_release.target.type = Spell.Release.Target.Type.AREA;
+        frostNova.on_release.target.area = new Spell.Release.Target.Area();
+        frostNova.on_release.target.area.vertical_range_multiplier = 0.3F;
+//        frostNova.on_release.target.projectile.client_data = new Spell.ProjectileData.Client(
+//                new ParticleBatch[] {
+//                        new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 3, 0, 0.1F)
+//                },
+//                "snowball"
+//        );
+
+        var frostDamage = new Spell.Impact();
+        frostDamage.action = new Spell.Impact.Action();
+        frostDamage.action.type = Spell.Impact.Action.Type.DAMAGE;
+        frostDamage.action.damage = new Spell.Impact.Action.Damage();
+        frostDamage.action.damage.attribute = "spelldamage:frost";
+        frostDamage.particles = new ParticleBatch[] {
                 new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET, 30, 0.5F, 3F)
         };
-
-        var frostboltSlow = new Spell.Impact();
-        frostboltSlow.action = new Spell.Impact.Action();
-        frostboltSlow.action.type = Spell.Impact.Action.Type.STATUS_EFFECT;
-        frostboltSlow.action.status_effect = new Spell.Impact.Action.StatusEffect();
-        frostboltSlow.action.status_effect.effect_id = "slowness";
-        frostboltSlow.action.status_effect.amplifier = 1;
-        frostboltSlow.action.status_effect.duration = 40;
-//        frostboltSlow.particles = new ParticleBatch[] {
+        var frostSlow = new Spell.Impact();
+        frostSlow.action = new Spell.Impact.Action();
+        frostSlow.action.type = Spell.Impact.Action.Type.STATUS_EFFECT;
+        frostSlow.action.status_effect = new Spell.Impact.Action.StatusEffect();
+        frostSlow.action.status_effect.effect_id = "slowness";
+        frostSlow.action.status_effect.amplifier = 1;
+        frostSlow.action.status_effect.duration = 40;
+//        frostSlow.particles = new ParticleBatch[] {
 //                new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, 30, 0.5F, 3F)
 //        };
-        frostbolt.on_impact = new Spell.Impact[] { frostboltDamage, frostboltSlow };
-        spells.put(new Identifier("minecraft", "stone_sword"), frostbolt);
+        frostNova.on_impact = new Spell.Impact[] { frostDamage, frostSlow };
 
+        spells.put(new Identifier("minecraft", "stone_sword"), frostNova);
     }
 }
