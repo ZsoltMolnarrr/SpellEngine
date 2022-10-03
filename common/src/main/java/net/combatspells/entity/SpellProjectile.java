@@ -113,7 +113,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
             updateClientSideData();
         }
         if (!this.world.isClient) {
-            if (distanceTraveled >= range) {
+            if (distanceTraveled >= range || age > 1200) { // 1200 ticks = 1 minute
                 this.kill();
                 return;
             }
@@ -167,8 +167,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
             System.out.println((world.isClient ? "Client: " : "Server: ") + "Distance: " + distanceVector);
             System.out.println((world.isClient ? "Client: " : "Server: ") + "Velocity: " + getVelocity());
             var newVelocity = VectorHelper.rotateTowards(getVelocity(), distanceVector, projectileData.homing_angle);
-            System.out.println((world.isClient ? "Client: " : "Server: ") + "Rotated to: " + newVelocity);
-            this.setVelocity(newVelocity);
+            if (newVelocity.lengthSquared() > 0) {
+                System.out.println((world.isClient ? "Client: " : "Server: ") + "Rotated to: " + newVelocity);
+                this.setVelocity(newVelocity);
+            }
         }
     }
 
