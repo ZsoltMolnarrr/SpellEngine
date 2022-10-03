@@ -18,8 +18,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ClientPlayerEntityMixin implements SpellCasterClient {
     private Spell currentSpell;
     private Entity target;
+
     private ClientPlayerEntity player() {
-        return (ClientPlayerEntity)((Object)this);
+        return (ClientPlayerEntity) ((Object) this);
     }
 
     @Override
@@ -30,6 +31,10 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
     @Override
     public void setCurrentSpell(Spell spell) {
         currentSpell = spell;
+    }
+
+    public Entity getCurrentTarget() {
+        return target;
     }
 
     @Override
@@ -57,9 +62,9 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
             switch (action.type) {
                 case PROJECTILE, CURSOR -> {
                     updateTarget();
-                    var targets = new int[]{ };
+                    var targets = new int[]{};
                     if (target != null) {
-                        targets = new int[]{ target.getId() };
+                        targets = new int[]{target.getId()};
                     }
                     ClientPlayNetworking.send(
                             Packets.ReleaseRequest.ID,
@@ -69,7 +74,7 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
                     var targets = TargetHelper.targetsFromArea(caster, currentSpell.range, currentSpell.on_release.target.area);
                     var targetIDs = new int[targets.size()];
                     int i = 0;
-                    for (var target: targets) {
+                    for (var target : targets) {
                         targetIDs[i] = target.getId();
                         i += 1;
                     }
@@ -93,13 +98,22 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
                     target = caster;
                 }
             }
-            default -> { }
+            default -> {
+            }
         }
     }
 
-    @Inject(method = "clearActiveItem", at = @At("TAIL"))
-    private void clearCurrentSpell(CallbackInfo ci) {
-        System.out.println("Cast cancel");
-        currentSpell = null;
+//    @Inject(method = "clearActiveItem", at = @At("TAIL"))
+//    private void clearCurrentSpell(CallbackInfo ci) {
+//        System.out.println("Cast cancel");
+//        currentSpell = null;
+//    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    public void post_Tick(CallbackInfo ci) {
+        if (!player().isUsingItem()) {
+            currentSpell = null;
+            target = null;
+        }
     }
 }
