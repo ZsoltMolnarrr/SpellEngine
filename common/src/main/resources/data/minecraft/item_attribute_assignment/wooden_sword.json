@@ -1,9 +1,9 @@
 {
   "attributes": [
     {
-      "attribute" : "spelldamage:frost",
+      "attribute" : "spelldamage:fire",
       "operation" : "ADDITION",
-      "value": 3
+      "value": 4
     }
   ]
 }

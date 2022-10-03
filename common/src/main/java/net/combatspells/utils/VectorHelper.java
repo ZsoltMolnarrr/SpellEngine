@@ -46,9 +46,6 @@ public class VectorHelper {
         if (angleBetween <= angleToRotate) {
             rotated = towards;
         } else {
-            if (angleBetween > 60) {
-                angleToRotate *= 5F;
-            }
             var v1 = vector;
             var towardsLength = Math.sin(Math.toRadians(angleToRotate)) / Math.cos(Math.toRadians(90.0 - angleBetween + angleToRotate));
             var v2 = towards.multiply(towardsLength);
