@@ -169,8 +169,6 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
             var newVelocity = VectorHelper.rotateTowards(getVelocity(), distanceVector, projectileData.homing_angle);
             System.out.println((world.isClient ? "Client: " : "Server: ") + "Rotated to: " + newVelocity);
             this.setVelocity(newVelocity);
-        } else {
-            System.out.println((world.isClient ? "Client: " : "Server: ") + "No target");
         }
     }
 

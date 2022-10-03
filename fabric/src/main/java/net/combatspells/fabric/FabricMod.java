@@ -21,7 +21,7 @@ public class FabricMod implements ModInitializer {
                 FabricEntityTypeBuilder.<SpellProjectile>create(SpawnGroup.MISC, SpellProjectile::new)
                         .dimensions(EntityDimensions.fixed(0.25F, 0.25F)) // dimensions in Minecraft units of the projectile
                         .trackRangeBlocks(128)
-                        .trackedUpdateRate(5) // necessary for all thrown projectiles (as it prevents it from breaking, lol)
+                        .trackedUpdateRate(2)
                         .build()
         );
     }

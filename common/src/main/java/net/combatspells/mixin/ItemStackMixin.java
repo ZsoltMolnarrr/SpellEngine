@@ -78,7 +78,6 @@ public abstract class ItemStackMixin {
         cir.setReturnValue(TypedActionResult.consume(itemStack()));
         cir.cancel();
         // Nothing to do?
-        System.out.println("Spell casting - Start");
     }
 
     // Tick cast
@@ -89,11 +88,12 @@ public abstract class ItemStackMixin {
         if (spell == null) { return; }
 
         if (world.isClient) {
-            var target = TargetHelper.targetFromRaycast(user, spell.range);
-            System.out.println("Targeting " + (target != null ? target.getEntityName() : "nothing" ) );
+            if (user instanceof SpellCasterClient caster) {
+                caster.castTick(remainingUseTicks);
+            }
         }
 
-        var progress = SpellHelper.getCastProgress(remainingUseTicks, spell.cast_duration);
+//        var progress = SpellHelper.getCastProgress(remainingUseTicks, spell.cast_duration);
 //        System.out.println("Spell tick - Tick: " + progress);
 
         ci.cancel();

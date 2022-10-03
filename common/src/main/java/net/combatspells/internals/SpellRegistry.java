@@ -41,6 +41,34 @@ public class SpellRegistry {
         fireBall.on_impact = new Spell.Impact[] { firballImpact };
         spells.put(new Identifier("minecraft", "wooden_sword"), fireBall);
 
+        var frostbolt = new Spell();
+        frostbolt.cast_duration = 1;
+        frostbolt.range = 64;
+        frostbolt.on_release = new Spell.Release();
+        frostbolt.on_release.target = new Spell.Release.Target();
+        frostbolt.on_release.target.type = Spell.Release.Target.Type.PROJECTILE;
+        frostbolt.on_release.target.projectile = new Spell.ProjectileData();
+        frostbolt.on_release.target.projectile.client_data = new Spell.ProjectileData.Client(
+                new ParticleBatch[] {
+                        new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 3, 0, 0.1F)
+                },
+                "snowball"
+        );
+
+        frostbolt.on_release.target.projectile.homing_angle = 2;
+        frostbolt.on_release.target.projectile.velocity = 1F;
+
+        var frostboltImpact = new Spell.Impact();
+        frostboltImpact.action = new Spell.Impact.Action();
+        frostboltImpact.action.type = Spell.Impact.Action.Type.DAMAGE;
+        frostboltImpact.action.damage = new Spell.Impact.Action.Damage();
+        frostboltImpact.action.damage.attribute = "spelldamage:frost";
+        frostboltImpact.particles = new ParticleBatch[] {
+                new ParticleBatch("soul_fire_flame", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 30, 0.5F, 3F)
+        };
+        frostbolt.on_impact = new Spell.Impact[] { frostboltImpact };
+        spells.put(new Identifier("minecraft", "diamond_sword"), frostbolt);
+
 
         var scorch = new Spell();
         scorch.cast_duration = 0.5F;

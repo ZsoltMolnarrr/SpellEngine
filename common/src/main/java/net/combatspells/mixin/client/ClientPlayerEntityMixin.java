@@ -35,6 +35,7 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
     @Override
     public void castStart(Spell spell) {
         currentSpell = spell;
+        System.out.println("Spell casting - Start");
 
         // Start player animation
         // Start sound

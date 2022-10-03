@@ -23,7 +23,17 @@ public class VectorHelper {
         return angle;
     }
 
-    public static Vec3d rotateTowards(Vec3d vector, Vec3d towards, double delta) {
+    /**
+     * Rotates a vector towards another, by the maximum of a given amount.
+     * @param vector
+     * @param towards
+     * @param angleToRotate angle in degrees
+     * @return
+     */
+    public static Vec3d rotateTowards(Vec3d vector, Vec3d towards, double angleToRotate) {
+        if (angleToRotate == 0) {
+            return vector;
+        }
         var originalLength = vector.length();
         vector = vector.normalize();
         towards = towards.normalize();
@@ -33,13 +43,11 @@ public class VectorHelper {
         if (angleBetween == 0) {
             return vector;
         }
-        if (angleBetween <= delta) {
+        if (angleBetween <= angleToRotate) {
             rotated = towards;
         } else {
             var v1 = vector;
-//            var gamma = 90 - angleBetween + delta;
-//            var towardsLength = (v1.length() * Math.sin(Math.toRadians(delta))) / Math.sin(Math.toRadians(gamma));
-            var towardsLength = Math.sin(Math.toRadians(delta)) / Math.cos(Math.toRadians(90.0 - angleBetween + delta));
+            var towardsLength = Math.sin(Math.toRadians(angleToRotate)) / Math.cos(Math.toRadians(90.0 - angleBetween + angleToRotate));
             var v2 = towards.multiply(towardsLength);
             System.out.println("Angle: " + angleBetween + " T':" + towardsLength);
             rotated = v1.add(v2).normalize();
