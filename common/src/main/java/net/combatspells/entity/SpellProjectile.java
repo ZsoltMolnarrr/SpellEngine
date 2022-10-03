@@ -5,6 +5,7 @@ import net.combatspells.CombatSpells;
 import net.combatspells.api.SpellHelper;
 import net.combatspells.api.spell.Spell;
 import net.combatspells.utils.ParticleHelper;
+import net.combatspells.utils.VectorHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.FlyingItemEntity;
@@ -31,6 +32,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
     public float range = 128;
     private Spell.ProjectileData projectileData;
     private Spell.Impact[] impactData;
+    private Entity target;
 
     public SpellProjectile(EntityType<? extends ProjectileEntity> entityType, World world) {
         super(entityType, world);
@@ -42,11 +44,13 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
     }
 
     public SpellProjectile(World world, LivingEntity caster, double x, double y, double z,
-                           Spell.ProjectileData projectileData, Spell.Impact[] impactData) {
+                           Spell.ProjectileData projectileData, Spell.Impact[] impactData,
+                           Entity target) {
         this(world, caster);
         this.setPosition(x, y, z);
         this.projectileData = projectileData;
         this.impactData = impactData;
+        this.target = target;
         var velocity = projectileData.velocity;
         var divergence = projectileData.divergence;
         if (projectileData.inherit_shooter_velocity) {
@@ -56,24 +60,40 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
             this.setVelocity(look.x, look.y, look.z, velocity, divergence);
         }
         var gson = new Gson();
-        this.getDataTracker().set(CLIENT_DATA, gson.toJson(projectileData.client_data));
+        this.getDataTracker().set(CLIENT_DATA, gson.toJson(projectileData));
+        if (target != null) {
+            this.getDataTracker().set(TARGET_ID, target.getId());
+        }
     }
 
-    private Spell.ProjectileData.Client cachedClientData;
-    private Spell.ProjectileData.Client clientData() {
-        if (cachedClientData != null) {
-            return cachedClientData;
+    private void updateClientSideData() {
+        if (projectileData != null) {
+            return;
         }
         try {
             var gson = new Gson();
             var json = this.getDataTracker().get(CLIENT_DATA);
-            var data = gson.fromJson(json, Spell.ProjectileData.Client.class);
-            cachedClientData = data;
-            return data;
+            var data = gson.fromJson(json, Spell.ProjectileData.class);
+            projectileData = data;
         } catch (Exception e) {
-            System.err.println("Failed to read Spell.ProjectileData.Client clientData()");
+            System.err.println("Failed to read Spell.ProjectileData clientData()");
         }
-        return null;
+    }
+
+    private Entity getTarget() {
+        Entity entityReference = null;
+        if (world.isClient) {
+            var id = this.getDataTracker().get(TARGET_ID);
+            if (id != null && id != 0) {
+                entityReference = world.getEntityById(id);
+            }
+        } else {
+            entityReference = target;
+        }
+        if (entityReference != null && entityReference.isAttackable() && entityReference.isAlive()) {
+            return entityReference;
+        }
+        return entityReference;
     }
 
     public boolean shouldRender(double distance) {
@@ -89,6 +109,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
 
     public void tick() {
         Entity entity = this.getOwner();
+        if (world.isClient) {
+            updateClientSideData();
+        }
         if (!this.world.isClient) {
             if (distanceTraveled >= range) {
                 this.kill();
@@ -103,6 +126,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
                 this.onCollision(hitResult);
             }
 
+            this.followTarget();
             this.checkBlockCollision();
             Vec3d velocity = this.getVelocity();
             double d = this.getX() + velocity.x;
@@ -121,9 +145,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
             // this.setVelocity(vec3d.add(this.powerX, this.powerY, this.powerZ).multiply((double)g));
 
             if (world.isClient) {
-                var clientData = clientData();
-                if (clientData != null) {
-                    for(var travel_particles: clientData.travel_particles) {
+                if (projectileData != null) {
+                    for (var travel_particles : projectileData.client_data.travel_particles) {
                         ParticleHelper.play(world, this, getYaw(), getPitch() + 90, travel_particles);
                     }
                 }
@@ -133,6 +156,21 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
             this.distanceTraveled += velocity.length();
         } else {
             this.discard();
+        }
+    }
+
+    private void followTarget() {
+        var target = getTarget();
+        if (target != null && projectileData.homing_angle > 0) {
+            var distanceVector = (target.getPos().add(0, target.getHeight() / 2F, 0))
+                    .subtract(this.getPos().add(0, this.getHeight() / 2F, 0));
+            System.out.println((world.isClient ? "Client: " : "Server: ") + "Distance: " + distanceVector);
+            System.out.println((world.isClient ? "Client: " : "Server: ") + "Velocity: " + getVelocity());
+            var newVelocity = VectorHelper.rotateTowards(getVelocity(), distanceVector, projectileData.homing_angle);
+            System.out.println((world.isClient ? "Client: " : "Server: ") + "Rotated to: " + newVelocity);
+            this.setVelocity(newVelocity);
+        } else {
+            System.out.println((world.isClient ? "Client: " : "Server: ") + "No target");
         }
     }
 
@@ -184,9 +222,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
 
     @Override
     public ItemStack getStack() {
-        var clientData = clientData();
-        if (clientData != null) {
-            return Registry.ITEM.get(new Identifier(clientData.item_id)).getDefaultStack();
+        if (projectileData != null && projectileData.client_data != null) {
+            return Registry.ITEM.get(new Identifier(projectileData.client_data.item_id)).getDefaultStack();
         }
         return ItemStack.EMPTY;
     }
@@ -195,11 +232,14 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
     protected void initDataTracker() {
         var gson = new Gson();
         this.getDataTracker().startTracking(CLIENT_DATA, "");
+        this.getDataTracker().startTracking(TARGET_ID, 0);
     }
 
     private static final TrackedData<String> CLIENT_DATA;
+    private static final TrackedData<Integer> TARGET_ID;
 
     static {
         CLIENT_DATA = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.STRING);
+        TARGET_ID = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.INTEGER);
     }
 }

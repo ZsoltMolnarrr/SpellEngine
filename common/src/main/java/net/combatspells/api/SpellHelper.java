@@ -41,7 +41,12 @@ public class SpellHelper {
             boolean success = false;
             switch (action.type) {
                 case PROJECTILE -> {
-                    shootProjectile(world, caster, spell.range, action.projectile, spell.on_impact);
+                    Entity target = null;
+                    var entityFound = targets.stream().findFirst();
+                    if (entityFound.isPresent()) {
+                        target = entityFound.get();
+                    }
+                    shootProjectile(world, caster, spell.range, action.projectile, spell.on_impact, target);
                     success = true;
                 }
                 case CURSOR -> {
@@ -79,7 +84,8 @@ public class SpellHelper {
     }
 
     private static void shootProjectile(World world, LivingEntity caster, float range,
-                                        Spell.ProjectileData projectileData, Spell.Impact[] impact) {
+                                        Spell.ProjectileData projectileData, Spell.Impact[] impact,
+                                        Entity target) {
         // Send target packet
         if (world.isClient) {
             return;
@@ -88,7 +94,7 @@ public class SpellHelper {
         var x = caster.getX();
         var y  = caster.getEyeY();
         var z  = caster.getZ();
-        var projectile = new SpellProjectile(world, caster, x, y, z, projectileData, impact);
+        var projectile = new SpellProjectile(world, caster, x, y, z, projectileData, impact, target);
         projectile.range = range;
 
         world.spawnEntity(projectile);

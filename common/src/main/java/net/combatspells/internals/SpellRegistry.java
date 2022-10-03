@@ -14,7 +14,7 @@ public class SpellRegistry {
         // spells.put(new Identifier("minecraft", "wooden_sword"), "fireball");
 
         var fireBall = new Spell();
-        fireBall.cast_duration = 2;
+        fireBall.cast_duration = 1;
         fireBall.range = 64;
         fireBall.on_release = new Spell.Release();
         fireBall.on_release.target = new Spell.Release.Target();
@@ -26,6 +26,10 @@ public class SpellRegistry {
                 },
                 "fire_charge"
         );
+
+        fireBall.on_release.target.projectile.homing_angle = 1;
+        fireBall.on_release.target.projectile.velocity = 0.5F;
+
         var firballImpact = new Spell.Impact();
         firballImpact.action = new Spell.Impact.Action();
         firballImpact.action.type = Spell.Impact.Action.Type.DAMAGE;

@@ -74,6 +74,7 @@ public class Spell {
         public float velocity = 1F;
         public float divergence = 0;
         public boolean inherit_shooter_velocity = false;
+        public float homing_angle = 10F;
         public Client client_data;
         public static class Client { public Client() { }
             public ParticleBatch[] travel_particles;
