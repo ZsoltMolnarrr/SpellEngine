@@ -10,12 +10,13 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPlayerEntity.class)
-public class ClientPlayerEntityMixin implements SpellCasterClient {
+public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     private Spell currentSpell;
     private Entity target;
 
@@ -35,6 +36,13 @@ public class ClientPlayerEntityMixin implements SpellCasterClient {
 
     public Entity getCurrentTarget() {
         return target;
+    }
+
+    public float getCurrentCastProgress() {
+        if (currentSpell != null) {
+            return SpellHelper.getCastProgress(player().getItemUseTimeLeft(), currentSpell.cast_duration);
+        }
+        return 0;
     }
 
     @Override
