@@ -1,10 +1,14 @@
 package net.combatspells.api.spell;
 
+import net.spelldamage.api.MagicSchool;
+
 public class Spell {
     // Structure
     public float cast_duration = 0;
     public float range = 50;
     public float cooldown_duration = 0;
+
+    public MagicSchool school;
 
 //    public Cast cast;
 //    public static class Cast { public Cast() { }
@@ -51,12 +55,10 @@ public class Spell {
             public Damage damage;
             public static class Damage { public Damage() { }
                 public float multiplier = 1;
-                public String attribute;
             }
             public Heal heal;
             public static class Heal { public Heal() { }
                 public float multiplier = 1;
-                public String attribute;
             }
             public StatusEffect status_effect;
             public static class StatusEffect { public StatusEffect() { }

@@ -28,7 +28,7 @@ public class HudRenderHelper {
             var caster = (SpellCasterClient) player;
             var spell = caster.getCurrentSpell();
             if (spell != null) {
-                castBarViewModel = new CastBarWidget.ViewModel(0, caster.getCurrentCastProgress(), spell.cast_duration);
+                castBarViewModel = new CastBarWidget.ViewModel(spell.school.color(), caster.getCurrentCastProgress(), spell.cast_duration);
             }
         }
 
@@ -100,6 +100,11 @@ public class HudRenderHelper {
             RenderSystem.setShaderTexture(0, CAST_BAR);
 
             // Set shader color from viewmodel
+            float red = ((float) ((viewModel.color >> 16) & 0xFF)) / 255F;
+            float green = ((float) ((viewModel.color >> 8) & 0xFF)) / 255F;
+            float blue = ((float) (viewModel.color & 0xFF)) / 255F;
+
+            RenderSystem.setShaderColor(red, green, blue, 1F);
 
             renderBar(matrixStack, true, 1, x, y);
             float partialProgress = 0;
@@ -107,6 +112,7 @@ public class HudRenderHelper {
                 partialProgress = tickDelta / (viewModel.castDuration * 20F);
             }
             renderBar(matrixStack, false, viewModel.progress + partialProgress, x, y);
+
 
             RenderSystem.disableBlend();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -137,15 +143,15 @@ public class HudRenderHelper {
                 case LEFT -> {
                     u = 0;
                     // System.out.println(" partMaxWidth: " + partMaxWidth + " progressRange: " + progressRange + " progressFloor: " + progressFloor + " adjustedProgress: " + adjustedProgress + " width: " + width);
-                    RenderSystem.setShaderColor(1.F, 0F, 0F, 0.5F);
+//                    RenderSystem.setShaderColor(1.F, 0F, 0F, 0.5F);
                 }
                 case CENTER -> {
                     u = (int) tailWidth;
-                    RenderSystem.setShaderColor(0.F, 1F, 0F, 0.5F);
+//                    RenderSystem.setShaderColor(0.F, 1F, 0F, 0.5F);
                 }
                 case RIGHT -> {
                     u = (int) (textureWidth - tailWidth);
-                    RenderSystem.setShaderColor(0.F, 0F, 1F, 0.5F);
+//                    RenderSystem.setShaderColor(0.F, 0F, 1F, 0.5F);
                 }
             }
             int v = isBackground ? 0 : barHeight;

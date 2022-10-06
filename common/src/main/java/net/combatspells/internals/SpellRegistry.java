@@ -3,6 +3,7 @@ package net.combatspells.internals;
 import net.combatspells.api.spell.ParticleBatch;
 import net.combatspells.api.spell.Spell;
 import net.minecraft.util.Identifier;
+import net.spelldamage.api.MagicSchool;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,7 @@ public class SpellRegistry {
         var fireBall = new Spell();
         fireBall.cast_duration = 1;
         fireBall.range = 64;
+        fireBall.school = MagicSchool.FIRE;
         fireBall.on_release = new Spell.Release();
         fireBall.on_release.target = new Spell.Release.Target();
         fireBall.on_release.target.type = Spell.Release.Target.Type.PROJECTILE;
@@ -34,7 +36,6 @@ public class SpellRegistry {
         firballImpact.action = new Spell.Impact.Action();
         firballImpact.action.type = Spell.Impact.Action.Type.DAMAGE;
         firballImpact.action.damage = new Spell.Impact.Action.Damage();
-        firballImpact.action.damage.attribute = "spelldamage:fire";
         firballImpact.particles = new ParticleBatch[] {
                 new ParticleBatch("lava", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 30, 0.5F, 3F)
         };
@@ -42,6 +43,7 @@ public class SpellRegistry {
         spells.put(new Identifier("minecraft", "wooden_sword"), fireBall);
 
         var frostbolt = new Spell();
+        frostbolt.school = MagicSchool.FROST;
         frostbolt.cast_duration = 1;
         frostbolt.range = 64;
         frostbolt.on_release = new Spell.Release();
@@ -62,7 +64,6 @@ public class SpellRegistry {
         frostboltImpact.action = new Spell.Impact.Action();
         frostboltImpact.action.type = Spell.Impact.Action.Type.DAMAGE;
         frostboltImpact.action.damage = new Spell.Impact.Action.Damage();
-        frostboltImpact.action.damage.attribute = "spelldamage:frost";
         frostboltImpact.particles = new ParticleBatch[] {
                 new ParticleBatch("soul_fire_flame", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 30, 0.5F, 3F)
         };
@@ -71,6 +72,7 @@ public class SpellRegistry {
 
 
         var scorch = new Spell();
+        scorch.school = MagicSchool.FIRE;
         scorch.cast_duration = 0.5F;
         scorch.range = 32;
         scorch.on_release = new Spell.Release();
@@ -81,7 +83,6 @@ public class SpellRegistry {
         scorchDamage.action = new Spell.Impact.Action();
         scorchDamage.action.type = Spell.Impact.Action.Type.DAMAGE;
         scorchDamage.action.damage = new Spell.Impact.Action.Damage();
-        scorchDamage.action.damage.attribute = "spelldamage:fire";
         scorchDamage.particles = new ParticleBatch[] {
                 new ParticleBatch("small_flame", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 30, 0.2F, 0.2F)
         };
@@ -90,6 +91,7 @@ public class SpellRegistry {
 
 
         var frostNova = new Spell();
+        frostNova.school = MagicSchool.FROST;
         frostNova.cast_duration = 2;
         frostNova.cooldown_duration = 3;
         frostNova.range = 10;
@@ -109,7 +111,6 @@ public class SpellRegistry {
         frostDamage.action = new Spell.Impact.Action();
         frostDamage.action.type = Spell.Impact.Action.Type.DAMAGE;
         frostDamage.action.damage = new Spell.Impact.Action.Damage();
-        frostDamage.action.damage.attribute = "spelldamage:frost";
         frostDamage.particles = new ParticleBatch[] {
                 new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET, 30, 0.5F, 3F)
         };

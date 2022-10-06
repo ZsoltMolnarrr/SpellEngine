@@ -10,7 +10,6 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -49,7 +48,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     public void castStart(Spell spell) {
         currentSpell = spell;
         System.out.println("Spell casting - Start");
-
         // Start player animation
         // Start sound
         // Start spawning particles

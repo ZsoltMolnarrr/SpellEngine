@@ -30,8 +30,7 @@ import net.minecraft.world.World;
 
 public class SpellProjectile extends ProjectileEntity implements FlyingItemEntity {
     public float range = 128;
-    private Spell.ProjectileData projectileData;
-    private Spell.Impact[] impactData;
+    private Spell spell;
     private Entity target;
 
     public SpellProjectile(EntityType<? extends ProjectileEntity> entityType, World world) {
@@ -44,13 +43,12 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
     }
 
     public SpellProjectile(World world, LivingEntity caster, double x, double y, double z,
-                           Spell.ProjectileData projectileData, Spell.Impact[] impactData,
-                           Entity target) {
+                           Spell spell, Entity target) {
         this(world, caster);
         this.setPosition(x, y, z);
-        this.projectileData = projectileData;
-        this.impactData = impactData;
+        this.spell = spell;
         this.target = target;
+        var projectileData = projectileData();
         var velocity = projectileData.velocity;
         var divergence = projectileData.divergence;
         if (projectileData.inherit_shooter_velocity) {
@@ -66,17 +64,26 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
         }
     }
 
+    private Spell.ProjectileData projectileData() {
+        if (world.isClient) {
+            return clientSyncedData;
+        } else {
+            return spell.on_release.target.projectile;
+        }
+    }
+    private Spell.ProjectileData clientSyncedData;
+
     private void updateClientSideData() {
-        if (projectileData != null) {
+        if (clientSyncedData != null) {
             return;
         }
         try {
             var gson = new Gson();
             var json = this.getDataTracker().get(CLIENT_DATA);
             var data = gson.fromJson(json, Spell.ProjectileData.class);
-            projectileData = data;
+            clientSyncedData = data;
         } catch (Exception e) {
-            System.err.println("Failed to read Spell.ProjectileData clientData()");
+            System.err.println("Spell Projectile - Failed to read clientSyncedData");
         }
     }
 
@@ -145,8 +152,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
             // this.setVelocity(vec3d.add(this.powerX, this.powerY, this.powerZ).multiply((double)g));
 
             if (world.isClient) {
-                if (projectileData != null) {
-                    for (var travel_particles : projectileData.client_data.travel_particles) {
+                if (projectileData() != null) {
+                    for (var travel_particles : projectileData().client_data.travel_particles) {
                         ParticleHelper.play(world, this, getYaw(), getPitch() + 90, travel_particles);
                     }
                 }
@@ -161,12 +168,12 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
 
     private void followTarget() {
         var target = getTarget();
-        if (target != null && projectileData.homing_angle > 0) {
+        if (target != null && projectileData().homing_angle > 0) {
             var distanceVector = (target.getPos().add(0, target.getHeight() / 2F, 0))
                     .subtract(this.getPos().add(0, this.getHeight() / 2F, 0));
             System.out.println((world.isClient ? "Client: " : "Server: ") + "Distance: " + distanceVector);
             System.out.println((world.isClient ? "Client: " : "Server: ") + "Velocity: " + getVelocity());
-            var newVelocity = VectorHelper.rotateTowards(getVelocity(), distanceVector, projectileData.homing_angle);
+            var newVelocity = VectorHelper.rotateTowards(getVelocity(), distanceVector, projectileData().homing_angle);
             if (newVelocity.lengthSquared() > 0) {
                 System.out.println((world.isClient ? "Client: " : "Server: ") + "Rotated to: " + newVelocity);
                 this.setVelocity(newVelocity);
@@ -183,7 +190,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
         if (!world.isClient) {
             var target = entityHitResult.getEntity();
             if (target != null && this.getOwner() instanceof LivingEntity caster) {
-                var performed = SpellHelper.performImpacts(world, caster, target, impactData);
+                var performed = SpellHelper.performImpacts(world, caster, target, spell);
                 if (performed) {
                     this.kill();
                 }
@@ -191,8 +198,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
         }
     }
 
-    private static String NBT_PROJECTILE_DATA = "Spell.ProjectileData";
-    private static String NBT_IMPACT_DATA = "Spell.Impact";
+    private static String NBT_SPELL_DATA = "Spell.Data";
 
     @Override
     protected void onBlockHit(BlockHitResult blockHitResult) {
@@ -203,27 +209,25 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
         var gson = new Gson();
-        nbt.putString(NBT_PROJECTILE_DATA, gson.toJson(projectileData));
-        nbt.putString(NBT_IMPACT_DATA, gson.toJson(impactData));
+        nbt.putString(NBT_SPELL_DATA, gson.toJson(spell));
     }
 
     public void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
-        if (nbt.contains(NBT_PROJECTILE_DATA, NbtElement.STRING_TYPE)) {
+        if (nbt.contains(NBT_SPELL_DATA, NbtElement.STRING_TYPE)) {
             try {
                 var gson = new Gson();
-                this.projectileData = gson.fromJson(nbt.getString(NBT_PROJECTILE_DATA), Spell.ProjectileData.class);
-                this.impactData = gson.fromJson(nbt.getString(NBT_IMPACT_DATA), Spell.Impact[].class);
+                this.spell = gson.fromJson(nbt.getString(NBT_SPELL_DATA), Spell.class);
             } catch (Exception e) {
-                System.err.println("SpellProjectile - Failed to read projectileData from NBT");
+                System.err.println("SpellProjectile - Failed to read spell data from NBT");
             }
         }
     }
 
     @Override
     public ItemStack getStack() {
-        if (projectileData != null && projectileData.client_data != null) {
-            return Registry.ITEM.get(new Identifier(projectileData.client_data.item_id)).getDefaultStack();
+        if (projectileData() != null && projectileData().client_data != null) {
+            return Registry.ITEM.get(new Identifier(projectileData().client_data.item_id)).getDefaultStack();
         }
         return ItemStack.EMPTY;
     }

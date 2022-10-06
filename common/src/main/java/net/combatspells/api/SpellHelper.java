@@ -46,7 +46,7 @@ public class SpellHelper {
                     if (entityFound.isPresent()) {
                         target = entityFound.get();
                     }
-                    shootProjectile(world, caster, spell.range, action.projectile, spell.on_impact, target);
+                    shootProjectile(world, caster, target, spell);
                     success = true;
                 }
                 case CURSOR -> {
@@ -74,18 +74,16 @@ public class SpellHelper {
     }
 
     private static void directImpact(World world, LivingEntity caster, Entity target, Spell spell) {
-        performImpacts(world, caster, target, spell.on_impact);
+        performImpacts(world, caster, target, spell);
     }
 
     private static void areaImpact(World world, LivingEntity caster, List<Entity> targets, Spell spell) {
         for(var target: targets) {
-            performImpacts(world, caster, target, spell.on_impact);
+            performImpacts(world, caster, target, spell);
         }
     }
 
-    private static void shootProjectile(World world, LivingEntity caster, float range,
-                                        Spell.ProjectileData projectileData, Spell.Impact[] impact,
-                                        Entity target) {
+    private static void shootProjectile(World world, LivingEntity caster, Entity target, Spell spell) {
         // Send target packet
         if (world.isClient) {
             return;
@@ -94,23 +92,23 @@ public class SpellHelper {
         var x = caster.getX();
         var y  = caster.getEyeY();
         var z  = caster.getZ();
-        var projectile = new SpellProjectile(world, caster, x, y, z, projectileData, impact, target);
-        projectile.range = range;
+        var projectile = new SpellProjectile(world, caster, x, y, z, spell, target);
+        projectile.range = spell.range;
 
         world.spawnEntity(projectile);
         System.out.println("Spawning projectile");
     }
 
-    public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell.Impact[] impacts) {
+    public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell spell) {
         var performed = false;
-        for (var impact: impacts) {
-            var result = performImpact(world, caster, target, impact);
+        for (var impact: spell.on_impact) {
+            var result = performImpact(world, caster, target, spell.school, impact);
             performed = performed || result;
         }
         return performed;
     }
 
-    public static boolean performImpact(World world, LivingEntity caster, Entity target, Spell.Impact impact) {
+    private static boolean performImpact(World world, LivingEntity caster, Entity target, MagicSchool school, Spell.Impact impact) {
         if (!target.isAttackable()) {
             return false;
         }
@@ -123,22 +121,8 @@ public class SpellHelper {
                         return false;
                     }
                     var damageData = impact.action.damage;
-                    var attributeId = new Identifier(damageData.attribute);
-                    var school = MagicSchool.fromAttributeId(attributeId);
-                    double amount = 0;
-                    DamageSource source;
-                    if (school != null) {
-                        amount = SpellDamageHelper.getSpellDamage(school, caster);
-                        source = SpellDamageSource.create(school, caster);
-                    } else {
-                        var attribute = Registry.ATTRIBUTE.get(attributeId);
-                        amount = caster.getAttributeValue(attribute);
-                        if (caster instanceof PlayerEntity player) {
-                            source = DamageSource.player(player);
-                        } else {
-                            source = DamageSource.mob(caster);
-                        }
-                    }
+                    var amount = SpellDamageHelper.getSpellDamage(school, caster);
+                    var source = SpellDamageSource.create(school, caster);
                     amount *= damageData.multiplier;
                     caster.onAttacking(target);
                     target.damage(source, (float) amount);
@@ -150,15 +134,7 @@ public class SpellHelper {
                     }
                     if (target instanceof LivingEntity livingTarget) {
                         var healData = impact.action.heal;
-                        var attributeId = new Identifier(healData.attribute);
-                        var school = MagicSchool.fromAttributeId(attributeId);
-                        double amount = 0;
-                        if (school != null) {
-                            amount = SpellDamageHelper.getSpellDamage(school, caster);
-                        } else {
-                            var attribute = Registry.ATTRIBUTE.get(attributeId);
-                            amount = caster.getAttributeValue(attribute);
-                        }
+                        var amount = SpellDamageHelper.getSpellDamage(school, caster);
                         amount *= healData.multiplier;
                         livingTarget.heal((float) amount);
                         success = true;
