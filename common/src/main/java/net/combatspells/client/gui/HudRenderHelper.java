@@ -13,22 +13,32 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec2f;
 
 public class HudRenderHelper {
+
     public static void render(MatrixStack matrixStack, float tickDelta) {
+        render(matrixStack, tickDelta, false);
+    }
+    public static void render(MatrixStack matrixStack, float tickDelta, boolean config) {
         var hudConfig = CombatSpellsClient.hudConfig.currentConfig;
         var clientConfig = CombatSpellsClient.config;
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayerEntity player = client.player;
 
+        if (player == null && !config) {
+            return;
+        }
+
         var targetViewModel = TargetWidget.ViewModel.mock();
         CastBarWidget.ViewModel castBarViewModel = null;
-        if (player == null) {
-            return;
-        } else {
+        if (config) {
+            castBarViewModel = CastBarWidget.ViewModel.mock();
+        }
+
+        if (player != null) {
             targetViewModel = TargetWidget.ViewModel.from(player);
             var caster = (SpellCasterClient) player;
             var spell = caster.getCurrentSpell();
             if (spell != null) {
-                castBarViewModel = new CastBarWidget.ViewModel(spell.school.color(), caster.getCurrentCastProgress(), spell.cast_duration, spell.icon_id);
+                castBarViewModel = new CastBarWidget.ViewModel(spell.school.color(), caster.getCurrentCastProgress(), spell.cast_duration, spell.icon_id, true);
             }
         }
 
@@ -89,8 +99,13 @@ public class HudRenderHelper {
         private static final int textureHeight = 10;
         private static final int barHeight = textureHeight / 2;
         private static final Identifier CAST_BAR = new Identifier(CombatSpells.MOD_ID, "textures/hud/castbar.png");
+        public static final int spellIconSize = 16;
 
-        private record ViewModel(int color, float progress, float castDuration, String iconTexture) { }
+        public record ViewModel(int color, float progress, float castDuration, String iconTexture, boolean allowTickDelta) {
+            public static ViewModel mock() {
+                return new ViewModel(0xFF3300, 0.5F, 1, "combatspells:textures/spells/fireball.png", false);
+            }
+        }
 
         public static void render(MatrixStack matrixStack, float tickDelta, Vec2f starting, ViewModel viewModel) {
             var configuredWidth = 90;
@@ -109,18 +124,18 @@ public class HudRenderHelper {
 
             renderBar(matrixStack, true, 1, x, y);
             float partialProgress = 0;
-            if (viewModel.castDuration > 0) {
+            if (viewModel.allowTickDelta && viewModel.castDuration > 0) {
                 partialProgress = tickDelta / (viewModel.castDuration * 20F);
             }
             renderBar(matrixStack, false, viewModel.progress + partialProgress, x, y);
 
             if (viewModel.iconTexture != null) {
                 x = (int) (starting.x + (totalWidth / 2) + barHeight);
-                y = (int) (starting.y - 6);
+                y = (int) (starting.y - ((spellIconSize - barHeight) / 2));
                 var id = new Identifier(viewModel.iconTexture);
                 RenderSystem.setShaderTexture(0, id);
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-                DrawableHelper.drawTexture(matrixStack, x, y, 0, 0, 16, 16, 16, 16);
+                DrawableHelper.drawTexture(matrixStack, x, y, 0, 0, spellIconSize, spellIconSize, spellIconSize, spellIconSize);
             }
 
             RenderSystem.disableBlend();

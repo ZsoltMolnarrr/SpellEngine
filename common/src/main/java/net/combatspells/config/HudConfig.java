@@ -8,11 +8,11 @@ public class HudConfig {
 
     public static HudConfig createDefault() {
         var config = new HudConfig();
-        config.castWidget = createDefaultRollWidget();
+        config.castWidget = createDefaultCastWidget();
         return config;
     }
 
-    public static HudElement createDefaultRollWidget() {
+    public static HudElement createDefaultCastWidget() {
         var origin = HudElement.Origin.BOTTOM;
         var offset = origin.initialOffset().add(new Vec2f(0, -40));
         return new HudElement(origin, offset);
