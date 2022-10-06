@@ -3,6 +3,6 @@
   "gui.combatspells.close" : "Close",
   "gui.combatspells.settings" : "Settings",
   "gui.combatspells.hud" : "Move cast bar",
-  "gui.combatspells.corner" : "Corner",
+  "gui.combatspells.preset" : "Preset",
   "gui.combatspells.reset" : "Reset"
 }

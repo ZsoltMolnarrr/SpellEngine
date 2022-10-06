@@ -38,30 +38,5 @@ public class HudElement {
             }
             return new Vec2f(screenWidth / 2F, screenHeight / 2F); // Should never run
         }
-
-        public Vec2f initialOffset() {
-            int offset = 12;
-            switch (this) {
-                case TOP -> {
-                    return new Vec2f(0, offset);
-                }
-                case TOP_LEFT -> {
-                    return new Vec2f(offset, offset);
-                }
-                case TOP_RIGHT -> {
-                    return new Vec2f((-1) * offset, offset);
-                }
-                case BOTTOM -> {
-                    return new Vec2f(0, (-1) * offset);
-                }
-                case BOTTOM_LEFT -> {
-                    return new Vec2f(offset, (-1) * offset);
-                }
-                case BOTTOM_RIGHT -> {
-                    return new Vec2f((-1) * offset, (-1) * offset);
-                }
-            }
-            return new Vec2f(0, 0); // Should never run
-        }
     }
 }

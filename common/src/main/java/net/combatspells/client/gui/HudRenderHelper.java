@@ -31,10 +31,11 @@ public class HudRenderHelper {
         CastBarWidget.ViewModel castBarViewModel = null;
         if (config) {
             castBarViewModel = CastBarWidget.ViewModel.mock();
+        } else {
+            targetViewModel = TargetWidget.ViewModel.from(player);
         }
 
         if (player != null) {
-            targetViewModel = TargetWidget.ViewModel.from(player);
             var caster = (SpellCasterClient) player;
             var spell = caster.getCurrentSpell();
             if (spell != null) {
@@ -44,15 +45,14 @@ public class HudRenderHelper {
 
         var screenWidth = client.getWindow().getScaledWidth();
         var screenHeight = client.getWindow().getScaledHeight();
-        var originPoint = hudConfig.castWidget.origin.getPoint(screenWidth, screenHeight);
-        var drawOffset = hudConfig.castWidget.offset;
-        var startingPoint = originPoint.add(drawOffset);
-        TargetWidget.render(matrixStack, tickDelta, startingPoint, targetViewModel);
-
-        startingPoint = startingPoint.add(new Vec2f(0, -20));
+        var originPoint = hudConfig.base.origin.getPoint(screenWidth, screenHeight);
+        var startingPoint = originPoint.add(hudConfig.base.offset);
         if (castBarViewModel != null) {
-            CastBarWidget.render(matrixStack, tickDelta, startingPoint, castBarViewModel);
+            CastBarWidget.render(matrixStack, tickDelta, hudConfig.bar_width, startingPoint, castBarViewModel);
         }
+
+        startingPoint = startingPoint.add(hudConfig.target_offset);
+        TargetWidget.render(matrixStack, tickDelta, startingPoint, targetViewModel);
     }
 
     public static class TargetWidget {
@@ -107,9 +107,8 @@ public class HudRenderHelper {
             }
         }
 
-        public static void render(MatrixStack matrixStack, float tickDelta, Vec2f starting, ViewModel viewModel) {
-            var configuredWidth = 90;
-            var totalWidth = configuredWidth + minWidth;
+        public static void render(MatrixStack matrixStack, float tickDelta, int barWidth, Vec2f starting, ViewModel viewModel) {
+            var totalWidth = barWidth + minWidth;
             int x = (int) (starting.x - (totalWidth / 2));
             int y = (int) starting.y;
 
@@ -122,12 +121,12 @@ public class HudRenderHelper {
 
             RenderSystem.setShaderColor(red, green, blue, 1F);
 
-            renderBar(matrixStack, true, 1, x, y);
+            renderBar(matrixStack, barWidth, true, 1, x, y);
             float partialProgress = 0;
             if (viewModel.allowTickDelta && viewModel.castDuration > 0) {
                 partialProgress = tickDelta / (viewModel.castDuration * 20F);
             }
-            renderBar(matrixStack, false, viewModel.progress + partialProgress, x, y);
+            renderBar(matrixStack, barWidth, false, viewModel.progress + partialProgress, x, y);
 
             if (viewModel.iconTexture != null) {
                 x = (int) (starting.x + (totalWidth / 2) + barHeight);
@@ -142,9 +141,8 @@ public class HudRenderHelper {
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
 
-        private static void renderBar(MatrixStack matrixStack, boolean isBackground, float progress, int x, int y) {
-            var configuredWidth = 90;
-            var totalWidth = configuredWidth + minWidth;
+        private static void renderBar(MatrixStack matrixStack, int barWidth, boolean isBackground, float progress, int x, int y) {
+            var totalWidth = barWidth + minWidth;
             var centerWidth = totalWidth - minWidth;
             float leftRenderBegin = 0;
             float centerRenderBegin = tailWidth;
