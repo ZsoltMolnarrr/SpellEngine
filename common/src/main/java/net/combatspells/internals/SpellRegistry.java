@@ -17,6 +17,7 @@ public class SpellRegistry {
         var fireBall = new Spell();
         fireBall.cast_duration = 1;
         fireBall.range = 64;
+        fireBall.icon_id = "combatspells:textures/spells/fireball.png";
         fireBall.school = MagicSchool.FIRE;
         fireBall.on_release = new Spell.Release();
         fireBall.on_release.target = new Spell.Release.Target();
@@ -44,6 +45,7 @@ public class SpellRegistry {
 
         var frostbolt = new Spell();
         frostbolt.school = MagicSchool.FROST;
+        frostbolt.icon_id = "combatspells:textures/spells/frostbolt.png";
         frostbolt.cast_duration = 1;
         frostbolt.range = 64;
         frostbolt.on_release = new Spell.Release();

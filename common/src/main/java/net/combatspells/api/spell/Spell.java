@@ -7,6 +7,7 @@ public class Spell {
     public float cast_duration = 0;
     public float range = 50;
     public float cooldown_duration = 0;
+    public String icon_id;
 
     public MagicSchool school;
 
