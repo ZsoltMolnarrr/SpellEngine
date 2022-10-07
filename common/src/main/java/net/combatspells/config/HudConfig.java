@@ -21,22 +21,17 @@ public class HudConfig {
     public static HudConfig createDefault() {
         var defaultWidth = 90;
         var config = new HudConfig();
-        config.base = createDefaultCastWidget();
+        config.base = new HudElement(HudElement.Origin.BOTTOM, new Vec2f(0, -66));
         config.target = new Part(true, new Vec2f(0, -12));
         config.icon = new Part(true, new Vec2f((defaultWidth / 2) + 10, -6));
         config.bar_width = defaultWidth;
         return config;
     }
 
-    public static HudElement createDefaultCastWidget() {
-        var hudElement = preset(HudElement.Origin.BOTTOM);
-        hudElement.offset = hudElement.offset.add(new Vec2f(0, -50));
-        return hudElement;
-    }
-
     public static HudElement preset(HudElement.Origin origin) {
         int offsetW = 70;
         int offsetH = 16;
+        var barWidth = 90;
         var offset = new Vec2f(0, 0);
         switch (origin) {
             case TOP -> {

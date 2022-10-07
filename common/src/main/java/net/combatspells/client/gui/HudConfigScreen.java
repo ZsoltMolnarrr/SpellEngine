@@ -55,7 +55,17 @@ public class HudConfigScreen extends Screen {
             reset();
         }));
 
-        y = centerY - 20;
+        setupPartButtons();
+
+        setPartsVisibility(false);
+    }
+
+    private void setupPartButtons() {
+        var centerX = (width / 2);
+        var centerY = (height / 2);
+        var buttonWidth = 60;
+
+        int y = centerY - 20;
         int x = centerX - (buttonWidth/2);
         var targetButtons = createPartAdjustmentButtons(Part.TARGET, x, y);
         targetButtons.forEach(this::addDrawableChild);
@@ -68,8 +78,6 @@ public class HudConfigScreen extends Screen {
         var sizeButtons = createBarSizeButtons(x, y);
         sizeButtons.forEach(this::addDrawableChild);
         partButtons.addAll(sizeButtons);
-
-        setPartsVisibility(false);
     }
 
     enum Part { TARGET, ICON }
@@ -156,6 +164,9 @@ public class HudConfigScreen extends Screen {
     private void changeWidth(boolean increase) {
         var diff = increase ? 1 : -1;
         var config = CombatSpellsClient.hudConfig.currentConfig;
+        if (!increase && config.bar_width <= 0) {
+            return;
+        }
         config.bar_width += diff;
     }
 
@@ -237,5 +248,14 @@ public class HudConfigScreen extends Screen {
 
     public void reset() {
         CombatSpellsClient.hudConfig.currentConfig = HudConfig.createDefault();
+        removePartButtons();
+        setupPartButtons();
+    }
+
+    private void removePartButtons() {
+        for(var partButton: partButtons) {
+            remove(partButton);
+        }
+        partButtons.clear();
     }
 }
