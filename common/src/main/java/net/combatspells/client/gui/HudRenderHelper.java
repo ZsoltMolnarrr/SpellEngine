@@ -3,6 +3,7 @@ package net.combatspells.client.gui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.combatspells.CombatSpells;
 import net.combatspells.client.CombatSpellsClient;
+import net.combatspells.config.HudConfig;
 import net.combatspells.internals.SpellCasterClient;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
@@ -46,13 +47,15 @@ public class HudRenderHelper {
         var screenWidth = client.getWindow().getScaledWidth();
         var screenHeight = client.getWindow().getScaledHeight();
         var originPoint = hudConfig.base.origin.getPoint(screenWidth, screenHeight);
-        var startingPoint = originPoint.add(hudConfig.base.offset);
+        var baseOffset = originPoint.add(hudConfig.base.offset);
         if (castBarViewModel != null) {
-            CastBarWidget.render(matrixStack, tickDelta, hudConfig.bar_width, startingPoint, castBarViewModel);
+            CastBarWidget.render(matrixStack, tickDelta, hudConfig, baseOffset, castBarViewModel);
         }
 
-        startingPoint = startingPoint.add(hudConfig.target_offset);
-        TargetWidget.render(matrixStack, tickDelta, startingPoint, targetViewModel);
+        if (hudConfig.target.visible) {
+            var targetOffset = baseOffset.add(hudConfig.target.offset);
+            TargetWidget.render(matrixStack, tickDelta, targetOffset, targetViewModel);
+        }
     }
 
     public static class TargetWidget {
@@ -107,7 +110,8 @@ public class HudRenderHelper {
             }
         }
 
-        public static void render(MatrixStack matrixStack, float tickDelta, int barWidth, Vec2f starting, ViewModel viewModel) {
+        public static void render(MatrixStack matrixStack, float tickDelta, HudConfig hudConfig, Vec2f starting, ViewModel viewModel) {
+            var barWidth = hudConfig.bar_width;
             var totalWidth = barWidth + minWidth;
             int x = (int) (starting.x - (totalWidth / 2));
             int y = (int) starting.y;
@@ -128,9 +132,9 @@ public class HudRenderHelper {
             }
             renderBar(matrixStack, barWidth, false, viewModel.progress + partialProgress, x, y);
 
-            if (viewModel.iconTexture != null) {
-                x = (int) (starting.x + (totalWidth / 2) + barHeight);
-                y = (int) (starting.y - ((spellIconSize - barHeight) / 2));
+            if (hudConfig.icon.visible && viewModel.iconTexture != null) {
+                x = (int) (starting.x + hudConfig.icon.offset.x);
+                y = (int) (starting.y + hudConfig.icon.offset.y);
                 var id = new Identifier(viewModel.iconTexture);
                 RenderSystem.setShaderTexture(0, id);
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

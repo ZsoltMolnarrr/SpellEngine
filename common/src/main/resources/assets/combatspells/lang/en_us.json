@@ -2,7 +2,11 @@
   "gui.combatspells.config_menu" : "Combat Spells config",
   "gui.combatspells.close" : "Close",
   "gui.combatspells.settings" : "Settings",
-  "gui.combatspells.hud" : "Move cast bar",
+  "gui.combatspells.hud" : "Cast bar",
+  "gui.combatspells.parts" : "Parts",
   "gui.combatspells.preset" : "Preset",
-  "gui.combatspells.reset" : "Reset"
+  "gui.combatspells.reset" : "Reset",
+  "gui.combatspells.target" : "Target",
+  "gui.combatspells.icon" : "Icon",
+  "gui.combatspells.bar_width" : "Bar width"
 }
