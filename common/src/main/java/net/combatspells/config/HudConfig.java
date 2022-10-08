@@ -19,40 +19,76 @@ public class HudConfig {
     }
 
     public static HudConfig createDefault() {
-        var defaultWidth = 90;
+        var barWidth = 90;
         var config = new HudConfig();
         config.base = new HudElement(HudElement.Origin.BOTTOM, new Vec2f(0, -66));
-        config.target = new Part(true, new Vec2f(0, -12));
-        config.icon = new Part(true, new Vec2f((defaultWidth / 2) + 10, -6));
-        config.bar_width = defaultWidth;
+        config.target = new Part(true, targetOffsetUp());
+        config.icon = new Part(true, iconRight(barWidth));
+        config.bar_width = barWidth;
         return config;
     }
 
-    public static HudElement preset(HudElement.Origin origin) {
+    public static HudConfig preset(HudElement.Origin origin) {
         int offsetW = 70;
         int offsetH = 16;
         var barWidth = 90;
         var offset = new Vec2f(0, 0);
+        var target = new Part();
+        var icon = new Part();
         switch (origin) {
             case TOP -> {
-                offset = new Vec2f(0, offsetH * 2);
+                offset = new Vec2f(0, offsetH);
+                target.offset = targetOffsetDown();
+                icon.offset = iconRight(barWidth);
             }
             case TOP_LEFT -> {
-                offset = new Vec2f(offsetW - 8, offsetH * 2);
+                offset = new Vec2f(offsetW - 8, offsetH);
+                target.offset = targetOffsetDown();
+                icon.offset = iconRight(barWidth);
             }
             case TOP_RIGHT -> {
-                offset = new Vec2f((-1) * offsetW - 8, offsetH * 2);
+                offset = new Vec2f((-1) * offsetW + 8, offsetH);
+                target.offset = targetOffsetDown();
+                icon.offset = iconLeft(barWidth);
             }
             case BOTTOM -> {
                 offset = new Vec2f(0, (-1) * offsetH);
+                target.offset = targetOffsetUp();
+                icon.offset = iconRight(barWidth);
             }
             case BOTTOM_LEFT -> {
                 offset = new Vec2f(offsetW - 8, (-1) * offsetH);
+                target.offset = targetOffsetUp();
+                icon.offset = iconRight(barWidth);
             }
             case BOTTOM_RIGHT -> {
-                offset = new Vec2f((-1) * offsetW - 8, (-1) * offsetH);
+                offset = new Vec2f((-1) * offsetW + 8, (-1) * offsetH);
+                target.offset = targetOffsetUp();
+                icon.offset = iconLeft(barWidth);
             }
         }
-        return new HudElement(origin, offset);
+
+        var config = new HudConfig();
+        config.base = new HudElement(origin, offset);
+        config.target = target;
+        config.icon = icon;
+        config.bar_width = barWidth;
+        return config;
+    }
+
+    private static Vec2f targetOffsetUp() {
+        return new Vec2f(0, -12);
+    }
+
+    private static Vec2f targetOffsetDown() {
+        return new Vec2f(0, 12);
+    }
+
+    private static Vec2f iconLeft(int barWidth) {
+        return new Vec2f(- (barWidth / 2) - 10 - 16, -6);
+    }
+
+    private static Vec2f iconRight(int barWidth) {
+        return new Vec2f((barWidth / 2) + 10, -6);
     }
 }

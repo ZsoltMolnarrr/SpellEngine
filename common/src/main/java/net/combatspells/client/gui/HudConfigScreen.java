@@ -49,15 +49,13 @@ public class HudConfigScreen extends Screen {
             this.toggleParts();
         }));
         addDrawableChild(new ButtonWidget(centerX - (buttonWidth/2), y, buttonWidth, buttonHeight, Text.translatable("gui.combatspells.preset"), button -> {
-            nextPreset();
+            this.nextPreset();
         }));
         addDrawableChild(new ButtonWidget(centerX + padding + buttonWidth - (buttonWidth/2), y, buttonWidth, buttonHeight, Text.translatable("gui.combatspells.reset"), button -> {
-            reset();
+            this.reset();
         }));
 
         setupPartButtons();
-
-        setPartsVisibility(false);
     }
 
     private void setupPartButtons() {
@@ -78,6 +76,8 @@ public class HudConfigScreen extends Screen {
         var sizeButtons = createBarSizeButtons(x, y);
         sizeButtons.forEach(this::addDrawableChild);
         partButtons.addAll(sizeButtons);
+
+        setPartsVisibility(partConfigVisible);
     }
 
     enum Part { TARGET, ICON }
@@ -117,11 +117,11 @@ public class HudConfigScreen extends Screen {
         var buttonSize = 20;
         var spacing = 8;
         buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.translatable("-"), button -> {
-            changeWidth(false);
+            changeBarWidth(false);
         }));
         x += buttonSize + spacing;
         buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.translatable("+"), button -> {
-            changeWidth(true);
+            changeBarWidth(true);
         }));
         return buttons;
     }
@@ -161,7 +161,7 @@ public class HudConfigScreen extends Screen {
         return null;
     }
 
-    private void changeWidth(boolean increase) {
+    private void changeBarWidth(boolean increase) {
         var diff = increase ? 1 : -1;
         var config = CombatSpellsClient.hudConfig.currentConfig;
         if (!increase && config.bar_width <= 0) {
@@ -171,17 +171,17 @@ public class HudConfigScreen extends Screen {
     }
 
     private boolean partsVisible() {
-        return partButtons.stream().findFirst().get().visible;
+        return partConfigVisible;
     }
 
     private void toggleParts() {
-        var visibility = !partsVisible();
-        setPartsVisibility(visibility);
+        setPartsVisibility(!partConfigVisible);
     }
 
     private void setPartsVisibility(boolean visibility) {
+        partConfigVisible = visibility;
         for(var button: partButtons) {
-            button.visible = visibility;
+            button.visible = partConfigVisible;
         }
     }
 
@@ -230,16 +230,17 @@ public class HudConfigScreen extends Screen {
         return result;
     }
 
-    public static void nextPreset() {
+    public void nextPreset() {
         var config = CombatSpellsClient.hudConfig.currentConfig;
         HudElement.Origin origin;
         try {
             origin = HudElement.Origin.values()[(config.base.origin.ordinal() + 1)];
-            config.base = HudConfig.preset(origin);
+            CombatSpellsClient.hudConfig.currentConfig = HudConfig.preset(origin);
         } catch (Exception e) {
             origin = HudElement.Origin.values()[0];
-            config.base = HudConfig.preset(origin);
+            CombatSpellsClient.hudConfig.currentConfig = HudConfig.preset(origin);
         }
+        refreshPartButtons();
     }
 
     public void save() {
@@ -248,14 +249,14 @@ public class HudConfigScreen extends Screen {
 
     public void reset() {
         CombatSpellsClient.hudConfig.currentConfig = HudConfig.createDefault();
-        removePartButtons();
-        setupPartButtons();
+        refreshPartButtons();
     }
 
-    private void removePartButtons() {
+    private void refreshPartButtons() {
         for(var partButton: partButtons) {
             remove(partButton);
         }
         partButtons.clear();
+        setupPartButtons();
     }
 }
