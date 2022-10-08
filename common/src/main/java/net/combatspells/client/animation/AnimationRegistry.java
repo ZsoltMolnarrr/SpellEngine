@@ -15,7 +15,7 @@ public class AnimationRegistry {
     public static Map<String, KeyframeAnimation> animations = new HashMap<>();
 
     public static void load(ResourceManager resourceManager) {
-        var dataFolder = "rolling_animations";
+        var dataFolder = "spell_animations";
         for (var entry : resourceManager.findResources(dataFolder, fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
             var identifier = entry.getKey();
             var resource = entry.getValue();

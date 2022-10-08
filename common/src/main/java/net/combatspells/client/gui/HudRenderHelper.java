@@ -40,7 +40,7 @@ public class HudRenderHelper {
             var caster = (SpellCasterClient) player;
             var spell = caster.getCurrentSpell();
             if (spell != null) {
-                castBarViewModel = new CastBarWidget.ViewModel(spell.school.color(), caster.getCurrentCastProgress(), spell.cast_duration, spell.icon_id, true);
+                castBarViewModel = new CastBarWidget.ViewModel(spell.school.color(), caster.getCurrentCastProgress(), spell.cast.duration, spell.icon_id, true);
             }
         }
 

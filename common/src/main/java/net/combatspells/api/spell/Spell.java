@@ -4,23 +4,22 @@ import net.spelldamage.api.MagicSchool;
 
 public class Spell {
     // Structure
-    public float cast_duration = 0;
     public float range = 50;
     public float cooldown_duration = 0;
     public String icon_id;
-
     public MagicSchool school;
 
-//    public Cast cast;
-//    public static class Cast { public Cast() { }
-//        public float duration = 0;
-////        public Mode mode;
-////        public enum Mode {
-////            CAST, CHANNEL
-////        }
-//        public Sound sound;
-////        public ParticleBatch[] particles;
-//    }
+    public Cast cast = new Cast();
+    public static class Cast { public Cast() { }
+        public float duration = 0;
+//        public Mode mode;
+//        public enum Mode {
+//            CAST, CHANNEL
+//        }
+        public String animation;
+        public Sound sound;
+//        public ParticleBatch[] particles;
+    }
 
     public Release on_release;
     public static class Release { public Release() { }

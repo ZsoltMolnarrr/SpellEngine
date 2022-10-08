@@ -35,7 +35,7 @@ public class SpellHelper {
     public static void castRelease(World world, LivingEntity caster, List<Entity> targets, ItemStack itemStack, int remainingUseTicks) {
         var item = itemStack.getItem();
         var spell = SpellRegistry.spells.get(Registry.ITEM.getId(item));
-        var progress = getCastProgress(remainingUseTicks, spell.cast_duration);
+        var progress = getCastProgress(remainingUseTicks, spell.cast.duration);
         if (progress >= 1) {
             var action = spell.on_release.target;
             boolean success = false;

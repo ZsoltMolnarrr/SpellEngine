@@ -15,7 +15,8 @@ public class SpellRegistry {
         // spells.put(new Identifier("minecraft", "wooden_sword"), "fireball");
 
         var fireBall = new Spell();
-        fireBall.cast_duration = 1;
+        fireBall.cast.duration = 1;
+        fireBall.cast.animation = "combatspells:one_handed_staff_forward";
         fireBall.range = 64;
         fireBall.icon_id = "combatspells:textures/spells/fireball.png";
         fireBall.school = MagicSchool.FIRE;
@@ -46,7 +47,8 @@ public class SpellRegistry {
         var frostbolt = new Spell();
         frostbolt.school = MagicSchool.FROST;
         frostbolt.icon_id = "combatspells:textures/spells/frostbolt.png";
-        frostbolt.cast_duration = 1;
+        frostbolt.cast.duration = 1;
+        frostbolt.cast.animation = "combatspells:one_handed_staff_forward";
         frostbolt.range = 64;
         frostbolt.on_release = new Spell.Release();
         frostbolt.on_release.target = new Spell.Release.Target();
@@ -75,7 +77,7 @@ public class SpellRegistry {
 
         var scorch = new Spell();
         scorch.school = MagicSchool.FIRE;
-        scorch.cast_duration = 0.5F;
+        scorch.cast.duration = 0.5F;
         scorch.range = 32;
         scorch.on_release = new Spell.Release();
         scorch.on_release.target = new Spell.Release.Target();
@@ -94,7 +96,7 @@ public class SpellRegistry {
 
         var frostNova = new Spell();
         frostNova.school = MagicSchool.FROST;
-        frostNova.cast_duration = 2;
+        frostNova.cast.duration = 2;
         frostNova.cooldown_duration = 3;
         frostNova.range = 10;
         frostNova.on_release = new Spell.Release();

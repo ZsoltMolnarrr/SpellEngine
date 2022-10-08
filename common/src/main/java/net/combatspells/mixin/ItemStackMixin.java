@@ -1,10 +1,10 @@
 package net.combatspells.mixin;
 
-import net.combatspells.api.spell.Spell;
 import net.combatspells.api.SpellHelper;
+import net.combatspells.api.spell.Spell;
 import net.combatspells.internals.SpellCasterClient;
+import net.combatspells.internals.SpellCasterItemStack;
 import net.combatspells.internals.SpellRegistry;
-import net.combatspells.utils.TargetHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -23,18 +23,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ItemStack.class)
-public abstract class ItemStackMixin {
+public abstract class ItemStackMixin implements SpellCasterItemStack {
     @Shadow public abstract Item getItem();
 
     private ItemStack itemStack() {
         return (ItemStack) ((Object)this);
     }
 
+    private Spell cachedSpell;
+
     @Nullable
     private Spell spell() {
+        if (cachedSpell != null) {
+            return cachedSpell;
+        }
         var item = getItem();
         var id = Registry.ITEM.getId(item);
-        return SpellRegistry.spells.get(id);
+        cachedSpell = SpellRegistry.spells.get(id);
+        return cachedSpell;
+    }
+
+    // SpellCasterItemStack
+    @Override
+    public Spell getSpell() {
+        return spell();
     }
 
     // Use conditions
@@ -56,7 +68,7 @@ public abstract class ItemStackMixin {
     @Inject(method = "getUseAction", at = @At("HEAD"), cancellable = true)
     private void getUseAction_HEAD(CallbackInfoReturnable<UseAction> cir) {
         if (spell() == null) { return; }
-        cir.setReturnValue(UseAction.BOW);
+        cir.setReturnValue(UseAction.NONE);
         cir.cancel();
     }
 

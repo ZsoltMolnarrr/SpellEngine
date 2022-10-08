@@ -28,18 +28,13 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return currentSpell;
     }
 
-    @Override
-    public void setCurrentSpell(Spell spell) {
-        currentSpell = spell;
-    }
-
     public Entity getCurrentTarget() {
         return target;
     }
 
     public float getCurrentCastProgress() {
         if (currentSpell != null) {
-            return SpellHelper.getCastProgress(player().getItemUseTimeLeft(), currentSpell.cast_duration);
+            return SpellHelper.getCastProgress(player().getItemUseTimeLeft(), currentSpell.cast.duration);
         }
         return 0;
     }
@@ -48,9 +43,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     public void castStart(Spell spell) {
         currentSpell = spell;
         System.out.println("Spell casting - Start");
-        // Start player animation
-        // Start sound
-        // Start spawning particles
     }
 
     @Override
@@ -60,7 +52,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     @Override
     public void castRelease(ItemStack itemStack, int remainingUseTicks) {
-        var progress = SpellHelper.getCastProgress(remainingUseTicks, currentSpell.cast_duration);
+        var progress = SpellHelper.getCastProgress(remainingUseTicks, currentSpell.cast.duration);
         var caster = player();
         if (progress >= 1) {
             var slot = caster.getInventory().indexOf(itemStack);
