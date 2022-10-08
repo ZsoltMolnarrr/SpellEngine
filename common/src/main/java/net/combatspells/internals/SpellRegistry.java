@@ -1,6 +1,7 @@
 package net.combatspells.internals;
 
 import net.combatspells.api.spell.ParticleBatch;
+import net.combatspells.api.spell.Sound;
 import net.combatspells.api.spell.Spell;
 import net.minecraft.util.Identifier;
 import net.spelldamage.api.MagicSchool;
@@ -17,6 +18,7 @@ public class SpellRegistry {
         var fireBall = new Spell();
         fireBall.cast.duration = 1;
         fireBall.cast.animation = "combatspells:one_handed_staff_forward";
+        fireBall.cast.sound = new Sound("combatspells:casting_fire");
         fireBall.range = 64;
         fireBall.icon_id = "combatspells:textures/spells/fireball.png";
         fireBall.school = MagicSchool.FIRE;
@@ -49,6 +51,7 @@ public class SpellRegistry {
         frostbolt.icon_id = "combatspells:textures/spells/frostbolt.png";
         frostbolt.cast.duration = 1;
         frostbolt.cast.animation = "combatspells:one_handed_staff_forward";
+        frostbolt.cast.sound = new Sound("combatspells:casting_frost");
         frostbolt.range = 64;
         frostbolt.on_release = new Spell.Release();
         frostbolt.on_release.target = new Spell.Release.Target();

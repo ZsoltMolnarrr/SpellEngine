@@ -16,8 +16,9 @@ public class SoundHelper {
     private static Random rng = new Random();
 
     public static List<String> soundKeys = List.of(
-        "roll",
-        "roll_cooldown_ready"
+        "casting_arcane",
+        "casting_fire",
+        "casting_frost"
     );
 
     public static void registerSounds() {

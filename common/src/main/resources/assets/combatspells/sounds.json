@@ -1,12 +1,17 @@
 {
-  "roll": {
+  "casting_arcane": {
     "sounds": [
-      "combatspells:roll"
+      "combatspells:casting_arcane"
     ]
   },
-  "roll_cooldown_ready": {
+  "casting_fire": {
     "sounds": [
-      "combatspells:roll_cooldown_ready"
+      "combatspells:casting_fire"
+    ]
+  },
+  "casting_frost": {
+    "sounds": [
+      "combatspells:casting_frost"
     ]
   }
 }

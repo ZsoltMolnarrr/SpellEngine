@@ -12,17 +12,19 @@ import net.bettercombat.api.animation.FirstPersonAnimator;
 import net.bettercombat.client.animation.AdjustmentModifier;
 import net.bettercombat.client.animation.StateCollectionHelper;
 import net.combatspells.Platform;
+import net.combatspells.client.sound.SpellCastingSound;
 import net.combatspells.client.animation.AnimatablePlayer;
 import net.combatspells.client.animation.AnimationRegistry;
 import net.combatspells.client.animation.AnimationSubStack;
 import net.combatspells.internals.SpellCasterEntity;
 import net.combatspells.utils.StringUtil;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.util.Arm;
-import net.minecraft.util.Lazy;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -56,20 +58,23 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         var player = (PlayerEntity) instance;
 
         String castAnimationName = null;
+        String castSoundId = null;
         var spell = ((SpellCasterEntity)player).getCurrentSpell();
         if (spell != null) {
             castAnimationName = spell.cast.animation;
-
+            if (spell.cast.sound != null) {
+                castSoundId = spell.cast.sound.id();
+            }
             // Rotate body towards look vector
             ((LivingEntityAccessor)player).invokeTurnHead(player.getHeadYaw(), 0);
         }
         updateCastingAnimation(castAnimationName);
+        updateCastingSound(castSoundId);
     }
 
     private String lastCastAnimationName;
     private void updateCastingAnimation(String animationName) {
         if (!StringUtil.matching(animationName, lastCastAnimationName)) {
-            System.out.println("Playing animation: " + animationName);
             if (animationName != null && !animationName.isEmpty()) {
                 var animation = AnimationRegistry.animations.get(animationName);
                 var copy = animation.mutableCopy();
@@ -90,6 +95,26 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             }
         }
         lastCastAnimationName = animationName;
+    }
+
+    private String lastCastSoundId;
+    private SpellCastingSound lastCastSound;
+    private void updateCastingSound(String soundId) {
+        if (!StringUtil.matching(soundId, lastCastSoundId)) {
+            System.out.println("Playing sound: " + soundId);
+            if (soundId != null && !soundId.isEmpty()) {
+                var id = new Identifier(soundId);
+                var sound = new SpellCastingSound(this, id, 1 ,1);
+                MinecraftClient.getInstance().getSoundManager().play(sound);
+                lastCastSound = sound;
+            } else {
+                if (lastCastSound != null) {
+                    MinecraftClient.getInstance().getSoundManager().stop(lastCastSound);
+                    lastCastSound = null;
+                }
+            }
+        }
+        lastCastSoundId = soundId;
     }
 
     private AdjustmentModifier createPitchAdjustment() {
