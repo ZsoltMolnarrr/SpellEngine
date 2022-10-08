@@ -47,7 +47,6 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
         this(world, caster);
         this.setPosition(x, y, z);
         this.spell = spell;
-        this.followedTarget = target;
         var projectileData = projectileData();
         var velocity = projectileData.velocity;
         var divergence = projectileData.divergence;
@@ -59,9 +58,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
         }
         var gson = new Gson();
         this.getDataTracker().set(CLIENT_DATA, gson.toJson(projectileData));
-        if (target != null) {
-            this.getDataTracker().set(TARGET_ID, target.getId());
-        }
+        setFollowedTarget(target);
     }
 
     private Spell.ProjectileData projectileData() {
@@ -84,6 +81,17 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
             clientSyncedData = data;
         } catch (Exception e) {
             System.err.println("Spell Projectile - Failed to read clientSyncedData");
+        }
+    }
+
+    private void setFollowedTarget(Entity target) {
+        followedTarget = target;
+        var id = 0;
+        if (!world.isClient) {
+            if (target != null) {
+                id = target.getId();
+            }
+            this.getDataTracker().set(TARGET_ID, id);
         }
     }
 
@@ -190,7 +198,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
         if (!world.isClient) {
             var target = entityHitResult.getEntity();
             if (target != null && this.getOwner() instanceof LivingEntity caster) {
-                this.followedTarget = null;
+                setFollowedTarget(null);
                 var performed = SpellHelper.performImpacts(world, caster, target, spell);
                 if (performed) {
                     this.kill();
