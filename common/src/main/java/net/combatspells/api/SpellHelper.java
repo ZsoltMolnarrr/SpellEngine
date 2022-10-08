@@ -117,7 +117,7 @@ public class SpellHelper {
             var relation = TargetHelper.getRelation(caster, target);
             switch (impact.action.type) {
                 case DAMAGE -> {
-                    if(!TargetHelper.actionAllowed(false, relation)) {
+                    if(!TargetHelper.actionAllowed(false, relation, caster, target)) {
                         return false;
                     }
                     var damageData = impact.action.damage;
@@ -129,7 +129,7 @@ public class SpellHelper {
                     success = true;
                 }
                 case HEAL -> {
-                    if(!TargetHelper.actionAllowed(true, relation)) {
+                    if(!TargetHelper.actionAllowed(true, relation, caster, target)) {
                         return false;
                     }
                     if (target instanceof LivingEntity livingTarget) {
@@ -145,7 +145,7 @@ public class SpellHelper {
                         var data = impact.action.status_effect;
                         var id = new Identifier(data.effect_id);
                         var effect = Registry.STATUS_EFFECT.get(id);
-                        if(!TargetHelper.actionAllowed(effect.isBeneficial(), relation)) {
+                        if(!TargetHelper.actionAllowed(effect.isBeneficial(), relation, caster, target)) {
                             return false;
                         }
                         var duration = Math.round(data.duration * 20F);

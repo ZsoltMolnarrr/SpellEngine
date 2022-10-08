@@ -46,7 +46,6 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         var spell = ((SpellCasterEntity)player).getCurrentSpell();
         if (spell != null) {
             castAnimationName = spell.cast.animation;
-
             ((LivingEntityAccessor)player).invokeTurnHead(player.getHeadYaw(), 0);
         }
         updateCastingAnimation(castAnimationName);

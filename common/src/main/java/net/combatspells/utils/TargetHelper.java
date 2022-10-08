@@ -7,6 +7,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -39,17 +40,32 @@ public class TargetHelper {
         return caster.isTeammate(target) ? Relation.FRIENDLY : Relation.HOSTILE;
     }
 
-    public static boolean actionAllowed(boolean beneficial, Relation relation) {
+    public static boolean actionAllowed(boolean helpful, Relation relation, LivingEntity caster, Entity target) {
         switch (relation) {
             case FRIENDLY -> {
-                return beneficial;
+                if (helpful) {
+                    return true;
+                } else {
+                    return allowedToHurt(caster, target);
+                }
             }
             case NEUTRAL, HOSTILE -> {
-                return !beneficial;
+                return !helpful;
             }
         }
         assert true;
         return true;
+    }
+
+    // Generalized copy of shouldDamagePlayer
+    public static boolean allowedToHurt(Entity e1, Entity e2) {
+        AbstractTeam abstractTeam = e1.getScoreboardTeam();
+        AbstractTeam abstractTeam2 = e2.getScoreboardTeam();
+        if (abstractTeam == null) {
+            return true;
+        } else {
+            return !abstractTeam.isEqual(abstractTeam2) || abstractTeam.isFriendlyFireAllowed();
+        }
     }
 
     public static Entity targetFromRaycast(Entity caster, float range) {

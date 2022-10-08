@@ -31,7 +31,7 @@ import net.minecraft.world.World;
 public class SpellProjectile extends ProjectileEntity implements FlyingItemEntity {
     public float range = 128;
     private Spell spell;
-    private Entity target;
+    private Entity followedTarget;
 
     public SpellProjectile(EntityType<? extends ProjectileEntity> entityType, World world) {
         super(entityType, world);
@@ -47,7 +47,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
         this(world, caster);
         this.setPosition(x, y, z);
         this.spell = spell;
-        this.target = target;
+        this.followedTarget = target;
         var projectileData = projectileData();
         var velocity = projectileData.velocity;
         var divergence = projectileData.divergence;
@@ -87,7 +87,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
         }
     }
 
-    private Entity getTarget() {
+    private Entity getFollowedTarget() {
         Entity entityReference = null;
         if (world.isClient) {
             var id = this.getDataTracker().get(TARGET_ID);
@@ -95,7 +95,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
                 entityReference = world.getEntityById(id);
             }
         } else {
-            entityReference = target;
+            entityReference = followedTarget;
         }
         if (entityReference != null && entityReference.isAttackable() && entityReference.isAlive()) {
             return entityReference;
@@ -167,7 +167,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
     }
 
     private void followTarget() {
-        var target = getTarget();
+        var target = getFollowedTarget();
         if (target != null && projectileData().homing_angle > 0) {
             var distanceVector = (target.getPos().add(0, target.getHeight() / 2F, 0))
                     .subtract(this.getPos().add(0, this.getHeight() / 2F, 0));
@@ -190,6 +190,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
         if (!world.isClient) {
             var target = entityHitResult.getEntity();
             if (target != null && this.getOwner() instanceof LivingEntity caster) {
+                this.followedTarget = null;
                 var performed = SpellHelper.performImpacts(world, caster, target, spell);
                 if (performed) {
                     this.kill();
