@@ -49,7 +49,8 @@ dependencies {
     modImplementation(files("./run/mods/spelldamage-fabric-1.0-SNAPSHOT+1.19.jar"))
 
     modCompileOnly("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }
-    modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-fabric")
+    //modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-fabric")
+    modCompileOnly(files("../fabric/run/mods/bettercombat-fabric-1.4.5+1.19.jar"))
 }
 
 processResources {
