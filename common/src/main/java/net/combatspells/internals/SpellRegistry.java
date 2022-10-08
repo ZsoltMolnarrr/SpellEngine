@@ -23,6 +23,7 @@ public class SpellRegistry {
         fireBall.icon_id = "combatspells:textures/spells/fireball.png";
         fireBall.school = MagicSchool.FIRE;
         fireBall.on_release = new Spell.Release();
+        fireBall.on_release.sound = new Sound("combatspells:release_fire");
         fireBall.on_release.target = new Spell.Release.Target();
         fireBall.on_release.target.type = Spell.Release.Target.Type.PROJECTILE;
         fireBall.on_release.target.projectile = new Spell.ProjectileData();
@@ -37,6 +38,7 @@ public class SpellRegistry {
         fireBall.on_release.target.projectile.velocity = 0.5F;
 
         var firballImpact = new Spell.Impact();
+        firballImpact.sound = new Sound("combatspells:impact_fireball");
         firballImpact.action = new Spell.Impact.Action();
         firballImpact.action.type = Spell.Impact.Action.Type.DAMAGE;
         firballImpact.action.damage = new Spell.Impact.Action.Damage();
@@ -54,6 +56,7 @@ public class SpellRegistry {
         frostbolt.cast.sound = new Sound("combatspells:casting_frost");
         frostbolt.range = 64;
         frostbolt.on_release = new Spell.Release();
+        frostbolt.on_release.sound = new Sound("combatspells:release_frost");
         frostbolt.on_release.target = new Spell.Release.Target();
         frostbolt.on_release.target.type = Spell.Release.Target.Type.PROJECTILE;
         frostbolt.on_release.target.projectile = new Spell.ProjectileData();
@@ -68,6 +71,7 @@ public class SpellRegistry {
         frostbolt.on_release.target.projectile.velocity = 1F;
 
         var frostboltImpact = new Spell.Impact();
+        frostboltImpact.sound = new Sound("combatspells:impact_frostbolt");
         frostboltImpact.action = new Spell.Impact.Action();
         frostboltImpact.action.type = Spell.Impact.Action.Type.DAMAGE;
         frostboltImpact.action.damage = new Spell.Impact.Action.Damage();

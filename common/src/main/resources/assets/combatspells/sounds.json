@@ -13,5 +13,30 @@
     "sounds": [
       "combatspells:casting_frost"
     ]
+  },
+  "release_arcane": {
+    "sounds": [
+      "combatspells:release_arcane"
+    ]
+  },
+  "release_fire": {
+    "sounds": [
+      "combatspells:release_fire"
+    ]
+  },
+  "release_frost": {
+    "sounds": [
+      "combatspells:release_frost"
+    ]
+  },
+  "impact_fireball": {
+    "sounds": [
+      "combatspells:impact_fireball_1"
+    ]
+  },
+  "impact_frostbolt": {
+    "sounds": [
+      "combatspells:impact_frostbolt_1"
+    ]
   }
 }
