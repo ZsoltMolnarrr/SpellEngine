@@ -50,8 +50,8 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     @Inject(method = "<init>", at = @At("TAIL"))
     private void postInit(ClientWorld world, GameProfile profile, PlayerPublicKey publicKey, CallbackInfo ci) {
         var stack = ((IAnimatedPlayer) this).getAnimationStack();
-        stack.addAnimLayer(2200, releaseAnimation.base);
-        stack.addAnimLayer(2100, castingAnimation.base);
+        stack.addAnimLayer(950, releaseAnimation.base);
+        stack.addAnimLayer(900, castingAnimation.base);
         if (Platform.isModLoaded("bettercombat")) {
             ((FirstPersonAnimator)this).addLayer(releaseAnimation.base);
             ((FirstPersonAnimator)this).addLayer(castingAnimation.base);

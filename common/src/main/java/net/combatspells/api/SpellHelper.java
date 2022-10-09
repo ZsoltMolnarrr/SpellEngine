@@ -36,7 +36,6 @@ public class SpellHelper {
         }
         var elapsedTicks = maximumUseTicks - remainingUseTicks;
         var haste = getCastingSpeed(caster);
-        System.out.println("Haste: " + haste + " duration: " + (duration / haste));
         return Math.min(((float)elapsedTicks) / ((duration / haste) * 20F), 1F);
     }
 
