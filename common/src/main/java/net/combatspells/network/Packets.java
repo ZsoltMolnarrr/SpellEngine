@@ -4,11 +4,10 @@ import com.google.gson.Gson;
 import net.combatspells.CombatSpells;
 import net.combatspells.api.spell.ParticleBatch;
 import net.combatspells.config.ServerConfig;
+import net.combatspells.internals.SpellAnimationType;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 
@@ -27,6 +26,24 @@ public class Packets {
             var remainingUseTicks = buffer.readInt();
             var targets = buffer.readIntArray();
             return new ReleaseRequest(slot, remainingUseTicks, targets);
+        }
+    }
+
+    public record SpellAnimation(int playerId, SpellAnimationType type, String name) {
+        public static Identifier ID = new Identifier(CombatSpells.MOD_ID, "spell_animation");
+        public PacketByteBuf write() {
+            PacketByteBuf buffer = PacketByteBufs.create();
+            buffer.writeInt(playerId);
+            buffer.writeInt(type.ordinal());
+            buffer.writeString(name);
+            return buffer;
+        }
+
+        public static SpellAnimation read(PacketByteBuf buffer) {
+            int playerId = buffer.readInt();
+            var type = SpellAnimationType.values()[buffer.readInt()];
+            var name = buffer.readString();
+            return new SpellAnimation(playerId, type, name);
         }
     }
 

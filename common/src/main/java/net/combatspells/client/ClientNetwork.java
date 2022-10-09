@@ -1,9 +1,11 @@
 package net.combatspells.client;
 
 import net.combatspells.CombatSpells;
+import net.combatspells.client.animation.AnimatablePlayer;
 import net.combatspells.network.Packets;
 import net.combatspells.utils.ParticleHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.entity.player.PlayerEntity;
 
 public class ClientNetwork {
     public static void initializeHandlers() {
@@ -19,6 +21,16 @@ public class ClientNetwork {
             client.execute(() -> {
                 for(var instruction: instructions) {
                     instruction.perform(client.world);
+                }
+            });
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(Packets.SpellAnimation.ID, (client, handler, buf, responseSender) -> {
+            var packet = Packets.SpellAnimation.read(buf);
+            client.execute(() -> {
+                var entity = client.world.getEntityById(packet.playerId());
+                if (entity instanceof PlayerEntity player) {
+                    ((AnimatablePlayer)player).playAnimation(packet.type(), packet.name());
                 }
             });
         });

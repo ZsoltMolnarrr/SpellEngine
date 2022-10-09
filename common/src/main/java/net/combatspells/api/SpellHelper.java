@@ -3,12 +3,12 @@ package net.combatspells.api;
 import net.combatspells.api.spell.Spell;
 import net.combatspells.entity.SpellProjectile;
 import net.combatspells.internals.SpellRegistry;
+import net.combatspells.utils.AnimationHelper;
 import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.SoundHelper;
 import net.combatspells.utils.TargetHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -20,6 +20,8 @@ import net.spelldamage.api.SpellDamageHelper;
 import net.spelldamage.api.SpellDamageSource;
 
 import java.util.List;
+
+import static net.combatspells.internals.SpellAnimationType.RELEASE;
 
 public class SpellHelper {
     public static int maximumUseTicks = 72000;
@@ -65,6 +67,7 @@ public class SpellHelper {
                 ParticleHelper.sendBatches(caster, spell.on_release.particles);
                 SoundHelper.playSound(world, caster, spell.on_release.sound);
                 if (caster instanceof PlayerEntity player) {
+                    AnimationHelper.sendAnimation(player, RELEASE, spell.on_release.animation);
                     if (spell.cooldown_duration > 0) {
                         player.getItemCooldownManager().set(item, Math.round(spell.cooldown_duration * 20F));
                     }

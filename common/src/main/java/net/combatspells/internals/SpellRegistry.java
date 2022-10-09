@@ -17,13 +17,14 @@ public class SpellRegistry {
 
         var fireBall = new Spell();
         fireBall.cast.duration = 1;
-        fireBall.cast.animation = "combatspells:one_handed_staff_forward";
+        fireBall.cast.animation = "combatspells:one_handed_projectile_charge";
         fireBall.cast.sound = new Sound("combatspells:casting_fire");
         fireBall.range = 64;
         fireBall.icon_id = "combatspells:textures/spells/fireball.png";
         fireBall.school = MagicSchool.FIRE;
         fireBall.on_release = new Spell.Release();
         fireBall.on_release.sound = new Sound("combatspells:release_fire");
+        fireBall.on_release.animation = "combatspells:one_handed_projectile_release";
         fireBall.on_release.target = new Spell.Release.Target();
         fireBall.on_release.target.type = Spell.Release.Target.Type.PROJECTILE;
         fireBall.on_release.target.projectile = new Spell.ProjectileData();
@@ -52,10 +53,11 @@ public class SpellRegistry {
         frostbolt.school = MagicSchool.FROST;
         frostbolt.icon_id = "combatspells:textures/spells/frostbolt.png";
         frostbolt.cast.duration = 1;
-        frostbolt.cast.animation = "combatspells:one_handed_staff_forward";
+        frostbolt.cast.animation = "combatspells:one_handed_projectile_charge";
         frostbolt.cast.sound = new Sound("combatspells:casting_frost");
         frostbolt.range = 64;
         frostbolt.on_release = new Spell.Release();
+        frostbolt.on_release.animation = "combatspells:one_handed_projectile_release";
         frostbolt.on_release.sound = new Sound("combatspells:release_frost");
         frostbolt.on_release.target = new Spell.Release.Target();
         frostbolt.on_release.target.type = Spell.Release.Target.Type.PROJECTILE;

@@ -9,14 +9,15 @@ import dev.kosmx.playerAnim.core.util.Vec3f;
 import dev.kosmx.playerAnim.impl.IAnimatedPlayer;
 import net.bettercombat.api.animation.FirstPersonAnimation;
 import net.bettercombat.api.animation.FirstPersonAnimator;
-import net.bettercombat.client.animation.AdjustmentModifier;
 import net.bettercombat.client.animation.StateCollectionHelper;
 import net.combatspells.Platform;
 import net.combatspells.api.spell.Sound;
+import net.combatspells.client.animation.AdjustmentModifier;
 import net.combatspells.client.sound.SpellCastingSound;
 import net.combatspells.client.animation.AnimatablePlayer;
 import net.combatspells.client.animation.AnimationRegistry;
 import net.combatspells.client.animation.AnimationSubStack;
+import net.combatspells.internals.SpellAnimationType;
 import net.combatspells.internals.SpellCasterEntity;
 import net.combatspells.utils.StringUtil;
 import net.minecraft.client.MinecraftClient;
@@ -43,12 +44,15 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     }
 
     private final AnimationSubStack castingAnimation = new AnimationSubStack(createPitchAdjustment());
+    private final AnimationSubStack releaseAnimation = new AnimationSubStack(createPitchAdjustment());
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void postInit(ClientWorld world, GameProfile profile, PlayerPublicKey publicKey, CallbackInfo ci) {
         var stack = ((IAnimatedPlayer) this).getAnimationStack();
+        stack.addAnimLayer(2200, releaseAnimation.base);
         stack.addAnimLayer(2100, castingAnimation.base);
         if (Platform.isModLoaded("bettercombat")) {
+            ((FirstPersonAnimator)this).addLayer(releaseAnimation.base);
             ((FirstPersonAnimator)this).addLayer(castingAnimation.base);
         }
     }
@@ -74,24 +78,25 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     private String lastCastAnimationName;
     private void updateCastingAnimation(String animationName) {
         if (!StringUtil.matching(animationName, lastCastAnimationName)) {
-            if (animationName != null && !animationName.isEmpty()) {
-                var animation = AnimationRegistry.animations.get(animationName);
-                var copy = animation.mutableCopy();
-                updateAnimationByCurrentActivity(copy);
-                copy.torso.fullyEnablePart(true);
-                copy.head.pitch.setEnabled(false);
-                var mirror = isLeftHanded();
-
-                var fadeIn = copy.beginTick;
-                // castingAnimation.speed.speed = speed;
-                castingAnimation.mirror.setEnabled(mirror);
-                castingAnimation.base.replaceAnimationWithFade(
-                        AbstractFadeModifier.standardFadeIn(fadeIn, Ease.INOUTSINE),
-                        new KeyframeAnimationPlayer(copy.build(), 0));
-            } else {
-                castingAnimation.base.replaceAnimationWithFade(
-                        AbstractFadeModifier.standardFadeIn(5, Ease.INOUTSINE), null);
-            }
+            playAnimation(SpellAnimationType.CASTING, animationName);
+//            if (animationName != null && !animationName.isEmpty()) {
+//                var animation = AnimationRegistry.animations.get(animationName);
+//                var copy = animation.mutableCopy();
+//                updateAnimationByCurrentActivity(copy);
+//                copy.torso.fullyEnablePart(true);
+//                copy.head.pitch.setEnabled(false);
+//                var mirror = isLeftHanded();
+//
+//                var fadeIn = copy.beginTick;
+//                // castingAnimation.speed.speed = speed;
+//                castingAnimation.mirror.setEnabled(mirror);
+//                castingAnimation.base.replaceAnimationWithFade(
+//                        AbstractFadeModifier.standardFadeIn(fadeIn, Ease.INOUTSINE),
+//                        new KeyframeAnimationPlayer(copy.build(), 0));
+//            } else {
+//                castingAnimation.base.replaceAnimationWithFade(
+//                        AbstractFadeModifier.standardFadeIn(5, Ease.INOUTSINE), null);
+//            }
         }
         lastCastAnimationName = animationName;
     }
@@ -174,6 +179,44 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             StateCollectionHelper.configure(animation.rightLeg, false, false);
             StateCollectionHelper.configure(animation.leftLeg, false, false);
         }
+    }
+
+    public void playAnimation(SpellAnimationType type, String name) {
+        try {
+            var stack = stackFor(type);
+            if (name != null && !name.isEmpty()) {
+                var animation = AnimationRegistry.animations.get(name);
+                var copy = animation.mutableCopy();
+                updateAnimationByCurrentActivity(copy);
+                copy.torso.fullyEnablePart(true);
+                copy.head.pitch.setEnabled(false);
+                var mirror = isLeftHanded();
+
+                var fadeIn = copy.beginTick;
+                stack.mirror.setEnabled(mirror);
+                stack.base.replaceAnimationWithFade(
+                        AbstractFadeModifier.standardFadeIn(fadeIn, Ease.INOUTSINE),
+                        new KeyframeAnimationPlayer(copy.build(), 0));
+            } else {
+                stack.base.replaceAnimationWithFade(
+                        AbstractFadeModifier.standardFadeIn(5, Ease.INOUTSINE), null);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private AnimationSubStack stackFor(SpellAnimationType type) {
+        switch (type) {
+            case CASTING -> {
+                return castingAnimation;
+            }
+            case RELEASE -> {
+                return releaseAnimation;
+            }
+        }
+        assert true;
+        return null;
     }
 
     private boolean isMounting() {

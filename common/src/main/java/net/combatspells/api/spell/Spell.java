@@ -40,6 +40,7 @@ public class Spell {
                 public float vertical_range_multiplier = 1F;
             }
         }
+        public String animation;
         public ParticleBatch[] particles;
         public Sound sound;
     }
