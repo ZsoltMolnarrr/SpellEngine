@@ -26,18 +26,24 @@ import static net.combatspells.internals.SpellAnimationType.RELEASE;
 public class SpellHelper {
     public static int maximumUseTicks = 72000;
 
-    public static float getCastProgress(int remainingUseTicks, float duration) {
+    public static float getCastingSpeed(LivingEntity caster) {
+        return (float) SpellDamageHelper.getHaste(caster);
+    }
+
+    public static float getCastProgress(LivingEntity caster, int remainingUseTicks, float duration) {
         if (duration <= 0) {
             return 1F;
         }
         var elapsedTicks = maximumUseTicks - remainingUseTicks;
-        return Math.min(((float)elapsedTicks) / (duration * 20F), 1F);
+        var haste = getCastingSpeed(caster);
+        System.out.println("Haste: " + haste + " duration: " + (duration / haste));
+        return Math.min(((float)elapsedTicks) / ((duration / haste) * 20F), 1F);
     }
 
     public static void castRelease(World world, LivingEntity caster, List<Entity> targets, ItemStack itemStack, int remainingUseTicks) {
         var item = itemStack.getItem();
         var spell = SpellRegistry.spells.get(Registry.ITEM.getId(item));
-        var progress = getCastProgress(remainingUseTicks, spell.cast.duration);
+        var progress = getCastProgress(caster, remainingUseTicks, spell.cast.duration);
         if (progress >= 1) {
             var action = spell.on_release.target;
             boolean success = false;
