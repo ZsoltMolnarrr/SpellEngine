@@ -8,7 +8,10 @@ import net.combatspells.utils.AnimationHelper;
 import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.SoundHelper;
 import net.combatspells.utils.TargetHelper;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
@@ -27,6 +30,22 @@ import static net.combatspells.internals.SpellAnimationType.RELEASE;
 public class SpellHelper {
     public static int maximumUseTicks = 72000;
 
+    public record AmmoResult(boolean satisfied, ItemStack ammo) { }
+    public static AmmoResult ammoForSpell(PlayerEntity player, Spell spell, ItemStack itemStack) {
+        boolean satisfied = true;
+        ItemStack ammo = null;
+        boolean ignoreAmmo = player.getAbilities().creativeMode || EnchantmentHelper.getLevel(Enchantments.INFINITY, itemStack) > 0;
+        if (!ignoreAmmo && spell.cost.item_id != null && !spell.cost.item_id.isEmpty()) {
+            var id = new Identifier(spell.cost.item_id);
+            var ammoItem = Registry.ITEM.get(id);
+            if(ammoItem != null) {
+                ammo = ammoItem.getDefaultStack();
+                satisfied = player.getInventory().contains(ammo);
+            }
+        }
+        return new AmmoResult(satisfied, ammo);
+    }
+
     public static float getCastingSpeed(LivingEntity caster) {
         return (float) SpellDamageHelper.getHaste(caster);
     }
@@ -44,7 +63,11 @@ public class SpellHelper {
         var item = itemStack.getItem();
         var spell = SpellRegistry.spells.get(Registry.ITEM.getId(item));
         var progress = getCastProgress(caster, remainingUseTicks, spell.cast.duration);
-        if (progress >= 1) {
+        var ammoResult = new AmmoResult(true, null);
+        if (caster instanceof PlayerEntity player) {
+            ammoResult = ammoForSpell(player, spell, itemStack);
+        }
+        if (progress >= 1 && ammoResult.satisfied()) {
             var action = spell.on_release.target;
             boolean success = false;
             switch (action.type) {
@@ -80,6 +103,25 @@ public class SpellHelper {
                             duration = duration / getCastingSpeed(caster);
                         }
                         player.getItemCooldownManager().set(item, Math.round(duration * 20F));
+                    }
+                    player.addExhaustion(spell.cost.exhaust * CombatSpells.config.spell_cost_exhaust_multiplier);
+                    if (CombatSpells.config.spell_cost_durability_allowed && spell.cost.durability > 0) {
+                        itemStack.damage(spell.cost.durability, caster, (asd) -> {
+                            asd.sendEquipmentBreakStatus(EquipmentSlot.MAINHAND);
+                            asd.sendEquipmentBreakStatus(EquipmentSlot.OFFHAND);
+                        });
+                    }
+                    if (CombatSpells.config.spell_cost_item_allowed && ammoResult.ammo != null) {
+                        for(int i = 0; i < player.getInventory().size(); ++i) {
+                            var stack = player.getInventory().getStack(i);
+                            if (stack.isOf(ammoResult.ammo.getItem())) {
+                                stack.decrement(1);
+                                if (stack.isEmpty()) {
+                                    player.getInventory().removeOne(stack);
+                                }
+                                break;
+                            }
+                        }
                     }
                 }
             }

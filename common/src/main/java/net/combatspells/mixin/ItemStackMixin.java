@@ -79,17 +79,18 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
     private void use_HEAD(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
         var spell = spell();
         if (spell() == null) { return; }
-
-        if (world.isClient) {
-            if (user instanceof SpellCasterClient caster) {
-                caster.castStart(spell);
+        if (SpellHelper.ammoForSpell(user, spell, itemStack()).satisfied()) {
+            if (world.isClient) {
+                if (user instanceof SpellCasterClient caster) {
+                    caster.castStart(spell);
+                }
             }
+            user.setCurrentHand(hand); // Set item in use
+            cir.setReturnValue(TypedActionResult.consume(itemStack()));
+        } else {
+            cir.setReturnValue(TypedActionResult.fail(itemStack()));
         }
-
-        user.setCurrentHand(hand); // Set item in use
-        cir.setReturnValue(TypedActionResult.consume(itemStack()));
         cir.cancel();
-        // Nothing to do?
     }
 
     // Tick cast

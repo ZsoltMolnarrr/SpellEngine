@@ -50,6 +50,7 @@ public class SpellRegistry {
                 new ParticleBatch("lava", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 30, 0.5F, 3F)
         };
         fireBall.on_impact = new Spell.Impact[] { firballImpact };
+        fireBall.cost.item_id = "minecraft:coal";
         spells.put(new Identifier("minecraft", "wooden_sword"), fireBall);
 
         var frostbolt = new Spell();

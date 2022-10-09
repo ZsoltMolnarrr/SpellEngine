@@ -5,7 +5,6 @@ import net.spelldamage.api.MagicSchool;
 public class Spell {
     // Structure
     public float range = 50;
-    public float cooldown_duration = 0;
     public String icon_id;
     public MagicSchool school;
 
@@ -71,6 +70,14 @@ public class Spell {
 
         public ParticleBatch[] particles;
         public Sound sound;
+    }
+
+    public float cooldown_duration = 0;
+    public Cost cost = new Cost();
+    public static class Cost { public Cost() { }
+        public float exhaust = 0.1F;
+        public String item_id;
+        public int durability = 1;
     }
 
     public static class ProjectileData { public ProjectileData() { }
