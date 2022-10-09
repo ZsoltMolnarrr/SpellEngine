@@ -20,7 +20,7 @@ public class SpellRegistry {
         fireBall.cast.animation = "combatspells:one_handed_projectile_charge";
         fireBall.cast.sound = new Sound("combatspells:casting_fire");
         fireBall.cast.particles = new ParticleBatch[] {
-                new ParticleBatch("flame", ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET, 1, 0.05F, 0.1F)
+                new ParticleBatch("flame", ParticleBatch.Shape.PIPE, ParticleBatch.Origin.FEET, 1, 0.05F, 0.1F)
         };
         fireBall.range = 64;
         fireBall.icon_id = "combatspells:textures/spells/fireball.png";

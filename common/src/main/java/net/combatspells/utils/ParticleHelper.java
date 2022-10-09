@@ -129,10 +129,15 @@ public class ParticleHelper {
 
     private static Vec3d offset(Entity entity, ParticleBatch batch) {
         switch (batch.shape) {
-            case PILLAR -> {
-                var width = entity.getWidth();
+            case PIPE -> {
+                var x = entity.getWidth();
                 var angle = (float) Math.toRadians(rng.nextFloat() * 360F);
-                return new Vec3d(width,0,0).rotateY(angle);
+                return new Vec3d(x,0,0).rotateY(angle);
+            }
+            case PILLAR -> {
+                var x = randomInRange(0, entity.getWidth());
+                var angle = (float) Math.toRadians(rng.nextFloat() * 360F);
+                return new Vec3d(x,0,0).rotateY(angle);
             }
         }
         return Vec3d.ZERO;
@@ -155,7 +160,7 @@ public class ParticleHelper {
                 }
                 return direction;
             }
-            case PILLAR -> {
+            case PILLAR, PIPE -> {
                 var y = randomInRange(batch.min_speed, batch.max_speed);
                 return new Vec3d(0, y, 0);
             }

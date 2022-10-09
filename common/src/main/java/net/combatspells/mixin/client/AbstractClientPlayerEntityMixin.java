@@ -93,7 +93,6 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             soundId = castSound.id();
         }
         if (!StringUtil.matching(soundId, lastCastSoundId)) {
-            System.out.println("Playing sound: " + soundId);
             if (castSound != null && soundId != null && !soundId.isEmpty()) {
                 var id = new Identifier(soundId);
                 var sound = new SpellCastingSound(this, id, castSound.volume(), castSound.randomizedPitch());

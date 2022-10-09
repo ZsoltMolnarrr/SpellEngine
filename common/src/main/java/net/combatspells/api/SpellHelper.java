@@ -99,7 +99,6 @@ public class SpellHelper {
         projectile.range = spell.range;
 
         world.spawnEntity(projectile);
-        System.out.println("Spawning projectile");
     }
 
     public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell spell) {
