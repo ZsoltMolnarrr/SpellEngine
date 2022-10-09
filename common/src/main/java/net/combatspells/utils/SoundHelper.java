@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Random;
 
 public class SoundHelper {
-    private static Random rng = new Random();
-
     public static List<String> soundKeys = List.of(
         "casting_arcane",
         "casting_fire",
@@ -44,9 +42,6 @@ public class SoundHelper {
         }
         try {
             System.out.println("Release sound C");
-            float pitch = (sound.randomness() > 0)
-                    ?  rng.nextFloat(sound.pitch() - sound.randomness(), sound.pitch() + sound.randomness())
-                    : sound.pitch();
             var soundEvent = Registry.SOUND_EVENT.get(new Identifier(sound.id()));
             world.playSound(
                     (PlayerEntity)null,
@@ -56,7 +51,7 @@ public class SoundHelper {
                     soundEvent,
                     SoundCategory.PLAYERS,
                     1F,
-                    pitch);
+                    sound.randomizedPitch());
             System.out.println("Release sound D: " + " x:" + entity.getX() + " y:" + entity.getY() + " z:" + entity.getZ());
         } catch (Exception e) {
             System.out.println("Failed to play sound: " + sound.id());

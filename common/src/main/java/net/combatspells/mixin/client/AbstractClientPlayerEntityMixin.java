@@ -12,6 +12,7 @@ import net.bettercombat.api.animation.FirstPersonAnimator;
 import net.bettercombat.client.animation.AdjustmentModifier;
 import net.bettercombat.client.animation.StateCollectionHelper;
 import net.combatspells.Platform;
+import net.combatspells.api.spell.Sound;
 import net.combatspells.client.sound.SpellCastingSound;
 import net.combatspells.client.animation.AnimatablePlayer;
 import net.combatspells.client.animation.AnimationRegistry;
@@ -58,18 +59,16 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         var player = (PlayerEntity) instance;
 
         String castAnimationName = null;
-        String castSoundId = null;
+        Sound castSound = null;
         var spell = ((SpellCasterEntity)player).getCurrentSpell();
         if (spell != null) {
             castAnimationName = spell.cast.animation;
-            if (spell.cast.sound != null) {
-                castSoundId = spell.cast.sound.id();
-            }
+            castSound = spell.cast.sound;
             // Rotate body towards look vector
             ((LivingEntityAccessor)player).invokeTurnHead(player.getHeadYaw(), 0);
         }
         updateCastingAnimation(castAnimationName);
-        updateCastingSound(castSoundId);
+        updateCastingSound(castSound);
     }
 
     private String lastCastAnimationName;
@@ -99,12 +98,16 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
 
     private String lastCastSoundId;
     private SpellCastingSound lastCastSound;
-    private void updateCastingSound(String soundId) {
+    private void updateCastingSound(Sound castSound) {
+        String soundId = null;
+        if (castSound != null) {
+            soundId = castSound.id();
+        }
         if (!StringUtil.matching(soundId, lastCastSoundId)) {
             System.out.println("Playing sound: " + soundId);
-            if (soundId != null && !soundId.isEmpty()) {
+            if (castSound != null && soundId != null && !soundId.isEmpty()) {
                 var id = new Identifier(soundId);
-                var sound = new SpellCastingSound(this, id, 1 ,1);
+                var sound = new SpellCastingSound(this, id, castSound.volume(), castSound.randomizedPitch());
                 MinecraftClient.getInstance().getSoundManager().play(sound);
                 lastCastSound = sound;
             } else {

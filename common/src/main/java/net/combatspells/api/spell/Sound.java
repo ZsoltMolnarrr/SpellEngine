@@ -1,6 +1,7 @@
 package net.combatspells.api.spell;
 
 import java.util.Objects;
+import java.util.Random;
 
 public final class Sound {
     /**
@@ -84,5 +85,14 @@ public final class Sound {
                 "volume=" + volume + ", " +
                 "pitch=" + pitch + ", " +
                 "randomness=" + randomness + ']';
+    }
+
+    // Helper
+    private static Random rng = new Random();
+    public float randomizedPitch() {
+        float pitch = (this.randomness() > 0)
+                ?  rng.nextFloat(this.pitch() - this.randomness(), this.pitch() + this.randomness())
+                : this.pitch();
+        return pitch;
     }
 }
