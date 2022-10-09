@@ -61,7 +61,11 @@ public class ParticleHelper {
             var id = new Identifier(batch.particle_id);
             var origin = origin(entity, batch.origin).add(offset(entity, batch));;
             var particle = (ParticleEffect) Registry.PARTICLE_TYPE.get(id);
-            for(int i = 0; i < batch.count; ++i) {
+            var count = batch.count;
+            if (batch.count < 1) {
+                count = rng.nextFloat() < batch.count ? 1 : 0;
+            }
+            for(int i = 0; i < count; ++i) {
                 var direction = direction(batch, yaw, pitch);
                 world.addParticle(particle, true,
                         origin.x, origin.y, origin.z,
@@ -78,7 +82,11 @@ public class ParticleHelper {
             var id = new Identifier(batch.particle_id);
             var origin = origin(entity, batch.origin).add(offset(entity, batch));
             var particle = (ParticleEffect) Registry.PARTICLE_TYPE.get(id);
-            for(int i = 0; i < batch.count; ++i) {
+            var count = batch.count;
+            if (batch.count < 1) {
+                count = rng.nextFloat() < batch.count ? 1 : 0;
+            }
+            for(int i = 0; i < count; ++i) {
                 var direction = direction(batch, yaw, pitch);
                 instructions.add(new SpawnInstruction(particle,
                         origin.x, origin.y, origin.z,

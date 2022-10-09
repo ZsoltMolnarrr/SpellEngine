@@ -59,7 +59,7 @@ public class SpellRegistry {
         frostbolt.cast.animation = "combatspells:one_handed_projectile_charge";
         frostbolt.cast.sound = new Sound("combatspells:casting_frost");
         frostbolt.cast.particles = new ParticleBatch[] {
-                new ParticleBatch("snowflake", ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.CENTER, 1, 0.1F, 0.2F)
+                new ParticleBatch("snowflake", ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.CENTER, 0.5F, 0.1F, 0.2F)
         };
         frostbolt.range = 64;
         frostbolt.on_release = new Spell.Release();
