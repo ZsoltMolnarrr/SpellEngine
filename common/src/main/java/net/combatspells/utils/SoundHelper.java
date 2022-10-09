@@ -35,13 +35,10 @@ public class SoundHelper {
     }
 
     public static void playSound(World world, Entity entity, Sound sound) {
-        System.out.println("Release sound A");
         if (sound == null) {
-            System.out.println("Release sound B");
             return;
         }
         try {
-            System.out.println("Release sound C");
             var soundEvent = Registry.SOUND_EVENT.get(new Identifier(sound.id()));
             world.playSound(
                     (PlayerEntity)null,
@@ -52,9 +49,8 @@ public class SoundHelper {
                     SoundCategory.PLAYERS,
                     1F,
                     sound.randomizedPitch());
-            System.out.println("Release sound D: " + " x:" + entity.getX() + " y:" + entity.getY() + " z:" + entity.getZ());
         } catch (Exception e) {
-            System.out.println("Failed to play sound: " + sound.id());
+            System.err.println("Failed to play sound: " + sound.id());
             e.printStackTrace();
         }
     }

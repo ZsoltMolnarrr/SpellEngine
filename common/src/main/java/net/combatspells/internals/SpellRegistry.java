@@ -19,6 +19,9 @@ public class SpellRegistry {
         fireBall.cast.duration = 1;
         fireBall.cast.animation = "combatspells:one_handed_projectile_charge";
         fireBall.cast.sound = new Sound("combatspells:casting_fire");
+        fireBall.cast.particles = new ParticleBatch[] {
+                new ParticleBatch("flame", ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET, 1, 0.05F, 0.1F)
+        };
         fireBall.range = 64;
         fireBall.icon_id = "combatspells:textures/spells/fireball.png";
         fireBall.school = MagicSchool.FIRE;
@@ -55,6 +58,9 @@ public class SpellRegistry {
         frostbolt.cast.duration = 1;
         frostbolt.cast.animation = "combatspells:one_handed_projectile_charge";
         frostbolt.cast.sound = new Sound("combatspells:casting_frost");
+        frostbolt.cast.particles = new ParticleBatch[] {
+                new ParticleBatch("snowflake", ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.CENTER, 1, 0.1F, 0.2F)
+        };
         frostbolt.range = 64;
         frostbolt.on_release = new Spell.Release();
         frostbolt.on_release.animation = "combatspells:one_handed_projectile_release";

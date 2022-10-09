@@ -39,7 +39,7 @@ public class VectorHelper {
         towards = towards.normalize();
         Vec3d rotated;
         var angleBetween = angleWithSignBetween(vector, towards, vector.crossProduct(towards));
-        System.out.println("Pre Angle between vectors: " + angleBetween);
+        // System.out.println("Pre Angle between vectors: " + angleBetween);
         if (angleBetween == 0) {
             return vector;
         }
@@ -49,11 +49,11 @@ public class VectorHelper {
             var v1 = vector;
             var towardsLength = Math.sin(Math.toRadians(angleToRotate)) / Math.cos(Math.toRadians(90.0 - angleBetween + angleToRotate));
             var v2 = towards.multiply(towardsLength);
-            System.out.println("Angle: " + angleBetween + " T':" + towardsLength);
+           // System.out.println("Angle: " + angleBetween + " T':" + towardsLength);
             rotated = v1.add(v2).normalize();
         }
         rotated = rotated.multiply(originalLength);
-        System.out.println("Post Angle between vectors: " + angleBetween(rotated, towards));
+        // System.out.println("Post Angle between vectors: " + angleBetween(rotated, towards));
         return rotated;
     }
 }

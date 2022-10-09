@@ -4,7 +4,7 @@ public class ParticleBatch {
     public String particle_id;
     public Shape shape;
     public enum Shape {
-        CIRCLE
+        CIRCLE, PILLAR
     }
     public Origin origin = Origin.CENTER;
     public enum Origin {

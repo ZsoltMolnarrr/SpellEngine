@@ -18,7 +18,7 @@ public class Spell {
 //        }
         public String animation;
         public Sound sound;
-//        public ParticleBatch[] particles;
+        public ParticleBatch[] particles;
     }
 
     public Release on_release;

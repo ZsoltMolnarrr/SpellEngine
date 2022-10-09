@@ -19,6 +19,7 @@ import net.combatspells.client.animation.AnimationRegistry;
 import net.combatspells.client.animation.AnimationSubStack;
 import net.combatspells.internals.SpellAnimationType;
 import net.combatspells.internals.SpellCasterEntity;
+import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.StringUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -70,6 +71,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             castSound = spell.cast.sound;
             // Rotate body towards look vector
             ((LivingEntityAccessor)player).invokeTurnHead(player.getHeadYaw(), 0);
+            ParticleHelper.play(player.world, player, spell.cast.particles);
         }
         updateCastingAnimation(castAnimationName);
         updateCastingSound(castSound);
@@ -79,24 +81,6 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     private void updateCastingAnimation(String animationName) {
         if (!StringUtil.matching(animationName, lastCastAnimationName)) {
             playAnimation(SpellAnimationType.CASTING, animationName);
-//            if (animationName != null && !animationName.isEmpty()) {
-//                var animation = AnimationRegistry.animations.get(animationName);
-//                var copy = animation.mutableCopy();
-//                updateAnimationByCurrentActivity(copy);
-//                copy.torso.fullyEnablePart(true);
-//                copy.head.pitch.setEnabled(false);
-//                var mirror = isLeftHanded();
-//
-//                var fadeIn = copy.beginTick;
-//                // castingAnimation.speed.speed = speed;
-//                castingAnimation.mirror.setEnabled(mirror);
-//                castingAnimation.base.replaceAnimationWithFade(
-//                        AbstractFadeModifier.standardFadeIn(fadeIn, Ease.INOUTSINE),
-//                        new KeyframeAnimationPlayer(copy.build(), 0));
-//            } else {
-//                castingAnimation.base.replaceAnimationWithFade(
-//                        AbstractFadeModifier.standardFadeIn(5, Ease.INOUTSINE), null);
-//            }
         }
         lastCastAnimationName = animationName;
     }

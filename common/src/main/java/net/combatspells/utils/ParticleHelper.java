@@ -43,14 +43,23 @@ public class ParticleHelper {
         }
     }
 
+    public static void play(World world, Entity source, ParticleBatch[] batches) {
+        if (batches == null) {
+            return;
+        }
+        for (var batch: batches) {
+            play(world, source, 0, 0, batch);
+        }
+    }
+
     public static void play(World world, Entity source, ParticleBatch effect) {
         play(world, source, 0, 0, effect);
     }
 
-    public static void play(World world, Entity source, float yaw, float pitch, ParticleBatch batch) {
+    public static void play(World world, Entity entity, float yaw, float pitch, ParticleBatch batch) {
         try {
             var id = new Identifier(batch.particle_id);
-            var origin = origin(source, batch.origin);
+            var origin = origin(entity, batch.origin).add(offset(entity, batch));;
             var particle = (ParticleEffect) Registry.PARTICLE_TYPE.get(id);
             for(int i = 0; i < batch.count; ++i) {
                 var direction = direction(batch, yaw, pitch);
@@ -63,11 +72,11 @@ public class ParticleHelper {
         }
     }
 
-    public static List<SpawnInstruction> convertToInstructions(Entity source, float pitch, float yaw, ParticleBatch[] batches) {
+    public static List<SpawnInstruction> convertToInstructions(Entity entity, float pitch, float yaw, ParticleBatch[] batches) {
         var instructions = new ArrayList<SpawnInstruction>();
         for(var batch: batches) {
             var id = new Identifier(batch.particle_id);
-            var origin = origin(source, batch.origin);
+            var origin = origin(entity, batch.origin).add(offset(entity, batch));
             var particle = (ParticleEffect) Registry.PARTICLE_TYPE.get(id);
             for(int i = 0; i < batch.count; ++i) {
                 var direction = direction(batch, yaw, pitch);
@@ -110,6 +119,17 @@ public class ParticleHelper {
         return entity.getPos();
     }
 
+    private static Vec3d offset(Entity entity, ParticleBatch batch) {
+        switch (batch.shape) {
+            case PILLAR -> {
+                var width = entity.getWidth();
+                var angle = (float) Math.toRadians(rng.nextFloat() * 360F);
+                return new Vec3d(width,0,0).rotateY(angle);
+            }
+        }
+        return Vec3d.ZERO;
+    }
+
     private static Vec3d direction(ParticleBatch batch, float yaw, float pitch) {
         switch (batch.shape) {
             case CIRCLE -> {
@@ -126,6 +146,10 @@ public class ParticleHelper {
                     direction = direction.rotateX((float) (Math.cos(yawRad) * pitchRad));
                 }
                 return direction;
+            }
+            case PILLAR -> {
+                var y = randomInRange(batch.min_speed, batch.max_speed);
+                return new Vec3d(0, y, 0);
             }
         }
         assert true;
