@@ -1,5 +1,6 @@
 package net.combatspells.api;
 
+import net.combatspells.CombatSpells;
 import net.combatspells.api.spell.Spell;
 import net.combatspells.entity.SpellProjectile;
 import net.combatspells.internals.SpellRegistry;
@@ -73,8 +74,12 @@ public class SpellHelper {
                 SoundHelper.playSound(world, caster, spell.on_release.sound);
                 if (caster instanceof PlayerEntity player) {
                     AnimationHelper.sendAnimation(player, RELEASE, spell.on_release.animation);
-                    if (spell.cooldown_duration > 0) {
-                        player.getItemCooldownManager().set(item, Math.round(spell.cooldown_duration * 20F));
+                    var duration = spell.cooldown_duration;
+                    if (duration > 0) {
+                        if (CombatSpells.config.haste_affects_cooldown) {
+                            duration = duration / getCastingSpeed(caster);
+                        }
+                        player.getItemCooldownManager().set(item, Math.round(duration * 20F));
                     }
                 }
             }

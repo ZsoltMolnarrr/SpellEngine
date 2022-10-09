@@ -6,6 +6,6 @@ import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 
 @Config(name = "server")
 public class ServerConfig implements ConfigData {
-    @Comment("Yay")
-    public int something = 10;
+    @Comment("Spell haste reduces the cooldown time of abilities")
+    public boolean haste_affects_cooldown = true;
 }
