@@ -29,7 +29,7 @@ public class TargetHelper {
                 return getRelation(caster, owner);
             }
         }
-        if (casterTeam == null && targetTeam == null) {
+        if (casterTeam == null || targetTeam == null) {
             if (caster instanceof PlayerEntity casterPlayer) {
                 if (target instanceof PlayerEntity targetEntity) {
                     return Relation.FRIENDLY;
@@ -50,7 +50,7 @@ public class TargetHelper {
                 }
             }
             case NEUTRAL, HOSTILE -> {
-                return !helpful;
+                return !helpful; // Only allowed in case harmful
             }
         }
         assert true;
