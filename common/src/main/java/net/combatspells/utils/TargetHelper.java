@@ -1,6 +1,7 @@
 package net.combatspells.utils;
 
 import net.combatspells.api.spell.Spell;
+import net.combatspells.internals.SpellCasterClient;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -106,5 +107,13 @@ public class TargetHelper {
         var world = client.world;
         var hit = client.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, client.player));
         return hit.getType() != HitResult.Type.BLOCK;
+    }
+
+    public static boolean isTargetedByClientPlayer(Entity entity) {
+        if (entity.world.isClient) {
+            var clientPlayer = MinecraftClient.getInstance().player;
+            return ((SpellCasterClient) clientPlayer).getCurrentTarget() == entity;
+        }
+        return false;
     }
 }
