@@ -2,7 +2,7 @@ package net.combatspells.api;
 
 import net.combatspells.CombatSpells;
 import net.combatspells.api.spell.Spell;
-import net.combatspells.entity.SpellProjectile;
+import net.combatspells.entity.FlyingSpellProjectile;
 import net.combatspells.internals.SpellRegistry;
 import net.combatspells.utils.AnimationHelper;
 import net.combatspells.utils.ParticleHelper;
@@ -147,7 +147,7 @@ public class SpellHelper {
         var x = caster.getX();
         var y  = caster.getEyeY();
         var z  = caster.getZ();
-        var projectile = new SpellProjectile(world, caster, x, y, z, spell, target);
+        var projectile = new FlyingSpellProjectile(world, caster, x, y, z, spell, target);
         projectile.range = spell.range;
 
         world.spawnEntity(projectile);

@@ -73,11 +73,11 @@ public class SpellRegistry {
                 new ParticleBatch[] {
                         new ParticleBatch("snowflake", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 3, 0, 0.1F)
                 },
-                "snowball"
+                "ice" // "snowball"
         );
-
+        frostbolt.on_release.target.projectile.client_data.render = Spell.ProjectileData.Client.RenderMode.DEEP;
         frostbolt.on_release.target.projectile.homing_angle = 2;
-        frostbolt.on_release.target.projectile.velocity = 1F;
+        frostbolt.on_release.target.projectile.velocity = 0.1F;
 
         var frostboltImpact = new Spell.Impact();
         frostboltImpact.sound = new Sound("combatspells:impact_frostbolt");

@@ -1,6 +1,7 @@
 package net.combatspells.fabric.client;
 
 import net.combatspells.CombatSpells;
+import net.combatspells.client.render.SpellProjectileRenderer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -18,6 +19,6 @@ public class FabricClientMod implements ClientModInitializer {
         });
 
         EntityRendererRegistry.register(CombatSpells.SPELL_PROJECTILE, (context) ->
-                new FlyingItemEntityRenderer(context));
+                new SpellProjectileRenderer(context));
     }
 }

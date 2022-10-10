@@ -89,6 +89,10 @@ public class Spell {
         public static class Client { public Client() { }
             public ParticleBatch[] travel_particles;
             public String item_id;
+            public RenderMode render = RenderMode.FLAT;
+            public enum RenderMode {
+                FLAT, DEEP
+            }
             public Client(ParticleBatch[] travel_particles, String item_id) {
                 this.travel_particles = travel_particles;
                 this.item_id = item_id;

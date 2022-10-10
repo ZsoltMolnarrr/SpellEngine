@@ -6,12 +6,11 @@ import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.combatspells.attribute_assigner.AttributeAssigner;
 import net.combatspells.config.ServerConfig;
 import net.combatspells.config.ServerConfigWrapper;
-import net.combatspells.entity.SpellProjectile;
+import net.combatspells.entity.FlyingSpellProjectile;
 import net.combatspells.internals.SpellRegistry;
 import net.combatspells.network.ServerNetwork;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.entity.EntityType;
-import net.minecraft.util.Identifier;
 
 public class CombatSpells {
     public static final String MOD_ID = "combatspells";
@@ -21,7 +20,7 @@ public class CombatSpells {
 
     public static ServerConfig config;
 
-    public static EntityType<SpellProjectile> SPELL_PROJECTILE;
+    public static EntityType<FlyingSpellProjectile> SPELL_PROJECTILE;
 
     public static void init() {
         AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));

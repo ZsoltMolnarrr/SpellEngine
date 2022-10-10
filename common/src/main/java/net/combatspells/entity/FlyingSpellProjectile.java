@@ -4,11 +4,11 @@ import com.google.gson.Gson;
 import net.combatspells.CombatSpells;
 import net.combatspells.api.SpellHelper;
 import net.combatspells.api.spell.Spell;
+import net.combatspells.client.render.FlyingSpellEntity;
 import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.VectorHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.FlyingItemEntity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -28,22 +28,22 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 
-public class SpellProjectile extends ProjectileEntity implements FlyingItemEntity {
+public class FlyingSpellProjectile extends ProjectileEntity implements FlyingSpellEntity {
     public float range = 128;
     private Spell spell;
     private Entity followedTarget;
 
-    public SpellProjectile(EntityType<? extends ProjectileEntity> entityType, World world) {
+    public FlyingSpellProjectile(EntityType<? extends ProjectileEntity> entityType, World world) {
         super(entityType, world);
     }
 
-    protected SpellProjectile(World world, LivingEntity owner) {
+    protected FlyingSpellProjectile(World world, LivingEntity owner) {
         super(CombatSpells.SPELL_PROJECTILE, world);
         this.setOwner(owner);
     }
 
-    public SpellProjectile(World world, LivingEntity caster, double x, double y, double z,
-                           Spell spell, Entity target) {
+    public FlyingSpellProjectile(World world, LivingEntity caster, double x, double y, double z,
+                                 Spell spell, Entity target) {
         this(world, caster);
         this.setPosition(x, y, z);
         this.spell = spell;
@@ -242,6 +242,15 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
     }
 
     @Override
+    public Spell.ProjectileData.Client.RenderMode renderMode() {
+        var data = projectileData();
+        if (data != null) {
+            return projectileData().client_data.render;
+        }
+        return Spell.ProjectileData.Client.RenderMode.FLAT;
+    }
+
+    @Override
     protected void initDataTracker() {
         var gson = new Gson();
         this.getDataTracker().startTracking(CLIENT_DATA, "");
@@ -252,7 +261,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingItemEntit
     private static final TrackedData<Integer> TARGET_ID;
 
     static {
-        CLIENT_DATA = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.STRING);
-        TARGET_ID = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.INTEGER);
+        CLIENT_DATA = DataTracker.registerData(FlyingSpellProjectile.class, TrackedDataHandlerRegistry.STRING);
+        TARGET_ID = DataTracker.registerData(FlyingSpellProjectile.class, TrackedDataHandlerRegistry.INTEGER);
     }
 }
