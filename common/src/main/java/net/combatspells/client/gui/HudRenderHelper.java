@@ -19,7 +19,7 @@ public class HudRenderHelper {
         render(matrixStack, tickDelta, false);
     }
     public static void render(MatrixStack matrixStack, float tickDelta, boolean config) {
-        var hudConfig = CombatSpellsClient.hudConfig.currentConfig;
+        var hudConfig = CombatSpellsClient.hudConfig.value;
         var clientConfig = CombatSpellsClient.config;
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayerEntity player = client.player;

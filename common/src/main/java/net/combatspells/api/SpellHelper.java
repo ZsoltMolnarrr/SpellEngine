@@ -9,7 +9,6 @@ import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.SoundHelper;
 import net.combatspells.utils.TargetHelper;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -35,7 +34,7 @@ public class SpellHelper {
     public static AmmoResult ammoForSpell(PlayerEntity player, Spell spell, ItemStack itemStack) {
         boolean satisfied = true;
         ItemStack ammo = null;
-        boolean ignoreAmmo = player.getAbilities().creativeMode || EnchantmentHelper.getLevel(Enchantments.INFINITY, itemStack) > 0;
+        boolean ignoreAmmo = player.getAbilities().creativeMode || EnchantmentHelper.getLevel(Enchantments_CombatSpells.INFINITY, itemStack) > 0;
         if (!ignoreAmmo && spell.cost.item_id != null && !spell.cost.item_id.isEmpty()) {
             var id = new Identifier(spell.cost.item_id);
             var ammoItem = Registry.ITEM.get(id);

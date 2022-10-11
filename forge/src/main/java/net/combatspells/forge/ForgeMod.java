@@ -23,7 +23,6 @@ public class ForgeMod {
         NetworkHandler.registerMessages();
         registerSounds();
         SOUNDS.register(FMLJavaModLoadingContext.get().getModEventBus());
-        CombatSpells.configureEnchantments();
     }
 
     @SubscribeEvent
@@ -31,17 +30,17 @@ public class ForgeMod {
         // These don't seem to do anything :D
         event.register(ForgeRegistries.Keys.ATTRIBUTES,
             helper -> {
-                helper.register(EntityAttributes_CombatRoll.distanceId, EntityAttributes_CombatRoll.DISTANCE);
-                helper.register(EntityAttributes_CombatRoll.rechargeId, EntityAttributes_CombatRoll.RECHARGE);
-                helper.register(EntityAttributes_CombatRoll.countId, EntityAttributes_CombatRoll.COUNT);
+//                helper.register(EntityAttributes_CombatRoll.distanceId, EntityAttributes_CombatRoll.DISTANCE);
+//                helper.register(EntityAttributes_CombatRoll.rechargeId, EntityAttributes_CombatRoll.RECHARGE);
+//                helper.register(EntityAttributes_CombatRoll.countId, EntityAttributes_CombatRoll.COUNT);
             }
         );
         event.register(ForgeRegistries.Keys.ENCHANTMENTS,
             helper -> {
-                helper.register(Enchantments_CombatRoll.distanceId, Enchantments_CombatRoll.DISTANCE);
-                helper.register(Enchantments_CombatRoll.rechargeChestId, Enchantments_CombatRoll.RECHARGE_CHEST);
-                helper.register(Enchantments_CombatRoll.rechargeLegsId, Enchantments_CombatRoll.RECHARGE_LEGS);
-                helper.register(Enchantments_CombatRoll.countId, Enchantments_CombatRoll.COUNT);
+//                helper.register(Enchantments_CombatRoll.distanceId, Enchantments_CombatRoll.DISTANCE);
+//                helper.register(Enchantments_CombatRoll.rechargeChestId, Enchantments_CombatRoll.RECHARGE_CHEST);
+//                helper.register(Enchantments_CombatRoll.rechargeLegsId, Enchantments_CombatRoll.RECHARGE_LEGS);
+//                helper.register(Enchantments_CombatRoll.countId, Enchantments_CombatRoll.COUNT);
             }
         );
     }

@@ -1,5 +1,6 @@
 package net.combatspells.forge.client;
 
+import net.combatspells.client.gui.ConfigMenuScreen;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraftforge.api.distmarker.Dist;
@@ -16,7 +17,7 @@ import net.combatspells.client.CombatSpellsClient;
 public class ForgeClientModEvents {
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event){
-        RollKeybings.all.forEach(event::register);
+//        RollKeybings.all.forEach(event::register);
     }
 
     @SubscribeEvent

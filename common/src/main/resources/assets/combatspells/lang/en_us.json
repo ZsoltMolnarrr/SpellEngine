@@ -1,4 +1,7 @@
 {
+  "enchantment.combatspells.spell_infinity" : "Spell Infinity",
+  "enchantment.combatspells.spell_infinity.desc" : "Spells are free to cast",
+
   "gui.combatspells.config_menu" : "Combat Spells config",
   "gui.combatspells.close" : "Close",
   "gui.combatspells.settings" : "Settings",

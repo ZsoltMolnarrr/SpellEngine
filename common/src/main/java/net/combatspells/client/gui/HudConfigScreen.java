@@ -28,7 +28,7 @@ public class HudConfigScreen extends Screen {
     }
 
     private HudConfig config() {
-        return CombatSpellsClient.hudConfig.currentConfig;
+        return CombatSpellsClient.hudConfig.value;
     }
 
     @Override
@@ -163,7 +163,7 @@ public class HudConfigScreen extends Screen {
 
     private void changeBarWidth(boolean increase) {
         var diff = increase ? 1 : -1;
-        var config = CombatSpellsClient.hudConfig.currentConfig;
+        var config = CombatSpellsClient.hudConfig.value;
         if (!increase && config.bar_width <= 0) {
             return;
         }
@@ -222,7 +222,7 @@ public class HudConfigScreen extends Screen {
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         var result = super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
         if (!this.isDragging() && button == 0) {
-            var config = CombatSpellsClient.hudConfig.currentConfig;
+            var config = CombatSpellsClient.hudConfig.value;
             config.base.offset = new Vec2f(
                     (float) (config.base.offset.x + deltaX),
                     (float) (config.base.offset.y + deltaY));
@@ -231,14 +231,14 @@ public class HudConfigScreen extends Screen {
     }
 
     public void nextPreset() {
-        var config = CombatSpellsClient.hudConfig.currentConfig;
+        var config = CombatSpellsClient.hudConfig.value;
         HudElement.Origin origin;
         try {
             origin = HudElement.Origin.values()[(config.base.origin.ordinal() + 1)];
-            CombatSpellsClient.hudConfig.currentConfig = HudConfig.preset(origin);
+            CombatSpellsClient.hudConfig.value = HudConfig.preset(origin);
         } catch (Exception e) {
             origin = HudElement.Origin.values()[0];
-            CombatSpellsClient.hudConfig.currentConfig = HudConfig.preset(origin);
+            CombatSpellsClient.hudConfig.value = HudConfig.preset(origin);
         }
         refreshPartButtons();
     }
@@ -248,7 +248,7 @@ public class HudConfigScreen extends Screen {
     }
 
     public void reset() {
-        CombatSpellsClient.hudConfig.currentConfig = HudConfig.createDefault();
+        CombatSpellsClient.hudConfig.value = HudConfig.createDefault();
         refreshPartButtons();
     }
 
