@@ -2,9 +2,8 @@ package net.combatspells.mixin.client;
 
 import net.combatspells.api.SpellHelper;
 import net.combatspells.api.spell.Spell;
+import net.combatspells.client.CombatSpellsClient;
 import net.combatspells.internals.SpellCasterClient;
-import net.combatspells.internals.SpellCasterEntity;
-import net.combatspells.internals.SpellCasterItemStack;
 import net.combatspells.network.Packets;
 import net.combatspells.utils.TargetHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -35,7 +34,20 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     @Override
-    public void castTick(int remainingUseTicks) {
+    public void castTick(ItemStack itemStack, int remainingUseTicks) {
+        // System.out.println("Cast tick progress: " + progress + ", remainingUseTicks: " + remainingUseTicks);
+        if (CombatSpellsClient.config.autoRelease) {
+            var currentSpell = getCurrentSpell();
+            if (currentSpell == null) {
+                return;
+            }
+            var progress = SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell.cast.duration);
+            if (progress >= 1) {
+                castRelease(itemStack, remainingUseTicks);
+                player().clearActiveItem();
+                return;
+            }
+        }
         updateTarget();
     }
 
@@ -82,7 +94,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     private int findSlot(PlayerEntity player, ItemStack stack) {
         var inventory = player.getInventory().main;
         for(int i = 0; i < inventory.size(); ++i) {
-            ItemStack itemStack = (ItemStack)inventory.get(i);
+            ItemStack itemStack = inventory.get(i);
             if (stack == itemStack) {
                 return i;
             }

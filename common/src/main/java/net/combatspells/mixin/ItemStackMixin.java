@@ -14,6 +14,8 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import net.spelldamage.api.MagicSchool;
+import net.spelldamage.api.MagicalItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -23,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ItemStack.class)
-public abstract class ItemStackMixin implements SpellCasterItemStack {
+public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalItemStack {
     @Shadow public abstract Item getItem();
 
     private ItemStack itemStack() {
@@ -43,7 +45,18 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
         return cachedSpell;
     }
 
+    // MagicalItemStack
+
+    public @Nullable MagicSchool getMagicSchool() {
+        var spell = spell();
+        if (spell != null) {
+            return spell.school;
+        }
+        return null;
+    }
+
     // SpellCasterItemStack
+
     @Override
     public Spell getSpell() {
         return spell();
@@ -102,7 +115,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
 
         if (world.isClient) {
             if (user instanceof SpellCasterClient caster) {
-                caster.castTick(remainingUseTicks);
+                caster.castTick(itemStack(), remainingUseTicks);
             }
         }
 

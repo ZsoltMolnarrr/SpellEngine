@@ -13,6 +13,8 @@
   "gui.combatspells.icon" : "Icon",
   "gui.combatspells.bar_width" : "Bar width",
 
+  "text.autoconfig.combatspells.option.client.autoRelease" : "Auto release",
+  "text.autoconfig.combatspells.option.client.autoRelease.@Tooltip" : "Automatically release spell when fully charged",
   "text.autoconfig.combatspells.option.client.highlightTarget" : "Highlight target",
   "text.autoconfig.combatspells.option.client.highlightTarget.@Tooltip" : "Render glowing effect on targeted entity",
   "text.autoconfig.combatspells.option.client.useMagicColorForHighlight" : "Use magic color for highlight",
