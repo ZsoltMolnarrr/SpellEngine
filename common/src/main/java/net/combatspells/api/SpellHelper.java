@@ -17,6 +17,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spelldamage.api.MagicSchool;
@@ -138,15 +139,22 @@ public class SpellHelper {
         }
     }
 
+    public static Vec3d launchPoint(LivingEntity caster) {
+        double shoulderHeight = caster.getHeight() * 0.15 * caster.getScaleFactor();
+        Vec3d look = caster.getRotationVector().multiply(0.5 * caster.getScaleFactor());
+        return caster.getEyePos().subtract(0, shoulderHeight, 0).add(look);
+    }
+
     private static void shootProjectile(World world, LivingEntity caster, Entity target, Spell spell) {
         // Send target packet
         if (world.isClient) {
             return;
         }
 
-        var x = caster.getX();
-        var y  = caster.getEyeY();
-        var z  = caster.getZ();
+        var launchPoint = launchPoint(caster);
+        var x = launchPoint.getX();
+        var y  = launchPoint.getY();
+        var z  = launchPoint.getZ();
         var projectile = new FlyingSpellProjectile(world, caster, x, y, z, spell, target);
         projectile.range = spell.range;
 
