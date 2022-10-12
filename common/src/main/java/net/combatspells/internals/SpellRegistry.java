@@ -47,6 +47,7 @@ public class SpellRegistry {
                 var id = identifier
                         .toString().replace(directory + "/", "");
                 id = id.substring(0, id.lastIndexOf('.'));
+                Validator.validate(container);
                 parsed.put(new Identifier(id), container);
                 // System.out.println("loaded spell - id: " + id +  " spell: " + gson.toJson(container));
             } catch (Exception e) {
@@ -137,11 +138,9 @@ public class SpellRegistry {
         SyncFormat sync = gson.fromJson(json, SyncFormat.class);
         sync.spells.forEach((key, value) -> {
             spells.put(new Identifier(key), value);
-            // System.out.println("Decoded spell: " + key + " value: " + gson.toJson(value));
         });
         sync.assignments.forEach((key, value) -> {
             assignments.put(new Identifier(key), value);
-            // System.out.println("Decoded assignments: " + key + " value: " + gson.toJson(value));
         });
     }
 
