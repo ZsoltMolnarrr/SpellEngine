@@ -8,7 +8,7 @@ import net.combatspells.attribute_assigner.AttributeAssigner;
 import net.combatspells.config.EnchantmentsConfig;
 import net.combatspells.config.ServerConfig;
 import net.combatspells.config.ServerConfigWrapper;
-import net.combatspells.entity.FlyingSpellProjectile;
+import net.combatspells.entity.SpellProjectile;
 import net.combatspells.internals.SpellRegistry;
 import net.combatspells.network.ServerNetwork;
 import net.minecraft.client.resource.language.I18n;
@@ -30,7 +30,7 @@ public class CombatSpells {
             .setDirectory(MOD_ID)
             .sanitize(true)
             .build();
-    public static EntityType<FlyingSpellProjectile> SPELL_PROJECTILE;
+    public static EntityType<SpellProjectile> SPELL_PROJECTILE;
 
     public static void init() {
         AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));

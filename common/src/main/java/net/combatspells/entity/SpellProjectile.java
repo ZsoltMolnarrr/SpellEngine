@@ -28,22 +28,22 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 
-public class FlyingSpellProjectile extends ProjectileEntity implements FlyingSpellEntity {
+public class SpellProjectile extends ProjectileEntity implements FlyingSpellEntity {
     public float range = 128;
     private Spell spell;
     private Entity followedTarget;
 
-    public FlyingSpellProjectile(EntityType<? extends ProjectileEntity> entityType, World world) {
+    public SpellProjectile(EntityType<? extends ProjectileEntity> entityType, World world) {
         super(entityType, world);
     }
 
-    protected FlyingSpellProjectile(World world, LivingEntity owner) {
+    protected SpellProjectile(World world, LivingEntity owner) {
         super(CombatSpells.SPELL_PROJECTILE, world);
         this.setOwner(owner);
     }
 
-    public FlyingSpellProjectile(World world, LivingEntity caster, double x, double y, double z,
-                                 Spell spell, Entity target) {
+    public SpellProjectile(World world, LivingEntity caster, double x, double y, double z,
+                           Spell spell, Entity target) {
         this(world, caster);
         this.setPosition(x, y, z);
         this.spell = spell;
@@ -261,7 +261,7 @@ public class FlyingSpellProjectile extends ProjectileEntity implements FlyingSpe
     private static final TrackedData<Integer> TARGET_ID;
 
     static {
-        CLIENT_DATA = DataTracker.registerData(FlyingSpellProjectile.class, TrackedDataHandlerRegistry.STRING);
-        TARGET_ID = DataTracker.registerData(FlyingSpellProjectile.class, TrackedDataHandlerRegistry.INTEGER);
+        CLIENT_DATA = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.STRING);
+        TARGET_ID = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.INTEGER);
     }
 }

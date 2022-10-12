@@ -1,7 +1,7 @@
 package net.combatspells.fabric;
 
 import net.combatspells.CombatSpells;
-import net.combatspells.entity.FlyingSpellProjectile;
+import net.combatspells.entity.SpellProjectile;
 import net.fabricmc.api.ModInitializer;
 import net.combatspells.utils.SoundHelper;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
@@ -17,7 +17,7 @@ public class FabricMod implements ModInitializer {
         CombatSpells.SPELL_PROJECTILE = Registry.register(
                 ENTITY_TYPE,
                 new Identifier(CombatSpells.MOD_ID, "spell_projectile"),
-                FabricEntityTypeBuilder.<FlyingSpellProjectile>create(SpawnGroup.MISC, FlyingSpellProjectile::new)
+                FabricEntityTypeBuilder.<SpellProjectile>create(SpawnGroup.MISC, SpellProjectile::new)
                         .dimensions(EntityDimensions.fixed(0.25F, 0.25F)) // dimensions in Minecraft units of the projectile
                         .trackRangeBlocks(128)
                         .trackedUpdateRate(2)
