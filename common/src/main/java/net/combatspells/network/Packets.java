@@ -49,21 +49,21 @@ public class Packets {
 
     public record ParticleBatches(int sourceEntityId, ParticleBatch[] batches) {
         public static Identifier ID = new Identifier(CombatSpells.MOD_ID, "particle_effects");
-        public PacketByteBuf write() {
+        public PacketByteBuf write(float countMultiplier) {
             PacketByteBuf buffer = PacketByteBufs.create();
             buffer.writeInt(sourceEntityId);
             buffer.writeInt(batches.length);
             for(var batch: batches) {
-                write(batch, buffer);
+                write(batch, buffer, countMultiplier);
             }
             return buffer;
         }
 
-        private static void write(ParticleBatch batch, PacketByteBuf buffer) {
+        private static void write(ParticleBatch batch, PacketByteBuf buffer, float countMultiplier) {
             buffer.writeString(batch.particle_id);
             buffer.writeInt(batch.shape.ordinal());
             buffer.writeInt(batch.origin.ordinal());
-            buffer.writeFloat(batch.count);
+            buffer.writeFloat(batch.count * countMultiplier);
             buffer.writeFloat(batch.min_speed);
             buffer.writeFloat(batch.max_speed);
         }

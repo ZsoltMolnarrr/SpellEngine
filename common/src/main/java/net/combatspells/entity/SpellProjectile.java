@@ -179,11 +179,11 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         if (target != null && projectileData().homing_angle > 0) {
             var distanceVector = (target.getPos().add(0, target.getHeight() / 2F, 0))
                     .subtract(this.getPos().add(0, this.getHeight() / 2F, 0));
-            System.out.println((world.isClient ? "Client: " : "Server: ") + "Distance: " + distanceVector);
-            System.out.println((world.isClient ? "Client: " : "Server: ") + "Velocity: " + getVelocity());
+//            System.out.println((world.isClient ? "Client: " : "Server: ") + "Distance: " + distanceVector);
+//            System.out.println((world.isClient ? "Client: " : "Server: ") + "Velocity: " + getVelocity());
             var newVelocity = VectorHelper.rotateTowards(getVelocity(), distanceVector, projectileData().homing_angle);
             if (newVelocity.lengthSquared() > 0) {
-                System.out.println((world.isClient ? "Client: " : "Server: ") + "Rotated to: " + newVelocity);
+//                System.out.println((world.isClient ? "Client: " : "Server: ") + "Rotated to: " + newVelocity);
                 this.setVelocity(newVelocity);
             }
         }

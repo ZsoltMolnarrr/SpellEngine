@@ -176,6 +176,7 @@ public class SpellHelper {
         }
         var success = false;
         try {
+            double particleMultiplier = 1;
             var relation = TargetHelper.getRelation(caster, target);
             switch (impact.action.type) {
                 case DAMAGE -> {
@@ -183,7 +184,9 @@ public class SpellHelper {
                         return false;
                     }
                     var damageData = impact.action.damage;
-                    var amount = SpellDamageHelper.getSpellDamage(school, caster);
+                    var damage = SpellDamageHelper.getSpellDamage(school, caster);
+                    particleMultiplier = damage.criticalMultiplier();
+                    var amount = damage.value();
                     var source = SpellDamageSource.create(school, caster);
                     amount *= damageData.multiplier;
                     caster.onAttacking(target);
@@ -196,7 +199,9 @@ public class SpellHelper {
                     }
                     if (target instanceof LivingEntity livingTarget) {
                         var healData = impact.action.heal;
-                        var amount = SpellDamageHelper.getSpellDamage(school, caster);
+                        var healing = SpellDamageHelper.getSpellDamage(school, caster);
+                        particleMultiplier = healing.criticalMultiplier();
+                        var amount = healing.value();
                         amount *= healData.multiplier;
                         livingTarget.heal((float) amount);
                         success = true;
@@ -220,7 +225,7 @@ public class SpellHelper {
                 }
             }
             if (success) {
-                ParticleHelper.sendBatches(target, impact.particles);
+                ParticleHelper.sendBatches(target, impact.particles, (float) particleMultiplier);
                 SoundHelper.playSound(world, target, impact.sound);
             }
         } catch (Exception e) {

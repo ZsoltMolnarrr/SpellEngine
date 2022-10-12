@@ -21,10 +21,14 @@ public class ParticleHelper {
     private static Random rng = new Random();
 
     public static void sendBatches(Entity trackedEntity, ParticleBatch[] batches) {
+        sendBatches(trackedEntity, batches, 1);
+    }
+
+    public static void sendBatches(Entity trackedEntity, ParticleBatch[] batches, float countMultiplier) {
         if (batches == null || batches.length == 0) {
             return;
         }
-        var packet = new Packets.ParticleBatches(trackedEntity.getId(), batches).write();
+        var packet = new Packets.ParticleBatches(trackedEntity.getId(), batches).write(countMultiplier);
         if (trackedEntity instanceof ServerPlayerEntity serverPlayer) {
             sendWrittenBatchesToPlayer(serverPlayer, packet);
         }
