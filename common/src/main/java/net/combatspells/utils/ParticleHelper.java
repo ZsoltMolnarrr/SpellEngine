@@ -168,6 +168,12 @@ public class ParticleHelper {
                 var y = randomInRange(batch.min_speed, batch.max_speed);
                 return new Vec3d(0, y, 0);
             }
+            case SPHERE -> {
+                var direction = new Vec3d(randomInRange(batch.min_speed, batch.max_speed), 0, 0)
+                        .rotateZ((float) Math.toRadians(rng.nextFloat() * 360F))
+                        .rotateY((float) Math.toRadians(rng.nextFloat() * 360F));
+                return direction;
+            }
         }
         assert true;
         return Vec3d.ZERO;

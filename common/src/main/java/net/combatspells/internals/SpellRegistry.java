@@ -85,7 +85,7 @@ public class SpellRegistry {
         frostboltImpact.action.type = Spell.Impact.Action.Type.DAMAGE;
         frostboltImpact.action.damage = new Spell.Impact.Action.Damage();
         frostboltImpact.particles = new ParticleBatch[] {
-                new ParticleBatch("soul_fire_flame", ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.CENTER, 30, 0.5F, 3F)
+                new ParticleBatch("soul_fire_flame", ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER, 130, 0.2F, 0.2F)
         };
         frostbolt.on_impact = new Spell.Impact[] { frostboltImpact };
         spells.put(new Identifier("minecraft", "diamond_sword"), frostbolt);
