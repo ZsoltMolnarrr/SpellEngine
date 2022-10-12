@@ -3,6 +3,7 @@ package net.combatspells.network;
 import com.google.common.collect.Iterables;
 import net.combatspells.CombatSpells;
 import net.combatspells.api.SpellHelper;
+import net.combatspells.internals.SpellRegistry;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -19,6 +20,7 @@ public class ServerNetwork {
     public static void initializeHandlers() {
         configSerialized = Packets.ConfigSync.write(CombatSpells.config);
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            sender.sendPacket(Packets.SpellRegistrySync.ID, SpellRegistry.encoded);
             sender.sendPacket(Packets.ConfigSync.ID, configSerialized);
         });
 

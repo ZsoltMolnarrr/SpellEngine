@@ -8,12 +8,16 @@ import net.combatspells.api.spell.Sound;
 import net.combatspells.api.spell.Spell;
 import net.combatspells.api.spell.SpellAssignment;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.spelldamage.api.MagicSchool;
 
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SpellRegistry {
@@ -24,6 +28,7 @@ public class SpellRegistry {
         ServerLifecycleEvents.SERVER_STARTED.register((minecraftServer) -> {
             loadSpells(minecraftServer.getResourceManager());
             loadAssignments(minecraftServer.getResourceManager());
+            encodeContent();
         });
     }
 
@@ -43,9 +48,9 @@ public class SpellRegistry {
                         .toString().replace(directory + "/", "");
                 id = id.substring(0, id.lastIndexOf('.'));
                 parsed.put(new Identifier(id), container);
-                System.out.println("loaded spell - id: " + id +  " spell: " + gson.toJson(container));
+                // System.out.println("loaded spell - id: " + id +  " spell: " + gson.toJson(container));
             } catch (Exception e) {
-                System.err.println("Failed to parse: " + identifier);
+                System.err.println("Failed to parse spell: " + identifier);
                 e.printStackTrace();
             }
         }
@@ -68,9 +73,9 @@ public class SpellRegistry {
                         .toString().replace(directory + "/", "");
                 id = id.substring(0, id.lastIndexOf('.'));
                 parsed.put(new Identifier(id), container);
-                System.out.println("loaded assignment - id: " + id +  " assignment: " + container.spell);
+                // System.out.println("loaded assignment - id: " + id +  " assignment: " + container.spell);
             } catch (Exception e) {
-                System.err.println("Failed to parse: " + identifier);
+                System.err.println("Failed to parse item_spell_assignment: " + identifier);
                 e.printStackTrace();
             }
         }
@@ -79,14 +84,65 @@ public class SpellRegistry {
 
     public static Spell resolveSpell(Identifier itemId) {
         var assignment = assignments.get(itemId);
-        System.out.println("resolveSpell A");
         if (assignment == null || assignment.spell == null) {
-            System.out.println("resolveSpell B");
             return null;
         }
         var spellId = new Identifier(assignment.spell);
-        System.out.println("resolveSpell C: " + spells.get(spellId));
         return spells.get(spellId);
+    }
+
+    public static PacketByteBuf encoded = PacketByteBufs.create();
+
+    public static class SyncFormat { public SyncFormat() { }
+        private Map<String, Spell> spells = new HashMap();
+        private Map<String, SpellAssignment> assignments = new HashMap();
+    }
+
+    private static void encodeContent() {
+        var gson = new Gson();
+        var buffer = PacketByteBufs.create();
+
+        var sync = new SyncFormat();
+        spells.forEach((key, value) -> {
+            sync.spells.put(key.toString(), value);
+        });
+        assignments.forEach((key, value) -> {
+            sync.assignments.put(key.toString(), value);
+        });
+        var json = gson.toJson(sync);
+
+        List<String> chunks = new ArrayList<>();
+        var chunkSize = 10000;
+        for (int i = 0; i < json.length(); i += chunkSize) {
+            chunks.add(json.substring(i, Math.min(json.length(), i + chunkSize)));
+        }
+        buffer.writeInt(chunks.size());
+        for (var chunk: chunks) {
+            buffer.writeString(chunk);
+        }
+
+        System.out.println("Encoded SpellRegistry size (with package overhead): " + buffer.readableBytes()
+                + " bytes (in " + chunks.size() + " string chunks with the size of "  + chunkSize + ")");
+
+        encoded = buffer;
+    }
+
+    public static void decodeContent(PacketByteBuf buffer) {
+        var chunkCount = buffer.readInt();
+        String json = "";
+        for (int i = 0; i < chunkCount; ++i) {
+            json = json.concat(buffer.readString());
+        }
+        var gson = new Gson();
+        SyncFormat sync = gson.fromJson(json, SyncFormat.class);
+        sync.spells.forEach((key, value) -> {
+            spells.put(new Identifier(key), value);
+            // System.out.println("Decoded spell: " + key + " value: " + gson.toJson(value));
+        });
+        sync.assignments.forEach((key, value) -> {
+            assignments.put(new Identifier(key), value);
+            // System.out.println("Decoded assignments: " + key + " value: " + gson.toJson(value));
+        });
     }
 
     private static void printHardCoded() {

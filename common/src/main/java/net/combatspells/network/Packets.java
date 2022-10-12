@@ -93,6 +93,10 @@ public class Packets {
         }
     }
 
+    public static class SpellRegistrySync {
+        public static Identifier ID = new Identifier(CombatSpells.MOD_ID, "spell_registry_sync");
+    }
+
     public static class ConfigSync {
         public static Identifier ID = new Identifier(CombatSpells.MOD_ID, "config_sync");
 
