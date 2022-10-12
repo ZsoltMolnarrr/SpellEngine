@@ -41,7 +41,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
         }
         var item = getItem();
         var id = Registry.ITEM.getId(item);
-        cachedSpell = SpellRegistry.spells.get(id);
+        cachedSpell = SpellRegistry.resolveSpell(id);
         return cachedSpell;
     }
 

@@ -1,0 +1,88 @@
+{
+  "range": 64.0,
+  "icon_id": "combatspells:textures/spells/frostbolt.png",
+  "school": "FROST",
+  "cast": {
+    "duration": 1.0,
+    "animation": "combatspells:one_handed_projectile_charge",
+    "sound": {
+      "id": "combatspells:casting_frost",
+      "volume": 1.0,
+      "pitch": 1.0,
+      "randomness": 0.1
+    },
+    "particles": [
+      {
+        "particle_id": "snowflake",
+        "shape": "PILLAR",
+        "origin": "CENTER",
+        "count": 0.5,
+        "min_speed": 0.1,
+        "max_speed": 0.2
+      }
+    ]
+  },
+  "on_release": {
+    "target": {
+      "type": "PROJECTILE",
+      "projectile": {
+        "velocity": 1.0,
+        "divergence": 0.0,
+        "inherit_shooter_velocity": false,
+        "homing_angle": 2.0,
+        "client_data": {
+          "travel_particles": [
+            {
+              "particle_id": "snowflake",
+              "shape": "CIRCLE",
+              "origin": "CENTER",
+              "count": 3.0,
+              "min_speed": 0.0,
+              "max_speed": 0.1
+            }
+          ],
+          "item_id": "ice",
+          "render": "DEEP"
+        }
+      }
+    },
+    "animation": "combatspells:one_handed_projectile_release",
+    "sound": {
+      "id": "combatspells:release_frost",
+      "volume": 1.0,
+      "pitch": 1.0,
+      "randomness": 0.1
+    }
+  },
+  "on_impact": [
+    {
+      "action": {
+        "type": "DAMAGE",
+        "damage": {
+          "multiplier": 1.0
+        }
+      },
+      "particles": [
+        {
+          "particle_id": "soul_fire_flame",
+          "shape": "SPHERE",
+          "origin": "CENTER",
+          "count": 130.0,
+          "min_speed": 0.2,
+          "max_speed": 0.2
+        }
+      ],
+      "sound": {
+        "id": "combatspells:impact_frostbolt",
+        "volume": 1.0,
+        "pitch": 1.0,
+        "randomness": 0.1
+      }
+    }
+  ],
+  "cooldown_duration": 0.0,
+  "cost": {
+    "exhaust": 0.1,
+    "durability": 1
+  }
+}

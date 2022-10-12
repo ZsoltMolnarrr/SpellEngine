@@ -1,19 +1,96 @@
 package net.combatspells.internals;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.stream.JsonReader;
 import net.combatspells.api.spell.ParticleBatch;
 import net.combatspells.api.spell.Sound;
 import net.combatspells.api.spell.Spell;
+import net.combatspells.api.spell.SpellAssignment;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.spelldamage.api.MagicSchool;
 
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
 public class SpellRegistry {
-    public static final Map<Identifier, Spell> spells = new HashMap();
+    private static Map<Identifier, Spell> spells = new HashMap();
+    private static Map<Identifier, SpellAssignment> assignments = new HashMap();
 
     public static void initialize() {
-        // spells.put(new Identifier("minecraft", "wooden_sword"), "fireball");
+        ServerLifecycleEvents.SERVER_STARTED.register((minecraftServer) -> {
+            loadSpells(minecraftServer.getResourceManager());
+            loadAssignments(minecraftServer.getResourceManager());
+        });
+    }
+
+    public static void loadSpells(ResourceManager resourceManager) {
+        var gson = new Gson();
+        Map<Identifier, Spell> parsed = new HashMap();
+        // Reading all attribute files
+        var directory = "spells";
+        for (var entry : resourceManager.findResources(directory, fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
+            var identifier = entry.getKey();
+            var resource = entry.getValue();
+            try {
+                // System.out.println("Checking resource: " + identifier);
+                JsonReader reader = new JsonReader(new InputStreamReader(resource.getInputStream()));
+                Spell container = gson.fromJson(reader, Spell.class);
+                var id = identifier
+                        .toString().replace(directory + "/", "");
+                id = id.substring(0, id.lastIndexOf('.'));
+                parsed.put(new Identifier(id), container);
+                System.out.println("loaded spell - id: " + id +  " spell: " + gson.toJson(container));
+            } catch (Exception e) {
+                System.err.println("Failed to parse: " + identifier);
+                e.printStackTrace();
+            }
+        }
+        spells = parsed;
+    }
+
+    public static void loadAssignments(ResourceManager resourceManager) {
+        var gson = new Gson();
+        Map<Identifier, SpellAssignment> parsed = new HashMap();
+        // Reading all attribute files
+        var directory = "item_spell_assignment";
+        for (var entry : resourceManager.findResources(directory, fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
+            var identifier = entry.getKey();
+            var resource = entry.getValue();
+            try {
+                // System.out.println("Checking resource: " + identifier);
+                JsonReader reader = new JsonReader(new InputStreamReader(resource.getInputStream()));
+                SpellAssignment container = gson.fromJson(reader, SpellAssignment.class);
+                var id = identifier
+                        .toString().replace(directory + "/", "");
+                id = id.substring(0, id.lastIndexOf('.'));
+                parsed.put(new Identifier(id), container);
+                System.out.println("loaded assignment - id: " + id +  " assignment: " + container.spell);
+            } catch (Exception e) {
+                System.err.println("Failed to parse: " + identifier);
+                e.printStackTrace();
+            }
+        }
+        assignments = parsed;
+    }
+
+    public static Spell resolveSpell(Identifier itemId) {
+        var assignment = assignments.get(itemId);
+        System.out.println("resolveSpell A");
+        if (assignment == null || assignment.spell == null) {
+            System.out.println("resolveSpell B");
+            return null;
+        }
+        var spellId = new Identifier(assignment.spell);
+        System.out.println("resolveSpell C: " + spells.get(spellId));
+        return spells.get(spellId);
+    }
+
+    private static void printHardCoded() {
+        var gson = new GsonBuilder().setPrettyPrinting().create();
 
         var fireBall = new Spell();
         fireBall.cast.duration = 1;
@@ -53,6 +130,8 @@ public class SpellRegistry {
         fireBall.cost.item_id = "minecraft:coal";
         spells.put(new Identifier("minecraft", "wooden_sword"), fireBall);
 
+        System.out.println(gson.toJson(fireBall));
+
         var frostbolt = new Spell();
         frostbolt.school = MagicSchool.FROST;
         frostbolt.icon_id = "combatspells:textures/spells/frostbolt.png";
@@ -89,7 +168,7 @@ public class SpellRegistry {
         };
         frostbolt.on_impact = new Spell.Impact[] { frostboltImpact };
         spells.put(new Identifier("minecraft", "diamond_sword"), frostbolt);
-
+        System.out.println(gson.toJson(frostbolt));
 
         var scorch = new Spell();
         scorch.school = MagicSchool.FIRE;
