@@ -12,6 +12,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import net.spelldamage.api.MagicSchool;
 
 import java.util.ArrayList;
 import java.util.List;

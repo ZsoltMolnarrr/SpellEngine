@@ -4,7 +4,7 @@ import net.combatspells.internals.SpellInfinityEnchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.item.ItemStack;
-import net.spelldamage.internals.SchoolFilteredEnchantment;
+import net.spelldamage.api.ConditionalEnchantment;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,7 +21,7 @@ public class EnchantmentHelperMixin {
         var toRemove = new ArrayList<EnchantmentLevelEntry>();
         for (var entry: entries) {
             var enchantment = entry.enchantment;
-            if (enchantment instanceof SchoolFilteredEnchantment
+            if (enchantment instanceof ConditionalEnchantment
                     || enchantment instanceof SpellInfinityEnchantment) {
                 if (!entry.enchantment.isAcceptableItem(stack)) {
                     toRemove.add(entry);
