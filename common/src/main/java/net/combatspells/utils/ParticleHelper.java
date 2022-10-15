@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
@@ -193,4 +194,23 @@ public class ParticleHelper {
         var varied = sign * range * rand;
         return base + varied;
     }
+
+//    public static void defaultParticle(MagicSchool school) {
+//        switch (school) {
+//            case ARCANE -> {
+//
+//            }
+//            case FIRE -> {
+//            }
+//            case FROST -> {
+//            }
+//            case HEALING -> {
+//            }
+//            case LIGHTNING -> {
+//                // ParticleTypes.FLASH
+//            }
+//            case SOUL -> {
+//            }
+//        }
+//    }
 }

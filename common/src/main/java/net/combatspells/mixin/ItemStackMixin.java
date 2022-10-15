@@ -114,6 +114,11 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
         if (spell == null) { return; }
 
         if (world.isClient) {
+            if (user instanceof PlayerEntity player) {
+                if (player.getItemCooldownManager().isCoolingDown(itemStack().getItem())) {
+                    player.clearActiveItem();
+                }
+            }
             if (user instanceof SpellCasterClient caster) {
                 caster.castTick(itemStack(), remainingUseTicks);
             }
