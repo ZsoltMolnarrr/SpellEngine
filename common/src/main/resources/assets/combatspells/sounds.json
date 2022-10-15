@@ -14,6 +14,21 @@
       "combatspells:casting_frost"
     ]
   },
+  "casting_healing": {
+    "sounds": [
+      "combatspells:casting_healing"
+    ]
+  },
+  "casting_lightning": {
+    "sounds": [
+      "combatspells:casting_lightning"
+    ]
+  },
+  "casting_soul": {
+    "sounds": [
+      "combatspells:casting_soul"
+    ]
+  },
   "release_arcane": {
     "sounds": [
       "combatspells:release_arcane"
@@ -27,6 +42,21 @@
   "release_frost": {
     "sounds": [
       "combatspells:release_frost"
+    ]
+  },
+  "release_healing": {
+    "sounds": [
+      "combatspells:release_healing"
+    ]
+  },
+  "release_lightning": {
+    "sounds": [
+      "combatspells:release_lightning"
+    ]
+  },
+  "release_soul": {
+    "sounds": [
+      "combatspells:release_soul"
     ]
   },
   "impact_fireball": {

@@ -18,9 +18,15 @@ public class SoundHelper {
         "casting_arcane",
         "casting_fire",
         "casting_frost",
+        "casting_healing",
+        "casting_lightning",
+        "casting_soul",
         "release_arcane",
         "release_fire",
         "release_frost",
+        "release_lightning",
+        "release_healing",
+        "release_soul",
         // Spell specific impact sounds
         "impact_fireball",
         "impact_frostbolt"
