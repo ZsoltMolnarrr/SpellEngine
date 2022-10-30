@@ -3,7 +3,7 @@
   "icon_id": "combatspells:textures/spells/fireball.png",
   "school": "FIRE",
   "cast": {
-    "duration": 1.0,
+    "duration": 1.5,
     "animation": "combatspells:one_handed_projectile_charge",
     "sound": {
       "id": "combatspells:casting_fire",

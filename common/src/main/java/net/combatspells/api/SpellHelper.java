@@ -61,7 +61,7 @@ public class SpellHelper {
 
     public static void castRelease(World world, LivingEntity caster, List<Entity> targets, ItemStack itemStack, int remainingUseTicks) {
         var item = itemStack.getItem();
-        var spell = SpellRegistry.resolveSpell(Registry.ITEM.getId(item));
+        var spell = SpellRegistry.resolveSpellByItem(Registry.ITEM.getId(item));
         var progress = getCastProgress(caster, remainingUseTicks, spell.cast.duration);
         var ammoResult = new AmmoResult(true, null);
         if (caster instanceof PlayerEntity player) {

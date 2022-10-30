@@ -2,6 +2,17 @@
   "enchantment.combatspells.spell_infinity" : "Spell Infinity",
   "enchantment.combatspells.spell_infinity.desc" : "Spells are free to cast",
 
+  "spell.tooltip.when_used": "Casts spell when used:",
+  "spell.tooltip.cast_time": "Cast time: {duration} second",
+  "spell.tooltip.cast_time.plural": "Cast Time: {duration} seconds",
+  "spell.tooltip.range": "Range: {range} block",
+  "spell.tooltip.range.plural": "Range: {range} blocks",
+  "spell.tooltip.ammo": "Requires: {item}",
+  "spell.tooltip.ammo.plural": "Requires: {item} ({count}x)",
+
+  "spell.combatspells.fireball.name": "Fireball",
+  "spell.combatspells.fireball.description": "Launches a ball of fire dealing {damage} fire damage on impact",
+
   "gui.combatspells.config_menu" : "Combat Spells config",
   "gui.combatspells.close" : "Close",
   "gui.combatspells.settings" : "Settings",

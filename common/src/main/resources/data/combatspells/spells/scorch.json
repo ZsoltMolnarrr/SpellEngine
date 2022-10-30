@@ -1,5 +1,5 @@
 {
-  "range": 32.0,
+  "range": 1.0,
   "icon_id": "combatspells:textures/spells/fireball.png",
   "school": "FIRE",
   "cast": {

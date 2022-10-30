@@ -10,6 +10,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
 import net.minecraft.util.registry.Registry;
@@ -17,6 +18,7 @@ import net.minecraft.world.World;
 import net.spelldamage.api.MagicSchool;
 import net.spelldamage.api.MagicalItemStack;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,6 +29,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalItemStack {
     @Shadow public abstract Item getItem();
+
+    @Shadow @Final @Deprecated private Item item;
 
     private ItemStack itemStack() {
         return (ItemStack) ((Object)this);
@@ -41,7 +45,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
         }
         var item = getItem();
         var id = Registry.ITEM.getId(item);
-        cachedSpell = SpellRegistry.resolveSpell(id);
+        cachedSpell = SpellRegistry.resolveSpellByItem(id);
         return cachedSpell;
     }
 
@@ -56,6 +60,12 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     }
 
     // SpellCasterItemStack
+
+    public Identifier getSpellId() {
+        var item = getItem();
+        var itemId = Registry.ITEM.getId(item);
+        return SpellRegistry.getSpellId(itemId);
+    }
 
     @Override
     public Spell getSpell() {

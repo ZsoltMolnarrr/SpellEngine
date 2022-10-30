@@ -3,7 +3,7 @@
   "icon_id": "combatspells:textures/spells/frostbolt.png",
   "school": "FROST",
   "cast": {
-    "duration": 1.0,
+    "duration": 2.0,
     "animation": "combatspells:one_handed_projectile_charge",
     "sound": {
       "id": "combatspells:casting_frost",

@@ -83,12 +83,24 @@ public class SpellRegistry {
         assignments = parsed;
     }
 
-    public static Spell resolveSpell(Identifier itemId) {
+    public static Identifier getSpellId(Identifier itemId) {
         var assignment = assignments.get(itemId);
         if (assignment == null || assignment.spell == null) {
             return null;
         }
         var spellId = new Identifier(assignment.spell);
+        return spellId;
+    }
+
+    public static Spell resolveSpellByItem(Identifier itemId) {
+        var spellId = getSpellId(itemId);
+        if (spellId == null) {
+            return null;
+        }
+        return spells.get(spellId);
+    }
+
+    public static Spell getSpell(Identifier spellId) {
         return spells.get(spellId);
     }
 
