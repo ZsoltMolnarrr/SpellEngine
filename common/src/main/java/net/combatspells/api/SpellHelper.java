@@ -256,16 +256,16 @@ public class SpellHelper {
                 case DAMAGE -> {
                     var damageData = impact.action.damage;
                     var damage = new EstimatedValue(
-                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.DISABLED).value(),
-                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.FORCED).value())
+                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.DISABLED, itemStack).value(),
+                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.FORCED, itemStack).value())
                             .multiply(damageData.multiplier);
                     damageEffects.add(damage);
                 }
                 case HEAL -> {
                     var healData = impact.action.heal;
                     var healing = new EstimatedValue(
-                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.DISABLED).value(),
-                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.FORCED).value())
+                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.DISABLED, itemStack).value(),
+                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.FORCED, itemStack).value())
                             .multiply(healData.multiplier);
                     healEffects.add(healing);
                 }

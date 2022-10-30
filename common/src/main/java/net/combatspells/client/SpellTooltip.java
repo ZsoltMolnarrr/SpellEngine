@@ -15,9 +15,8 @@ import net.minecraft.util.registry.Registry;
 import java.util.List;
 
 public class SpellTooltip {
-
-    private static String damageToken = "{damage}";
-    private static String healToken = "{heal}";
+    private static final String damageToken = "{damage}";
+    private static final String healToken = "{heal}";
 
     public static void addSpellInfo(ItemStack itemStack, List<Text> lines) {
         var player = MinecraftClient.getInstance().player;
@@ -80,6 +79,9 @@ public class SpellTooltip {
     }
 
     private static String formattedRange(double min, double max) {
+        if (min == max) {
+            return formattedNumber((float) min);
+        }
         return formattedNumber((float) min) + " - " + formattedNumber((float) max);
     }
 
