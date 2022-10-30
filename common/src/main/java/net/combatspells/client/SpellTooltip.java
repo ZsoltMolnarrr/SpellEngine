@@ -36,7 +36,7 @@ public class SpellTooltip {
                         .formatted(Formatting.GRAY));
 
                 var description = I18n.translate(spellKeyPrefix(spellId) + ".description");
-                var estimatedOutput = SpellHelper.estimate(spell, player);
+                var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);
                 description = replaceTokens(description, damageToken, estimatedOutput.damage());
                 description = replaceTokens(description, healToken, estimatedOutput.heal());
                 lines.add(Text.literal(" ")

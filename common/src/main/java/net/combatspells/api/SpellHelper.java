@@ -238,10 +238,19 @@ public class SpellHelper {
 
     // DAMAGE/HEAL OUTPUT ESTIMATION
 
-    public static EstimatedOutput estimate(Spell spell, LivingEntity caster) {
+    public static EstimatedOutput estimate(Spell spell, PlayerEntity caster, ItemStack itemStack) {
         var school = spell.school;
         var damageEffects = new ArrayList<EstimatedValue>();
         var healEffects = new ArrayList<EstimatedValue>();
+
+        var replaceAttributes = caster.getMainHandStack() != itemStack;
+        var heldAttributes = caster.getMainHandStack().getAttributeModifiers(EquipmentSlot.MAINHAND);
+        var itemAttributes = itemStack.getAttributeModifiers(EquipmentSlot.MAINHAND);
+        if (replaceAttributes) {
+            caster.getAttributes().removeModifiers(heldAttributes);
+            caster.getAttributes().addTemporaryModifiers(itemAttributes);
+        }
+
         for (var impact: spell.on_impact) {
             switch (impact.action.type) {
                 case DAMAGE -> {
@@ -264,6 +273,12 @@ public class SpellHelper {
                 }
             }
         }
+
+        if (replaceAttributes) {
+            caster.getAttributes().removeModifiers(itemAttributes );
+            caster.getAttributes().addTemporaryModifiers(heldAttributes);
+        }
+
         return new EstimatedOutput(damageEffects, healEffects);
     }
 
