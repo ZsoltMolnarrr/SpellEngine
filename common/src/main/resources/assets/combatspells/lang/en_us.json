@@ -8,10 +8,14 @@
   "spell.tooltip.range": "Range: {range} block",
   "spell.tooltip.range.plural": "Range: {range} blocks",
   "spell.tooltip.ammo": "Requires: {item}",
-  "spell.tooltip.ammo.plural": "Requires: {item} ({count}x)",
+  "spell.tooltip.ammo.plural": "Requires: {item} (x{count})",
 
   "spell.combatspells.fireball.name": "Fireball",
-  "spell.combatspells.fireball.description": "Launches a ball of fire dealing {damage} fire damage on impact",
+  "spell.combatspells.fireball.description": "Launches a ball of fire dealing {damage} fire damage on impact.",
+
+  "spell.combatspells.frostbolt.name": "Frostbolt",
+  "spell.combatspells.frostbolt.description": "Launches a ball of frost dealing {damage} frost damage and slowing the target on impact.",
+
 
   "gui.combatspells.config_menu" : "Combat Spells config",
   "gui.combatspells.close" : "Close",

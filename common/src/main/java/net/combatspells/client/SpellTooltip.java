@@ -16,7 +16,8 @@ import java.util.List;
 
 public class SpellTooltip {
 
-    // "enchantment.spelldamage.spell_power.desc" : "Increases the all kind of spell damage you deal",
+    private static String damageToken = "{damage}";
+    private static String healToken = "{heal}";
 
     public static void addSpellInfo(ItemStack itemStack, List<Text> lines) {
         var player = MinecraftClient.getInstance().player;
@@ -33,8 +34,13 @@ public class SpellTooltip {
                         .append(Text.literal(" "))
                         .append(Text.translatable(spellKeyPrefix(spellId) + ".name").formatted(Formatting.BOLD))
                         .formatted(Formatting.GRAY));
+
+                var description = I18n.translate(spellKeyPrefix(spellId) + ".description");
+                var estimatedOutput = SpellHelper.estimate(spell, player);
+                description = replaceTokens(description, damageToken, estimatedOutput.damage());
+                description = replaceTokens(description, healToken, estimatedOutput.heal());
                 lines.add(Text.literal(" ")
-                        .append(Text.translatable(spellKeyPrefix(spellId) + ".description"))
+                        .append(Text.translatable(description))
                         .formatted(Formatting.GRAY));
 
                 var castTimeKey = keyWithPlural("spell.tooltip.cast_time", spell.cast.duration);
@@ -61,6 +67,20 @@ public class SpellTooltip {
                 }
             }
         }
+    }
+
+    private static String replaceTokens(String text, String token, List<SpellHelper.EstimatedValue> values) {
+        for (int i = 0; i < values.size(); ++i) {
+            var range = values.get(i);
+            boolean indexedTokens = values.size() > 1;
+            token = indexedTokens ? (token + "_" + i) : token;
+            text = text.replace(token, formattedRange(range.min(), range.max()));
+        }
+        return text;
+    }
+
+    private static String formattedRange(double min, double max) {
+        return formattedNumber((float) min) + " - " + formattedNumber((float) max);
     }
 
     private static String formattedNumber(float number) {

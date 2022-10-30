@@ -23,6 +23,7 @@ import net.spelldamage.api.MagicSchool;
 import net.spelldamage.api.SpellDamageHelper;
 import net.spelldamage.api.SpellDamageSource;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static net.combatspells.internals.SpellAnimationType.RELEASE;
@@ -234,4 +235,42 @@ public class SpellHelper {
         }
         return success;
     }
+
+    // DAMAGE/HEAL OUTPUT ESTIMATION
+
+    public static EstimatedOutput estimate(Spell spell, LivingEntity caster) {
+        var school = spell.school;
+        var damageEffects = new ArrayList<EstimatedValue>();
+        var healEffects = new ArrayList<EstimatedValue>();
+        for (var impact: spell.on_impact) {
+            switch (impact.action.type) {
+                case DAMAGE -> {
+                    var damageData = impact.action.damage;
+                    var damage = new EstimatedValue(
+                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.DISABLED).value(),
+                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.FORCED).value())
+                            .multiply(damageData.multiplier);
+                    damageEffects.add(damage);
+                }
+                case HEAL -> {
+                    var healData = impact.action.heal;
+                    var healing = new EstimatedValue(
+                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.DISABLED).value(),
+                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.FORCED).value())
+                            .multiply(healData.multiplier);
+                    healEffects.add(healing);
+                }
+                case STATUS_EFFECT -> {
+                }
+            }
+        }
+        return new EstimatedOutput(damageEffects, healEffects);
+    }
+
+    public record EstimatedValue(double min, double max) {
+        public EstimatedValue multiply(double value) {
+            return new EstimatedValue(min * value, max * value);
+        }
+    }
+    public record EstimatedOutput(List<EstimatedValue> damage, List<EstimatedValue> heal) { }
 }
