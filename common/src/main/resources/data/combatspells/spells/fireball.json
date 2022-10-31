@@ -1,6 +1,5 @@
 {
   "range": 64.0,
-  "icon_id": "combatspells:textures/spells/fireball.png",
   "school": "FIRE",
   "cast": {
     "duration": 1.5,

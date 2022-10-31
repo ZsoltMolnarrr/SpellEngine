@@ -47,15 +47,6 @@ public class SpellHelper {
         return new AmmoResult(satisfied, ammo);
     }
 
-    public static float getCastProgress(LivingEntity caster, int remainingUseTicks, Spell spell) {
-        if (spell.cast == null || spell.cast.duration <= 0) {
-            return 1F;
-        }
-        var elapsedTicks = maximumUseTicks - remainingUseTicks;
-        var hasteAffectedDuration = getCastDuration(caster, spell);
-        return Math.min(((float)elapsedTicks) / (hasteAffectedDuration * 20F), 1F);
-    }
-
     public static float hasteAffectedValue(LivingEntity caster, float value) {
         return hasteAffectedValue(caster, value, null);
     }
@@ -76,6 +67,15 @@ public class SpellHelper {
         return hasteAffectedValue(caster, spell.cast.duration, provisionedWeapon);
     }
 
+    public static float getCastProgress(LivingEntity caster, int remainingUseTicks, Spell spell) {
+        if (spell.cast == null || spell.cast.duration <= 0) {
+            return 1F;
+        }
+        var elapsedTicks = maximumUseTicks - remainingUseTicks;
+        var hasteAffectedDuration = getCastDuration(caster, spell);
+        return Math.min(((float)elapsedTicks) / (hasteAffectedDuration * 20F), 1F);
+    }
+
     public static float getCooldownDuration(LivingEntity caster, Spell spell) {
         return getCooldownDuration(caster, spell, null);
     }
@@ -93,6 +93,9 @@ public class SpellHelper {
     public static void castRelease(World world, LivingEntity caster, List<Entity> targets, ItemStack itemStack, int remainingUseTicks) {
         var item = itemStack.getItem();
         var spell = SpellRegistry.resolveSpellByItem(Registry.ITEM.getId(item));
+        if (spell == null) {
+            return;
+        }
         var progress = getCastProgress(caster, remainingUseTicks, spell);
         var ammoResult = new AmmoResult(true, null);
         if (caster instanceof PlayerEntity player) {

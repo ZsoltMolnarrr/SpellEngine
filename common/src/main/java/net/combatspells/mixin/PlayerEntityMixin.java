@@ -6,6 +6,7 @@ import net.combatspells.client.animation.AnimatablePlayer;
 import net.combatspells.internals.SpellCasterEntity;
 import net.combatspells.internals.SpellCasterItemStack;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -16,6 +17,19 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     private PlayerEntity player() {
         return (PlayerEntity) ((Object) this);
     }
+
+    @Override
+    public Identifier getCurrentSpellId() {
+        if (player().isUsingItem()) {
+            var itemStack = player().getActiveItem();
+            if (itemStack != null) {
+                var casterStack = (SpellCasterItemStack) ((Object)itemStack);
+                return casterStack.getSpellId();
+            }
+        }
+        return null;
+    }
+
     @Override
     public Spell getCurrentSpell() {
         if (player().isUsingItem()) {

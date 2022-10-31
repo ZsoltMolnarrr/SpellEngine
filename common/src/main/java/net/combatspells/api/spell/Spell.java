@@ -5,7 +5,6 @@ import net.spelldamage.api.MagicSchool;
 public class Spell {
     // Structure
     public float range = 50;
-    public String icon_id;
     public MagicSchool school;
 
     public Cast cast = new Cast();

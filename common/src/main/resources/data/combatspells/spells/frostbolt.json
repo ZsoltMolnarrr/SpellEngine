@@ -1,6 +1,5 @@
 {
   "range": 64.0,
-  "icon_id": "combatspells:textures/spells/frostbolt.png",
   "school": "FROST",
   "cast": {
     "duration": 2.0,

@@ -39,8 +39,14 @@ public class HudRenderHelper {
         if (player != null) {
             var caster = (SpellCasterClient) player;
             var spell = caster.getCurrentSpell();
+            var spellId = caster.getCurrentSpellId();
             if (spell != null) {
-                castBarViewModel = new CastBarWidget.ViewModel(spell.school.color(), caster.getCurrentCastProgress(), spell.cast.duration, spell.icon_id, true);
+                castBarViewModel = new CastBarWidget.ViewModel(
+                        spell.school.color(),
+                        caster.getCurrentCastProgress(),
+                        spell.cast.duration,
+                        spellIconTexture(spellId),
+                        true);
             }
         }
 
@@ -56,6 +62,11 @@ public class HudRenderHelper {
             var targetOffset = baseOffset.add(hudConfig.target.offset);
             TargetWidget.render(matrixStack, tickDelta, targetOffset, targetViewModel);
         }
+    }
+
+    // Example: `combatspells:fireball` -> `combatspells:textures/spells/fireball.png`
+    private static String spellIconTexture(Identifier spellId) {
+        return spellId.getNamespace() + ":textures/spells/" + spellId.getPath() + ".png";
     }
 
     public static class TargetWidget {
@@ -106,7 +117,7 @@ public class HudRenderHelper {
 
         public record ViewModel(int color, float progress, float castDuration, String iconTexture, boolean allowTickDelta) {
             public static ViewModel mock() {
-                return new ViewModel(0xFF3300, 0.5F, 1, "combatspells:textures/spells/fireball.png", false);
+                return new ViewModel(0xFF3300, 0.5F, 1, spellIconTexture(new Identifier("combatspells", "fireball")), false);
             }
         }
 
