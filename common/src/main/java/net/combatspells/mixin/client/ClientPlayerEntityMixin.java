@@ -41,7 +41,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             if (currentSpell == null) {
                 return;
             }
-            var progress = SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell.cast.duration);
+            var progress = SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell);
             if (progress >= 1) {
                 castRelease(itemStack, remainingUseTicks);
                 player().clearActiveItem();
@@ -57,7 +57,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         if (currentSpell == null) {
             return;
         }
-        var progress = SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell.cast.duration);
+        var progress = SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell);
         var caster = player();
         if (progress >= 1) {
             var slot = findSlot(caster, itemStack);

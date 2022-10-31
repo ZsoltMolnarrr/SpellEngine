@@ -47,23 +47,53 @@ public class SpellHelper {
         return new AmmoResult(satisfied, ammo);
     }
 
-    public static float getCastingSpeed(LivingEntity caster) {
-        return (float) SpellDamageHelper.getHaste(caster);
-    }
-
-    public static float getCastProgress(LivingEntity caster, int remainingUseTicks, float duration) {
-        if (duration <= 0) {
+    public static float getCastProgress(LivingEntity caster, int remainingUseTicks, Spell spell) {
+        if (spell.cast == null || spell.cast.duration <= 0) {
             return 1F;
         }
         var elapsedTicks = maximumUseTicks - remainingUseTicks;
-        var haste = getCastingSpeed(caster);
-        return Math.min(((float)elapsedTicks) / ((duration / haste) * 20F), 1F);
+        var hasteAffectedDuration = getCastDuration(caster, spell);
+        return Math.min(((float)elapsedTicks) / (hasteAffectedDuration * 20F), 1F);
+    }
+
+    public static float hasteAffectedValue(LivingEntity caster, float value) {
+        return hasteAffectedValue(caster, value, null);
+    }
+
+    public static float hasteAffectedValue(LivingEntity caster, float value, ItemStack provisionedWeapon) {
+        var haste = (float) SpellDamageHelper.getHaste(caster, provisionedWeapon);
+        return value / haste;
+    }
+
+    public static float getCastDuration(LivingEntity caster, Spell spell) {
+        return getCastDuration(caster, spell, null);
+    }
+
+    public static float getCastDuration(LivingEntity caster, Spell spell, ItemStack provisionedWeapon) {
+        if (spell.cast == null) {
+            return 0;
+        }
+        return hasteAffectedValue(caster, spell.cast.duration, provisionedWeapon);
+    }
+
+    public static float getCooldownDuration(LivingEntity caster, Spell spell) {
+        return getCooldownDuration(caster, spell, null);
+    }
+
+    public static float getCooldownDuration(LivingEntity caster, Spell spell, ItemStack provisionedWeapon) {
+        var duration = spell.cooldown_duration;
+        if (duration > 0) {
+            if (CombatSpells.config.haste_affects_cooldown) {
+                duration = hasteAffectedValue(caster, spell.cooldown_duration, provisionedWeapon);
+            }
+        }
+        return duration;
     }
 
     public static void castRelease(World world, LivingEntity caster, List<Entity> targets, ItemStack itemStack, int remainingUseTicks) {
         var item = itemStack.getItem();
         var spell = SpellRegistry.resolveSpellByItem(Registry.ITEM.getId(item));
-        var progress = getCastProgress(caster, remainingUseTicks, spell.cast.duration);
+        var progress = getCastProgress(caster, remainingUseTicks, spell);
         var ammoResult = new AmmoResult(true, null);
         if (caster instanceof PlayerEntity player) {
             ammoResult = ammoForSpell(player, spell, itemStack);
@@ -98,11 +128,8 @@ public class SpellHelper {
                 SoundHelper.playSound(world, caster, spell.on_release.sound);
                 if (caster instanceof PlayerEntity player) {
                     AnimationHelper.sendAnimation(player, RELEASE, spell.on_release.animation);
-                    var duration = spell.cooldown_duration;
+                    var duration = getCooldownDuration(caster, spell);
                     if (duration > 0) {
-                        if (CombatSpells.config.haste_affects_cooldown) {
-                            duration = duration / getCastingSpeed(caster);
-                        }
                         player.getItemCooldownManager().set(item, Math.round(duration * 20F));
                     }
                     player.addExhaustion(spell.cost.exhaust * CombatSpells.config.spell_cost_exhaust_multiplier);

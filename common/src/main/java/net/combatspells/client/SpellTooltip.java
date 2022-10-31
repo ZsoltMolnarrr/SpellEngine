@@ -42,16 +42,27 @@ public class SpellTooltip {
                         .append(Text.translatable(description))
                         .formatted(Formatting.GRAY));
 
-                var castTimeKey = keyWithPlural("spell.tooltip.cast_time", spell.cast.duration);
-                var castTime = I18n.translate(castTimeKey).replace("{duration}", formattedNumber(spell.cast.duration));
+                var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
+                var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
+                var castTime = I18n.translate(castTimeKey).replace("{duration}", formattedNumber(castDuration));
                 lines.add(Text.literal(" ")
                         .append(Text.literal(castTime))
                         .formatted(Formatting.GOLD));
-                var rangeKey = keyWithPlural("spell.tooltip.range", spell.cast.duration);
+
+                var rangeKey = keyWithPlural("spell.tooltip.range", spell.range);
                 var range = I18n.translate(rangeKey).replace("{range}", formattedNumber(spell.range));
                 lines.add(Text.literal(" ")
                         .append(Text.literal(range))
                         .formatted(Formatting.GOLD));
+
+                var cooldownDuration = SpellHelper.getCooldownDuration(player, spell, itemStack);
+                if (cooldownDuration > 0) {
+                    var cooldownKey = keyWithPlural("spell.tooltip.cooldown", cooldownDuration);
+                    var cooldown = I18n.translate(cooldownKey).replace("{duration}", formattedNumber(cooldownDuration));
+                    lines.add(Text.literal(" ")
+                            .append(Text.literal(cooldown))
+                            .formatted(Formatting.GOLD));
+                }
 
                 if (spell.cost != null && spell.cost.item_id != null && !spell.cost.item_id.isEmpty()) {
                     var item = Registry.ITEM.get(new Identifier(spell.cost.item_id));

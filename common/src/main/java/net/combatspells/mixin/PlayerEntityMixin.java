@@ -32,7 +32,7 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     public float getCurrentCastProgress() {
         var spell = getCurrentSpell();
         if (spell != null) {
-            return SpellHelper.getCastProgress(player(), player().getItemUseTimeLeft(), spell.cast.duration);
+            return SpellHelper.getCastProgress(player(), player().getItemUseTimeLeft(), spell);
         }
         return 0;
     }
