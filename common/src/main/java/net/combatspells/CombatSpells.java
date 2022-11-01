@@ -13,12 +13,17 @@ import net.combatspells.internals.SpellRegistry;
 import net.combatspells.network.ServerNetwork;
 import net.combatspells.runes.RuneCraftingBlock;
 import net.combatspells.runes.RuneCraftingRecipe;
+import net.combatspells.runes.RuneCraftingScreenHandler;
 import net.combatspells.runes.RuneItems;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.screen.ScreenHandlerContext;
+import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.tinyconfig.ConfigManager;
@@ -55,6 +60,7 @@ public class CombatSpells {
         Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(MOD_ID, RuneCraftingRecipe.ID), RuneCraftingRecipe.SERIALIZER);
         Registry.register(Registry.BLOCK, new Identifier(MOD_ID, RuneCraftingBlock.NAME), RuneCraftingBlock.INSTANCE);
         Registry.register(Registry.ITEM, new Identifier(MOD_ID, RuneCraftingBlock.NAME), new BlockItem(RuneCraftingBlock.INSTANCE, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
+        Registry.register(Registry.SCREEN_HANDLER, new Identifier(MOD_ID, RuneCraftingRecipe.ID), RuneCraftingScreenHandler.HANDLER_TYPE);
     }
 
     public static void registerEnchantments() {
