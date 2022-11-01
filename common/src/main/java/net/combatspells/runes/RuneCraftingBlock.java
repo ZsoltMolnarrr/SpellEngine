@@ -19,7 +19,6 @@ import net.minecraft.world.World;
 
 public class RuneCraftingBlock extends CraftingTableBlock {
     public static final String NAME = "rune_crafting";
-
     public static final RuneCraftingBlock INSTANCE = new RuneCraftingBlock(FabricBlockSettings.of(Material.REPAIR_STATION).hardness(2));
     private static final Text SCREEN_TITLE = Text.literal("Rune Crafting"); //Text.translatable("container.upgrade");
 
