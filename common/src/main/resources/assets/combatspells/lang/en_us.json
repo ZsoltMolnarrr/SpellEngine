@@ -2,6 +2,13 @@
   "enchantment.combatspells.spell_infinity" : "Spell Infinity",
   "enchantment.combatspells.spell_infinity.desc" : "Spells are free to cast",
 
+  "item.combatspells.arcane_rune": "Arcane Rune",
+  "item.combatspells.fire_rune": "Fire Rune",
+  "item.combatspells.frost_rune": "Frost Rune",
+  "item.combatspells.healing_rune": "Healing Rune",
+  "item.combatspells.lightning_rune": "Lightning Rune",
+  "item.combatspells.soul_rune": "Soul Rune",
+
   "spell.tooltip.when_used": "Casts spell when used:",
   "spell.tooltip.cast_time": "Cast Time: {duration} second",
   "spell.tooltip.cast_time.plural": "Cast Time: {duration} seconds",
@@ -14,7 +21,8 @@
 
   "spell.combatspells.fireball.name": "Fireball",
   "spell.combatspells.fireball.description": "Launches a ball of fire dealing {damage} fire damage on impact.",
-
+  "spell.combatspells.scorch.name": "Scorch",
+  "spell.combatspells.scorch.description": "Scorches the enemy for {damage} fire damage.",
   "spell.combatspells.frostbolt.name": "Frostbolt",
   "spell.combatspells.frostbolt.description": "Launches a ball of frost dealing {damage} frost damage and slowing the target on impact.",
 

@@ -29,6 +29,7 @@ public class FabricMod implements ModInitializer {
     public void onInitialize() {
         CombatSpells.init();
         CombatSpells.registerEnchantments();
+        CombatSpells.registerItems();
         SoundHelper.registerSounds();
     }
 }

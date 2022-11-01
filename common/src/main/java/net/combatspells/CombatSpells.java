@@ -10,6 +10,7 @@ import net.combatspells.config.ServerConfig;
 import net.combatspells.config.ServerConfigWrapper;
 import net.combatspells.entity.SpellProjectile;
 import net.combatspells.internals.SpellRegistry;
+import net.combatspells.item.RuneItems;
 import net.combatspells.network.ServerNetwork;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.entity.EntityType;
@@ -47,6 +48,12 @@ public class CombatSpells {
         enchantmentConfig.value.apply();
         for(var entry: Enchantments_CombatSpells.all.entrySet()) {
             Registry.register(Registry.ENCHANTMENT, entry.getKey(), entry.getValue());
+        }
+    }
+
+    public static void registerItems() {
+        for(var entry: RuneItems.all.entrySet()) {
+            Registry.register(Registry.ITEM, entry.getKey(), entry.getValue());
         }
     }
 }

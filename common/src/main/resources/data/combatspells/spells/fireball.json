@@ -82,7 +82,7 @@
   "cooldown_duration": 0.0,
   "cost": {
     "exhaust": 0.1,
-    "item_id": "minecraft:coal",
+    "item_id": "combatspells:fire_rune",
     "durability": 1
   }
 }
