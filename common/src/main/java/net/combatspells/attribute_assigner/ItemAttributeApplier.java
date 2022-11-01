@@ -51,7 +51,7 @@ public class ItemAttributeApplier {
                 Map<EquipmentSlot, Collection<EntityAttributeModifier>> slotSpecificAttributeCollections = new HashMap();
 
                 for(var slot: slots) {
-                    // The attribute modifiers from this item stack
+                    // The attribute modifiers from this runes stack
                     var attributeModifiers = itemStack.getAttributeModifiers(slot);
 
                     // The modifiers changing the given attribute

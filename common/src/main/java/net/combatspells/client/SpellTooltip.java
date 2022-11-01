@@ -69,7 +69,7 @@ public class SpellTooltip {
                     if (item != null) {
                         var ammoKey = keyWithPlural("spell.tooltip.ammo", 1); // Add variable ammo count later
                         var itemName = I18n.translate(item.getTranslationKey());
-                        var ammo = I18n.translate(ammoKey).replace("{item}", itemName);
+                        var ammo = I18n.translate(ammoKey).replace("{runes}", itemName);
                         var hasItem = SpellHelper.ammoForSpell(player, spell, itemStack).satisfied();
                         lines.add(Text.literal(" ")
                                 .append(Text.literal(ammo).formatted(hasItem ? Formatting.GREEN : Formatting.RED)));

@@ -1,4 +1,4 @@
-package net.combatspells.item;
+package net.combatspells.runes;
 
 import net.combatspells.CombatSpells;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;

@@ -10,10 +10,16 @@ import net.combatspells.config.ServerConfig;
 import net.combatspells.config.ServerConfigWrapper;
 import net.combatspells.entity.SpellProjectile;
 import net.combatspells.internals.SpellRegistry;
-import net.combatspells.item.RuneItems;
 import net.combatspells.network.ServerNetwork;
+import net.combatspells.runes.RuneCraftingBlock;
+import net.combatspells.runes.RuneCraftingRecipe;
+import net.combatspells.runes.RuneItems;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.entity.EntityType;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.tinyconfig.ConfigManager;
 
@@ -42,6 +48,13 @@ public class CombatSpells {
         AttributeAssigner.initialize();
 
         ServerNetwork.initializeHandlers();
+    }
+
+    public static void registerRuneCrafting() {
+        Registry.register(Registry.RECIPE_TYPE, new Identifier(MOD_ID, RuneCraftingRecipe.ID), RuneCraftingRecipe.TYPE);
+        Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(MOD_ID, RuneCraftingRecipe.ID), RuneCraftingRecipe.SERIALIZER);
+        Registry.register(Registry.BLOCK, new Identifier(MOD_ID, RuneCraftingBlock.NAME), RuneCraftingBlock.INSTANCE);
+        Registry.register(Registry.ITEM, new Identifier(MOD_ID, RuneCraftingBlock.NAME), new BlockItem(RuneCraftingBlock.INSTANCE, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
     }
 
     public static void registerEnchantments() {

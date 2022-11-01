@@ -2,6 +2,7 @@
   "enchantment.combatspells.spell_infinity" : "Spell Infinity",
   "enchantment.combatspells.spell_infinity.desc" : "Spells are free to cast",
 
+  "block.combatspells.rune_crafting": "Rune Crafting Altar",
   "item.combatspells.arcane_rune": "Arcane Rune",
   "item.combatspells.fire_rune": "Fire Rune",
   "item.combatspells.frost_rune": "Frost Rune",

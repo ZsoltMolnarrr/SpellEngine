@@ -97,7 +97,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
 
     // Start casting
 
-    // Can use item?
+    // Can use runes?
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
     private void use_HEAD(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
         var spell = spell();
@@ -108,7 +108,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
                     caster.castStart(spell);
                 }
             }
-            user.setCurrentHand(hand); // Set item in use
+            user.setCurrentHand(hand); // Set runes in use
             cir.setReturnValue(TypedActionResult.consume(itemStack()));
         } else {
             cir.setReturnValue(TypedActionResult.fail(itemStack()));
@@ -142,7 +142,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
 
     // Release casting
 
-    // finishUsing = finish consuming item
+    // finishUsing = finish consuming runes
 
     @Inject(method = "onStoppedUsing", at = @At("HEAD"), cancellable = true)
     private void onStoppedUsing_HEAD(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {

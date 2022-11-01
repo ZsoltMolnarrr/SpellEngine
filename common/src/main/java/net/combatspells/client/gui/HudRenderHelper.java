@@ -64,9 +64,9 @@ public class HudRenderHelper {
         }
     }
 
-    // Example: `combatspells:fireball` -> `combatspells:textures/spells/fireball.png`
+    // Example: `combatspells:fireball` -> `combatspells:textures/spell/fireball.png`
     private static String spellIconTexture(Identifier spellId) {
-        return spellId.getNamespace() + ":textures/spells/" + spellId.getPath() + ".png";
+        return spellId.getNamespace() + ":textures/spell/" + spellId.getPath() + ".png";
     }
 
     public static class TargetWidget {
