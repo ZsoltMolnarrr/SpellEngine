@@ -1,6 +1,7 @@
 package net.combatspells.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.combatspells.CombatSpells;
 import net.combatspells.runes.RuneCraftingScreenHandler;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -12,7 +13,7 @@ import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
 public class RuneCraftingScreen extends ForgingScreen<RuneCraftingScreenHandler> {
-    private static final Identifier TEXTURE = new Identifier("textures/gui/container/smithing.png");
+    private static final Identifier TEXTURE = new Identifier(CombatSpells.MOD_ID, "textures/gui/rune_crafting.png");
 
     public RuneCraftingScreen(RuneCraftingScreenHandler handler, PlayerInventory playerInventory, Text title) {
         super(handler, playerInventory, title, TEXTURE);

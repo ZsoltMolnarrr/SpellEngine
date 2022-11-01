@@ -1,4 +1,4 @@
-package net.combatspells.client.render;
+package net.combatspells.client.projectile;
 
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;

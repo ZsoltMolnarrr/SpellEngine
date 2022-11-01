@@ -71,7 +71,6 @@ public class RuneCraftingScreenHandler extends ForgingScreenHandler {
             this.output.setLastRecipe(this.currentRecipe);
             this.output.setStack(0, itemStack);
         }
-
     }
 
     protected boolean isUsableAsAddition(ItemStack stack) {

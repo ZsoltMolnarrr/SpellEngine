@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import net.combatspells.CombatSpells;
 import net.combatspells.api.SpellHelper;
 import net.combatspells.api.spell.Spell;
-import net.combatspells.client.render.FlyingSpellEntity;
+import net.combatspells.client.projectile.FlyingSpellEntity;
 import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.VectorHelper;
 import net.minecraft.entity.Entity;

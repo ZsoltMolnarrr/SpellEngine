@@ -2,12 +2,11 @@ package net.combatspells.fabric.client;
 
 import net.combatspells.CombatSpells;
 import net.combatspells.client.SpellTooltip;
-import net.combatspells.client.render.SpellProjectileRenderer;
+import net.combatspells.client.projectile.SpellProjectileRenderer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.combatspells.client.CombatSpellsClient;
 import net.combatspells.client.gui.HudRenderHelper;

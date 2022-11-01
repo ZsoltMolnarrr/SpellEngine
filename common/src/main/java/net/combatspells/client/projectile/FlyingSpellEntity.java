@@ -1,4 +1,4 @@
-package net.combatspells.client.render;
+package net.combatspells.client.projectile;
 
 import net.combatspells.api.spell.Spell;
 import net.minecraft.entity.FlyingItemEntity;
