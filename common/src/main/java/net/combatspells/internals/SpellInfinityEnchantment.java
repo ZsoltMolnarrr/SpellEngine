@@ -1,5 +1,6 @@
 package net.combatspells.internals;
 
+import net.combatspells.CombatSpells;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentTarget;
 import net.minecraft.enchantment.MendingEnchantment;
@@ -28,6 +29,9 @@ public class SpellInfinityEnchantment extends Enchantment {
     }
 
     public boolean isAcceptableItem(ItemStack stack) {
+        if(!CombatSpells.config.spell_cost_item_allowed) {
+            return false;
+        }
         var object = (Object)stack;
         if (object instanceof SpellCasterItemStack casterItemStack) {
             return casterItemStack.getSpell() != null;
