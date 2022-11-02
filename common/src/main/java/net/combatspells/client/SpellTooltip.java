@@ -1,6 +1,7 @@
 package net.combatspells.client;
 
 import com.ibm.icu.text.DecimalFormat;
+import net.combatspells.CombatSpells;
 import net.combatspells.api.SpellHelper;
 import net.combatspells.internals.SpellCasterItemStack;
 import net.combatspells.internals.SpellRegistry;
@@ -64,7 +65,12 @@ public class SpellTooltip {
                             .formatted(Formatting.GOLD));
                 }
 
-                if (spell.cost != null && spell.cost.item_id != null && !spell.cost.item_id.isEmpty()) {
+                var showItemCost = true;
+                var config = CombatSpells.config;
+                if (config != null) {
+                    showItemCost = config.spell_cost_item_allowed;
+                }
+                if (showItemCost && spell.cost != null && spell.cost.item_id != null && !spell.cost.item_id.isEmpty()) {
                     var item = Registry.ITEM.get(new Identifier(spell.cost.item_id));
                     if (item != null) {
                         var ammoKey = keyWithPlural("spell.tooltip.ammo", 1); // Add variable ammo count later
