@@ -1,0 +1,13 @@
+{
+  "type": "combatspells:rune_crafting",
+  "base": {
+    "tag": "combatspells:rune_crafting/base/stone"
+  },
+  "addition": {
+    "tag": "combatspells:rune_crafting/reagent/frost_small"
+  },
+  "result": {
+    "count": 8,
+    "item": "combatspells:frost_rune"
+  }
+}

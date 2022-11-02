@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "#": {
+      "item": "minecraft:polished_andesite"
+    },
+    "P": {
+      "item": "minecraft:ender_pearl"
+    }
+  },
+  "pattern": [
+    "   ",
+    "#P#",
+    "###"
+  ],
+  "result": {
+    "item": "combatspells:rune_crafting"
+  }
+}

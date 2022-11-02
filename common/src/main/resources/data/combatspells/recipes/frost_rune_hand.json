@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "tag": "combatspells:rune_crafting/base/stone"
+    },
+    {
+      "tag": "combatspells:rune_crafting/reagent/frost_small"
+    }
+  ],
+  "result": {
+    "count": 2,
+    "item": "combatspells:frost_rune"
+  }
+}
