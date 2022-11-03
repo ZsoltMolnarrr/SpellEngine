@@ -18,14 +18,13 @@ import net.minecraft.world.World;
 public class RuneCraftingBlock extends CraftingTableBlock {
     public static final String NAME = "rune_crafting";
     public static final RuneCraftingBlock INSTANCE = new RuneCraftingBlock(FabricBlockSettings.of(Material.REPAIR_STATION).hardness(2));
-    private static final Text SCREEN_TITLE = Text.literal("Rune Crafting"); //Text.translatable("container.upgrade");
+    private static final Text SCREEN_TITLE = Text.translatable("gui.combatspells.rune_crafting");
 
     public RuneCraftingBlock(Settings settings) {
         super(settings);
     }
 
     public NamedScreenHandlerFactory createScreenHandlerFactory(BlockState state, World world, BlockPos pos) {
-//        return RuneCraftingScreenHandler.HANDLER_TYPE.factor
         return new SimpleNamedScreenHandlerFactory((syncId, inventory, player) -> {
             return new RuneCraftingScreenHandler(syncId, inventory, ScreenHandlerContext.create(world, pos));
         }, SCREEN_TITLE);

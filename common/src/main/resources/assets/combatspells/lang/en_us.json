@@ -27,6 +27,7 @@
   "spell.combatspells.frostbolt.name": "Frostbolt",
   "spell.combatspells.frostbolt.description": "Launches a ball of frost dealing {damage} frost damage and slowing the target on impact.",
 
+  "gui.combatspells.rune_crafting" : "Rune Crafting",
   "gui.combatspells.config_menu" : "Combat Spells config",
   "gui.combatspells.close" : "Close",
   "gui.combatspells.settings" : "Settings",
