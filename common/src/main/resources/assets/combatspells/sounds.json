@@ -1,4 +1,9 @@
 {
+  "rune_crafting": {
+    "sounds": [
+      "combatspells:rune_crafting"
+    ]
+  },
   "casting_arcane": {
     "sounds": [
       "combatspells:casting_arcane"

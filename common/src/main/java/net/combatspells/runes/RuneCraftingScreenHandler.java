@@ -1,6 +1,6 @@
 package net.combatspells.runes;
 
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+import net.combatspells.CombatSpells;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -10,6 +10,9 @@ import net.minecraft.screen.ForgingScreenHandler;
 import net.minecraft.screen.ScreenHandlerContext;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,9 +53,14 @@ public class RuneCraftingScreenHandler extends ForgingScreenHandler {
         this.output.unlockLastRecipe(player);
         this.decrementStack(0);
         this.decrementStack(1);
-//        this.context.run((world, pos) -> {
-//            world.syncWorldEvent(WorldEvents.SMITHING_TABLE_USED, pos, 0);
-//        });
+
+        var runeCrafter = (RuneCrafter)player;
+        if (runeCrafter.getLastCrafted() < 1) {
+            return;
+        }
+        runeCrafter.setLastCrafted(0);
+        SoundEvent runeCraftingSound = new SoundEvent(new Identifier(CombatSpells.MOD_ID, "rune_crafting"));
+        world.playSound(player.getX(), player.getY(), player.getZ(), runeCraftingSound, SoundCategory.BLOCKS, world.random.nextFloat() * 0.1F + 0.9F, 1, true);
     }
 
     private void decrementStack(int slot) {
