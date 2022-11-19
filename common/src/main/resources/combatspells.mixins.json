@@ -14,7 +14,8 @@
     "client.AbstractClientPlayerEntityMixin",
     "client.ClientPlayerEntityMixin",
     "client.EntityMixin",
-    "client.LivingEntityMixin"
+    "client.LivingEntityMixin",
+    "client.LivingEntityRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
