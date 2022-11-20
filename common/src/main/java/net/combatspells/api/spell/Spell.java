@@ -25,18 +25,25 @@ public class Spell {
         public static class Target { public Target() { }
             public Type type;
             public enum Type {
-                PROJECTILE, CURSOR, AREA
+                AREA, BEAM, CURSOR, PROJECTILE
             }
-            public ProjectileData projectile;
-            public Cursor cursor;
-            public static class Cursor { public Cursor() { }
-                public boolean use_caster_as_fallback = false;
-            }
+
             public Area area;
             public static class Area { public Area() { }
                 public float horizontal_range_multiplier = 1F;
                 public float vertical_range_multiplier = 1F;
             }
+
+            public Beam beam;
+            public static class Beam { public Beam() { }
+            }
+
+            public Cursor cursor;
+            public static class Cursor { public Cursor() { }
+                public boolean use_caster_as_fallback = false;
+            }
+
+            public ProjectileData projectile;
         }
         public String animation;
         public ParticleBatch[] particles;

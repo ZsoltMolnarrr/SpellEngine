@@ -1,5 +1,6 @@
 package net.combatspells.mixin.client;
 
+import net.combatspells.internals.SpellCasterEntity;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
@@ -32,14 +33,15 @@ public class LivingEntityRendererMixin {
 //        Vec3d targetPos = livingEntity.getPos().add(2,2,2); // this.fromLerpedPosition(livingEntity.getPos().add(2,2,2), (double)casterHeight, g);
 //        Vec3d targetPos = this.fromLerpedPosition(livingEntity, new Vec3d(2,2,2), casterHeight, g);
 
-        Vec3d casterPos = livingEntity.getEyePos();
-
-        var lookVector = Vec3d.fromPolar(livingEntity.getPitch(), livingEntity.getYaw()).multiply(3);
-
-        Vec3d targetPos = casterPos.add(lookVector);
-        var time = (float)livingEntity.world.getTime() + g;
-        renderBeam(matrixStack, vertexConsumerProvider, casterPos, targetPos, offset, time);
-
+        if (livingEntity instanceof SpellCasterEntity caster) {
+            if (caster.isBeaming()) {
+                Vec3d casterPos = livingEntity.getEyePos();
+                var lookVector = Vec3d.fromPolar(livingEntity.getPitch(), livingEntity.getYaw()).multiply(3);
+                Vec3d targetPos = casterPos.add(lookVector);
+                var time = (float)livingEntity.world.getTime() + g;
+                renderBeam(matrixStack, vertexConsumerProvider, casterPos, targetPos, offset, time);
+            }
+        }
 //        matrixStack.push();
 //        matrixStack.translate(0.0, (double)casterHeight, 0.0);
 //
@@ -149,9 +151,9 @@ public class LivingEntityRendererMixin {
         float q = j * 0.05F * -1.5F;
         float jj = h * h;
 
-        int r = 64 + (int)(jj * 191.0F);
-        int g = 32 + (int)(jj * 191.0F);
-        int b = 128 - (int)(jj * 64.0F);
+        int r = 64 + (int)(1 * 191.0F);
+        int g = 32 + (int)(1 * 191.0F);
+        int b = 128 - (int)(1 * 64.0F);
         float v = 0.2F;
         float w = 0.282F;
         float x = MathHelper.cos(q + 2.3561945F) * 0.282F;
@@ -170,8 +172,7 @@ public class LivingEntityRendererMixin {
         float ak = MathHelper.sin(q + 1.5707964F) * 0.2F;
         float al = MathHelper.cos(q + 4.712389F) * 0.2F;
         float am = MathHelper.sin(q + 4.712389F) * 0.2F;
-        float ao = 0.0F;
-        float ap = 0.4999F;
+
         float aq = -1.0F + k;
         float ar = m * 2.5F + aq;
         VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(LAYER);
@@ -198,6 +199,12 @@ public class LivingEntityRendererMixin {
     }
 
     private static void vertex(VertexConsumer vertexConsumer, Matrix4f positionMatrix, Matrix3f normalMatrix, float x, float y, float z, int red, int green, int blue, float u, float v) {
-        vertexConsumer.vertex(positionMatrix, x, y, z).color(red, green, blue, 255).texture(u, v).overlay(OverlayTexture.DEFAULT_UV).light(15728880).normal(normalMatrix, 0.0F, 1.0F, 0.0F).next();
+        vertexConsumer.vertex(positionMatrix, x, y, z)
+                .color(red, green, blue, 255)
+                .texture(u, v)
+                .overlay(OverlayTexture.DEFAULT_UV)
+//                .light(240, 240)
+                .light(15728880)
+                .normal(normalMatrix, 0.0F, 1.0F, 0.0F).next();
     }
 }

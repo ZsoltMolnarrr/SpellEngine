@@ -7,4 +7,5 @@ public interface SpellCasterEntity {
     Identifier getCurrentSpellId();
     Spell getCurrentSpell();
     float getCurrentCastProgress();
+    boolean isBeaming();
 }

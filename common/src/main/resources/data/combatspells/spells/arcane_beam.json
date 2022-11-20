@@ -1,0 +1,70 @@
+{
+  "range": 32.0,
+  "school": "ARCANE",
+  "cast": {
+    "duration": 1.0,
+    "animation": "combatspells:one_handed_projectile_charge",
+    "sound": {
+      "id": "combatspells:casting_arcane",
+      "volume": 1.0,
+      "pitch": 1.0,
+      "randomness": 0.1
+    },
+    "particles": [
+      {
+        "particle_id": "magic",
+        "shape": "PIPE",
+        "origin": "FEET",
+        "count": 1.0,
+        "min_speed": 0.05,
+        "max_speed": 0.1
+      }
+    ]
+  },
+  "on_release": {
+    "target": {
+      "type": "BEAM",
+      "beam": {
+      }
+    },
+    "animation": "combatspells:one_handed_projectile_release",
+    "sound": {
+      "id": "combatspells:release_arcane",
+      "volume": 1.0,
+      "pitch": 1.0,
+      "randomness": 0.1
+    }
+  },
+  "on_impact": [
+    {
+      "action": {
+        "type": "DAMAGE",
+        "damage": {
+          "multiplier": 1.0
+        }
+      },
+      "particles": [
+        {
+          "particle_id": "magic",
+          "shape": "SPHERE",
+          "origin": "CENTER",
+          "count": 30.0,
+          "min_speed": 0.1,
+          "max_speed": 0.2
+        }
+      ],
+      "sound": {
+        "id": "combatspells:impact_fireball",
+        "volume": 1.0,
+        "pitch": 1.0,
+        "randomness": 0.1
+      }
+    }
+  ],
+  "cooldown_duration": 3.0,
+  "cost": {
+    "exhaust": 0.1,
+    "item_id": "minecraft:coal",
+    "durability": 1
+  }
+}

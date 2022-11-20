@@ -7,17 +7,22 @@ import net.combatspells.internals.SpellCasterClient;
 import net.combatspells.network.Packets;
 import net.combatspells.utils.TargetHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ClientPlayerEntity.class)
 public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
+    @Shadow @Final public ClientPlayNetworkHandler networkHandler;
     private Entity target;
 
     private ClientPlayerEntity player() {
@@ -128,9 +133,17 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 //    }
 
     @Inject(method = "tick", at = @At("TAIL"))
-    public void post_Tick(CallbackInfo ci) {
-        if (!player().isUsingItem()) {
+    public void tick_TAIL(CallbackInfo ci) {
+        var player = player();
+        if (!player.isUsingItem()) {
             target = null;
+        }
+        if (isBeaming()) {
+            networkHandler.sendPacket(new PlayerMoveC2SPacket.Full(
+                    player.getX(), player.getY(), player.getZ(),
+                    player.getYaw(), player.getPitch(),
+                    player.isOnGround())
+            );
         }
     }
 }

@@ -13,6 +13,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static net.combatspells.api.spell.Spell.Release.Target.Type.BEAM;
+
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
     private PlayerEntity player() {
@@ -53,11 +55,16 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
-    public void post_Tick(CallbackInfo ci) {
+    public void tick_TAIL(CallbackInfo ci) {
         lastRuneCrafted += 1;
         if (player().world.isClient) {
             ((AnimatablePlayer)player()).updateCastAnimationsOnTick();
         }
+    }
+
+    public boolean isBeaming() {
+        var spell = getCurrentSpell();
+        return spell != null && spell.on_release != null && spell.on_release.target.type == BEAM;
     }
 
     // MARK: RuneCrafter
