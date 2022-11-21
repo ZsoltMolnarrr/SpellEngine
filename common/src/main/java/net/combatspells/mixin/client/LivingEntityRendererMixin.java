@@ -2,6 +2,7 @@ package net.combatspells.mixin.client;
 
 import net.combatspells.internals.SpellCasterEntity;
 import net.combatspells.internals.SpellHelper;
+import net.combatspells.utils.TargetHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
@@ -33,6 +34,8 @@ public class LivingEntityRendererMixin {
 
         if (livingEntity instanceof SpellCasterEntity caster) {
             if (caster.isBeaming()) {
+                var time = (float)livingEntity.world.getTime() + delta;
+                Vec3d from = livingEntity.getPos().add(0, launchHeight, 0);
                 var lookVector = Vec3d.ZERO;
                 if (livingEntity == MinecraftClient.getInstance().player) {
                     // No lerp for local player
@@ -41,10 +44,9 @@ public class LivingEntityRendererMixin {
                     lookVector = Vec3d.fromPolar(livingEntity.prevPitch, livingEntity.prevYaw);
                     lookVector = lookVector.lerp(Vec3d.fromPolar(livingEntity.getPitch(), livingEntity.getYaw()), delta);
                 }
-                lookVector = lookVector.multiply(3);
-                var time = (float)livingEntity.world.getTime() + delta;
-
-                Vec3d from = livingEntity.getPos().add(0, launchHeight, 0);
+                lookVector = lookVector.normalize();
+                var length = TargetHelper.beamLength(livingEntity, lookVector, 32);
+                lookVector = lookVector.multiply(length);
                 Vec3d to = from.add(lookVector);
 
                 renderBeam(matrixStack, vertexConsumerProvider, from, to, offset, time);

@@ -2,6 +2,7 @@ package net.combatspells.utils;
 
 import net.combatspells.api.spell.Spell;
 import net.combatspells.internals.SpellCasterClient;
+import net.combatspells.internals.SpellHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -115,5 +116,15 @@ public class TargetHelper {
             return ((SpellCasterClient) clientPlayer).getCurrentTarget() == entity;
         }
         return false;
+    }
+
+    public static float beamLength(LivingEntity caster, Vec3d direction, float max) {
+        var start = SpellHelper.launchPoint(caster, 0.15F);
+        var end = start.add(direction.multiply(max));
+        var hit = caster.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, caster));
+        if (hit.getType() == HitResult.Type.BLOCK) {
+            return (float) start.distanceTo(hit.getPos()) - 1F;
+        }
+        return max;
     }
 }
