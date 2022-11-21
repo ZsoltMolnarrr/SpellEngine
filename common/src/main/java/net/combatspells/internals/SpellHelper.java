@@ -1,6 +1,7 @@
-package net.combatspells.api;
+package net.combatspells.internals;
 
 import net.combatspells.CombatSpells;
+import net.combatspells.api.Enchantments_CombatSpells;
 import net.combatspells.api.spell.Spell;
 import net.combatspells.entity.SpellProjectile;
 import net.combatspells.internals.SpellRegistry;
@@ -181,7 +182,7 @@ public class SpellHelper {
 
     public static Vec3d launchPoint(LivingEntity caster, float forward) {
         Vec3d look = caster.getRotationVector().multiply(forward * caster.getScaleFactor());
-        return caster.getEyePos().subtract(0, launchHeight(caster), 0).add(look);
+        return caster.getPos().add(0, launchHeight(caster), 0).add(look);
     }
 
 

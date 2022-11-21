@@ -1,6 +1,6 @@
 package net.combatspells.mixin.client;
 
-import net.combatspells.api.SpellHelper;
+import net.combatspells.internals.SpellHelper;
 import net.combatspells.api.spell.Spell;
 import net.combatspells.client.CombatSpellsClient;
 import net.combatspells.internals.SpellCasterClient;
