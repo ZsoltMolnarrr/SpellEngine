@@ -169,11 +169,21 @@ public class SpellHelper {
         }
     }
 
-    public static Vec3d launchPoint(LivingEntity caster) {
-        double shoulderHeight = caster.getHeight() * 0.15 * caster.getScaleFactor();
-        Vec3d look = caster.getRotationVector().multiply(0.5 * caster.getScaleFactor());
-        return caster.getEyePos().subtract(0, shoulderHeight, 0).add(look);
+    public static float launchHeight(LivingEntity livingEntity) {
+        var eyeHeight = livingEntity.getStandingEyeHeight();
+        var shoulderDistance = livingEntity.getHeight() * 0.15;
+        return (float) ((eyeHeight - shoulderDistance) * livingEntity.getScaleFactor());
     }
+
+    public static Vec3d launchPoint(LivingEntity caster) {
+        return launchPoint(caster, 0.5F);
+    }
+
+    public static Vec3d launchPoint(LivingEntity caster, float forward) {
+        Vec3d look = caster.getRotationVector().multiply(forward * caster.getScaleFactor());
+        return caster.getEyePos().subtract(0, launchHeight(caster), 0).add(look);
+    }
+
 
     private static void shootProjectile(World world, LivingEntity caster, Entity target, Spell spell) {
         // Send target packet

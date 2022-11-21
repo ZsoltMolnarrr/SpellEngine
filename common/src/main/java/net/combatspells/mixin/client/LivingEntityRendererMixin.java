@@ -1,5 +1,6 @@
 package net.combatspells.mixin.client;
 
+import net.combatspells.api.SpellHelper;
 import net.combatspells.internals.SpellCasterEntity;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
@@ -26,8 +27,7 @@ public class LivingEntityRendererMixin {
 
     @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("TAIL"))
     private void render_TAIL(LivingEntity livingEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
-        var casterHeight = livingEntity.getStandingEyeHeight();
-        var offset = new Vec3d(0.0, (double)casterHeight, 0.0);
+        var offset = new Vec3d(0.0, SpellHelper.launchHeight(livingEntity), 0.15);
 //        Vec3d casterPos = this.fromLerpedPosition(livingEntity, (double)casterHeight, g);
 //        System.out.println("Render beam start: " + casterPos);
 //        Vec3d targetPos = livingEntity.getPos().add(2,2,2); // this.fromLerpedPosition(livingEntity.getPos().add(2,2,2), (double)casterHeight, g);
@@ -129,7 +129,7 @@ public class LivingEntityRendererMixin {
     private static void renderBeam(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider,
                                    Vec3d from, Vec3d to, Vec3d offset, float time) {
         matrixStack.push();
-        matrixStack.translate(offset.x, offset.y, offset.z);
+        matrixStack.translate(0, offset.y, 0);
 
         Vec3d beamVector = to.subtract(from);
         float m = (float)(beamVector.length() + 1.0);
@@ -143,6 +143,7 @@ public class LivingEntityRendererMixin {
         float o = (float)Math.atan2(beamVector.z, beamVector.x);
         matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion((1.5707964F - o) * 57.295776F));
         matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(n * 57.295776F));
+        matrixStack.translate(0, offset.z, 0); // At this point everything is so rotated, we need to translate along y to move along z
 
         float h = 1; // guardianEntity.getBeamProgress(g);
         float j = time;
@@ -203,7 +204,6 @@ public class LivingEntityRendererMixin {
                 .color(red, green, blue, 255)
                 .texture(u, v)
                 .overlay(OverlayTexture.DEFAULT_UV)
-//                .light(240, 240)
                 .light(15728880)
                 .normal(normalMatrix, 0.0F, 1.0F, 0.0F).next();
     }
