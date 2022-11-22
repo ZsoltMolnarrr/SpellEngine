@@ -14,6 +14,7 @@
     "client.AbstractClientPlayerEntityMixin",
     "client.ClientPlayerEntityMixin",
     "client.EntityMixin",
+    "client.EntityRenderMixin",
     "client.LivingEntityMixin",
     "client.LivingEntityRendererMixin"
   ],
