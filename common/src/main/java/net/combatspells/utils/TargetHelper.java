@@ -123,7 +123,7 @@ public class TargetHelper {
         var end = start.add(direction.multiply(max));
         var hit = caster.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, caster));
         if (hit.getType() == HitResult.Type.BLOCK) {
-            return (float) start.distanceTo(hit.getPos()) - 1F; // We need to subtract exactly `1`, to make the collision accurate. No idea why
+            return (float) start.distanceTo(hit.getPos()); // We need to subtract exactly `1`, to make the collision accurate. No idea why
         }
         return max;
     }

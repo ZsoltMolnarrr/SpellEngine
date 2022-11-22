@@ -4,10 +4,7 @@ import net.combatspells.internals.SpellCasterEntity;
 import net.combatspells.internals.SpellHelper;
 import net.combatspells.utils.TargetHelper;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.*;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
@@ -28,7 +25,7 @@ public class LivingEntityRendererMixin {
     }
 
     @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("TAIL"))
-    private void render_TAIL(LivingEntity livingEntity, float f, float delta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
+    private void render_TAIL(LivingEntity livingEntity, float f, float delta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, CallbackInfo ci) {
         var launchHeight = SpellHelper.launchHeight(livingEntity);
         var offset = new Vec3d(0.0, launchHeight, 0.15);
 
@@ -49,21 +46,18 @@ public class LivingEntityRendererMixin {
                 lookVector = lookVector.multiply(length);
                 Vec3d to = from.add(lookVector);
 
-                renderBeam(matrixStack, vertexConsumerProvider, from, to, offset, time);
+                renderBeam(matrixStack, vertexConsumerProvider, from, to, offset, time, light);
             }
         }
     }
 
     private static void renderBeam(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider,
-                                   Vec3d from, Vec3d to, Vec3d offset, float time) {
+                                   Vec3d from, Vec3d to, Vec3d offset, float time, int light) {
         matrixStack.push();
         matrixStack.translate(0, offset.y, 0);
 
         Vec3d beamVector = to.subtract(from);
-        float m = (float)(beamVector.length() + 1.0);
-//        beamVector = beamVector.normalize();
-//        float n = (float)Math.acos(beamVector.y);
-//        float o = (float)Math.atan2(beamVector.z, beamVector.x);
+        float m = (float)beamVector.length();
 
         // Perform some rotation
         beamVector = beamVector.normalize();
@@ -108,31 +102,34 @@ public class LivingEntityRendererMixin {
         MatrixStack.Entry entry = matrixStack.peek();
         Matrix4f matrix4f = entry.getPositionMatrix();
         Matrix3f matrix3f = entry.getNormalMatrix();
-        vertex(vertexConsumer, matrix4f, matrix3f, af, m, ag, r, g, b, 0.4999F, ar);
-        vertex(vertexConsumer, matrix4f, matrix3f, af, 0.0F, ag, r, g, b, 0.4999F, aq);
-        vertex(vertexConsumer, matrix4f, matrix3f, ah, 0.0F, ai, r, g, b, 0.0F, aq);
-        vertex(vertexConsumer, matrix4f, matrix3f, ah, m, ai, r, g, b, 0.0F, ar);
-        vertex(vertexConsumer, matrix4f, matrix3f, aj, m, ak, r, g, b, 0.4999F, ar);
-        vertex(vertexConsumer, matrix4f, matrix3f, aj, 0.0F, ak, r, g, b, 0.4999F, aq);
-        vertex(vertexConsumer, matrix4f, matrix3f, al, 0.0F, am, r, g, b, 0.0F, aq);
-        vertex(vertexConsumer, matrix4f, matrix3f, al, m, am, r, g, b, 0.0F, ar);
+        vertex(vertexConsumer, matrix4f, matrix3f, af, m, ag, r, g, b, 0.4999F, ar, light);
+        vertex(vertexConsumer, matrix4f, matrix3f, af, 0.0F, ag, r, g, b, 0.4999F, aq, light);
+        vertex(vertexConsumer, matrix4f, matrix3f, ah, 0.0F, ai, r, g, b, 0.0F, aq, light);
+        vertex(vertexConsumer, matrix4f, matrix3f, ah, m, ai, r, g, b, 0.0F, ar, light);
+        vertex(vertexConsumer, matrix4f, matrix3f, aj, m, ak, r, g, b, 0.4999F, ar, light);
+        vertex(vertexConsumer, matrix4f, matrix3f, aj, 0.0F, ak, r, g, b, 0.4999F, aq, light);
+        vertex(vertexConsumer, matrix4f, matrix3f, al, 0.0F, am, r, g, b, 0.0F, aq, light);
+        vertex(vertexConsumer, matrix4f, matrix3f, al, m, am, r, g, b, 0.0F, ar, light);
         float as = 0.0F;
 
-        vertex(vertexConsumer, matrix4f, matrix3f, x, m, y, r, g, b, 0.5F, as + 0.5F);
-        vertex(vertexConsumer, matrix4f, matrix3f, z, m, aa, r, g, b, 1.0F, as + 0.5F);
-        vertex(vertexConsumer, matrix4f, matrix3f, ad, m, ae, r, g, b, 1.0F, as);
-        vertex(vertexConsumer, matrix4f, matrix3f, ab, m, ac, r, g, b, 0.5F, as);
+        vertex(vertexConsumer, matrix4f, matrix3f, x, m, y, r, g, b, 0.5F, as + 0.5F, light);
+        vertex(vertexConsumer, matrix4f, matrix3f, z, m, aa, r, g, b, 1.0F, as + 0.5F, light);
+        vertex(vertexConsumer, matrix4f, matrix3f, ad, m, ae, r, g, b, 1.0F, as, light);
+        vertex(vertexConsumer, matrix4f, matrix3f, ab, m, ac, r, g, b, 0.5F, as, light);
 
         matrixStack.pop();
 
     }
 
-    private static void vertex(VertexConsumer vertexConsumer, Matrix4f positionMatrix, Matrix3f normalMatrix, float x, float y, float z, int red, int green, int blue, float u, float v) {
+    private static void vertex(VertexConsumer vertexConsumer, Matrix4f positionMatrix, Matrix3f normalMatrix, float x, float y, float z, int red, int green, int blue, float u, float v, int light) {
         vertexConsumer.vertex(positionMatrix, x, y, z)
                 .color(red, green, blue, 255)
                 .texture(u, v)
                 .overlay(OverlayTexture.DEFAULT_UV)
-                .light(15728880)
+                .light(LightmapTextureManager.MAX_LIGHT_COORDINATE)
+//                .light(light)
+//                .light(15728880)
+//                .light(0)
                 .normal(normalMatrix, 0.0F, 1.0F, 0.0F).next();
     }
 }
