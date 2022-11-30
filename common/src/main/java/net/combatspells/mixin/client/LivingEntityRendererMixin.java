@@ -1,5 +1,7 @@
 package net.combatspells.mixin.client;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.combatspells.client.beam.DummyBeamRenderer;
 import net.combatspells.internals.SpellCasterEntity;
 import net.combatspells.internals.SpellHelper;
 import net.combatspells.utils.TargetHelper;
@@ -105,14 +107,26 @@ public class LivingEntityRendererMixin {
 
         matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(time * 2.25F - 45.0F));
 
+//        RenderSystem.disableCull();
+//        RenderSystem.enableBlend();
+
         var length = m;
         var textureId = BEAM_TEXTURE;
         var innerRadius = 0.15F;
-        renderBeamLayer(matrixStack,
-                vertexConsumerProvider.getBuffer(LAYER),
-                r, g, b, 255F,
-                0, length, 0.0F, innerRadius, innerRadius, 0.0F, -(1F)* innerRadius, 0.0F, 0.0F, -(1F)* innerRadius, 0.0F, 1.0F,
-                0F, 1F);
+//        DummyBeamRenderer.renderBeamLayer(matrixStack,
+//                vertexConsumerProvider.getBuffer(LAYER),
+//                r, g, b, 255,
+//                0, length,
+//                0, 0, innerRadius, innerRadius, 0.0F, -(1F)* innerRadius, 0.0F, 0.0F,
+//                -(1F)* innerRadius, 0.0F, 1.0F, 0F);
+
+        DummyBeamRenderer.renderBeam(matrixStack, vertexConsumerProvider,
+                255, 255, 255,1,
+                0, length, 0.15F);
+
+
+//        RenderSystem.disableBlend();
+//        RenderSystem.enableCull();
 
 
 
@@ -139,37 +153,5 @@ public class LivingEntityRendererMixin {
 //        vertex(vertexConsumer, matrix4f, matrix3f, ab, m, ac, r, g, b, 0.5F, as, light);
 
         matrixStack.pop();
-
-    }
-
-    private static void renderBeamLayer(MatrixStack matrices, VertexConsumer vertices, float red, float green, float blue, float alpha, int yOffset, float height, float x1, float z1, float x2, float z2, float x3, float z3, float x4, float z4, float u1, float u2, float v1, float v2) {
-        MatrixStack.Entry entry = matrices.peek();
-        Matrix4f matrix4f = entry.getPositionMatrix();
-        Matrix3f matrix3f = entry.getNormalMatrix();
-        renderBeamFace(matrix4f, matrix3f, vertices, red, green, blue, alpha, yOffset, height, x1, z1, x2, z2, u1, u2, v1, v2);
-        renderBeamFace(matrix4f, matrix3f, vertices, red, green, blue, alpha, yOffset, height, x4, z4, x3, z3, u1, u2, v1, v2);
-        renderBeamFace(matrix4f, matrix3f, vertices, red, green, blue, alpha, yOffset, height, x2, z2, x4, z4, u1, u2, v1, v2);
-        renderBeamFace(matrix4f, matrix3f, vertices, red, green, blue, alpha, yOffset, height, x3, z3, x1, z1, u1, u2, v1, v2);
-    }
-
-    private static void renderBeamFace(Matrix4f positionMatrix, Matrix3f normalMatrix, VertexConsumer vertices, float red, float green, float blue, float alpha, int yOffset, float height, float x1, float z1, float x2, float z2, float u1, float u2, float v1, float v2) {
-        renderBeamVertex(positionMatrix, normalMatrix, vertices, red, green, blue, alpha, height, x1, z1, u2, v1);
-        renderBeamVertex(positionMatrix, normalMatrix, vertices, red, green, blue, alpha, yOffset, x1, z1, u2, v2);
-        renderBeamVertex(positionMatrix, normalMatrix, vertices, red, green, blue, alpha, yOffset, x2, z2, u1, v2);
-        renderBeamVertex(positionMatrix, normalMatrix, vertices, red, green, blue, alpha, height, x2, z2, u1, v1);
-    }
-
-    /**
-     * @param v the top-most coordinate of the texture region
-     * @param u the left-most coordinate of the texture region
-     */
-    private static void renderBeamVertex(Matrix4f positionMatrix, Matrix3f normalMatrix, VertexConsumer vertices, float red, float green, float blue, float alpha, float y, float x, float z, float u, float v) {
-        vertices.vertex(positionMatrix, x, y, z)
-                .color(red, green, blue, alpha)
-                .texture(u, v)
-                .overlay(OverlayTexture.DEFAULT_UV)
-                .light(15728880)
-                .normal(normalMatrix, 0.0F, 1.0F, 0.0F)
-                .next();
     }
 }
