@@ -15,8 +15,10 @@ import net.combatspells.runes.RuneCraftingBlock;
 import net.combatspells.runes.RuneCraftingRecipe;
 import net.combatspells.runes.RuneCraftingScreenHandler;
 import net.combatspells.runes.RuneItems;
+import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.BlockItem;
@@ -61,6 +63,7 @@ public class CombatSpells {
         Registry.register(Registry.BLOCK, new Identifier(MOD_ID, RuneCraftingBlock.NAME), RuneCraftingBlock.INSTANCE);
         Registry.register(Registry.ITEM, new Identifier(MOD_ID, RuneCraftingBlock.NAME), new BlockItem(RuneCraftingBlock.INSTANCE, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
         Registry.register(Registry.SCREEN_HANDLER, new Identifier(MOD_ID, RuneCraftingRecipe.ID), RuneCraftingScreenHandler.HANDLER_TYPE);
+        BlockRenderLayerMap.INSTANCE.putBlock(RuneCraftingBlock.INSTANCE, RenderLayer.getTranslucent());
     }
 
     public static void registerEnchantments() {

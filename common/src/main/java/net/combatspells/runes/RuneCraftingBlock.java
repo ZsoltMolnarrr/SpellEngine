@@ -69,5 +69,9 @@ public class RuneCraftingBlock extends CraftingTableBlock {
         builder.add(FACING);
     }
 
+    // MARK: Partial transparency
 
+    public boolean isTranslucent(BlockState state, BlockView world, BlockPos pos) {
+        return true;
+    }
 }
