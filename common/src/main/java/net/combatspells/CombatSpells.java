@@ -62,8 +62,8 @@ public class CombatSpells {
         Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(MOD_ID, RuneCraftingRecipe.ID), RuneCraftingRecipe.SERIALIZER);
         Registry.register(Registry.BLOCK, new Identifier(MOD_ID, RuneCraftingBlock.NAME), RuneCraftingBlock.INSTANCE);
         Registry.register(Registry.ITEM, new Identifier(MOD_ID, RuneCraftingBlock.NAME), new BlockItem(RuneCraftingBlock.INSTANCE, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
+        BlockRenderLayerMap.INSTANCE.putBlock(RuneCraftingBlock.INSTANCE, RenderLayer.getCutout());
         Registry.register(Registry.SCREEN_HANDLER, new Identifier(MOD_ID, RuneCraftingRecipe.ID), RuneCraftingScreenHandler.HANDLER_TYPE);
-        BlockRenderLayerMap.INSTANCE.putBlock(RuneCraftingBlock.INSTANCE, RenderLayer.getTranslucent());
     }
 
     public static void registerEnchantments() {
