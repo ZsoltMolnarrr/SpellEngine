@@ -1,5 +1,19 @@
 {
   "variants": {
-    "": { "model": "combatspells:block/rune_crafting" }
+    "facing=north": {
+      "model": "combatspells:block/rune_crafting"
+    },
+    "facing=south": {
+      "model": "combatspells:block/rune_crafting",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "combatspells:block/rune_crafting",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "combatspells:block/rune_crafting",
+      "y": 270
+    }
   }
 }

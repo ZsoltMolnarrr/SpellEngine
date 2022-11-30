@@ -16,7 +16,7 @@ import net.minecraft.util.UseAction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spelldamage.api.MagicSchool;
-import net.spelldamage.api.MagicalItemStack;
+import net.spelldamage.api.enchantment.MagicalItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
