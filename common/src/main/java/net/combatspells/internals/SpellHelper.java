@@ -21,7 +21,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spelldamage.api.MagicSchool;
-import net.spelldamage.api.SpellDamageHelper;
+import net.spelldamage.api.SpellDamage;
 import net.spelldamage.api.SpellDamageSource;
 
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ public class SpellHelper {
     }
 
     public static float hasteAffectedValue(LivingEntity caster, float value, ItemStack provisionedWeapon) {
-        var haste = (float) SpellDamageHelper.getHaste(caster, provisionedWeapon);
+        var haste = (float) SpellDamage.getHaste(caster, provisionedWeapon);
         return value / haste;
     }
 
@@ -226,9 +226,9 @@ public class SpellHelper {
                         return false;
                     }
                     var damageData = impact.action.damage;
-                    var damage = SpellDamageHelper.getSpellDamage(school, caster);
+                    var damage = SpellDamage.getSpellDamage(school, caster);
                     particleMultiplier = damage.criticalMultiplier();
-                    var amount = damage.value();
+                    var amount = damage.randomValue();
                     var source = SpellDamageSource.create(school, caster);
                     amount *= damageData.multiplier;
                     caster.onAttacking(target);
@@ -241,9 +241,9 @@ public class SpellHelper {
                     }
                     if (target instanceof LivingEntity livingTarget) {
                         var healData = impact.action.heal;
-                        var healing = SpellDamageHelper.getSpellDamage(school, caster);
+                        var healing = SpellDamage.getSpellDamage(school, caster);
                         particleMultiplier = healing.criticalMultiplier();
-                        var amount = healing.value();
+                        var amount = healing.randomValue();
                         amount *= healData.multiplier;
                         livingTarget.heal((float) amount);
                         success = true;
@@ -296,17 +296,15 @@ public class SpellHelper {
             switch (impact.action.type) {
                 case DAMAGE -> {
                     var damageData = impact.action.damage;
-                    var damage = new EstimatedValue(
-                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.DISABLED, itemStack).value(),
-                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.FORCED, itemStack).value())
+                    var result = SpellDamage.getSpellDamage(school, caster, itemStack);
+                    var damage = new EstimatedValue(result.nonCriticalValue(), result.forcedCriticalValue())
                             .multiply(damageData.multiplier);
                     damageEffects.add(damage);
                 }
                 case HEAL -> {
                     var healData = impact.action.heal;
-                    var healing = new EstimatedValue(
-                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.DISABLED, itemStack).value(),
-                            SpellDamageHelper.getSpellDamage(school, caster, SpellDamageHelper.CriticalStrikeMode.FORCED, itemStack).value())
+                    var result = SpellDamage.getSpellDamage(school, caster, itemStack);
+                    var healing = new EstimatedValue(result.nonCriticalValue(), result.forcedCriticalValue())
                             .multiply(healData.multiplier);
                     healEffects.add(healing);
                 }
