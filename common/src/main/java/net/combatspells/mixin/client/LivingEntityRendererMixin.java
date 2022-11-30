@@ -18,10 +18,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LivingEntityRenderer.class)
 public class LivingEntityRendererMixin {
     private static final Identifier BEAM_TEXTURE = new Identifier("textures/entity/guardian_beam.png");
+    private static final Identifier BEACON_TEXTURE = new Identifier("textures/entity/beacon_beam.png");
+
     private static final RenderLayer LAYER;
 
     static {
-        LAYER = RenderLayer.getEntityCutoutNoCull(BEAM_TEXTURE);
+        LAYER = RenderLayer.getBeaconBeam(BEACON_TEXTURE, false);
+        //RenderLayer.getBeaconBeam(BEACON_TEXTURE, true).apply
+        // var asd = RenderLayer.of(BEACON_BEAM_SHADER)
     }
 
     @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("TAIL"))
@@ -56,6 +60,8 @@ public class LivingEntityRendererMixin {
         matrixStack.push();
         matrixStack.translate(0, offset.y, 0);
 
+        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(LAYER);
+
         Vec3d beamVector = to.subtract(from);
         float m = (float)beamVector.length();
 
@@ -67,12 +73,10 @@ public class LivingEntityRendererMixin {
         matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(n * 57.295776F));
         matrixStack.translate(0, offset.z, 0); // At this point everything is so rotated, we need to translate along y to move along z
 
-        float h = 1; // guardianEntity.getBeamProgress(g);
         float j = time;
         float k = j * 0.5F % 1.0F;
 
         float q = j * 0.05F * -1.5F;
-        float jj = h * h;
 
         int r = 64 + (int)(1 * 191.0F);
         int g = 32 + (int)(1 * 191.0F);
@@ -98,38 +102,74 @@ public class LivingEntityRendererMixin {
 
         float aq = -1.0F + k;
         float ar = m * 2.5F + aq;
-        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(LAYER);
-        MatrixStack.Entry entry = matrixStack.peek();
-        Matrix4f matrix4f = entry.getPositionMatrix();
-        Matrix3f matrix3f = entry.getNormalMatrix();
-        vertex(vertexConsumer, matrix4f, matrix3f, af, m, ag, r, g, b, 0.4999F, ar, light);
-        vertex(vertexConsumer, matrix4f, matrix3f, af, 0.0F, ag, r, g, b, 0.4999F, aq, light);
-        vertex(vertexConsumer, matrix4f, matrix3f, ah, 0.0F, ai, r, g, b, 0.0F, aq, light);
-        vertex(vertexConsumer, matrix4f, matrix3f, ah, m, ai, r, g, b, 0.0F, ar, light);
-        vertex(vertexConsumer, matrix4f, matrix3f, aj, m, ak, r, g, b, 0.4999F, ar, light);
-        vertex(vertexConsumer, matrix4f, matrix3f, aj, 0.0F, ak, r, g, b, 0.4999F, aq, light);
-        vertex(vertexConsumer, matrix4f, matrix3f, al, 0.0F, am, r, g, b, 0.0F, aq, light);
-        vertex(vertexConsumer, matrix4f, matrix3f, al, m, am, r, g, b, 0.0F, ar, light);
+
+        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(time * 2.25F - 45.0F));
+
+        var length = m;
+        var textureId = BEAM_TEXTURE;
+        var innerRadius = 0.15F;
+        renderBeamLayer(matrixStack,
+                vertexConsumerProvider.getBuffer(LAYER),
+                r, g, b, 255F,
+                0, length, 0.0F, innerRadius, innerRadius, 0.0F, -(1F)* innerRadius, 0.0F, 0.0F, -(1F)* innerRadius, 0.0F, 1.0F,
+                0F, 1F);
+
+
+
+//        renderBeacon(matrixStack, vertexConsumerProvider, BEACON_TEXTURE, 0, 1.0F, 0, 0, m, color, 0.2F, 0.25F);
+
+//        MatrixStack.Entry entry = matrixStack.peek();
+//        Matrix4f matrix4f = entry.getPositionMatrix();
+//        Matrix3f matrix3f = entry.getNormalMatrix();
+
+
+//        vertex(vertexConsumer, matrix4f, matrix3f, af, m, ag, r, g, b, 0.4999F, ar, light);
+//        vertex(vertexConsumer, matrix4f, matrix3f, af, 0.0F, ag, r, g, b, 0.4999F, aq, light);
+//        vertex(vertexConsumer, matrix4f, matrix3f, ah, 0.0F, ai, r, g, b, 0.0F, aq, light);
+//        vertex(vertexConsumer, matrix4f, matrix3f, ah, m, ai, r, g, b, 0.0F, ar, light);
+//        vertex(vertexConsumer, matrix4f, matrix3f, aj, m, ak, r, g, b, 0.4999F, ar, light);
+//        vertex(vertexConsumer, matrix4f, matrix3f, aj, 0.0F, ak, r, g, b, 0.4999F, aq, light);
+//        vertex(vertexConsumer, matrix4f, matrix3f, al, 0.0F, am, r, g, b, 0.0F, aq, light);
+//        vertex(vertexConsumer, matrix4f, matrix3f, al, m, am, r, g, b, 0.0F, ar, light);
         float as = 0.0F;
 
-        vertex(vertexConsumer, matrix4f, matrix3f, x, m, y, r, g, b, 0.5F, as + 0.5F, light);
-        vertex(vertexConsumer, matrix4f, matrix3f, z, m, aa, r, g, b, 1.0F, as + 0.5F, light);
-        vertex(vertexConsumer, matrix4f, matrix3f, ad, m, ae, r, g, b, 1.0F, as, light);
-        vertex(vertexConsumer, matrix4f, matrix3f, ab, m, ac, r, g, b, 0.5F, as, light);
+//        vertex(vertexConsumer, matrix4f, matrix3f, x, m, y, r, g, b, 0.5F, as + 0.5F, light);
+//        vertex(vertexConsumer, matrix4f, matrix3f, z, m, aa, r, g, b, 1.0F, as + 0.5F, light);
+//        vertex(vertexConsumer, matrix4f, matrix3f, ad, m, ae, r, g, b, 1.0F, as, light);
+//        vertex(vertexConsumer, matrix4f, matrix3f, ab, m, ac, r, g, b, 0.5F, as, light);
 
         matrixStack.pop();
 
     }
 
-    private static void vertex(VertexConsumer vertexConsumer, Matrix4f positionMatrix, Matrix3f normalMatrix, float x, float y, float z, int red, int green, int blue, float u, float v, int light) {
-        vertexConsumer.vertex(positionMatrix, x, y, z)
-                .color(red, green, blue, 255)
+    private static void renderBeamLayer(MatrixStack matrices, VertexConsumer vertices, float red, float green, float blue, float alpha, int yOffset, float height, float x1, float z1, float x2, float z2, float x3, float z3, float x4, float z4, float u1, float u2, float v1, float v2) {
+        MatrixStack.Entry entry = matrices.peek();
+        Matrix4f matrix4f = entry.getPositionMatrix();
+        Matrix3f matrix3f = entry.getNormalMatrix();
+        renderBeamFace(matrix4f, matrix3f, vertices, red, green, blue, alpha, yOffset, height, x1, z1, x2, z2, u1, u2, v1, v2);
+        renderBeamFace(matrix4f, matrix3f, vertices, red, green, blue, alpha, yOffset, height, x4, z4, x3, z3, u1, u2, v1, v2);
+        renderBeamFace(matrix4f, matrix3f, vertices, red, green, blue, alpha, yOffset, height, x2, z2, x4, z4, u1, u2, v1, v2);
+        renderBeamFace(matrix4f, matrix3f, vertices, red, green, blue, alpha, yOffset, height, x3, z3, x1, z1, u1, u2, v1, v2);
+    }
+
+    private static void renderBeamFace(Matrix4f positionMatrix, Matrix3f normalMatrix, VertexConsumer vertices, float red, float green, float blue, float alpha, int yOffset, float height, float x1, float z1, float x2, float z2, float u1, float u2, float v1, float v2) {
+        renderBeamVertex(positionMatrix, normalMatrix, vertices, red, green, blue, alpha, height, x1, z1, u2, v1);
+        renderBeamVertex(positionMatrix, normalMatrix, vertices, red, green, blue, alpha, yOffset, x1, z1, u2, v2);
+        renderBeamVertex(positionMatrix, normalMatrix, vertices, red, green, blue, alpha, yOffset, x2, z2, u1, v2);
+        renderBeamVertex(positionMatrix, normalMatrix, vertices, red, green, blue, alpha, height, x2, z2, u1, v1);
+    }
+
+    /**
+     * @param v the top-most coordinate of the texture region
+     * @param u the left-most coordinate of the texture region
+     */
+    private static void renderBeamVertex(Matrix4f positionMatrix, Matrix3f normalMatrix, VertexConsumer vertices, float red, float green, float blue, float alpha, float y, float x, float z, float u, float v) {
+        vertices.vertex(positionMatrix, x, y, z)
+                .color(red, green, blue, alpha)
                 .texture(u, v)
                 .overlay(OverlayTexture.DEFAULT_UV)
-                .light(LightmapTextureManager.MAX_LIGHT_COORDINATE)
-//                .light(light)
-//                .light(15728880)
-//                .light(0)
-                .normal(normalMatrix, 0.0F, 1.0F, 0.0F).next();
+                .light(15728880)
+                .normal(normalMatrix, 0.0F, 1.0F, 0.0F)
+                .next();
     }
 }
