@@ -121,7 +121,7 @@ public class LivingEntityRendererMixin {
 //                -(1F)* innerRadius, 0.0F, 1.0F, 0F);
 
         DummyBeamRenderer.renderBeam(matrixStack, vertexConsumerProvider,
-                255, 255, 255,1,
+                1, 1, 1,1,
                 0, length, 0.15F);
 
 

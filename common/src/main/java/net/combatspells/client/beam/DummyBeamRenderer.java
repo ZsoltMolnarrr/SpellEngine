@@ -17,11 +17,13 @@ public class DummyBeamRenderer extends RenderLayer {
     public static void renderBeam(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
                              float red, float green, float blue, float alpha,
                              float yOffset, float height, float width) {
-        renderBeamLayer(matrices, vertexConsumers.getBuffer(RenderLayer.getBeaconBeam(BEACON_TEXTURE, true)),
-                red, green, blue, 1.0f,
+        matrices.push();
+        renderBeamLayer(matrices, vertexConsumers.getBuffer(RenderLayer.getBeaconBeam(BEACON_TEXTURE, false)),
+                red, green, blue, alpha,
                 yOffset, height,
                 0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
                 0.0f, 1.0f, -1F + 0, -1 + 0);
+        matrices.pop();
     }
 
     private static void renderBeamLayer(MatrixStack matrices, VertexConsumer vertices,
