@@ -1,7 +1,6 @@
 package net.combatspells.mixin.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.combatspells.client.beam.DummyBeamRenderer;
+import net.combatspells.client.beam.BeamRenderer;
 import net.combatspells.internals.SpellCasterEntity;
 import net.combatspells.internals.SpellHelper;
 import net.combatspells.utils.TargetHelper;
@@ -19,15 +18,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LivingEntityRenderer.class)
 public class LivingEntityRendererMixin {
-    private static final Identifier BEAM_TEXTURE = new Identifier("textures/entity/guardian_beam.png");
     private static final Identifier BEACON_TEXTURE = new Identifier("textures/entity/beacon_beam.png");
 
     private static final RenderLayer LAYER;
 
     static {
         LAYER = RenderLayer.getBeaconBeam(BEACON_TEXTURE, false);
-        //RenderLayer.getBeaconBeam(BEACON_TEXTURE, true).apply
-        // var asd = RenderLayer.of(BEACON_BEAM_SHADER)
     }
 
     @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("TAIL"))
@@ -52,20 +48,20 @@ public class LivingEntityRendererMixin {
                 lookVector = lookVector.multiply(length);
                 Vec3d to = from.add(lookVector);
 
-                renderBeam(matrixStack, vertexConsumerProvider, from, to, offset, time, light);
+                renderBeam(matrixStack, vertexConsumerProvider, from, to, offset, time);
             }
         }
     }
 
     private static void renderBeam(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider,
-                                   Vec3d from, Vec3d to, Vec3d offset, float time, int light) {
+                                   Vec3d from, Vec3d to, Vec3d offset, float time) {
         matrixStack.push();
         matrixStack.translate(0, offset.y, 0);
 
         VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(LAYER);
 
         Vec3d beamVector = to.subtract(from);
-        float m = (float)beamVector.length();
+        float length = (float)beamVector.length();
 
         // Perform some rotation
         beamVector = beamVector.normalize();
@@ -75,82 +71,20 @@ public class LivingEntityRendererMixin {
         matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(n * 57.295776F));
         matrixStack.translate(0, offset.z, 0); // At this point everything is so rotated, we need to translate along y to move along z
 
-        float j = time;
-        float k = j * 0.5F % 1.0F;
-
-        float q = j * 0.05F * -1.5F;
-
-        int r = 64 + (int)(1 * 191.0F);
-        int g = 32 + (int)(1 * 191.0F);
-        int b = 128 - (int)(1 * 64.0F);
-        float v = 0.2F;
-        float w = 0.282F;
-        float x = MathHelper.cos(q + 2.3561945F) * 0.282F;
-        float y = MathHelper.sin(q + 2.3561945F) * 0.282F;
-        float z = MathHelper.cos(q + 0.7853982F) * 0.282F;
-        float aa = MathHelper.sin(q + 0.7853982F) * 0.282F;
-        float ab = MathHelper.cos(q + 3.926991F) * 0.282F;
-        float ac = MathHelper.sin(q + 3.926991F) * 0.282F;
-        float ad = MathHelper.cos(q + 5.4977875F) * 0.282F;
-        float ae = MathHelper.sin(q + 5.4977875F) * 0.282F;
-        float af = MathHelper.cos(q + 3.1415927F) * 0.2F;
-        float ag = MathHelper.sin(q + 3.1415927F) * 0.2F;
-        float ah = MathHelper.cos(q + 0.0F) * 0.2F;
-        float ai = MathHelper.sin(q + 0.0F) * 0.2F;
-        float aj = MathHelper.cos(q + 1.5707964F) * 0.2F;
-        float ak = MathHelper.sin(q + 1.5707964F) * 0.2F;
-        float al = MathHelper.cos(q + 4.712389F) * 0.2F;
-        float am = MathHelper.sin(q + 4.712389F) * 0.2F;
-
-        float aq = -1.0F + k;
-        float ar = m * 2.5F + aq;
-
         matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(time * 2.25F - 45.0F));
 
-//        RenderSystem.disableCull();
-//        RenderSystem.enableBlend();
+        var textureId = BEACON_TEXTURE;
+        var width = 0.1F;
+        var color = 0xFFFFFF40;
 
-        var length = m;
-        var textureId = BEAM_TEXTURE;
-        var innerRadius = 0.15F;
-//        DummyBeamRenderer.renderBeamLayer(matrixStack,
-//                vertexConsumerProvider.getBuffer(LAYER),
-//                r, g, b, 255,
-//                0, length,
-//                0, 0, innerRadius, innerRadius, 0.0F, -(1F)* innerRadius, 0.0F, 0.0F,
-//                -(1F)* innerRadius, 0.0F, 1.0F, 0F);
-
-        DummyBeamRenderer.renderBeam(matrixStack, vertexConsumerProvider,
-                1, 1, 1,1,
-                0, length, 0.15F);
-
-
-//        RenderSystem.disableBlend();
-//        RenderSystem.enableCull();
-
-
-
-//        renderBeacon(matrixStack, vertexConsumerProvider, BEACON_TEXTURE, 0, 1.0F, 0, 0, m, color, 0.2F, 0.25F);
-
-//        MatrixStack.Entry entry = matrixStack.peek();
-//        Matrix4f matrix4f = entry.getPositionMatrix();
-//        Matrix3f matrix3f = entry.getNormalMatrix();
-
-
-//        vertex(vertexConsumer, matrix4f, matrix3f, af, m, ag, r, g, b, 0.4999F, ar, light);
-//        vertex(vertexConsumer, matrix4f, matrix3f, af, 0.0F, ag, r, g, b, 0.4999F, aq, light);
-//        vertex(vertexConsumer, matrix4f, matrix3f, ah, 0.0F, ai, r, g, b, 0.0F, aq, light);
-//        vertex(vertexConsumer, matrix4f, matrix3f, ah, m, ai, r, g, b, 0.0F, ar, light);
-//        vertex(vertexConsumer, matrix4f, matrix3f, aj, m, ak, r, g, b, 0.4999F, ar, light);
-//        vertex(vertexConsumer, matrix4f, matrix3f, aj, 0.0F, ak, r, g, b, 0.4999F, aq, light);
-//        vertex(vertexConsumer, matrix4f, matrix3f, al, 0.0F, am, r, g, b, 0.0F, aq, light);
-//        vertex(vertexConsumer, matrix4f, matrix3f, al, m, am, r, g, b, 0.0F, ar, light);
-        float as = 0.0F;
-
-//        vertex(vertexConsumer, matrix4f, matrix3f, x, m, y, r, g, b, 0.5F, as + 0.5F, light);
-//        vertex(vertexConsumer, matrix4f, matrix3f, z, m, aa, r, g, b, 1.0F, as + 0.5F, light);
-//        vertex(vertexConsumer, matrix4f, matrix3f, ad, m, ae, r, g, b, 1.0F, as, light);
-//        vertex(vertexConsumer, matrix4f, matrix3f, ab, m, ac, r, g, b, 0.5F, as, light);
+        var red = (color >> 24) & 255;
+        var green = (color >> 16) & 255;
+        var blue = (color >> 8 ) & 255;
+        var alpha = color & 255;
+        // System.out.println("Beam color " + " red:" + red + " green:" + green + " blue:" + blue + " alpha:" + alpha);
+        BeamRenderer.renderBeam(matrixStack, vertexConsumerProvider, textureId,
+                red, green, blue, alpha,
+                0, length, width);
 
         matrixStack.pop();
     }
