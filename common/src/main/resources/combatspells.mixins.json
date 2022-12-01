@@ -5,12 +5,11 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "AttributeAssigner_ItemStackMixin",
-    "EnchantmentHelperMixin",
     "ItemStackMixin",
-    "PlayerEntityMixin",
-    "client.LivingEntityAccessor"
+    "PlayerEntityMixin"
   ],
   "client": [
+    "client.LivingEntityAccessor",
     "client.AbstractClientPlayerEntityMixin",
     "client.ClientPlayerEntityMixin",
     "client.EntityMixin",
