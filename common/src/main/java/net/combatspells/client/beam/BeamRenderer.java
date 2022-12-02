@@ -3,6 +3,7 @@ package net.combatspells.client.beam;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix3f;
 import net.minecraft.util.math.Matrix4f;
 
@@ -11,30 +12,35 @@ public class BeamRenderer extends RenderLayer {
         super(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent, startAction, endAction);
     }
     
-    public static void renderBeam(MatrixStack matrices, VertexConsumerProvider vertexConsumers, Identifier texture,
-                             int red, int green, int blue, int alpha,
-                             float yOffset, float height, float width) {
+    public static void renderBeam(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
+                                  Identifier texture, long time, float tickDelta, float direction,
+                                  int red, int green, int blue, int alpha,
+                                  float yOffset, float height, float width) {
         matrices.push();
+
+        float shift = (float)Math.floorMod(time, 40) + tickDelta;
+        float offset = MathHelper.fractionalPart(shift * 0.2f - (float)MathHelper.floor(shift * 0.1f)) * (- direction);
+
         var originalWidth = width;
         renderBeamLayer(matrices, vertexConsumers.getBuffer(RenderLayer.getBeaconBeam(texture, false)),
                 red, green, blue, alpha,
                 yOffset, height,
                 0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
-                0.0f, 1.0f, -1F + 0, -1 + 0);
+                0.0f, 1f, height, offset);
 
         width = originalWidth * 1.5F;
         renderBeamLayer(matrices, vertexConsumers.getBuffer(RenderLayer.getBeaconBeam(texture, true)),
                 red, green, blue, alpha / 2,
                 yOffset, height,
                 0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
-                0.0f, 1.0f, -1F + 0, -1 + 0);
+                0.0f, 1.0f, height, offset * 0.9F);
 
         width = originalWidth * 2F;
         renderBeamLayer(matrices, vertexConsumers.getBuffer(RenderLayer.getBeaconBeam(texture, true)),
                 red, green, blue, alpha / 3,
                 yOffset, height,
                 0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
-                0.0f, 1.0f, -1F + 0, -1 + 0);
+                0.0f, 1.0f, height, offset * 0.8F);
         matrices.pop();
     }
 

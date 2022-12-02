@@ -33,7 +33,6 @@ public class LivingEntityRendererMixin {
 
         if (livingEntity instanceof SpellCasterEntity caster) {
             if (caster.isBeaming()) {
-                var time = (float)livingEntity.world.getTime() + delta;
                 Vec3d from = livingEntity.getPos().add(0, launchHeight, 0);
                 var lookVector = Vec3d.ZERO;
                 if (livingEntity == MinecraftClient.getInstance().player) {
@@ -48,13 +47,14 @@ public class LivingEntityRendererMixin {
                 lookVector = lookVector.multiply(length);
                 Vec3d to = from.add(lookVector);
 
-                renderBeam(matrixStack, vertexConsumerProvider, from, to, offset, time);
+                renderBeam(matrixStack, vertexConsumerProvider, from, to, offset, livingEntity.world.getTime(), delta);
             }
         }
     }
 
     private static void renderBeam(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider,
-                                   Vec3d from, Vec3d to, Vec3d offset, float time) {
+                                   Vec3d from, Vec3d to, Vec3d offset, long time, float tickDelta) {
+        var absoluteTime = (float)time + tickDelta;
         matrixStack.push();
         matrixStack.translate(0, offset.y, 0);
 
@@ -71,18 +71,20 @@ public class LivingEntityRendererMixin {
         matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(n * 57.295776F));
         matrixStack.translate(0, offset.z, 0); // At this point everything is so rotated, we need to translate along y to move along z
 
-        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(time * 2.25F - 45.0F));
+        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(absoluteTime * 2.25F - 45.0F));
 
         var textureId = BEACON_TEXTURE;
         var width = 0.1F;
         var color = 0xFFFFFF40;
+        float flow = 1;
 
         var red = (color >> 24) & 255;
         var green = (color >> 16) & 255;
         var blue = (color >> 8 ) & 255;
         var alpha = color & 255;
         // System.out.println("Beam color " + " red:" + red + " green:" + green + " blue:" + blue + " alpha:" + alpha);
-        BeamRenderer.renderBeam(matrixStack, vertexConsumerProvider, textureId,
+        BeamRenderer.renderBeam(matrixStack, vertexConsumerProvider,
+                textureId, time, tickDelta, flow,
                 red, green, blue, alpha,
                 0, length, width);
 
