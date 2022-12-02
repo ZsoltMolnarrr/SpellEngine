@@ -58,8 +58,6 @@ public class LivingEntityRendererMixin {
         matrixStack.push();
         matrixStack.translate(0, offset.y, 0);
 
-        VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(LAYER);
-
         Vec3d beamVector = to.subtract(from);
         float length = (float)beamVector.length();
 

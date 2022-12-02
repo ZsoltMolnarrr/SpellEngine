@@ -11,7 +11,18 @@ public class BeamRenderer extends RenderLayer {
     public BeamRenderer(String name, VertexFormat vertexFormat, VertexFormat.DrawMode drawMode, int expectedBufferSize, boolean hasCrumbling, boolean translucent, Runnable startAction, Runnable endAction) {
         super(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent, startAction, endAction);
     }
-    
+
+    private static RenderLayer createRenderLayer(Identifier texture) {
+        var affectsOutline = true;
+        RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
+                .shader(BEACON_BEAM_SHADER)
+                .texture(new RenderPhase.Texture(texture, false, false))
+                .transparency(affectsOutline != false ? TRANSLUCENT_TRANSPARENCY : NO_TRANSPARENCY)
+//                .writeMaskState(affectsOutline != false ? COLOR_MASK : ALL_MASK)
+                .build(false);
+        return RenderLayer.of("beacon_beam", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, false, true, multiPhaseParameters);
+    }
+
     public static void renderBeam(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
                                   Identifier texture, long time, float tickDelta, float direction,
                                   int red, int green, int blue, int alpha,
@@ -20,6 +31,8 @@ public class BeamRenderer extends RenderLayer {
 
         float shift = (float)Math.floorMod(time, 40) + tickDelta;
         float offset = MathHelper.fractionalPart(shift * 0.2f - (float)MathHelper.floor(shift * 0.1f)) * (- direction);
+
+        var renderLayer = createRenderLayer(texture);
 
         var originalWidth = width;
         renderBeamLayer(matrices, vertexConsumers.getBuffer(RenderLayer.getBeaconBeam(texture, false)),

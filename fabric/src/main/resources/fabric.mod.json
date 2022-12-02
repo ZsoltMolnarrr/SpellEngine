@@ -25,6 +25,7 @@
       "net.combatspells.fabric.client.ModMenuIntegration"
     ]
   },
+  "accessWidener" : "combatspells.accesswidener",
   "mixins": [
     "combatspells.mixins.json"
   ],
