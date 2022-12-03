@@ -73,7 +73,7 @@ public class LivingEntityRendererMixin {
 
         var textureId = BEACON_TEXTURE;
         var width = 0.1F;
-        var color = 0xFFFFFF40;
+        var color = 0xff66ffFF;
         float flow = 1;
 
         var red = (color >> 24) & 255;

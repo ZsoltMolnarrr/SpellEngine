@@ -12,15 +12,37 @@ public class BeamRenderer extends RenderLayer {
         super(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent, startAction, endAction);
     }
 
-    private static RenderLayer createRenderLayer(Identifier texture) {
-        var affectsOutline = true;
-        RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
+    private static RenderLayer createRenderLayer(Identifier texture, boolean cull, boolean transparent) {
+        MultiPhaseParameters multiPhaseParameters = MultiPhaseParameters.builder()
                 .shader(BEACON_BEAM_SHADER)
+                .cull(cull ? ENABLE_CULLING : DISABLE_CULLING)
                 .texture(new RenderPhase.Texture(texture, false, false))
-                .transparency(affectsOutline != false ? TRANSLUCENT_TRANSPARENCY : NO_TRANSPARENCY)
-//                .writeMaskState(affectsOutline != false ? COLOR_MASK : ALL_MASK)
+                .transparency(transparent ? RenderPhase.LIGHTNING_TRANSPARENCY : NO_TRANSPARENCY)
+                .writeMaskState(transparent ? COLOR_MASK : ALL_MASK)
                 .build(false);
-        return RenderLayer.of("beacon_beam", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, false, true, multiPhaseParameters);
+        return RenderLayer.of("spell_beam",
+                VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL,
+                VertexFormat.DrawMode.QUADS,
+                256,
+                false,
+                true,
+                multiPhaseParameters);
+
+//        RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
+//                .shader(BEACON_BEAM_SHADER)
+//                .texture(new RenderPhase.Texture(texture, false, false))
+//                .cull(cull ? ENABLE_CULLING : DISABLE_CULLING)
+//                .overlay(ENABLE_OVERLAY_COLOR)
+//                .transparency(TRANSLUCENT_TRANSPARENCY)
+//                .writeMaskState(RenderPhase.ALL_MASK)
+//                .build(true);
+//        return RenderLayer.of("spell_beam",
+//                VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL,
+//                VertexFormat.DrawMode.QUADS,
+//                256,
+//                false,
+//                true,
+//                multiPhaseParameters);
     }
 
     public static void renderBeam(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
@@ -32,24 +54,25 @@ public class BeamRenderer extends RenderLayer {
         float shift = (float)Math.floorMod(time, 40) + tickDelta;
         float offset = MathHelper.fractionalPart(shift * 0.2f - (float)MathHelper.floor(shift * 0.1f)) * (- direction);
 
-        var renderLayer = createRenderLayer(texture);
+        var innerRenderLayer = createRenderLayer(texture, true, true); //alpha < 250);
+        var outerRenderLayer = createRenderLayer(texture, false, true);
 
         var originalWidth = width;
-        renderBeamLayer(matrices, vertexConsumers.getBuffer(RenderLayer.getBeaconBeam(texture, false)),
+        renderBeamLayer(matrices, vertexConsumers.getBuffer(innerRenderLayer),
                 red, green, blue, alpha,
                 yOffset, height,
                 0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
                 0.0f, 1f, height, offset);
 
         width = originalWidth * 1.5F;
-        renderBeamLayer(matrices, vertexConsumers.getBuffer(RenderLayer.getBeaconBeam(texture, true)),
+        renderBeamLayer(matrices, vertexConsumers.getBuffer(outerRenderLayer),
                 red, green, blue, alpha / 2,
                 yOffset, height,
                 0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
                 0.0f, 1.0f, height, offset * 0.9F);
 
         width = originalWidth * 2F;
-        renderBeamLayer(matrices, vertexConsumers.getBuffer(RenderLayer.getBeaconBeam(texture, true)),
+        renderBeamLayer(matrices, vertexConsumers.getBuffer(outerRenderLayer),
                 red, green, blue, alpha / 3,
                 yOffset, height,
                 0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
