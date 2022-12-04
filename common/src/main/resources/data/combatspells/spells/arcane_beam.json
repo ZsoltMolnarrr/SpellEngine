@@ -10,16 +10,7 @@
       "pitch": 1.0,
       "randomness": 0.1
     },
-    "particles": [
-      {
-        "particle_id": "magic",
-        "shape": "PIPE",
-        "origin": "FEET",
-        "count": 1.0,
-        "min_speed": 0.05,
-        "max_speed": 0.1
-      }
-    ]
+    "particles": []
   },
   "on_release": {
     "target": {
@@ -27,7 +18,27 @@
       "beam": {
         "color_rgba": 4284940287,
         "width": 0.08,
-        "flow": 1.5
+        "flow": 1.5,
+        "emit_particles": [
+          {
+            "particle_id": "witch",
+            "shape": "PIPE",
+            "origin": "CENTER",
+            "count": 1,
+            "min_speed": 0.1,
+            "max_speed": 0.2
+          }
+        ],
+        "block_hit_particles": [
+          {
+            "particle_id": "witch",
+            "shape": "CIRCLE",
+            "origin": "CENTER",
+            "count": 1,
+            "min_speed": 0.1,
+            "max_speed": 0.2
+          }
+        ]
       }
     },
     "animation": "combatspells:one_handed_projectile_release",
@@ -48,7 +59,7 @@
       },
       "particles": [
         {
-          "particle_id": "magic",
+          "particle_id": "witch",
           "shape": "SPHERE",
           "origin": "CENTER",
           "count": 30.0,
@@ -67,7 +78,7 @@
   "cooldown_duration": 3.0,
   "cost": {
     "exhaust": 0.1,
-    "item_id": "minecraft:coal",
+    "item_id": "combatspells:arcane_rune",
     "durability": 1
   }
 }

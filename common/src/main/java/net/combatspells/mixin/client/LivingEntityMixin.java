@@ -5,6 +5,7 @@ import net.combatspells.client.CombatSpellsClient;
 import net.combatspells.client.beam.BeamEmitterEntity;
 import net.combatspells.internals.Beam;
 import net.combatspells.internals.SpellCasterEntity;
+import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.TargetHelper;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
@@ -49,18 +50,19 @@ public class LivingEntityMixin implements BeamEmitterEntity {
         }
         var renderedBeam = lastRenderedBeam;
         if (livingEntity.world.isClient && beam != null && renderedBeam != null) {
-            var clientWorld = (ClientWorld)livingEntity.world;
-            var particle = (ParticleEffect) Registry.PARTICLE_TYPE.get(new Identifier("flame"));
-            var origin = renderedBeam.position().origin();
-//            clientWorld.addParticle(particle, true,
-//                    origin.x, origin.y, origin.z,
-//                    0, 1, 0);
+            var position = renderedBeam.position();
+            var appearance = renderedBeam.appearance();
 
-            if (renderedBeam.position().hitBlock()) {
-                var end = renderedBeam.position().end();
-                clientWorld.addParticle(particle, true,
-                        end.x, end.y, end.z,
-                        0, 1, 0);
+            for (var batch: appearance.emit_particles) {
+                ParticleHelper.play(livingEntity.world, position.origin(),
+                appearance.width * 2, livingEntity.getYaw(), livingEntity.getPitch() + 90, batch);
+            }
+
+            if (position.hitBlock()) {
+                for (var batch: appearance.block_hit_particles) {
+                    ParticleHelper.play(livingEntity.world, position.end(),
+                            appearance.width * 2, livingEntity.getYaw(), livingEntity.getPitch() + 90, batch);
+                }
             }
         }
     }
