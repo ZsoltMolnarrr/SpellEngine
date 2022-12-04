@@ -3,6 +3,7 @@ package net.combatspells.mixin.client;
 import net.combatspells.api.spell.Spell;
 import net.combatspells.client.beam.BeamEmitterEntity;
 import net.combatspells.client.beam.BeamRenderer;
+import net.combatspells.internals.Beam;
 import net.combatspells.internals.SpellCasterEntity;
 import net.combatspells.internals.SpellHelper;
 import net.combatspells.utils.TargetHelper;
@@ -28,8 +29,8 @@ public class LivingEntityRendererMixin {
         var offset = new Vec3d(0.0, launchHeight, 0.15);
 
         if (livingEntity instanceof SpellCasterEntity caster) {
-            var beam = caster.getBeam();
-            if (beam != null) {
+            var beamAppearance = caster.getBeam();
+            if (beamAppearance != null) {
                 Vec3d from = livingEntity.getPos().add(0, launchHeight, 0);
                 var lookVector = Vec3d.ZERO;
                 if (livingEntity == MinecraftClient.getInstance().player) {
@@ -40,12 +41,12 @@ public class LivingEntityRendererMixin {
                     lookVector = lookVector.lerp(Vec3d.fromPolar(livingEntity.getPitch(), livingEntity.getYaw()), delta);
                 }
                 lookVector = lookVector.normalize();
-                var renderedBeam = TargetHelper.castBeam(livingEntity, lookVector, 32);
-                lookVector = lookVector.multiply(renderedBeam.length());
+                var beamPosition = TargetHelper.castBeam(livingEntity, lookVector, 32);
+                lookVector = lookVector.multiply(beamPosition.length());
                 Vec3d to = from.add(lookVector);
 
-                renderBeam(matrixStack, vertexConsumerProvider, beam, from, to, offset, livingEntity.world.getTime(), delta);
-                ((BeamEmitterEntity)livingEntity).setLastRenderedBeam(renderedBeam);
+                renderBeam(matrixStack, vertexConsumerProvider, beamAppearance, from, to, offset, livingEntity.world.getTime(), delta);
+                ((BeamEmitterEntity)livingEntity).setLastRenderedBeam(new Beam.Rendered(beamPosition, beamAppearance));
             } else {
                 ((BeamEmitterEntity)livingEntity).setLastRenderedBeam(null);
             }

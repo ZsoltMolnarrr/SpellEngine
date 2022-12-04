@@ -1,7 +1,7 @@
 package net.combatspells.utils;
 
 import net.combatspells.api.spell.Spell;
-import net.combatspells.client.beam.RenderedBeam;
+import net.combatspells.internals.Beam;
 import net.combatspells.internals.SpellCasterClient;
 import net.combatspells.internals.SpellHelper;
 import net.minecraft.client.MinecraftClient;
@@ -119,7 +119,7 @@ public class TargetHelper {
         return false;
     }
 
-    public static RenderedBeam castBeam(LivingEntity caster, Vec3d direction, float max) {
+    public static Beam.Position castBeam(LivingEntity caster, Vec3d direction, float max) {
         var start = SpellHelper.launchPoint(caster, 0.15F);
         var end = start.add(direction.multiply(max));
         var length = max;
@@ -130,6 +130,6 @@ public class TargetHelper {
             end = hit.getPos();
             length = (float) start.distanceTo(hit.getPos());
         }
-        return new RenderedBeam(start, end, length, hitBlock);
+        return new Beam.Position(start, end, length, hitBlock);
     }
 }
