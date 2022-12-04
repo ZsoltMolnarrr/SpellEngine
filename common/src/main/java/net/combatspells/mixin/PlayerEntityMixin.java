@@ -8,6 +8,7 @@ import net.combatspells.internals.SpellCasterItemStack;
 import net.combatspells.runes.RuneCrafter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -63,8 +64,16 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
     }
 
     public boolean isBeaming() {
+        return getBeam() != null;
+    }
+
+    @Nullable
+    public Spell.Release.Target.Beam getBeam() {
         var spell = getCurrentSpell();
-        return spell != null && spell.on_release != null && spell.on_release.target.type == BEAM;
+        if (spell != null && spell.on_release != null && spell.on_release.target.type == BEAM) {
+            return spell.on_release.target.beam;
+        }
+        return null;
     }
 
     // MARK: RuneCrafter

@@ -36,6 +36,13 @@ public class Spell {
 
             public Beam beam;
             public static class Beam { public Beam() { }
+                public String texture_id = "textures/entity/beacon_beam.png";
+                public long color_rgba = 0xFFFFFFFF;
+                public float width = 0.1F;
+                public float flow = 1;
+
+                public ParticleBatch[] emit_particles;
+                public ParticleBatch[] block_hit_particles;
             }
 
             public Cursor cursor;

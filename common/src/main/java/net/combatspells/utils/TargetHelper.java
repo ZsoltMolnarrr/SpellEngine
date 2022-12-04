@@ -1,6 +1,7 @@
 package net.combatspells.utils;
 
 import net.combatspells.api.spell.Spell;
+import net.combatspells.client.beam.RenderedBeam;
 import net.combatspells.internals.SpellCasterClient;
 import net.combatspells.internals.SpellHelper;
 import net.minecraft.client.MinecraftClient;
@@ -118,13 +119,17 @@ public class TargetHelper {
         return false;
     }
 
-    public static float beamLength(LivingEntity caster, Vec3d direction, float max) {
+    public static RenderedBeam castBeam(LivingEntity caster, Vec3d direction, float max) {
         var start = SpellHelper.launchPoint(caster, 0.15F);
         var end = start.add(direction.multiply(max));
+        var length = max;
+        boolean hitBlock = false;
         var hit = caster.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, caster));
         if (hit.getType() == HitResult.Type.BLOCK) {
-            return (float) start.distanceTo(hit.getPos()); // We need to subtract exactly `1`, to make the collision accurate. No idea why
+            hitBlock = true;
+            end = hit.getPos();
+            length = (float) start.distanceTo(hit.getPos());
         }
-        return max;
+        return new RenderedBeam(start, end, length, hitBlock);
     }
 }

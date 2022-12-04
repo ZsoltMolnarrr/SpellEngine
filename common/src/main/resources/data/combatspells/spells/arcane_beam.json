@@ -25,6 +25,9 @@
     "target": {
       "type": "BEAM",
       "beam": {
+        "color_rgba": 4284940287,
+        "width": 0.08,
+        "flow": 1.5
       }
     },
     "animation": "combatspells:one_handed_projectile_release",
