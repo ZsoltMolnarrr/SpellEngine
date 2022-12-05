@@ -96,7 +96,7 @@ public class HudRenderHelper {
 
             public static ViewModel from(ClientPlayerEntity player) {
                 var caster = (SpellCasterClient)player;
-                var target = caster.getCurrentTarget();
+                var target = caster.getCurrentFirstTarget();
                 var text = "";
                 if (target != null) {
                     text = target.getName().getString();

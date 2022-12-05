@@ -20,17 +20,30 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.List;
+
 @Mixin(ClientPlayerEntity.class)
 public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     @Shadow @Final public ClientPlayNetworkHandler networkHandler;
-    private Entity target;
+    private List<Entity> targets = List.of();
 
     private ClientPlayerEntity player() {
         return (ClientPlayerEntity) ((Object) this);
     }
 
-    public Entity getCurrentTarget() {
-        return target;
+    private Entity firstTarget() {
+        return targets.stream().findFirst().orElse(null);
+    }
+
+    public List<Entity> getCurrentTargets() {
+        if (targets == null) {
+            return List.of();
+        }
+        return targets;
+    }
+
+    public Entity getCurrentFirstTarget() {
+        return firstTarget();
     }
 
     @Override
@@ -71,8 +84,9 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 case PROJECTILE, CURSOR -> {
                     updateTarget();
                     var targets = new int[]{};
-                    if (target != null) {
-                        targets = new int[]{target.getId()};
+                    var firstTarget = firstTarget();
+                    if (firstTarget != null) {
+                        targets = new int[]{ firstTarget.getId() };
                     }
                     ClientPlayNetworking.send(
                             Packets.ReleaseRequest.ID,
@@ -111,17 +125,30 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         var caster = player();
         var currentSpell = getCurrentSpell();
         if (currentSpell == null) {
+            targets = List.of();
             return;
         }
-        target = TargetHelper.targetFromRaycast(player(), currentSpell.range);
         switch (currentSpell.on_release.target.type) {
-            case CURSOR -> {
-                var cursor = currentSpell.on_release.target.cursor;
-                if (target == null && cursor.use_caster_as_fallback) {
-                    target = caster;
-                }
+            case AREA -> {
+                targets = TargetHelper.targetsFromArea(caster, currentSpell.range, currentSpell.on_release.target.area);
             }
-            default -> {
+            case BEAM -> {
+                targets = TargetHelper.targetsFromRaycast(caster, currentSpell.range);
+            }
+            case CURSOR, PROJECTILE -> {
+                var target = TargetHelper.targetFromRaycast(caster, currentSpell.range);
+                if (target != null) {
+                    targets = List.of(target);
+                } else {
+                    targets = List.of();
+                }
+                var cursor = currentSpell.on_release.target.cursor;
+                if (cursor != null) {
+                    var firstTarget = firstTarget();
+                    if (firstTarget == null && cursor.use_caster_as_fallback) {
+                        targets = List.of(caster);
+                    }
+                }
             }
         }
     }
@@ -136,7 +163,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     public void tick_TAIL(CallbackInfo ci) {
         var player = player();
         if (!player.isUsingItem()) {
-            target = null;
+            targets = List.of();
         }
         if (isBeaming()) {
             networkHandler.sendPacket(new PlayerMoveC2SPacket.Full(

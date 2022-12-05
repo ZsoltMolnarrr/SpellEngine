@@ -11,12 +11,18 @@ import net.minecraft.entity.Tameable;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.scoreboard.AbstractTeam;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 public class TargetHelper {
     public enum Relation {
@@ -87,6 +93,57 @@ public class TargetHelper {
         return null;
     }
 
+    public static List<Entity> targetsFromRaycast(Entity caster, float range) {
+        Vec3d start = caster.getEyePos();
+        Vec3d look = caster.getRotationVec(1.0F)
+                .normalize()
+                .multiply(range);
+        Vec3d end = start.add(look);
+        Box searchAABB = caster.getBoundingBox().expand(range, range, range);
+        return TargetHelper.raycast(caster, start, end, searchAABB, (target) -> {
+            return !target.isSpectator() && target.canHit();
+        }, range*range); // `range*range` is provided for squared distance comparison
+    }
+
+    @Nullable
+    private static List<Entity> raycast(Entity entity, Vec3d min, Vec3d max, Box box, Predicate<Entity> predicate, double d) {
+        World world = entity.world;
+        double e = d;
+        // Entity entity2 = null;
+        List<Entity> entities = new ArrayList<>();
+        Vec3d vec3d = null;
+        for (Entity entity3 : world.getOtherEntities(entity, box, predicate)) {
+            Vec3d vec3d2;
+            double f;
+            Box box2 = entity3.getBoundingBox().expand(entity3.getTargetingMargin());
+            Optional<Vec3d> optional = box2.raycast(min, max);
+            if (box2.contains(min)) {
+                if (!(e >= 0.0)) continue;
+                // entity2 = entity3;
+                entities.add(entity3);
+                vec3d = optional.orElse(min);
+                e = 0.0;
+                continue;
+            }
+            if (!optional.isPresent() || !((f = min.squaredDistanceTo(vec3d2 = optional.get())) < e) && e != 0.0) continue;
+            if (entity3.getRootVehicle() == entity.getRootVehicle()) {
+                if (e != 0.0) continue;
+                // entity2 = entity3;
+                entities.add(entity3);
+                vec3d = vec3d2;
+                continue;
+            }
+            // entity2 = entity3;
+            entities.add(entity3);
+            vec3d = vec3d2;
+            e = f;
+        }
+//        if (entity2 == null) {
+//            return null;
+//        }
+        return entities;
+    }
+
     public static List<Entity> targetsFromArea(Entity caster, float range, Spell.Release.Target.Area area) {
         var horizontal = range * area.horizontal_range_multiplier;
         var vertical = range * area.vertical_range_multiplier;
@@ -114,7 +171,7 @@ public class TargetHelper {
     public static boolean isTargetedByClientPlayer(Entity entity) {
         if (entity.world.isClient) {
             var clientPlayer = MinecraftClient.getInstance().player;
-            return ((SpellCasterClient) clientPlayer).getCurrentTarget() == entity;
+            return ((SpellCasterClient) clientPlayer).getCurrentTargets().contains(entity);
         }
         return false;
     }

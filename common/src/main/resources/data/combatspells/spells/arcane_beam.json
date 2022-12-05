@@ -21,7 +21,7 @@
         "flow": 1.5,
         "emit_particles": [
           {
-            "particle_id": "witch",
+            "particle_id": "firework",
             "shape": "PIPE",
             "origin": "CENTER",
             "count": 1,
@@ -31,7 +31,7 @@
         ],
         "block_hit_particles": [
           {
-            "particle_id": "witch",
+            "particle_id": "firework",
             "shape": "CIRCLE",
             "origin": "CENTER",
             "count": 1,
@@ -59,7 +59,7 @@
       },
       "particles": [
         {
-          "particle_id": "witch",
+          "particle_id": "firework",
           "shape": "SPHERE",
           "origin": "CENTER",
           "count": 30.0,
