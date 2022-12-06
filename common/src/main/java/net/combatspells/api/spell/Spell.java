@@ -10,10 +10,7 @@ public class Spell {
     public Cast cast = new Cast();
     public static class Cast { public Cast() { }
         public float duration = 0;
-//        public Mode mode;
-//        public enum Mode {
-//            CAST, CHANNEL
-//        }
+        public int channel_ticks = 0;
         public String animation;
         public Sound sound;
         public ParticleBatch[] particles;

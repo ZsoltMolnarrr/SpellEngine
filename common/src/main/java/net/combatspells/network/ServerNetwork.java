@@ -24,13 +24,13 @@ public class ServerNetwork {
             sender.sendPacket(Packets.ConfigSync.ID, configSerialized);
         });
 
-        ServerPlayNetworking.registerGlobalReceiver(Packets.ReleaseRequest.ID, (server, player, handler, buf, responseSender) -> {
+        ServerPlayNetworking.registerGlobalReceiver(Packets.SpellRequest.ID, (server, player, handler, buf, responseSender) -> {
             ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.world)
                     .orNull();
             if (world == null || world.isClient) {
                 return;
             }
-            var packet = Packets.ReleaseRequest.read(buf);
+            var packet = Packets.SpellRequest.read(buf);
             world.getServer().executeSync(() -> {
                 var stack = player.getInventory().getStack(packet.slot());
                 List<Entity> targets = new ArrayList<>();
@@ -40,7 +40,7 @@ public class ServerNetwork {
                         targets.add(entity);
                     }
                 }
-                SpellHelper.castRelease(world, player, targets, stack, packet.remainingUseTicks());
+                SpellHelper.performSpell(world, player, targets, stack, packet.action(), packet.remainingUseTicks());
             });
         });
     }

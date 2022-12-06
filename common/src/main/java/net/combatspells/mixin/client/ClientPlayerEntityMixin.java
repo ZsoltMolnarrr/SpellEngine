@@ -1,8 +1,9 @@
 package net.combatspells.mixin.client;
 
+import net.combatspells.client.CombatSpellsClient;
+import net.combatspells.internals.SpellCastAction;
 import net.combatspells.internals.SpellHelper;
 import net.combatspells.api.spell.Spell;
-import net.combatspells.client.CombatSpellsClient;
 import net.combatspells.internals.SpellCasterClient;
 import net.combatspells.network.Packets;
 import net.combatspells.utils.TargetHelper;
@@ -53,61 +54,129 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     @Override
     public void castTick(ItemStack itemStack, int remainingUseTicks) {
-        // System.out.println("Cast tick progress: " + progress + ", remainingUseTicks: " + remainingUseTicks);
-        if (CombatSpellsClient.config.autoRelease) {
-            var currentSpell = getCurrentSpell();
-            if (currentSpell == null) {
-                return;
-            }
-            var progress = SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell);
-            if (progress >= 1) {
-                castRelease(itemStack, remainingUseTicks);
-                player().clearActiveItem();
-                return;
-            }
-        }
-        updateTarget();
-    }
-
-    @Override
-    public void castRelease(ItemStack itemStack, int remainingUseTicks) {
         var currentSpell = getCurrentSpell();
         if (currentSpell == null) {
             return;
         }
-        var progress = SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell);
+
+        updateTargets();
+        if (SpellHelper.isChanneled(currentSpell)) {
+            cast(currentSpell, SpellCastAction.CHANNEL, itemStack, remainingUseTicks);
+        } else {
+            if (CombatSpellsClient.config.autoRelease
+                    && SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell) >= 1) {
+                cast(currentSpell, SpellCastAction.RELEASE, itemStack, remainingUseTicks);
+            }
+        }
+
+//        if (CombatSpellsClient.config.autoRelease) {
+//            var currentSpell = ge tCurrentSpell();
+//            if (currentSpell == null) {
+//                return;
+//            }
+//            var progress = SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell);
+//            if (progress >= 1) {
+//                castRelease(itemStack, remainingUseTicks);
+//                player().clearActiveItem();
+//                return;
+//            }
+//        }
+    }
+
+    @Override
+    public void castRelease(ItemStack itemStack, int remainingUseTicks) {
+        updateTargets();
+        cast(getCurrentSpell(), SpellCastAction.RELEASE, itemStack, remainingUseTicks);
+
+//        var currentSpell = getCurrentSpell();
+//        if (currentSpell == null) {
+//            return;
+//        }
+//        var progress = SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell);
+//        var caster = player();
+//        if (progress >= 1) {
+//            updateTargets();
+//            var slot = findSlot(caster, itemStack);
+//            var action = currentSpell.on_release.target;
+//            switch (action.type) {
+//                case PROJECTILE, CURSOR -> {
+//                    var targetIDs = new int[]{};
+//                    var firstTarget = firstTarget();
+//                    if (firstTarget != null) {
+//                        targetIDs = new int[]{ firstTarget.getId() };
+//                    }
+//                    ClientPlayNetworking.send(
+//                            Packets.SpellRequest.ID,
+//                            new Packets.SpellRequest(slot, remainingUseTicks, targetIDs).write());
+//                }
+//                case AREA -> {
+//                    var targetIDs = new int[targets.size()];
+//                    int i = 0;
+//                    for (var target : targets) {
+//                        targetIDs[i] = target.getId();
+//                        i += 1;
+//                    }
+//                    ClientPlayNetworking.send(
+//                            Packets.SpellRequest.ID,
+//                            new Packets.SpellRequest(slot, remainingUseTicks, targetIDs).write());
+//                }
+//            }
+//            // Lookup target by target mode
+//        }
+//        System.out.println("Cast release");
+    }
+
+    private void cast(Spell spell, SpellCastAction action, ItemStack itemStack, int remainingUseTicks) {
+        if (spell == null) {
+            return;
+        }
         var caster = player();
-        if (progress >= 1) {
-            var slot = findSlot(caster, itemStack);
-            var action = currentSpell.on_release.target;
-            switch (action.type) {
-                case PROJECTILE, CURSOR -> {
-                    updateTarget();
-                    var targets = new int[]{};
-                    var firstTarget = firstTarget();
-                    if (firstTarget != null) {
-                        targets = new int[]{ firstTarget.getId() };
-                    }
-                    ClientPlayNetworking.send(
-                            Packets.ReleaseRequest.ID,
-                            new Packets.ReleaseRequest(slot, remainingUseTicks, targets).write());
+        var progress = SpellHelper.getCastProgress(caster, remainingUseTicks, spell);
+        boolean shouldEndCasting = false;
+        switch (action) {
+            case CHANNEL -> {
+                if (!SpellHelper.isChanneled(spell)
+                        || !SpellHelper.isChannelTickDue(spell, remainingUseTicks)) {
+                    return;
                 }
-                case AREA -> {
-                    var targets = TargetHelper.targetsFromArea(caster, currentSpell.range, currentSpell.on_release.target.area);
-                    var targetIDs = new int[targets.size()];
-                    int i = 0;
-                    for (var target : targets) {
-                        targetIDs[i] = target.getId();
-                        i += 1;
-                    }
-                    ClientPlayNetworking.send(
-                            Packets.ReleaseRequest.ID,
-                            new Packets.ReleaseRequest(slot, remainingUseTicks, targetIDs).write());
+                shouldEndCasting = progress >= 1;
+            }
+            case RELEASE -> {
+                if (progress < 1
+                        || SpellHelper.isChanneled(spell)) {
+                    return;
+                }
+                shouldEndCasting = true;
+            }
+        }
+
+        var slot = findSlot(caster, itemStack);
+        var release = spell.on_release.target;
+        int[] targetIDs = new int[]{};
+        switch (release.type) {
+            case PROJECTILE, CURSOR -> {
+                var firstTarget = firstTarget();
+                if (firstTarget != null) {
+                    targetIDs = new int[]{ firstTarget.getId() };
                 }
             }
-            // Lookup target by target mode
+            case AREA, BEAM -> {
+                targetIDs = new int[targets.size()];
+                int i = 0;
+                for (var target : targets) {
+                    targetIDs[i] = target.getId();
+                    i += 1;
+                }
+            }
         }
-        System.out.println("Cast release");
+        System.out.println("Sending spell cast packet: " + new Packets.SpellRequest(action, slot, remainingUseTicks, targetIDs));
+        ClientPlayNetworking.send(
+                Packets.SpellRequest.ID,
+                new Packets.SpellRequest(action, slot, remainingUseTicks, targetIDs).write());
+
+        if (shouldEndCasting) {
+            player().clearActiveItem();
+        }
     }
 
     private int findSlot(PlayerEntity player, ItemStack stack) {
@@ -121,12 +190,15 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return -1;
     }
 
-    private void updateTarget() {
+    private void updateTargets() {
+        targets = findTargets(getCurrentSpell());
+    }
+
+    private List<Entity> findTargets(Spell currentSpell) {
         var caster = player();
-        var currentSpell = getCurrentSpell();
+        List<Entity> targets = List.of();
         if (currentSpell == null) {
-            targets = List.of();
-            return;
+            return targets;
         }
         switch (currentSpell.on_release.target.type) {
             case AREA -> {
@@ -151,6 +223,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 }
             }
         }
+        return targets;
     }
 
 //    @Inject(method = "clearActiveItem", at = @At("TAIL"))

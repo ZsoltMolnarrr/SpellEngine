@@ -5,6 +5,7 @@ import net.combatspells.CombatSpells;
 import net.combatspells.api.spell.ParticleBatch;
 import net.combatspells.config.ServerConfig;
 import net.combatspells.internals.SpellAnimationType;
+import net.combatspells.internals.SpellCastAction;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
@@ -12,20 +13,23 @@ import net.minecraft.util.Identifier;
 import java.util.ArrayList;
 
 public class Packets {
-    public record ReleaseRequest(int slot, int remainingUseTicks, int[] targets) {
+    public record SpellRequest(SpellCastAction action, int slot, int remainingUseTicks, int[] targets) {
         public static Identifier ID = new Identifier(CombatSpells.MOD_ID, "release_request");
+
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();
+            buffer.writeEnumConstant(action);
             buffer.writeInt(slot);
             buffer.writeInt(remainingUseTicks);
             buffer.writeIntArray(targets);
             return buffer;
         }
-        public static ReleaseRequest read(PacketByteBuf buffer) {
+        public static SpellRequest read(PacketByteBuf buffer) {
+            var action = buffer.readEnumConstant(SpellCastAction.class);
             var slot = buffer.readInt();
             var remainingUseTicks = buffer.readInt();
             var targets = buffer.readIntArray();
-            return new ReleaseRequest(slot, remainingUseTicks, targets);
+            return new SpellRequest(action, slot, remainingUseTicks, targets);
         }
     }
 

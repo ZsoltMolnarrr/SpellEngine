@@ -11,7 +11,6 @@ import net.minecraft.entity.Tameable;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.scoreboard.AbstractTeam;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -100,13 +99,13 @@ public class TargetHelper {
                 .multiply(range);
         Vec3d end = start.add(look);
         Box searchAABB = caster.getBoundingBox().expand(range, range, range);
-        return TargetHelper.raycast(caster, start, end, searchAABB, (target) -> {
+        return TargetHelper.raycastMultiple(caster, start, end, searchAABB, (target) -> {
             return !target.isSpectator() && target.canHit();
         }, range*range); // `range*range` is provided for squared distance comparison
     }
 
     @Nullable
-    private static List<Entity> raycast(Entity entity, Vec3d min, Vec3d max, Box box, Predicate<Entity> predicate, double d) {
+    private static List<Entity> raycastMultiple(Entity entity, Vec3d min, Vec3d max, Box box, Predicate<Entity> predicate, double d) {
         World world = entity.world;
         double e = d;
         // Entity entity2 = null;
@@ -136,11 +135,11 @@ public class TargetHelper {
             // entity2 = entity3;
             entities.add(entity3);
             vec3d = vec3d2;
-            e = f;
+            //e = f;
         }
-//        if (entity2 == null) {
-//            return null;
-//        }
+        // if (entity2 == null) {
+        //     return null;
+        // }
         return entities;
     }
 

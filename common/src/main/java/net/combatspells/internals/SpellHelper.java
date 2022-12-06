@@ -4,7 +4,6 @@ import net.combatspells.CombatSpells;
 import net.combatspells.api.Enchantments_CombatSpells;
 import net.combatspells.api.spell.Spell;
 import net.combatspells.entity.SpellProjectile;
-import net.combatspells.internals.SpellRegistry;
 import net.combatspells.utils.AnimationHelper;
 import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.SoundHelper;
@@ -91,7 +90,23 @@ public class SpellHelper {
         return duration;
     }
 
-    public static void castRelease(World world, LivingEntity caster, List<Entity> targets, ItemStack itemStack, int remainingUseTicks) {
+    public static boolean isChannelTickDue(Spell spell, int remainingUseTicks) {
+        return (remainingUseTicks % spell.cast.channel_ticks) == 0;
+    }
+
+    public static boolean isChanneled(Spell spell) {
+        return channelValueMultiplier(spell) != 0;
+    }
+
+    public static float channelValueMultiplier(Spell spell) {
+        var ticks = spell.cast.channel_ticks;
+        if (ticks <= 0) {
+            return 0;
+        }
+        return ((float)ticks) / 20F;
+    }
+
+    public static void performSpell(World world, LivingEntity caster, List<Entity> targets, ItemStack itemStack, SpellCastAction action, int remainingUseTicks) {
         var item = itemStack.getItem();
         var spell = SpellRegistry.resolveSpellByItem(Registry.ITEM.getId(item));
         if (spell == null) {
@@ -102,10 +117,35 @@ public class SpellHelper {
         if (caster instanceof PlayerEntity player) {
             ammoResult = ammoForSpell(player, spell, itemStack);
         }
-        if (progress >= 1 && ammoResult.satisfied()) {
-            var action = spell.on_release.target;
+        var channelMultiplier = 1F;
+        switch (action) {
+            case CHANNEL -> {
+                channelMultiplier = channelValueMultiplier(spell);
+            }
+            case RELEASE -> {
+                channelMultiplier = (progress >= 1) ? 1 : 0;
+            }
+        }
+        if (channelMultiplier > 0 && ammoResult.satisfied()) {
+            var targeting = spell.on_release.target;
             boolean success = false;
-            switch (action.type) {
+            switch (targeting.type) {
+                case AREA -> {
+                    areaImpact(world, caster, targets, spell, channelMultiplier);
+                    success = true;
+                }
+                case BEAM -> {
+                    System.out.println("Beam impact channelMultiplier: " + channelMultiplier);
+                    areaImpact(world, caster, targets, spell, channelMultiplier);
+                    success = false;
+                }
+                case CURSOR -> {
+                    var target = targets.stream().findFirst();
+                    if (target.isPresent()) {
+                        directImpact(world, caster, target.get(), spell, channelMultiplier);
+                        success = true;
+                    }
+                }
                 case PROJECTILE -> {
                     Entity target = null;
                     var entityFound = targets.stream().findFirst();
@@ -113,17 +153,6 @@ public class SpellHelper {
                         target = entityFound.get();
                     }
                     shootProjectile(world, caster, target, spell);
-                    success = true;
-                }
-                case CURSOR -> {
-                    var target = targets.stream().findFirst();
-                    if (target.isPresent()) {
-                        directImpact(world, caster, target.get(), spell);
-                        success = true;
-                    }
-                }
-                case AREA -> {
-                    areaImpact(world, caster, targets, spell);
                     success = true;
                 }
             }
@@ -160,13 +189,13 @@ public class SpellHelper {
         }
     }
 
-    private static void directImpact(World world, LivingEntity caster, Entity target, Spell spell) {
-        performImpacts(world, caster, target, spell);
+    private static void directImpact(World world, LivingEntity caster, Entity target, Spell spell, float channelMultiplier) {
+        performImpacts(world, caster, target, spell, channelMultiplier);
     }
 
-    private static void areaImpact(World world, LivingEntity caster, List<Entity> targets, Spell spell) {
+    private static void areaImpact(World world, LivingEntity caster, List<Entity> targets, Spell spell, float channelMultiplier) {
         for(var target: targets) {
-            performImpacts(world, caster, target, spell);
+            performImpacts(world, caster, target, spell, channelMultiplier);
         }
     }
 
@@ -203,16 +232,16 @@ public class SpellHelper {
         System.out.println("Shooting projectile");
     }
 
-    public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell spell) {
+    public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell spell, float channelMultiplier) {
         var performed = false;
         for (var impact: spell.on_impact) {
-            var result = performImpact(world, caster, target, spell.school, impact);
+            var result = performImpact(world, caster, target, spell.school, impact, channelMultiplier);
             performed = performed || result;
         }
         return performed;
     }
 
-    private static boolean performImpact(World world, LivingEntity caster, Entity target, MagicSchool school, Spell.Impact impact) {
+    private static boolean performImpact(World world, LivingEntity caster, Entity target, MagicSchool school, Spell.Impact impact, float channelMultiplier) {
         if (!target.isAttackable()) {
             return false;
         }
@@ -231,6 +260,7 @@ public class SpellHelper {
                     var amount = damage.randomValue();
                     var source = SpellDamageSource.create(school, caster);
                     amount *= damageData.multiplier;
+                    amount *= channelMultiplier;
                     caster.onAttacking(target);
                     target.damage(source, (float) amount);
                     success = true;
@@ -245,6 +275,7 @@ public class SpellHelper {
                         particleMultiplier = healing.criticalMultiplier();
                         var amount = healing.randomValue();
                         amount *= healData.multiplier;
+                        amount *= channelMultiplier;
                         livingTarget.heal((float) amount);
                         success = true;
                     }
@@ -258,6 +289,7 @@ public class SpellHelper {
                             return false;
                         }
                         var duration = Math.round(data.duration * 20F);
+                        // duration *= progressMultiplier; // ?????
                         var amplifier = data.amplifier;
                         livingTarget.addStatusEffect(
                                 new StatusEffectInstance(effect, duration, amplifier),

@@ -199,7 +199,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             var target = entityHitResult.getEntity();
             if (target != null && this.getOwner() != null && this.getOwner() instanceof LivingEntity caster) {
                 setFollowedTarget(null);
-                var performed = SpellHelper.performImpacts(world, caster, target, spell);
+                var performed = SpellHelper.performImpacts(world, caster, target, spell, 1F);
                 if (performed) {
                     this.kill();
                 }

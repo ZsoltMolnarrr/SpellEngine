@@ -10,7 +10,8 @@
       "pitch": 1.0,
       "randomness": 0.1
     },
-    "particles": []
+    "particles": [],
+    "channel_ticks": 2
   },
   "on_release": {
     "target": {
