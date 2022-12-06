@@ -5,6 +5,7 @@ import net.combatspells.CombatSpells;
 import net.combatspells.client.CombatSpellsClient;
 import net.combatspells.config.HudConfig;
 import net.combatspells.internals.SpellCasterClient;
+import net.combatspells.internals.SpellHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.hud.InGameHud;
@@ -41,12 +42,17 @@ public class HudRenderHelper {
             var spell = caster.getCurrentSpell();
             var spellId = caster.getCurrentSpellId();
             if (spell != null) {
+//                var progress = caster.getCurrentCastProgress();
+//                if (SpellHelper.isChanneled(spell)) {
+//                    progress = Math.max(1F - progress, 0F);
+//                }
                 castBarViewModel = new CastBarWidget.ViewModel(
                         spell.school.color(),
                         caster.getCurrentCastProgress(),
                         spell.cast.duration,
                         spellIconTexture(spellId),
-                        true);
+                        true,
+                        SpellHelper.isChanneled(spell));
             }
         }
 
@@ -115,9 +121,9 @@ public class HudRenderHelper {
         private static final Identifier CAST_BAR = new Identifier(CombatSpells.MOD_ID, "textures/hud/castbar.png");
         public static final int spellIconSize = 16;
 
-        public record ViewModel(int color, float progress, float castDuration, String iconTexture, boolean allowTickDelta) {
+        public record ViewModel(int color, float progress, float castDuration, String iconTexture, boolean allowTickDelta, boolean reverse) {
             public static ViewModel mock() {
-                return new ViewModel(0xFF3300, 0.5F, 1, spellIconTexture(new Identifier("combatspells", "fireball")), false);
+                return new ViewModel(0xFF3300, 0.5F, 1, spellIconTexture(new Identifier("combatspells", "fireball")), false, false);
             }
         }
 
@@ -141,7 +147,8 @@ public class HudRenderHelper {
             if (viewModel.allowTickDelta && viewModel.castDuration > 0) {
                 partialProgress = tickDelta / (viewModel.castDuration * 20F);
             }
-            renderBar(matrixStack, barWidth, false, viewModel.progress + partialProgress, x, y);
+            var progress = viewModel.reverse() ? (1F - viewModel.progress - partialProgress) : (viewModel.progress + partialProgress);
+            renderBar(matrixStack, barWidth, false, progress, x, y);
 
             if (hudConfig.icon.visible && viewModel.iconTexture != null) {
                 x = (int) (starting.x + hudConfig.icon.offset.x);

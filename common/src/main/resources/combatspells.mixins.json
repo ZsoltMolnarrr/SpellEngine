@@ -6,10 +6,10 @@
   "mixins": [
     "AttributeAssigner_ItemStackMixin",
     "ItemStackMixin",
+    "LivingEntityAccessor",
     "PlayerEntityMixin"
   ],
   "client": [
-    "client.LivingEntityAccessor",
     "client.AbstractClientPlayerEntityMixin",
     "client.ClientPlayerEntityMixin",
     "client.EntityMixin",

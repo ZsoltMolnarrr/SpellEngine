@@ -4,6 +4,7 @@ import net.combatspells.CombatSpells;
 import net.combatspells.api.Enchantments_CombatSpells;
 import net.combatspells.api.spell.Spell;
 import net.combatspells.entity.SpellProjectile;
+import net.combatspells.mixin.LivingEntityAccessor;
 import net.combatspells.utils.AnimationHelper;
 import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.SoundHelper;
@@ -247,7 +248,7 @@ public class SpellHelper {
         }
         var success = false;
         try {
-            double particleMultiplier = 1;
+            double particleMultiplier = 1 * channelMultiplier;
             var relation = TargetHelper.getRelation(caster, target);
             switch (impact.action.type) {
                 case DAMAGE -> {
@@ -261,6 +262,9 @@ public class SpellHelper {
                     var source = SpellDamageSource.create(school, caster);
                     amount *= damageData.multiplier;
                     amount *= channelMultiplier;
+                    if (CombatSpells.config.bypass_iframes && target instanceof LivingEntityAccessor livingEntityAccessor) {
+                        livingEntityAccessor.setLastAttackedTicks(20);
+                    }
                     caster.onAttacking(target);
                     target.damage(source, (float) amount);
                     success = true;

@@ -19,6 +19,7 @@ import net.combatspells.client.animation.AnimationRegistry;
 import net.combatspells.client.animation.AnimationSubStack;
 import net.combatspells.internals.SpellAnimationType;
 import net.combatspells.internals.SpellCasterEntity;
+import net.combatspells.mixin.LivingEntityAccessor;
 import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.StringUtil;
 import net.minecraft.client.MinecraftClient;
