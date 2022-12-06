@@ -99,42 +99,50 @@ public class TargetHelper {
                 .multiply(range);
         Vec3d end = start.add(look);
         Box searchAABB = caster.getBoundingBox().expand(range, range, range);
-        return TargetHelper.raycastMultiple(caster, start, end, searchAABB, (target) -> {
+        var entitiesHit = TargetHelper.raycastMultiple(caster, start, end, searchAABB, (target) -> {
             return !target.isSpectator() && target.canHit();
         }, range*range); // `range*range` is provided for squared distance comparison
+        return entitiesHit.stream()
+                .filter((hit) -> {
+                    return hit.position() == null || raycastObstacleFree(start, hit.position());
+                })
+                .map(hit -> hit.entity)
+                .toList();
     }
 
+    private record EntityHit(Entity entity, Vec3d position) { }
+
     @Nullable
-    private static List<Entity> raycastMultiple(Entity entity, Vec3d min, Vec3d max, Box box, Predicate<Entity> predicate, double d) {
-        World world = entity.world;
-        double e = d;
+    private static List<EntityHit> raycastMultiple(Entity sourceEntity, Vec3d min, Vec3d max, Box searchBox, Predicate<Entity> predicate, double squaredDistance) {
+        World world = sourceEntity.world;
+        double e = squaredDistance;
         // Entity entity2 = null;
-        List<Entity> entities = new ArrayList<>();
+        List<EntityHit> entities = new ArrayList<>();
         Vec3d vec3d = null;
-        for (Entity entity3 : world.getOtherEntities(entity, box, predicate)) {
-            Vec3d vec3d2;
+        for (Entity entity : world.getOtherEntities(sourceEntity, searchBox, predicate)) {
+            Vec3d hitPosition;
             double f;
-            Box box2 = entity3.getBoundingBox().expand(entity3.getTargetingMargin());
-            Optional<Vec3d> optional = box2.raycast(min, max);
+            Box box2 = entity.getBoundingBox().expand(entity.getTargetingMargin());
+            Optional<Vec3d> raycastResult = box2.raycast(min, max);
             if (box2.contains(min)) {
                 if (!(e >= 0.0)) continue;
-                // entity2 = entity3;
-                entities.add(entity3);
-                vec3d = optional.orElse(min);
+                // entity2 = entity;
+                vec3d = raycastResult.orElse(min);
+                entities.add(new EntityHit(entity, vec3d));
                 e = 0.0;
                 continue;
             }
-            if (!optional.isPresent() || !((f = min.squaredDistanceTo(vec3d2 = optional.get())) < e) && e != 0.0) continue;
-            if (entity3.getRootVehicle() == entity.getRootVehicle()) {
+            if (!raycastResult.isPresent() || !((f = min.squaredDistanceTo(hitPosition = raycastResult.get())) < e) && e != 0.0) continue;
+            if (entity.getRootVehicle() == sourceEntity.getRootVehicle()) {
                 if (e != 0.0) continue;
-                // entity2 = entity3;
-                entities.add(entity3);
-                vec3d = vec3d2;
+                // entity2 = entity;
+                vec3d = hitPosition;
+                entities.add(new EntityHit(entity, vec3d));
                 continue;
             }
-            // entity2 = entity3;
-            entities.add(entity3);
-            vec3d = vec3d2;
+            // entity2 = entity;
+            vec3d = hitPosition;
+            entities.add(new EntityHit(entity, vec3d));
             //e = f;
         }
         // if (entity2 == null) {
