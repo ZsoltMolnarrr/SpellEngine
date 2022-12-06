@@ -87,7 +87,9 @@ public class TargetHelper {
             return !target.isSpectator() && target.canHit();
         }, range*range); // `range*range` is provided for squared distance comparison
         if (hitResult != null) {
-            return hitResult.getEntity();
+            if (hitResult.getPos() == null || raycastObstacleFree(start, hitResult.getPos())) {
+                return hitResult.getEntity();
+            }
         }
         return null;
     }
@@ -103,9 +105,7 @@ public class TargetHelper {
             return !target.isSpectator() && target.canHit();
         }, range*range); // `range*range` is provided for squared distance comparison
         return entitiesHit.stream()
-                .filter((hit) -> {
-                    return hit.position() == null || raycastObstacleFree(start, hit.position());
-                })
+                .filter((hit) -> hit.position() == null || raycastObstacleFree(start, hit.position()))
                 .map(hit -> hit.entity)
                 .toList();
     }
