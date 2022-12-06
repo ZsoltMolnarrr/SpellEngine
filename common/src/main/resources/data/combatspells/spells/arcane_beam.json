@@ -2,7 +2,7 @@
   "range": 32.0,
   "school": "ARCANE",
   "cast": {
-    "duration": 5.0,
+    "duration": 3.0,
     "animation": "combatspells:one_handed_projectile_charge",
     "sound": {
       "id": "combatspells:casting_arcane",
@@ -76,10 +76,11 @@
       }
     }
   ],
-  "cooldown_duration": 1.0,
   "cost": {
     "exhaust": 0.1,
     "item_id": "combatspells:arcane_rune",
-    "durability": 1
+    "durability": 1,
+    "cooldown_duration": 3,
+    "cooldown_proportional": true
   }
 }

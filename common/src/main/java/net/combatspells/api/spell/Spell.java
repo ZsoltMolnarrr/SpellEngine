@@ -82,12 +82,13 @@ public class Spell {
         public Sound sound;
     }
 
-    public float cooldown_duration = 0;
     public Cost cost = new Cost();
     public static class Cost { public Cost() { }
         public float exhaust = 0.1F;
         public String item_id;
         public int durability = 1;
+        public float cooldown_duration = 0;
+        public boolean cooldown_proportional = false;
     }
 
     public static class ProjectileData { public ProjectileData() { }

@@ -62,10 +62,10 @@
       }
     }
   ],
-  "cooldown_duration": 3.0,
   "cost": {
     "exhaust": 0.1,
     "item_id": "minecraft:coal",
-    "durability": 1
+    "durability": 1,
+    "cooldown_duration": 3.0
   }
 }

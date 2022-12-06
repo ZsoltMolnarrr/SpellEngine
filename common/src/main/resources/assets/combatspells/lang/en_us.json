@@ -17,6 +17,7 @@
   "spell.tooltip.range.plural": "Range: {range} blocks",
   "spell.tooltip.cooldown": "Cooldown: {duration} second",
   "spell.tooltip.cooldown.plural": "Cooldown: {duration} seconds",
+  "spell.tooltip.cooldown.proportional": "Cooldown proportional to usage",
   "spell.tooltip.ammo": "Requires: {item}",
   "spell.tooltip.ammo.plural": "Requires: {item} (x{count})",
 

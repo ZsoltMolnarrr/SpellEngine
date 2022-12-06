@@ -72,10 +72,9 @@
       }
     }
   ],
-  "cooldown_duration": 4.0,
   "cost": {
     "exhaust": 0.1,
-    "durability": 1,
-    "item_id": "combatspells:frost_rune"
+    "item_id": "combatspells:frost_rune",
+    "cooldown_duration": 4.0
   }
 }

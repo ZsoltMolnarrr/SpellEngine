@@ -257,7 +257,7 @@ public class SpellRegistry {
         var frostNova = new Spell();
         frostNova.school = MagicSchool.FROST;
         frostNova.cast.duration = 2;
-        frostNova.cooldown_duration = 3;
+        frostNova.cost.cooldown_duration = 3;
         frostNova.range = 10;
         frostNova.on_release = new Spell.Release();
         frostNova.on_release.target = new Spell.Release.Target();

@@ -82,10 +82,10 @@ public class SpellHelper {
     }
 
     public static float getCooldownDuration(LivingEntity caster, Spell spell, ItemStack provisionedWeapon) {
-        var duration = spell.cooldown_duration;
+        var duration = spell.cost.cooldown_duration;
         if (duration > 0) {
             if (CombatSpells.config.haste_affects_cooldown) {
-                duration = hasteAffectedValue(caster, spell.cooldown_duration, provisionedWeapon);
+                duration = hasteAffectedValue(caster, spell.cost.cooldown_duration, provisionedWeapon);
             }
         }
         return duration;
@@ -169,7 +169,7 @@ public class SpellHelper {
                 SoundHelper.playSound(world, caster, spell.on_release.sound);
                 if (caster instanceof PlayerEntity player) {
                     AnimationHelper.sendAnimation(player, RELEASE, spell.on_release.animation);
-                    var duration = getCooldownDuration(caster, spell);
+                    var duration = cooldownToSet(caster, spell, progress);
                     if (duration > 0) {
                         player.getItemCooldownManager().set(item, Math.round(duration * 20F));
                     }
@@ -194,6 +194,14 @@ public class SpellHelper {
                     }
                 }
             }
+        }
+    }
+
+    private static float cooldownToSet(LivingEntity caster, Spell spell, float progress) {
+        if (spell.cost.cooldown_proportional) {
+            return getCooldownDuration(caster, spell) * progress;
+        } else {
+            return getCooldownDuration(caster, spell);
         }
     }
 
