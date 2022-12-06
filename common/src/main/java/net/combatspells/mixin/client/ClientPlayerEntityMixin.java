@@ -60,70 +60,22 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
 
         updateTargets();
+        var progress = SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell);
         if (SpellHelper.isChanneled(currentSpell)) {
-            cast(currentSpell, SpellCastAction.CHANNEL, itemStack, remainingUseTicks);
+            var action = (progress >= 1) ? SpellCastAction.RELEASE : SpellCastAction.CHANNEL;
+            cast(currentSpell, action, itemStack, remainingUseTicks);
         } else {
             if (CombatSpellsClient.config.autoRelease
                     && SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell) >= 1) {
                 cast(currentSpell, SpellCastAction.RELEASE, itemStack, remainingUseTicks);
             }
         }
-
-//        if (CombatSpellsClient.config.autoRelease) {
-//            var currentSpell = ge tCurrentSpell();
-//            if (currentSpell == null) {
-//                return;
-//            }
-//            var progress = SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell);
-//            if (progress >= 1) {
-//                castRelease(itemStack, remainingUseTicks);
-//                player().clearActiveItem();
-//                return;
-//            }
-//        }
     }
 
     @Override
     public void castRelease(ItemStack itemStack, int remainingUseTicks) {
         updateTargets();
         cast(getCurrentSpell(), SpellCastAction.RELEASE, itemStack, remainingUseTicks);
-
-//        var currentSpell = getCurrentSpell();
-//        if (currentSpell == null) {
-//            return;
-//        }
-//        var progress = SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell);
-//        var caster = player();
-//        if (progress >= 1) {
-//            updateTargets();
-//            var slot = findSlot(caster, itemStack);
-//            var action = currentSpell.on_release.target;
-//            switch (action.type) {
-//                case PROJECTILE, CURSOR -> {
-//                    var targetIDs = new int[]{};
-//                    var firstTarget = firstTarget();
-//                    if (firstTarget != null) {
-//                        targetIDs = new int[]{ firstTarget.getId() };
-//                    }
-//                    ClientPlayNetworking.send(
-//                            Packets.SpellRequest.ID,
-//                            new Packets.SpellRequest(slot, remainingUseTicks, targetIDs).write());
-//                }
-//                case AREA -> {
-//                    var targetIDs = new int[targets.size()];
-//                    int i = 0;
-//                    for (var target : targets) {
-//                        targetIDs[i] = target.getId();
-//                        i += 1;
-//                    }
-//                    ClientPlayNetworking.send(
-//                            Packets.SpellRequest.ID,
-//                            new Packets.SpellRequest(slot, remainingUseTicks, targetIDs).write());
-//                }
-//            }
-//            // Lookup target by target mode
-//        }
-//        System.out.println("Cast release");
     }
 
     private void cast(Spell spell, SpellCastAction action, ItemStack itemStack, int remainingUseTicks) {
@@ -132,18 +84,18 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
         var caster = player();
         var progress = SpellHelper.getCastProgress(caster, remainingUseTicks, spell);
+        var isChannelled = SpellHelper.isChanneled(spell);
         boolean shouldEndCasting = false;
         switch (action) {
             case CHANNEL -> {
-                if (!SpellHelper.isChanneled(spell)
+                if (!isChannelled
                         || !SpellHelper.isChannelTickDue(spell, remainingUseTicks)) {
                     return;
                 }
                 shouldEndCasting = progress >= 1;
             }
             case RELEASE -> {
-                if (progress < 1
-                        || SpellHelper.isChanneled(spell)) {
+                if (!isChannelled && progress < 1) {
                     return;
                 }
                 shouldEndCasting = true;

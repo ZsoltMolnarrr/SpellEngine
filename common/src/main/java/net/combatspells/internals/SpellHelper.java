@@ -119,45 +119,52 @@ public class SpellHelper {
             ammoResult = ammoForSpell(player, spell, itemStack);
         }
         var channelMultiplier = 1F;
+        boolean shouldPerformImpact = true;
         switch (action) {
             case CHANNEL -> {
                 channelMultiplier = channelValueMultiplier(spell);
             }
             case RELEASE -> {
-                channelMultiplier = (progress >= 1) ? 1 : 0;
+                if (isChanneled(spell)) {
+                    shouldPerformImpact = false;
+                    channelMultiplier = 1;
+                } else {
+                    channelMultiplier = (progress >= 1) ? 1 : 0;
+                }
             }
         }
         if (channelMultiplier > 0 && ammoResult.satisfied()) {
             var targeting = spell.on_release.target;
-            boolean success = false;
-            switch (targeting.type) {
-                case AREA -> {
-                    areaImpact(world, caster, targets, spell, channelMultiplier);
-                    success = true;
-                }
-                case BEAM -> {
-                    System.out.println("Beam impact channelMultiplier: " + channelMultiplier);
-                    areaImpact(world, caster, targets, spell, channelMultiplier);
-                    success = false;
-                }
-                case CURSOR -> {
-                    var target = targets.stream().findFirst();
-                    if (target.isPresent()) {
-                        directImpact(world, caster, target.get(), spell, channelMultiplier);
-                        success = true;
+            boolean released = action == SpellCastAction.RELEASE;
+            System.out.println("Beam action: " + action);
+            if (shouldPerformImpact) {
+                switch (targeting.type) {
+                    case AREA -> {
+                        areaImpact(world, caster, targets, spell, channelMultiplier);
                     }
-                }
-                case PROJECTILE -> {
-                    Entity target = null;
-                    var entityFound = targets.stream().findFirst();
-                    if (entityFound.isPresent()) {
-                        target = entityFound.get();
+                    case BEAM -> {
+                        System.out.println("Beam impact channelMultiplier: " + channelMultiplier);
+                        areaImpact(world, caster, targets, spell, channelMultiplier);
                     }
-                    shootProjectile(world, caster, target, spell);
-                    success = true;
+                    case CURSOR -> {
+                        var target = targets.stream().findFirst();
+                        if (target.isPresent()) {
+                            directImpact(world, caster, target.get(), spell, channelMultiplier);
+                        } else {
+                            released = false;
+                        }
+                    }
+                    case PROJECTILE -> {
+                        Entity target = null;
+                        var entityFound = targets.stream().findFirst();
+                        if (entityFound.isPresent()) {
+                            target = entityFound.get();
+                        }
+                        shootProjectile(world, caster, target, spell);
+                    }
                 }
             }
-            if (success) {
+            if (released) {
                 ParticleHelper.sendBatches(caster, spell.on_release.particles);
                 SoundHelper.playSound(world, caster, spell.on_release.sound);
                 if (caster instanceof PlayerEntity player) {
