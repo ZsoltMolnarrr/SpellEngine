@@ -272,6 +272,7 @@ public class SpellHelper {
                     if(!TargetHelper.actionAllowed(false, relation, caster, target)) {
                         return false;
                     }
+                    var isChannelDamage = channelMultiplier != 1F;
                     var damageData = impact.action.damage;
                     var damage = SpellDamage.getSpellDamage(school, caster);
                     particleMultiplier = damage.criticalMultiplier();
@@ -279,10 +280,13 @@ public class SpellHelper {
                     var amount = damage.randomValue();
                     amount *= damageData.multiplier;
                     amount *= channelMultiplier;
+                    if (isChannelDamage) {
+                        amount *= SpellDamage.getHaste(caster);
+                    }
 
                     var timeUntilRegen = target.timeUntilRegen;
                     if (target instanceof LivingEntity livingEntity) {
-                        ((ChannelTarget)livingEntity).setHitByChanneling(true);
+                        ((ChannelTarget)livingEntity).setHitByChanneling(isChannelDamage);
                         if (CombatSpells.config.bypass_iframes) {
                             target.timeUntilRegen = 0;
                         }
