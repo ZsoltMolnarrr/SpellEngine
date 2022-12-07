@@ -11,7 +11,6 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 import java.util.List;
-import java.util.Random;
 
 public class SoundHelper {
     public static List<String> soundKeys = List.of(

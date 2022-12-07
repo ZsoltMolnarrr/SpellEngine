@@ -4,14 +4,14 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.combatspells.CombatSpells;
+import net.combatspells.client.animation.AnimationRegistry;
 import net.combatspells.client.gui.RuneCraftingScreen;
+import net.combatspells.config.ClientConfig;
+import net.combatspells.config.ClientConfigWrapper;
 import net.combatspells.config.HudConfig;
 import net.combatspells.runes.RuneCraftingScreenHandler;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.MinecraftClient;
-import net.combatspells.client.animation.AnimationRegistry;
-import net.combatspells.config.ClientConfig;
-import net.combatspells.config.ClientConfigWrapper;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.tinyconfig.ConfigManager;
 

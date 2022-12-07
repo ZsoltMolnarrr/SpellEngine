@@ -2,8 +2,8 @@ package net.combatspells.client;
 
 import com.ibm.icu.text.DecimalFormat;
 import net.combatspells.CombatSpells;
-import net.combatspells.internals.SpellHelper;
 import net.combatspells.internals.SpellCasterItemStack;
+import net.combatspells.internals.SpellHelper;
 import net.combatspells.internals.SpellRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.resource.language.I18n;

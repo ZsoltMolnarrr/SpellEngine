@@ -1,10 +1,10 @@
 package net.combatspells.mixin.client;
 
+import net.combatspells.api.spell.Spell;
 import net.combatspells.client.CombatSpellsClient;
 import net.combatspells.internals.SpellCastAction;
-import net.combatspells.internals.SpellHelper;
-import net.combatspells.api.spell.Spell;
 import net.combatspells.internals.SpellCasterClient;
+import net.combatspells.internals.SpellHelper;
 import net.combatspells.network.Packets;
 import net.combatspells.utils.TargetHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;

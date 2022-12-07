@@ -2,9 +2,9 @@ package net.combatspells.entity;
 
 import com.google.gson.Gson;
 import net.combatspells.CombatSpells;
-import net.combatspells.internals.SpellHelper;
 import net.combatspells.api.spell.Spell;
 import net.combatspells.client.projectile.FlyingSpellEntity;
+import net.combatspells.internals.SpellHelper;
 import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.VectorHelper;
 import net.minecraft.entity.Entity;

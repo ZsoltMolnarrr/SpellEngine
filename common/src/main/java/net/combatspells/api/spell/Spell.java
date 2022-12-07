@@ -12,6 +12,7 @@ public class Spell {
         public float duration = 0;
         public int channel_ticks = 0;
         public String animation;
+        public Sound start_sound;
         public Sound sound;
         public ParticleBatch[] particles;
     }

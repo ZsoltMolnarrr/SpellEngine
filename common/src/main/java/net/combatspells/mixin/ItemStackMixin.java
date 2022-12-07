@@ -1,9 +1,9 @@
 package net.combatspells.mixin;
 
-import net.combatspells.internals.SpellHelper;
 import net.combatspells.api.spell.Spell;
 import net.combatspells.internals.SpellCasterClient;
 import net.combatspells.internals.SpellCasterItemStack;
+import net.combatspells.internals.SpellHelper;
 import net.combatspells.internals.SpellRegistry;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;

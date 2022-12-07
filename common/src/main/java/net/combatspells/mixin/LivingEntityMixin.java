@@ -1,6 +1,5 @@
 package net.combatspells.mixin;
 
-import net.combatspells.CombatSpells;
 import net.combatspells.entity.LivingEntityExtension;
 import net.minecraft.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
