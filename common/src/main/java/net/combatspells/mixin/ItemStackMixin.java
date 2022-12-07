@@ -105,7 +105,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
         if (SpellHelper.ammoForSpell(user, spell, itemStack()).satisfied()) {
             if (world.isClient) {
                 if (user instanceof SpellCasterClient caster) {
-                    caster.castStart(spell);
+                    caster.castStart(spell, itemStack(), SpellHelper.maximumUseTicks);
                 }
             }
             user.setCurrentHand(hand); // Set runes in use

@@ -48,8 +48,13 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     @Override
-    public void castStart(Spell spell) {
+    public void castStart(Spell spell, ItemStack itemStack, int remainingUseTicks) {
         System.out.println("Spell casting - Start");
+        var caster = player();
+        var slot = findSlot(caster, itemStack);
+        ClientPlayNetworking.send(
+                Packets.SpellRequest.ID,
+                new Packets.SpellRequest(SpellCastAction.START, slot, remainingUseTicks, new int[]{}).write());
     }
 
     @Override

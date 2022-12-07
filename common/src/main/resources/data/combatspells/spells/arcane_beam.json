@@ -10,6 +10,12 @@
       "pitch": 1.0,
       "randomness": 0.1
     },
+    "start_sound": {
+      "id": "combatspells:impact_fireball",
+      "volume": 1.0,
+      "pitch": 1.0,
+      "randomness": 0.1
+    },
     "particles": [],
     "channel_ticks": 4
   },

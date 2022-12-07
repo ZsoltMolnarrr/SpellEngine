@@ -114,13 +114,13 @@ public class SpellHelper {
             return;
         }
         var progress = getCastProgress(caster, remainingUseTicks, spell);
-        var ammoResult = new AmmoResult(true, null);
-        if (caster instanceof PlayerEntity player) {
-            ammoResult = ammoForSpell(player, spell, itemStack);
-        }
         var channelMultiplier = 1F;
         boolean shouldPerformImpact = true;
         switch (action) {
+            case START -> {
+                SoundHelper.playSound(caster.world, caster, spell.cast.start_sound);
+                return;
+            }
             case CHANNEL -> {
                 channelMultiplier = channelValueMultiplier(spell);
             }
@@ -132,6 +132,10 @@ public class SpellHelper {
                     channelMultiplier = (progress >= 1) ? 1 : 0;
                 }
             }
+        }
+        var ammoResult = new AmmoResult(true, null);
+        if (caster instanceof PlayerEntity player) {
+            ammoResult = ammoForSpell(player, spell, itemStack);
         }
         if (channelMultiplier > 0 && ammoResult.satisfied()) {
             var targeting = spell.on_release.target;
