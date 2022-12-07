@@ -8,8 +8,6 @@ import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 public class ServerConfig implements ConfigData {
     @Comment("Allow spells to bypass invulnerability frames. This is required in order for high attack frequency spells (such as beams) to work.")
     public boolean bypass_iframes = true;
-    @Comment("Channelled spells to do lower knockback, due to the high frequency of attacks")
-    public float channelled_spells_knockback = 0.3F;
     @Comment("Spell haste reduces the cooldown time of abilities")
     public boolean haste_affects_cooldown = true;
     @Comment("Spell costs exhausts (hunger) will be multiplied with this value. Set `0` for no exhaust.")
@@ -18,8 +16,4 @@ public class ServerConfig implements ConfigData {
     public boolean spell_cost_item_allowed = true;
     @Comment("Spells should damage items on use. Set `false` to disable.")
     public boolean spell_cost_durability_allowed = true;
-
-    public float getChannelledSpellsKnockback() {
-        return Math.min(Math.max(0F, channelled_spells_knockback), 1F);
-    }
 }

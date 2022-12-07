@@ -64,6 +64,7 @@ public class Spell {
             }
             public Damage damage;
             public static class Damage { public Damage() { }
+                public float knockback = 1;
                 public float multiplier = 1;
             }
             public Heal heal;

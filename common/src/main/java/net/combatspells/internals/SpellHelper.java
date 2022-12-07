@@ -3,9 +3,8 @@ package net.combatspells.internals;
 import net.combatspells.CombatSpells;
 import net.combatspells.api.Enchantments_CombatSpells;
 import net.combatspells.api.spell.Spell;
-import net.combatspells.entity.ChannelTarget;
+import net.combatspells.entity.LivingEntityExtension;
 import net.combatspells.entity.SpellProjectile;
-import net.combatspells.mixin.LivingEntityAccessor;
 import net.combatspells.utils.AnimationHelper;
 import net.combatspells.utils.ParticleHelper;
 import net.combatspells.utils.SoundHelper;
@@ -18,7 +17,6 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -274,6 +272,7 @@ public class SpellHelper {
                     }
                     var isChannelDamage = channelMultiplier != 1F;
                     var damageData = impact.action.damage;
+                    var knockbackMultiplier = Math.min(Math.max(0F, damageData.knockback), 1F);
                     var damage = SpellDamage.getSpellDamage(school, caster);
                     particleMultiplier = damage.criticalMultiplier();
                     var source = SpellDamageSource.create(school, caster);
@@ -286,7 +285,7 @@ public class SpellHelper {
 
                     var timeUntilRegen = target.timeUntilRegen;
                     if (target instanceof LivingEntity livingEntity) {
-                        ((ChannelTarget)livingEntity).setHitByChanneling(isChannelDamage);
+                        ((LivingEntityExtension)livingEntity).setKnockbackMultiplier(knockbackMultiplier);
                         if (CombatSpells.config.bypass_iframes) {
                             target.timeUntilRegen = 0;
                         }
@@ -296,7 +295,7 @@ public class SpellHelper {
                     target.damage(source, (float) amount);
 
                     if (target instanceof LivingEntity livingEntity) {
-                        ((ChannelTarget)livingEntity).setHitByChanneling(false);
+                        ((LivingEntityExtension)livingEntity).setKnockbackMultiplier(1F);
                         target.timeUntilRegen = timeUntilRegen;
                     }
                     success = true;
@@ -341,6 +340,9 @@ public class SpellHelper {
         } catch (Exception e) {
             System.err.println("Failed to perform impact effect");
             System.err.println(e.getMessage());
+            if (target instanceof LivingEntity livingEntity) {
+                ((LivingEntityExtension)livingEntity).setKnockbackMultiplier(1F);
+            }
         }
         return success;
     }
