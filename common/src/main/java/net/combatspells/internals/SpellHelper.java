@@ -3,6 +3,7 @@ package net.combatspells.internals;
 import net.combatspells.CombatSpells;
 import net.combatspells.api.Enchantments_CombatSpells;
 import net.combatspells.api.spell.Spell;
+import net.combatspells.entity.ChannelTarget;
 import net.combatspells.entity.SpellProjectile;
 import net.combatspells.mixin.LivingEntityAccessor;
 import net.combatspells.utils.AnimationHelper;
@@ -17,6 +18,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -273,15 +275,26 @@ public class SpellHelper {
                     var damageData = impact.action.damage;
                     var damage = SpellDamage.getSpellDamage(school, caster);
                     particleMultiplier = damage.criticalMultiplier();
-                    var amount = damage.randomValue();
                     var source = SpellDamageSource.create(school, caster);
+                    var amount = damage.randomValue();
                     amount *= damageData.multiplier;
                     amount *= channelMultiplier;
-                    if (CombatSpells.config.bypass_iframes && target instanceof LivingEntityAccessor livingEntityAccessor) {
-                        livingEntityAccessor.setLastAttackedTicks(20);
+
+                    var timeUntilRegen = target.timeUntilRegen;
+                    if (target instanceof LivingEntity livingEntity) {
+                        ((ChannelTarget)livingEntity).setHitByChanneling(true);
+                        if (CombatSpells.config.bypass_iframes) {
+                            target.timeUntilRegen = 0;
+                        }
                     }
+
                     caster.onAttacking(target);
                     target.damage(source, (float) amount);
+
+                    if (target instanceof LivingEntity livingEntity) {
+                        ((ChannelTarget)livingEntity).setHitByChanneling(false);
+                        target.timeUntilRegen = timeUntilRegen;
+                    }
                     success = true;
                 }
                 case HEAL -> {

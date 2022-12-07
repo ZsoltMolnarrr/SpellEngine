@@ -26,7 +26,7 @@
   "spell.combatspells.scorch.name": "Scorch",
   "spell.combatspells.scorch.description": "Scorches the enemy for {damage} fire damage.",
   "spell.combatspells.arcane_beam.name": "Arcane Beam",
-  "spell.combatspells.arcane_beam.description": "Channels a beam of energy dealing {damage} arcane damage",
+  "spell.combatspells.arcane_beam.description": "Channels a beam of energy dealing {damage} arcane damage every second.",
   "spell.combatspells.frostbolt.name": "Frostbolt",
   "spell.combatspells.frostbolt.description": "Launches a ball of frost dealing {damage} frost damage and slowing the target on impact.",
 

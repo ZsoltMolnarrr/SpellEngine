@@ -11,7 +11,7 @@
       "randomness": 0.1
     },
     "particles": [],
-    "channel_ticks": 2
+    "channel_ticks": 4
   },
   "on_release": {
     "target": {
@@ -54,9 +54,7 @@
     {
       "action": {
         "type": "DAMAGE",
-        "damage": {
-          "multiplier": 1.0
-        }
+        "damage": { }
       },
       "particles": [
         {
