@@ -20,9 +20,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
-import net.spelldamage.api.MagicSchool;
-import net.spelldamage.api.SpellDamage;
-import net.spelldamage.api.SpellDamageSource;
+import net.spell_damage.api.MagicSchool;
+import net.spell_damage.api.SpellDamage;
+import net.spell_damage.api.SpellDamageSource;
 
 import java.util.ArrayList;
 import java.util.List;

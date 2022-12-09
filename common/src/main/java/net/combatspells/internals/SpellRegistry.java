@@ -12,7 +12,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
-import net.spelldamage.api.MagicSchool;
+import net.spell_damage.api.MagicSchool;
 
 import java.io.InputStreamReader;
 import java.util.ArrayList;

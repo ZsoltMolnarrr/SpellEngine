@@ -6,7 +6,7 @@ import net.minecraft.enchantment.EnchantmentTarget;
 import net.minecraft.enchantment.MendingEnchantment;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
-import net.spelldamage.api.enchantment.CustomConditionalEnchantment;
+import net.spell_damage.api.enchantment.CustomConditionalEnchantment;
 import net.tinyconfig.models.EnchantmentConfig;
 
 public class SpellInfinityEnchantment extends Enchantment implements CustomConditionalEnchantment {

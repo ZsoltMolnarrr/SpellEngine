@@ -1,6 +1,6 @@
 package net.combatspells.api.spell;
 
-import net.spelldamage.api.MagicSchool;
+import net.spell_damage.api.MagicSchool;
 
 public class Spell {
     // Structure

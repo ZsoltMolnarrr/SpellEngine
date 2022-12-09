@@ -1,9 +1,9 @@
 {
   "attributes": [
     {
-      "attribute" : "spelldamage:frost",
-      "operation" : "MULTIPLY_TOTAL",
-      "value": 1.2
+      "attribute" : "spell_damage:frost",
+      "operation" : "ADDITION",
+      "value": 3
     }
   ]
 }
