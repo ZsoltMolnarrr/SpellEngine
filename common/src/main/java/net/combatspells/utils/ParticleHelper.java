@@ -91,7 +91,7 @@ public class ParticleHelper {
             }
             for(int i = 0; i < count; ++i) {
                 var direction = direction(batch, yaw, pitch);
-                var particleSpecificOrigin = origin.add(offset(width, batch.shape));
+                var particleSpecificOrigin = origin.add(offset(width, batch.shape, yaw, pitch));
                 world.addParticle(particle, true,
                         particleSpecificOrigin.x, particleSpecificOrigin.y, particleSpecificOrigin.z,
                         direction.x, direction.y, direction.z);
@@ -114,9 +114,9 @@ public class ParticleHelper {
             }
             for(int i = 0; i < count; ++i) {
                 var direction = direction(batch, yaw, pitch);
-                var particleSpecificOrigin = origin.add(offset(entity.getWidth(), batch.shape));
+                var particleSpecificOrigin = origin.add(offset(entity.getWidth(), batch.shape, yaw, pitch));
                 instructions.add(new SpawnInstruction(particle,
-                        origin.x, origin.y, origin.z,
+                        particleSpecificOrigin.x, particleSpecificOrigin.y, particleSpecificOrigin.z,
                         direction.x, direction.y, direction.z));
             }
         }
@@ -154,19 +154,28 @@ public class ParticleHelper {
         return entity.getPos();
     }
 
-    private static Vec3d offset(float width, ParticleBatch.Shape shape) {
+    private static Vec3d offset(float width, ParticleBatch.Shape shape, float yaw, float pitch) {
+        var offset = Vec3d.ZERO;
+        boolean rotateToAngle = false;
         switch (shape) {
             case PIPE -> {
+                rotateToAngle = true;
                 var angle = (float) Math.toRadians(rng.nextFloat() * 360F);
-                return new Vec3d(width,0,0).rotateY(angle);
+                offset = new Vec3d(width,0,0).rotateY(angle);
             }
             case PILLAR -> {
+                rotateToAngle = true;
                 var x = randomInRange(0, width);
                 var angle = (float) Math.toRadians(rng.nextFloat() * 360F);
-                return new Vec3d(x,0,0).rotateY(angle);
+                offset = new Vec3d(x,0,0).rotateY(angle);
             }
         }
-        return Vec3d.ZERO;
+        if (rotateToAngle) {
+            offset = offset
+                    .rotateX((float) Math.toRadians(-pitch))
+                    .rotateY((float) Math.toRadians(-yaw));
+        }
+        return offset;
     }
 
     private static Vec3d direction(ParticleBatch batch, float yaw, float pitch) {
