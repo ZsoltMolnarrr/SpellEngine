@@ -68,7 +68,7 @@ processResources {
 shadowJar {
     configurations = [project.configurations.shadowCommon]
     classifier "dev-shadow"
-    relocate 'net.tinyconfig', 'net.combatspells.tinyconfig'
+    relocate 'net.tinyconfig', 'net.spell_engine.tinyconfig'
 }
 
 remapJar {

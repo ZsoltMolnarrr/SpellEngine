@@ -1,0 +1,24 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.spell_engine.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "AttributeAssigner_ItemStackMixin",
+    "ItemStackMixin",
+    "LivingEntityAccessor",
+    "LivingEntityMixin",
+    "PlayerEntityMixin"
+  ],
+  "client": [
+    "client.AbstractClientPlayerEntityMixin",
+    "client.ClientPlayerEntityMixin",
+    "client.EntityMixin",
+    "client.EntityRenderMixin",
+    "client.LivingEntityRendererMixin",
+    "client.LivingEntityVisualMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

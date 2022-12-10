@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "combatspells",
+  "id": "spell_engine",
   "version": "${version}",
-  "name": "Combat Spells",
-  "description": "Spell casting core",
+  "name": "Spell Engine",
+  "description": "Data driven spell API.",
   "authors": [
     "Daedelus"
   ],
@@ -16,17 +16,17 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "net.combatspells.fabric.client.FabricClientMod"
+      "net.spell_engine.fabric.client.FabricClientMod"
     ],
     "main": [
-      "net.combatspells.fabric.FabricMod"
+      "net.spell_engine.fabric.FabricMod"
     ],
     "modmenu": [
-      "net.combatspells.fabric.client.ModMenuIntegration"
+      "net.spell_engine.fabric.client.ModMenuIntegration"
     ]
   },
   "mixins": [
-    "combatspells.mixins.json"
+    "spell_engine.mixins.json"
   ],
   "depends": {
     "minecraft": ">=1.19.0 <1.19.3",

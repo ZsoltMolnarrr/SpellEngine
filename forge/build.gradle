@@ -6,7 +6,7 @@ plugins {
 
 loom {
     forge {
-        mixinConfig "combatspells.mixins.json"
+        mixinConfig "spell_engine.mixins.json"
     }
 }
 
@@ -73,8 +73,8 @@ shadowJar {
     exclude "fabric.mod.json"
     configurations = [project.configurations.shadowCommon]
     classifier "dev-shadow"
-    relocate 'net.fabricmc', 'net.combatspells.fabricmc'
-    relocate 'net.tinyconfig', 'net.combatspells.tinyconfig'
+    relocate 'net.fabricmc', 'net.spell_engine.fabricmc'
+    relocate 'net.tinyconfig', 'net.spell_engine.tinyconfig'
 }
 
 remapJar {

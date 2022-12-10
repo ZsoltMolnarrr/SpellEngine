@@ -1,3 +1,3 @@
 {
-  "spell": "combatspells:frost_nova"
+  "spell": "spell_engine:frost_nova"
 }

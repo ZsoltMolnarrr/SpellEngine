@@ -11,7 +11,7 @@ subprojects {
     apply plugin: "dev.architectury.loom"
 
     loom {
-        accessWidenerPath = file("src/main/resources/combatspells.accesswidener")
+        accessWidenerPath = file("src/main/resources/spell_engine.accesswidener")
         silentMojangMappingsLicense()
     }
 

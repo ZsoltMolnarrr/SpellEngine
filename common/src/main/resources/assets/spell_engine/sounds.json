@@ -1,0 +1,77 @@
+{
+  "rune_crafting": {
+    "sounds": [
+      "spell_engine:rune_crafting"
+    ]
+  },
+  "casting_arcane": {
+    "sounds": [
+      "spell_engine:casting_arcane"
+    ]
+  },
+  "casting_fire": {
+    "sounds": [
+      "spell_engine:casting_fire"
+    ]
+  },
+  "casting_frost": {
+    "sounds": [
+      "spell_engine:casting_frost"
+    ]
+  },
+  "casting_healing": {
+    "sounds": [
+      "spell_engine:casting_healing"
+    ]
+  },
+  "casting_lightning": {
+    "sounds": [
+      "spell_engine:casting_lightning"
+    ]
+  },
+  "casting_soul": {
+    "sounds": [
+      "spell_engine:casting_soul"
+    ]
+  },
+  "release_arcane": {
+    "sounds": [
+      "spell_engine:release_arcane"
+    ]
+  },
+  "release_fire": {
+    "sounds": [
+      "spell_engine:release_fire"
+    ]
+  },
+  "release_frost": {
+    "sounds": [
+      "spell_engine:release_frost"
+    ]
+  },
+  "release_healing": {
+    "sounds": [
+      "spell_engine:release_healing"
+    ]
+  },
+  "release_lightning": {
+    "sounds": [
+      "spell_engine:release_lightning"
+    ]
+  },
+  "release_soul": {
+    "sounds": [
+      "spell_engine:release_soul"
+    ]
+  },
+  "impact_fireball": {
+    "sounds": [
+      "spell_engine:impact_fireball_1"
+    ]
+  },
+  "impact_frostbolt": {
+    "sounds": [
+      "spell_engine:impact_frostbolt_1"
+    ]
+  }
+}
