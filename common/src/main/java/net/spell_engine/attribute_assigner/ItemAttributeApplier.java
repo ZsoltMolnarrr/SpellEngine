@@ -134,13 +134,7 @@ public class ItemAttributeApplier {
                     var attribute = entry.getKey();
                     itemStack.addAttributeModifier(
                             attribute,
-                            createEntityAttributeModifier(
-                                    element.slot,
-                                    attribute,
-                                    entry.getValue().getName(),
-                                    entry.getValue().getValue(),
-                                    entry.getValue().getOperation()
-                            ),
+                            entry.getValue(),
                             element.slot
                     );
                 }

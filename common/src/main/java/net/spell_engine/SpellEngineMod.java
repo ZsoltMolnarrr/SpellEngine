@@ -11,6 +11,7 @@ import net.spell_engine.config.ServerConfigWrapper;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.network.ServerNetwork;
+import net.spell_engine.particle.Particles;
 import net.spell_engine.runes.RuneCraftingBlock;
 import net.spell_engine.runes.RuneCraftingRecipe;
 import net.spell_engine.runes.RuneCraftingScreenHandler;
@@ -49,8 +50,8 @@ public class SpellEngineMod {
 
         SpellRegistry.initialize();
         AttributeAssigner.initialize();
-
         ServerNetwork.initializeHandlers();
+        Particles.register();
     }
 
     public static void registerRuneCrafting() {
