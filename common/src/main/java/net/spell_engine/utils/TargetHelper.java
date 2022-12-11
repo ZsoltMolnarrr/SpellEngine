@@ -19,6 +19,7 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -106,11 +107,20 @@ public class TargetHelper {
         }, range*range); // `range*range` is provided for squared distance comparison
         return entitiesHit.stream()
                 .filter((hit) -> hit.position() == null || raycastObstacleFree(start, hit.position()))
+                .sorted(new Comparator<EntityHit>() {
+                    @Override
+                    public int compare(EntityHit hit1, EntityHit hit2) {
+                        if (hit1.squaredDistanceToSource == hit2.squaredDistanceToSource) {
+                            return 0;
+                        }
+                        return (hit1.squaredDistanceToSource < hit2.squaredDistanceToSource) ? -1 : 1;
+                    }
+                })
                 .map(hit -> hit.entity)
                 .toList();
     }
 
-    private record EntityHit(Entity entity, Vec3d position) { }
+    private record EntityHit(Entity entity, Vec3d position, double squaredDistanceToSource) { }
 
     @Nullable
     private static List<EntityHit> raycastMultiple(Entity sourceEntity, Vec3d min, Vec3d max, Box searchBox, Predicate<Entity> predicate, double squaredDistance) {
@@ -128,7 +138,7 @@ public class TargetHelper {
                 if (!(e >= 0.0)) continue;
                 // entity2 = entity;
                 vec3d = raycastResult.orElse(min);
-                entities.add(new EntityHit(entity, vec3d));
+                entities.add(new EntityHit(entity, vec3d, 0));
                 e = 0.0;
                 continue;
             }
@@ -137,12 +147,12 @@ public class TargetHelper {
                 if (e != 0.0) continue;
                 // entity2 = entity;
                 vec3d = hitPosition;
-                entities.add(new EntityHit(entity, vec3d));
+                entities.add(new EntityHit(entity, vec3d, entity.squaredDistanceTo(sourceEntity)));
                 continue;
             }
             // entity2 = entity;
             vec3d = hitPosition;
-            entities.add(new EntityHit(entity, vec3d));
+            entities.add(new EntityHit(entity, vec3d, entity.squaredDistanceTo(sourceEntity)));
             //e = f;
         }
         // if (entity2 == null) {
