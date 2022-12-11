@@ -61,16 +61,6 @@
           "multiplier": 1.0
         }
       },
-      "particles": [
-        {
-          "particle_id": "soul_fire_flame",
-          "shape": "SPHERE",
-          "origin": "CENTER",
-          "count": 130.0,
-          "min_speed": 0.2,
-          "max_speed": 0.2
-        }
-      ],
       "sound": {
         "id": "spell_engine:impact_frostbolt",
         "volume": 1.0,
@@ -86,7 +76,17 @@
           "amplifier": 2,
           "effect_id": "slowness"
         }
-      }
+      },
+      "particles": [
+        {
+          "particle_id": "spell_engine:frost",
+          "shape": "SPHERE",
+          "origin": "CENTER",
+          "count": 100.0,
+          "min_speed": 0.2,
+          "max_speed": 0.7
+        }
+      ]
     }
   ],
   "cost": {
