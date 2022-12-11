@@ -230,15 +230,15 @@ public class HudConfigScreen extends Screen {
         return result;
     }
 
+    private int lastSelectedPreset = 0;
+
     public void nextPreset() {
-        var config = SpellEngineClient.hudConfig.value;
-        HudElement.Origin origin;
+        lastSelectedPreset += 1;
         try {
-            origin = HudElement.Origin.values()[(config.base.origin.ordinal() + 1)];
-            SpellEngineClient.hudConfig.value = HudConfig.preset(origin);
+            SpellEngineClient.hudConfig.value = HudConfig.presets.get(lastSelectedPreset);
         } catch (Exception e) {
-            origin = HudElement.Origin.values()[0];
-            SpellEngineClient.hudConfig.value = HudConfig.preset(origin);
+            lastSelectedPreset = 0;
+            SpellEngineClient.hudConfig.value = HudConfig.presets.get(0);
         }
         refreshPartButtons();
     }
