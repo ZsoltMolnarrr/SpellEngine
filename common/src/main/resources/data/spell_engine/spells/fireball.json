@@ -12,7 +12,7 @@
     },
     "particles": [
       {
-        "particle_id": "flame",
+        "particle_id": "spell_engine:flame",
         "shape": "PIPE",
         "origin": "FEET",
         "count": 1.0,
@@ -32,7 +32,7 @@
         "client_data": {
           "travel_particles": [
             {
-              "particle_id": "flame",
+              "particle_id": "spell_engine:flame",
               "shape": "CIRCLE",
               "origin": "CENTER",
               "count": 3.0,
