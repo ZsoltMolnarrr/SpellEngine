@@ -28,7 +28,7 @@ import net.minecraft.util.registry.Registry;
 import net.tinyconfig.ConfigManager;
 
 public class SpellEngineMod {
-    public static final String MOD_ID = "spell_engine";
+    public static final String ID = "spell_engine";
     public static String modName() {
         return I18n.translate("spell_engine.mod_name");
     }
@@ -38,7 +38,7 @@ public class SpellEngineMod {
     public static ConfigManager<EnchantmentsConfig> enchantmentConfig = new ConfigManager<EnchantmentsConfig>
             ("enchantments", new EnchantmentsConfig())
             .builder()
-            .setDirectory(MOD_ID)
+            .setDirectory(ID)
             .sanitize(true)
             .build();
     public static EntityType<SpellProjectile> SPELL_PROJECTILE;
@@ -55,12 +55,12 @@ public class SpellEngineMod {
     }
 
     public static void registerRuneCrafting() {
-        Registry.register(Registry.RECIPE_TYPE, new Identifier(MOD_ID, RuneCraftingRecipe.ID), RuneCraftingRecipe.TYPE);
-        Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(MOD_ID, RuneCraftingRecipe.ID), RuneCraftingRecipe.SERIALIZER);
-        Registry.register(Registry.BLOCK, new Identifier(MOD_ID, RuneCraftingBlock.NAME), RuneCraftingBlock.INSTANCE);
-        Registry.register(Registry.ITEM, new Identifier(MOD_ID, RuneCraftingBlock.NAME), new BlockItem(RuneCraftingBlock.INSTANCE, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
+        Registry.register(Registry.RECIPE_TYPE, new Identifier(ID, RuneCraftingRecipe.ID), RuneCraftingRecipe.TYPE);
+        Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(ID, RuneCraftingRecipe.ID), RuneCraftingRecipe.SERIALIZER);
+        Registry.register(Registry.BLOCK, new Identifier(ID, RuneCraftingBlock.NAME), RuneCraftingBlock.INSTANCE);
+        Registry.register(Registry.ITEM, new Identifier(ID, RuneCraftingBlock.NAME), new BlockItem(RuneCraftingBlock.INSTANCE, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
         BlockRenderLayerMap.INSTANCE.putBlock(RuneCraftingBlock.INSTANCE, RenderLayer.getCutout());
-        Registry.register(Registry.SCREEN_HANDLER, new Identifier(MOD_ID, RuneCraftingRecipe.ID), RuneCraftingScreenHandler.HANDLER_TYPE);
+        Registry.register(Registry.SCREEN_HANDLER, new Identifier(ID, RuneCraftingRecipe.ID), RuneCraftingScreenHandler.HANDLER_TYPE);
     }
 
     public static void registerEnchantments() {

@@ -33,7 +33,7 @@ public class SoundHelper {
 
     public static void registerSounds() {
         for (var soundKey: soundKeys) {
-            var soundId = new Identifier(SpellEngineMod.MOD_ID, soundKey);
+            var soundId = new Identifier(SpellEngineMod.ID, soundKey);
             var soundEvent = new SoundEvent(soundId);
             Registry.register(Registry.SOUND_EVENT, soundId, soundEvent);
         }

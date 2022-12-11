@@ -14,7 +14,7 @@ import java.util.ArrayList;
 
 public class Packets {
     public record SpellRequest(SpellCastAction action, int slot, int remainingUseTicks, int[] targets) {
-        public static Identifier ID = new Identifier(SpellEngineMod.MOD_ID, "release_request");
+        public static Identifier ID = new Identifier(SpellEngineMod.ID, "release_request");
 
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();
@@ -34,7 +34,7 @@ public class Packets {
     }
 
     public record SpellAnimation(int playerId, SpellAnimationType type, String name) {
-        public static Identifier ID = new Identifier(SpellEngineMod.MOD_ID, "spell_animation");
+        public static Identifier ID = new Identifier(SpellEngineMod.ID, "spell_animation");
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();
             buffer.writeInt(playerId);
@@ -52,7 +52,7 @@ public class Packets {
     }
 
     public record ParticleBatches(int sourceEntityId, ParticleBatch[] batches) {
-        public static Identifier ID = new Identifier(SpellEngineMod.MOD_ID, "particle_effects");
+        public static Identifier ID = new Identifier(SpellEngineMod.ID, "particle_effects");
         public PacketByteBuf write(float countMultiplier) {
             PacketByteBuf buffer = PacketByteBufs.create();
             buffer.writeInt(sourceEntityId);
@@ -98,11 +98,11 @@ public class Packets {
     }
 
     public static class SpellRegistrySync {
-        public static Identifier ID = new Identifier(SpellEngineMod.MOD_ID, "spell_registry_sync");
+        public static Identifier ID = new Identifier(SpellEngineMod.ID, "spell_registry_sync");
     }
 
     public static class ConfigSync {
-        public static Identifier ID = new Identifier(SpellEngineMod.MOD_ID, "config_sync");
+        public static Identifier ID = new Identifier(SpellEngineMod.ID, "config_sync");
 
         public static PacketByteBuf write(ServerConfig config) {
             var gson = new Gson();

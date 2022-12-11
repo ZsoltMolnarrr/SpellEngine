@@ -1,4 +1,4 @@
-package net.spell_engine.client;
+package net.spell_engine.client.gui;
 
 import com.ibm.icu.text.DecimalFormat;
 import net.spell_engine.SpellEngineMod;

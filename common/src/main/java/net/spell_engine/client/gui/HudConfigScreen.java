@@ -1,6 +1,6 @@
 package net.spell_engine.client.gui;
 
-import net.spell_engine.client.CombatSpellsClient;
+import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.config.HudConfig;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -28,7 +28,7 @@ public class HudConfigScreen extends Screen {
     }
 
     private HudConfig config() {
-        return CombatSpellsClient.hudConfig.value;
+        return SpellEngineClient.hudConfig.value;
     }
 
     @Override
@@ -163,7 +163,7 @@ public class HudConfigScreen extends Screen {
 
     private void changeBarWidth(boolean increase) {
         var diff = increase ? 1 : -1;
-        var config = CombatSpellsClient.hudConfig.value;
+        var config = SpellEngineClient.hudConfig.value;
         if (!increase && config.bar_width <= 0) {
             return;
         }
@@ -222,7 +222,7 @@ public class HudConfigScreen extends Screen {
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         var result = super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
         if (!this.isDragging() && button == 0) {
-            var config = CombatSpellsClient.hudConfig.value;
+            var config = SpellEngineClient.hudConfig.value;
             config.base.offset = new Vec2f(
                     (float) (config.base.offset.x + deltaX),
                     (float) (config.base.offset.y + deltaY));
@@ -231,24 +231,24 @@ public class HudConfigScreen extends Screen {
     }
 
     public void nextPreset() {
-        var config = CombatSpellsClient.hudConfig.value;
+        var config = SpellEngineClient.hudConfig.value;
         HudElement.Origin origin;
         try {
             origin = HudElement.Origin.values()[(config.base.origin.ordinal() + 1)];
-            CombatSpellsClient.hudConfig.value = HudConfig.preset(origin);
+            SpellEngineClient.hudConfig.value = HudConfig.preset(origin);
         } catch (Exception e) {
             origin = HudElement.Origin.values()[0];
-            CombatSpellsClient.hudConfig.value = HudConfig.preset(origin);
+            SpellEngineClient.hudConfig.value = HudConfig.preset(origin);
         }
         refreshPartButtons();
     }
 
     public void save() {
-        CombatSpellsClient.hudConfig.save();
+        SpellEngineClient.hudConfig.save();
     }
 
     public void reset() {
-        CombatSpellsClient.hudConfig.value = HudConfig.createDefault();
+        SpellEngineClient.hudConfig.value = HudConfig.createDefault();
         refreshPartButtons();
     }
 

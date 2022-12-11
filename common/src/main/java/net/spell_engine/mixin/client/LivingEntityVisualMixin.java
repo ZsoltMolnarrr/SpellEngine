@@ -1,7 +1,7 @@
 package net.spell_engine.mixin.client;
 
 import net.spell_engine.api.spell.Spell;
-import net.spell_engine.client.CombatSpellsClient;
+import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.beam.BeamEmitterEntity;
 import net.spell_engine.internals.Beam;
 import net.spell_engine.internals.SpellCasterEntity;
@@ -23,7 +23,7 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
 
     @Inject(method = "isGlowing", at = @At("HEAD"), cancellable = true)
     public void isGlowing_HEAD(CallbackInfoReturnable<Boolean> cir) {
-        if (TargetHelper.isTargetedByClientPlayer(livingEntity()) && CombatSpellsClient.config.highlightTarget) {
+        if (TargetHelper.isTargetedByClientPlayer(livingEntity()) && SpellEngineClient.config.highlightTarget) {
             cir.setReturnValue(true);
             cir.cancel();
         }

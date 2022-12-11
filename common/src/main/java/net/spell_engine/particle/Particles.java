@@ -16,7 +16,7 @@ public class Particles {
     }
 
     public static class Flame {
-        public static Identifier ID = new Identifier(SpellEngineMod.MOD_ID, "flame");
+        public static Identifier ID = new Identifier(SpellEngineMod.ID, "flame");
         public static DefaultParticleType particle = Particles.createSimple();
     }
 

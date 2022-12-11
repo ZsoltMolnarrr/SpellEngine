@@ -15,7 +15,7 @@ public class RuneItems {
     static {
         all = new HashMap<>();
         for(var school : MagicSchool.values()) {
-            var id = new Identifier(SpellEngineMod.MOD_ID, school.toString().toLowerCase() + "_rune");
+            var id = new Identifier(SpellEngineMod.ID, school.toString().toLowerCase() + "_rune");
             var item = new Item(new FabricItemSettings().group(ItemGroup.COMBAT));
             all.put(id, item);
         }

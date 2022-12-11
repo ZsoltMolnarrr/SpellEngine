@@ -1,7 +1,7 @@
 package net.spell_engine.mixin.client;
 
 import net.spell_engine.api.spell.Spell;
-import net.spell_engine.client.CombatSpellsClient;
+import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.internals.SpellCastAction;
 import net.spell_engine.internals.SpellCasterClient;
 import net.spell_engine.internals.SpellHelper;
@@ -70,7 +70,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             var action = (progress >= 1) ? SpellCastAction.RELEASE : SpellCastAction.CHANNEL;
             cast(currentSpell, action, itemStack, remainingUseTicks);
         } else {
-            if (CombatSpellsClient.config.autoRelease
+            if (SpellEngineClient.config.autoRelease
                     && SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell) >= 1) {
                 cast(currentSpell, SpellCastAction.RELEASE, itemStack, remainingUseTicks);
             }

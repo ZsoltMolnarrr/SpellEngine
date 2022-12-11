@@ -12,10 +12,10 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegisterEvent;
 
-@Mod(SpellEngineMod.MOD_ID)
+@Mod(SpellEngineMod.ID)
 public class ForgeMod {
 
-    public static DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, SpellEngineMod.MOD_ID);
+    public static DeferredRegister<SoundEvent> SOUNDS = DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, SpellEngineMod.ID);
 
     public ForgeMod() {
         // EventBuses.registerModEventBus(Rolling.MOD_ID, FMLJavaModLoadingContext.get().getModEventBus());
@@ -47,7 +47,7 @@ public class ForgeMod {
 
     private void registerSounds() {
         for (var soundKey: SoundHelper.soundKeys) {
-            SOUNDS.register(soundKey, () -> new SoundEvent(new Identifier(SpellEngineMod.MOD_ID, soundKey)));
+            SOUNDS.register(soundKey, () -> new SoundEvent(new Identifier(SpellEngineMod.ID, soundKey)));
         }
     }
 }

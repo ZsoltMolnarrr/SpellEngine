@@ -2,7 +2,7 @@ package net.spell_engine.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.client.CombatSpellsClient;
+import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.config.HudConfig;
 import net.spell_engine.internals.SpellCasterClient;
 import net.spell_engine.internals.SpellHelper;
@@ -20,8 +20,7 @@ public class HudRenderHelper {
         render(matrixStack, tickDelta, false);
     }
     public static void render(MatrixStack matrixStack, float tickDelta, boolean config) {
-        var hudConfig = CombatSpellsClient.hudConfig.value;
-        var clientConfig = CombatSpellsClient.config;
+        var hudConfig = SpellEngineClient.hudConfig.value;
         MinecraftClient client = MinecraftClient.getInstance();
         ClientPlayerEntity player = client.player;
 
@@ -105,7 +104,7 @@ public class HudRenderHelper {
                 var target = caster.getCurrentFirstTarget();
                 var text = "";
                 if (target != null
-                        && (CombatSpellsClient.config.showTargetNameWhenMultiple || caster.getCurrentTargets().size() == 1)) {
+                        && (SpellEngineClient.config.showTargetNameWhenMultiple || caster.getCurrentTargets().size() == 1)) {
                     text = target.getName().getString();
                 }
                 return new ViewModel(text);
@@ -119,7 +118,7 @@ public class HudRenderHelper {
         private static final int textureWidth = 182;
         private static final int textureHeight = 10;
         private static final int barHeight = textureHeight / 2;
-        private static final Identifier CAST_BAR = new Identifier(SpellEngineMod.MOD_ID, "textures/hud/castbar.png");
+        private static final Identifier CAST_BAR = new Identifier(SpellEngineMod.ID, "textures/hud/castbar.png");
         public static final int spellIconSize = 16;
 
         public record ViewModel(int color, float progress, float castDuration, String iconTexture, boolean allowTickDelta, boolean reverse) {

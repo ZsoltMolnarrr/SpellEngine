@@ -13,7 +13,7 @@ import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
 public class RuneCraftingScreen extends ForgingScreen<RuneCraftingScreenHandler> {
-    private static final Identifier TEXTURE = new Identifier(SpellEngineMod.MOD_ID, "textures/gui/rune_crafting.png");
+    private static final Identifier TEXTURE = new Identifier(SpellEngineMod.ID, "textures/gui/rune_crafting.png");
 
     public RuneCraftingScreen(RuneCraftingScreenHandler handler, PlayerInventory playerInventory, Text title) {
         super(handler, playerInventory, title, TEXTURE);

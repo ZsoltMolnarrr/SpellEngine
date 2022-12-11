@@ -15,7 +15,7 @@ public class Enchantments_CombatSpells {
     // Damage enchants
 
     public static final String infinityName = "spell_infinity";
-    public static final Identifier infinityId = new Identifier(SpellEngineMod.MOD_ID, infinityName);
+    public static final Identifier infinityId = new Identifier(SpellEngineMod.ID, infinityName);
     public static final SpellInfinityEnchantment INFINITY = new SpellInfinityEnchantment(Enchantment.Rarity.VERY_RARE, config().infinity, EquipmentSlot.MAINHAND);
 
     // Helpers

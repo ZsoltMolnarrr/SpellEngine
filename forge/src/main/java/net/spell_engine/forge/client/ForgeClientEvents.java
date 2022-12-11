@@ -7,7 +7,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.gui.HudRenderHelper;
 
-@Mod.EventBusSubscriber(modid = SpellEngineMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = SpellEngineMod.ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ForgeClientEvents {
     @SubscribeEvent
     public static void onRenderHud(RenderGuiEvent.Post event){

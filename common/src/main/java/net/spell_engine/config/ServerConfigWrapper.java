@@ -5,7 +5,7 @@ import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.spell_engine.SpellEngineMod;
 
-@Config(name = SpellEngineMod.MOD_ID)
+@Config(name = SpellEngineMod.ID)
 public class ServerConfigWrapper extends PartitioningSerializer.GlobalData {
     @ConfigEntry.Category("server")
     @ConfigEntry.Gui.Excluded

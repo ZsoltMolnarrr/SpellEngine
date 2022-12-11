@@ -15,13 +15,13 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.tinyconfig.ConfigManager;
 
-public class CombatSpellsClient {
+public class SpellEngineClient {
     public static ClientConfig config;
 
     public static ConfigManager<HudConfig> hudConfig = new ConfigManager<HudConfig>
             ("hud_config", HudConfig.createDefault())
             .builder()
-            .setDirectory(SpellEngineMod.MOD_ID)
+            .setDirectory(SpellEngineMod.ID)
             .sanitize(true)
             .build();
 

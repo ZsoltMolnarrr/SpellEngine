@@ -59,7 +59,7 @@ public class RuneCraftingScreenHandler extends ForgingScreenHandler {
             return;
         }
         runeCrafter.setLastCrafted(0);
-        SoundEvent runeCraftingSound = new SoundEvent(new Identifier(SpellEngineMod.MOD_ID, "rune_crafting"));
+        SoundEvent runeCraftingSound = new SoundEvent(new Identifier(SpellEngineMod.ID, "rune_crafting"));
         world.playSound(player.getX(), player.getY(), player.getZ(), runeCraftingSound, SoundCategory.BLOCKS, world.random.nextFloat() * 0.1F + 0.9F, 1, true);
     }
 

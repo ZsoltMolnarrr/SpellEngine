@@ -16,7 +16,7 @@ public class FabricMod implements ModInitializer {
     static {
         SpellEngineMod.SPELL_PROJECTILE = Registry.register(
                 ENTITY_TYPE,
-                new Identifier(SpellEngineMod.MOD_ID, "spell_projectile"),
+                new Identifier(SpellEngineMod.ID, "spell_projectile"),
                 FabricEntityTypeBuilder.<SpellProjectile>create(SpawnGroup.MISC, SpellProjectile::new)
                         .dimensions(EntityDimensions.fixed(0.25F, 0.25F)) // dimensions in Minecraft units of the projectile
                         .trackRangeBlocks(128)

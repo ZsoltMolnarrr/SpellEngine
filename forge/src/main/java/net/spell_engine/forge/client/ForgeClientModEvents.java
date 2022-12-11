@@ -11,9 +11,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.spell_engine.client.CombatSpellsClient;
+import net.spell_engine.client.SpellEngineClient;
 
-@Mod.EventBusSubscriber(modid = SpellEngineMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = SpellEngineMod.ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ForgeClientModEvents {
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event){
@@ -22,7 +22,7 @@ public class ForgeClientModEvents {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event){
-        CombatSpellsClient.initialize();
+        SpellEngineClient.initialize();
         ClientLifecycleEvents.onClientStarted.forEach((action) -> action.onClientStarted(MinecraftClient.getInstance()));
         ModLoadingContext.get().registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> {
             return new ConfigScreenHandler.ConfigScreenFactory((minecraft, screen) -> {
