@@ -12,7 +12,7 @@
     },
     "particles": [
       {
-        "particle_id": "snowflake",
+        "particle_id": "spell_engine:snowflake",
         "shape": "PILLAR",
         "origin": "CENTER",
         "count": 0.5,

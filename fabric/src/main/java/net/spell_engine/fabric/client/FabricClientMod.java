@@ -3,10 +3,11 @@ package net.spell_engine.fabric.client;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.gui.SpellTooltip;
+import net.spell_engine.client.particle.GenericSpellParticle;
 import net.spell_engine.client.particle.SpellFlameParticle;
+import net.spell_engine.client.particle.SpellSnowflakeParticle;
 import net.spell_engine.client.projectile.SpellProjectileRenderer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
@@ -52,5 +53,7 @@ public class FabricClientMod implements ClientModInitializer {
          * Second argument is the particle's factory. The factory controls how the particle behaves.
          * In this example, we'll use FlameParticle's Factory.*/
         ParticleFactoryRegistry.getInstance().register(Particles.flame.particleType, SpellFlameParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(Particles.arcane_spell.particleType, GenericSpellParticle.ArcaneSpellFactory::new);
+        ParticleFactoryRegistry.getInstance().register(Particles.snowflake.particleType, SpellSnowflakeParticle.Factory::new);
     }
 }
