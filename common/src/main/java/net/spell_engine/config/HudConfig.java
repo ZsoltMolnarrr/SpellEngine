@@ -25,19 +25,27 @@ public class HudConfig { HudConfig() { }
             this.visible = visible;
             this.offset = offset;
         }
+
+        public Part copy() {
+            return new Part(visible, new Vec2f(offset.x, offset.y));
+        }
+    }
+
+    public HudConfig copy() {
+        return new HudConfig(base.copy(), target.copy(), icon.copy(), bar_width);
     }
 
     // MARK: Default and Presets
 
     public static HudConfig createDefault() {
-        return presets.get(0);
+        return presets.get(0).copy();
     }
 
     private static HudConfig overXPBar() {
         return new HudConfig(
                 new HudElement(
                         HudElement.Origin.BOTTOM,
-                        new Vec2f(0, -28)),
+                        new Vec2f(0, -29)),
                 new Part(
                         false,
                         new Vec2f(0, -12)),

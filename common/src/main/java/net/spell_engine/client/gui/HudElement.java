@@ -39,4 +39,8 @@ public class HudElement {
             return new Vec2f(screenWidth / 2F, screenHeight / 2F); // Should never run
         }
     }
+
+    public HudElement copy() {
+        return new HudElement(origin, offset);
+    }
 }

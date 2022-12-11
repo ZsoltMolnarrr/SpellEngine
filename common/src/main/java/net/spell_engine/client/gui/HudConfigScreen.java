@@ -235,10 +235,10 @@ public class HudConfigScreen extends Screen {
     public void nextPreset() {
         lastSelectedPreset += 1;
         try {
-            SpellEngineClient.hudConfig.value = HudConfig.presets.get(lastSelectedPreset);
+            SpellEngineClient.hudConfig.value = HudConfig.presets.get(lastSelectedPreset).copy();
         } catch (Exception e) {
             lastSelectedPreset = 0;
-            SpellEngineClient.hudConfig.value = HudConfig.presets.get(0);
+            SpellEngineClient.hudConfig.value = HudConfig.presets.get(0).copy();
         }
         refreshPartButtons();
     }

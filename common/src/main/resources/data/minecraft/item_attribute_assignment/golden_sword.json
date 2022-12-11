@@ -1,7 +1,7 @@
 {
   "attributes": [
     {
-      "attribute" : "spell_damage:frost",
+      "attribute" : "spell_damage:fire",
       "operation" : "ADDITION",
       "value": 3
     }

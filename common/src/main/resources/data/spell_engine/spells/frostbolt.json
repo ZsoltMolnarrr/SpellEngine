@@ -77,6 +77,16 @@
         "pitch": 1.0,
         "randomness": 0.1
       }
+    },
+    {
+      "action": {
+        "type": "STATUS_EFFECT",
+        "status_effect": {
+          "duration": 5,
+          "amplifier": 2,
+          "effect_id": "slowness"
+        }
+      }
     }
   ],
   "cost": {
