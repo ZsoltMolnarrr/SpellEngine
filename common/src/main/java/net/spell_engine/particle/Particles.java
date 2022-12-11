@@ -5,6 +5,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.spell_engine.SpellEngineMod;
 
+import java.util.List;
+
 public class Particles {
     private static class Helper extends DefaultParticleType {
         protected Helper(boolean alwaysShow) {
@@ -15,12 +17,29 @@ public class Particles {
         return new Helper(false);
     }
 
-    public static class Flame {
-        public static Identifier ID = new Identifier(SpellEngineMod.ID, "flame");
-        public static DefaultParticleType particle = Particles.createSimple();
+    public static class ParticleEntry {
+        public final Identifier id;
+        public final DefaultParticleType particleType = Particles.createSimple();
+        public boolean usesCustomTexture = false;
+        public ParticleEntry(String name) {
+            this.id =  new Identifier(SpellEngineMod.ID, name);
+        }
+        public ParticleEntry customTexture() {
+            this.usesCustomTexture = true;
+            return this;
+        }
+    }
+
+    public static final ParticleEntry flame = new ParticleEntry("flame");
+
+    public static final List<ParticleEntry> all;
+    static {
+        all = List.of(flame);
     }
 
     public static void register() {
-        Registry.register(Registry.PARTICLE_TYPE, Flame.ID, Flame.particle);
+        for(var entry: all) {
+            Registry.register(Registry.PARTICLE_TYPE, entry.id, entry.particleType);
+        }
     }
 }

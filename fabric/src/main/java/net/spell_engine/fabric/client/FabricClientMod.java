@@ -3,6 +3,7 @@ package net.spell_engine.fabric.client;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.minecraft.screen.PlayerScreenHandler;
+import net.minecraft.util.registry.Registry;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.particle.SpellFlameParticle;
@@ -39,13 +40,17 @@ public class FabricClientMod implements ClientModInitializer {
          *
          * This is only used if you plan to add your own textures for the particle. Otherwise, remove  this.*/
         ClientSpriteRegistryCallback.event(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).register(((atlasTexture, registry) -> {
-            //registry.register(Particles.Flame.ID);
+            for(var entry: Particles.all) {
+                if (entry.usesCustomTexture) {
+                    registry.register(entry.id);
+                }
+            }
         }));
 
         /* Registers our particle client-side.
          * First argument is our particle's instance, created previously on ExampleMod.
          * Second argument is the particle's factory. The factory controls how the particle behaves.
          * In this example, we'll use FlameParticle's Factory.*/
-        ParticleFactoryRegistry.getInstance().register(Particles.Flame.particle, SpellFlameParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(Particles.flame.particleType, SpellFlameParticle.Factory::new);
     }
 }
