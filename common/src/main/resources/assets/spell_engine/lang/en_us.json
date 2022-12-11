@@ -27,6 +27,8 @@
   "text.autoconfig.spell_engine.title" : "Spell Engine",
   "text.autoconfig.spell_engine.option.client.autoRelease" : "Auto release",
   "text.autoconfig.spell_engine.option.client.autoRelease.@Tooltip" : "Automatically release spell when fully charged",
+  "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple" : "Show target name when multiple",
+  "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple.@Tooltip" : "Show target name when more than one entity is being targeted",
   "text.autoconfig.spell_engine.option.client.highlightTarget" : "Highlight target",
   "text.autoconfig.spell_engine.option.client.highlightTarget.@Tooltip" : "Render glowing effect on targeted entity",
   "text.autoconfig.spell_engine.option.client.useMagicColorForHighlight" : "Use magic color for highlight",

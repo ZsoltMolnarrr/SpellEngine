@@ -104,7 +104,8 @@ public class HudRenderHelper {
                 var caster = (SpellCasterClient)player;
                 var target = caster.getCurrentFirstTarget();
                 var text = "";
-                if (target != null) {
+                if (target != null
+                        && (CombatSpellsClient.config.showTargetNameWhenMultiple || caster.getCurrentTargets().size() == 1)) {
                     text = target.getName().getString();
                 }
                 return new ViewModel(text);
