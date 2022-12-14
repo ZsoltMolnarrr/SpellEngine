@@ -15,7 +15,8 @@ public class SpellContainer { public SpellContainer() { }
         if (spell_ids == null || spell_ids.isEmpty()) {
             return null;
         }
-        var index = selected % spell_ids.size();
+        var remainder = selected % spell_ids.size();
+        var index = (remainder >= 0) ? remainder : spell_ids.size() - remainder;
         return spell_ids.get(index);
     }
 }

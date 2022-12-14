@@ -13,6 +13,23 @@ import net.minecraft.util.Identifier;
 import java.util.ArrayList;
 
 public class Packets {
+
+    public record SpellCastSync(int playerId, Identifier spellId) {
+        public static Identifier ID = new Identifier(SpellEngineMod.ID, "cast_sync");
+        public PacketByteBuf write() {
+            PacketByteBuf buffer = PacketByteBufs.create();
+            buffer.writeInt(playerId);
+            buffer.writeString(spellId.toString());
+            return buffer;
+        }
+
+        public static SpellCastSync read(PacketByteBuf buffer) {
+            int playerId = buffer.readInt();
+            var spellId = new Identifier(buffer.readString());
+            return new SpellCastSync(playerId, spellId);
+        }
+    }
+
     public record SpellRequest(SpellCastAction action, Identifier spellId, int slot, int remainingUseTicks, int[] targets) {
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "release_request");
 

@@ -2,6 +2,7 @@ package net.spell_engine.client;
 
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.animation.AnimatablePlayer;
+import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.network.Packets;
 import net.spell_engine.utils.ParticleHelper;
@@ -26,6 +27,16 @@ public class ClientNetwork {
             client.execute(() -> {
                 for(var instruction: instructions) {
                     instruction.perform(client.world);
+                }
+            });
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(Packets.SpellCastSync.ID, (client, handler, buf, responseSender) -> {
+            var packet = Packets.SpellCastSync.read(buf);
+            client.execute(() -> {
+                var entity = client.world.getEntityById(packet.playerId());
+                if (entity instanceof SpellCasterEntity caster) {
+                    caster.setCurrentSpell(packet.spellId());
                 }
             });
         });

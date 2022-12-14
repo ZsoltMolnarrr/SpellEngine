@@ -61,9 +61,6 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
         if (player.world.isClient) {
             ((AnimatablePlayer)player()).updateCastAnimationsOnTick();
         }
-        if (!player.isUsingItem()) {
-            currentSpell = null;
-        }
     }
 
     public boolean isBeaming() {

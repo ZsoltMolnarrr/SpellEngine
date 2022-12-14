@@ -1,10 +1,16 @@
 package net.spell_engine.internals;
 
+import com.google.common.base.Suppliers;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Lazy;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.Enchantments_CombatSpells;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.entity.LivingEntityExtension;
 import net.spell_engine.entity.SpellProjectile;
+import net.spell_engine.network.Packets;
 import net.spell_engine.utils.AnimationHelper;
 import net.spell_engine.utils.ParticleHelper;
 import net.spell_engine.utils.SoundHelper;
@@ -25,7 +31,9 @@ import net.spell_damage.api.SpellDamage;
 import net.spell_damage.api.SpellDamageSource;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static net.spell_engine.internals.SpellAnimationType.RELEASE;
 
@@ -116,9 +124,20 @@ public class SpellHelper {
         var progress = getCastProgress(caster, remainingUseTicks, spell);
         var channelMultiplier = 1F;
         boolean shouldPerformImpact = true;
+        Supplier<Collection<ServerPlayerEntity>> trackingPlayers = Suppliers.memoize(() -> { // Suppliers.memoize = Lazy
+            if (caster instanceof PlayerEntity player) {
+                return PlayerLookup.tracking(player);
+            }
+            return List.of();
+        });
         switch (action) {
             case START -> {
                 SoundHelper.playSound(caster.world, caster, spell.cast.start_sound);
+                ((SpellCasterEntity) caster).setCurrentSpell(spellId);
+                var packet = new Packets.SpellCastSync(caster.getId(), spellId).write();
+                trackingPlayers.get().forEach(serverPlayer -> {
+                    ServerPlayNetworking.send(serverPlayer, Packets.SpellCastSync.ID, packet);
+                });
                 return;
             }
             case CHANNEL -> {
@@ -172,7 +191,7 @@ public class SpellHelper {
                 ParticleHelper.sendBatches(caster, spell.on_release.particles);
                 SoundHelper.playSound(world, caster, spell.on_release.sound);
                 if (caster instanceof PlayerEntity player) {
-                    AnimationHelper.sendAnimation(player, RELEASE, spell.on_release.animation);
+                    AnimationHelper.sendAnimation(player, trackingPlayers.get(), RELEASE, spell.on_release.animation);
                     var duration = cooldownToSet(caster, spell, progress);
                     if (duration > 0) {
                         player.getItemCooldownManager().set(item, Math.round(duration * 20F));

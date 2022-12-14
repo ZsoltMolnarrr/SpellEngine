@@ -8,8 +8,10 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 
+import java.util.Collection;
+
 public class AnimationHelper {
-    public static void sendAnimation(PlayerEntity animatedPlayer, SpellAnimationType type, String name) {
+    public static void sendAnimation(PlayerEntity animatedPlayer, Collection<ServerPlayerEntity> trackingPlayers, SpellAnimationType type, String name) {
         if (name == null || name.isEmpty()) {
             return;
         }
@@ -17,7 +19,7 @@ public class AnimationHelper {
         if (animatedPlayer instanceof ServerPlayerEntity serverPlayer) {
             sendPacketToPlayer(serverPlayer, packet);
         }
-        PlayerLookup.tracking(animatedPlayer).forEach(serverPlayer -> {
+        trackingPlayers.forEach(serverPlayer -> {
             sendPacketToPlayer(serverPlayer, packet);
         });
     }
