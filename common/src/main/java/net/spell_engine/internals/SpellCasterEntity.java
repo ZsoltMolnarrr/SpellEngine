@@ -5,6 +5,7 @@ import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 public interface SpellCasterEntity {
+    void setCurrentSpell(Identifier spellId);
     Identifier getCurrentSpellId();
     Spell getCurrentSpell();
     float getCurrentCastProgress();

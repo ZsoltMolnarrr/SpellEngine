@@ -1,10 +1,12 @@
 package net.spell_engine.mixin.client;
 
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.internals.SpellCastAction;
 import net.spell_engine.internals.SpellCasterClient;
 import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.network.Packets;
 import net.spell_engine.utils.TargetHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -26,6 +28,11 @@ import java.util.List;
 @Mixin(ClientPlayerEntity.class)
 public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     @Shadow @Final public ClientPlayNetworkHandler networkHandler;
+
+    @Shadow public abstract boolean isUsingItem();
+
+    private int selectedSpellIndex = 0;
+
     private List<Entity> targets = List.of();
 
     private ClientPlayerEntity player() {
@@ -47,14 +54,21 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return firstTarget();
     }
 
+    public boolean hasAmmoToStart(SpellContainer container, ItemStack itemStack) {
+        var spell = SpellRegistry.spell(container, selectedSpellIndex);
+        return spell != null && SpellHelper.ammoForSpell(player(), spell, itemStack).satisfied();
+    }
+
     @Override
-    public void castStart(Spell spell, ItemStack itemStack, int remainingUseTicks) {
+    public void castStart(SpellContainer container, ItemStack itemStack, int remainingUseTicks) {
         System.out.println("Spell casting - Start");
         var caster = player();
         var slot = findSlot(caster, itemStack);
+        var spellId = SpellRegistry.spellId(container, selectedSpellIndex);
         ClientPlayNetworking.send(
                 Packets.SpellRequest.ID,
-                new Packets.SpellRequest(SpellCastAction.START, slot, remainingUseTicks, new int[]{}).write());
+                new Packets.SpellRequest(SpellCastAction.START, spellId, slot, remainingUseTicks, new int[]{}).write());
+        setCurrentSpell(spellId);
     }
 
     @Override
@@ -126,13 +140,15 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 }
             }
         }
-        System.out.println("Sending spell cast packet: " + new Packets.SpellRequest(action, slot, remainingUseTicks, targetIDs));
+        var spellId = getCurrentSpellId();
+        // System.out.println("Sending spell cast packet: " + new Packets.SpellRequest(action, spellId, slot, remainingUseTicks, targetIDs));
         ClientPlayNetworking.send(
                 Packets.SpellRequest.ID,
-                new Packets.SpellRequest(action, slot, remainingUseTicks, targetIDs).write());
+                new Packets.SpellRequest(action, spellId, slot, remainingUseTicks, targetIDs).write());
 
         if (shouldEndCasting) {
             player().clearActiveItem();
+            setCurrentSpell(null);
         }
     }
 

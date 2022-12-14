@@ -107,9 +107,9 @@ public class SpellHelper {
         return ((float)ticks) / 20F;
     }
 
-    public static void performSpell(World world, LivingEntity caster, List<Entity> targets, ItemStack itemStack, SpellCastAction action, int remainingUseTicks) {
+    public static void performSpell(World world, LivingEntity caster, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCastAction action, int remainingUseTicks) {
         var item = itemStack.getItem();
-        var spell = SpellRegistry.resolveSpellByItem(Registry.ITEM.getId(item));
+        var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
             return;
         }

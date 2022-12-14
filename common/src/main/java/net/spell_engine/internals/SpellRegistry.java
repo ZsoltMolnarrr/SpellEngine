@@ -80,24 +80,20 @@ public class SpellRegistry {
         containers = parsed;
     }
 
-    public static Identifier getSpellId(Identifier itemId) {
-        var container = containers.get(itemId);
-        if (container == null) {
-            return null;
-        }
-        var spellId = container.spellId(0);
-        if (spellId == null) {
-            return null;
-        }
-        return new Identifier(spellId);
+    public static Spell spell(SpellContainer container, int selectedIndex) {
+        var spellId = new Identifier(container.spellId(selectedIndex));
+        return getSpell(spellId);
     }
 
-    public static Spell resolveSpellByItem(Identifier itemId) {
-        var spellId = getSpellId(itemId);
-        if (spellId == null) {
+    public static Identifier spellId(SpellContainer container, int selectedIndex) {
+        return new Identifier(container.spellId(selectedIndex));
+    }
+
+    public static SpellContainer containerForItem(Identifier itemId) {
+        if (itemId == null) {
             return null;
         }
-        return spells.get(spellId);
+        return containers.get(itemId);
     }
 
     public static Spell getSpell(Identifier spellId) {

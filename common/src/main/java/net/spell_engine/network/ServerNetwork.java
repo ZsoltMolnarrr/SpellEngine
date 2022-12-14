@@ -1,7 +1,10 @@
 package net.spell_engine.network;
 
 import com.google.common.collect.Iterables;
+import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.internals.SpellCastAction;
+import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -40,7 +43,10 @@ public class ServerNetwork {
                         targets.add(entity);
                     }
                 }
-                SpellHelper.performSpell(world, player, targets, stack, packet.action(), packet.remainingUseTicks());
+                if (packet.action() == SpellCastAction.START) {
+                    ((SpellCasterEntity) player).setCurrentSpell(packet.spellId());
+                }
+                SpellHelper.performSpell(world, player, packet.spellId(), targets, stack, packet.action(), packet.remainingUseTicks());
             });
         });
     }

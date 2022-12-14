@@ -21,7 +21,7 @@ public class SpellInfinityEnchantment extends Enchantment implements CustomCondi
     private static boolean itemStackHasSpell(ItemStack stack) {
         var object = (Object)stack;
         if (object instanceof SpellCasterItemStack casterItemStack) {
-            return casterItemStack.getSpell() != null;
+            return casterItemStack.getSpellContainer() != null;
         }
         return false;
     }

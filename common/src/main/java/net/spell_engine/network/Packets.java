@@ -13,12 +13,13 @@ import net.minecraft.util.Identifier;
 import java.util.ArrayList;
 
 public class Packets {
-    public record SpellRequest(SpellCastAction action, int slot, int remainingUseTicks, int[] targets) {
+    public record SpellRequest(SpellCastAction action, Identifier spellId, int slot, int remainingUseTicks, int[] targets) {
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "release_request");
 
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();
             buffer.writeEnumConstant(action);
+            buffer.writeString(spellId.toString());
             buffer.writeInt(slot);
             buffer.writeInt(remainingUseTicks);
             buffer.writeIntArray(targets);
@@ -26,10 +27,11 @@ public class Packets {
         }
         public static SpellRequest read(PacketByteBuf buffer) {
             var action = buffer.readEnumConstant(SpellCastAction.class);
+            var spellId = new Identifier(buffer.readString());
             var slot = buffer.readInt();
             var remainingUseTicks = buffer.readInt();
             var targets = buffer.readIntArray();
-            return new SpellRequest(action, slot, remainingUseTicks, targets);
+            return new SpellRequest(action, spellId, slot, remainingUseTicks, targets);
         }
     }
 

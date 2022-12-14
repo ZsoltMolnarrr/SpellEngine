@@ -5,6 +5,7 @@ import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.internals.SpellCasterItemStack;
 import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.runes.RuneCrafter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
@@ -22,14 +23,16 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
         return (PlayerEntity) ((Object) this);
     }
 
+    private Identifier currentSpell;
+
+    public void setCurrentSpell(Identifier spellId) {
+        currentSpell = spellId;
+    }
+
     @Override
     public Identifier getCurrentSpellId() {
         if (player().isUsingItem()) {
-            var itemStack = player().getActiveItem();
-            if (itemStack != null) {
-                var casterStack = (SpellCasterItemStack) ((Object)itemStack);
-                return casterStack.getSpellId();
-            }
+            return currentSpell;
         }
         return null;
     }
@@ -37,11 +40,7 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
     @Override
     public Spell getCurrentSpell() {
         if (player().isUsingItem()) {
-            var itemStack = player().getActiveItem();
-            if (itemStack != null) {
-                var casterStack = (SpellCasterItemStack) ((Object)itemStack);
-                return casterStack.getSpell();
-            }
+            return SpellRegistry.getSpell(currentSpell);
         }
         return null;
     }
@@ -58,8 +57,12 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL(CallbackInfo ci) {
         lastRuneCrafted += 1;
-        if (player().world.isClient) {
+        var player = player();
+        if (player.world.isClient) {
             ((AnimatablePlayer)player()).updateCastAnimationsOnTick();
+        }
+        if (!player.isUsingItem()) {
+            currentSpell = null;
         }
     }
 
