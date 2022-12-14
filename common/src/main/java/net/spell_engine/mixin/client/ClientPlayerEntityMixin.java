@@ -3,10 +3,7 @@ package net.spell_engine.mixin.client;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.client.SpellEngineClient;
-import net.spell_engine.internals.SpellCastAction;
-import net.spell_engine.internals.SpellCasterClient;
-import net.spell_engine.internals.SpellHelper;
-import net.spell_engine.internals.SpellRegistry;
+import net.spell_engine.internals.*;
 import net.spell_engine.network.Packets;
 import net.spell_engine.utils.TargetHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -41,6 +38,21 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     private Entity firstTarget() {
         return targets.stream().findFirst().orElse(null);
+    }
+
+    public int getSelectedSpellIndex(SpellContainer container) {
+        return container.cappedIndex(selectedSpellIndex);
+    }
+
+    public SpellContainer getCurrentContainer() {
+        var mainHandStack = player().getMainHandStack();
+        if (!mainHandStack.isEmpty()) {
+            var object = (Object)mainHandStack;
+            if (object instanceof SpellCasterItemStack stack) {
+                return stack.getSpellContainer();
+            }
+        }
+        return null;
     }
 
     public List<Entity> getCurrentTargets() {

@@ -1,3 +1,8 @@
 {
-  "spell": "spell_engine:fireball"
+  "school": "FIRE",
+  "max_spell_count": 3,
+  "spell_ids": [
+    "spell_engine:scorch",
+    "spell_engine:fireball"
+  ]
 }

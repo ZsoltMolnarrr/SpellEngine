@@ -11,11 +11,14 @@ public class HudConfig { HudConfig() { }
     public Part icon;
     public int bar_width;
 
-    public HudConfig(HudElement base, Part target, Part icon, int bar_width) {
+    public HudElement hotbar;
+
+    public HudConfig(HudElement base, Part target, Part icon, int bar_width, HudElement hotbar) {
         this.base = base;
         this.target = target;
         this.icon = icon;
         this.bar_width = bar_width;
+        this.hotbar = hotbar;
     }
 
     public static class Part { public Part() { }
@@ -32,10 +35,14 @@ public class HudConfig { HudConfig() { }
     }
 
     public HudConfig copy() {
-        return new HudConfig(base.copy(), target.copy(), icon.copy(), bar_width);
+        return new HudConfig(base.copy(), target.copy(), icon.copy(), bar_width, hotbar);
     }
 
     // MARK: Default and Presets
+
+    public static HudElement defaultHotBar() {
+        return new HudElement(HudElement.Origin.BOTTOM, new Vec2f(-150, -24));
+    }
 
     public static HudConfig createDefault() {
         return presets.get(0).copy();
@@ -52,7 +59,8 @@ public class HudConfig { HudConfig() { }
                 new Part(
                         true,
                         new Vec2f(-8, -25)),
-                172);
+                172,
+                defaultHotBar());
     }
 
     public static final List<HudConfig> presets = List.of(
@@ -105,12 +113,12 @@ public class HudConfig { HudConfig() { }
             }
         }
 
-        var config = new HudConfig();
-        config.base = new HudElement(origin, offset);
-        config.target = target;
-        config.icon = icon;
-        config.bar_width = barWidth;
-        return config;
+        return new HudConfig(
+                new HudElement(origin, offset),
+                target,
+                icon,
+                barWidth,
+                defaultHotBar());
     }
 
     private static Vec2f targetOffsetUp() {

@@ -3,6 +3,7 @@ package net.spell_engine.client.gui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
+import net.spell_engine.client.util.Color;
 import net.spell_engine.config.HudConfig;
 import net.spell_engine.internals.SpellCasterClient;
 import net.spell_engine.internals.SpellHelper;
@@ -13,6 +14,9 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec2f;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class HudRenderHelper {
 
@@ -29,6 +33,7 @@ public class HudRenderHelper {
         }
 
         var targetViewModel = TargetWidget.ViewModel.mock();
+        var hotbarViewModel = SpellHotBarWidget.ViewModel.mock();
         CastBarWidget.ViewModel castBarViewModel = null;
         if (config) {
             castBarViewModel = CastBarWidget.ViewModel.mock();
@@ -38,13 +43,19 @@ public class HudRenderHelper {
 
         if (player != null) {
             var caster = (SpellCasterClient) player;
+            var container = caster.getCurrentContainer();
+            if (container != null && container.isValid()) {
+                var icons = container.spell_ids.stream()
+                        .map(spellId -> spellIconTexture(new Identifier(spellId)))
+                        .collect(Collectors.toList());
+                int selected = caster.getSelectedSpellIndex(container);
+                hotbarViewModel = new SpellHotBarWidget.ViewModel(icons, selected, Color.from(0xFFFFFF));
+            } else {
+                hotbarViewModel = SpellHotBarWidget.ViewModel.empty;
+            }
             var spell = caster.getCurrentSpell();
             var spellId = caster.getCurrentSpellId();
             if (spell != null) {
-//                var progress = caster.getCurrentCastProgress();
-//                if (SpellHelper.isChanneled(spell)) {
-//                    progress = Math.max(1F - progress, 0F);
-//                }
                 castBarViewModel = new CastBarWidget.ViewModel(
                         spell.school.color(),
                         caster.getCurrentCastProgress(),
@@ -67,11 +78,13 @@ public class HudRenderHelper {
             var targetOffset = baseOffset.add(hudConfig.target.offset);
             TargetWidget.render(matrixStack, tickDelta, targetOffset, targetViewModel);
         }
+
+        SpellHotBarWidget.render(matrixStack, screenWidth, screenHeight, hotbarViewModel);
     }
 
     // Example: `spell_engine:fireball` -> `spell_engine:textures/spell/fireball.png`
-    private static String spellIconTexture(Identifier spellId) {
-        return spellId.getNamespace() + ":textures/spell/" + spellId.getPath() + ".png";
+    private static Identifier spellIconTexture(Identifier spellId) {
+        return new Identifier(spellId.getNamespace(), "textures/spell/" + spellId.getPath() + ".png");
     }
 
     public static class TargetWidget {
@@ -121,7 +134,7 @@ public class HudRenderHelper {
         private static final Identifier CAST_BAR = new Identifier(SpellEngineMod.ID, "textures/hud/castbar.png");
         public static final int spellIconSize = 16;
 
-        public record ViewModel(int color, float progress, float castDuration, String iconTexture, boolean allowTickDelta, boolean reverse) {
+        public record ViewModel(int color, float progress, float castDuration, Identifier iconTexture, boolean allowTickDelta, boolean reverse) {
             public static ViewModel mock() {
                 return new ViewModel(0xFF3300, 0.5F, 1, spellIconTexture(new Identifier("spell_engine", "fireball")), false, false);
             }
@@ -153,8 +166,7 @@ public class HudRenderHelper {
             if (hudConfig.icon.visible && viewModel.iconTexture != null) {
                 x = (int) (starting.x + hudConfig.icon.offset.x);
                 y = (int) (starting.y + hudConfig.icon.offset.y);
-                var id = new Identifier(viewModel.iconTexture);
-                RenderSystem.setShaderTexture(0, id);
+                RenderSystem.setShaderTexture(0, viewModel.iconTexture);
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
                 DrawableHelper.drawTexture(matrixStack, x, y, 0, 0, spellIconSize, spellIconSize, spellIconSize, spellIconSize);
             }
@@ -200,6 +212,72 @@ public class HudRenderHelper {
             }
             int v = isBackground ? 0 : barHeight;
             DrawableHelper.drawTexture(matrixStack, (int) (x + renderBegin), y, u, v, width, barHeight, textureWidth, textureHeight);
+        }
+    }
+
+    public class SpellHotBarWidget {
+        private static final Identifier WIDGETS_TEXTURE = new Identifier("textures/gui/widgets.png");
+        private static final int textureWidth = 256;
+        private static final int textureHeight = 256;
+
+        public record ViewModel(List<Identifier> spellIcons, int selected, Color sliderColor) {
+            public static ViewModel mock() {
+                return new ViewModel(
+                        List.of(
+                                spellIconTexture(new Identifier(SpellEngineMod.ID, "fireball")),
+                                spellIconTexture(new Identifier(SpellEngineMod.ID, "fireball")),
+                                spellIconTexture(new Identifier(SpellEngineMod.ID, "fireball"))
+                        ),
+                        1,
+                        Color.from(0xFFFFFF)
+                );
+            }
+
+            public static final ViewModel empty = new ViewModel(List.of(), 0, Color.from(0xFFFFFF));
+        }
+
+        public static void render(MatrixStack matrixStack, int screenWidth, int screenHeight, ViewModel viewModel) {
+            var config = SpellEngineClient.hudConfig.value.hotbar;
+            var origin = config.origin.getPoint(screenWidth, screenHeight).add(config.offset);
+//            var origin = new Vec2f(screenWidth / 2, screenHeight / 2);
+            if (viewModel.spellIcons.isEmpty()) {
+                return;
+            }
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+
+            // Background
+            int slotHeight = 22;
+            int slothWidth = 20;
+            RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
+            DrawableHelper.drawTexture(matrixStack, (int) (origin.x), (int) (origin.y), 0, 0, slothWidth / 2, slotHeight, textureWidth, textureHeight);
+            int middleElements = viewModel.spellIcons.size() - 1;
+            for (int i = 0; i < middleElements; i++) {
+                DrawableHelper.drawTexture(matrixStack, (int) (origin.x) + (slothWidth / 2) + (i * slothWidth), (int) (origin.y), slothWidth / 2, 0, slothWidth, slotHeight, textureWidth, textureHeight);
+            }
+            DrawableHelper.drawTexture(matrixStack, (int) (origin.x) + (slothWidth / 2) + (middleElements * slothWidth), (int) (origin.y), 170, 0, (slotHeight / 2) + 1, slotHeight, textureWidth, textureHeight);
+
+            // Icons
+            var iconsOffset = new Vec2f(3,3);
+            int iconSize = 16;
+            for (int i = 0; i < viewModel.spellIcons.size(); i++) {
+                var icon = viewModel.spellIcons.get(i);
+                RenderSystem.setShaderTexture(0, icon);
+                DrawableHelper.drawTexture(matrixStack, (int) (origin.x + iconsOffset.x) + ((slothWidth) * i), (int) (origin.y + iconsOffset.y), 0, 0, iconSize, iconSize, iconSize, iconSize);
+
+                // TODO: Cooldown
+            }
+
+            // Selector
+            int selectorSize = 24;
+            RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
+            int x = ((int) origin.x) - 1 + (slothWidth * viewModel.selected);
+            int y = ((int) origin.y) - 1;
+            DrawableHelper.drawTexture(matrixStack, x, y, 0, 22, selectorSize, selectorSize, textureWidth, textureHeight);
+
+
+            RenderSystem.disableBlend();
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 }

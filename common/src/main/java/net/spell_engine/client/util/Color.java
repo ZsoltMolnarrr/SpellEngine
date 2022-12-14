@@ -1,4 +1,4 @@
-package net.spell_engine.client.particle;
+package net.spell_engine.client.util;
 
 public record Color(float red, float green, float blue) {
     public static Color from(int rgb) {

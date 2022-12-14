@@ -11,12 +11,20 @@ public class SpellContainer { public SpellContainer() { }
 
     // MARK: Helpers
 
+    public int cappedIndex(int selected) {
+        var remainder = selected % spell_ids.size();
+        return (remainder >= 0) ? remainder : (remainder + spell_ids.size());
+    }
+
     public String spellId(int selected) {
         if (spell_ids == null || spell_ids.isEmpty()) {
             return null;
         }
-        var remainder = selected % spell_ids.size();
-        var index = (remainder >= 0) ? remainder : (remainder + spell_ids.size());
+        var index = cappedIndex(selected);
         return spell_ids.get(index);
+    }
+
+    public boolean isValid() {
+        return school != null && spell_ids != null && max_spell_count > 0;
     }
 }

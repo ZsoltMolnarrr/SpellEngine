@@ -6,8 +6,6 @@ import net.spell_engine.api.spell.SpellContainer;
 import org.jetbrains.annotations.Nullable;
 
 public interface SpellCasterItemStack {
-//    Identifier getSpellId();
-//    Spell getSpell();
     @Nullable
     SpellContainer getSpellContainer();
 }
