@@ -1,3 +1,9 @@
 {
-  "spell": "spell_engine:frostbolt"
+  "school": "FROST",
+  "max_spell_count": 3,
+  "spell_ids": [
+    "spell_engine:ice_lance",
+    "spell_engine:frostbolt",
+    "spell_engine:frost_nova"
+  ]
 }

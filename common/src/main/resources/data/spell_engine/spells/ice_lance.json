@@ -1,0 +1,95 @@
+{
+  "range": 64.0,
+  "school": "FROST",
+  "cast": {
+    "duration": 2.0,
+    "animation": "spell_engine:one_handed_projectile_charge",
+    "sound": {
+      "id": "spell_engine:casting_frost",
+      "volume": 1.0,
+      "pitch": 1.0,
+      "randomness": 0.1
+    },
+    "particles": [
+      {
+        "particle_id": "spell_engine:snowflake",
+        "shape": "PILLAR",
+        "origin": "CENTER",
+        "count": 0.5,
+        "min_speed": 0.1,
+        "max_speed": 0.2
+      }
+    ]
+  },
+  "on_release": {
+    "target": {
+      "type": "PROJECTILE",
+      "projectile": {
+        "velocity": 1.0,
+        "divergence": 0.0,
+        "inherit_shooter_velocity": false,
+        "homing_angle": 2.0,
+        "client_data": {
+          "travel_particles": [
+            {
+              "particle_id": "spell_engine:snowflake",
+              "shape": "CIRCLE",
+              "origin": "CENTER",
+              "count": 3.0,
+              "min_speed": 0.0,
+              "max_speed": 0.1
+            }
+          ],
+          "item_id": "snowball",
+          "render": "DEEP"
+        }
+      }
+    },
+    "animation": "spell_engine:one_handed_projectile_release",
+    "sound": {
+      "id": "spell_engine:release_frost",
+      "volume": 1.0,
+      "pitch": 1.0,
+      "randomness": 0.1
+    }
+  },
+  "on_impact": [
+    {
+      "action": {
+        "type": "DAMAGE",
+        "damage": {
+          "multiplier": 1.0
+        }
+      },
+      "sound": {
+        "id": "spell_engine:impact_frostbolt",
+        "volume": 1.0,
+        "pitch": 1.0,
+        "randomness": 0.1
+      }
+    },
+    {
+      "action": {
+        "type": "STATUS_EFFECT",
+        "status_effect": {
+          "duration": 5,
+          "amplifier": 2,
+          "effect_id": "slowness"
+        }
+      },
+      "particles": [
+        {
+          "particle_id": "spell_engine:frost",
+          "shape": "SPHERE",
+          "origin": "CENTER",
+          "count": 100.0,
+          "min_speed": 0.2,
+          "max_speed": 0.7
+        }
+      ]
+    }
+  ],
+  "cost": {
+    "cooldown_duration": 0.0
+  }
+}
