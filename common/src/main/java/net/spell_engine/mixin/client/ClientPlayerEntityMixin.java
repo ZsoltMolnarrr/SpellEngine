@@ -54,6 +54,11 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return firstTarget();
     }
 
+    public boolean isOnCooldown(SpellContainer container) {
+        var spellId = SpellRegistry.spellId(container, selectedSpellIndex);
+        return getCooldownManager().isCoolingDown(spellId);
+    }
+
     public boolean hasAmmoToStart(SpellContainer container, ItemStack itemStack) {
         var spell = SpellRegistry.spell(container, selectedSpellIndex);
         return spell != null && SpellHelper.ammoForSpell(player(), spell, itemStack).satisfied();

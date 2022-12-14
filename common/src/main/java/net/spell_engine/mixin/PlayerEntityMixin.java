@@ -3,9 +3,9 @@ package net.spell_engine.mixin;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.SpellCasterEntity;
-import net.spell_engine.internals.SpellCasterItemStack;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
+import net.spell_engine.internals.SpellCooldownManager;
 import net.spell_engine.runes.RuneCrafter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
@@ -24,6 +24,8 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
     }
 
     private Identifier currentSpell;
+
+    private final SpellCooldownManager spellCooldownManager = new SpellCooldownManager(player());
 
     public void setCurrentSpell(Identifier spellId) {
         currentSpell = spellId;
@@ -54,6 +56,11 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
         return 0;
     }
 
+    @Override
+    public SpellCooldownManager getCooldownManager() {
+        return spellCooldownManager;
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL(CallbackInfo ci) {
         lastRuneCrafted += 1;
@@ -61,6 +68,7 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
         if (player.world.isClient) {
             ((AnimatablePlayer)player()).updateCastAnimationsOnTick();
         }
+        spellCooldownManager.update();
     }
 
     public boolean isBeaming() {

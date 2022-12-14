@@ -1,23 +1,18 @@
 package net.spell_engine.mixin;
 
-import net.spell_engine.api.spell.Spell;
-import net.spell_engine.api.spell.SpellContainer;
-import net.spell_engine.internals.SpellCasterClient;
-import net.spell_engine.internals.SpellCasterItemStack;
-import net.spell_engine.internals.SpellHelper;
-import net.spell_engine.internals.SpellRegistry;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_damage.api.MagicSchool;
 import net.spell_damage.api.enchantment.MagicalItemStack;
+import net.spell_engine.api.spell.SpellContainer;
+import net.spell_engine.internals.*;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -100,7 +95,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
         if (container == null) { return; }
         if (world.isClient) {
             if (user instanceof SpellCasterClient caster) {
-                if (!caster.hasAmmoToStart(container, itemStack)) {
+                if (!caster.hasAmmoToStart(container, itemStack) || caster.isOnCooldown(container)) {
                     cir.setReturnValue(TypedActionResult.fail(itemStack()));
                     cir.cancel();
                     return;
@@ -123,7 +118,8 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
 
         if (world.isClient) {
             if (user instanceof PlayerEntity player) {
-                if (player.getItemCooldownManager().isCoolingDown(itemStack().getItem())) {
+                var caster = ((SpellCasterEntity) player);
+                if (caster.getCooldownManager().isCoolingDown(caster.getCurrentSpellId())) {
                     player.clearActiveItem();
                 }
             }

@@ -50,5 +50,12 @@ public class ClientNetwork {
                 }
             });
         });
+
+        ClientPlayNetworking.registerGlobalReceiver(Packets.SpellCooldown.ID, (client, handler, buf, responseSender) -> {
+            var packet = Packets.SpellCooldown.read(buf);
+            client.execute(() -> {
+                ((SpellCasterEntity)client.player).getCooldownManager().set(packet.spellId(), packet.duration());
+            });
+        });
     }
 }

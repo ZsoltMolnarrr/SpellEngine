@@ -16,7 +16,7 @@ public class SpellContainer { public SpellContainer() { }
             return null;
         }
         var remainder = selected % spell_ids.size();
-        var index = (remainder >= 0) ? remainder : spell_ids.size() - remainder;
+        var index = (remainder >= 0) ? remainder : (remainder + spell_ids.size());
         return spell_ids.get(index);
     }
 }

@@ -52,6 +52,22 @@ public class Packets {
         }
     }
 
+    public record SpellCooldown(Identifier spellId, int duration) {
+        public static Identifier ID = new Identifier(SpellEngineMod.ID, "spell_cooldown");
+        public PacketByteBuf write() {
+            PacketByteBuf buffer = PacketByteBufs.create();
+            buffer.writeString(spellId.toString());
+            buffer.writeInt(duration);
+            return buffer;
+        }
+
+        public static SpellCooldown read(PacketByteBuf buffer) {
+            var spellId = new Identifier(buffer.readString());
+            int duration = buffer.readInt();
+            return new SpellCooldown(spellId, duration);
+        }
+    }
+
     public record SpellAnimation(int playerId, SpellAnimationType type, String name) {
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "spell_animation");
         public PacketByteBuf write() {

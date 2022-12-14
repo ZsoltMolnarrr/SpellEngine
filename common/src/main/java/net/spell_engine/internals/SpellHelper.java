@@ -194,7 +194,7 @@ public class SpellHelper {
                     AnimationHelper.sendAnimation(player, trackingPlayers.get(), RELEASE, spell.on_release.animation);
                     var duration = cooldownToSet(caster, spell, progress);
                     if (duration > 0) {
-                        player.getItemCooldownManager().set(item, Math.round(duration * 20F));
+                        ((SpellCasterEntity) player).getCooldownManager().set(spellId, Math.round(duration * 20F));
                     }
                     player.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
                     if (SpellEngineMod.config.spell_cost_durability_allowed && spell.cost.durability > 0) {

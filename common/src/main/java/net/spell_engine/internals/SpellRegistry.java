@@ -81,7 +81,11 @@ public class SpellRegistry {
     }
 
     public static Spell spell(SpellContainer container, int selectedIndex) {
-        var spellId = new Identifier(container.spellId(selectedIndex));
+        var string = container.spellId(selectedIndex);
+        if (string == null) {
+            return null;
+        }
+        var spellId = new Identifier(string);
         return getSpell(spellId);
     }
 
