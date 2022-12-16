@@ -1,5 +1,6 @@
 package net.spell_engine.client.gui;
 
+import net.minecraft.client.gui.Element;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.config.HudConfig;
 import net.minecraft.client.gui.screen.Screen;
@@ -218,14 +219,48 @@ public class HudConfigScreen extends Screen {
         textRenderer.draw(matrices, translated, x - width, y, 0xFFFFFF);
     }
 
+    private Dragged dragged;
+    private enum Dragged {
+        CAST_BAR, HOT_BAR
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (HudRenderHelper.CastBarWidget.lastRendered != null && HudRenderHelper.CastBarWidget.lastRendered.contains(mouseX, mouseY)) {
+            dragged = Dragged.CAST_BAR;
+            return true;
+        }
+        if (HudRenderHelper.SpellHotBarWidget.lastRendered != null && HudRenderHelper.SpellHotBarWidget.lastRendered.contains(mouseX, mouseY)) {
+            dragged = Dragged.HOT_BAR;
+            return true;
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        dragged = null;
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         var result = super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
-        if (!this.isDragging() && button == 0) {
+        if (!this.isDragging() && button == 0 && dragged != null) {
             var config = SpellEngineClient.hudConfig.value;
-            config.base.offset = new Vec2f(
-                    (float) (config.base.offset.x + deltaX),
-                    (float) (config.base.offset.y + deltaY));
+            switch (dragged) {
+                case CAST_BAR -> {
+                    config.base.offset = new Vec2f(
+                            (float) (config.base.offset.x + deltaX),
+                            (float) (config.base.offset.y + deltaY));
+
+                }
+                case HOT_BAR -> {
+                    config.hotbar.offset = new Vec2f(
+                            (float) (config.hotbar.offset.x + deltaX),
+                            (float) (config.hotbar.offset.y + deltaY));
+                }
+            }
         }
         return result;
     }

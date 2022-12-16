@@ -6,6 +6,7 @@ import net.minecraft.util.math.MathHelper;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.util.Color;
+import net.spell_engine.client.util.Rect;
 import net.spell_engine.config.HudConfig;
 import net.spell_engine.internals.SpellCasterClient;
 import net.spell_engine.internals.SpellHelper;
@@ -129,13 +130,14 @@ public class HudRenderHelper {
     }
 
     public static class CastBarWidget {
+        public static Rect lastRendered;
         private static final float tailWidth = 5;
         public static final float minWidth = 2 * tailWidth;
         private static final int textureWidth = 182;
         private static final int textureHeight = 10;
         private static final int barHeight = textureHeight / 2;
         private static final Identifier CAST_BAR = new Identifier(SpellEngineMod.ID, "textures/hud/castbar.png");
-        public static final int spellIconSize = 16;
+        private static final int spellIconSize = 16;
 
         public record ViewModel(int color, float progress, float castDuration, Identifier iconTexture, boolean allowTickDelta, boolean reverse) {
             public static ViewModel mock() {
@@ -146,8 +148,10 @@ public class HudRenderHelper {
         public static void render(MatrixStack matrixStack, float tickDelta, HudConfig hudConfig, Vec2f starting, ViewModel viewModel) {
             var barWidth = hudConfig.bar_width;
             var totalWidth = barWidth + minWidth;
+            var totalHeight = barHeight;
             int x = (int) (starting.x - (totalWidth / 2));
-            int y = (int) starting.y;
+            int y = (int) (starting.y - (totalHeight / 2));
+            lastRendered = new Rect(new Vec2f(x,y), new Vec2f(x + totalWidth,y + totalHeight));
 
             RenderSystem.enableBlend();
             RenderSystem.setShaderTexture(0, CAST_BAR);
@@ -219,6 +223,7 @@ public class HudRenderHelper {
     }
 
     public class SpellHotBarWidget {
+        public static Rect lastRendered;
         private static final Identifier WIDGETS_TEXTURE = new Identifier("textures/gui/widgets.png");
         private static final int textureWidth = 256;
         private static final int textureHeight = 256;
@@ -254,6 +259,8 @@ public class HudRenderHelper {
                     .getPoint(screenWidth, screenHeight)
                     .add(config.offset)
                     .add(new Vec2f(estimatedWidth * (-0.5F), estimatedHeight * (-0.5F))); // Grow from center
+            lastRendered = new Rect(origin, origin.add(new Vec2f(estimatedWidth, estimatedHeight)));
+
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
 
