@@ -5,6 +5,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.util.math.MathHelper;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
+import net.spell_engine.client.input.InputHelper;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.client.util.Rect;
 import net.spell_engine.config.HudConfig;
@@ -36,6 +37,7 @@ public class HudRenderHelper {
         }
 
         var targetViewModel = TargetWidget.ViewModel.mock();
+        boolean renderHotbar = true;
         var hotbarViewModel = SpellHotBarWidget.ViewModel.mock();
         CastBarWidget.ViewModel castBarViewModel = null;
         if (config) {
@@ -57,6 +59,8 @@ public class HudRenderHelper {
             } else {
                 hotbarViewModel = SpellHotBarWidget.ViewModel.empty;
             }
+            renderHotbar = InputHelper.isLockAssigned() && InputHelper.isLocked;
+
             var spell = caster.getCurrentSpell();
             var spellId = caster.getCurrentSpellId();
             if (spell != null) {
@@ -83,7 +87,9 @@ public class HudRenderHelper {
             TargetWidget.render(matrixStack, tickDelta, targetOffset, targetViewModel);
         }
 
-        SpellHotBarWidget.render(matrixStack, screenWidth, screenHeight, hotbarViewModel);
+        if (renderHotbar) {
+            SpellHotBarWidget.render(matrixStack, screenWidth, screenHeight, hotbarViewModel);
+        }
     }
 
     // Example: `spell_engine:fireball` -> `spell_engine:textures/spell/fireball.png`

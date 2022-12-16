@@ -14,4 +14,6 @@ public class ClientConfig implements ConfigData {
     public boolean highlightTarget = true;
     @ConfigEntry.Gui.Tooltip
     public boolean useMagicColorForHighlight = true;
+    @ConfigEntry.Gui.Tooltip
+    public boolean hideItemHotbarWhenLocked = true;
 }

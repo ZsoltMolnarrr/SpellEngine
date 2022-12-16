@@ -8,15 +8,22 @@ import java.util.List;
 
 public class Keybindings {
     public static KeyBinding hotbarModifier;
+    public static KeyBinding hotbarLock;
     public static final List<KeyBinding> all;
 
     static {
         hotbarModifier = new KeyBinding(
-                "keybinds." + SpellEngineMod.ID + ".hotbar_modifier",
+                "keybindings." + SpellEngineMod.ID + ".hotbar_modifier",
                 InputUtil.Type.KEYSYM,
                 InputUtil.GLFW_KEY_LEFT_ALT,
                 SpellEngineMod.modName());
 
-        all = List.of(hotbarModifier);
+        hotbarLock = new KeyBinding(
+                "keybindings." + SpellEngineMod.ID + ".hotbar_lock",
+                InputUtil.Type.KEYSYM,
+                InputUtil.UNKNOWN_KEY.getCode(),
+                SpellEngineMod.modName());
+
+        all = List.of(hotbarModifier, hotbarLock);
     }
 }

@@ -16,6 +16,7 @@
     "client.ClientPlayerEntityMixin",
     "client.EntityMixin",
     "client.EntityRenderMixin",
+    "client.InGameHudMixin",
     "client.LivingEntityRendererMixin",
     "client.LivingEntityVisualMixin",
     "client.MinecraftClientMixin"
