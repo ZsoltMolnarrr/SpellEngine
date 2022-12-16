@@ -35,13 +35,13 @@ public class HudConfig { HudConfig() { }
     }
 
     public HudConfig copy() {
-        return new HudConfig(base.copy(), target.copy(), icon.copy(), bar_width, hotbar);
+        return new HudConfig(base.copy(), target.copy(), icon.copy(), bar_width, hotbar.copy());
     }
 
     // MARK: Default and Presets
 
     public static HudElement defaultHotBar() {
-        return new HudElement(HudElement.Origin.BOTTOM, new Vec2f(-150, -24));
+        return new HudElement(HudElement.Origin.BOTTOM, new Vec2f(-150, -11));
     }
 
     public static HudConfig createDefault() {

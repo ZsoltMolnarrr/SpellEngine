@@ -16,7 +16,7 @@
   "gui.spell_engine.config_menu" : "Spell Engine Config",
   "gui.spell_engine.close" : "Close",
   "gui.spell_engine.settings" : "Settings",
-  "gui.spell_engine.hud" : "Cast bar",
+  "gui.spell_engine.hud" : "HUD",
   "gui.spell_engine.parts" : "Parts",
   "gui.spell_engine.preset" : "Preset",
   "gui.spell_engine.reset" : "Reset",
