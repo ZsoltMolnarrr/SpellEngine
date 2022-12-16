@@ -1,6 +1,8 @@
 package net.spell_engine.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.render.*;
+import net.minecraft.util.math.MathHelper;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.util.Color;
@@ -45,11 +47,12 @@ public class HudRenderHelper {
             var caster = (SpellCasterClient) player;
             var container = caster.getCurrentContainer();
             if (container != null && container.isValid()) {
-                var icons = container.spell_ids.stream()
-                        .map(spellId -> spellIconTexture(new Identifier(spellId)))
+                var cooldownManager = caster.getCooldownManager();
+                var spells = container.spell_ids.stream()
+                        .map(spellId -> new SpellHotBarWidget.SpellViewModel(spellIconTexture(new Identifier(spellId)), cooldownManager.getCooldownProgress(new Identifier(spellId), tickDelta)))
                         .collect(Collectors.toList());
                 int selected = caster.getSelectedSpellIndex(container);
-                hotbarViewModel = new SpellHotBarWidget.ViewModel(icons, selected, Color.from(0xFFFFFF));
+                hotbarViewModel = new SpellHotBarWidget.ViewModel(spells, selected, Color.from(0xFFFFFF));
             } else {
                 hotbarViewModel = SpellHotBarWidget.ViewModel.empty;
             }
@@ -220,13 +223,15 @@ public class HudRenderHelper {
         private static final int textureWidth = 256;
         private static final int textureHeight = 256;
 
-        public record ViewModel(List<Identifier> spellIcons, int selected, Color sliderColor) {
+        public record SpellViewModel(Identifier iconId, float cooldown) { }
+
+        public record ViewModel(List<SpellViewModel> spells, int selected, Color sliderColor) {
             public static ViewModel mock() {
                 return new ViewModel(
                         List.of(
-                                spellIconTexture(new Identifier(SpellEngineMod.ID, "fireball")),
-                                spellIconTexture(new Identifier(SpellEngineMod.ID, "fireball")),
-                                spellIconTexture(new Identifier(SpellEngineMod.ID, "fireball"))
+                                new SpellViewModel(spellIconTexture(new Identifier(SpellEngineMod.ID, "fireball")), 0),
+                                new SpellViewModel(spellIconTexture(new Identifier(SpellEngineMod.ID, "fireball")), 0),
+                                new SpellViewModel(spellIconTexture(new Identifier(SpellEngineMod.ID, "fireball")), 0)
                         ),
                         1,
                         Color.from(0xFFFFFF)
@@ -238,46 +243,76 @@ public class HudRenderHelper {
 
         public static void render(MatrixStack matrixStack, int screenWidth, int screenHeight, ViewModel viewModel) {
             var config = SpellEngineClient.hudConfig.value.hotbar;
-            var origin = config.origin.getPoint(screenWidth, screenHeight).add(config.offset);
-//            var origin = new Vec2f(screenWidth / 2, screenHeight / 2);
-            if (viewModel.spellIcons.isEmpty()) {
+            if (viewModel.spells.isEmpty()) {
                 return;
             }
+            int slotHeight = 22;
+            int slotWidth = 20;
+            float estimatedWidth = slotWidth * viewModel.spells.size();
+            float estimatedHeight = slotHeight;
+            var origin = config.origin
+                    .getPoint(screenWidth, screenHeight)
+                    .add(config.offset)
+                    .add(new Vec2f(estimatedWidth * (-0.5F), estimatedHeight * (-0.5F))); // Grow from center
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
 
             // Background
-            int slotHeight = 22;
-            int slothWidth = 20;
             RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
-            DrawableHelper.drawTexture(matrixStack, (int) (origin.x), (int) (origin.y), 0, 0, slothWidth / 2, slotHeight, textureWidth, textureHeight);
-            int middleElements = viewModel.spellIcons.size() - 1;
+            DrawableHelper.drawTexture(matrixStack, (int) (origin.x), (int) (origin.y), 0, 0, slotWidth / 2, slotHeight, textureWidth, textureHeight);
+            int middleElements = viewModel.spells.size() - 1;
             for (int i = 0; i < middleElements; i++) {
-                DrawableHelper.drawTexture(matrixStack, (int) (origin.x) + (slothWidth / 2) + (i * slothWidth), (int) (origin.y), slothWidth / 2, 0, slothWidth, slotHeight, textureWidth, textureHeight);
+                DrawableHelper.drawTexture(matrixStack, (int) (origin.x) + (slotWidth / 2) + (i * slotWidth), (int) (origin.y), slotWidth / 2, 0, slotWidth, slotHeight, textureWidth, textureHeight);
             }
-            DrawableHelper.drawTexture(matrixStack, (int) (origin.x) + (slothWidth / 2) + (middleElements * slothWidth), (int) (origin.y), 170, 0, (slotHeight / 2) + 1, slotHeight, textureWidth, textureHeight);
+            DrawableHelper.drawTexture(matrixStack, (int) (origin.x) + (slotWidth / 2) + (middleElements * slotWidth), (int) (origin.y), 170, 0, (slotHeight / 2) + 1, slotHeight, textureWidth, textureHeight);
 
             // Icons
             var iconsOffset = new Vec2f(3,3);
             int iconSize = 16;
-            for (int i = 0; i < viewModel.spellIcons.size(); i++) {
-                var icon = viewModel.spellIcons.get(i);
-                RenderSystem.setShaderTexture(0, icon);
-                DrawableHelper.drawTexture(matrixStack, (int) (origin.x + iconsOffset.x) + ((slothWidth) * i), (int) (origin.y + iconsOffset.y), 0, 0, iconSize, iconSize, iconSize, iconSize);
+            for (int i = 0; i < viewModel.spells.size(); i++) {
+                var spell = viewModel.spells.get(i);
+                RenderSystem.setShaderTexture(0, spell.iconId);
+                int x = (int) (origin.x + iconsOffset.x) + ((slotWidth) * i);
+                int y = (int) (origin.y + iconsOffset.y);
+                DrawableHelper.drawTexture(matrixStack, x, y, 0, 0, iconSize, iconSize, iconSize, iconSize);
 
-                // TODO: Cooldown
+                if (spell.cooldown > 0) {
+                    renderCooldown(spell.cooldown, x, y);
+                }
             }
 
             // Selector
             int selectorSize = 24;
             RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
-            int x = ((int) origin.x) - 1 + (slothWidth * viewModel.selected);
+            int x = ((int) origin.x) - 1 + (slotWidth * viewModel.selected);
             int y = ((int) origin.y) - 1;
             DrawableHelper.drawTexture(matrixStack, x, y, 0, 22, selectorSize, selectorSize, textureWidth, textureHeight);
 
 
             RenderSystem.disableBlend();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        }
+
+        private static void renderCooldown(float progress, int x, int y) {
+            RenderSystem.disableDepthTest();
+            RenderSystem.disableTexture();
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            Tessellator tessellator2 = Tessellator.getInstance();
+            BufferBuilder bufferBuilder2 = tessellator2.getBuffer();
+            renderGuiQuad(bufferBuilder2, x, y + MathHelper.floor(16.0f * (1.0f - progress)), 16, MathHelper.ceil(16.0f * progress), 255, 255, 255, 127);
+            RenderSystem.enableTexture();
+            RenderSystem.enableDepthTest();
+        }
+
+        private static void renderGuiQuad(BufferBuilder buffer, int x, int y, int width, int height, int red, int green, int blue, int alpha) {
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+            buffer.vertex(x + 0, y + 0, 0.0).color(red, green, blue, alpha).next();
+            buffer.vertex(x + 0, y + height, 0.0).color(red, green, blue, alpha).next();
+            buffer.vertex(x + width, y + height, 0.0).color(red, green, blue, alpha).next();
+            buffer.vertex(x + width, y + 0, 0.0).color(red, green, blue, alpha).next();
+            BufferRenderer.drawWithShader(buffer.end());
         }
     }
 }
