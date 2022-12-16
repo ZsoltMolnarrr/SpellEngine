@@ -8,7 +8,8 @@
     "ItemStackMixin",
     "LivingEntityAccessor",
     "LivingEntityMixin",
-    "PlayerEntityMixin"
+    "PlayerEntityMixin",
+    "client.PlayerInventoryMixin"
   ],
   "client": [
     "client.AbstractClientPlayerEntityMixin",
@@ -16,7 +17,8 @@
     "client.EntityMixin",
     "client.EntityRenderMixin",
     "client.LivingEntityRendererMixin",
-    "client.LivingEntityVisualMixin"
+    "client.LivingEntityVisualMixin",
+    "client.MinecraftClientMixin"
   ],
   "injectors": {
     "defaultRequire": 1

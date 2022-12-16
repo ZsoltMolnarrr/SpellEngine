@@ -1,4 +1,5 @@
 {
+  "spell_engine.mod_name" : "Spell Engine",
   "enchantment.spell_engine.spell_infinity" : "Spell Infinity",
   "enchantment.spell_engine.spell_infinity.desc" : "Spells are free to cast",
 
@@ -23,6 +24,8 @@
   "gui.spell_engine.target" : "Target",
   "gui.spell_engine.icon" : "Icon",
   "gui.spell_engine.bar_width" : "Bar width",
+
+  "keybinds.spell_engine.hotbar_modifier" : "Hotbar modifier",
 
   "text.autoconfig.spell_engine.title" : "Spell Engine",
   "text.autoconfig.spell_engine.option.client.autoRelease" : "Auto release",

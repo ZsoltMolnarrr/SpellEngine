@@ -10,6 +10,8 @@ import java.util.List;
 public interface SpellCasterClient extends SpellCasterEntity {
     List<Entity> getCurrentTargets();
     Entity getCurrentFirstTarget();
+    void setSelectedSpellIndex(int index);
+    void changeSelectedSpellIndex(int delta);
     int getSelectedSpellIndex(SpellContainer container);
     SpellContainer getCurrentContainer();
     boolean isOnCooldown(SpellContainer container);

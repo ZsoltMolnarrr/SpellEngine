@@ -1,6 +1,8 @@
 package net.spell_engine.fabric;
 
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.entity.SpellProjectile;
 import net.fabricmc.api.ModInitializer;
 import net.spell_engine.utils.SoundHelper;
@@ -32,5 +34,12 @@ public class FabricMod implements ModInitializer {
         SpellEngineMod.registerItems();
         SpellEngineMod.registerRuneCrafting();
         SoundHelper.registerSounds();
+        registerKeyBindings();
+    }
+
+    private void registerKeyBindings() {
+        for(var keybinding: Keybindings.all) {
+            KeyBindingHelper.registerKeyBinding(keybinding);
+        }
     }
 }

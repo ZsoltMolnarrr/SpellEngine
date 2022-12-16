@@ -40,6 +40,14 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return targets.stream().findFirst().orElse(null);
     }
 
+    public void changeSelectedSpellIndex(int delta) {
+        selectedSpellIndex += delta;
+    }
+
+    public void setSelectedSpellIndex(int index) {
+        selectedSpellIndex = index;
+    }
+
     public int getSelectedSpellIndex(SpellContainer container) {
         return container.cappedIndex(selectedSpellIndex);
     }
