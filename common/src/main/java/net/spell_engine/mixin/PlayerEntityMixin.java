@@ -1,14 +1,11 @@
 package net.spell_engine.mixin;
 
-import net.spell_engine.api.spell.Spell;
-import net.spell_engine.client.animation.AnimatablePlayer;
-import net.spell_engine.internals.SpellCasterEntity;
-import net.spell_engine.internals.SpellHelper;
-import net.spell_engine.internals.SpellRegistry;
-import net.spell_engine.internals.SpellCooldownManager;
-import net.spell_engine.runes.RuneCrafter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
+import net.spell_engine.api.spell.Spell;
+import net.spell_engine.client.animation.AnimatablePlayer;
+import net.spell_engine.internals.*;
+import net.spell_engine.runes.RuneCrafter;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,11 +21,13 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
     }
 
     private Identifier currentSpell;
+    private int spellSlack = 0;
 
     private final SpellCooldownManager spellCooldownManager = new SpellCooldownManager(player());
 
     public void setCurrentSpell(Identifier spellId) {
         currentSpell = spellId;
+        spellSlack = 0;
     }
 
     @Override
@@ -67,6 +66,17 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
         var player = player();
         if (player.world.isClient) {
             ((AnimatablePlayer)player()).updateCastAnimationsOnTick();
+            if (!player.isUsingItem() && currentSpell != null) {
+                spellSlack += 1;
+//                if (spellSlack >= 3) {
+//                    setCurrentSpell(null);
+//                }
+            }
+        } else {
+            // Server side
+            if (!player.isUsingItem() || SpellContainerHelper.containerFromItemStack(player.getActiveItem()) == null) {
+                SpellCastSyncHelper.clearCasting(player);
+            }
         }
         spellCooldownManager.update();
     }

@@ -16,6 +16,12 @@ public class Packets {
 
     public record SpellCastSync(int playerId, Identifier spellId) {
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "cast_sync");
+        public static Identifier CLEAR_SYMBOL = new Identifier(SpellEngineMod.ID, "clear_symbol");
+
+        public static SpellCastSync clear(int playerId) {
+            return new SpellCastSync(playerId, CLEAR_SYMBOL);
+        }
+
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();
             buffer.writeInt(playerId);

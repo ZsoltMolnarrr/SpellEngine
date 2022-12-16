@@ -1,5 +1,6 @@
 package net.spell_engine.mixin.client;
 
+import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.client.SpellEngineClient;
@@ -53,14 +54,33 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     public SpellContainer getCurrentContainer() {
-        var mainHandStack = player().getMainHandStack();
-        if (!mainHandStack.isEmpty()) {
-            var object = (Object)mainHandStack;
-            if (object instanceof SpellCasterItemStack stack) {
-                return stack.getSpellContainer();
+        var container = containerFromItemStack(player().getMainHandStack());
+        if (container == null) {
+            container = containerFromItemStack(player().getOffHandStack());
+        }
+        return container;
+    }
+
+    private SpellContainer containerFromItemStack(ItemStack itemStack) {
+        if (itemStack.isEmpty()) {
+            return null;
+        }
+        var object = (Object)itemStack;
+        if (object instanceof SpellCasterItemStack stack) {
+            var container = stack.getSpellContainer();
+            if (container != null && container.isValid()) {
+                return container;
             }
         }
         return null;
+    }
+
+    private Identifier spellIdFromItemStack(ItemStack itemStack) {
+        var container = containerFromItemStack(itemStack);
+        if (container == null || !container.isValid()) {
+            return null;
+        }
+        return new Identifier(container.spellId(selectedSpellIndex));
     }
 
     public List<Entity> getCurrentTargets() {
@@ -86,7 +106,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     @Override
     public void castStart(SpellContainer container, ItemStack itemStack, int remainingUseTicks) {
-        System.out.println("Spell casting - Start");
         var caster = player();
         var slot = findSlot(caster, itemStack);
         var spellId = SpellRegistry.spellId(container, selectedSpellIndex);
@@ -101,6 +120,13 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         var currentSpell = getCurrentSpell();
         if (currentSpell == null) {
             return;
+        }
+        if (SpellEngineClient.config.restartCastingWhenSwitchingSpell) {
+            if (!getCurrentSpellId().equals(spellIdFromItemStack(itemStack))) {
+                cast(getCurrentSpell(), SpellCastAction.RELEASE, itemStack, remainingUseTicks);
+                endCasting();
+                return;
+            }
         }
 
         updateTargets();
@@ -120,6 +146,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     public void castRelease(ItemStack itemStack, int remainingUseTicks) {
         updateTargets();
         cast(getCurrentSpell(), SpellCastAction.RELEASE, itemStack, remainingUseTicks);
+        endCasting();
     }
 
     private void cast(Spell spell, SpellCastAction action, ItemStack itemStack, int remainingUseTicks) {
@@ -139,9 +166,9 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 shouldEndCasting = progress >= 1;
             }
             case RELEASE -> {
-                if (!isChannelled && progress < 1) {
-                    return;
-                }
+//                if (!isChannelled && progress < 1) {
+//                    return;
+//                }
                 shouldEndCasting = true;
             }
         }
@@ -172,15 +199,22 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 new Packets.SpellRequest(action, spellId, slot, remainingUseTicks, targetIDs).write());
 
         if (shouldEndCasting) {
-            player().clearActiveItem();
-            setCurrentSpell(null);
+            endCasting();
         }
     }
 
+    private void endCasting() {
+        player().clearActiveItem();
+        setCurrentSpell(null);
+    }
+
+    private void clearCasting() {
+        setCurrentSpell(null);
+    }
+
     private int findSlot(PlayerEntity player, ItemStack stack) {
-        var inventory = player.getInventory().main;
-        for(int i = 0; i < inventory.size(); ++i) {
-            ItemStack itemStack = inventory.get(i);
+        for(int i = 0; i < player.getInventory().size(); ++i) {
+            ItemStack itemStack = player.getInventory().getStack(i);
             if (stack == itemStack) {
                 return i;
             }
@@ -233,8 +267,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL(CallbackInfo ci) {
         var player = player();
-        if (!player.isUsingItem()) {
+        var spellIdFromActiveStack = spellIdFromItemStack(player.getActiveItem());
+        if (!player.isUsingItem() || spellIdFromActiveStack == null) {
             targets = List.of();
+            clearCasting();
         }
         if (isBeaming()) {
             networkHandler.sendPacket(new PlayerMoveC2SPacket.Full(

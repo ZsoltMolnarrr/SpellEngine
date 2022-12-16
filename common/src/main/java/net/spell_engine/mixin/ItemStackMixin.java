@@ -32,17 +32,11 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
         return (ItemStack) ((Object)this);
     }
 
-    private SpellContainer cachedSpell;
-
     @Nullable
     private SpellContainer container() {
-        if (cachedSpell != null) {
-            return cachedSpell;
-        }
         var item = getItem();
         var id = Registry.ITEM.getId(item);
-        cachedSpell = SpellRegistry.containerForItem(id);
-        return cachedSpell;
+        return SpellRegistry.containerForItem(id);
     }
 
     // MagicalItemStack
@@ -90,9 +84,21 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     // Can use runes?
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
     private void use_HEAD(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
+        System.out.println("ItemStack use start");
         var itemStack = itemStack();
         var container = container();
-        if (container == null) { return; }
+        if (container == null) {
+            if (user instanceof SpellCasterEntity caster) {
+                if (caster.getCurrentSpellId() != null) {
+                    if (world.isClient) {
+                        caster.setCurrentSpell(null);
+                    } else {
+                        SpellCastSyncHelper.clearCasting(user);
+                    }
+                }
+            }
+            return;
+        }
         if (world.isClient) {
             if (user instanceof SpellCasterClient caster) {
                 if (!caster.hasAmmoToStart(container, itemStack) || caster.isOnCooldown(container)) {
@@ -113,17 +119,17 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
 
     @Inject(method = "usageTick", at = @At("HEAD"), cancellable = true)
     private void usageTick_HEAD(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
+        System.out.println("ItemStack use tick");
         var spell = container();
         if (spell == null) { return; }
 
         if (world.isClient) {
-            if (user instanceof PlayerEntity player) {
-                var caster = ((SpellCasterEntity) player);
-                if (caster.getCooldownManager().isCoolingDown(caster.getCurrentSpellId())) {
-                    player.clearActiveItem();
-                }
-            }
             if (user instanceof SpellCasterClient caster) {
+                if (user instanceof PlayerEntity player) {
+                    if (caster.getCooldownManager().isCoolingDown(caster.getCurrentSpellId())) {
+                        player.clearActiveItem();
+                    }
+                }
                 caster.castTick(itemStack(), remainingUseTicks);
             }
         }
@@ -140,6 +146,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
 
     @Inject(method = "onStoppedUsing", at = @At("HEAD"), cancellable = true)
     private void onStoppedUsing_HEAD(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
+        System.out.println("ItemStack use stop");
         var spell = container();
         if (spell == null) { return; }
 

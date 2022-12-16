@@ -36,7 +36,11 @@ public class ClientNetwork {
             client.execute(() -> {
                 var entity = client.world.getEntityById(packet.playerId());
                 if (entity instanceof SpellCasterEntity caster) {
-                    caster.setCurrentSpell(packet.spellId());
+                    if (packet.spellId().equals(Packets.SpellCastSync.CLEAR_SYMBOL)) {
+                        caster.setCurrentSpell(null);
+                    } else {
+                        caster.setCurrentSpell(packet.spellId());
+                    }
                 }
             });
         });

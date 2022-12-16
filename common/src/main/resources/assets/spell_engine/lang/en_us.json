@@ -35,6 +35,8 @@
   "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple.@Tooltip" : "Show target name when more than one entity is being targeted",
   "text.autoconfig.spell_engine.option.client.highlightTarget" : "Highlight target",
   "text.autoconfig.spell_engine.option.client.highlightTarget.@Tooltip" : "Render glowing effect on targeted entity",
+  "text.autoconfig.spell_engine.option.client.restartCastingWhenSwitchingSpell" : "Restart when switching spell",
+  "text.autoconfig.spell_engine.option.client.restartCastingWhenSwitchingSpell.@Tooltip" : "Immediately cancel currently casted spell and restart casting in case switching.",
   "text.autoconfig.spell_engine.option.client.useMagicColorForHighlight" : "Use magic color for highlight",
   "text.autoconfig.spell_engine.option.client.useMagicColorForHighlight.@Tooltip" : "Use the color of the magic school for glowing effect on targeted entity",
   "text.autoconfig.spell_engine.option.client.hideItemHotbarWhenLocked" : "Hide item hotbar",

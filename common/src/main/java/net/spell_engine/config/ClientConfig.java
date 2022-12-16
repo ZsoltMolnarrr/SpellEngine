@@ -15,5 +15,7 @@ public class ClientConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip
     public boolean useMagicColorForHighlight = true;
     @ConfigEntry.Gui.Tooltip
+    public boolean restartCastingWhenSwitchingSpell = false;
+    @ConfigEntry.Gui.Tooltip
     public boolean hideItemHotbarWhenLocked = true;
 }

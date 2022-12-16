@@ -4,7 +4,6 @@ import com.google.common.base.Suppliers;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Lazy;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.Enchantments_CombatSpells;
 import net.spell_engine.api.spell.Spell;
@@ -34,8 +33,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
-
-import static net.spell_engine.internals.SpellAnimationType.RELEASE;
 
 public class SpellHelper {
     public static int maximumUseTicks = 72000;
@@ -115,7 +112,7 @@ public class SpellHelper {
         return ((float)ticks) / 20F;
     }
 
-    public static void performSpell(World world, LivingEntity caster, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCastAction action, int remainingUseTicks) {
+    public static void performSpell(World world, PlayerEntity caster, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCastAction action, int remainingUseTicks) {
         var item = itemStack.getItem();
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
@@ -125,19 +122,12 @@ public class SpellHelper {
         var channelMultiplier = 1F;
         boolean shouldPerformImpact = true;
         Supplier<Collection<ServerPlayerEntity>> trackingPlayers = Suppliers.memoize(() -> { // Suppliers.memoize = Lazy
-            if (caster instanceof PlayerEntity player) {
-                return PlayerLookup.tracking(player);
-            }
-            return List.of();
+            return PlayerLookup.tracking(caster);
         });
         switch (action) {
             case START -> {
                 SoundHelper.playSound(caster.world, caster, spell.cast.start_sound);
-                ((SpellCasterEntity) caster).setCurrentSpell(spellId);
-                var packet = new Packets.SpellCastSync(caster.getId(), spellId).write();
-                trackingPlayers.get().forEach(serverPlayer -> {
-                    ServerPlayNetworking.send(serverPlayer, Packets.SpellCastSync.ID, packet);
-                });
+                SpellCastSyncHelper.setCasting(caster, spellId, trackingPlayers.get());
                 return;
             }
             case CHANNEL -> {
@@ -150,12 +140,11 @@ public class SpellHelper {
                 } else {
                     channelMultiplier = (progress >= 1) ? 1 : 0;
                 }
+                SpellCastSyncHelper.clearCasting(caster, trackingPlayers.get());
             }
         }
-        var ammoResult = new AmmoResult(true, null);
-        if (caster instanceof PlayerEntity player) {
-            ammoResult = ammoForSpell(player, spell, itemStack);
-        }
+        var ammoResult = ammoForSpell(caster, spell, itemStack);
+
         if (channelMultiplier > 0 && ammoResult.satisfied()) {
             var targeting = spell.on_release.target;
             boolean released = action == SpellCastAction.RELEASE;
@@ -190,29 +179,27 @@ public class SpellHelper {
             if (released) {
                 ParticleHelper.sendBatches(caster, spell.on_release.particles);
                 SoundHelper.playSound(world, caster, spell.on_release.sound);
-                if (caster instanceof PlayerEntity player) {
-                    AnimationHelper.sendAnimation(player, trackingPlayers.get(), RELEASE, spell.on_release.animation);
-                    var duration = cooldownToSet(caster, spell, progress);
-                    if (duration > 0) {
-                        ((SpellCasterEntity) player).getCooldownManager().set(spellId, Math.round(duration * 20F));
-                    }
-                    player.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
-                    if (SpellEngineMod.config.spell_cost_durability_allowed && spell.cost.durability > 0) {
-                        itemStack.damage(spell.cost.durability, caster, (asd) -> {
-                            asd.sendEquipmentBreakStatus(EquipmentSlot.MAINHAND);
-                            asd.sendEquipmentBreakStatus(EquipmentSlot.OFFHAND);
-                        });
-                    }
-                    if (SpellEngineMod.config.spell_cost_item_allowed && ammoResult.ammo != null) {
-                        for(int i = 0; i < player.getInventory().size(); ++i) {
-                            var stack = player.getInventory().getStack(i);
-                            if (stack.isOf(ammoResult.ammo.getItem())) {
-                                stack.decrement(1);
-                                if (stack.isEmpty()) {
-                                    player.getInventory().removeOne(stack);
-                                }
-                                break;
+                AnimationHelper.sendAnimation(caster, trackingPlayers.get(), SpellAnimationType.RELEASE, spell.on_release.animation);
+                var duration = cooldownToSet(caster, spell, progress);
+                if (duration > 0) {
+                    ((SpellCasterEntity) caster).getCooldownManager().set(spellId, Math.round(duration * 20F));
+                }
+                caster.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
+                if (SpellEngineMod.config.spell_cost_durability_allowed && spell.cost.durability > 0) {
+                    itemStack.damage(spell.cost.durability, caster, (asd) -> {
+                        asd.sendEquipmentBreakStatus(EquipmentSlot.MAINHAND);
+                        asd.sendEquipmentBreakStatus(EquipmentSlot.OFFHAND);
+                    });
+                }
+                if (SpellEngineMod.config.spell_cost_item_allowed && ammoResult.ammo != null) {
+                    for(int i = 0; i < caster.getInventory().size(); ++i) {
+                        var stack = caster.getInventory().getStack(i);
+                        if (stack.isOf(ammoResult.ammo.getItem())) {
+                            stack.decrement(1);
+                            if (stack.isEmpty()) {
+                                caster.getInventory().removeOne(stack);
                             }
+                            break;
                         }
                     }
                 }
