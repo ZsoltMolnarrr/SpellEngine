@@ -59,7 +59,7 @@ public class HudRenderHelper {
             } else {
                 hotbarViewModel = SpellHotBarWidget.ViewModel.empty;
             }
-            renderHotbar = InputHelper.isLockAssigned() && InputHelper.isLocked;
+            renderHotbar = !InputHelper.isLockAssigned() || InputHelper.isLocked;
 
             var spell = caster.getCurrentSpell();
             var spellId = caster.getCurrentSpellId();
