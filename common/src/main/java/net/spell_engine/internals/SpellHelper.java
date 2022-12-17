@@ -113,7 +113,6 @@ public class SpellHelper {
     }
 
     public static void performSpell(World world, PlayerEntity caster, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCastAction action, int remainingUseTicks) {
-        var item = itemStack.getItem();
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
             return;

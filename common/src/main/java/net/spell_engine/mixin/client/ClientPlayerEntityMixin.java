@@ -1,5 +1,6 @@
 package net.spell_engine.mixin.client;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
@@ -29,6 +30,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     @Shadow public abstract boolean isUsingItem();
 
+    @Shadow @Final protected MinecraftClient client;
     private int selectedSpellIndex = 2;
 
     private List<Entity> targets = List.of();
@@ -123,8 +125,9 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
         if (SpellEngineClient.config.restartCastingWhenSwitchingSpell) {
             if (!getCurrentSpellId().equals(spellIdFromItemStack(itemStack))) {
-                cast(getCurrentSpell(), SpellCastAction.RELEASE, itemStack, remainingUseTicks);
-                endCasting();
+//                cast(getCurrentSpell(), SpellCastAction.RELEASE, itemStack, remainingUseTicks);
+//                endCasting();
+                stopItemUsage();
                 return;
             }
         }
@@ -137,7 +140,8 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         } else {
             if (SpellEngineClient.config.autoRelease
                     && SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell) >= 1) {
-                cast(currentSpell, SpellCastAction.RELEASE, itemStack, remainingUseTicks);
+                //cast(currentSpell, SpellCastAction.RELEASE, itemStack, remainingUseTicks);
+                stopItemUsage();
             }
         }
     }
@@ -203,7 +207,15 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
     }
 
+    private void stopItemUsage() {
+        var client = MinecraftClient.getInstance();
+        client.interactionManager.stopUsingItem(client.player);
+        setCurrentSpell(null);
+    }
+
     private void endCasting() {
+//        var client = MinecraftClient.getInstance();
+//        client.interactionManager.stopUsingItem(client.player);
         player().clearActiveItem();
         setCurrentSpell(null);
     }

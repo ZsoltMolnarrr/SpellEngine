@@ -1,5 +1,6 @@
 package net.spell_engine.mixin;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -88,13 +89,13 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
         var itemStack = itemStack();
         var container = container();
         if (container == null) {
-            if (user instanceof SpellCasterEntity caster) {
-                if (caster.getCurrentSpellId() != null) {
-                    if (world.isClient) {
-                        caster.setCurrentSpell(null);
-                    } else {
-                        SpellCastSyncHelper.clearCasting(user);
-                    }
+            if (user instanceof SpellCasterEntity caster && caster.getCurrentSpellId() != null) {
+                if (world.isClient) {
+                    var client = MinecraftClient.getInstance();
+                    client.interactionManager.stopUsingItem(client.player);
+                    caster.setCurrentSpell(null);
+                } else {
+                    SpellCastSyncHelper.clearCasting(user);
                 }
             }
             return;
@@ -119,17 +120,26 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
 
     @Inject(method = "usageTick", at = @At("HEAD"), cancellable = true)
     private void usageTick_HEAD(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
-        System.out.println("ItemStack use tick");
+        System.out.println("ItemStack use tick A " + (world.isClient ? "CLIENT" : "SERVER"));
         var spell = container();
-        if (spell == null) { return; }
+        if (spell == null) {
+            return;
+        }
+        System.out.println("ItemStack use tick B " + (world.isClient ? "CLIENT" : "SERVER"));
+
+        if (user instanceof PlayerEntity player) {
+            var caster = (SpellCasterEntity)player;
+            if (caster.getCooldownManager().isCoolingDown(caster.getCurrentSpellId())) {
+                var client = MinecraftClient.getInstance();
+                client.interactionManager.stopUsingItem(client.player);
+                // player.clearActiveItem();
+                ci.cancel();
+                return;
+            }
+        }
 
         if (world.isClient) {
             if (user instanceof SpellCasterClient caster) {
-                if (user instanceof PlayerEntity player) {
-                    if (caster.getCooldownManager().isCoolingDown(caster.getCurrentSpellId())) {
-                        player.clearActiveItem();
-                    }
-                }
                 caster.castTick(itemStack(), remainingUseTicks);
             }
         }
