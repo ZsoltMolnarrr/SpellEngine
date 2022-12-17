@@ -43,11 +43,13 @@
   "text.autoconfig.spell_engine.option.client.highlightTarget" : "Highlight target",
   "text.autoconfig.spell_engine.option.client.highlightTarget.@Tooltip" : "Render glowing effect on targeted entity",
   "text.autoconfig.spell_engine.option.client.restartCastingWhenSwitchingSpell" : "Restart when switching spell",
-  "text.autoconfig.spell_engine.option.client.restartCastingWhenSwitchingSpell.@Tooltip" : "Immediately cancel currently casted spell and restart casting in case switching.",
+  "text.autoconfig.spell_engine.option.client.restartCastingWhenSwitchingSpell.@Tooltip" : "Immediately cancel currently casted spell and restart casting in case switching",
   "text.autoconfig.spell_engine.option.client.useMagicColorForHighlight" : "Use magic color for highlight",
   "text.autoconfig.spell_engine.option.client.useMagicColorForHighlight.@Tooltip" : "Use the color of the magic school for glowing effect on targeted entity",
   "text.autoconfig.spell_engine.option.client.hideItemHotbarWhenLocked" : "Hide item hotbar",
   "text.autoconfig.spell_engine.option.client.hideItemHotbarWhenLocked.@Tooltip" : "Hide item hotbar when locking spell hotbar",
+  "text.autoconfig.spell_engine.option.client.lockHotbarOnRightClick" : "Lock spell hotbar when used",
+  "text.autoconfig.spell_engine.option.client.lockHotbarOnRightClick.@Tooltip" : "Switch to using spell hotbar when attempting to use a spell caster weapon",
 
 
   "gui.spell_engine.rune_crafting" : "Rune Crafting",

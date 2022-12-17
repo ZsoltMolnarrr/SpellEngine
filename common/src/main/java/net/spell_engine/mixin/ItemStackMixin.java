@@ -82,10 +82,9 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
 
     // Start casting
 
-    // Can use runes?
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
     private void use_HEAD(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-        System.out.println("ItemStack use start");
+        // System.out.println("ItemStack use start");
         var itemStack = itemStack();
         var container = container();
         if (container == null) {
@@ -120,12 +119,12 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
 
     @Inject(method = "usageTick", at = @At("HEAD"), cancellable = true)
     private void usageTick_HEAD(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
-        System.out.println("ItemStack use tick A " + (world.isClient ? "CLIENT" : "SERVER"));
+        // System.out.println("ItemStack use tick A " + (world.isClient ? "CLIENT" : "SERVER"));
         var spell = container();
         if (spell == null) {
             return;
         }
-        System.out.println("ItemStack use tick B " + (world.isClient ? "CLIENT" : "SERVER"));
+        // System.out.println("ItemStack use tick B " + (world.isClient ? "CLIENT" : "SERVER"));
 
         if (user instanceof PlayerEntity player) {
             var caster = (SpellCasterEntity)player;
@@ -144,19 +143,14 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
             }
         }
 
-//        var progress = SpellHelper.getCastProgress(remainingUseTicks, spell.cast_duration);
-//        System.out.println("Spell tick - Tick: " + progress);
-
         ci.cancel();
     }
 
     // Release casting
 
-    // finishUsing = finish consuming runes
-
     @Inject(method = "onStoppedUsing", at = @At("HEAD"), cancellable = true)
     private void onStoppedUsing_HEAD(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
-        System.out.println("ItemStack use stop");
+        // System.out.println("ItemStack use stop");
         var spell = container();
         if (spell == null) { return; }
 

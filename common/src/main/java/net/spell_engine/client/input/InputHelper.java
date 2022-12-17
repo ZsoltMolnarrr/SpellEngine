@@ -15,6 +15,10 @@ public class InputHelper {
     }
 
     public static void toggleLock() {
+        toggleLock(false);
+    }
+
+    public static void toggleLock(boolean skipValidation) {
         var client = MinecraftClient.getInstance();
         if (isLocked) {
             isLocked = false;

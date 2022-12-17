@@ -18,4 +18,6 @@ public class ClientConfig implements ConfigData {
     public boolean restartCastingWhenSwitchingSpell = false;
     @ConfigEntry.Gui.Tooltip
     public boolean hideItemHotbarWhenLocked = true;
+    @ConfigEntry.Gui.Tooltip
+    public boolean lockHotbarOnRightClick = true;
 }
