@@ -1,6 +1,7 @@
 package net.spell_engine.client.gui;
 
 import com.ibm.icu.text.DecimalFormat;
+import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.internals.SpellCasterItemStack;
 import net.spell_engine.internals.SpellHelper;
@@ -13,6 +14,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SpellTooltip {
@@ -25,69 +27,94 @@ public class SpellTooltip {
             return;
         }
         if ((Object)itemStack instanceof SpellCasterItemStack stack) {
-            // var spellId = stack.getSpellId();
-//            var spell = SpellRegistry.getSpell(spellId);
-//            if(stack.getSpellContainer() != null) {
-//                lines.add(Text.of(""));
-//
-//                lines.add(Text.translatable("spell.tooltip.when_used")
-//                        .append(Text.literal(" "))
-//                        .append(Text.translatable(spellKeyPrefix(spellId) + ".name").formatted(Formatting.BOLD))
-//                        .formatted(Formatting.GRAY));
-//
-//                var description = I18n.translate(spellKeyPrefix(spellId) + ".description");
-//                var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);
-//                description = replaceTokens(description, damageToken, estimatedOutput.damage());
-//                description = replaceTokens(description, healToken, estimatedOutput.heal());
-//                lines.add(Text.literal(" ")
-//                        .append(Text.translatable(description))
-//                        .formatted(Formatting.GRAY));
-//
-//                var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
-//                var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
-//                var castTime = I18n.translate(castTimeKey).replace("{duration}", formattedNumber(castDuration));
-//                lines.add(Text.literal(" ")
-//                        .append(Text.literal(castTime))
-//                        .formatted(Formatting.GOLD));
-//
-//                var rangeKey = keyWithPlural("spell.tooltip.range", spell.range);
-//                var range = I18n.translate(rangeKey).replace("{range}", formattedNumber(spell.range));
-//                lines.add(Text.literal(" ")
-//                        .append(Text.literal(range))
-//                        .formatted(Formatting.GOLD));
-//
-//                var cooldownDuration = SpellHelper.getCooldownDuration(player, spell, itemStack);
-//                if (cooldownDuration > 0) {
-//                    String cooldown;
-//                    if (spell.cost.cooldown_proportional) {
-//                        cooldown = I18n.translate("spell.tooltip.cooldown.proportional");
-//                    } else {
-//                        var cooldownKey = keyWithPlural("spell.tooltip.cooldown", cooldownDuration);
-//                        cooldown = I18n.translate(cooldownKey).replace("{duration}", formattedNumber(cooldownDuration));
-//                    }
-//                    lines.add(Text.literal(" ")
-//                            .append(Text.literal(cooldown))
-//                            .formatted(Formatting.GOLD));
-//                }
-//
-//                var showItemCost = true;
-//                var config = SpellEngineMod.config;
-//                if (config != null) {
-//                    showItemCost = config.spell_cost_item_allowed;
-//                }
-//                if (showItemCost && spell.cost != null && spell.cost.item_id != null && !spell.cost.item_id.isEmpty()) {
-//                    var item = Registry.ITEM.get(new Identifier(spell.cost.item_id));
-//                    if (item != null) {
-//                        var ammoKey = keyWithPlural("spell.tooltip.ammo", 1); // Add variable ammo count later
-//                        var itemName = I18n.translate(item.getTranslationKey());
-//                        var ammo = I18n.translate(ammoKey).replace("{item}", itemName);
-//                        var hasItem = SpellHelper.ammoForSpell(player, spell, itemStack).satisfied();
-//                        lines.add(Text.literal(" ")
-//                                .append(Text.literal(ammo).formatted(hasItem ? Formatting.GREEN : Formatting.RED)));
-//                    }
-//                }
-//            }
+            var container = stack.getSpellContainer();
+            if(container != null && container.isValid()) {
+
+                var limit = I18n.translate("spell.tooltip.host.limit")
+                        .replace("{current}", "" + container.spell_ids.size())
+                        .replace("{max}", "" + container.max_spell_count);
+                lines.add(Text.translatable("spell.tooltip.host." + container.school.spellName())
+                        .append(Text.literal(" " + limit))
+                        .formatted(Formatting.GRAY));
+
+                for (int i = 0; i < container.spell_ids.size(); i++) {
+                    var spellId = new Identifier(container.spell_ids.get(i));
+                    var info = spellInfo(spellId, player, itemStack);
+                    if (!info.isEmpty()) {
+                        if (i > 0) {
+                            lines.add(Text.literal(" ")); // Separator: empty line
+                        }
+                        lines.addAll(info);
+                    }
+                }
+            }
         }
+    }
+
+    private static List<Text> spellInfo(Identifier spellId, PlayerEntity player, ItemStack itemStack) {
+        var lines = new ArrayList<Text>();
+        var spell = SpellRegistry.getSpell(spellId);
+        if (spell == null) {
+            return lines;
+        }
+
+        lines.add(Text.translatable(spellKeyPrefix(spellId) + ".name")
+                .formatted(Formatting.BOLD)
+                .formatted(Formatting.GRAY));
+
+        var description = I18n.translate(spellKeyPrefix(spellId) + ".description");
+        var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);
+        description = replaceTokens(description, damageToken, estimatedOutput.damage());
+        description = replaceTokens(description, healToken, estimatedOutput.heal());
+        lines.add(Text.literal(" ")
+                .append(Text.translatable(description))
+                .formatted(Formatting.GRAY));
+
+        var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
+        var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
+        var castTime = I18n.translate(castTimeKey).replace("{duration}", formattedNumber(castDuration));
+        lines.add(Text.literal(" ")
+                .append(Text.literal(castTime))
+                .formatted(Formatting.GOLD));
+
+        var rangeKey = keyWithPlural("spell.tooltip.range", spell.range);
+        var range = I18n.translate(rangeKey).replace("{range}", formattedNumber(spell.range));
+        lines.add(Text.literal(" ")
+                .append(Text.literal(range))
+                .formatted(Formatting.GOLD));
+
+        var cooldownDuration = SpellHelper.getCooldownDuration(player, spell, itemStack);
+        if (cooldownDuration > 0) {
+            String cooldown;
+            if (spell.cost.cooldown_proportional) {
+                cooldown = I18n.translate("spell.tooltip.cooldown.proportional");
+            } else {
+                var cooldownKey = keyWithPlural("spell.tooltip.cooldown", cooldownDuration);
+                cooldown = I18n.translate(cooldownKey).replace("{duration}", formattedNumber(cooldownDuration));
+            }
+            lines.add(Text.literal(" ")
+                    .append(Text.literal(cooldown))
+                    .formatted(Formatting.GOLD));
+        }
+
+        var showItemCost = true;
+        var config = SpellEngineMod.config;
+        if (config != null) {
+            showItemCost = config.spell_cost_item_allowed;
+        }
+        if (showItemCost && spell.cost != null && spell.cost.item_id != null && !spell.cost.item_id.isEmpty()) {
+            var item = Registry.ITEM.get(new Identifier(spell.cost.item_id));
+            if (item != null) {
+                var ammoKey = keyWithPlural("spell.tooltip.ammo", 1); // Add variable ammo count later
+                var itemName = I18n.translate(item.getTranslationKey());
+                var ammo = I18n.translate(ammoKey).replace("{item}", itemName);
+                var hasItem = SpellHelper.ammoForSpell(player, spell, itemStack).satisfied();
+                lines.add(Text.literal(" ")
+                        .append(Text.literal(ammo).formatted(hasItem ? Formatting.GREEN : Formatting.RED)));
+            }
+        }
+
+        return lines;
     }
 
     private static String replaceTokens(String text, String token, List<SpellHelper.EstimatedValue> values) {
