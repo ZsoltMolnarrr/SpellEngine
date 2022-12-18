@@ -31,6 +31,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     @Shadow public abstract boolean isUsingItem();
 
     @Shadow @Final protected MinecraftClient client;
+    @Shadow private boolean usingItem;
     private int selectedSpellIndex = 0;
 
     private List<Entity> targets = List.of();
@@ -120,16 +121,12 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     @Override
     public void castTick(ItemStack itemStack, int remainingUseTicks) {
         var currentSpell = getCurrentSpell();
-        if (currentSpell == null) {
+        if (currentSpell == null
+                || (SpellEngineClient.config.restartCastingWhenSwitchingSpell
+                    && !getCurrentSpellId().equals(spellIdFromItemStack(itemStack)))
+        ) {
+            stopItemUsage();
             return;
-        }
-        if (SpellEngineClient.config.restartCastingWhenSwitchingSpell) {
-            if (!getCurrentSpellId().equals(spellIdFromItemStack(itemStack))) {
-//                cast(getCurrentSpell(), SpellCastAction.RELEASE, itemStack, remainingUseTicks);
-//                endCasting();
-                stopItemUsage();
-                return;
-            }
         }
 
         updateTargets();
@@ -150,7 +147,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     public void castRelease(ItemStack itemStack, int remainingUseTicks) {
         updateTargets();
         cast(getCurrentSpell(), SpellCastAction.RELEASE, itemStack, remainingUseTicks);
-        endCasting();
     }
 
     private void cast(Spell spell, SpellCastAction action, ItemStack itemStack, int remainingUseTicks) {
@@ -210,12 +206,9 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     private void stopItemUsage() {
         var client = MinecraftClient.getInstance();
         client.interactionManager.stopUsingItem(client.player);
-        setCurrentSpell(null);
     }
 
     private void endCasting() {
-//        var client = MinecraftClient.getInstance();
-//        client.interactionManager.stopUsingItem(client.player);
         player().clearActiveItem();
         setCurrentSpell(null);
     }
@@ -270,18 +263,15 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return targets;
     }
 
-//    @Inject(method = "clearActiveItem", at = @At("TAIL"))
-//    private void clearCurrentSpell(CallbackInfo ci) {
-//        System.out.println("Cast cancel");
-//        currentSpell = null;
-//    }
-
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL(CallbackInfo ci) {
         var player = player();
         var spellIdFromActiveStack = spellIdFromItemStack(player.getActiveItem());
-        if (!player.isUsingItem() || spellIdFromActiveStack == null) {
+        boolean usingItem = !player.isUsingItem();
+        if (!usingItem || spellIdFromActiveStack == null) {
             targets = List.of();
+        }
+        if (spellIdFromActiveStack == null) {
             clearCasting();
         }
         if (isBeaming()) {
