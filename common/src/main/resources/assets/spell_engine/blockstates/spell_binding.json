@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "spell_engine:block/spell_binding"
+    }
+  }
+}

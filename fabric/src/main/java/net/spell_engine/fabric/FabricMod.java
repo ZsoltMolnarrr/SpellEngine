@@ -32,6 +32,7 @@ public class FabricMod implements ModInitializer {
         SpellEngineMod.init();
         SpellEngineMod.registerEnchantments();
         SpellEngineMod.registerItems();
+        SpellEngineMod.registerSpellBinding();
         SpellEngineMod.registerRuneCrafting();
         SoundHelper.registerSounds();
         registerKeyBindings();

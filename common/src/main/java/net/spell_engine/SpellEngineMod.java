@@ -25,6 +25,8 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import net.spell_engine.spellbinding.SpellBinding;
+import net.spell_engine.spellbinding.SpellBindingBlock;
 import net.tinyconfig.ConfigManager;
 
 public class SpellEngineMod {
@@ -61,6 +63,11 @@ public class SpellEngineMod {
         Registry.register(Registry.ITEM, new Identifier(ID, RuneCraftingBlock.NAME), new BlockItem(RuneCraftingBlock.INSTANCE, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
         BlockRenderLayerMap.INSTANCE.putBlock(RuneCraftingBlock.INSTANCE, RenderLayer.getCutout());
         Registry.register(Registry.SCREEN_HANDLER, new Identifier(ID, RuneCraftingRecipe.ID), RuneCraftingScreenHandler.HANDLER_TYPE);
+    }
+
+    public static void registerSpellBinding() {
+        Registry.register(Registry.BLOCK, SpellBinding.ID, SpellBindingBlock.INSTANCE);
+        Registry.register(Registry.ITEM, SpellBinding.ID, new BlockItem(SpellBindingBlock.INSTANCE, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
     }
 
     public static void registerEnchantments() {
