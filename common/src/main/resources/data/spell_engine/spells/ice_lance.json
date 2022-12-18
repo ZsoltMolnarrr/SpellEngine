@@ -1,6 +1,9 @@
 {
   "range": 64.0,
   "school": "FROST",
+  "learn": {
+    "tier": 1
+  },
   "cast": {
     "duration": 2.0,
     "animation": "spell_engine:one_handed_projectile_charge",

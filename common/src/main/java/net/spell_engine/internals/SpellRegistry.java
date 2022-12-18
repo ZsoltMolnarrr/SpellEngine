@@ -1,25 +1,26 @@
 package net.spell_engine.internals;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-import net.spell_engine.api.spell.*;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
-import net.spell_damage.api.MagicSchool;
+import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.SpellContainer;
 
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SpellRegistry {
     private static Map<Identifier, Spell> spells = new HashMap();
     private static Map<Identifier, SpellContainer> containers = new HashMap();
+
+    public static Map<Identifier, Spell> all() {
+        return spells;
+    }
 
     public static void initialize() {
         ServerLifecycleEvents.SERVER_STARTED.register((minecraftServer) -> {
@@ -154,5 +155,16 @@ public class SpellRegistry {
         sync.containers.forEach((key, value) -> {
             containers.put(new Identifier(key), value);
         });
+    }
+
+    public static int rawId(Identifier identifier) {
+        return identifier.toString().hashCode();
+    }
+
+    public static Optional<Identifier> fromRawId(int rawId) {
+        return spells.entrySet().stream()
+                .filter(entry -> rawId(entry.getKey()) == rawId)
+                .findFirst()
+                .map(entry -> entry.getKey());
     }
 }

@@ -1,6 +1,9 @@
 {
   "range": 64.0,
   "school": "FIRE",
+  "learn": {
+    "tier": 3
+  },
   "cast": {
     "duration": 1.5,
     "animation": "spell_engine:one_handed_projectile_charge",

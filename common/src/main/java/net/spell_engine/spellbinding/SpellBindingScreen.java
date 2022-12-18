@@ -1,6 +1,8 @@
 package net.spell_engine.spellbinding;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -9,7 +11,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.internals.SpellRegistry;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+@Environment(value= EnvType.CLIENT)
 public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler> {
     private static final Identifier TEXTURE = new Identifier(SpellEngineMod.ID, "textures/gui/" + SpellBinding.name + ".png");
 
@@ -49,6 +56,12 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 //        if ((((ForgingScreenHandler)this.handler).getSlot(0).hasStack() || ((ForgingScreenHandler)this.handler).getSlot(1).hasStack()) && !((ForgingScreenHandler)this.handler).getSlot(2).hasStack()) {
 //            this.drawTexture(matrices, i + 99, j + 45, this.backgroundWidth, 0, 28, 21);
 //        }
+        var asd = Arrays.stream(this.handler.spellId)
+                .mapToObj(rawId -> SpellRegistry.fromRawId(rawId))
+                .filter(id -> id.isPresent())
+                .map(id -> id.get())
+                .collect(Collectors.toList());
+        System.out.println("Server offers spell ids: " + asd);
     }
 
     @Override

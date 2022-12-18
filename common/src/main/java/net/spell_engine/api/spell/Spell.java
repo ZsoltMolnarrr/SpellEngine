@@ -7,6 +7,13 @@ public class Spell {
     public float range = 50;
     public MagicSchool school;
 
+    public Learn learn = new Learn();
+    public static class Learn { public Learn() {}
+        public int tier = 1;
+        public int level_cost_per_tier = 3;
+        public int level_requirement_per_tier = 10;
+    }
+
     public Cast cast = new Cast();
     public static class Cast { public Cast() { }
         public float duration = 0;

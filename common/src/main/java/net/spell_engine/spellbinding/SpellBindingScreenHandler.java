@@ -1,23 +1,27 @@
 package net.spell_engine.spellbinding;
 
 import net.minecraft.block.Blocks;
+import net.minecraft.block.EnchantingTableBlock;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.screen.EnchantmentScreenHandler;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.screen.*;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.SpellContainerHelper;
 
+import java.util.List;
+
 public class SpellBindingScreenHandler extends ScreenHandler {
     public static final ScreenHandlerType<SpellBindingScreenHandler> HANDLER_TYPE = new ScreenHandlerType(SpellBindingScreenHandler::new);
-
+    public static final int MAXIMUM_SPELL_COUNT = 10;
     // State
     private final Inventory inventory = new SimpleInventory(2){
         @Override
@@ -28,6 +32,10 @@ public class SpellBindingScreenHandler extends ScreenHandler {
     };
 
     private final ScreenHandlerContext context;
+
+    public final int[] spellId = new int[MAXIMUM_SPELL_COUNT];
+    public final int[] spellCost = new int[MAXIMUM_SPELL_COUNT];
+    public final int[] spellLevelRequirement = new int[MAXIMUM_SPELL_COUNT];
 
     public SpellBindingScreenHandler(int syncId, PlayerInventory playerInventory) {
         this(syncId, playerInventory, ScreenHandlerContext.EMPTY);
@@ -61,6 +69,12 @@ public class SpellBindingScreenHandler extends ScreenHandler {
         for (int i = 0; i < 9; ++i) {
             this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 142));
         }
+
+        for (int i = 0; i < MAXIMUM_SPELL_COUNT; ++i) {
+            this.addProperty(Property.create(this.spellId, i));
+            this.addProperty(Property.create(this.spellCost, i));
+            this.addProperty(Property.create(this.spellLevelRequirement, i));
+        }
     }
 
     public int getLapisCount() {
@@ -74,9 +88,39 @@ public class SpellBindingScreenHandler extends ScreenHandler {
     @Override
     public void onContentChanged(Inventory inventory) {
         if (inventory != this.inventory) { return; }
-
+        ItemStack itemStack = inventory.getStack(0);
+        if (itemStack.isEmpty() || !SpellContainerHelper.hasValidContainer(itemStack)) {
+            for (int i = 0; i < MAXIMUM_SPELL_COUNT; ++i) {
+                this.spellId[i] = 0;
+                this.spellCost[i] = 0;
+                this.spellLevelRequirement[i] = 0;
+            }
+        } else {
+            this.context.run((world, pos) -> {
+                int j;
+                int libraryPower = 0;
+                for (BlockPos blockPos : EnchantingTableBlock.BOOKSHELF_OFFSETS) {
+                    if (!EnchantingTableBlock.canAccessBookshelf(world, pos, blockPos)) continue;
+                    ++libraryPower;
+                }
+                var offers = SpellBinding.offersFor(itemStack);
+                for (int i = 0; i < MAXIMUM_SPELL_COUNT; ++i) {
+                    if (i < offers.size()) {
+                        var offer = offers.get(i);
+                        this.spellId[i] = offer.id();
+                        this.spellCost[i] = offer.cost();
+                        this.spellLevelRequirement[i] = offer.levelRequirement();
+                    } else {
+                        this.spellId[i] = 0;
+                        this.spellCost[i] = 0;
+                        this.spellLevelRequirement[i] = 0;
+                    }
+                }
+                this.sendContentUpdates();
+            });
+        }
     }
-    
+
     @Override
     public boolean canUse(PlayerEntity player) {
         return EnchantmentScreenHandler.canUse(this.context, player, SpellBindingBlock.INSTANCE);
