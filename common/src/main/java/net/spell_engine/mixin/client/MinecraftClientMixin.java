@@ -3,6 +3,7 @@ package net.spell_engine.mixin.client;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
+import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.InputHelper;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.SpellCasterClient;
@@ -39,6 +40,14 @@ public class MinecraftClientMixin {
     private void handleInputEvents_SpellHotbarLock(CallbackInfo ci) {
         if (Keybindings.hotbarLock.wasPressed()) {
             InputHelper.toggleLock();
+        }
+    }
+
+    @Inject(method = "openPauseMenu", at = @At(value = "HEAD"), cancellable = true)
+    private void openPauseMenu_HEAD_UnlockHotbar(boolean pause, CallbackInfo ci) {
+        if (SpellEngineClient.config.unlockHotbarOnEscape && InputHelper.isLocked) {
+            InputHelper.isLocked = false;
+            ci.cancel();
         }
     }
 }

@@ -1,6 +1,9 @@
 package net.spell_engine.client.input;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.spell_engine.internals.SpellCasterClient;
 
 public class InputHelper {
@@ -23,12 +26,23 @@ public class InputHelper {
         if (isLocked) {
             isLocked = false;
         } else {
-            if (client.player != null) {
-                var container = ((SpellCasterClient)client.player).getCurrentContainer();
-                if (container != null && container.isValid()) {
-                    isLocked = true;
-                }
+            if (skipValidation || hasValidSpellContainer(client.player)) {
+                isLocked = true;
             }
         }
+    }
+
+    private static boolean hasValidSpellContainer(PlayerEntity player) {
+        if (player != null) {
+            var container = ((SpellCasterClient)player).getCurrentContainer();
+            return container != null && container.isValid();
+        }
+        return false;
+    }
+
+    public static void showLockedMessage(String key) {
+        var client = MinecraftClient.getInstance();
+        MutableText component = Text.translatable("hud.leave_spell_hotbar", key);
+        client.inGameHud.setOverlayMessage(component, false);
     }
 }

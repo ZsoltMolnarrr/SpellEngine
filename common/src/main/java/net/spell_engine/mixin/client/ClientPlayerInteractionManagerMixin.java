@@ -23,7 +23,8 @@ public class ClientPlayerInteractionManagerMixin {
             if (object instanceof SpellCasterItemStack stack) {
                 var container = stack.getSpellContainer();
                 if (container != null && container.isValid()) {
-                    InputHelper.toggleLock(true);
+                    InputHelper.isLocked = true;
+                    InputHelper.showLockedMessage("ESC");
                     cir.setReturnValue(ActionResult.PASS);
                     cir.cancel();
                 }

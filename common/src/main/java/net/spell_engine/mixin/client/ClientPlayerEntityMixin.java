@@ -31,7 +31,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     @Shadow public abstract boolean isUsingItem();
 
     @Shadow @Final protected MinecraftClient client;
-    private int selectedSpellIndex = 2;
+    private int selectedSpellIndex = 0;
 
     private List<Entity> targets = List.of();
 
