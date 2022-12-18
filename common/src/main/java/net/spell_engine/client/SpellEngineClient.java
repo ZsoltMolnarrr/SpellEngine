@@ -13,6 +13,8 @@ import net.spell_engine.runes.RuneCraftingScreenHandler;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
+import net.spell_engine.spellbinding.SpellBindingScreen;
+import net.spell_engine.spellbinding.SpellBindingScreenHandler;
 import net.tinyconfig.ConfigManager;
 
 public class SpellEngineClient {
@@ -37,5 +39,6 @@ public class SpellEngineClient {
         });
 
         HandledScreens.register(RuneCraftingScreenHandler.HANDLER_TYPE, RuneCraftingScreen::new);
+        HandledScreens.register(SpellBindingScreenHandler.HANDLER_TYPE, SpellBindingScreen::new);
     }
 }

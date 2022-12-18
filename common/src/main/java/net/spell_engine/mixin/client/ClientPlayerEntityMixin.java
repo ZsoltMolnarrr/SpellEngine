@@ -267,7 +267,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     public void tick_TAIL_SpellEngine(CallbackInfo ci) {
         var player = player();
         var spellIdFromActiveStack = spellIdFromItemStack(player.getActiveItem());
-        boolean usingItem = !player.isUsingItem();
+        boolean usingItem = player.isUsingItem();
         if (!usingItem || spellIdFromActiveStack == null) {
             targets = List.of();
         }

@@ -27,6 +27,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.spell_engine.spellbinding.SpellBinding;
 import net.spell_engine.spellbinding.SpellBindingBlock;
+import net.spell_engine.spellbinding.SpellBindingScreenHandler;
 import net.tinyconfig.ConfigManager;
 
 public class SpellEngineMod {
@@ -68,6 +69,7 @@ public class SpellEngineMod {
     public static void registerSpellBinding() {
         Registry.register(Registry.BLOCK, SpellBinding.ID, SpellBindingBlock.INSTANCE);
         Registry.register(Registry.ITEM, SpellBinding.ID, new BlockItem(SpellBindingBlock.INSTANCE, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
+        Registry.register(Registry.SCREEN_HANDLER, SpellBinding.ID, SpellBindingScreenHandler.HANDLER_TYPE);
     }
 
     public static void registerEnchantments() {

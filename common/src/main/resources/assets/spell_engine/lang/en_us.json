@@ -55,6 +55,7 @@
   "text.autoconfig.spell_engine.option.client.unlockHotbarOnEscape" : "Switch to item hotbar on ESC",
   "text.autoconfig.spell_engine.option.client.unlockHotbarOnEscape.@Tooltip" : "Switch to back to item hotbar pressing ESC key",
 
+  "gui.spell_engine.spell_binding" : "Spell Binding",
   "block.spell_engine.spell_binding": "Spell Binding Table",
 
   "gui.spell_engine.rune_crafting" : "Rune Crafting",
