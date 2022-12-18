@@ -50,7 +50,7 @@ public class ClientNetwork {
             client.execute(() -> {
                 var entity = client.world.getEntityById(packet.playerId());
                 if (entity instanceof PlayerEntity player) {
-                    ((AnimatablePlayer)player).playAnimation(packet.type(), packet.name());
+                    ((AnimatablePlayer)player).playSpellAnimation(packet.type(), packet.name());
                 }
             });
         });

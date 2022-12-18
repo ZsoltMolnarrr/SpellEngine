@@ -21,13 +21,10 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
     }
 
     private Identifier currentSpell;
-    private int spellSlack = 0;
-
     private final SpellCooldownManager spellCooldownManager = new SpellCooldownManager(player());
 
     public void setCurrentSpell(Identifier spellId) {
         currentSpell = spellId;
-        spellSlack = 0;
     }
 
     @Override
@@ -61,16 +58,12 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
-    public void tick_TAIL(CallbackInfo ci) {
+    public void tick_TAIL_SpellEngine(CallbackInfo ci) {
         lastRuneCrafted += 1;
         var player = player();
         if (player.world.isClient) {
-            ((AnimatablePlayer)player()).updateCastAnimationsOnTick();
+            ((AnimatablePlayer)player()).updateSpellCastAnimationsOnTick();
             if (!player.isUsingItem() && currentSpell != null) {
-                spellSlack += 1;
-//                if (spellSlack >= 3) {
-//                    setCurrentSpell(null);
-//                }
             }
         } else {
             // Server side

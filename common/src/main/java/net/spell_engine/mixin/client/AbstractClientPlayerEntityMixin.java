@@ -45,11 +45,11 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         super(world, pos, yaw, gameProfile, publicKey);
     }
 
-    private final AnimationSubStack castingAnimation = new AnimationSubStack(createPitchAdjustment());
-    private final AnimationSubStack releaseAnimation = new AnimationSubStack(createPitchAdjustment());
+    private final AnimationSubStack castingAnimation = new AnimationSubStack(createPitchAdjustment_SpellEngine());
+    private final AnimationSubStack releaseAnimation = new AnimationSubStack(createPitchAdjustment_SpellEngine());
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void postInit(ClientWorld world, GameProfile profile, PlayerPublicKey publicKey, CallbackInfo ci) {
+    private void postInit_SpellEngine(ClientWorld world, GameProfile profile, PlayerPublicKey publicKey, CallbackInfo ci) {
         var stack = ((IAnimatedPlayer) this).getAnimationStack();
         stack.addAnimLayer(950, releaseAnimation.base);
         stack.addAnimLayer(900, castingAnimation.base);
@@ -60,7 +60,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     }
 
     @Override
-    public void updateCastAnimationsOnTick() {
+    public void updateSpellCastAnimationsOnTick() {
         var instance = (Object) this;
         var player = (PlayerEntity) instance;
 
@@ -81,7 +81,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     private String lastCastAnimationName;
     private void updateCastingAnimation(String animationName) {
         if (!StringUtil.matching(animationName, lastCastAnimationName)) {
-            playAnimation(SpellAnimationType.CASTING, animationName);
+            playSpellAnimation(SpellAnimationType.CASTING, animationName);
         }
         lastCastAnimationName = animationName;
     }
@@ -109,7 +109,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         lastCastSoundId = soundId;
     }
 
-    private AdjustmentModifier createPitchAdjustment() {
+    private AdjustmentModifier createPitchAdjustment_SpellEngine() {
         var player = (PlayerEntity)this;
         var useFirstPersonAnimationAPI = Platform.isModLoaded("bettercombat");
         return new AdjustmentModifier((partName) -> {
@@ -158,23 +158,23 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         });
     }
 
-    private void updateAnimationByCurrentActivity(KeyframeAnimation.AnimationBuilder animation) {
-        if (isMounting()) {
+    private void updateAnimationByCurrentActivity_SpellEngine(KeyframeAnimation.AnimationBuilder animation) {
+        if (isMounting_SpellEngine()) {
             StateCollectionHelper.configure(animation.rightLeg, false, false);
             StateCollectionHelper.configure(animation.leftLeg, false, false);
         }
     }
 
-    public void playAnimation(SpellAnimationType type, String name) {
+    public void playSpellAnimation(SpellAnimationType type, String name) {
         try {
-            var stack = stackFor(type);
+            var stack = spellAnimationStackFor(type);
             if (name != null && !name.isEmpty()) {
                 var animation = AnimationRegistry.animations.get(name);
                 var copy = animation.mutableCopy();
-                updateAnimationByCurrentActivity(copy);
+                updateAnimationByCurrentActivity_SpellEngine(copy);
                 copy.torso.fullyEnablePart(true);
                 copy.head.pitch.setEnabled(false);
-                var mirror = isLeftHanded();
+                var mirror = isLeftHanded_SpellEngine();
 
                 var fadeIn = copy.beginTick;
                 stack.mirror.setEnabled(mirror);
@@ -190,7 +190,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         }
     }
 
-    private AnimationSubStack stackFor(SpellAnimationType type) {
+    private AnimationSubStack spellAnimationStackFor(SpellAnimationType type) {
         switch (type) {
             case CASTING -> {
                 return castingAnimation;
@@ -203,11 +203,11 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         return null;
     }
 
-    private boolean isMounting() {
+    private boolean isMounting_SpellEngine() {
         return this.getVehicle() != null;
     }
 
-    public boolean isLeftHanded() {
+    public boolean isLeftHanded_SpellEngine() {
         return this.getMainArm() == Arm.LEFT;
     }
 }

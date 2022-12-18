@@ -60,21 +60,21 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     // Use conditions
 
     @Inject(method = "isUsedOnRelease", at = @At("HEAD"), cancellable = true)
-    private void isUsedOnRelease_HEAD(CallbackInfoReturnable<Boolean> cir) {
+    private void isUsedOnRelease_HEAD_SpellEngine(CallbackInfoReturnable<Boolean> cir) {
         if (container() == null) { return; }
         cir.setReturnValue(false);
         cir.cancel();
     }
 
     @Inject(method = "getMaxUseTime", at = @At("HEAD"), cancellable = true)
-    private void getMaxUseTime_HEAD(CallbackInfoReturnable<Integer> cir) {
+    private void getMaxUseTime_HEAD_SpellEngine(CallbackInfoReturnable<Integer> cir) {
         if (container() == null) { return; }
         cir.setReturnValue(SpellHelper.maximumUseTicks);
         cir.cancel();
     }
 
     @Inject(method = "getUseAction", at = @At("HEAD"), cancellable = true)
-    private void getUseAction_HEAD(CallbackInfoReturnable<UseAction> cir) {
+    private void getUseAction_HEAD_SpellEngine(CallbackInfoReturnable<UseAction> cir) {
         if (container() == null) { return; }
         cir.setReturnValue(UseAction.NONE);
         cir.cancel();
@@ -83,7 +83,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     // Start casting
 
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
-    private void use_HEAD(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
+    private void use_HEAD_SpellEngine(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
         // System.out.println("ItemStack use start");
         var itemStack = itemStack();
         var container = container();
@@ -118,7 +118,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     // Tick cast
 
     @Inject(method = "usageTick", at = @At("HEAD"), cancellable = true)
-    private void usageTick_HEAD(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
+    private void usageTick_HEAD_SpellEngine(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
         // System.out.println("ItemStack use tick A " + (world.isClient ? "CLIENT" : "SERVER"));
         var spell = container();
         if (spell == null) {
@@ -149,7 +149,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     // Release casting
 
     @Inject(method = "onStoppedUsing", at = @At("HEAD"), cancellable = true)
-    private void onStoppedUsing_HEAD(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
+    private void onStoppedUsing_HEAD_SpellEngine(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
         // System.out.println("ItemStack use stop");
         var spell = container();
         if (spell == null) { return; }

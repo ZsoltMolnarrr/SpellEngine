@@ -17,7 +17,7 @@ public class EntityMixin {
     }
 
     @Inject(method = "getTeamColorValue", at = @At("HEAD"), cancellable = true)
-    public void getTeamColorValue_HEAD(CallbackInfoReturnable<Integer> cir) {
+    public void getTeamColorValue_HEAD_SpellEngine(CallbackInfoReturnable<Integer> cir) {
         if (TargetHelper.isTargetedByClientPlayer(entity()) && SpellEngineClient.config.useMagicColorForHighlight) {
             var clientPlayer = MinecraftClient.getInstance().player;
             var spell = ((SpellCasterClient) clientPlayer).getCurrentSpell();
