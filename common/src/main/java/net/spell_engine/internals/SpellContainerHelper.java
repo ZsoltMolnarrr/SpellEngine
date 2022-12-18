@@ -17,4 +17,8 @@ public class SpellContainerHelper {
         }
         return null;
     }
+
+    public static boolean hasValidContainer(ItemStack itemStack) {
+        return containerFromItemStack(itemStack) != null;
+    }
 }

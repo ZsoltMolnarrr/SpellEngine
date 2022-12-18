@@ -92,7 +92,8 @@ public class SpellBindingBlock extends BlockWithEntity {
     public NamedScreenHandlerFactory createScreenHandlerFactory(BlockState state, World world, BlockPos pos) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof EnchantingTableBlockEntity) {
-            Text text = ((Nameable)((Object)blockEntity)).getDisplayName();
+            // Text text = ((Nameable)((Object)blockEntity)).getDisplayName();
+            var text = Text.translatable("gui.spell_engine.spell_binding.title");
             // return new SimpleNamedScreenHandlerFactory((syncId, inventory, player) -> new EnchantmentScreenHandler(syncId, inventory, ScreenHandlerContext.create(world, pos)), text);
             return new SimpleNamedScreenHandlerFactory((syncId, inventory, player) ->
                     new SpellBindingScreenHandler(syncId, inventory, ScreenHandlerContext.create(world, pos)), text);
