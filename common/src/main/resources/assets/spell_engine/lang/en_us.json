@@ -58,6 +58,11 @@
   "gui.spell_engine.spell_binding" : "Spell Binding",
   "gui.spell_engine.spell_binding.title" : "Bind Spells",
   "block.spell_engine.spell_binding": "Spell Binding Table",
+  "gui.spell_engine.spell_binding.already_bound" : "Spell already bound",
+  "gui.spell_engine.spell_binding.no_more_slots" : "No more spell slots",
+  "gui.spell_engine.spell_binding.available" : "Bind spell",
+  "gui.spell_engine.spell_binding.level_req_fail" : "Level Requirement: %s",
+
 
   "gui.spell_engine.rune_crafting" : "Rune Crafting",
   "block.spell_engine.rune_crafting": "Rune Crafting Altar",

@@ -1,8 +1,10 @@
 package net.spell_engine.spellbinding;
 
+import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.render.DiffuseLighting;
@@ -10,17 +12,18 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.util.SpellRender;
+import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Environment(value= EnvType.CLIENT)
 public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler> {
@@ -47,6 +50,53 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         this.renderBackground(matrices);
         super.render(matrices, mouseX, mouseY, delta);
         this.drawMouseoverTooltip(matrices, mouseX, mouseY);
+        var player = MinecraftClient.getInstance().player;
+        var lapisCount = handler.getLapisCount();
+        var itemStack = handler.getStacks().get(0);
+        for (var button: buttonViewModels) {
+            if (button.spell != null && button.mouseOver(mouseX, mouseY)) {
+                ArrayList<Text> tooltip = Lists.newArrayList();
+                switch (button.bindingState.state) {
+                    case ALREADY_APPLIED -> {
+                        tooltip.add(Text.translatable("gui.spell_engine.spell_binding.already_bound")
+                                .formatted(Formatting.GRAY));
+                    }
+                    case NO_MORE_SLOT -> {
+                        tooltip.add(Text.translatable("gui.spell_engine.spell_binding.no_more_slots")
+                                .formatted(Formatting.GRAY));
+                    }
+                    case APPLICABLE -> {
+                        if (button.bindingState.readyToApply(player, lapisCount)) {
+                            tooltip.add(Text.translatable("gui.spell_engine.spell_binding.available")
+                                    .formatted(Formatting.GREEN));
+                        } else {
+                            if (!button.bindingState.requirements.metRequiredLevel(player)) {
+                                tooltip.add(Text.translatable("gui.spell_engine.spell_binding.level_req_fail",
+                                                button.bindingState.requirements.requiredLevel())
+                                        .formatted(Formatting.RED));
+                            } else {
+                                var lapisCost = button.bindingState.requirements.lapisCost();
+                                var hasEnoughLapis = button.bindingState.requirements.hasEnoughLapis(lapisCount);
+                                MutableText lapis = lapisCost == 1 ? Text.translatable("container.enchant.lapis.one") : Text.translatable("container.enchant.lapis.many", lapisCost);
+                                tooltip.add(lapis.formatted(hasEnoughLapis ? Formatting.GRAY : Formatting.RED));
+
+                                var levelCost = button.bindingState.requirements.levelCost();
+                                var hasEnoughLevels = button.bindingState.requirements.hasEnoughLevelsToSpend(player);
+                                MutableText levels = levelCost == 1 ? Text.translatable("container.enchant.level.one") : Text.translatable("container.enchant.level.many", levelCost);
+                                tooltip.add(levels.formatted(hasEnoughLevels ? Formatting.GRAY : Formatting.RED));
+                            }
+                        }
+                    }
+                    case INVALID -> {
+                        continue;
+                    }
+                }
+                tooltip.add(Text.literal(" "));
+                tooltip.addAll(SpellTooltip.spellInfo(button.spell.id(), player, itemStack));
+                this.renderTooltip(matrices, tooltip, mouseX, mouseY);
+                break;
+            }
+        }
     }
 
     @Override
@@ -70,6 +120,15 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 
     private void updateButtons(int originX, int originY) {
         var buttons = new ArrayList<ButtonViewModel>();
+        var itemStack = handler.getStacks().get(0);
+        var lapisCount = handler.getLapisCount();
+        var player = MinecraftClient.getInstance().player;
+        var container = SpellContainerHelper.containerFromItemStack(itemStack);
+        if (container == null) {
+            buttonViewModels = buttons;
+            return;
+        }
+
         for (int i = 0; i < SpellBindingScreenHandler.MAXIMUM_SPELL_COUNT; i++) {
             var rawId = handler.spellId[i];
             var cost = handler.spellCost[i];
@@ -78,13 +137,16 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
             if (spellId.isEmpty()) { continue; }
             var id = spellId.get();
             var spell = new SpellInfo(
+                    id,
                     SpellRender.iconTexture(id),
                     Text.translatable(SpellTooltip.spellTranslationKey(id)),
                     cost, requirement);
+            SpellBinding.State bindingState = SpellBinding.State.of(id, itemStack, cost, cost, requirement);
+            boolean isEnabled = bindingState.readyToApply(player, lapisCount);
             var button = new ButtonViewModel(
                     originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + (buttons.size() * BUTTON_HEIGHT),
                     BUTTON_WIDTH, BUTTON_HEIGHT,
-                    true, spell);
+                    isEnabled, spell, bindingState);
             buttons.add(button);
         }
         buttonViewModels = buttons;
@@ -98,8 +160,10 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     }
 
     enum ButtonState { NORMAL, HOVER }
-    record SpellInfo(Identifier icon, Text name, int cost, int requirement) { }
-    record ButtonViewModel(int x, int y, int width, int height, boolean isEnabled, SpellInfo info) {
+
+
+    record SpellInfo(Identifier id, Identifier icon, Text name, int cost, int requirement) { }
+    record ButtonViewModel(int x, int y, int width, int height, boolean isEnabled, SpellInfo spell, SpellBinding.State bindingState) {
         public boolean mouseOver(int mouseX, int mouseY) {
             return (mouseX > x && mouseX < x + width) && (mouseY > y && mouseY < y + height);
         }
@@ -130,11 +194,15 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         RenderSystem.setShaderTexture(0, TEXTURE);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         drawTexture(matrices, viewModel.x, viewModel.y, u, v, viewModel.width, viewModel.height);
-        if (viewModel.info != null) {
-            var spell = viewModel.info;
+        if (viewModel.spell != null) {
+            boolean isUnlocked = viewModel.bindingState.state == SpellBinding.State.ApplyState.ALREADY_APPLIED || viewModel.isEnabled;
+            var spell = viewModel.spell;
             textRenderer.drawWithShadow(matrices, spell.name,
-                    viewModel.x + viewModel.height, viewModel.y + SPELL_ICON_INDENT, 0xFFFFFF);
+                    viewModel.x + viewModel.height, viewModel.y + SPELL_ICON_INDENT, isUnlocked ? 0xFFFFFF : 0x808080);
             if (spell.icon != null) {
+
+                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, isUnlocked ? 1F : 0.5f);
+                RenderSystem.enableBlend();
                 RenderSystem.setShaderTexture(0, spell.icon);
                 // int x, int y, int u, int v, int width, int height
                 DrawableHelper.drawTexture(matrices,
@@ -142,17 +210,9 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                         viewModel.y + SPELL_ICON_INDENT,
                         0, 0,
                         SPELL_ICON_SIZE, SPELL_ICON_SIZE, SPELL_ICON_SIZE, SPELL_ICON_SIZE);
-//                drawTexture(matrices,
-//                        viewModel.x + SPELL_ICON_INDENT, viewModel.x + SPELL_ICON_INDENT,
-//                        0, 0,
-//                        SPELL_ICON_SIZE, SPELL_ICON_SIZE);
             }
         }
-    }
-
-    @Override
-    public void close() {
-        super.close();
-        System.out.println("CLOSING SpellBindingScreen");
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        RenderSystem.disableBlend();
     }
 }

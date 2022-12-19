@@ -51,7 +51,7 @@ public class SpellTooltip {
         }
     }
 
-    private static List<Text> spellInfo(Identifier spellId, PlayerEntity player, ItemStack itemStack) {
+    public static List<Text> spellInfo(Identifier spellId, PlayerEntity player, ItemStack itemStack) {
         var lines = new ArrayList<Text>();
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {

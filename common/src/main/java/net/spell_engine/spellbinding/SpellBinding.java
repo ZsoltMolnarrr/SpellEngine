@@ -1,5 +1,6 @@
 package net.spell_engine.spellbinding;
 
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
@@ -43,5 +44,65 @@ public class SpellBinding {
                     entry.getValue().learn.tier * entry.getValue().learn.level_requirement_per_tier
                 ))
                 .collect(Collectors.toList());
+    }
+
+    public static class State {
+        public enum ApplyState { ALREADY_APPLIED, NO_MORE_SLOT, APPLICABLE, INVALID }
+        public ApplyState state;
+        public State(ApplyState state) {
+            this.state = state;
+        }
+
+        public Requirements requirements;
+        public record Requirements(int lapisCost, int levelCost, int requiredLevel) {
+            public boolean satisfiedFor(PlayerEntity player, int lapisCount) {
+                return player.isCreative() ||
+                        (metRequiredLevel(player)
+                        && hasEnoughLapis(lapisCount)
+                        && hasEnoughLevelsToSpend(player));
+            }
+
+            public boolean metRequiredLevel(PlayerEntity player) {
+                return player.experienceLevel >= requiredLevel;
+            }
+
+            public boolean hasEnoughLapis(int lapisCount) {
+                return lapisCount >= lapisCost;
+            }
+
+            public boolean hasEnoughLevelsToSpend(PlayerEntity player) {
+                return player.experienceLevel >= levelCost;
+            }
+        }
+
+        public static State of(int spellId, ItemStack itemStack, int lapisCost, int levelCost, int requiredLevel) {
+            var validId = SpellRegistry.fromRawId(spellId);
+            if (validId.isEmpty()) {
+                return new State(ApplyState.INVALID);
+            }
+            return State.of(validId.get(), itemStack, lapisCost, levelCost, requiredLevel);
+        }
+
+        public static State of(Identifier spellId, ItemStack itemStack, int lapisCost, int levelCost, int requiredLevel) {
+            var container = SpellContainerHelper.containerFromItemStack(itemStack);
+            if (container == null) {
+                return new State(ApplyState.INVALID);
+            }
+            if (container.spell_ids.contains(spellId.toString())) {
+                return new State(ApplyState.ALREADY_APPLIED);
+            }
+            if (container.spell_ids.size() >= container.max_spell_count) {
+                return new State(ApplyState.NO_MORE_SLOT);
+            }
+            var state = new State(ApplyState.APPLICABLE);
+            state.requirements = new Requirements(lapisCost, levelCost, requiredLevel);
+            return state;
+        }
+
+        public boolean readyToApply(PlayerEntity player, int lapisCount) {
+            return state == SpellBinding.State.ApplyState.APPLICABLE
+                    && requirements != null
+                    && requirements.satisfiedFor(player, lapisCount);
+        }
     }
 }

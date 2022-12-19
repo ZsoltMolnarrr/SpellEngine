@@ -1,0 +1,7 @@
+{
+  "school": "FIRE",
+  "max_spell_count": 1,
+  "spell_ids": [
+    "spell_engine:scorch"
+  ]
+}
