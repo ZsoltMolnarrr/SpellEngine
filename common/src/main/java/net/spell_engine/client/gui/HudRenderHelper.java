@@ -8,6 +8,7 @@ import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.InputHelper;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.client.util.Rect;
+import net.spell_engine.client.util.SpellRender;
 import net.spell_engine.config.HudConfig;
 import net.spell_engine.internals.SpellCasterClient;
 import net.spell_engine.internals.SpellHelper;
@@ -52,7 +53,7 @@ public class HudRenderHelper {
             if (container != null && container.isValid()) {
                 var cooldownManager = caster.getCooldownManager();
                 var spells = container.spell_ids.stream()
-                        .map(spellId -> new SpellHotBarWidget.SpellViewModel(spellIconTexture(new Identifier(spellId)), cooldownManager.getCooldownProgress(new Identifier(spellId), tickDelta)))
+                        .map(spellId -> new SpellHotBarWidget.SpellViewModel(SpellRender.iconTexture(new Identifier(spellId)), cooldownManager.getCooldownProgress(new Identifier(spellId), tickDelta)))
                         .collect(Collectors.toList());
                 int selected = caster.getSelectedSpellIndex(container);
                 hotbarViewModel = new SpellHotBarWidget.ViewModel(spells, selected, Color.from(0xFFFFFF));
@@ -68,7 +69,7 @@ public class HudRenderHelper {
                         spell.school.color(),
                         caster.getCurrentCastProgress(),
                         spell.cast.duration,
-                        spellIconTexture(spellId),
+                        SpellRender.iconTexture(spellId),
                         true,
                         SpellHelper.isChanneled(spell));
             }
@@ -90,11 +91,6 @@ public class HudRenderHelper {
         if (renderHotbar) {
             SpellHotBarWidget.render(matrixStack, screenWidth, screenHeight, hotbarViewModel);
         }
-    }
-
-    // Example: `spell_engine:fireball` -> `spell_engine:textures/spell/fireball.png`
-    private static Identifier spellIconTexture(Identifier spellId) {
-        return new Identifier(spellId.getNamespace(), "textures/spell/" + spellId.getPath() + ".png");
     }
 
     public static class TargetWidget {
@@ -147,7 +143,7 @@ public class HudRenderHelper {
 
         public record ViewModel(int color, float progress, float castDuration, Identifier iconTexture, boolean allowTickDelta, boolean reverse) {
             public static ViewModel mock() {
-                return new ViewModel(0xFF3300, 0.5F, 1, spellIconTexture(new Identifier("spell_engine", "fireball")), false, false);
+                return new ViewModel(0xFF3300, 0.5F, 1, SpellRender.iconTexture(new Identifier("spell_engine", "fireball")), false, false);
             }
         }
 
@@ -240,9 +236,9 @@ public class HudRenderHelper {
             public static ViewModel mock() {
                 return new ViewModel(
                         List.of(
-                                new SpellViewModel(spellIconTexture(new Identifier(SpellEngineMod.ID, "fireball")), 0),
-                                new SpellViewModel(spellIconTexture(new Identifier(SpellEngineMod.ID, "fireball")), 0),
-                                new SpellViewModel(spellIconTexture(new Identifier(SpellEngineMod.ID, "fireball")), 0)
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "fireball")), 0),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "fireball")), 0),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "fireball")), 0)
                         ),
                         1,
                         Color.from(0xFFFFFF)

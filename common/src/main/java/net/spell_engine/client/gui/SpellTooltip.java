@@ -58,7 +58,7 @@ public class SpellTooltip {
             return lines;
         }
 
-        lines.add(Text.translatable(spellKeyPrefix(spellId) + ".name")
+        lines.add(Text.translatable(spellTranslationKey(spellId))
                 .formatted(Formatting.BOLD)
                 .formatted(Formatting.GRAY));
 
@@ -147,7 +147,11 @@ public class SpellTooltip {
         return key;
     }
 
-    private static String spellKeyPrefix(Identifier spellId) {
+    public static String spellTranslationKey(Identifier spellId) {
+        return spellKeyPrefix(spellId) + ".name";
+    }
+
+    public static String spellKeyPrefix(Identifier spellId) {
         // For example: `spell.spell_engine.fireball`
         return "spell." + spellId.getNamespace() + "." + spellId.getPath();
     }
