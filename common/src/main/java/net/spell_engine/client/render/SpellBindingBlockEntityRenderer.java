@@ -12,17 +12,19 @@ import net.minecraft.client.render.entity.model.EntityModelLayers;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.SpriteIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3f;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 
 // Copied from EnchantingTableBlockEntityRenderer
 @Environment(EnvType.CLIENT)
 public class SpellBindingBlockEntityRenderer implements BlockEntityRenderer<SpellBindingBlockEntity> {
-    
-    // public static final SpriteIdentifier BOOK_TEXTURE = new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, new Identifier(SpellEngineMod.ID, "entity/spell_binding_book"));
-    public static final SpriteIdentifier BOOK_TEXTURE = new SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, new Identifier("entity/enchanting_table_book"));
+
+    public static final SpriteIdentifier BOOK_TEXTURE = new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, new Identifier(SpellEngineMod.ID, "entity/spell_binding_book"));
+//    public static final SpriteIdentifier BOOK_TEXTURE = new SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, new Identifier("entity/enchanting_table_book"));
 
     private final BookModel book;
 

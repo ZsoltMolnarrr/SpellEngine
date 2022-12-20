@@ -44,6 +44,5 @@ public class SpellEngineClient {
         HandledScreens.register(RuneCraftingScreenHandler.HANDLER_TYPE, RuneCraftingScreen::new);
         HandledScreens.register(SpellBindingScreenHandler.HANDLER_TYPE, SpellBindingScreen::new);
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
-        //BlockEntityRendererRegistry.register(SpellBindingBlockEntity.ENTITY_TYPE, );
     }
 }

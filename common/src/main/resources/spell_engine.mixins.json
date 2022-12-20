@@ -20,7 +20,8 @@
     "client.InGameHudMixin",
     "client.LivingEntityRendererMixin",
     "client.LivingEntityVisualMixin",
-    "client.MinecraftClientMixin"
+    "client.MinecraftClientMixin",
+    "client.TexturedRenderLayersMixin"
   ],
   "injectors": {
     "defaultRequire": 1
