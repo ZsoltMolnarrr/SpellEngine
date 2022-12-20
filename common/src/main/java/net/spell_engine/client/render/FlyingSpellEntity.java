@@ -1,4 +1,4 @@
-package net.spell_engine.client.projectile;
+package net.spell_engine.client.render;
 
 import net.spell_engine.api.spell.Spell;
 import net.minecraft.entity.FlyingItemEntity;

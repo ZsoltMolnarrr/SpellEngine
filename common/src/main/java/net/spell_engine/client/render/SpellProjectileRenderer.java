@@ -1,4 +1,4 @@
-package net.spell_engine.client.projectile;
+package net.spell_engine.client.render;
 
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumerProvider;

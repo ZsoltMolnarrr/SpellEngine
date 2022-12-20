@@ -20,7 +20,7 @@ public class FabricMod implements ModInitializer {
                 ENTITY_TYPE,
                 new Identifier(SpellEngineMod.ID, "spell_projectile"),
                 FabricEntityTypeBuilder.<SpellProjectile>create(SpawnGroup.MISC, SpellProjectile::new)
-                        .dimensions(EntityDimensions.fixed(0.25F, 0.25F)) // dimensions in Minecraft units of the projectile
+                        .dimensions(EntityDimensions.fixed(0.25F, 0.25F)) // dimensions in Minecraft units of the render
                         .trackRangeBlocks(128)
                         .trackedUpdateRate(2)
                         .build()

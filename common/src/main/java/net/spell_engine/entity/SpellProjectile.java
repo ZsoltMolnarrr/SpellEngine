@@ -3,7 +3,7 @@ package net.spell_engine.entity;
 import com.google.gson.Gson;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
-import net.spell_engine.client.projectile.FlyingSpellEntity;
+import net.spell_engine.client.render.FlyingSpellEntity;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.utils.ParticleHelper;
 import net.spell_engine.utils.VectorHelper;

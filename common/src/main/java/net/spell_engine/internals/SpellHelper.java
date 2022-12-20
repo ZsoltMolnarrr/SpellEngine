@@ -254,7 +254,7 @@ public class SpellHelper {
         projectile.range = spell.range;
 
         world.spawnEntity(projectile);
-        System.out.println("Shooting projectile");
+        System.out.println("Shooting render");
     }
 
     public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell spell, float channelMultiplier) {

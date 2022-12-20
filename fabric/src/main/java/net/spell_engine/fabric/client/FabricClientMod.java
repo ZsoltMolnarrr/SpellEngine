@@ -9,7 +9,7 @@ import net.spell_engine.client.particle.GenericDamageParticle;
 import net.spell_engine.client.particle.GenericSpellParticle;
 import net.spell_engine.client.particle.SpellFlameParticle;
 import net.spell_engine.client.particle.SpellSnowflakeParticle;
-import net.spell_engine.client.projectile.SpellProjectileRenderer;
+import net.spell_engine.client.render.SpellProjectileRenderer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
