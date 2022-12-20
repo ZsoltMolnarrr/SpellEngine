@@ -4,6 +4,11 @@
       "spell_engine:rune_crafting"
     ]
   },
+  "bind_spell": {
+    "sounds": [
+      "spell_engine:bind_spell"
+    ]
+  },
   "casting_arcane": {
     "sounds": [
       "spell_engine:casting_arcane"

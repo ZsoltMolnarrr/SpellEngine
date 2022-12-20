@@ -14,6 +14,8 @@ import java.util.List;
 
 public class SoundHelper {
     public static List<String> soundKeys = List.of(
+        "rune_crafting",
+        "bind_spell",
         "casting_arcane",
         "casting_fire",
         "casting_frost",

@@ -10,7 +10,12 @@ import net.minecraft.item.Items;
 import net.minecraft.screen.*;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 
@@ -172,6 +177,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
         return itemStack;
     }
 
+    private static Identifier soundId = new Identifier(SpellEngineMod.ID, "bind_spell");
     @Override
     public boolean onButtonClick(PlayerEntity player, int id) {
         try {
@@ -208,6 +214,8 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                 applyLevelCost(player, binding.requirements.levelCost());
                 this.inventory.markDirty();
                 this.onContentChanged(this.inventory);
+                var soundEvent = new SoundEvent(soundId);
+                world.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
             });
 
             return true;
