@@ -1,9 +1,6 @@
 package net.spell_engine.spellbinding;
 
-import net.minecraft.block.Blocks;
 import net.minecraft.block.EnchantingTableBlock;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.EnchantmentLevelEntry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -12,12 +9,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.*;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.SpellContainerHelper;
+import net.spell_engine.internals.SpellRegistry;
 
-import java.util.List;
+import java.util.ArrayList;
 
 public class SpellBindingScreenHandler extends ScreenHandler {
     public static final ScreenHandlerType<SpellBindingScreenHandler> HANDLER_TYPE = new ScreenHandlerType(SpellBindingScreenHandler::new);
@@ -182,17 +179,35 @@ public class SpellBindingScreenHandler extends ScreenHandler {
             var cost = spellCost[id];
             var requiredLevel = spellLevelRequirement[id];
             var lapisCount = getLapisCount();
-            var itemStack = getStacks().get(0);
-            var binding = SpellBinding.State.of(rawId, itemStack, cost, requiredLevel);
+            var weaponStack = getStacks().get(0);
+            var lapisStack = getStacks().get(1);
+            var spellIdOptional = SpellRegistry.fromRawId(rawId);
+            if (spellIdOptional.isEmpty()) {
+                return false;
+            }
+            var spellId = spellIdOptional.get();
+            var binding = SpellBinding.State.of(spellId, weaponStack, cost, requiredLevel);
             if (binding.state == SpellBinding.State.ApplyState.INVALID) {
                 return false;
             }
             if (!binding.readyToApply(player, lapisCount)) {
                 return false;
             }
-
             this.context.run((world, pos) -> {
-                
+                var container = SpellContainerHelper.containerFromItemStack(weaponStack).copy();
+                var spellIds = new ArrayList<String>(container.spell_ids);
+                spellIds.add(spellId.toString());
+                container.spell_ids = spellIds;
+                var nbtContainer = SpellContainerHelper.toNBT(container);
+                var nbt = weaponStack.getOrCreateNbt();
+                nbt.put(SpellContainerHelper.NBT_KEY_CONTAINER, nbtContainer);
+
+                if (!player.isCreative()) {
+                    lapisStack.decrement(binding.requirements.lapisCost());
+                }
+                applyLevelCost(player, binding.requirements.levelCost());
+                this.inventory.markDirty();
+                this.onContentChanged(this.inventory);
             });
 
             return true;
@@ -201,5 +216,17 @@ public class SpellBindingScreenHandler extends ScreenHandler {
             e.printStackTrace();
         }
         return false;
+    }
+
+    private static void applyLevelCost(PlayerEntity player, int levelCost) {
+        player.experienceLevel -= levelCost;
+        if (player.experienceLevel < 0) {
+            player.experienceLevel = 0;
+            player.experienceProgress = 0.0f;
+            player.totalExperience = 0;
+        }
+        if (player instanceof ServerPlayerEntity serverPlayer) {
+            serverPlayer.setExperienceLevel(player.experienceLevel); // Triggers XP sync
+        }
     }
 }

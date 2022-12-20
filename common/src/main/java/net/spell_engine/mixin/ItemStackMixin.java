@@ -34,7 +34,22 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     }
 
     @Nullable
-    private SpellContainer container() {
+    private SpellContainer spellContainer() {
+        var nbtContainer = spellContainerFromNBT();
+        if (nbtContainer != null) {
+            return nbtContainer;
+        }
+        return spellContainerDefault();
+    }
+
+    @Nullable
+    private SpellContainer spellContainerFromNBT() {
+        var itemStack = itemStack();
+        return SpellContainerHelper.fromNBT(itemStack.getOrCreateNbt());
+    }
+
+    @Nullable
+    private SpellContainer spellContainerDefault() {
         var item = getItem();
         var id = Registry.ITEM.getId(item);
         return SpellRegistry.containerForItem(id);
@@ -43,7 +58,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     // MagicalItemStack
 
     public @Nullable MagicSchool getMagicSchool() {
-        var container = container();
+        var container = spellContainer();
         if (container != null) {
             return container.school;
         }
@@ -54,28 +69,28 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
 
     @Nullable
     public SpellContainer getSpellContainer() {
-        return container();
+        return spellContainer();
     }
 
     // Use conditions
 
     @Inject(method = "isUsedOnRelease", at = @At("HEAD"), cancellable = true)
     private void isUsedOnRelease_HEAD_SpellEngine(CallbackInfoReturnable<Boolean> cir) {
-        if (container() == null) { return; }
+        if (spellContainer() == null) { return; }
         cir.setReturnValue(false);
         cir.cancel();
     }
 
     @Inject(method = "getMaxUseTime", at = @At("HEAD"), cancellable = true)
     private void getMaxUseTime_HEAD_SpellEngine(CallbackInfoReturnable<Integer> cir) {
-        if (container() == null) { return; }
+        if (spellContainer() == null) { return; }
         cir.setReturnValue(SpellHelper.maximumUseTicks);
         cir.cancel();
     }
 
     @Inject(method = "getUseAction", at = @At("HEAD"), cancellable = true)
     private void getUseAction_HEAD_SpellEngine(CallbackInfoReturnable<UseAction> cir) {
-        if (container() == null) { return; }
+        if (spellContainer() == null) { return; }
         cir.setReturnValue(UseAction.NONE);
         cir.cancel();
     }
@@ -86,7 +101,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     private void use_HEAD_SpellEngine(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
         // System.out.println("ItemStack use start");
         var itemStack = itemStack();
-        var container = container();
+        var container = spellContainer();
         if (container == null) {
             if (user instanceof SpellCasterEntity caster && caster.getCurrentSpellId() != null) {
                 if (world.isClient) {
@@ -120,7 +135,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     @Inject(method = "usageTick", at = @At("HEAD"), cancellable = true)
     private void usageTick_HEAD_SpellEngine(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
         // System.out.println("ItemStack use tick A " + (world.isClient ? "CLIENT" : "SERVER"));
-        var spell = container();
+        var spell = spellContainer();
         if (spell == null) {
             return;
         }
@@ -151,7 +166,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     @Inject(method = "onStoppedUsing", at = @At("HEAD"), cancellable = true)
     private void onStoppedUsing_HEAD_SpellEngine(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
         // System.out.println("ItemStack use stop");
-        var spell = container();
+        var spell = spellContainer();
         if (spell == null) { return; }
 
         if (world.isClient) {

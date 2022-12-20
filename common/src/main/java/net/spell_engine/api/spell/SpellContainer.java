@@ -2,12 +2,19 @@ package net.spell_engine.api.spell;
 
 import net.spell_damage.api.MagicSchool;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SpellContainer { public SpellContainer() { }
     public MagicSchool school;
     public int max_spell_count;
     public List<String> spell_ids;
+
+    public SpellContainer(MagicSchool school, int max_spell_count, List<String> spell_ids) {
+        this.school = school;
+        this.max_spell_count = max_spell_count;
+        this.spell_ids = spell_ids;
+    }
 
     // MARK: Helpers
 
@@ -26,5 +33,9 @@ public class SpellContainer { public SpellContainer() { }
 
     public boolean isValid() {
         return school != null && spell_ids != null && max_spell_count > 0;
+    }
+
+    public SpellContainer copy() {
+        return new SpellContainer(school, max_spell_count, new ArrayList<>(spell_ids));
     }
 }
