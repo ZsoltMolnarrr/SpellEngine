@@ -95,19 +95,19 @@ public class HudConfigScreen extends Screen {
         checkBoxes.put(part, checkBox);
 
         x += buttonSize + spacing;
-        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.translatable("←"), button -> {
+        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.of("←"), button -> {
             move(part, Direction.LEFT);
         }));
         x += buttonSize + spacing;
-        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.translatable("↑"), button -> {
+        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.of("↑"), button -> {
             move(part, Direction.UP);
         }));
         x += buttonSize + spacing;
-        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.translatable("↓"), button -> {
+        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.of("↓"), button -> {
             move(part, Direction.DOWN);
         }));
         x += buttonSize + spacing;
-        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.translatable("→"), button -> {
+        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.of("→"), button -> {
             move(part, Direction.RIGHT);
         }));
         return buttons;

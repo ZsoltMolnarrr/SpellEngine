@@ -7,6 +7,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -36,8 +37,28 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         this.stack = ItemStack.EMPTY;
     }
 
+    private int pageOffset = 0;
+    private ButtonWidget upButton;
+    private ButtonWidget downButton;
+
     protected void init() {
         super.init();
+        int originX = (this.width - this.backgroundWidth) / 2;
+        int originY = (this.height - this.backgroundHeight) / 2;
+        var x = originX + 152;
+        var y = originY + 3;
+        var width = 16;
+        var height = 10;
+        upButton = new ButtonWidget(x , y, width, height, Text.of("↑"), button -> {
+            this.pageUp();
+        });
+        upButton.visible = false;
+        downButton = new ButtonWidget(x, y + (PAGE_SIZE * BUTTON_HEIGHT) + height + 1, width, height, Text.of("↓"), button -> {
+            this.pageDown();
+        });
+        downButton.visible = false;
+        this.addDrawableChild(upButton);
+        this.addDrawableChild(downButton);
     }
 
     @Override
@@ -122,14 +143,56 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         int originY = (this.height - this.backgroundHeight) / 2;
         this.drawTexture(matrices, originX, originY, 0, 0, this.backgroundWidth, this.backgroundHeight);
         DiffuseLighting.enableGuiDepthLighting();
+        this.updatePageControls();
         this.updateButtons(originX, originY);
         this.drawButtons(matrices, mouseX, mouseY);
+    }
+
+    private static int PAGE_SIZE = 3;
+
+    private boolean isPagingEnabled() {
+        return buttonViewModels.size() > PAGE_SIZE;
+    }
+
+    private int maximalPageOffset() {
+        return buttonViewModels.size() - PAGE_SIZE;
+    }
+    private boolean hasPageUp() {
+        return pageOffset > 0;
+    }
+
+    private boolean hasPageDown() {
+        return pageOffset < maximalPageOffset();
+    }
+
+    private void pageUp() {
+        if (hasPageUp()) {
+            pageOffset -= 1;
+        }
+    }
+
+    private void pageDown() {
+        if (hasPageDown()) {
+            pageOffset += 1;
+        }
+    }
+
+    private void restartPaging() {
+        this.pageOffset = 0;
     }
 
     private List<ButtonViewModel> buttonViewModels = List.of();
 
     private static final int BUTTONS_ORIGIN_X = 60;
     private static final int BUTTONS_ORIGIN_Y = 14;
+
+    private void updatePageControls() {
+        var isPaging = isPagingEnabled();
+        upButton.visible = isPaging;
+        upButton.active = hasPageUp();
+        downButton.visible = isPaging;
+        downButton.active = hasPageDown();
+    }
 
     private void updateButtons(int originX, int originY) {
         var buttons = new ArrayList<ButtonViewModel>();
@@ -138,7 +201,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         var player = MinecraftClient.getInstance().player;
         var container = SpellContainerHelper.containerFromItemStack(itemStack);
         if (container == null) {
-            buttonViewModels = buttons;
+            setButtons(buttons);
             return;
         }
 
@@ -149,17 +212,25 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
             var spellId = SpellRegistry.fromRawId(rawId);
             if (spellId.isEmpty()) { continue; }
             var id = spellId.get();
+            boolean shown = (i >= pageOffset) && (i < (pageOffset + PAGE_SIZE));
             var spell = new SpellInfo(
                     id,
                     SpellRender.iconTexture(id),
                     Text.translatable(SpellTooltip.spellTranslationKey(id)));
             SpellBinding.State bindingState = SpellBinding.State.of(id, itemStack, cost, requirement);
             boolean isEnabled = bindingState.readyToApply(player, lapisCount);
-            var button = new ButtonViewModel(
-                    originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + (buttons.size() * BUTTON_HEIGHT),
+            var button = new ButtonViewModel(shown,
+                    originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + ((buttons.size() - pageOffset) * BUTTON_HEIGHT),
                     BUTTON_WIDTH, BUTTON_HEIGHT,
                     isEnabled, spell, bindingState);
             buttons.add(button);
+        }
+        setButtons(buttons);
+    }
+
+    private void setButtons(List<ButtonViewModel> buttons) {
+        if(buttons.size() != buttonViewModels.size()) {
+            restartPaging();
         }
         buttonViewModels = buttons;
     }
@@ -173,8 +244,9 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 
     enum ButtonState { NORMAL, HOVER }
     record SpellInfo(Identifier id, Identifier icon, Text name) { }
-    record ButtonViewModel(int x, int y, int width, int height, boolean isEnabled, SpellInfo spell, SpellBinding.State binding) {
+    record ButtonViewModel(boolean shown, int x, int y, int width, int height, boolean isEnabled, SpellInfo spell, SpellBinding.State binding) {
         public boolean mouseOver(int mouseX, int mouseY) {
+            if(!shown) { return false; }
             return (mouseX > x && mouseX < x + width) && (mouseY > y && mouseY < y + height);
         }
     }
@@ -191,9 +263,10 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     private static final int ORB_TEXTURE_V = 242;
     private static final int BOTTOM_TEXT_OFFSET = 10;
     private static final int COLOR_GOOD = 0x36ff00;
-    private static final int COLOR_BAD = 0xfc5c5c; // 0x990000;
+    private static final int COLOR_BAD = 0xfc5c5c;
     private static final int COLOR_GOOD_BUT_DISABLED = 0x48890e;
     private void drawSpellButton(MatrixStack matrices, ButtonViewModel viewModel, ButtonState state) {
+        if(!viewModel.shown) { return; }
         var player = MinecraftClient.getInstance().player;
         int u = BUTTON_TEXTURE_U;
         int v = BUTTON_TEXTURE_V;
