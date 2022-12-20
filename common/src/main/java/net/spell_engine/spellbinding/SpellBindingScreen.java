@@ -69,7 +69,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         for (var button: buttonViewModels) {
             if (button.spell != null && button.mouseOver(mouseX, mouseY)) {
                 ArrayList<Text> tooltip = Lists.newArrayList();
-                switch (button.bindingState.state) {
+                switch (button.binding.state) {
                     case ALREADY_APPLIED -> {
                         tooltip.add(Text.translatable("gui.spell_engine.spell_binding.already_bound")
                                 .formatted(Formatting.GRAY));
@@ -79,22 +79,22 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                                 .formatted(Formatting.GRAY));
                     }
                     case APPLICABLE -> {
-                        if (button.bindingState.readyToApply(player, lapisCount)) {
+                        if (button.binding.readyToApply(player, lapisCount)) {
                             tooltip.add(Text.translatable("gui.spell_engine.spell_binding.available")
                                     .formatted(Formatting.GREEN));
                         } else {
-                            if (!button.bindingState.requirements.metRequiredLevel(player)) {
+                            if (!button.binding.requirements.metRequiredLevel(player)) {
                                 tooltip.add(Text.translatable("gui.spell_engine.spell_binding.level_req_fail",
-                                                button.bindingState.requirements.requiredLevel())
+                                                button.binding.requirements.requiredLevel())
                                         .formatted(Formatting.RED));
                             } else {
-                                var lapisCost = button.bindingState.requirements.lapisCost();
-                                var hasEnoughLapis = button.bindingState.requirements.hasEnoughLapis(lapisCount);
+                                var lapisCost = button.binding.requirements.lapisCost();
+                                var hasEnoughLapis = button.binding.requirements.hasEnoughLapis(lapisCount);
                                 MutableText lapis = lapisCost == 1 ? Text.translatable("container.enchant.lapis.one") : Text.translatable("container.enchant.lapis.many", lapisCost);
                                 tooltip.add(lapis.formatted(hasEnoughLapis ? Formatting.GRAY : Formatting.RED));
 
-                                var levelCost = button.bindingState.requirements.levelCost();
-                                var hasEnoughLevels = button.bindingState.requirements.hasEnoughLevelsToSpend(player);
+                                var levelCost = button.binding.requirements.levelCost();
+                                var hasEnoughLevels = button.binding.requirements.hasEnoughLevelsToSpend(player);
                                 MutableText levels = levelCost == 1 ? Text.translatable("container.enchant.level.one") : Text.translatable("container.enchant.level.many", levelCost);
                                 tooltip.add(levels.formatted(hasEnoughLevels ? Formatting.GRAY : Formatting.RED));
                             }
@@ -152,8 +152,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
             var spell = new SpellInfo(
                     id,
                     SpellRender.iconTexture(id),
-                    Text.translatable(SpellTooltip.spellTranslationKey(id)),
-                    cost, requirement);
+                    Text.translatable(SpellTooltip.spellTranslationKey(id)));
             SpellBinding.State bindingState = SpellBinding.State.of(id, itemStack, cost, requirement);
             boolean isEnabled = bindingState.readyToApply(player, lapisCount);
             var button = new ButtonViewModel(
@@ -173,10 +172,8 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     }
 
     enum ButtonState { NORMAL, HOVER }
-
-
-    record SpellInfo(Identifier id, Identifier icon, Text name, int cost, int requirement) { }
-    record ButtonViewModel(int x, int y, int width, int height, boolean isEnabled, SpellInfo spell, SpellBinding.State bindingState) {
+    record SpellInfo(Identifier id, Identifier icon, Text name) { }
+    record ButtonViewModel(int x, int y, int width, int height, boolean isEnabled, SpellInfo spell, SpellBinding.State binding) {
         public boolean mouseOver(int mouseX, int mouseY) {
             return (mouseX > x && mouseX < x + width) && (mouseY > y && mouseY < y + height);
         }
@@ -194,7 +191,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     private static final int ORB_TEXTURE_V = 242;
     private static final int BOTTOM_TEXT_OFFSET = 10;
     private static final int COLOR_GOOD = 0x36ff00;
-    private static final int COLOR_BAD = 0x990000;
+    private static final int COLOR_BAD = 0xfc5c5c; // 0x990000;
     private static final int COLOR_GOOD_BUT_DISABLED = 0x48890e;
     private void drawSpellButton(MatrixStack matrices, ButtonViewModel viewModel, ButtonState state) {
         var player = MinecraftClient.getInstance().player;
@@ -217,18 +214,18 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         drawTexture(matrices, viewModel.x, viewModel.y, u, v, viewModel.width, viewModel.height);
         if (viewModel.spell != null) {
-            boolean alreadyApplied = viewModel.bindingState.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
+            boolean alreadyApplied = viewModel.binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
             boolean isUnlocked = alreadyApplied || viewModel.isEnabled;
             var spell = viewModel.spell;
             textRenderer.drawWithShadow(matrices, spell.name,
                     viewModel.x + viewModel.height, viewModel.y + SPELL_ICON_INDENT, isUnlocked ? 0xFFFFFF : 0x808080);
             var goodColor = viewModel.isEnabled ? COLOR_GOOD : COLOR_GOOD_BUT_DISABLED;
             if (!alreadyApplied) {
-                String levelRequirement = "" + viewModel.spell.requirement;
+                String levelRequirement = "" + viewModel.binding.requirements.requiredLevel();
                 textRenderer.drawWithShadow(matrices, levelRequirement,
                         viewModel.x + viewModel.width - 2 - textRenderer.getWidth(levelRequirement),
                         viewModel.y + viewModel.height - BOTTOM_TEXT_OFFSET,
-                        viewModel.bindingState.requirements.metRequiredLevel(player) ? goodColor : COLOR_BAD);
+                        viewModel.binding.requirements.metRequiredLevel(player) ? goodColor : COLOR_BAD);
             }
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, isUnlocked ? 1F : 0.5f);
             RenderSystem.enableBlend();
@@ -247,11 +244,11 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                         viewModel.x + ORB_INDENT,
                         viewModel.y + viewModel.height - ORB_ICON_SIZE - ORB_INDENT,
                         ORB_TEXTURE_U, ORB_TEXTURE_V, ORB_ICON_SIZE, ORB_ICON_SIZE);
-                String levelCost = "" + viewModel.spell.cost;
+                String levelCost = "" + viewModel.binding.requirements.levelCost();
                 textRenderer.drawWithShadow(matrices, levelCost,
                     viewModel.x + ORB_INDENT + (Math.round(ORB_ICON_SIZE * 0.6)),
                     viewModel.y + viewModel.height - BOTTOM_TEXT_OFFSET,
-                    viewModel.bindingState.requirements.hasEnoughLevelsToSpend(player) ? goodColor : COLOR_BAD);
+                    viewModel.binding.requirements.hasEnoughLevelsToSpend(player) ? goodColor : COLOR_BAD);
             }
         }
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
