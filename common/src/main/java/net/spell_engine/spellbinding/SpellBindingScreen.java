@@ -40,8 +40,21 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         super.init();
     }
 
-    public void handledScreenTick() {
-        super.handledScreenTick();
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        try {
+            for (int i = 0; i < buttonViewModels.size(); i++) {
+                var spellButton = buttonViewModels.get(i);
+                if (spellButton.mouseOver((int) mouseX, (int) mouseY)) {
+                    client.interactionManager.clickButton(this.handler.syncId, i);
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 
     @Override
@@ -141,7 +154,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                     SpellRender.iconTexture(id),
                     Text.translatable(SpellTooltip.spellTranslationKey(id)),
                     cost, requirement);
-            SpellBinding.State bindingState = SpellBinding.State.of(id, itemStack, cost, cost, requirement);
+            SpellBinding.State bindingState = SpellBinding.State.of(id, itemStack, cost, requirement);
             boolean isEnabled = bindingState.readyToApply(player, lapisCount);
             var button = new ButtonViewModel(
                     originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + (buttons.size() * BUTTON_HEIGHT),
@@ -175,7 +188,16 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     private static final int BUTTON_HEIGHT = 19;
     private static final int SPELL_ICON_SIZE = 16;
     private static final int SPELL_ICON_INDENT = (int) Math.ceil((BUTTON_HEIGHT - SPELL_ICON_SIZE) / 2.0);
+    private static final int ORB_INDENT = 1;
+    private static final int ORB_ICON_SIZE = 13;
+    private static final int ORB_TEXTURE_U = 0;
+    private static final int ORB_TEXTURE_V = 242;
+    private static final int BOTTOM_TEXT_OFFSET = 10;
+    private static final int COLOR_GOOD = 0x36ff00;
+    private static final int COLOR_BAD = 0x990000;
+    private static final int COLOR_GOOD_BUT_DISABLED = 0x48890e;
     private void drawSpellButton(MatrixStack matrices, ButtonViewModel viewModel, ButtonState state) {
+        var player = MinecraftClient.getInstance().player;
         int u = BUTTON_TEXTURE_U;
         int v = BUTTON_TEXTURE_V;
         if (viewModel.isEnabled) {
@@ -195,14 +217,22 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         drawTexture(matrices, viewModel.x, viewModel.y, u, v, viewModel.width, viewModel.height);
         if (viewModel.spell != null) {
-            boolean isUnlocked = viewModel.bindingState.state == SpellBinding.State.ApplyState.ALREADY_APPLIED || viewModel.isEnabled;
+            boolean alreadyApplied = viewModel.bindingState.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
+            boolean isUnlocked = alreadyApplied || viewModel.isEnabled;
             var spell = viewModel.spell;
             textRenderer.drawWithShadow(matrices, spell.name,
                     viewModel.x + viewModel.height, viewModel.y + SPELL_ICON_INDENT, isUnlocked ? 0xFFFFFF : 0x808080);
+            var goodColor = viewModel.isEnabled ? COLOR_GOOD : COLOR_GOOD_BUT_DISABLED;
+            if (!alreadyApplied) {
+                String levelRequirement = "" + viewModel.spell.requirement;
+                textRenderer.drawWithShadow(matrices, levelRequirement,
+                        viewModel.x + viewModel.width - 2 - textRenderer.getWidth(levelRequirement),
+                        viewModel.y + viewModel.height - BOTTOM_TEXT_OFFSET,
+                        viewModel.bindingState.requirements.metRequiredLevel(player) ? goodColor : COLOR_BAD);
+            }
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, isUnlocked ? 1F : 0.5f);
+            RenderSystem.enableBlend();
             if (spell.icon != null) {
-
-                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, isUnlocked ? 1F : 0.5f);
-                RenderSystem.enableBlend();
                 RenderSystem.setShaderTexture(0, spell.icon);
                 // int x, int y, int u, int v, int width, int height
                 DrawableHelper.drawTexture(matrices,
@@ -210,6 +240,18 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                         viewModel.y + SPELL_ICON_INDENT,
                         0, 0,
                         SPELL_ICON_SIZE, SPELL_ICON_SIZE, SPELL_ICON_SIZE, SPELL_ICON_SIZE);
+            }
+            if (!alreadyApplied) {
+                RenderSystem.setShaderTexture(0, TEXTURE);
+                drawTexture(matrices,
+                        viewModel.x + ORB_INDENT,
+                        viewModel.y + viewModel.height - ORB_ICON_SIZE - ORB_INDENT,
+                        ORB_TEXTURE_U, ORB_TEXTURE_V, ORB_ICON_SIZE, ORB_ICON_SIZE);
+                String levelCost = "" + viewModel.spell.cost;
+                textRenderer.drawWithShadow(matrices, levelCost,
+                    viewModel.x + ORB_INDENT + (Math.round(ORB_ICON_SIZE * 0.6)),
+                    viewModel.y + viewModel.height - BOTTOM_TEXT_OFFSET,
+                    viewModel.bindingState.requirements.hasEnoughLevelsToSpend(player) ? goodColor : COLOR_BAD);
             }
         }
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);

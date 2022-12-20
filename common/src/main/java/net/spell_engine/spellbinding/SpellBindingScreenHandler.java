@@ -23,7 +23,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
     public static final ScreenHandlerType<SpellBindingScreenHandler> HANDLER_TYPE = new ScreenHandlerType(SpellBindingScreenHandler::new);
     public static final int MAXIMUM_SPELL_COUNT = 10;
     // State
-    private final Inventory inventory = new SimpleInventory(2){
+    private final Inventory inventory = new SimpleInventory(2) {
         @Override
         public void markDirty() {
             super.markDirty();
@@ -44,17 +44,18 @@ public class SpellBindingScreenHandler extends ScreenHandler {
     public SpellBindingScreenHandler(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context) {
         super(HANDLER_TYPE, syncId);
         this.context = context;
-        this.addSlot(new Slot(this.inventory, 0, 15, 47){
+        this.addSlot(new Slot(this.inventory, 0, 15, 47) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return SpellContainerHelper.hasValidContainer(stack);
             }
+
             @Override
             public int getMaxItemCount() {
                 return 1;
             }
         });
-        this.addSlot(new Slot(this.inventory, 1, 35, 47){
+        this.addSlot(new Slot(this.inventory, 1, 35, 47) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return stack.isOf(Items.LAPIS_LAZULI);
@@ -87,7 +88,9 @@ public class SpellBindingScreenHandler extends ScreenHandler {
 
     @Override
     public void onContentChanged(Inventory inventory) {
-        if (inventory != this.inventory) { return; }
+        if (inventory != this.inventory) {
+            return;
+        }
         ItemStack itemStack = inventory.getStack(0);
         if (itemStack.isEmpty() || !SpellContainerHelper.hasValidContainer(itemStack)) {
             for (int i = 0; i < MAXIMUM_SPELL_COUNT; ++i) {
@@ -135,7 +138,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
     @Override
     public ItemStack transferSlot(PlayerEntity player, int index) {
         ItemStack itemStack = ItemStack.EMPTY;
-        Slot slot = (Slot)this.slots.get(index);
+        Slot slot = (Slot) this.slots.get(index);
         if (slot != null && slot.hasStack()) {
             ItemStack itemStack2 = slot.getStack();
             itemStack = itemStack2.copy();
@@ -151,11 +154,11 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                 if (!this.insertItem(itemStack2, 1, 2, true)) {
                     return ItemStack.EMPTY;
                 }
-            } else if (!((Slot)this.slots.get(0)).hasStack() && ((Slot)this.slots.get(0)).canInsert(itemStack2)) {
+            } else if (!((Slot) this.slots.get(0)).hasStack() && ((Slot) this.slots.get(0)).canInsert(itemStack2)) {
                 ItemStack itemStack3 = itemStack2.copy();
                 itemStack3.setCount(1);
                 itemStack2.decrement(1);
-                ((Slot)this.slots.get(0)).setStack(itemStack3);
+                ((Slot) this.slots.get(0)).setStack(itemStack3);
             } else {
                 return ItemStack.EMPTY;
             }
@@ -170,5 +173,33 @@ public class SpellBindingScreenHandler extends ScreenHandler {
             slot.onTakeItem(player, itemStack2);
         }
         return itemStack;
+    }
+
+    @Override
+    public boolean onButtonClick(PlayerEntity player, int id) {
+        try {
+            var rawId = spellId[id];
+            var cost = spellCost[id];
+            var requiredLevel = spellLevelRequirement[id];
+            var lapisCount = getLapisCount();
+            var itemStack = getStacks().get(0);
+            var binding = SpellBinding.State.of(rawId, itemStack, cost, requiredLevel);
+            if (binding.state == SpellBinding.State.ApplyState.INVALID) {
+                return false;
+            }
+            if (!binding.readyToApply(player, lapisCount)) {
+                return false;
+            }
+
+            this.context.run((world, pos) -> {
+                
+            });
+
+            return true;
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
     }
 }

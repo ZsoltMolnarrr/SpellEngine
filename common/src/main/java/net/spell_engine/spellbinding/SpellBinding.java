@@ -49,8 +49,9 @@ public class SpellBinding {
     public static class State {
         public enum ApplyState { ALREADY_APPLIED, NO_MORE_SLOT, APPLICABLE, INVALID }
         public ApplyState state;
-        public State(ApplyState state) {
+        public State(ApplyState state, Requirements requirements) {
             this.state = state;
+            this.requirements = requirements;
         }
 
         public Requirements requirements;
@@ -75,28 +76,29 @@ public class SpellBinding {
             }
         }
 
-        public static State of(int spellId, ItemStack itemStack, int lapisCost, int levelCost, int requiredLevel) {
+        public static State of(int spellId, ItemStack itemStack, int cost, int requiredLevel) {
             var validId = SpellRegistry.fromRawId(spellId);
             if (validId.isEmpty()) {
-                return new State(ApplyState.INVALID);
+                return new State(ApplyState.INVALID, null);
             }
-            return State.of(validId.get(), itemStack, lapisCost, levelCost, requiredLevel);
+            return State.of(validId.get(), itemStack, cost, requiredLevel);
         }
 
-        public static State of(Identifier spellId, ItemStack itemStack, int lapisCost, int levelCost, int requiredLevel) {
+        public static State of(Identifier spellId, ItemStack itemStack, int cost, int requiredLevel) {
             var container = SpellContainerHelper.containerFromItemStack(itemStack);
+            int lapisCost = cost;
+            int levelCost = cost;
+            var requirements = new Requirements(lapisCost, levelCost, requiredLevel);
             if (container == null) {
-                return new State(ApplyState.INVALID);
+                return new State(ApplyState.INVALID, requirements);
             }
             if (container.spell_ids.contains(spellId.toString())) {
-                return new State(ApplyState.ALREADY_APPLIED);
+                return new State(ApplyState.ALREADY_APPLIED, requirements);
             }
             if (container.spell_ids.size() >= container.max_spell_count) {
-                return new State(ApplyState.NO_MORE_SLOT);
+                return new State(ApplyState.NO_MORE_SLOT, requirements);
             }
-            var state = new State(ApplyState.APPLICABLE);
-            state.requirements = new Requirements(lapisCost, levelCost, requiredLevel);
-            return state;
+            return new State(ApplyState.APPLICABLE, requirements);
         }
 
         public boolean readyToApply(PlayerEntity player, int lapisCount) {
