@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftClient.class)
-public class MinecraftClientMixin {
+public abstract class MinecraftClientMixin {
     @Shadow @Nullable public ClientPlayerEntity player;
 
     @Redirect(method = "handleInputEvents", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerInventory;selectedSlot:I", opcode = Opcodes.PUTFIELD))
@@ -48,6 +48,15 @@ public class MinecraftClientMixin {
         if (SpellEngineClient.config.unlockHotbarOnEscape && InputHelper.isLocked) {
             InputHelper.isLocked = false;
             ci.cancel();
+        }
+    }
+
+    @Inject(method = "tick", at = @At(value = "HEAD"))
+    private void tick_HEAD_UnlockHotbar(CallbackInfo ci) {
+        if (player == null) { return; }
+        var container = ((SpellCasterClient)player).getCurrentContainer();
+        if (container == null || !container.isValid() || container.spell_ids.isEmpty()) {
+            InputHelper.isLocked = false;
         }
     }
 }
