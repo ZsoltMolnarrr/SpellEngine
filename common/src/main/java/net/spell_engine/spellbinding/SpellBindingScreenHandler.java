@@ -108,7 +108,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                     if (!EnchantingTableBlock.canAccessBookshelf(world, pos, blockPos)) continue;
                     ++libraryPower;
                 }
-                var offers = SpellBinding.offersFor(itemStack);
+                var offers = SpellBinding.offersFor(itemStack, libraryPower);
                 for (int i = 0; i < MAXIMUM_SPELL_COUNT; ++i) {
                     if (i < offers.size()) {
                         var offer = offers.get(i);

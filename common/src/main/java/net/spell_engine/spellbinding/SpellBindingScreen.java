@@ -90,6 +90,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         for (var button: buttonViewModels) {
             if (button.spell != null && button.mouseOver(mouseX, mouseY)) {
                 ArrayList<Text> tooltip = Lists.newArrayList();
+                boolean showSpellDetails = true;
                 switch (button.binding.state) {
                     case ALREADY_APPLIED -> {
                         tooltip.add(Text.translatable("gui.spell_engine.spell_binding.already_bound")
@@ -98,6 +99,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                     case NO_MORE_SLOT -> {
                         tooltip.add(Text.translatable("gui.spell_engine.spell_binding.no_more_slots")
                                 .formatted(Formatting.GRAY));
+                        showSpellDetails = false;
                     }
                     case APPLICABLE -> {
                         if (button.binding.readyToApply(player, lapisCount)) {
@@ -125,8 +127,10 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                         continue;
                     }
                 }
-                tooltip.add(Text.literal(" "));
-                tooltip.addAll(SpellTooltip.spellInfo(button.spell.id(), player, itemStack));
+                if (showSpellDetails) {
+                    tooltip.add(Text.literal(" "));
+                    tooltip.addAll(SpellTooltip.spellInfo(button.spell.id(), player, itemStack));
+                }
                 this.renderTooltip(matrices, tooltip, mouseX, mouseY);
                 break;
             }
@@ -286,6 +290,9 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         RenderSystem.setShaderTexture(0, TEXTURE);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         drawTexture(matrices, viewModel.x, viewModel.y, u, v, viewModel.width, viewModel.height);
+        if (viewModel.binding.state == SpellBinding.State.ApplyState.NO_MORE_SLOT) {
+            return;
+        }
         if (viewModel.spell != null) {
             boolean alreadyApplied = viewModel.binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
             boolean isUnlocked = alreadyApplied || viewModel.isEnabled;
