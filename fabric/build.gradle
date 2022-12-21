@@ -50,7 +50,7 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
     shadowCommon(implementation ("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}"))
-    modImplementation(files("./run/mods/spell_damage-fabric-${spell_damage_version}.jar"))
+    modImplementation(files("./run/mods/spell_power-fabric-${spell_power_version}.jar"))
 
     modCompileOnly("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }
     //modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-fabric")

@@ -5,7 +5,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.DefaultParticleType;
-import net.spell_damage.api.MagicSchool;
+import net.spell_power.api.MagicSchool;
 import net.spell_engine.client.util.Color;
 
 @Environment(value= EnvType.CLIENT)

@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Identifier;
-import net.spell_damage.api.MagicSchool;
+import net.spell_power.api.MagicSchool;
 
 import java.util.HashMap;
 import java.util.Map;

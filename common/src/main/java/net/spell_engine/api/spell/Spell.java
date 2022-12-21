@@ -1,6 +1,6 @@
 package net.spell_engine.api.spell;
 
-import net.spell_damage.api.MagicSchool;
+import net.spell_power.api.MagicSchool;
 
 public class Spell {
     // Structure

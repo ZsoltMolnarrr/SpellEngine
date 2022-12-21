@@ -2,7 +2,7 @@ package net.spell_engine.internals;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
-import net.spell_damage.api.MagicSchool;
+import net.spell_power.api.MagicSchool;
 import net.spell_engine.api.spell.SpellContainer;
 
 import java.util.ArrayList;
