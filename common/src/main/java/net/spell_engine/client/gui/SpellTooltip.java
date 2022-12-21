@@ -1,8 +1,10 @@
 package net.spell_engine.client.gui;
 
 import com.ibm.icu.text.DecimalFormat;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.SpellCasterItemStack;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
@@ -13,6 +15,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import net.spell_engine.mixin.client.KeybindingAccessor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,22 +39,29 @@ public class SpellTooltip {
                 lines.add(Text.translatable("spell.tooltip.host." + container.school.spellName())
                         .append(Text.literal(" " + limit))
                         .formatted(Formatting.GRAY));
-
+                var keybinding = Keybindings.tooltipDetails;
+                var showDetails = !keybinding.isUnbound() && InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(),
+                        ((KeybindingAccessor)keybinding).getBoundKey().getCode());
                 for (int i = 0; i < container.spell_ids.size(); i++) {
                     var spellId = new Identifier(container.spell_ids.get(i));
-                    var info = spellInfo(spellId, player, itemStack);
+                    var info = spellInfo(spellId, player, itemStack, showDetails);
                     if (!info.isEmpty()) {
-                        if (i > 0) {
+                        if (i > 0 && showDetails) {
                             lines.add(Text.literal(" ")); // Separator: empty line
                         }
                         lines.addAll(info);
                     }
                 }
+                if (!showDetails && !keybinding.isUnbound()) {
+                    lines.add(Text.translatable("spell.tooltip.hold_for_details",
+                            keybinding.getBoundKeyLocalizedText())
+                            .formatted(Formatting.GRAY));
+                }
             }
         }
     }
 
-    public static List<Text> spellInfo(Identifier spellId, PlayerEntity player, ItemStack itemStack) {
+    public static List<Text> spellInfo(Identifier spellId, PlayerEntity player, ItemStack itemStack, boolean details) {
         var lines = new ArrayList<Text>();
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
@@ -61,6 +71,10 @@ public class SpellTooltip {
         lines.add(Text.translatable(spellTranslationKey(spellId))
                 .formatted(Formatting.BOLD)
                 .formatted(Formatting.GRAY));
+
+        if(!details) {
+            return lines;
+        }
 
         var description = I18n.translate(spellKeyPrefix(spellId) + ".description");
         var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);

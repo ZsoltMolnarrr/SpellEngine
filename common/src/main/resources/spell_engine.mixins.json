@@ -18,6 +18,7 @@
     "client.EntityMixin",
     "client.EntityRenderMixin",
     "client.InGameHudMixin",
+    "client.KeybindingAccessor",
     "client.LivingEntityRendererMixin",
     "client.LivingEntityVisualMixin",
     "client.MinecraftClientMixin",

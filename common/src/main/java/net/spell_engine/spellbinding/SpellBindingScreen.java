@@ -129,7 +129,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                 }
                 if (showSpellDetails) {
                     tooltip.add(Text.literal(" "));
-                    tooltip.addAll(SpellTooltip.spellInfo(button.spell.id(), player, itemStack));
+                    tooltip.addAll(SpellTooltip.spellInfo(button.spell.id(), player, itemStack, true));
                 }
                 this.renderTooltip(matrices, tooltip, mouseX, mouseY);
                 break;

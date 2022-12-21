@@ -20,6 +20,7 @@
   "spell.tooltip.cooldown.proportional": "Cooldown proportional to usage",
   "spell.tooltip.ammo": "Requires: {item}",
   "spell.tooltip.ammo.plural": "Requires: {item} (x{count})",
+  "spell.tooltip.hold_for_details": "(Hold %1$s for details)",
 
   "gui.spell_engine.config_menu" : "Spell Engine Config",
   "gui.spell_engine.close" : "Close",
@@ -34,6 +35,7 @@
 
   "hud.leave_spell_hotbar": "Press %1$s to leave",
 
+  "keybindings.spell_engine.tooltip_details" : "Tooltip spell details",
   "keybindings.spell_engine.hotbar_modifier" : "Control spell hotbar",
   "keybindings.spell_engine.hotbar_lock" : "Switch to spell hotbar",
 
