@@ -5,12 +5,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SpellBinding {
@@ -29,18 +29,7 @@ public class SpellBinding {
         }
         return SpellRegistry.all().entrySet().stream()
                 .filter(entry -> entry.getValue().school == container.school)
-                .sorted(new Comparator<Map.Entry<Identifier, Spell>>() {
-                    @Override
-                    public int compare(Map.Entry<Identifier, Spell> spell1, Map.Entry<Identifier, Spell> spell2) {
-                        if (spell1.getValue().learn.tier > spell2.getValue().learn.tier) {
-                            return 1;
-                        }  else if (spell1.getValue().learn.tier < spell2.getValue().learn.tier) {
-                            return -1;
-                        } else {
-                            return spell1.getKey().toString().compareTo(spell2.getKey().toString());
-                        }
-                    }
-                })
+                .sorted(SpellContainerHelper.spellSorter)
                 .map(entry -> new Offer(
                     SpellRegistry.rawId(entry.getKey()),
                     entry.getValue().learn.tier * entry.getValue().learn.level_cost_per_tier,

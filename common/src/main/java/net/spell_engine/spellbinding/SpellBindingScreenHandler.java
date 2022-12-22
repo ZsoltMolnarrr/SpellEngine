@@ -16,6 +16,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 
@@ -200,13 +201,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                 return false;
             }
             this.context.run((world, pos) -> {
-                var container = SpellContainerHelper.containerFromItemStack(weaponStack).copy();
-                var spellIds = new ArrayList<String>(container.spell_ids);
-                spellIds.add(spellId.toString());
-                container.spell_ids = spellIds;
-                var nbtContainer = SpellContainerHelper.toNBT(container);
-                var nbt = weaponStack.getOrCreateNbt();
-                nbt.put(SpellContainerHelper.NBT_KEY_CONTAINER, nbtContainer);
+                SpellContainerHelper.addSpell(spellId, weaponStack);
 
                 if (!player.isCreative()) {
                     lapisStack.decrement(binding.requirements.lapisCost());
