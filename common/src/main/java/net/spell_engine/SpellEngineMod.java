@@ -3,6 +3,12 @@ package net.spell_engine;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.client.resource.language.I18n;
+import net.minecraft.entity.EntityType;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.Enchantments_CombatSpells;
 import net.spell_engine.attribute_assigner.AttributeAssigner;
 import net.spell_engine.config.EnchantmentsConfig;
@@ -12,19 +18,6 @@ import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.particle.Particles;
-import net.spell_engine.runes.RuneCraftingBlock;
-import net.spell_engine.runes.RuneCraftingRecipe;
-import net.spell_engine.runes.RuneCraftingScreenHandler;
-import net.spell_engine.runes.RuneItems;
-import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.spellbinding.SpellBinding;
 import net.spell_engine.spellbinding.SpellBindingBlock;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
@@ -58,15 +51,6 @@ public class SpellEngineMod {
         Particles.register();
     }
 
-    public static void registerRuneCrafting() {
-        Registry.register(Registry.RECIPE_TYPE, new Identifier(ID, RuneCraftingRecipe.ID), RuneCraftingRecipe.TYPE);
-        Registry.register(Registry.RECIPE_SERIALIZER, new Identifier(ID, RuneCraftingRecipe.ID), RuneCraftingRecipe.SERIALIZER);
-        Registry.register(Registry.BLOCK, new Identifier(ID, RuneCraftingBlock.NAME), RuneCraftingBlock.INSTANCE);
-        Registry.register(Registry.ITEM, new Identifier(ID, RuneCraftingBlock.NAME), new BlockItem(RuneCraftingBlock.INSTANCE, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
-        BlockRenderLayerMap.INSTANCE.putBlock(RuneCraftingBlock.INSTANCE, RenderLayer.getCutout());
-        Registry.register(Registry.SCREEN_HANDLER, new Identifier(ID, RuneCraftingRecipe.ID), RuneCraftingScreenHandler.HANDLER_TYPE);
-    }
-
     public static void registerSpellBinding() {
         Registry.register(Registry.BLOCK, SpellBinding.ID, SpellBindingBlock.INSTANCE);
         Registry.register(Registry.BLOCK_ENTITY_TYPE, SpellBinding.ID, SpellBindingBlockEntity.ENTITY_TYPE);
@@ -78,12 +62,6 @@ public class SpellEngineMod {
         enchantmentConfig.value.apply();
         for(var entry: Enchantments_CombatSpells.all.entrySet()) {
             Registry.register(Registry.ENCHANTMENT, entry.getKey(), entry.getValue());
-        }
-    }
-
-    public static void registerItems() {
-        for(var entry: RuneItems.all.entrySet()) {
-            Registry.register(Registry.ITEM, entry.getKey(), entry.getValue());
         }
     }
 }

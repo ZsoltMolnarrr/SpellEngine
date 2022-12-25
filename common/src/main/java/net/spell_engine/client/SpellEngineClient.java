@@ -9,12 +9,10 @@ import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.animation.AnimationRegistry;
-import net.spell_engine.client.gui.RuneCraftingScreen;
 import net.spell_engine.client.render.SpellBindingBlockEntityRenderer;
 import net.spell_engine.config.ClientConfig;
 import net.spell_engine.config.ClientConfigWrapper;
 import net.spell_engine.config.HudConfig;
-import net.spell_engine.runes.RuneCraftingScreenHandler;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 import net.spell_engine.spellbinding.SpellBindingScreen;
 import net.spell_engine.spellbinding.SpellBindingScreenHandler;
@@ -41,7 +39,6 @@ public class SpellEngineClient {
             AnimationRegistry.load(resourceManager);
         });
 
-        HandledScreens.register(RuneCraftingScreenHandler.HANDLER_TYPE, RuneCraftingScreen::new);
         HandledScreens.register(SpellBindingScreenHandler.HANDLER_TYPE, SpellBindingScreen::new);
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
     }

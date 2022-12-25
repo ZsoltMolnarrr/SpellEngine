@@ -5,7 +5,6 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.*;
-import net.spell_engine.runes.RuneCrafter;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import static net.spell_engine.api.spell.Spell.Release.Target.Type.BEAM;
 
 @Mixin(PlayerEntity.class)
-public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
+public class PlayerEntityMixin implements SpellCasterEntity {
     private PlayerEntity player() {
         return (PlayerEntity) ((Object) this);
     }
@@ -59,7 +58,6 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
 
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL_SpellEngine(CallbackInfo ci) {
-        lastRuneCrafted += 1;
         var player = player();
         if (player.world.isClient) {
             ((AnimatablePlayer)player()).updateSpellCastAnimationsOnTick();
@@ -85,19 +83,5 @@ public class PlayerEntityMixin implements SpellCasterEntity, RuneCrafter {
             return spell.on_release.target.beam;
         }
         return null;
-    }
-
-    // MARK: RuneCrafter
-
-    private int lastRuneCrafted = 0;
-
-    @Override
-    public void setLastCrafted(int time) {
-        lastRuneCrafted = time;
-    }
-
-    @Override
-    public int getLastCrafted() {
-        return lastRuneCrafted;
     }
 }

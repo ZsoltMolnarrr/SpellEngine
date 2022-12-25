@@ -65,17 +65,6 @@
   "gui.spell_engine.spell_binding.available" : "Bind spell",
   "gui.spell_engine.spell_binding.level_req_fail" : "Level Requirement: %s",
 
-
-  "gui.spell_engine.rune_crafting" : "Rune Crafting",
-  "block.spell_engine.rune_crafting": "Rune Crafting Altar",
-  "item.spell_engine.arcane_rune": "Arcane Rune",
-  "item.spell_engine.fire_rune": "Fire Rune",
-  "item.spell_engine.frost_rune": "Frost Rune",
-  "item.spell_engine.healing_rune": "Healing Rune",
-  "item.spell_engine.lightning_rune": "Lightning Rune",
-  "item.spell_engine.soul_rune": "Soul Rune",
-
-
   "spell.spell_engine.fireball.name": "Fireball",
   "spell.spell_engine.fireball.description": "Launches a ball of fire dealing {damage} fire damage on impact.",
   "spell.spell_engine.scorch.name": "Scorch",

@@ -1,9 +1,4 @@
 {
-  "rune_crafting": {
-    "sounds": [
-      "spell_engine:rune_crafting"
-    ]
-  },
   "bind_spell": {
     "sounds": [
       "spell_engine:bind_spell"
