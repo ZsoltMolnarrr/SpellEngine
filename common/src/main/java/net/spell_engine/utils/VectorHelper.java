@@ -34,14 +34,14 @@ public class VectorHelper {
         if (angleToRotate == 0) {
             return vector;
         }
-        var originalLength = vector.length();
+        var originalVector = new Vec3d(vector.x, vector.y, vector.z);
         vector = vector.normalize();
         towards = towards.normalize();
         Vec3d rotated;
         var angleBetween = angleWithSignBetween(vector, towards, vector.crossProduct(towards));
         // System.out.println("Pre Angle between vectors: " + angleBetween);
         if (angleBetween == 0) {
-            return vector;
+            return originalVector;
         }
         if (angleBetween <= angleToRotate) {
             rotated = towards;
@@ -52,7 +52,7 @@ public class VectorHelper {
            // System.out.println("Angle: " + angleBetween + " T':" + towardsLength);
             rotated = v1.add(v2).normalize();
         }
-        rotated = rotated.multiply(originalLength);
+        rotated = rotated.multiply(originalVector.length());
         // System.out.println("Post Angle between vectors: " + angleBetween(rotated, towards));
         return rotated;
     }

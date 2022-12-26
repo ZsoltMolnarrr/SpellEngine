@@ -28,7 +28,7 @@
     "target": {
       "type": "PROJECTILE",
       "projectile": {
-        "velocity": 0.5,
+        "velocity": 0.1,
         "divergence": 0.0,
         "inherit_shooter_velocity": false,
         "homing_angle": 1.0,
@@ -43,8 +43,8 @@
               "max_speed": 0.1
             }
           ],
-          "item_id": "fire_charge",
-          "render": "FLAT"
+          "item_id": "spell_engine:fireball_projectile",
+          "render": "DEEP"
         }
       }
     },

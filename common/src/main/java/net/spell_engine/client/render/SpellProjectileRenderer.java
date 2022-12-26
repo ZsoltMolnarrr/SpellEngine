@@ -12,12 +12,13 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.FlyingItemEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3f;
+import net.spell_engine.entity.SpellProjectile;
 
 
 // Mostly copied from: FlyingItemEntityRenderer
 public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extends EntityRenderer<T> {
-    private static final float MIN_DISTANCE = 12.25F;
     private final ItemRenderer itemRenderer;
     private final float scale;
     private final boolean lit;
@@ -48,7 +49,15 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
                         matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
                     }
                     case DEEP -> {
-                        matrices.multiply(entity.getMovementDirection().getRotationQuaternion());
+                        var velocity = entity.getVelocity();
+                        if (((SpellProjectile)entity).previousVelocity != null) {
+                            velocity = ((SpellProjectile)entity).previousVelocity.lerp(velocity, tickDelta);
+                        }
+                        velocity = velocity.normalize();
+                        var directionBasedYaw = Math.toDegrees(Math.atan2(velocity.x, velocity.z)) + 180F; //entity.getYaw();
+                        var directionBasedPitch = Math.toDegrees(Math.asin(velocity.y));
+                        matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion((float) directionBasedYaw));
+                        matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion((float) directionBasedPitch));
                     }
                 }
             }
@@ -57,6 +66,16 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
             super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
         }
     }
+
+//    private void renderItemModel() {
+//        var modeld =
+//        itemRenderer.models.getModel()
+//
+//        // We can use an empty fake ItemStack, because it is only used for checking overlay color
+//
+//        // #97
+//        // renderBakedItemModel
+//    }
 
     public Identifier getTexture(Entity entity) {
         return SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE;

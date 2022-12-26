@@ -33,6 +33,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     private Spell spell;
     private Entity followedTarget;
 
+    public Vec3d previousVelocity;
+
     public SpellProjectile(EntityType<? extends ProjectileEntity> entityType, World world) {
         super(entityType, world);
     }
@@ -56,6 +58,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             var look = caster.getRotationVector().normalize();
             this.setVelocity(look.x, look.y, look.z, velocity, divergence);
         }
+        this.getPitch(caster.getPitch());
+        this.setYaw(caster.getYaw());
+
         var gson = new Gson();
         this.getDataTracker().set(CLIENT_DATA, gson.toJson(projectileData));
         setFollowedTarget(target);
@@ -133,6 +138,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 return;
             }
         }
+        this.previousVelocity = new Vec3d(getVelocity().x, getVelocity().y, getVelocity().z);
         if (this.world.isClient || (entity == null || !entity.isRemoved()) && this.world.isChunkLoaded(this.getBlockPos())) {
             super.tick();
 
@@ -185,6 +191,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             if (newVelocity.lengthSquared() > 0) {
 //                System.out.println((world.isClient ? "Client: " : "Server: ") + "Rotated to: " + newVelocity);
                 this.setVelocity(newVelocity);
+                this.velocityDirty = true;
             }
         }
     }
