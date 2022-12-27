@@ -1,4 +1,4 @@
-package net.spell_engine.client.beam;
+package net.spell_engine.client.render;
 
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -12,39 +12,6 @@ public class BeamRenderer extends RenderLayer {
         super(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent, startAction, endAction);
     }
 
-    private static RenderLayer createRenderLayer(Identifier texture, boolean cull, boolean transparent) {
-        MultiPhaseParameters multiPhaseParameters = MultiPhaseParameters.builder()
-                .shader(BEACON_BEAM_SHADER)
-                .cull(cull ? ENABLE_CULLING : DISABLE_CULLING)
-                .texture(new RenderPhase.Texture(texture, false, false))
-                .transparency(transparent ? RenderPhase.LIGHTNING_TRANSPARENCY : NO_TRANSPARENCY)
-                .writeMaskState(transparent ? COLOR_MASK : ALL_MASK)
-                .build(false);
-        return RenderLayer.of("spell_beam",
-                VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL,
-                VertexFormat.DrawMode.QUADS,
-                256,
-                false,
-                true,
-                multiPhaseParameters);
-
-//        RenderLayer.MultiPhaseParameters multiPhaseParameters = RenderLayer.MultiPhaseParameters.builder()
-//                .shader(BEACON_BEAM_SHADER)
-//                .texture(new RenderPhase.Texture(texture, false, false))
-//                .cull(cull ? ENABLE_CULLING : DISABLE_CULLING)
-//                .overlay(ENABLE_OVERLAY_COLOR)
-//                .transparency(TRANSLUCENT_TRANSPARENCY)
-//                .writeMaskState(RenderPhase.ALL_MASK)
-//                .build(true);
-//        return RenderLayer.of("spell_beam",
-//                VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL,
-//                VertexFormat.DrawMode.QUADS,
-//                256,
-//                false,
-//                true,
-//                multiPhaseParameters);
-    }
-
     public static void renderBeam(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
                                   Identifier texture, long time, float tickDelta, float direction,
                                   int red, int green, int blue, int alpha,
@@ -54,8 +21,8 @@ public class BeamRenderer extends RenderLayer {
         float shift = (float)Math.floorMod(time, 40) + tickDelta;
         float offset = MathHelper.fractionalPart(shift * 0.2f - (float)MathHelper.floor(shift * 0.1f)) * (- direction);
 
-        var innerRenderLayer = createRenderLayer(texture, true, true); //alpha < 250);
-        var outerRenderLayer = createRenderLayer(texture, false, true);
+        var innerRenderLayer = CustomLayers.beam(texture, true, true); //alpha < 250);
+        var outerRenderLayer = CustomLayers.beam(texture, false, true);
 
         var originalWidth = width;
         renderBeamLayer(matrices, vertexConsumers.getBuffer(innerRenderLayer),

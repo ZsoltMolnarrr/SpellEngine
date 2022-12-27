@@ -1,8 +1,6 @@
 package net.spell_engine.client.render;
 
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.*;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.item.ItemRenderer;
@@ -14,7 +12,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.util.registry.Registry;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.mixin.client.render.ItemRendererAccessor;
@@ -73,13 +70,12 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
                     render(modelId, matrices, vertexConsumers, light, entity.getId());
                 }
             }
-//            this.itemRenderer.renderItem(((FlyingItemEntity)entity).getStack(), ModelTransformation.Mode.GROUND, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, entity.getId());
             matrices.pop();
             super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
         }
     }
 
-    public static final RenderLayer LAYER = RenderLayer.getEntityTranslucentEmissive(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false);
+    public static final RenderLayer LAYER = CustomLayers.projectile(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false);
 
     private void render(Identifier id, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int seed) {
         var model = ProjectileModels.getModel(id);

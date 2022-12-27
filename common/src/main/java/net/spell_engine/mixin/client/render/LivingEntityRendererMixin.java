@@ -2,7 +2,7 @@ package net.spell_engine.mixin.client.render;
 
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.beam.BeamEmitterEntity;
-import net.spell_engine.client.beam.BeamRenderer;
+import net.spell_engine.client.render.BeamRenderer;
 import net.spell_engine.internals.Beam;
 import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.internals.SpellHelper;
