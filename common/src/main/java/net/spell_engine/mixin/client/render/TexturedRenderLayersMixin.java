@@ -1,4 +1,4 @@
-package net.spell_engine.mixin.client;
+package net.spell_engine.mixin.client.render;
 
 import net.minecraft.client.render.TexturedRenderLayers;
 import net.minecraft.client.util.SpriteIdentifier;

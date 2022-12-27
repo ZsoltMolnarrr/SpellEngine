@@ -1,4 +1,4 @@
-package net.spell_engine.mixin.client;
+package net.spell_engine.mixin.client.control;
 
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.util.math.MatrixStack;

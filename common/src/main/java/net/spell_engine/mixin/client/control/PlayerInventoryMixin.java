@@ -1,4 +1,4 @@
-package net.spell_engine.mixin.client;
+package net.spell_engine.mixin.client.control;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerInventory;

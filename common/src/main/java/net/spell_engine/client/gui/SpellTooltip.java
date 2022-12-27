@@ -15,7 +15,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.spell_engine.mixin.client.KeybindingAccessor;
+import net.spell_engine.mixin.client.control.KeybindingAccessor;
 
 import java.util.ArrayList;
 import java.util.List;

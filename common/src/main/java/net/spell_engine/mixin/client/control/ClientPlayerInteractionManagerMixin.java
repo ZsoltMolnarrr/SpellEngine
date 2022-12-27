@@ -1,4 +1,4 @@
-package net.spell_engine.mixin.client;
+package net.spell_engine.mixin.client.control;
 
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerEntity;

@@ -1,4 +1,4 @@
-package net.spell_engine.mixin.client;
+package net.spell_engine.mixin.client.render;
 
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.internals.SpellCasterClient;
