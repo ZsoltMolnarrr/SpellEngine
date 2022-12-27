@@ -21,7 +21,9 @@
     "client.control.KeybindingAccessor",
     "client.control.MinecraftClientMixin",
     "client.render.EntityMixin",
+    "client.render.ItemRendererAccessor",
     "client.render.LivingEntityRendererMixin",
+    "client.render.ModelLoaderMixin",
     "client.render.TexturedRenderLayersMixin"
   ],
   "injectors": {

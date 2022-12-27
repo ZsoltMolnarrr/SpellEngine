@@ -4,10 +4,13 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.impl.client.model.ModelLoaderHooks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
+import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.client.Projectiles;
 import net.spell_engine.client.animation.AnimationRegistry;
 import net.spell_engine.client.render.SpellBindingBlockEntityRenderer;
 import net.spell_engine.config.ClientConfig;
@@ -17,6 +20,8 @@ import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 import net.spell_engine.spellbinding.SpellBindingScreen;
 import net.spell_engine.spellbinding.SpellBindingScreenHandler;
 import net.tinyconfig.ConfigManager;
+
+import java.util.List;
 
 public class SpellEngineClient {
     public static ClientConfig config;
@@ -34,11 +39,13 @@ public class SpellEngineClient {
         hudConfig.refresh();
 
         ClientNetwork.initializeHandlers();
+
         ClientLifecycleEvents.CLIENT_STARTED.register((client) -> {
             var resourceManager = MinecraftClient.getInstance().getResourceManager();
             AnimationRegistry.load(resourceManager);
         });
 
+        Projectiles.registerModelIds(List.of(new Identifier("spell_engine:fireball_projectile")));
         HandledScreens.register(SpellBindingScreenHandler.HANDLER_TYPE, SpellBindingScreen::new);
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
     }

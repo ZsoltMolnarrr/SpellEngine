@@ -2,6 +2,7 @@ package net.spell_engine.client;
 
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.animation.AnimatablePlayer;
+import net.spell_engine.client.render.ProjectileModels;
 import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.network.Packets;
@@ -18,6 +19,7 @@ public class ClientNetwork {
 
         ClientPlayNetworking.registerGlobalReceiver(Packets.SpellRegistrySync.ID, (client, handler, buf, responseSender) -> {
             SpellRegistry.decodeContent(buf);
+            ProjectileModels.load();
         });
 
         ClientPlayNetworking.registerGlobalReceiver(Packets.ParticleBatches.ID, (client, handler, buf, responseSender) -> {

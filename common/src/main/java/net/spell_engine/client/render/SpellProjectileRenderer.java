@@ -6,15 +6,18 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.FlyingItemEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.random.Random;
+import net.minecraft.util.registry.Registry;
 import net.spell_engine.entity.SpellProjectile;
+import net.spell_engine.mixin.client.render.ItemRendererAccessor;
 
 
 // Mostly copied from: FlyingItemEntityRenderer
@@ -65,30 +68,30 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
                 var time = entity.world.getTime();
                 var absoluteTime = (float)time + tickDelta;
                 matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(absoluteTime * renderData.rotate_degrees_per_tick));
+                if (renderData.item_id != null && !renderData.item_id.isEmpty()) {
+                    var modelId = new Identifier(renderData.item_id);
+                    render(modelId, matrices, vertexConsumers, light, entity.getId());
+                }
             }
-            this.itemRenderer.renderItem(((FlyingItemEntity)entity).getStack(), ModelTransformation.Mode.GROUND, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, entity.getId());
+//            this.itemRenderer.renderItem(((FlyingItemEntity)entity).getStack(), ModelTransformation.Mode.GROUND, light, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, entity.getId());
             matrices.pop();
             super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
         }
     }
 
-    private void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int seed) {
-//        BakedModel bakedModel = itemRenderer.getModel(ItemStack.EMPTY, null, null, seed); // Replace this with custom logic
-//        itemRenderer.renderItem(item, renderMode, leftHanded, matrices, vertexConsumers, light, overlay, bakedModel);
-    }
+    public static final RenderLayer LAYER = RenderLayer.getEntityTranslucentEmissive(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false);
 
-//    private void renderItemModel() {
-//        var modeld =
-//        itemRenderer.models.getModel()
-//
-//        // We can use an empty fake ItemStack, because it is only used for checking overlay color
-//
-//        // #97
-//        // renderBakedItemModel
-//    }
-
-    public static RenderLayer getRenderLayer() {
-        return RenderLayer.getEntityTranslucentEmissive(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
+    private void render(Identifier id, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int seed) {
+        var model = ProjectileModels.getModel(id);
+        if (model == null) {
+            var stack = Registry.ITEM.get(id).getDefaultStack();
+            if (!stack.isEmpty()) {
+                model = itemRenderer.getModel(stack, null, null, seed);
+            }
+        }
+        var buffer = vertexConsumers.getBuffer(LAYER);
+        matrices.translate(-0.5, -0.5, -0.5);
+        ((ItemRendererAccessor)itemRenderer).renderBakedItemModel(model, ItemStack.EMPTY, light, OverlayTexture.DEFAULT_UV, matrices, buffer);
     }
 
     public Identifier getTexture(Entity entity) {

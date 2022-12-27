@@ -1,6 +1,5 @@
 package net.spell_engine.internals;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;

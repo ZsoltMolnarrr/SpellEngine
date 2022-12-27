@@ -15,7 +15,6 @@ import net.spell_engine.config.EnchantmentsConfig;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
 import net.spell_engine.entity.SpellProjectile;
-import net.spell_engine.internals.ProjectileItems;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.particle.Particles;
@@ -50,8 +49,6 @@ public class SpellEngineMod {
         AttributeAssigner.initialize();
         ServerNetwork.initializeHandlers();
         Particles.register();
-
-        ProjectileItems.register();
     }
 
     public static void registerSpellBinding() {
