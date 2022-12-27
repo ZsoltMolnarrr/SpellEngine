@@ -1,5 +1,7 @@
 package net.spell_engine.client.render;
 
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.RenderPhase;
 import net.minecraft.client.render.VertexFormat;
@@ -16,8 +18,8 @@ public class CustomLayers extends RenderLayer {
                 .shader(BEACON_BEAM_SHADER)
                 .cull(cull ? ENABLE_CULLING : DISABLE_CULLING)
                 .texture(new RenderPhase.Texture(texture, false, false))
-                .transparency(transparent ? RenderPhase.LIGHTNING_TRANSPARENCY : NO_TRANSPARENCY)
-                .writeMaskState(transparent ? COLOR_MASK : ALL_MASK)
+                .transparency(transparent ? BEAM_TRANSPARENCY : NO_TRANSPARENCY)
+                .writeMaskState(transparent ? ALL_MASK : ALL_MASK)
                 .build(false);
         return RenderLayer.of("spell_beam",
                 VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL,
@@ -27,6 +29,14 @@ public class CustomLayers extends RenderLayer {
                 true,
                 multiPhaseParameters);
     }
+
+    protected static final Transparency BEAM_TRANSPARENCY = new Transparency("beam_transparency", () -> {
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
+    }, () -> {
+        RenderSystem.disableBlend();
+        RenderSystem.defaultBlendFunc();
+    });
 
     public static RenderLayer projectile(Identifier texture, boolean translucent) {
         MultiPhaseParameters multiPhaseParameters = MultiPhaseParameters.builder()
