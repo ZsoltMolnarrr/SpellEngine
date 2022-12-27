@@ -240,21 +240,20 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         }
     }
 
+    public Spell.ProjectileData.Client renderData() {
+        var data = projectileData();
+        if (data != null) {
+            return projectileData().client_data;
+        }
+        return null;
+    }
+
     @Override
     public ItemStack getStack() {
         if (projectileData() != null && projectileData().client_data != null) {
             return Registry.ITEM.get(new Identifier(projectileData().client_data.item_id)).getDefaultStack();
         }
         return ItemStack.EMPTY;
-    }
-
-    @Override
-    public Spell.ProjectileData.Client.RenderMode renderMode() {
-        var data = projectileData();
-        if (data != null) {
-            return projectileData().client_data.render;
-        }
-        return Spell.ProjectileData.Client.RenderMode.FLAT;
     }
 
     @Override
