@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "B": {
+      "item": "minecraft:book"
+    },
+    "A": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "D": {
+      "item": "minecraft:polished_diorite"
+    }
+  },
+  "pattern": [
+    " B ",
+    "AGA",
+    "DDD"
+  ],
+  "result": {
+    "item": "spell_engine:spell_binding"
+  }
+}
