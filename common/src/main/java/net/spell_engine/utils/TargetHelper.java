@@ -170,9 +170,14 @@ public class TargetHelper {
                 horizontal);
         var squaredDistance = range * range;
         var raycastStart = caster.getEyePos();
+        var look = caster.getRotationVector();
+        var angle = area.angle_degrees / 2F;
+        System.out.println("Checking AoE targets with angle: " + angle);
         var entities = caster.world.getOtherEntities(caster, box, (target) -> {
+            var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
             return !target.isSpectator() && target.canHit()
                     && target.squaredDistanceTo(caster) <= squaredDistance
+                    && ((angle <= 0) || (VectorHelper.angleBetween(look, targetCenter.subtract(raycastStart)) <= angle))
                     && raycastObstacleFree(raycastStart, target.getPos().add(0, target.getHeight() / 2F, 0));
         });
         return entities;

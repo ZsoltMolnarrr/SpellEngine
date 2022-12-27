@@ -37,6 +37,7 @@ public class Spell {
             public static class Area { public Area() { }
                 public float horizontal_range_multiplier = 1F;
                 public float vertical_range_multiplier = 1F;
+                public float angle_degrees = 0F;
             }
 
             public Beam beam;
