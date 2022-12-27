@@ -7,17 +7,17 @@ import net.spell_engine.SpellEngineMod;
 import java.util.List;
 
 public class Keybindings {
-    public static KeyBinding tooltipDetails;
+//    public static KeyBinding tooltipDetails;
     public static KeyBinding hotbarModifier;
     public static KeyBinding hotbarLock;
     public static final List<KeyBinding> all;
 
     static {
-        tooltipDetails = new KeyBinding(
-                "keybindings." + SpellEngineMod.ID + ".tooltip_details",
-                InputUtil.Type.KEYSYM,
-                InputUtil.GLFW_KEY_LEFT_ALT,
-                SpellEngineMod.modName());
+//        tooltipDetails = new KeyBinding(
+//                "keybindings." + SpellEngineMod.ID + ".tooltip_details",
+//                InputUtil.Type.KEYSYM,
+//                InputUtil.GLFW_KEY_LEFT_ALT,
+//                SpellEngineMod.modName());
 
         hotbarModifier = new KeyBinding(
                 "keybindings." + SpellEngineMod.ID + ".hotbar_modifier",
@@ -31,6 +31,9 @@ public class Keybindings {
                 InputUtil.UNKNOWN_KEY.getCode(),
                 SpellEngineMod.modName());
 
-        all = List.of(tooltipDetails, hotbarModifier, hotbarLock);
+        all = List.of(
+//                tooltipDetails,
+                hotbarModifier,
+                hotbarLock);
     }
 }

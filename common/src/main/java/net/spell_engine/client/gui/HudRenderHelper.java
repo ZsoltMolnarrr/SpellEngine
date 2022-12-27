@@ -37,6 +37,8 @@ public class HudRenderHelper {
             return;
         }
 
+        var clientConfig = SpellEngineClient.config;
+
         var targetViewModel = TargetWidget.ViewModel.mock();
         boolean renderHotbar = true;
         var hotbarViewModel = SpellHotBarWidget.ViewModel.mock();
@@ -60,7 +62,7 @@ public class HudRenderHelper {
             } else {
                 hotbarViewModel = SpellHotBarWidget.ViewModel.empty;
             }
-            renderHotbar = !InputHelper.isLockAssigned() || InputHelper.isLocked;
+            renderHotbar = clientConfig.showFocusedHotbarOnly ? (InputHelper.isLocked) : true;
 
             var spell = caster.getCurrentSpell();
             var spellId = caster.getCurrentSpellId();

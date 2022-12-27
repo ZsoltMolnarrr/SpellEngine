@@ -39,9 +39,9 @@ public class SpellTooltip {
                 lines.add(Text.translatable("spell.tooltip.host." + container.school.spellName())
                         .append(Text.literal(" " + limit))
                         .formatted(Formatting.GRAY));
-                var keybinding = Keybindings.tooltipDetails;
+                var keybinding = Keybindings.hotbarModifier;
                 var showDetails = !keybinding.isUnbound() && InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(),
-                        ((KeybindingAccessor)keybinding).getBoundKey().getCode());
+                        keybinding.getDefaultKey().getCode());
                 for (int i = 0; i < container.spell_ids.size(); i++) {
                     var spellId = new Identifier(container.spell_ids.get(i));
                     var info = spellInfo(spellId, player, itemStack, showDetails);
