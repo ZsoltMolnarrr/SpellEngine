@@ -46,8 +46,6 @@ public class Spell {
                 public long color_rgba = 0xFFFFFFFF;
                 public float width = 0.1F;
                 public float flow = 1;
-
-                public ParticleBatch[] emit_particles = new ParticleBatch[]{};
                 public ParticleBatch[] block_hit_particles = new ParticleBatch[]{};
             }
 

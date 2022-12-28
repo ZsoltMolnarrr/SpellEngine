@@ -51,15 +51,10 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
 
             var yaw = livingEntity.getYaw();
 
-            for (var batch: appearance.emit_particles) {
-                ParticleHelper.play(livingEntity.world, position.origin(),
-                appearance.width * 3, yaw + 180, livingEntity.getPitch() + 90, batch);
-            }
-
             if (position.hitBlock()) {
                 for (var batch: appearance.block_hit_particles) {
                     ParticleHelper.play(livingEntity.world, position.end(),
-                            appearance.width * 2, yaw, livingEntity.getPitch() + 90, batch);
+                            appearance.width * 2, yaw, livingEntity.getPitch(), batch);
                 }
             }
         }

@@ -172,7 +172,6 @@ public class TargetHelper {
         var raycastStart = caster.getEyePos();
         var look = caster.getRotationVector();
         var angle = area.angle_degrees / 2F;
-        System.out.println("Checking AoE targets with angle: " + angle);
         var entities = caster.world.getOtherEntities(caster, box, (target) -> {
             var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
             return !target.isSpectator() && target.canHit()

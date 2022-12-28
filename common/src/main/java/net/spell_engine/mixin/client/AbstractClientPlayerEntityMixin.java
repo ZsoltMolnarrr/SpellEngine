@@ -72,7 +72,13 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             castSound = spell.cast.sound;
             // Rotate body towards look vector
             ((LivingEntityAccessor)player).invokeTurnHead(player.getHeadYaw(), 0);
-            ParticleHelper.play(player.world, player, spell.cast.particles);
+            // ParticleHelper.play(player.world, player, spell.cast.particles);
+            for (var batch: spell.cast.particles) {
+                // System.out.println("updateSpellCastAnimationsOnTick - yaw: " + player.getYaw() + " pitch: " + getPitch());
+
+                // ParticleHelper.play(player.world, player, player.getYaw(), (getPitch() + 90) * -1, batch);
+                ParticleHelper.play(player.world, player, player.getYaw(), getPitch(), batch);
+            }
         }
         updateCastingAnimation(castAnimationName);
         updateCastingSound(castSound);

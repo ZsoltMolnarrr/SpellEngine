@@ -168,7 +168,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             if (world.isClient) {
                 if (projectileData() != null) {
                     for (var travel_particles : projectileData().client_data.travel_particles) {
-                        ParticleHelper.play(world, this, getYaw(), getPitch() + 90, travel_particles);
+                        ParticleHelper.play(world, this, getYaw(), getPitch(), travel_particles);
                     }
                 }
             }

@@ -37,6 +37,7 @@
             {
               "particle_id": "spell_engine:flame",
               "shape": "CIRCLE",
+              "rotation": "LOOK",
               "origin": "CENTER",
               "count": 3.0,
               "min_speed": 0.0,
