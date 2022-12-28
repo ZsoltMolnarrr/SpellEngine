@@ -1,5 +1,5 @@
 {
-  "range": 16.0,
+  "range": 12.0,
   "school": "FIRE",
   "learn": {
     "tier": 3
@@ -16,11 +16,11 @@
     "particles": [
       {
         "particle_id": "spell_engine:flame",
-        "angle": 15,
+        "angle": 30,
         "shape": "CONE",
         "rotation": "LOOK",
         "origin": "LAUNCH_POINT",
-        "count": 3.0,
+        "count": 6.0,
         "min_speed": 1,
         "max_speed": 1
       }
