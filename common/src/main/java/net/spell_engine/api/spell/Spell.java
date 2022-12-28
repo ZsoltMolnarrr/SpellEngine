@@ -108,6 +108,7 @@ public class Spell {
         public static class Client { public Client() { }
             public ParticleBatch[] travel_particles;
             public String item_id;
+            public float scale = 1F;
             public float rotate_degrees_per_tick = 2F;
             public RenderMode render = RenderMode.FLAT;
             public enum RenderMode {

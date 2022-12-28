@@ -44,7 +44,8 @@
             }
           ],
           "item_id": "ice",
-          "render": "DEEP"
+          "render": "DEEP",
+          "scale": 0.5
         }
       }
     },
