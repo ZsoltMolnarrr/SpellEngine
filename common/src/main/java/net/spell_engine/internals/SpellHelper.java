@@ -147,14 +147,12 @@ public class SpellHelper {
         if (channelMultiplier > 0 && ammoResult.satisfied()) {
             var targeting = spell.on_release.target;
             boolean released = action == SpellCastAction.RELEASE;
-            System.out.println("Beam action: " + action);
             if (shouldPerformImpact) {
                 switch (targeting.type) {
                     case AREA -> {
                         areaImpact(world, caster, targets, spell, channelMultiplier);
                     }
                     case BEAM -> {
-                        System.out.println("Beam impact channelMultiplier: " + channelMultiplier);
                         areaImpact(world, caster, targets, spell, channelMultiplier);
                     }
                     case CURSOR -> {
@@ -252,9 +250,7 @@ public class SpellHelper {
         var z  = launchPoint.getZ();
         var projectile = new SpellProjectile(world, caster, x, y, z, spell, target);
         projectile.range = spell.range;
-
         world.spawnEntity(projectile);
-        System.out.println("Shooting render");
     }
 
     public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell spell, float channelMultiplier) {

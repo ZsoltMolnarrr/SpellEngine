@@ -33,7 +33,6 @@ public class ProjectileModels {
     public static void load() {
         models.clear();
         var modelManager = MinecraftClient.getInstance().getBakedModelManager();
-        System.out.println("ProjectileModels load");
         for (var id: modelIds) {
             var modelId = new ModelIdentifier(id, "inventory");
             models.put(id, modelManager.getModel(modelId));
