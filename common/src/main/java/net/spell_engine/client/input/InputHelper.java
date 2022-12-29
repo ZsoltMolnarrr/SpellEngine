@@ -27,16 +27,16 @@ public class InputHelper {
         if (isLocked) {
             isLocked = false;
         } else {
-            if (skipValidation || hasValidSpellContainer(client.player)) {
+            if (skipValidation || hasUsableSpellContainer(client.player)) {
                 isLocked = true;
             }
         }
     }
 
-    private static boolean hasValidSpellContainer(PlayerEntity player) {
+    private static boolean hasUsableSpellContainer(PlayerEntity player) {
         if (player != null) {
             var container = ((SpellCasterClient)player).getCurrentContainer();
-            return container != null && container.isValid();
+            return container != null && container.isUsable();
         }
         return false;
     }

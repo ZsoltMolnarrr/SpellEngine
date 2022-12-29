@@ -70,7 +70,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         if (world.isClient) {
             return clientSyncedData;
         } else {
-            return spell.on_release.target.projectile;
+            return spell.release.target.projectile;
         }
     }
     private Spell.ProjectileData clientSyncedData;

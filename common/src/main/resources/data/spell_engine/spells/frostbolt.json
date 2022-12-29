@@ -24,7 +24,7 @@
       }
     ]
   },
-  "on_release": {
+  "release": {
     "target": {
       "type": "PROJECTILE",
       "projectile": {
@@ -37,6 +37,7 @@
             {
               "particle_id": "spell_engine:snowflake",
               "shape": "CIRCLE",
+              "rotation": "LOOK",
               "origin": "CENTER",
               "count": 3.0,
               "min_speed": 0.0,
@@ -57,12 +58,12 @@
       "randomness": 0.1
     }
   },
-  "on_impact": [
+  "impact": [
     {
       "action": {
         "type": "DAMAGE",
         "damage": {
-          "multiplier": 1.0
+          "spell_power_coefficient": 1.0
         }
       },
       "sound": {

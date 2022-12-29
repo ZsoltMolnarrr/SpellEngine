@@ -79,8 +79,8 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     @Nullable
     public Spell.Release.Target.Beam getBeam() {
         var spell = getCurrentSpell();
-        if (spell != null && spell.on_release != null && spell.on_release.target.type == BEAM) {
-            return spell.on_release.target.beam;
+        if (spell != null && spell.release != null && spell.release.target.type == BEAM) {
+            return spell.release.target.beam;
         }
         return null;
     }

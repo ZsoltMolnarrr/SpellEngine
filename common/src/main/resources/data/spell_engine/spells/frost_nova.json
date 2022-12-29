@@ -24,7 +24,7 @@
       }
     ]
   },
-  "on_release": {
+  "release": {
     "target": {
       "type": "AREA",
       "area": {
@@ -49,12 +49,12 @@
       }
     ]
   },
-  "on_impact": [
+  "impact": [
     {
       "action": {
         "type": "DAMAGE",
         "damage": {
-          "multiplier": 1.0
+          "spell_power_coefficient": 1.0
         }
       },
       "particles": [

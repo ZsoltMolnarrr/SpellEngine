@@ -25,7 +25,7 @@ public abstract class MinecraftClientMixin {
         if (InputHelper.shouldControlSpellHotbar()) {
             var caster = ((SpellCasterClient)player);
             var container = caster.getCurrentContainer();
-            if (container != null && container.isValid()) {
+            if (container != null && container.isUsable()) {
                 if (index >= container.spell_ids.size()) {
                     return;
                 }
@@ -55,7 +55,7 @@ public abstract class MinecraftClientMixin {
     private void tick_HEAD_UnlockHotbar(CallbackInfo ci) {
         if (player == null) { return; }
         var container = ((SpellCasterClient)player).getCurrentContainer();
-        if (container == null || !container.isValid() || container.spell_ids.isEmpty()) {
+        if (container == null || !container.isUsable() || container.spell_ids.isEmpty()) {
             InputHelper.isLocked = false;
         }
     }

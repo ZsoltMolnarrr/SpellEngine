@@ -27,7 +27,7 @@
     ],
     "channel_ticks": 4
   },
-  "on_release": {
+  "release": {
     "target": {
       "type": "AREA",
       "area": {
@@ -41,12 +41,12 @@
       "randomness": 0.1
     }
   },
-  "on_impact": [
+  "impact": [
     {
       "action": {
         "type": "DAMAGE",
         "damage": {
-          "multiplier": 1.0,
+          "spell_power_coefficient": 1.0,
           "knockback": 0.3
         }
       },

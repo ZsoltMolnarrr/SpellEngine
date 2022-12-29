@@ -1,7 +1,6 @@
 package net.spell_engine.client.render;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.util.Identifier;
@@ -20,7 +19,7 @@ public class ProjectileModels {
         for (var entry : SpellRegistry.all().entrySet()) {
             try {
                 var spell = entry.getValue();
-                var idString = spell.on_release.target.projectile.client_data.item_id;
+                var idString = spell.release.target.projectile.client_data.item_id;
                 if (idString.isEmpty()) {
                     continue;
                 }

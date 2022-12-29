@@ -52,7 +52,7 @@ public class HudRenderHelper {
         if (player != null) {
             var caster = (SpellCasterClient) player;
             var container = caster.getCurrentContainer();
-            if (container != null && container.isValid()) {
+            if (container != null && container.isUsable()) {
                 var cooldownManager = caster.getCooldownManager();
                 var spells = container.spell_ids.stream()
                         .map(spellId -> new SpellHotBarWidget.SpellViewModel(SpellRender.iconTexture(new Identifier(spellId)), cooldownManager.getCooldownProgress(new Identifier(spellId), tickDelta)))

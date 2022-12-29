@@ -24,7 +24,7 @@ public class Spell {
         public ParticleBatch[] particles;
     }
 
-    public Release on_release;
+    public Release release;
     public static class Release { public Release() { }
         public Target target;
         public static class Target { public Target() { }
@@ -61,7 +61,7 @@ public class Spell {
         public Sound sound;
     }
 
-    public Impact[] on_impact;
+    public Impact[] impact;
     public static class Impact { public Impact() { }
         public Action action;
         public static class Action { public Action() { }
@@ -72,11 +72,11 @@ public class Spell {
             public Damage damage;
             public static class Damage { public Damage() { }
                 public float knockback = 1;
-                public float multiplier = 1;
+                public float spell_power_coefficient = 1;
             }
             public Heal heal;
             public static class Heal { public Heal() { }
-                public float multiplier = 1;
+                public float spell_power_coefficient = 1;
             }
             public StatusEffect status_effect;
             public static class StatusEffect { public StatusEffect() { }

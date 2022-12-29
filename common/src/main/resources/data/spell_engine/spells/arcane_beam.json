@@ -39,7 +39,7 @@
 
     "channel_ticks": 4
   },
-  "on_release": {
+  "release": {
     "target": {
       "type": "BEAM",
       "beam": {
@@ -76,7 +76,7 @@
       "randomness": 0.1
     }
   },
-  "on_impact": [
+  "impact": [
     {
       "action": {
         "type": "DAMAGE",

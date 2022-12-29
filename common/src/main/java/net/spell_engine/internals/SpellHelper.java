@@ -2,14 +2,12 @@ package net.spell_engine.internals;
 
 import com.google.common.base.Suppliers;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.Enchantments_CombatSpells;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.entity.LivingEntityExtension;
 import net.spell_engine.entity.SpellProjectile;
-import net.spell_engine.network.Packets;
 import net.spell_engine.utils.AnimationHelper;
 import net.spell_engine.utils.ParticleHelper;
 import net.spell_engine.utils.SoundHelper;
@@ -145,7 +143,7 @@ public class SpellHelper {
         var ammoResult = ammoForSpell(caster, spell, itemStack);
 
         if (channelMultiplier > 0 && ammoResult.satisfied()) {
-            var targeting = spell.on_release.target;
+            var targeting = spell.release.target;
             boolean released = action == SpellCastAction.RELEASE;
             if (shouldPerformImpact) {
                 switch (targeting.type) {
@@ -174,9 +172,9 @@ public class SpellHelper {
                 }
             }
             if (released) {
-                ParticleHelper.sendBatches(caster, spell.on_release.particles);
-                SoundHelper.playSound(world, caster, spell.on_release.sound);
-                AnimationHelper.sendAnimation(caster, trackingPlayers.get(), SpellAnimationType.RELEASE, spell.on_release.animation);
+                ParticleHelper.sendBatches(caster, spell.release.particles);
+                SoundHelper.playSound(world, caster, spell.release.sound);
+                AnimationHelper.sendAnimation(caster, trackingPlayers.get(), SpellAnimationType.RELEASE, spell.release.animation);
                 var duration = cooldownToSet(caster, spell, progress);
                 if (duration > 0) {
                     ((SpellCasterEntity) caster).getCooldownManager().set(spellId, Math.round(duration * 20F));
@@ -255,7 +253,7 @@ public class SpellHelper {
 
     public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell spell, float channelMultiplier) {
         var performed = false;
-        for (var impact: spell.on_impact) {
+        for (var impact: spell.impact) {
             var result = performImpact(world, caster, target, spell.school, impact, channelMultiplier);
             performed = performed || result;
         }
@@ -282,7 +280,7 @@ public class SpellHelper {
                     particleMultiplier = damage.criticalMultiplier();
                     var source = SpellDamageSource.create(school, caster);
                     var amount = damage.randomValue();
-                    amount *= damageData.multiplier;
+                    amount *= damageData.spell_power_coefficient;
                     amount *= channelMultiplier;
                     if (isChannelDamage) {
                         amount *= SpellPower.getHaste(caster);
@@ -314,7 +312,7 @@ public class SpellHelper {
                         var healing = SpellPower.getSpellDamage(school, caster);
                         particleMultiplier = healing.criticalMultiplier();
                         var amount = healing.randomValue();
-                        amount *= healData.multiplier;
+                        amount *= healData.spell_power_coefficient;
                         amount *= channelMultiplier;
                         livingTarget.heal((float) amount);
                         success = true;
@@ -367,20 +365,20 @@ public class SpellHelper {
             caster.getAttributes().addTemporaryModifiers(itemAttributes);
         }
 
-        for (var impact: spell.on_impact) {
+        for (var impact: spell.impact) {
             switch (impact.action.type) {
                 case DAMAGE -> {
                     var damageData = impact.action.damage;
                     var result = SpellPower.getSpellDamage(school, caster, itemStack);
                     var damage = new EstimatedValue(result.nonCriticalValue(), result.forcedCriticalValue())
-                            .multiply(damageData.multiplier);
+                            .multiply(damageData.spell_power_coefficient);
                     damageEffects.add(damage);
                 }
                 case HEAL -> {
                     var healData = impact.action.heal;
                     var result = SpellPower.getSpellDamage(school, caster, itemStack);
                     var healing = new EstimatedValue(result.nonCriticalValue(), result.forcedCriticalValue())
-                            .multiply(healData.multiplier);
+                            .multiply(healData.spell_power_coefficient);
                     healEffects.add(healing);
                 }
                 case STATUS_EFFECT -> {

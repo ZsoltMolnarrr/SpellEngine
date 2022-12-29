@@ -80,7 +80,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     private Identifier spellIdFromItemStack(ItemStack itemStack) {
         var container = containerFromItemStack(itemStack);
-        if (container == null || !container.isValid()) {
+        if (container == null || !container.isUsable()) {
             return null;
         }
         return new Identifier(container.spellId(selectedSpellIndex));
@@ -174,7 +174,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
 
         var slot = findSlot(caster, itemStack);
-        var release = spell.on_release.target;
+        var release = spell.release.target;
         int[] targetIDs = new int[]{};
         switch (release.type) {
             case PROJECTILE, CURSOR -> {
@@ -237,9 +237,9 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         if (currentSpell == null) {
             return targets;
         }
-        switch (currentSpell.on_release.target.type) {
+        switch (currentSpell.release.target.type) {
             case AREA -> {
-                targets = TargetHelper.targetsFromArea(caster, currentSpell.range, currentSpell.on_release.target.area);
+                targets = TargetHelper.targetsFromArea(caster, currentSpell.range, currentSpell.release.target.area);
             }
             case BEAM -> {
                 targets = TargetHelper.targetsFromRaycast(caster, currentSpell.range);
@@ -251,7 +251,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 } else {
                     targets = List.of();
                 }
-                var cursor = currentSpell.on_release.target.cursor;
+                var cursor = currentSpell.release.target.cursor;
                 if (cursor != null) {
                     var firstTarget = firstTarget();
                     if (firstTarget == null && cursor.use_caster_as_fallback) {

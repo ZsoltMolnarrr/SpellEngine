@@ -19,6 +19,7 @@ public class SpellContainer { public SpellContainer() { }
     // MARK: Helpers
 
     public int cappedIndex(int selected) {
+        if (spell_ids.isEmpty()) { return 0; }
         var remainder = selected % spell_ids.size();
         return (remainder >= 0) ? remainder : (remainder + spell_ids.size());
     }
@@ -33,6 +34,10 @@ public class SpellContainer { public SpellContainer() { }
 
     public boolean isValid() {
         return school != null && spell_ids != null && max_spell_count > 0;
+    }
+
+    public boolean isUsable() {
+        return isValid() && !spell_ids.isEmpty();
     }
 
     public SpellContainer copy() {
