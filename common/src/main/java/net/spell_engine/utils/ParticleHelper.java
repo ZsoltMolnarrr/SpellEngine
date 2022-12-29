@@ -184,7 +184,7 @@ public class ParticleHelper {
             switch (rotation) {
                 case LOOK -> {
                     offset = offset
-                            .rotateX((float) Math.toRadians(-pitch))
+                            .rotateX((float) Math.toRadians(-1 * (pitch + 90)))
                             .rotateY((float) Math.toRadians(-yaw));
                 }
             }

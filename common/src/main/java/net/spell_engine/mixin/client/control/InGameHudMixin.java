@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class InGameHudMixin {
     @Inject(method = "renderHotbar", at = @At(value = "HEAD"), cancellable = true)
     private void renderHotbar_HEAD_SpellHotbar(float tickDelta, MatrixStack matrices, CallbackInfo ci) {
-        if (InputHelper.isLocked && SpellEngineClient.config.showFocusedHotbarOnly) {
+        if (!InputHelper.hotbarVisibility().item()) {
             ci.cancel();
         }
     }

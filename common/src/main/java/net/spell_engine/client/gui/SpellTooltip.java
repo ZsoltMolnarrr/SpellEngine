@@ -3,6 +3,7 @@ package net.spell_engine.client.gui;
 import com.ibm.icu.text.DecimalFormat;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Items;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.SpellCasterItemStack;
@@ -118,7 +119,7 @@ public class SpellTooltip {
         }
         if (showItemCost && spell.cost != null && spell.cost.item_id != null && !spell.cost.item_id.isEmpty()) {
             var item = Registry.ITEM.get(new Identifier(spell.cost.item_id));
-            if (item != null) {
+            if (item != Items.AIR) {
                 var ammoKey = keyWithPlural("spell.tooltip.ammo", 1); // Add variable ammo count later
                 var itemName = I18n.translate(item.getTranslationKey());
                 var ammo = I18n.translate(ammoKey).replace("{item}", itemName);

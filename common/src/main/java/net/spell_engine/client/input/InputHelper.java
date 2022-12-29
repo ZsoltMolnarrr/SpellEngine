@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.internals.SpellCasterClient;
 
 public class InputHelper {
@@ -44,5 +45,18 @@ public class InputHelper {
         var client = MinecraftClient.getInstance();
         MutableText component = Text.translatable("hud.leave_spell_hotbar", key);
         client.inGameHud.setOverlayMessage(component, false);
+    }
+
+    public record HotbarVisibility(boolean item, boolean spell) { }
+
+    public static HotbarVisibility hotbarVisibility() {
+        var config = SpellEngineClient.config;
+        boolean item = true;
+        boolean spell = true;
+        if (config.showFocusedHotbarOnly) {
+            spell = isLocked;
+            item = !spell;
+        }
+        return new HotbarVisibility(item, spell);
     }
 }

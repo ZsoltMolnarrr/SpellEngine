@@ -62,7 +62,7 @@ public class HudRenderHelper {
             } else {
                 hotbarViewModel = SpellHotBarWidget.ViewModel.empty;
             }
-            renderHotbar = clientConfig.showFocusedHotbarOnly ? (InputHelper.isLocked) : true;
+            renderHotbar = InputHelper.hotbarVisibility().spell();
 
             var spell = caster.getCurrentSpell();
             var spellId = caster.getCurrentSpellId();
