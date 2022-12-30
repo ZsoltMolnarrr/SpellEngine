@@ -68,7 +68,8 @@
 
   "spell.spell_engine.arcane_missile.name": "Arcane Missile",
   "spell.spell_engine.arcane_missile.description": "Shoots a bolt of energy dealing {damage} arcane damage.",
-
+  "spell.spell_engine.arcane_blast.name": "Arcane Blast",
+  "spell.spell_engine.arcane_blast.description": "Blasts the target dealing {damage} arcane damage. Grants Arcane Power.",
   "spell.spell_engine.arcane_beam.name": "Arcane Beam",
   "spell.spell_engine.arcane_beam.description": "Channels a beam of energy dealing {damage} arcane damage every second.",
 

@@ -80,7 +80,10 @@ public class Spell {
             }
             public StatusEffect status_effect;
             public static class StatusEffect { public StatusEffect() { }
-                public float duration = 0;
+                public boolean apply_to_caster = false;
+                public enum Apply { SET, ADD, CONSUME }
+                public Apply apply_mode = Apply.SET;
+                public float duration = 10;
                 public int amplifier = 0;
                 public String effect_id;
             }

@@ -319,8 +319,15 @@ public class SpellHelper {
                     }
                 }
                 case STATUS_EFFECT -> {
-                    if (target instanceof LivingEntity livingTarget) {
-                        var data = impact.action.status_effect;
+                    var data = impact.action.status_effect;
+                    LivingEntity livingTarget = null;
+                    if (data.apply_to_caster) {
+                        livingTarget = caster;
+                        relation = TargetHelper.Relation.FRIENDLY;
+                    } else if (target instanceof LivingEntity livingEntity) {
+                        livingTarget = livingEntity;
+                    }
+                    if (livingTarget != null) {
                         var id = new Identifier(data.effect_id);
                         var effect = Registry.STATUS_EFFECT.get(id);
                         if(!TargetHelper.actionAllowed(effect.isBeneficial(), relation, caster, target)) {
@@ -329,9 +336,37 @@ public class SpellHelper {
                         var duration = Math.round(data.duration * 20F);
                         // duration *= progressMultiplier; // ?????
                         var amplifier = data.amplifier;
-                        livingTarget.addStatusEffect(
-                                new StatusEffectInstance(effect, duration, amplifier),
-                                caster);
+                        switch (data.apply_mode) {
+                            case SET -> {
+                                livingTarget.addStatusEffect(
+                                        new StatusEffectInstance(effect, duration, amplifier),
+                                        caster);
+                            }
+                            case ADD -> {
+                                var currentEffect = livingTarget.getStatusEffect(effect);
+                                int newAmplifier = 0;
+                                if (currentEffect != null) {
+                                    var incrementedAmplifier = currentEffect.getAmplifier() + 1;
+                                    newAmplifier = Math.min(incrementedAmplifier, amplifier);
+                                }
+                                livingTarget.addStatusEffect(
+                                        new StatusEffectInstance(effect, duration, newAmplifier),
+                                        caster);
+                            }
+                            case CONSUME -> {
+                                var currentEffect = livingTarget.getStatusEffect(effect);
+                                if (currentEffect != null) {
+                                    var decrementedAmplifier = currentEffect.getAmplifier() - amplifier;
+                                    livingTarget.removeStatusEffect(effect);
+                                    if (decrementedAmplifier >= 0) {
+                                        livingTarget.addStatusEffect(
+                                                new StatusEffectInstance(effect, duration, decrementedAmplifier),
+                                                caster);
+                                    }
+                                }
+                            }
+                        }
+
                         success = true;
                     }
                 }
