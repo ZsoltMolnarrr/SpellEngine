@@ -24,6 +24,8 @@ import java.util.List;
 public class SpellTooltip {
     private static final String damageToken = "{damage}";
     private static final String healToken = "{heal}";
+    private static final String effectDurationToken = "{effect_duration}";
+    private static final String effectAmplifierToken = "{effect_amplifier}";
 
     public static void addSpellInfo(ItemStack itemStack, List<Text> lines) {
         var player = MinecraftClient.getInstance().player;
@@ -79,8 +81,20 @@ public class SpellTooltip {
 
         var description = I18n.translate(spellKeyPrefix(spellId) + ".description");
         var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);
-        description = replaceTokens(description, damageToken, estimatedOutput.damage());
-        description = replaceTokens(description, healToken, estimatedOutput.heal());
+        for (var impact: spell.impact) {
+            switch (impact.action.type) {
+                case DAMAGE -> {
+                    description = replaceTokens(description, damageToken, estimatedOutput.damage());
+                }
+                case HEAL -> {
+                    description = replaceTokens(description, healToken, estimatedOutput.heal());
+                }
+                case STATUS_EFFECT -> {
+                    var statusEffect = impact.action.status_effect;
+                    description = description.replace(effectAmplifierToken, "" + (statusEffect.amplifier + 1));
+                }
+            }
+        }
         lines.add(Text.literal(" ")
                 .append(Text.translatable(description))
                 .formatted(Formatting.GRAY));
