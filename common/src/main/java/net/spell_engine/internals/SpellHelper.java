@@ -175,17 +175,22 @@ public class SpellHelper {
                 ParticleHelper.sendBatches(caster, spell.release.particles);
                 SoundHelper.playSound(world, caster, spell.release.sound);
                 AnimationHelper.sendAnimation(caster, trackingPlayers.get(), SpellAnimationType.RELEASE, spell.release.animation);
+                // Consume things
+                // Cooldown
                 var duration = cooldownToSet(caster, spell, progress);
                 if (duration > 0) {
                     ((SpellCasterEntity) caster).getCooldownManager().set(spellId, Math.round(duration * 20F));
                 }
+                // Exhaust
                 caster.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
+                // Durability
                 if (SpellEngineMod.config.spell_cost_durability_allowed && spell.cost.durability > 0) {
-                    itemStack.damage(spell.cost.durability, caster, (asd) -> {
-                        asd.sendEquipmentBreakStatus(EquipmentSlot.MAINHAND);
-                        asd.sendEquipmentBreakStatus(EquipmentSlot.OFFHAND);
+                    itemStack.damage(spell.cost.durability, caster, (player) -> {
+                        player.sendEquipmentBreakStatus(EquipmentSlot.MAINHAND);
+                        player.sendEquipmentBreakStatus(EquipmentSlot.OFFHAND);
                     });
                 }
+                // Item
                 if (SpellEngineMod.config.spell_cost_item_allowed && ammoResult.ammo != null) {
                     for(int i = 0; i < caster.getInventory().size(); ++i) {
                         var stack = caster.getInventory().getStack(i);
@@ -197,6 +202,11 @@ public class SpellHelper {
                             break;
                         }
                     }
+                }
+                // Status effect
+                if (spell.cost.effect_id != null) {
+                    var effect = Registry.STATUS_EFFECT.get(new Identifier(spell.cost.effect_id));
+                    caster.removeStatusEffect(effect);
                 }
             }
         }
@@ -366,7 +376,6 @@ public class SpellHelper {
                                 }
                             }
                         }
-
                         success = true;
                     }
                 }

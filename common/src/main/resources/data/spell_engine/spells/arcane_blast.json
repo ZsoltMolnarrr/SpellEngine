@@ -1,6 +1,6 @@
 {
-  "range": 20,
   "school": "ARCANE",
+  "range": 16,
   "learn": {
     "tier": 2
   },
@@ -8,7 +8,8 @@
     "duration": 1,
     "animation": "spell_engine:one_handed_projectile_charge",
     "sound": {
-      "id": "spell_engine:casting_arcane"
+      "id": "spell_engine:casting_arcane",
+      "randomness": 0
     },
     "particles": [
       {

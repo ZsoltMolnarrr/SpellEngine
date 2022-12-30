@@ -1,6 +1,6 @@
 {
-  "range": 32.0,
   "school": "ARCANE",
+  "range": 32,
   "learn": {
     "tier": 3
   },
@@ -9,15 +9,10 @@
     "animation": "spell_engine:one_handed_projectile_charge",
     "sound": {
       "id": "spell_engine:casting_arcane",
-      "volume": 1.0,
-      "pitch": 1.0,
-      "randomness": 0.1
+      "randomness": 0
     },
     "start_sound": {
-      "id": "spell_engine:impact_fireball",
-      "volume": 1.0,
-      "pitch": 1.0,
-      "randomness": 0.1
+      "id": "spell_engine:impact_fireball"
     },
     "particles": [
       {
@@ -39,7 +34,6 @@
         "max_speed": 0.2
       }
     ],
-
     "channel_ticks": 4
   },
   "release": {
@@ -73,10 +67,7 @@
     },
     "animation": "spell_engine:one_handed_projectile_release",
     "sound": {
-      "id": "spell_engine:release_arcane",
-      "volume": 1.0,
-      "pitch": 1.0,
-      "randomness": 0.1
+      "id": "spell_engine:release_arcane"
     }
   },
   "impact": [
@@ -106,17 +97,13 @@
         }
       ],
       "sound": {
-        "id": "spell_engine:impact_fireball",
-        "volume": 1.0,
-        "pitch": 1.0,
-        "randomness": 0.1
+        "id": "spell_engine:impact_fireball"
       }
     }
   ],
   "cost": {
-    "exhaust": 0.1,
     "item_id": "spell_engine:arcane_rune",
-    "durability": 1,
+    "effect_id": "spell_power:arcane",
     "cooldown_duration": 0,
     "cooldown_proportional": true
   }

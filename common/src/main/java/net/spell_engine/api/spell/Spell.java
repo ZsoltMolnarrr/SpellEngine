@@ -4,8 +4,8 @@ import net.spell_power.api.MagicSchool;
 
 public class Spell {
     // Structure
-    public float range = 50;
     public MagicSchool school;
+    public float range = 50;
 
     public Learn learn = new Learn();
     public static class Learn { public Learn() {}
@@ -97,6 +97,7 @@ public class Spell {
     public static class Cost { public Cost() { }
         public float exhaust = 0.1F;
         public String item_id;
+        public String effect_id;
         public int durability = 1;
         public float cooldown_duration = 0;
         public boolean cooldown_proportional = false;
