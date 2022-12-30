@@ -45,8 +45,13 @@ public class SpellEngineClient {
             AnimationRegistry.load(resourceManager);
         });
 
-        Projectiles.registerModelIds(List.of(new Identifier("spell_engine:fireball_projectile")));
+
         HandledScreens.register(SpellBindingScreenHandler.HANDLER_TYPE, SpellBindingScreen::new);
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
+
+        Projectiles.registerModelIds(List.of(
+                new Identifier("spell_engine:fireball_projectile"),
+                new Identifier("spell_engine:arcane_missile")
+        ));
     }
 }
