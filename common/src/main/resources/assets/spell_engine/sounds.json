@@ -65,15 +65,9 @@
     ]
   },
 
-
   "arcane_missile_release": {
     "sounds": [
       "spell_engine:arcane_missile_release"
-    ]
-  },
-  "arcane_blast_release": {
-    "sounds": [
-      "spell_engine:arcane_blast_release"
     ]
   },
   "arcane_missile_impact": {
@@ -81,11 +75,39 @@
       "spell_engine:arcane_missile_impact"
     ]
   },
+
+  "arcane_blast_release": {
+    "sounds": [
+      "spell_engine:arcane_blast_release"
+    ]
+  },
   "arcane_blast_impact": {
     "sounds": [
       "spell_engine:arcane_blast_impact"
     ]
   },
+
+  "arcane_beam_start": {
+    "sounds": [
+      "spell_engine:arcane_beam_start"
+    ]
+  },
+  "arcane_beam_casting": {
+    "sounds": [
+      "spell_engine:arcane_beam_casting"
+    ]
+  },
+  "arcane_beam_impact": {
+    "sounds": [
+      "spell_engine:arcane_beam_impact"
+    ]
+  },
+  "arcane_beam_release": {
+    "sounds": [
+      "spell_engine:arcane_beam_release"
+    ]
+  },
+
   "impact_fireball": {
     "sounds": [
       "spell_engine:impact_fireball_1"

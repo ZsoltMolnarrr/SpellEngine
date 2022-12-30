@@ -8,11 +8,11 @@
     "duration": 10.0,
     "animation": "spell_engine:one_handed_projectile_charge",
     "sound": {
-      "id": "spell_engine:casting_arcane",
+      "id": "spell_engine:arcane_beam_casting",
       "randomness": 0
     },
     "start_sound": {
-      "id": "spell_engine:impact_fireball"
+      "id": "spell_engine:arcane_beam_start"
     },
     "particles": [
       {
@@ -67,7 +67,7 @@
     },
     "animation": "spell_engine:one_handed_projectile_release",
     "sound": {
-      "id": "spell_engine:release_arcane"
+      "id": "spell_engine:arcane_beam_release"
     }
   },
   "impact": [
@@ -97,7 +97,7 @@
         }
       ],
       "sound": {
-        "id": "spell_engine:impact_fireball"
+        "id": "spell_engine:arcane_beam_impact"
       }
     }
   ],

@@ -27,11 +27,18 @@ public class SoundHelper {
         "release_lightning",
         "release_healing",
         "release_soul",
+
         // Spell specific impact sounds
+
         "arcane_missile_release",
         "arcane_blast_release",
         "arcane_missile_impact",
         "arcane_blast_impact",
+        "arcane_beam_start",
+        "arcane_beam_casting",
+        "arcane_beam_impact",
+        "arcane_beam_release",
+
         "impact_fireball",
         "impact_frostbolt"
     );
