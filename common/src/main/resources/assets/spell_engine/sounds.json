@@ -66,6 +66,16 @@
   },
 
 
+  "arcane_missile_release": {
+    "sounds": [
+      "spell_engine:arcane_missile_release"
+    ]
+  },
+  "arcane_blast_release": {
+    "sounds": [
+      "spell_engine:arcane_blast_release"
+    ]
+  },
   "arcane_missile_impact": {
     "sounds": [
       "spell_engine:arcane_missile_impact"
