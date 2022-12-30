@@ -6,11 +6,12 @@ import net.minecraft.client.particle.*;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.DefaultParticleType;
 import net.spell_engine.client.util.Color;
+import net.spell_power.api.MagicSchool;
 
 @Environment(value= EnvType.CLIENT)
-public class GenericDamageParticle extends SpriteBillboardParticle {
+public class SpellHitParticle extends SpriteBillboardParticle {
 
-    public GenericDamageParticle(ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+    public SpellHitParticle(ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
         super(clientWorld, d, e, f, 0.0, 0.0, 0.0);
         this.velocityMultiplier = 0.7f;
         this.gravityStrength = 0.5f;
@@ -47,7 +48,30 @@ public class GenericDamageParticle extends SpriteBillboardParticle {
         public static Color color = Color.from(0x66ffff);
 
         public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var particle = new GenericDamageParticle(clientWorld, d, e, f, g, h, i);
+            var particle = new SpellHitParticle(clientWorld, d, e, f, g, h, i);
+            particle.setSprite(this.spriteProvider);
+            float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
+            // 0xff66ff
+            particle.setColor(color.red() * j, color.green() * j, color.blue() * j);
+            particle.velocityY += clientWorld.random.nextFloat() * 0.5F;
+            particle.alpha = 0.75F;
+            particle.maxAge *= 2;
+            return particle;
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static class ArcaneFactory implements ParticleFactory<DefaultParticleType> {
+        private final SpriteProvider spriteProvider;
+
+        public ArcaneFactory(SpriteProvider spriteProvider) {
+            this.spriteProvider = spriteProvider;
+        }
+
+        public static Color color = Color.from(MagicSchool.ARCANE.color());
+
+        public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+            var particle = new SpellHitParticle(clientWorld, d, e, f, g, h, i);
             particle.setSprite(this.spriteProvider);
             float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
             // 0xff66ff

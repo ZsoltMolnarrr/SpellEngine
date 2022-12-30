@@ -1,0 +1,80 @@
+{
+  "range": 64,
+  "school": "ARCANE",
+  "learn": {
+    "tier": 1
+  },
+  "cast": {
+    "duration": 1,
+    "animation": "spell_engine:one_handed_projectile_charge",
+    "sound": {
+      "id": "spell_engine:casting_arcane"
+    },
+    "particles": [
+      {
+        "particle_id": "spell_engine:arcane_spell",
+        "shape": "PIPE",
+        "origin": "FEET",
+        "count": 1.0,
+        "min_speed": 0.05,
+        "max_speed": 0.1
+      }
+    ]
+  },
+  "release": {
+    "target": {
+      "type": "PROJECTILE",
+      "projectile": {
+        "velocity": 1.0,
+        "homing_angle": 1.5,
+        "client_data": {
+          "travel_particles": [
+            {
+              "particle_id": "spell_engine:arcane_spell",
+              "shape": "CIRCLE",
+              "rotation": "LOOK",
+              "origin": "CENTER",
+              "count": 2.0,
+              "min_speed": 0.05,
+              "max_speed": 0.1
+            }
+          ],
+          "item_id": "purpur_pillar",
+          "render": "DEEP",
+          "scale": 0.5
+        }
+      }
+    },
+    "animation": "spell_engine:one_handed_projectile_release",
+    "sound": {
+      "id": "spell_engine:release_arcane"
+    }
+  },
+  "impact": [
+    {
+      "action": {
+        "type": "DAMAGE",
+        "damage": {
+          "knockback": 0.6,
+          "spell_power_coefficient": 0.5
+        }
+      },
+      "particles": [
+        {
+          "particle_id": "spell_engine:arcane_hit",
+          "shape": "SPHERE",
+          "origin": "CENTER",
+          "count": 40,
+          "min_speed": 0.2,
+          "max_speed": 0.7
+        }
+      ],
+      "sound": {
+        "id": "spell_engine:arcane_missile_impact"
+      }
+    }
+  ],
+  "cost": {
+    "item_id": "runes:arcane_stone"
+  }
+}

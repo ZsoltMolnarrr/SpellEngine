@@ -1,5 +1,7 @@
 package net.spell_engine.api.spell;
 
+import org.jetbrains.annotations.Nullable;
+
 public class ParticleBatch { public ParticleBatch() { }
     public String particle_id;
 
@@ -12,7 +14,16 @@ public class ParticleBatch { public ParticleBatch() { }
     // null = no rotation
     public Rotation rotation = null;
     public enum Rotation {
-        LOOK
+        LOOK;
+
+        @Nullable
+        public static Rotation from(int ordinal) {
+            if (ordinal < 0 || ordinal >= values().length) {
+                return null;
+            } else {
+                return Rotation.values()[ordinal];
+            }
+        }
     }
 
     public Shape shape;

@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.gui.SpellTooltip;
-import net.spell_engine.client.particle.GenericDamageParticle;
+import net.spell_engine.client.particle.SpellHitParticle;
 import net.spell_engine.client.particle.GenericSpellParticle;
 import net.spell_engine.client.particle.SpellFlameParticle;
 import net.spell_engine.client.particle.SpellSnowflakeParticle;
@@ -54,8 +54,9 @@ public class FabricClientMod implements ClientModInitializer {
          * Second argument is the particle's factory. The factory controls how the particle behaves.
          * In this example, we'll use FlameParticle's Factory.*/
         ParticleFactoryRegistry.getInstance().register(Particles.flame.particleType, SpellFlameParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(Particles.arcane_hit.particleType, SpellHitParticle.ArcaneFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.arcane_spell.particleType, GenericSpellParticle.ArcaneSpellFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.snowflake.particleType, SpellSnowflakeParticle.Factory::new);
-        ParticleFactoryRegistry.getInstance().register(Particles.frost.particleType, GenericDamageParticle.FrostFactory::new);
+        ParticleFactoryRegistry.getInstance().register(Particles.frost.particleType, SpellHitParticle.FrostFactory::new);
     }
 }

@@ -64,6 +64,18 @@
       "spell_engine:release_soul"
     ]
   },
+
+
+  "arcane_missile_impact": {
+    "sounds": [
+      "spell_engine:arcane_missile_impact"
+    ]
+  },
+  "arcane_blast_impact": {
+    "sounds": [
+      "spell_engine:arcane_blast_impact"
+    ]
+  },
   "impact_fireball": {
     "sounds": [
       "spell_engine:impact_fireball_1"

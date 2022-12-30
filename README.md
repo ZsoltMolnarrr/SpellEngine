@@ -29,3 +29,15 @@ Client side settings can be accessed in Main Menu > Mods > Combat Roll > Config.
 ## Installation
 
 Add this mod as dependency into your build.gradle file.
+
+# ⭐️ Creating a spell
+
+Create a new file at `resources/data/MOD_ID/spells/SPELL_ID.json`.
+
+Register resources: sound, projectile models.
+Add translations:
+```
+"spell.MOD_ID.SPELL_ID.name": "Spell Name",
+"spell.MOD_ID.SPELL_ID.description": "Description what the spell does",
+```
+The description supports the following tokens: `{damage}`, `{healing}`

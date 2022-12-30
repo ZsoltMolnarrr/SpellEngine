@@ -108,7 +108,7 @@ public class Packets {
             buffer.writeString(batch.particle_id);
             buffer.writeInt(batch.shape.ordinal());
             buffer.writeInt(batch.origin.ordinal());
-            buffer.writeInt(batch.rotation.ordinal());
+            buffer.writeInt(batch.rotation != null ? batch.rotation.ordinal() : -1);
             buffer.writeFloat(batch.count * countMultiplier);
             buffer.writeFloat(batch.min_speed);
             buffer.writeFloat(batch.max_speed);
@@ -120,7 +120,7 @@ public class Packets {
                     buffer.readString(),
                     ParticleBatch.Shape.values()[buffer.readInt()],
                     ParticleBatch.Origin.values()[buffer.readInt()],
-                    ParticleBatch.Rotation.values()[buffer.readInt()],
+                    ParticleBatch.Rotation.from(buffer.readInt()),
                     buffer.readFloat(),
                     buffer.readFloat(),
                     buffer.readFloat(),
