@@ -1,17 +1,15 @@
 {
-  "range": 64.0,
   "school": "FIRE",
+  "range": 48.0,
   "learn": {
-    "tier": 2
+    "tier": 1
   },
   "cast": {
-    "duration": 1.5,
+    "duration": 1,
     "animation": "spell_engine:one_handed_projectile_charge",
     "sound": {
       "id": "spell_engine:casting_fire",
-      "volume": 1.0,
-      "pitch": 1.0,
-      "randomness": 0.1
+      "randomness": 0
     },
     "particles": [
       {
@@ -28,9 +26,7 @@
     "target": {
       "type": "PROJECTILE",
       "projectile": {
-        "velocity": 0.1,
-        "divergence": 0.0,
-        "inherit_shooter_velocity": false,
+        "velocity": 1.0,
         "homing_angle": 1.0,
         "client_data": {
           "travel_particles": [
@@ -76,7 +72,7 @@
         }
       ],
       "sound": {
-        "id": "spell_engine:impact_fireball",
+        "id": "spell_engine:fire_breath_impact",
         "volume": 1.0,
         "pitch": 1.0,
         "randomness": 0.1

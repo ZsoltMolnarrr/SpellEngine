@@ -1,17 +1,18 @@
 {
-  "range": 10.0,
   "school": "FIRE",
+  "range": 10.0,
   "learn": {
-    "tier": 3
+    "tier": 2
   },
   "cast": {
-    "duration": 1.5,
+    "duration": 10,
     "animation": "spell_engine:one_handed_projectile_charge",
     "sound": {
-      "id": "spell_engine:casting_fire",
-      "volume": 1.0,
-      "pitch": 1.0,
-      "randomness": 0.1
+      "id": "spell_engine:fire_breath_casting",
+      "randomness": 0
+    },
+    "start_sound": {
+      "id": "spell_engine:fire_breath_start"
     },
     "particles": [
       {
@@ -35,10 +36,7 @@
       }
     },
     "sound": {
-      "id": "spell_engine:release_fire",
-      "volume": 1.0,
-      "pitch": 1.0,
-      "randomness": 0.1
+      "id": "spell_engine:fire_breath_release"
     }
   },
   "impact": [
@@ -61,10 +59,7 @@
         }
       ],
       "sound": {
-        "id": "spell_engine:impact_fireball",
-        "volume": 1.0,
-        "pitch": 1.0,
-        "randomness": 0.1
+        "id": "spell_engine:fireball_impact"
       }
     }
   ],

@@ -108,11 +108,33 @@
     ]
   },
 
-  "impact_fireball": {
+  "fireball_impact": {
     "sounds": [
-      "spell_engine:impact_fireball_1"
+      "spell_engine:fireball_impact"
     ]
   },
+  "fire_breath_start": {
+    "sounds": [
+      "spell_engine:fire_breath_start"
+    ]
+  },
+  "fire_breath_casting": {
+    "sounds": [
+      "spell_engine:fire_breath_casting"
+    ]
+  },
+  "fire_breath_release": {
+    "sounds": [
+      "spell_engine:fire_breath_release"
+    ]
+  },
+  "fire_breath_impact": {
+    "sounds": [
+      "spell_engine:fire_breath_impact"
+    ]
+  },
+
+
   "impact_frostbolt": {
     "sounds": [
       "spell_engine:impact_frostbolt_1"

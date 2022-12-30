@@ -102,7 +102,7 @@
     }
   ],
   "cost": {
-    "item_id": "spell_engine:arcane_rune",
+    "item_id": "runes:arcane_stone",
     "effect_id": "spell_power:arcane",
     "cooldown_duration": 0,
     "cooldown_proportional": true

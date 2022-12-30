@@ -39,7 +39,11 @@ public class SoundHelper {
         "arcane_beam_impact",
         "arcane_beam_release",
 
-        "impact_fireball",
+        "fireball_impact",
+        "fire_breath_start",
+        "fire_breath_casting",
+        "fire_breath_release",
+        "fire_breath_impact",
         "impact_frostbolt"
     );
 
