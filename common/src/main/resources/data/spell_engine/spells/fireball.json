@@ -47,10 +47,7 @@
     },
     "animation": "spell_engine:one_handed_projectile_release",
     "sound": {
-      "id": "spell_engine:release_fire",
-      "volume": 1.0,
-      "pitch": 1.0,
-      "randomness": 0.1
+      "id": "spell_engine:release_fire"
     }
   },
   "impact": [
@@ -72,17 +69,11 @@
         }
       ],
       "sound": {
-        "id": "spell_engine:fire_breath_impact",
-        "volume": 1.0,
-        "pitch": 1.0,
-        "randomness": 0.1
+        "id": "spell_engine:fireball_impact"
       }
     }
   ],
   "cost": {
-    "exhaust": 0.1,
-    "item_id": "spell_engine:fire_rune",
-    "durability": 1,
-    "cooldown_duration": 0.0
+    "item_id": "spell_engine:fire_rune"
   }
 }

@@ -271,7 +271,7 @@ public class SpellHelper {
     }
 
     private static boolean performImpact(World world, LivingEntity caster, Entity target, MagicSchool school, Spell.Impact impact, float channelMultiplier) {
-        if (!target.isAttackable()) {
+        if (!target.isAttackable() || !target.isAlive()) {
             return false;
         }
         var success = false;
