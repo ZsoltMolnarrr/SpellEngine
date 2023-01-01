@@ -134,6 +134,17 @@
     ]
   },
 
+  "fire_meteor_release": {
+    "sounds": [
+      "spell_engine:fire_meteor_release"
+    ]
+  },
+  "fire_meteor_impact": {
+    "sounds": [
+      "spell_engine:fire_meteor_impact"
+    ]
+  },
+
 
   "impact_frostbolt": {
     "sounds": [
