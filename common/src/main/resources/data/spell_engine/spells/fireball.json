@@ -41,7 +41,8 @@
             }
           ],
           "item_id": "spell_engine:fireball_projectile",
-          "render": "DEEP"
+          "render": "DEEP",
+          "scale": 0.75
         }
       }
     },
