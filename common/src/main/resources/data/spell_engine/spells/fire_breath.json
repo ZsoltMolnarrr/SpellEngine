@@ -61,6 +61,14 @@
       "sound": {
         "id": "spell_engine:fire_breath_impact"
       }
+    },
+    {
+      "action": {
+        "type": "FIRE",
+        "fire": {
+          "duration": 2
+        }
+      }
     }
   ],
   "cost": {

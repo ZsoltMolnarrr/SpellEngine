@@ -67,7 +67,7 @@ public class Spell {
         public static class Action { public Action() { }
             public Type type;
             public enum Type {
-                DAMAGE, HEAL, STATUS_EFFECT
+                DAMAGE, HEAL, STATUS_EFFECT, FIRE
             }
             public Damage damage;
             public static class Damage { public Damage() { }
@@ -86,6 +86,10 @@ public class Spell {
                 public float duration = 10;
                 public int amplifier = 0;
                 public String effect_id;
+            }
+            public Fire fire;
+            public static class Fire { public Fire() { }
+                public float duration = 10;
             }
         }
 

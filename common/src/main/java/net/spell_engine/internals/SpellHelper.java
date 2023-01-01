@@ -379,6 +379,12 @@ public class SpellHelper {
                         success = true;
                     }
                 }
+                case FIRE -> {
+                    if(!TargetHelper.actionAllowed(false, relation, caster, target)) {
+                        return false;
+                    }
+                    target.setOnFireFor(Math.round(impact.action.fire.duration));
+                }
             }
             if (success) {
                 ParticleHelper.sendBatches(target, impact.particles, (float) particleMultiplier);
@@ -425,7 +431,7 @@ public class SpellHelper {
                             .multiply(healData.spell_power_coefficient);
                     healEffects.add(healing);
                 }
-                case STATUS_EFFECT -> {
+                case STATUS_EFFECT, FIRE -> {
                 }
             }
         }
