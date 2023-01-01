@@ -151,7 +151,7 @@ public class SpellHelper {
                         areaImpact(world, caster, targets, spell, channelMultiplier);
                     }
                     case BEAM -> {
-                        areaImpact(world, caster, targets, spell, channelMultiplier);
+                        beamImpact(world, caster, targets, spell, channelMultiplier);
                     }
                     case CURSOR -> {
                         var target = targets.stream().findFirst();
@@ -168,6 +168,14 @@ public class SpellHelper {
                             target = entityFound.get();
                         }
                         shootProjectile(world, caster, target, spell);
+                    }
+                    case METEOR -> {
+                        var target = targets.stream().findFirst();
+                        if (target.isPresent()) {
+                            fallProjectile(world, caster, target.get(), spell);
+                        } else {
+                            released = false;
+                        }
                     }
                 }
             }
@@ -224,10 +232,26 @@ public class SpellHelper {
         performImpacts(world, caster, target, spell, channelMultiplier);
     }
 
+    private static void beamImpact(World world, LivingEntity caster, List<Entity> targets, Spell spell, float channelMultiplier) {
+        for(var target: targets) {
+            performImpacts(world, caster, target, spell, channelMultiplier);
+        }
+    }
+
     private static void areaImpact(World world, LivingEntity caster, List<Entity> targets, Spell spell, float channelMultiplier) {
         for(var target: targets) {
             performImpacts(world, caster, target, spell, channelMultiplier);
         }
+    }
+
+    public static void fallImpact(LivingEntity caster, Entity projectile, Spell spell, Vec3d position) {
+        var info = spell.release.target.meteor;
+        if (info == null) {
+            return;
+        }
+        var targets = TargetHelper.targetsFromArea(projectile, position.add(0, 1, 0), info.impact_range, info.area);
+        ParticleHelper.play(projectile.world, projectile, info.impact_particles);
+        areaImpact(projectile.world, caster, targets, spell, 1);
     }
 
     public static float launchHeight(LivingEntity livingEntity) {
@@ -245,19 +269,54 @@ public class SpellHelper {
         return caster.getPos().add(0, launchHeight(caster), 0).add(look);
     }
 
-
     private static void shootProjectile(World world, LivingEntity caster, Entity target, Spell spell) {
-        // Send target packet
         if (world.isClient) {
             return;
         }
 
         var launchPoint = launchPoint(caster);
-        var x = launchPoint.getX();
-        var y  = launchPoint.getY();
-        var z  = launchPoint.getZ();
-        var projectile = new SpellProjectile(world, caster, x, y, z, spell, target);
+        var projectile = new SpellProjectile(world, caster,
+                launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
+                SpellProjectile.Behaviour.FLY, spell, target);
+
+        var projectileData = spell.release.target.projectile;
+        var velocity = projectileData.velocity;
+        var divergence = projectileData.divergence;
+        if (projectileData.inherit_shooter_velocity) {
+            projectile.setVelocity(caster, caster.getPitch(), caster.getYaw(), caster.getRoll(), velocity, divergence);
+        } else {
+            var look = caster.getRotationVector().normalize();
+            projectile.setVelocity(look.x, look.y, look.z, velocity, divergence);
+        }
         projectile.range = spell.range;
+        projectile.getPitch(caster.getPitch());
+        projectile.setYaw(caster.getYaw());
+
+        world.spawnEntity(projectile);
+    }
+
+    private static void fallProjectile(World world, LivingEntity caster, Entity target, Spell spell) {
+        if (world.isClient) {
+            return;
+        }
+
+        var meteor = spell.release.target.meteor;
+        var height = meteor.launch_height;
+        var launchPoint = target.getPos().add(0, height, 0);
+        var projectile = new SpellProjectile(world, caster,
+                launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
+                SpellProjectile.Behaviour.FALL, spell, target);
+
+        var projectileData = spell.release.target.projectile;
+
+        var look = caster.getRotationVector().normalize();
+        projectile.setVelocity(new Vec3d(0, - projectileData.velocity, 0));
+        projectile.setYaw(0);
+        projectile.prevYaw = projectile.getYaw();
+        projectile.setPitch(-90);
+        projectile.prevPitch = projectile.getPitch();
+        projectile.range = height;
+        
         world.spawnEntity(projectile);
     }
 

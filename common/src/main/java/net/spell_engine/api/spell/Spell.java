@@ -30,7 +30,7 @@ public class Spell {
         public static class Target { public Target() { }
             public Type type;
             public enum Type {
-                AREA, BEAM, CURSOR, PROJECTILE
+                AREA, BEAM, CURSOR, PROJECTILE, METEOR
             }
 
             public Area area;
@@ -55,6 +55,15 @@ public class Spell {
             }
 
             public ProjectileData projectile;
+
+            public Meteor meteor;
+            public static class Meteor {
+                public float launch_height = 10;
+                public float impact_range = 10;
+                public ParticleBatch[] impact_particles = new ParticleBatch[]{};
+                public Area area;
+                // public ProjectileData projectile; // Adjacent field to be used
+            }
         }
         public String animation;
         public ParticleBatch[] particles;

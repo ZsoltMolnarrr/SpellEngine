@@ -162,22 +162,26 @@ public class TargetHelper {
     }
 
     public static List<Entity> targetsFromArea(Entity caster, float range, Spell.Release.Target.Area area) {
+        var origin = caster.getEyePos();
+        return targetsFromArea(caster, origin, range, area);
+    }
+
+    public static List<Entity> targetsFromArea(Entity centerEntity, Vec3d origin, float range, Spell.Release.Target.Area area) {
         var horizontal = range * area.horizontal_range_multiplier;
         var vertical = range * area.vertical_range_multiplier;
-        var box = caster.getBoundingBox().expand(
+        var box = centerEntity.getBoundingBox().expand(
                 horizontal,
                 vertical,
                 horizontal);
         var squaredDistance = range * range;
-        var raycastStart = caster.getEyePos();
-        var look = caster.getRotationVector();
+        var look = centerEntity.getRotationVector();
         var angle = area.angle_degrees / 2F;
-        var entities = caster.world.getOtherEntities(caster, box, (target) -> {
+        var entities = centerEntity.world.getOtherEntities(centerEntity, box, (target) -> {
             var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
             return !target.isSpectator() && target.canHit()
-                    && target.squaredDistanceTo(caster) <= squaredDistance
-                    && ((angle <= 0) || (VectorHelper.angleBetween(look, targetCenter.subtract(raycastStart)) <= angle))
-                    && raycastObstacleFree(raycastStart, target.getPos().add(0, target.getHeight() / 2F, 0));
+                    && target.squaredDistanceTo(centerEntity) <= squaredDistance
+                    && ((angle <= 0) || (VectorHelper.angleBetween(look, targetCenter.subtract(origin)) <= angle))
+                    && raycastObstacleFree(origin, target.getPos().add(0, target.getHeight() / 2F, 0));
         });
         return entities;
     }

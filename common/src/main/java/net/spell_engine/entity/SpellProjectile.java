@@ -44,25 +44,19 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         this.setOwner(owner);
     }
 
+    public enum Behaviour {
+        FLY, FALL
+    }
+
     public SpellProjectile(World world, LivingEntity caster, double x, double y, double z,
-                           Spell spell, Entity target) {
+                           Behaviour behaviour, Spell spell, Entity target) {
         this(world, caster);
         this.setPosition(x, y, z);
         this.spell = spell;
         var projectileData = projectileData();
-        var velocity = projectileData.velocity;
-        var divergence = projectileData.divergence;
-        if (projectileData.inherit_shooter_velocity) {
-            this.setVelocity(caster, caster.getPitch(), caster.getYaw(), caster.getRoll(), velocity, divergence);
-        } else {
-            var look = caster.getRotationVector().normalize();
-            this.setVelocity(look.x, look.y, look.z, velocity, divergence);
-        }
-        this.getPitch(caster.getPitch());
-        this.setYaw(caster.getYaw());
-
         var gson = new Gson();
         this.getDataTracker().set(CLIENT_DATA, gson.toJson(projectileData));
+        this.getDataTracker().set(BEHAVIOUR, behaviour.toString());
         setFollowedTarget(target);
     }
 
@@ -127,12 +121,40 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         return result;
     }
 
+    public Behaviour behaviour() {
+        var string = this.getDataTracker().get(BEHAVIOUR);
+        if (string == null || string.isEmpty()) {
+            return Behaviour.FLY;
+        }
+        return Behaviour.valueOf(string);
+    }
+
     public void tick() {
         Entity entity = this.getOwner();
+        var behaviour = behaviour();
         if (world.isClient) {
             updateClientSideData();
         }
         if (!this.world.isClient) {
+            switch (behaviour) {
+                case FLY -> {
+                    if (distanceTraveled >= range || age > 1200) { // 1200 ticks = 1 minute
+                        this.kill();
+                        return;
+                    }
+                }
+                case FALL -> {
+                    if (distanceTraveled >= (range * 0.98)) {
+                        finishFalling();
+                        this.kill();
+                        return;
+                    }
+                    if (age > 1200) { // 1200 ticks = 1 minute
+                        this.kill();
+                        return;
+                    }
+                }
+            }
             if (distanceTraveled >= range || age > 1200) { // 1200 ticks = 1 minute
                 this.kill();
                 return;
@@ -144,7 +166,13 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
             HitResult hitResult = ProjectileUtil.getCollision(this, this::canHit);
             if (hitResult.getType() != HitResult.Type.MISS) {
-                this.onCollision(hitResult);
+                switch (behaviour) {
+                    case FLY -> {
+                        this.onCollision(hitResult);
+                    }
+                    case FALL -> {
+                    }
+                }
             }
 
             this.followTarget();
@@ -177,6 +205,16 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             this.distanceTraveled += velocity.length();
         } else {
             this.discard();
+        }
+    }
+
+    private void finishFalling() {
+        Entity owner = this.getOwner();
+        if (owner == null || owner.isRemoved()) {
+            return;
+        }
+        if (owner instanceof LivingEntity livingEntity) {
+            SpellHelper.fallImpact(livingEntity, this, this.spell, this.getPos());
         }
     }
 
@@ -261,13 +299,16 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         var gson = new Gson();
         this.getDataTracker().startTracking(CLIENT_DATA, "");
         this.getDataTracker().startTracking(TARGET_ID, 0);
+        this.getDataTracker().startTracking(BEHAVIOUR, Behaviour.FLY.toString());
     }
 
+    private static final TrackedData<String> BEHAVIOUR;
     private static final TrackedData<String> CLIENT_DATA;
     private static final TrackedData<Integer> TARGET_ID;
 
     static {
         CLIENT_DATA = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.STRING);
         TARGET_ID = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.INTEGER);
+        BEHAVIOUR = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.STRING);
     }
 }

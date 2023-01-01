@@ -66,6 +66,9 @@
   "gui.spell_engine.spell_binding.level_req_fail" : "Level Requirement: %s",
 
 
+  "spell.spell_engine.scorch.name": "Scorch",
+  "spell.spell_engine.scorch.description": "Scorches the enemy for {damage} fire damage.",
+
   "spell.spell_engine.arcane_missile.name": "Arcane Missile",
   "spell.spell_engine.arcane_missile.description": "Shoots a bolt of energy dealing {damage} arcane damage.",
   "spell.spell_engine.arcane_blast.name": "Arcane Blast",
@@ -75,10 +78,11 @@
 
   "spell.spell_engine.fireball.name": "Fireball",
   "spell.spell_engine.fireball.description": "Launches a ball of fire dealing {damage} fire damage on impact.",
-  "spell.spell_engine.scorch.name": "Scorch",
-  "spell.spell_engine.scorch.description": "Scorches the enemy for {damage} fire damage.",
   "spell.spell_engine.fire_breath.name": "Fire Breath",
   "spell.spell_engine.fire_breath.description": "Scorches the enemy for {damage} fire damage.",
+  "spell.spell_engine.fire_meteor.name": "Meteor",
+  "spell.spell_engine.fire_meteor.description": "Boom for {damage} fire damage.",
+
   "spell.spell_engine.ice_lance.name": "Ice Lance",
   "spell.spell_engine.ice_lance.description": "Launches a ball of frost dealing {damage} frost damage and slowing the target on impact.",
   "spell.spell_engine.frostbolt.name": "Frostbolt",

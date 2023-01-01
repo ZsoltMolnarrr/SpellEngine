@@ -177,7 +177,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         var release = spell.release.target;
         int[] targetIDs = new int[]{};
         switch (release.type) {
-            case PROJECTILE, CURSOR -> {
+            case PROJECTILE, CURSOR, METEOR -> {
                 var firstTarget = firstTarget();
                 if (firstTarget != null) {
                     targetIDs = new int[]{ firstTarget.getId() };
@@ -244,7 +244,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             case BEAM -> {
                 targets = TargetHelper.targetsFromRaycast(caster, currentSpell.range);
             }
-            case CURSOR, PROJECTILE -> {
+            case CURSOR, PROJECTILE, METEOR -> {
                 var target = TargetHelper.targetFromRaycast(caster, currentSpell.range);
                 if (target != null) {
                     targets = List.of(target);
