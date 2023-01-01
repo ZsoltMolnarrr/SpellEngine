@@ -26,38 +26,42 @@
     "target": {
       "type": "METEOR",
       "meteor": {
-        "launch_height": 5,
-        "impact_range": 10,
+        "launch_height": 10,
+        "impact_range": 5,
         "impact_particles": [
           {
             "particle_id": "lava",
             "shape": "CIRCLE",
             "origin": "CENTER",
-            "count": 60.0,
+            "count": 90.0,
             "min_speed": 1.5,
-            "max_speed": 4.0
+            "max_speed": 6.0
           },
           {
             "particle_id": "flame",
             "shape": "SPHERE",
             "origin": "CENTER",
-            "count": 30.0,
-            "min_speed": 1.5,
-            "max_speed": 4.0
+            "count": 90.0,
+            "min_speed": 0.1,
+            "max_speed": 0.3
           },
           {
             "particle_id": "smoke",
             "shape": "SPHERE",
             "origin": "CENTER",
-            "count": 30.0,
-            "min_speed": 1.5,
-            "max_speed": 4.0
+            "count": 90.0,
+            "min_speed": 0.1,
+            "max_speed": 0.3
           }
         ],
+        "impact_sound": {
+          "id": "spell_engine:fire_meteor_impact",
+          "volume": 2
+        },
         "area" : { }
       },
       "projectile": {
-        "velocity": 0.2,
+        "velocity": 1,
         "client_data": {
           "travel_particles": [
             {
@@ -78,7 +82,7 @@
     },
     "animation": "spell_engine:one_handed_projectile_release",
     "sound": {
-      "id": "spell_engine:fire_meteor_release"
+      "id": "spell_engine:fire_breath_release"
     }
   },
   "impact": [
@@ -100,7 +104,7 @@
         }
       ],
       "sound": {
-        "id": "spell_engine:fire_meteor_impact"
+        "id": "spell_engine:fire_breath_impact"
       }
     }
   ],

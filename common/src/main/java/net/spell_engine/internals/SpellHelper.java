@@ -250,7 +250,8 @@ public class SpellHelper {
             return;
         }
         var targets = TargetHelper.targetsFromArea(projectile, position.add(0, 1, 0), info.impact_range, info.area);
-        ParticleHelper.play(projectile.world, projectile, info.impact_particles);
+        ParticleHelper.sendBatches(projectile, info.impact_particles, 1);
+        SoundHelper.playSound(projectile.world, projectile, info.impact_sound);
         areaImpact(projectile.world, caster, targets, spell, 1);
     }
 
@@ -316,7 +317,7 @@ public class SpellHelper {
         projectile.setPitch(-90);
         projectile.prevPitch = projectile.getPitch();
         projectile.range = height;
-        
+
         world.spawnEntity(projectile);
     }
 

@@ -58,11 +58,11 @@ public class Spell {
 
             public Meteor meteor;
             public static class Meteor {
+                public Area area;
                 public float launch_height = 10;
                 public float impact_range = 10;
                 public ParticleBatch[] impact_particles = new ParticleBatch[]{};
-                public Area area;
-                // public ProjectileData projectile; // Adjacent field to be used
+                public Sound impact_sound;
             }
         }
         public String animation;
