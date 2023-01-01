@@ -56,7 +56,7 @@
         ],
         "impact_sound": {
           "id": "spell_engine:fire_meteor_impact",
-          "volume": 2
+          "volume": 1.5
         },
         "area" : { }
       },
@@ -72,6 +72,24 @@
               "count": 3.0,
               "min_speed": 0.0,
               "max_speed": 0.1
+            },
+            {
+              "particle_id": "smoke",
+              "shape": "CIRCLE",
+              "rotation": "LOOK",
+              "origin": "CENTER",
+              "count": 5.0,
+              "min_speed": 0.1,
+              "max_speed": 0.3
+            },
+            {
+              "particle_id": "campfire_cosy_smoke",
+              "shape": "CIRCLE",
+              "rotation": "LOOK",
+              "origin": "CENTER",
+              "count": 6.0,
+              "min_speed": 0.0,
+              "max_speed": 0.05
             }
           ],
           "item_id": "spell_engine:fireball_projectile",
