@@ -85,7 +85,7 @@
           "particle_id": "spell_engine:frost",
           "shape": "SPHERE",
           "origin": "CENTER",
-          "count": 100.0,
+          "count": 50.0,
           "min_speed": 0.2,
           "max_speed": 0.7
         }
