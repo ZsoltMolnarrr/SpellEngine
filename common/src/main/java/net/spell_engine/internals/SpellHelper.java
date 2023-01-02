@@ -2,7 +2,6 @@ package net.spell_engine.internals;
 
 import com.google.common.base.Suppliers;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.Enchantments_CombatSpells;
@@ -27,6 +26,7 @@ import net.minecraft.world.World;
 import net.spell_power.api.MagicSchool;
 import net.spell_power.api.SpellPower;
 import net.spell_power.api.SpellDamageSource;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -146,13 +146,13 @@ public class SpellHelper {
         if (channelMultiplier > 0 && ammoResult.satisfied()) {
             var targeting = spell.release.target;
             boolean released = action == SpellCastAction.RELEASE;
-            var context = new ImpactContext(channelMultiplier, 1F);
+            var context = new ImpactContext(channelMultiplier, 1F, null);
             if (shouldPerformImpact) {
                 switch (targeting.type) {
                     case AREA -> {
                         var center = caster.getPos().add(0, caster.getHeight() / 2F, 0);
                         var area = spell.release.target.area;
-                        areaImpact(world, caster, targets, center, spell.range, area, spell, context);
+                        areaImpact(world, caster, targets, center, spell.range, area, false, spell, context);
                     }
                     case BEAM -> {
                         beamImpact(world, caster, targets, spell, context);
@@ -243,19 +243,22 @@ public class SpellHelper {
     }
 
     private static void areaImpact(World world, LivingEntity caster, List<Entity> targets,
-                                   Vec3d center, float range, Spell.Release.Target.Area area,
+                                   Vec3d center, float range, Spell.Release.Target.Area area, boolean offset,
                                    Spell spell, ImpactContext context) {
         double squaredRange = range * range;
         for(var target: targets) {
             float distanceBasedMultiplier = 1F;
             switch (area.distance_dropoff) {
                 case NONE -> { }
-                case LINEAR -> {
+                case SQUARED -> {
                     distanceBasedMultiplier = (float) ((squaredRange - target.squaredDistanceTo(center)) / squaredRange);
                     distanceBasedMultiplier = Math.max(distanceBasedMultiplier, 0F);
                 }
             }
-            performImpacts(world, caster, target, spell, context.distance(distanceBasedMultiplier));
+            performImpacts(world, caster, target, spell, context
+                    .distance(distanceBasedMultiplier)
+                    .offset(offset ? center : null)
+            );
         }
     }
 
@@ -270,7 +273,7 @@ public class SpellHelper {
         var targets = TargetHelper.targetsFromArea(projectile, center, range, area);
         ParticleHelper.sendBatches(projectile, info.impact_particles, 1);
         SoundHelper.playSound(projectile.world, projectile, info.impact_sound);
-        areaImpact(projectile.world, caster, targets, center, range, area, spell, new ImpactContext());
+        areaImpact(projectile.world, caster, targets, center, range, area, true, spell, new ImpactContext());
     }
 
     public static float launchHeight(LivingEntity livingEntity) {
@@ -347,17 +350,29 @@ public class SpellHelper {
         return performed;
     }
 
-    public record ImpactContext(float channel, float distance) {
+    public record ImpactContext(float channel, float distance, @Nullable Vec3d offset) {
         public ImpactContext() {
-            this(1, 1);
+            this(1, 1, null);
         }
 
         public ImpactContext channeled(float multiplier) {
-            return new ImpactContext(multiplier, distance);
+            return new ImpactContext(multiplier, distance, offset);
         }
 
         public ImpactContext distance(float multiplier) {
-            return new ImpactContext(channel, multiplier);
+            return new ImpactContext(channel, multiplier, offset);
+        }
+
+        public ImpactContext offset(Vec3d position) {
+            return new ImpactContext(channel, distance, position);
+        }
+
+        public boolean hasOffset() {
+            return offset != null;
+        }
+
+        public Vec3d knockbackDirection(Vec3d targetPosition) {
+            return targetPosition.subtract(offset).normalize();
         }
 
         public boolean isChanneled() {
@@ -368,6 +383,8 @@ public class SpellHelper {
             return channel * distance;
         }
     }
+
+    private static final float knockbackDefaultStrength = 0.4F;
 
     private static boolean performImpact(World world, LivingEntity caster, Entity target, MagicSchool school, Spell.Impact impact, ImpactContext context) {
         if (!target.isAttackable() || !target.isAlive()) {
@@ -383,8 +400,7 @@ public class SpellHelper {
                         return false;
                     }
                     var damageData = impact.action.damage;
-                    var knockback = damageData.knockback * context.total();
-                    var knockbackMultiplier = Math.min(Math.max(0F, knockback), 1F);
+                    var knockbackMultiplier = Math.max(0F, damageData.knockback * context.total());
                     var damage = SpellPower.getSpellDamage(school, caster);
                     particleMultiplier = damage.criticalMultiplier();
                     var source = SpellDamageSource.create(school, caster);
@@ -397,7 +413,7 @@ public class SpellHelper {
 
                     var timeUntilRegen = target.timeUntilRegen;
                     if (target instanceof LivingEntity livingEntity) {
-                        ((LivingEntityExtension)livingEntity).setKnockbackMultiplier(knockbackMultiplier);
+                        ((LivingEntityExtension) livingEntity).setKnockbackMultiplier(context.hasOffset() ? 0 : knockbackMultiplier);
                         if (SpellEngineMod.config.bypass_iframes) {
                             target.timeUntilRegen = 0;
                         }
@@ -409,6 +425,10 @@ public class SpellHelper {
                     if (target instanceof LivingEntity livingEntity) {
                         ((LivingEntityExtension)livingEntity).setKnockbackMultiplier(1F);
                         target.timeUntilRegen = timeUntilRegen;
+                        if (context.hasOffset()) {
+                            var direction = context.knockbackDirection(livingEntity.getPos()).negate(); // Negate for smart Vanilla API :)
+                            livingEntity.takeKnockback(knockbackDefaultStrength * knockbackMultiplier, direction.x, direction.z);
+                        }
                     }
                     success = true;
                 }

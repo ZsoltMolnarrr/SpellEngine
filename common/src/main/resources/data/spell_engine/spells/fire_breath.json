@@ -32,7 +32,7 @@
     "target": {
       "type": "AREA",
       "area": {
-        "distance_dropoff": "LINEAR",
+        "distance_dropoff": "SQUARED",
         "angle_degrees": 30
       }
     },

@@ -35,7 +35,7 @@ public class Spell {
 
             public Area area;
             public static class Area { public Area() { }
-                public enum DropoffCurve { NONE, LINEAR }
+                public enum DropoffCurve { NONE, SQUARED }
                 public DropoffCurve distance_dropoff = DropoffCurve.NONE;
                 public float horizontal_range_multiplier = 1F;
                 public float vertical_range_multiplier = 1F;

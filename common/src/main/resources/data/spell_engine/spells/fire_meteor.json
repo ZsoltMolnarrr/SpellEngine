@@ -58,7 +58,9 @@
           "id": "spell_engine:fire_meteor_impact",
           "volume": 1.5
         },
-        "area" : { }
+        "area" : {
+          "distance_dropoff": "SQUARED"
+        }
       },
       "projectile": {
         "velocity": 1,
@@ -108,7 +110,8 @@
       "action": {
         "type": "DAMAGE",
         "damage": {
-          "spell_power_coefficient": 1.0
+          "spell_power_coefficient": 1.0,
+          "knockback": 2
         }
       },
       "particles": [
