@@ -18,6 +18,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
@@ -25,18 +26,34 @@ public class ParticleHelper {
     private static Random rng = new Random();
 
     public static void sendBatches(Entity trackedEntity, ParticleBatch[] batches) {
-        sendBatches(trackedEntity, batches, 1);
+        sendBatches(trackedEntity, batches, 1, PlayerLookup.tracking(trackedEntity));
     }
 
-    public static void sendBatches(Entity trackedEntity, ParticleBatch[] batches, float countMultiplier) {
+    public static void sendBatches(Entity trackedEntity, ParticleBatch[] batches, float countMultiplier, Collection<ServerPlayerEntity> trackers) {
         if (batches == null || batches.length == 0) {
             return;
         }
-        var packet = new Packets.ParticleBatches(trackedEntity.getId(), batches).write(countMultiplier);
+        int sourceEntityId = trackedEntity.getId();
+//        Packets.ParticleBatches.SourceType sourceType = trackedEntity.isAlive() ?
+//                Packets.ParticleBatches.SourceType.ENTITY : Packets.ParticleBatches.SourceType.COORDINATE;
+        var sourceType = Packets.ParticleBatches.SourceType.COORDINATE;
+        ArrayList<Packets.ParticleBatches.Spawn> spawns = new ArrayList<>();
+        for(var batch : batches) {
+            Vec3d sourceLocation = Vec3d.ZERO;
+            switch (sourceType) {
+                case ENTITY -> {
+                }
+                case COORDINATE -> {
+                    sourceLocation = origin(trackedEntity, batch.origin);
+                }
+            }
+            spawns.add(new Packets.ParticleBatches.Spawn(sourceEntityId, sourceLocation, batch));
+        }
+        var packet = new Packets.ParticleBatches(sourceType, spawns).write(countMultiplier);
         if (trackedEntity instanceof ServerPlayerEntity serverPlayer) {
             sendWrittenBatchesToPlayer(serverPlayer, packet);
         }
-        PlayerLookup.tracking(trackedEntity).forEach(serverPlayer -> {
+        trackers.forEach(serverPlayer -> {
             sendWrittenBatchesToPlayer(serverPlayer, packet);
         });
     }
@@ -91,12 +108,24 @@ public class ParticleHelper {
         }
     }
 
-    public static List<SpawnInstruction> convertToInstructions(Entity entity, float pitch, float yaw, ParticleBatch[] batches) {
+    public static List<SpawnInstruction> convertToInstructions(World world, float pitch, float yaw, Packets.ParticleBatches packet) {
         var instructions = new ArrayList<SpawnInstruction>();
-        var width = entity.getWidth();
-        for(var batch: batches) {
+        var sourceType = packet.sourceType();
+        for(var spawn: packet.spawns()) {
+            var batch = spawn.batch();
+            var origin = Vec3d.ZERO;
+            float width = 0.5F;
+            switch (sourceType) {
+                case ENTITY -> {
+                    var entity = world.getEntityById(spawn.sourceEntityId());
+                    origin = origin(entity, batch.origin);
+                }
+                case COORDINATE -> {
+                    origin = spawn.sourceLocation();
+                }
+            }
+
             var id = new Identifier(batch.particle_id);
-            var origin = origin(entity, batch.origin);
             var particle = (ParticleEffect) Registry.PARTICLE_TYPE.get(id);
             var count = batch.count;
             var dynamicallyOffset = requiresDynamicOffset(batch);

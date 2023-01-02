@@ -1,6 +1,7 @@
 package net.spell_engine.network;
 
 import com.google.gson.Gson;
+import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.ParticleBatch;
 import net.spell_engine.config.ServerConfig;
@@ -11,6 +12,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Packets {
 
@@ -92,14 +94,21 @@ public class Packets {
         }
     }
 
-    public record ParticleBatches(int sourceEntityId, ParticleBatch[] batches) {
+    public record ParticleBatches(SourceType sourceType, List<Spawn> spawns) {
+        public enum SourceType { ENTITY, COORDINATE }
+        public record Spawn(int sourceEntityId, Vec3d sourceLocation, ParticleBatch batch) { }
+
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "particle_effects");
         public PacketByteBuf write(float countMultiplier) {
             PacketByteBuf buffer = PacketByteBufs.create();
-            buffer.writeInt(sourceEntityId);
-            buffer.writeInt(batches.length);
-            for(var batch: batches) {
-                write(batch, buffer, countMultiplier);
+            buffer.writeInt(sourceType.ordinal());
+            buffer.writeInt(spawns.size());
+            for (var spawn: spawns) {
+                buffer.writeInt(spawn.sourceEntityId);
+                buffer.writeDouble(spawn.sourceLocation.x);
+                buffer.writeDouble(spawn.sourceLocation.y);
+                buffer.writeDouble(spawn.sourceLocation.z);
+                write(spawn.batch, buffer, countMultiplier);
             }
             return buffer;
         }
@@ -129,16 +138,17 @@ public class Packets {
         }
 
         public static ParticleBatches read(PacketByteBuf buffer) {
-            var sourceEntityId = buffer.readInt();
-            var batchCount = buffer.readInt();
-            var batches = new ArrayList<ParticleBatch>();
-            for (int i = 0; i < batchCount; ++i) {
-                var batch = readBatch(buffer);
-                batches.add(batch);
+            var sourceType = SourceType.values()[buffer.readInt()];
+            var spawnCount = buffer.readInt();
+            var spawns = new ArrayList<Spawn>();
+            for (int i = 0; i < spawnCount; ++i) {
+                spawns.add(new Spawn(
+                        buffer.readInt(),
+                        new Vec3d(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()),
+                        readBatch(buffer)
+                ));
             }
-            ParticleBatch[] array = new ParticleBatch[batches.size()];
-            array = batches.toArray(array);
-            return new ParticleBatches(sourceEntityId, array);
+            return new ParticleBatches(sourceType, spawns);
         }
     }
 

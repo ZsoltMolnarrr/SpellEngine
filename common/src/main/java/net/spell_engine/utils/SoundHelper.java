@@ -47,6 +47,7 @@ public class SoundHelper {
         "fire_breath_impact",
         "fire_meteor_release",
         "fire_meteor_impact",
+
         "impact_frostbolt"
     );
 

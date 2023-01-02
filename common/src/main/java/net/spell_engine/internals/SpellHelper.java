@@ -1,6 +1,7 @@
 package net.spell_engine.internals;
 
 import com.google.common.base.Suppliers;
+import com.google.gson.Gson;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.spell_engine.SpellEngineMod;
@@ -271,7 +272,7 @@ public class SpellHelper {
         var range = info.impact_range;
         var area = info.area;
         var targets = TargetHelper.targetsFromArea(projectile, center, range, area);
-        ParticleHelper.sendBatches(projectile, info.impact_particles, 1);
+        ParticleHelper.sendBatches(projectile, info.impact_particles);
         SoundHelper.playSound(projectile.world, projectile, info.impact_sound);
         areaImpact(projectile.world, caster, targets, center, range, area, true, spell, new ImpactContext());
     }
@@ -343,8 +344,9 @@ public class SpellHelper {
 
     public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
         var performed = false;
+        var trackers = PlayerLookup.tracking(target);
         for (var impact: spell.impact) {
-            var result = performImpact(world, caster, target, spell.school, impact, context);
+            var result = performImpact(world, caster, target, spell.school, impact, context, trackers);
             performed = performed || result;
         }
         return performed;
@@ -386,8 +388,8 @@ public class SpellHelper {
 
     private static final float knockbackDefaultStrength = 0.4F;
 
-    private static boolean performImpact(World world, LivingEntity caster, Entity target, MagicSchool school, Spell.Impact impact, ImpactContext context) {
-        if (!target.isAttackable() || !target.isAlive()) {
+    private static boolean performImpact(World world, LivingEntity caster, Entity target, MagicSchool school, Spell.Impact impact, ImpactContext context, Collection<ServerPlayerEntity> trackers) {
+        if (!target.isAttackable()) {
             return false;
         }
         var success = false;
@@ -514,8 +516,12 @@ public class SpellHelper {
                 }
             }
             if (success) {
-                ParticleHelper.sendBatches(target, impact.particles, (float) particleMultiplier);
-                SoundHelper.playSound(world, target, impact.sound);
+                if (impact.particles != null) {
+                    ParticleHelper.sendBatches(target, impact.particles, (float) particleMultiplier, trackers);
+                }
+                if (impact.sound != null) {
+                    SoundHelper.playSound(world, target, impact.sound);
+                }
             }
         } catch (Exception e) {
             System.err.println("Failed to perform impact effect");
