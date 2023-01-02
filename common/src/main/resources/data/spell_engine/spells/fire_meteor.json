@@ -130,6 +130,7 @@
     }
   ],
   "cost": {
-    "item_id": "spell_engine:fire_rune"
+    "item_id": "runes:fire_stone",
+    "exhaust" : 0.3
   }
 }

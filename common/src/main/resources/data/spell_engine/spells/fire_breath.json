@@ -72,8 +72,8 @@
     }
   ],
   "cost": {
-    "exhaust": 0.1,
-    "item_id": "spell_engine:fire_rune",
+    "item_id": "runes:fire_stone",
+    "exhaust" : 0.2,
     "durability": 1,
     "cooldown_duration": 0.0
   }

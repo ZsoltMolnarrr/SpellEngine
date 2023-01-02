@@ -62,9 +62,6 @@ public class SoundHelper {
             var soundEvent = (customTravelDistance == null)
                     ? new SoundEvent(soundId)
                     : new SoundEvent(soundId, customTravelDistance);
-            if (customTravelDistance != null) {
-                System.out.println("Registering " + soundId + " with distance: " + customTravelDistance);
-            }
             Registry.register(Registry.SOUND_EVENT, soundId, soundEvent);
         }
     }

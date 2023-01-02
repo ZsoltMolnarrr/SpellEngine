@@ -102,6 +102,7 @@
   "cost": {
     "item_id": "runes:arcane_stone",
     "effect_id": "spell_power:arcane",
+    "exhaust" : 0.3,
     "cooldown_duration": 0,
     "cooldown_proportional": true
   }

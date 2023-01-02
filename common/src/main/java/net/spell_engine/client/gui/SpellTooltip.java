@@ -26,6 +26,7 @@ public class SpellTooltip {
     private static final String healToken = "{heal}";
     private static final String effectDurationToken = "{effect_duration}";
     private static final String effectAmplifierToken = "{effect_amplifier}";
+    private static final String impactRangeToken = "{impact_range}";
 
     public static void addSpellInfo(ItemStack itemStack, List<Text> lines) {
         var player = MinecraftClient.getInstance().player;
@@ -81,6 +82,15 @@ public class SpellTooltip {
 
         var description = I18n.translate(spellKeyPrefix(spellId) + ".description");
         var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);
+        switch (spell.release.target.type) {
+            case METEOR -> {
+                var meteor = spell.release.target.meteor;
+                if (meteor != null) {
+                    description = description.replace(impactRangeToken, formattedNumber(meteor.impact_range));
+                }
+            }
+            default -> { }
+        }
         for (var impact: spell.impact) {
             switch (impact.action.type) {
                 case DAMAGE -> {
