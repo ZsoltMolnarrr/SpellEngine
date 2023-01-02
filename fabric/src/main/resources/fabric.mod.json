@@ -34,7 +34,7 @@
     "fabric": "*",
     "cloth-config": ">=8.0.0",
     "player-animator": ">=0.3.5",
-    "spell_power": ">=1.0.0"
+    "spell_power": ">=0.9.0"
   },
   "breaks": {
     "bettercombat": "<1.4.0"

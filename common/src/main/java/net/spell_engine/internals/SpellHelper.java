@@ -1,9 +1,19 @@
 package net.spell_engine.internals;
 
 import com.google.common.base.Suppliers;
-import com.google.gson.Gson;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.Enchantments_CombatSpells;
 import net.spell_engine.api.spell.Spell;
@@ -13,20 +23,9 @@ import net.spell_engine.utils.AnimationHelper;
 import net.spell_engine.utils.ParticleHelper;
 import net.spell_engine.utils.SoundHelper;
 import net.spell_engine.utils.TargetHelper;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.World;
 import net.spell_power.api.MagicSchool;
-import net.spell_power.api.SpellPower;
 import net.spell_power.api.SpellDamageSource;
+import net.spell_power.api.SpellPower;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -403,26 +402,27 @@ public class SpellHelper {
                     }
                     var damageData = impact.action.damage;
                     var knockbackMultiplier = Math.max(0F, damageData.knockback * context.total());
-                    var damage = SpellPower.getSpellDamage(school, caster);
-                    particleMultiplier = damage.criticalMultiplier();
-                    var source = SpellDamageSource.create(school, caster);
-                    var amount = damage.randomValue();
-                    amount *= damageData.spell_power_coefficient;
-                    amount *= context.total();
-                    if (context.isChanneled()) {
-                        amount *= SpellPower.getHaste(caster);
-                    }
-
+                    var vulnerability = SpellPower.Vulnerability.none;
                     var timeUntilRegen = target.timeUntilRegen;
                     if (target instanceof LivingEntity livingEntity) {
                         ((LivingEntityExtension) livingEntity).setKnockbackMultiplier(context.hasOffset() ? 0 : knockbackMultiplier);
                         if (SpellEngineMod.config.bypass_iframes) {
                             target.timeUntilRegen = 0;
                         }
+                        vulnerability = SpellPower.getVulnerability(livingEntity, school);
                     }
 
+                    var damage = SpellPower.getSpellDamage(school, caster);
+                    var amount = damage.randomValue(vulnerability);
+                    amount *= damageData.spell_power_coefficient;
+                    amount *= context.total();
+                    if (context.isChanneled()) {
+                        amount *= SpellPower.getHaste(caster);
+                    }
+                    particleMultiplier = damage.criticalDamage() + vulnerability.criticalDamageBonus();
+
                     caster.onAttacking(target);
-                    target.damage(source, (float) amount);
+                    target.damage(SpellDamageSource.create(school, caster), (float) amount);
 
                     if (target instanceof LivingEntity livingEntity) {
                         ((LivingEntityExtension)livingEntity).setKnockbackMultiplier(1F);
@@ -441,7 +441,7 @@ public class SpellHelper {
                     if (target instanceof LivingEntity livingTarget) {
                         var healData = impact.action.heal;
                         var healing = SpellPower.getSpellDamage(school, caster);
-                        particleMultiplier = healing.criticalMultiplier();
+                        particleMultiplier = healing.criticalDamage();
                         var amount = healing.randomValue();
                         amount *= healData.spell_power_coefficient;
                         amount *= context.total();
