@@ -35,6 +35,8 @@ public class Spell {
 
             public Area area;
             public static class Area { public Area() { }
+                public enum DropoffCurve { NONE, LINEAR }
+                public DropoffCurve distance_dropoff = DropoffCurve.NONE;
                 public float horizontal_range_multiplier = 1F;
                 public float vertical_range_multiplier = 1F;
                 public float angle_degrees = 0F;
@@ -80,8 +82,8 @@ public class Spell {
             }
             public Damage damage;
             public static class Damage { public Damage() { }
-                public float knockback = 1;
                 public float spell_power_coefficient = 1;
+                public float knockback = 1;
             }
             public Heal heal;
             public static class Heal { public Heal() { }
@@ -98,7 +100,12 @@ public class Spell {
             }
             public Fire fire;
             public static class Fire { public Fire() { }
-                public float duration = 10;
+                // Entity.java - Notice `% 20` - tick offset is used to avoid instant hits
+                // if (this.fireTicks % 20 == 0 && !this.isInLava()) {
+                //    this.damage(DamageSource.ON_FIRE, 1.0f);
+                // }
+                public int duration = 2;
+                public int tick_offset = 10;
             }
         }
 

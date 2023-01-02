@@ -29,7 +29,7 @@ public class AnimationHelper {
             if (ServerPlayNetworking.canSend(serverPlayer, Packets.SpellAnimation.ID)) {
                 ServerPlayNetworking.send(serverPlayer, Packets.SpellAnimation.ID, packet);
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
