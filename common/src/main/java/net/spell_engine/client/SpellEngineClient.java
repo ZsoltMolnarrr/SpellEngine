@@ -50,8 +50,9 @@ public class SpellEngineClient {
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
 
         Projectiles.registerModelIds(List.of(
+                new Identifier("spell_engine:arcane_missile"),
                 new Identifier("spell_engine:fireball_projectile"),
-                new Identifier("spell_engine:arcane_missile")
+                new Identifier("spell_engine:frostbolt_projectile")
         ));
     }
 }
