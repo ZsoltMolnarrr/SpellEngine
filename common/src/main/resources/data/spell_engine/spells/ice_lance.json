@@ -43,7 +43,7 @@
               "max_speed": 0.1
             }
           ],
-          "item_id": "snowball",
+          "model_id": "snowball",
           "render": "DEEP"
         }
       }

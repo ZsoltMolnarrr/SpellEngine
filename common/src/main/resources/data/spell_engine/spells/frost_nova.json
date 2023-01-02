@@ -76,8 +76,7 @@
     }
   ],
   "cost": {
-    "exhaust": 0.1,
-    "item_id": "spell_engine:frost_rune",
-    "cooldown_duration": 4.0
+    "exhaust": 0.2,
+    "item_id": "runes:frost_stone"
   }
 }

@@ -131,16 +131,16 @@ public class Spell {
         public Client client_data;
         public static class Client { public Client() { }
             public ParticleBatch[] travel_particles;
-            public String item_id;
+            public String model_id;
             public float scale = 1F;
             public float rotate_degrees_per_tick = 2F;
             public RenderMode render = RenderMode.FLAT;
             public enum RenderMode {
                 FLAT, DEEP
             }
-            public Client(ParticleBatch[] travel_particles, String item_id) {
+            public Client(ParticleBatch[] travel_particles, String model_id) {
                 this.travel_particles = travel_particles;
-                this.item_id = item_id;
+                this.model_id = model_id;
             }
         }
     }

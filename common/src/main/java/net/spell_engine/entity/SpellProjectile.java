@@ -289,7 +289,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     @Override
     public ItemStack getStack() {
         if (projectileData() != null && projectileData().client_data != null) {
-            return Registry.ITEM.get(new Identifier(projectileData().client_data.item_id)).getDefaultStack();
+            return Registry.ITEM.get(new Identifier(projectileData().client_data.model_id)).getDefaultStack();
         }
         return ItemStack.EMPTY;
     }

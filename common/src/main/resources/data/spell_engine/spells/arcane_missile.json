@@ -40,7 +40,7 @@
               "max_speed": 0.1
             }
           ],
-          "item_id": "spell_engine:arcane_missile",
+          "model_id": "spell_engine:arcane_missile",
           "render": "DEEP",
           "scale": 0.5
         }

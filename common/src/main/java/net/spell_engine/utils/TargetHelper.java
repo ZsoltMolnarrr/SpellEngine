@@ -178,10 +178,16 @@ public class TargetHelper {
         var angle = area.angle_degrees / 2F;
         var entities = centerEntity.world.getOtherEntities(centerEntity, box, (target) -> {
             var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
+            var distanceVector = VectorHelper.distanceVector(origin, target.getBoundingBox());
             return !target.isSpectator() && target.canHit()
                     && target.squaredDistanceTo(centerEntity) <= squaredDistance
-                    && ((angle <= 0) || (VectorHelper.angleBetween(look, targetCenter.subtract(origin)) <= angle))
-                    && raycastObstacleFree(origin, target.getPos().add(0, target.getHeight() / 2F, 0));
+                    && ((angle <= 0)
+                        || (VectorHelper.angleBetween(look, targetCenter.subtract(origin)) <= angle)
+                        || (VectorHelper.angleBetween(look, distanceVector) <= angle)
+                        )
+                    && (raycastObstacleFree(origin, targetCenter)
+                        || raycastObstacleFree(origin, origin.add(distanceVector) )
+                        );
         });
         return entities;
     }

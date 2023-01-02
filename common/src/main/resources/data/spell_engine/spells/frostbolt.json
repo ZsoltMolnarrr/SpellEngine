@@ -42,7 +42,7 @@
               "max_speed": 0.1
             }
           ],
-          "item_id": "spell_engine:frostbolt_projectile",
+          "model_id": "spell_engine:frostbolt_projectile",
           "render": "DEEP",
           "scale": 0.75
         }

@@ -40,7 +40,7 @@
               "max_speed": 0.1
             }
           ],
-          "item_id": "spell_engine:fireball_projectile",
+          "model_id": "spell_engine:fireball_projectile",
           "render": "DEEP",
           "scale": 0.75
         }

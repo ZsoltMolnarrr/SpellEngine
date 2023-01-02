@@ -66,8 +66,8 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
                 var absoluteTime = (float)time + tickDelta;
                 matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(absoluteTime * renderData.rotate_degrees_per_tick));
                 matrices.scale(renderData.scale, renderData.scale, renderData.scale);
-                if (renderData.item_id != null && !renderData.item_id.isEmpty()) {
-                    var modelId = new Identifier(renderData.item_id);
+                if (renderData.model_id != null && !renderData.model_id.isEmpty()) {
+                    var modelId = new Identifier(renderData.model_id);
                     render(modelId, matrices, vertexConsumers, light, entity.getId());
                 }
             }

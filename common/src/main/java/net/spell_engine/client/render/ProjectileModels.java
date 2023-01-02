@@ -19,7 +19,7 @@ public class ProjectileModels {
         for (var entry : SpellRegistry.all().entrySet()) {
             try {
                 var spell = entry.getValue();
-                var idString = spell.release.target.projectile.client_data.item_id;
+                var idString = spell.release.target.projectile.client_data.model_id;
                 if (idString.isEmpty()) {
                     continue;
                 }
