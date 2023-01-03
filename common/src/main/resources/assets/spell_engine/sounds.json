@@ -156,9 +156,14 @@
       "spell_engine:frost_nova_release"
     ]
   },
-  "frost_nova_impact": {
+  "frost_nova_damage_impact": {
     "sounds": [
-      "spell_engine:frost_nova_impact"
+      "spell_engine:frost_nova_damage_impact"
+    ]
+  },
+  "frost_nova_effect_impact": {
+    "sounds": [
+      "spell_engine:frost_nova_effect_impact"
     ]
   }
 }

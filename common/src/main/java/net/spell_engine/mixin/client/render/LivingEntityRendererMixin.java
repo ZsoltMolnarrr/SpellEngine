@@ -1,8 +1,17 @@
 package net.spell_engine.mixin.client.render;
 
+import net.minecraft.client.render.OverlayTexture;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.texture.SpriteAtlasTexture;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.registry.Registry;
+import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.client.CustomModels;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.beam.BeamEmitterEntity;
 import net.spell_engine.client.render.BeamRenderer;
+import net.spell_engine.client.render.CustomLayers;
+import net.spell_engine.client.render.CustomModelRegistry;
 import net.spell_engine.internals.Beam;
 import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.internals.SpellHelper;
@@ -51,7 +60,16 @@ public class LivingEntityRendererMixin {
                 ((BeamEmitterEntity)livingEntity).setLastRenderedBeam(null);
             }
         }
+        if (livingEntity.hasStatusEffect(SpellEngineMod.frozen)) {
+            matrixStack.push();
+            matrixStack.translate(0, 0.5, 0);
+            CustomModels.render(spellObjectsLayer, MinecraftClient.getInstance().getItemRenderer(), new Identifier("spell_engine:frost_trap"),
+                    matrixStack, vertexConsumerProvider, light, livingEntity.getId());
+            matrixStack.pop();
+        }
     }
+
+    private static final RenderLayer spellObjectsLayer = CustomLayers.projectile(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false);
 
     private static void renderBeam(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider,
                                    Spell.Release.Target.Beam beam,

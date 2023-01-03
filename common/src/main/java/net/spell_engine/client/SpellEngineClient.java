@@ -4,13 +4,12 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.impl.client.model.ModelLoaderHooks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.client.Projectiles;
+import net.spell_engine.api.client.CustomModels;
 import net.spell_engine.client.animation.AnimationRegistry;
 import net.spell_engine.client.render.SpellBindingBlockEntityRenderer;
 import net.spell_engine.config.ClientConfig;
@@ -49,10 +48,11 @@ public class SpellEngineClient {
         HandledScreens.register(SpellBindingScreenHandler.HANDLER_TYPE, SpellBindingScreen::new);
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
 
-        Projectiles.registerModelIds(List.of(
+        CustomModels.registerModelIds(List.of(
                 new Identifier("spell_engine:arcane_missile"),
                 new Identifier("spell_engine:fireball_projectile"),
-                new Identifier("spell_engine:frostbolt_projectile")
+                new Identifier("spell_engine:frostbolt_projectile"),
+                new Identifier("spell_engine:frost_trap")
         ));
     }
 }

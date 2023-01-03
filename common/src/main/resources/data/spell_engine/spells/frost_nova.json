@@ -71,7 +71,7 @@
         }
       ],
       "sound": {
-        "id": "spell_engine:frost_nova_impact"
+        "id": "spell_engine:frost_nova_damage_impact"
       }
     },
     {
@@ -87,6 +87,9 @@
           },
           "show_particles": false
         }
+      },
+      "sound": {
+        "id": "spell_engine:frost_nova_effect_impact"
       }
     }
   ],

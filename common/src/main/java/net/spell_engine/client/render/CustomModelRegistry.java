@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ProjectileModels {
+public class CustomModelRegistry {
     public static final ArrayList<Identifier> modelIds = new ArrayList<>();
     public static final Map<Identifier, BakedModel> models = new HashMap<>();
 

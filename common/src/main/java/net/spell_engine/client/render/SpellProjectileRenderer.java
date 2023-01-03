@@ -13,6 +13,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.registry.Registry;
+import net.spell_engine.api.client.CustomModels;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.mixin.client.render.ItemRendererAccessor;
 
@@ -68,7 +69,7 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
                 matrices.scale(renderData.scale, renderData.scale, renderData.scale);
                 if (renderData.model_id != null && !renderData.model_id.isEmpty()) {
                     var modelId = new Identifier(renderData.model_id);
-                    render(modelId, matrices, vertexConsumers, light, entity.getId());
+                    CustomModels.render(LAYER, itemRenderer, modelId, matrices, vertexConsumers, light, entity.getId());
                 }
             }
             matrices.pop();
@@ -77,19 +78,6 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
     }
 
     public static final RenderLayer LAYER = CustomLayers.projectile(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false);
-
-    private void render(Identifier id, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int seed) {
-        var model = ProjectileModels.getModel(id);
-        if (model == null) {
-            var stack = Registry.ITEM.get(id).getDefaultStack();
-            if (!stack.isEmpty()) {
-                model = itemRenderer.getModel(stack, null, null, seed);
-            }
-        }
-        var buffer = vertexConsumers.getBuffer(LAYER);
-        matrices.translate(-0.5, -0.5, -0.5);
-        ((ItemRendererAccessor)itemRenderer).renderBakedItemModel(model, ItemStack.EMPTY, light, OverlayTexture.DEFAULT_UV, matrices, buffer);
-    }
 
     public Identifier getTexture(Entity entity) {
         return SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE;
