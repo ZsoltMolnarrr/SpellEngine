@@ -9,9 +9,7 @@
     "animation": "spell_engine:one_handed_projectile_charge",
     "sound": {
       "id": "spell_engine:casting_frost",
-      "volume": 1.0,
-      "pitch": 1.0,
-      "randomness": 0.1
+      "randomness": 0
     },
     "particles": [
       {
@@ -33,10 +31,7 @@
     },
     "animation": "spell_engine:one_handed_projectile_release",
     "sound": {
-      "id": "spell_engine:release_frost",
-      "volume": 1.0,
-      "pitch": 1.0,
-      "randomness": 0.1
+      "id": "spell_engine:frost_nova_release"
     },
     "particles": [
       {
@@ -76,7 +71,7 @@
         }
       ],
       "sound": {
-        "id": "spell_engine:impact_frostbolt"
+        "id": "spell_engine:frost_nova_impact"
       }
     },
     {

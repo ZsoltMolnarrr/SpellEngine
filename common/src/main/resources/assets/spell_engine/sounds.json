@@ -145,10 +145,20 @@
     ]
   },
 
-
-  "impact_frostbolt": {
+  "frostbolt_impact": {
     "sounds": [
-      "spell_engine:impact_frostbolt_1"
+      "spell_engine:frostbolt_impact"
+    ]
+  },
+
+  "frost_nova_release": {
+    "sounds": [
+      "spell_engine:frost_nova_release"
+    ]
+  },
+  "frost_nova_impact": {
+    "sounds": [
+      "spell_engine:frost_nova_impact"
     ]
   }
 }

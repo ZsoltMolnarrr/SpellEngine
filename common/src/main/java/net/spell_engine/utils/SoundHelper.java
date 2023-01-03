@@ -48,7 +48,9 @@ public class SoundHelper {
         "fire_meteor_release",
         "fire_meteor_impact",
 
-        "impact_frostbolt"
+        "frostbolt_impact",
+        "frost_nova_release",
+        "frost_nova_impact"
     );
 
     public static Map<String, Float> soundDistances = Map.of(

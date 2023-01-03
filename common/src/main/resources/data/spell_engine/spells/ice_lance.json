@@ -65,7 +65,7 @@
         }
       },
       "sound": {
-        "id": "spell_engine:impact_frostbolt",
+        "id": "spell_engine:frostbolt_impact",
         "volume": 1.0,
         "pitch": 1.0,
         "randomness": 0.1
