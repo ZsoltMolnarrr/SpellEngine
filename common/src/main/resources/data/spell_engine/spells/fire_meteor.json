@@ -57,10 +57,10 @@
         "impact_sound": {
           "id": "spell_engine:fire_meteor_impact",
           "volume": 1.5
-        },
-        "area" : {
-          "distance_dropoff": "SQUARED"
         }
+      },
+      "area": {
+        "distance_dropoff": "SQUARED"
       },
       "projectile": {
         "velocity": 1,

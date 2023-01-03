@@ -264,12 +264,12 @@ public class SpellHelper {
 
     public static void fallImpact(LivingEntity caster, Entity projectile, Spell spell, Vec3d position) {
         var info = spell.release.target.meteor;
-        if (info == null) {
+        var area = spell.release.target.area;
+        if (info == null || area == null) {
             return;
         }
         var center = position.add(0, 1, 0);
         var range = info.impact_range;
-        var area = info.area;
         var targets = TargetHelper.targetsFromArea(projectile, center, range, area);
         ParticleHelper.sendBatches(projectile, info.impact_particles);
         SoundHelper.playSound(projectile.world, projectile, info.impact_sound);
