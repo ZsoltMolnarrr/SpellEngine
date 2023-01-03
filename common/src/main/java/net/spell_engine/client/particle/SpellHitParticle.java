@@ -45,13 +45,12 @@ public class SpellHitParticle extends SpriteBillboardParticle {
             this.spriteProvider = spriteProvider;
         }
 
-        public static Color color = Color.from(0x66ffff);
+        public static Color color = Color.from(0x66ccff);
 
         public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
             var particle = new SpellHitParticle(clientWorld, d, e, f, g, h, i);
             particle.setSprite(this.spriteProvider);
             float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
-            // 0xff66ff
             particle.setColor(color.red() * j, color.green() * j, color.blue() * j);
             particle.velocityY += clientWorld.random.nextFloat() * 0.5F;
             particle.alpha = 0.75F;

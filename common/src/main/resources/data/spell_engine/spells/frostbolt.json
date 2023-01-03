@@ -82,7 +82,7 @@
       },
       "particles": [
         {
-          "particle_id": "spell_engine:frost",
+          "particle_id": "spell_engine:frost_hit",
           "shape": "SPHERE",
           "origin": "CENTER",
           "count": 50.0,

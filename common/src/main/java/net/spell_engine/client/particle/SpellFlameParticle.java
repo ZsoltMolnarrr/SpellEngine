@@ -5,6 +5,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.DefaultParticleType;
+import net.spell_engine.client.util.Color;
 
 @Environment(value= EnvType.CLIENT)
 public class SpellFlameParticle extends AbstractSlowingParticle {
@@ -49,4 +50,26 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
             return flameParticle;
         }
     }
+
+    @Environment(EnvType.CLIENT)
+    public static class FrostShard implements ParticleFactory<DefaultParticleType> {
+        private final SpriteProvider spriteProvider;
+
+        public FrostShard(SpriteProvider spriteProvider) {
+            this.spriteProvider = spriteProvider;
+        }
+
+        public static Color color = Color.from(0x66ccff);
+
+        public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
+            particle.setSprite(this.spriteProvider);
+            float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
+            particle.setColor(color.red() * j, color.green() * j, color.blue() * j);
+            particle.velocityY *= clientWorld.random.nextFloat() * 0.2F + 0.9F;
+            particle.maxAge = Math.round(clientWorld.random.nextFloat() * 3) + 5;
+            return particle;
+        }
+    }
+
 }

@@ -1,5 +1,5 @@
 {
-  "range": 8.0,
+  "range": 6.0,
   "school": "FROST",
   "learn": {
     "tier": 2
@@ -40,20 +40,20 @@
     },
     "particles": [
       {
-        "particle_id": "soul_fire_flame",
-        "shape": "SPHERE",
-        "origin": "CENTER",
-        "count": 130.0,
-        "min_speed": 0.2,
-        "max_speed": 0.2
-      },
-      {
-        "particle_id": "spell_engine:frost",
+        "particle_id": "spell_engine:snowflake",
         "shape": "CIRCLE",
         "origin": "CENTER",
         "count": 130.0,
-        "min_speed": 0.7,
-        "max_speed": 1.2
+        "min_speed": 0.2,
+        "max_speed": 0.6
+      },
+      {
+        "particle_id": "spell_engine:frost_shard",
+        "shape": "CIRCLE",
+        "origin": "CENTER",
+        "count": 130.0,
+        "min_speed": 0.5,
+        "max_speed": 0.9
       }
     ]
   },
@@ -67,7 +67,7 @@
       },
       "particles": [
         {
-          "particle_id": "spell_engine:frost",
+          "particle_id": "spell_engine:frost_hit",
           "shape": "SPHERE",
           "origin": "CENTER",
           "count": 30.0,

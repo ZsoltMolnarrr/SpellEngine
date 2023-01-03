@@ -34,12 +34,13 @@ public class Particles {
     public static final ParticleEntry arcane_spell = new ParticleEntry("arcane_spell");
     public static final ParticleEntry arcane_hit = new ParticleEntry("arcane_hit").customTexture();;
     public static final ParticleEntry flame = new ParticleEntry("flame");
-    public static final ParticleEntry frost = new ParticleEntry("frost").customTexture();
+    public static final ParticleEntry frost_hit = new ParticleEntry("frost_hit").customTexture();
+    public static final ParticleEntry frost_shard = new ParticleEntry("frost_shard").customTexture();
     public static final ParticleEntry snowflake = new ParticleEntry("snowflake");
 
     public static final List<ParticleEntry> all;
     static {
-        all = List.of(arcane_spell, arcane_hit, flame, frost, snowflake);
+        all = List.of(arcane_spell, arcane_hit, flame, frost_hit, frost_shard, snowflake);
     }
 
     public static void register() {

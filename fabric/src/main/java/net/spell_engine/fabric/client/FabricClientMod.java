@@ -53,10 +53,13 @@ public class FabricClientMod implements ClientModInitializer {
          * First argument is our particle's instance, created previously on ExampleMod.
          * Second argument is the particle's factory. The factory controls how the particle behaves.
          * In this example, we'll use FlameParticle's Factory.*/
-        ParticleFactoryRegistry.getInstance().register(Particles.flame.particleType, SpellFlameParticle.Factory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.arcane_hit.particleType, SpellHitParticle.ArcaneFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.arcane_spell.particleType, GenericSpellParticle.ArcaneSpellFactory::new);
+
+        ParticleFactoryRegistry.getInstance().register(Particles.flame.particleType, SpellFlameParticle.Factory::new);
+
         ParticleFactoryRegistry.getInstance().register(Particles.snowflake.particleType, SpellSnowflakeParticle.Factory::new);
-        ParticleFactoryRegistry.getInstance().register(Particles.frost.particleType, SpellHitParticle.FrostFactory::new);
+        ParticleFactoryRegistry.getInstance().register(Particles.frost_hit.particleType, SpellHitParticle.FrostFactory::new);
+        ParticleFactoryRegistry.getInstance().register(Particles.frost_shard.particleType, SpellFlameParticle.FrostShard::new);
     }
 }
