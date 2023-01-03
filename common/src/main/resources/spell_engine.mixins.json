@@ -10,7 +10,9 @@
     "LivingEntityFrozen",
     "LivingEntityMixin",
     "PlayerEntityMixin",
-    "client.control.PlayerInventoryMixin"
+    "client.control.PlayerInventoryMixin",
+    "statuseffect.LivingEntityStatusEffectSync",
+    "statuseffect.StatusEffectRemoveOnHit"
   ],
   "client": [
     "client.AbstractClientPlayerEntityMixin",

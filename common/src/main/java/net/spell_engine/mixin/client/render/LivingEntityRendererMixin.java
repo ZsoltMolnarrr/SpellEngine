@@ -1,29 +1,26 @@
 package net.spell_engine.mixin.client.render;
 
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.texture.SpriteAtlasTexture;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.registry.Registry;
-import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.client.CustomModels;
-import net.spell_engine.api.spell.Spell;
-import net.spell_engine.client.beam.BeamEmitterEntity;
-import net.spell_engine.client.render.BeamRenderer;
-import net.spell_engine.client.render.CustomLayers;
-import net.spell_engine.client.render.CustomModelRegistry;
-import net.spell_engine.internals.Beam;
-import net.spell_engine.internals.SpellCasterEntity;
-import net.spell_engine.internals.SpellHelper;
-import net.spell_engine.utils.TargetHelper;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
+import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.registry.Registry;
+import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.status_effect.CustomModelStatusEffect;
+import net.spell_engine.api.status_effect.SynchronizedStatusEffect;
+import net.spell_engine.client.beam.BeamEmitterEntity;
+import net.spell_engine.client.render.BeamRenderer;
+import net.spell_engine.client.render.CustomLayers;
+import net.spell_engine.internals.Beam;
+import net.spell_engine.internals.SpellCasterEntity;
+import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.utils.TargetHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -60,12 +57,14 @@ public class LivingEntityRendererMixin {
                 ((BeamEmitterEntity)livingEntity).setLastRenderedBeam(null);
             }
         }
-        if (livingEntity.hasStatusEffect(SpellEngineMod.frozen)) {
-            matrixStack.push();
-            matrixStack.translate(0, 0.5, 0);
-            CustomModels.render(spellObjectsLayer, MinecraftClient.getInstance().getItemRenderer(), new Identifier("spell_engine:frost_trap"),
-                    matrixStack, vertexConsumerProvider, light, livingEntity.getId());
-            matrixStack.pop();
+
+        for (var entry: SynchronizedStatusEffect.all(livingEntity).entrySet()) {
+            var rawId = entry.getKey();
+            var amplifier = entry.getValue();
+            var effect = Registry.STATUS_EFFECT.get(rawId);
+            if (effect instanceof CustomModelStatusEffect customEffect) {
+                 customEffect.renderEffect(amplifier, livingEntity, delta, matrixStack, vertexConsumerProvider, light);
+            }
         }
     }
 

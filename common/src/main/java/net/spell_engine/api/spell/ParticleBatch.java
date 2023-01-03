@@ -48,4 +48,15 @@ public class ParticleBatch { public ParticleBatch() { }
         this.max_speed = max_speed;
         this.angle = angle;
     }
+
+    public ParticleBatch(ParticleBatch other) {
+        this(other.particle_id,
+            other.shape,
+            other.origin,
+            other.rotation,
+            other.count,
+            other.min_speed,
+            other.max_speed,
+            other.angle);
+    }
 }

@@ -27,9 +27,9 @@ import net.spell_engine.spellbinding.SpellBinding;
 import net.spell_engine.spellbinding.SpellBindingBlock;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 import net.spell_engine.spellbinding.SpellBindingScreenHandler;
+import net.spell_engine.wizards.FrozenStatusEffect;
 import net.spell_power.api.MagicSchool;
 import net.spell_power.api.SpellPower;
-import net.spell_power.api.statuseffects.SpellVulnerabilityStatusEffect;
 import net.tinyconfig.ConfigManager;
 
 public class SpellEngineMod {
@@ -48,7 +48,7 @@ public class SpellEngineMod {
             .build();
     public static EntityType<SpellProjectile> SPELL_PROJECTILE;
 
-    public static StatusEffect frozen = new SpellVulnerabilityStatusEffect(StatusEffectCategory.HARMFUL, 0x99ccff)
+    public static StatusEffect frozen = new FrozenStatusEffect(StatusEffectCategory.HARMFUL, 0x99ccff)
             .setVulnerability(MagicSchool.FROST, new SpellPower.Vulnerability(0, 1F, 0F))
             .addAttributeModifier(EntityAttributes.GENERIC_MOVEMENT_SPEED,
                     "052f3166-8ae7-11ed-a1eb-0242ac120002",

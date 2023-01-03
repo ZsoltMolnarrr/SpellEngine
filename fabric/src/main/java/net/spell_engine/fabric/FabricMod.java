@@ -3,6 +3,7 @@ package net.spell_engine.fabric;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.status_effect.RemoveOnHitStatusEffect;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.entity.SpellProjectile;
 import net.fabricmc.api.ModInitializer;
@@ -39,7 +40,13 @@ public class FabricMod implements ModInitializer {
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
             var attacker = source.getAttacker();
             if (amount > 0 && attacker != null) {
-                entity.removeStatusEffect(SpellEngineMod.frozen);
+                for(var instance: entity.getStatusEffects()) {
+                    var effect = instance.getEffectType();
+                    if (((RemoveOnHitStatusEffect)effect).shouldRemoveOnDirectHit()) {
+                        entity.removeStatusEffect(effect);
+                        break;
+                    }
+                }
             }
             return true;
         });
