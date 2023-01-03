@@ -78,9 +78,14 @@
       "action": {
         "type": "STATUS_EFFECT",
         "status_effect": {
-          "apply_mode": "ADD",
+          "effect_id": "spell_engine:frozen",
           "duration": 10,
-          "effect_id": "spell_engine:frozen"
+          "apply_mode": "ADD",
+          "apply_limit": {
+            "health_base": 50,
+            "spell_power_multiplier": 2
+          },
+          "show_particles": false
         }
       }
     }

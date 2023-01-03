@@ -90,12 +90,18 @@ public class Spell {
             }
             public StatusEffect status_effect;
             public static class StatusEffect { public StatusEffect() { }
-                public boolean apply_to_caster = false;
-                public enum Apply { SET, ADD, CONSUME }
-                public Apply apply_mode = Apply.SET;
+                public String effect_id;
                 public float duration = 10;
                 public int amplifier = 0;
-                public String effect_id;
+                public boolean apply_to_caster = false;
+                public ApplyMode apply_mode = ApplyMode.SET;
+                public enum ApplyMode { SET, ADD }
+                public ApplyLimit apply_limit;
+                public static class ApplyLimit { public ApplyLimit() { }
+                    public float health_base = 0;
+                    public float spell_power_multiplier = 0;
+                }
+                public boolean show_particles = true;
             }
             public Fire fire;
             public static class Fire { public Fire() { }

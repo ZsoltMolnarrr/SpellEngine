@@ -65,19 +65,20 @@
         }
       },
       "sound": {
-        "id": "spell_engine:frostbolt_impact",
-        "volume": 1.0,
-        "pitch": 1.0,
-        "randomness": 0.1
+        "id": "spell_engine:frostbolt_impact"
       }
     },
     {
       "action": {
         "type": "STATUS_EFFECT",
         "status_effect": {
+          "effect_id": "slowness",
           "duration": 5,
-          "amplifier": 2,
-          "effect_id": "slowness"
+          "amplifier": 0,
+          "apply_limit": {
+            "health_base": 100,
+            "spell_power_multiplier": 2
+          }
         }
       },
       "particles": [

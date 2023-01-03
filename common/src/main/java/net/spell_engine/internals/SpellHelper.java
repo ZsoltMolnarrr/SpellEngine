@@ -468,14 +468,15 @@ public class SpellHelper {
                         if(!TargetHelper.actionAllowed(effect.isBeneficial(), relation, caster, target)) {
                             return false;
                         }
+                        if(!underApplyLimit(caster, livingTarget, school, data.apply_limit)) {
+                            return false;
+                        }
                         var duration = Math.round(data.duration * 20F);
                         // duration *= progressMultiplier; // ?????
                         var amplifier = data.amplifier;
+                        var showParticles = data.show_particles;
                         switch (data.apply_mode) {
                             case SET -> {
-                                livingTarget.addStatusEffect(
-                                        new StatusEffectInstance(effect, duration, amplifier),
-                                        caster);
                             }
                             case ADD -> {
                                 var currentEffect = livingTarget.getStatusEffect(effect);
@@ -484,23 +485,12 @@ public class SpellHelper {
                                     var incrementedAmplifier = currentEffect.getAmplifier() + 1;
                                     newAmplifier = Math.min(incrementedAmplifier, amplifier);
                                 }
-                                livingTarget.addStatusEffect(
-                                        new StatusEffectInstance(effect, duration, newAmplifier),
-                                        caster);
-                            }
-                            case CONSUME -> {
-                                var currentEffect = livingTarget.getStatusEffect(effect);
-                                if (currentEffect != null) {
-                                    var decrementedAmplifier = currentEffect.getAmplifier() - amplifier;
-                                    livingTarget.removeStatusEffect(effect);
-                                    if (decrementedAmplifier >= 0) {
-                                        livingTarget.addStatusEffect(
-                                                new StatusEffectInstance(effect, duration, decrementedAmplifier),
-                                                caster);
-                                    }
-                                }
+                                amplifier = newAmplifier;
                             }
                         }
+                        livingTarget.addStatusEffect(
+                                new StatusEffectInstance(effect, duration, amplifier, false, showParticles, true),
+                                caster);
                         success = true;
                     }
                 }
@@ -531,6 +521,15 @@ public class SpellHelper {
             }
         }
         return success;
+    }
+
+    public static boolean underApplyLimit(LivingEntity caster, LivingEntity target, MagicSchool school, Spell.Impact.Action.StatusEffect.ApplyLimit limit) {
+        if (limit == null) {
+            return true;
+        }
+        var power = (float) SpellPower.getSpellDamage(school, caster).nonCriticalValue();
+        float cap = limit.health_base + (power * limit.spell_power_multiplier);
+        return cap >= target.getMaxHealth();
     }
 
     // DAMAGE/HEAL OUTPUT ESTIMATION
