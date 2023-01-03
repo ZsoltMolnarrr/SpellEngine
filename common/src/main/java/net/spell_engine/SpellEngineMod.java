@@ -48,7 +48,7 @@ public class SpellEngineMod {
             .build();
     public static EntityType<SpellProjectile> SPELL_PROJECTILE;
 
-    public static StatusEffect frostNova = new SpellVulnerabilityStatusEffect(StatusEffectCategory.HARMFUL, 0x99ccff)
+    public static StatusEffect frozen = new SpellVulnerabilityStatusEffect(StatusEffectCategory.HARMFUL, 0x99ccff)
             .setVulnerability(MagicSchool.FROST, new SpellPower.Vulnerability(0, 1F, 0F))
             .addAttributeModifier(EntityAttributes.GENERIC_MOVEMENT_SPEED,
                     "052f3166-8ae7-11ed-a1eb-0242ac120002",
@@ -65,7 +65,7 @@ public class SpellEngineMod {
         ServerNetwork.initializeHandlers();
         Particles.register();
 
-        Registry.register(Registry.STATUS_EFFECT, new Identifier("spell_engine:frost_nova"), frostNova);
+        Registry.register(Registry.STATUS_EFFECT, new Identifier("spell_engine:frozen"), frozen);
     }
 
     public static void registerSpellBinding() {

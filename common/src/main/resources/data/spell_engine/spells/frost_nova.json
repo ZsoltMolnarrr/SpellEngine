@@ -79,8 +79,8 @@
         "type": "STATUS_EFFECT",
         "status_effect": {
           "apply_mode": "ADD",
-          "duration": 6,
-          "effect_id": "spell_engine:frost_nova"
+          "duration": 10,
+          "effect_id": "spell_engine:frozen"
         }
       }
     }

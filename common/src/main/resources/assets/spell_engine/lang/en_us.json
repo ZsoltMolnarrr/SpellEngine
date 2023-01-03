@@ -85,5 +85,5 @@
   "spell.spell_engine.frostbolt.description": "Launches a ball of frost dealing {damage} frost damage and slowing the target on impact.",
   "spell.spell_engine.frost_nova.name": "Frost Nova",
   "spell.spell_engine.frost_nova.description": "Launches a ball of frost dealing {damage} frost damage and slowing the target on impact.",
-  "effect.spell_engine.frost_nova": "Frost Nova"
+  "effect.spell_engine.frozen": "Frozen"
 }

@@ -7,6 +7,7 @@
     "AttributeAssigner_ItemStackMixin",
     "ItemStackMixin",
     "LivingEntityAccessor",
+    "LivingEntityFrozen",
     "LivingEntityMixin",
     "PlayerEntityMixin",
     "client.control.PlayerInventoryMixin"

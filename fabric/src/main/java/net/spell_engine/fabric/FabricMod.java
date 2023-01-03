@@ -2,9 +2,6 @@ package net.spell_engine.fabric;
 
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.EntityDamageSource;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.entity.SpellProjectile;
@@ -42,7 +39,7 @@ public class FabricMod implements ModInitializer {
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
             var attacker = source.getAttacker();
             if (amount > 0 && attacker != null) {
-                entity.removeStatusEffect(SpellEngineMod.frostNova);
+                entity.removeStatusEffect(SpellEngineMod.frozen);
             }
             return true;
         });
