@@ -26,7 +26,6 @@ public abstract class LivingEntityFrostShield {
 
     @Inject(method = "blockedByShield", at = @At("HEAD"), cancellable = true)
     private void blockedByShield_HEAD_FrostShield(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
-        var entity = (LivingEntity) ((Object)this);
         if (hasFrostShield && !source.bypassesArmor()) {
             cir.setReturnValue(true);
             cir.cancel();

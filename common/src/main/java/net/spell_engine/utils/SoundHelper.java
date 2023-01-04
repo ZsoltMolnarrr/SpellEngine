@@ -17,18 +17,18 @@ import java.util.Map;
 public class SoundHelper {
     public static List<String> soundKeys = List.of(
         "bind_spell",
-        "casting_arcane",
-        "casting_fire",
-        "casting_frost",
-        "casting_healing",
-        "casting_lightning",
-        "casting_soul",
-        "release_arcane",
-        "release_fire",
-        "release_frost",
-        "release_lightning",
-        "release_healing",
-        "release_soul",
+        "generic_arcane_casting",
+        "generic_fire_casting",
+        "generic_frost_casting",
+        "generic_healing_casting",
+        "generic_lightning_casting",
+        "generic_soul_casting",
+        "generic_arcane_release",
+        "generic_fire_release",
+        "generic_frost_release",
+        "generic_lightning_release",
+        "generic_healing_release",
+        "generic_soul_release",
 
         // Spell specific impact sounds
 

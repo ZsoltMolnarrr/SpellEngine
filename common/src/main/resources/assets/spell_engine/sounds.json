@@ -4,64 +4,64 @@
       "spell_engine:bind_spell"
     ]
   },
-  "casting_arcane": {
+  "generic_arcane_casting": {
     "sounds": [
-      "spell_engine:casting_arcane"
+      "spell_engine:generic_arcane_casting"
     ]
   },
-  "casting_fire": {
+  "generic_fire_casting": {
     "sounds": [
-      "spell_engine:casting_fire"
+      "spell_engine:generic_fire_casting"
     ]
   },
-  "casting_frost": {
+  "generic_frost_casting": {
     "sounds": [
-      "spell_engine:casting_frost"
+      "spell_engine:generic_frost_casting"
     ]
   },
-  "casting_healing": {
+  "generic_healing_casting": {
     "sounds": [
-      "spell_engine:casting_healing"
+      "spell_engine:generic_healing_casting"
     ]
   },
-  "casting_lightning": {
+  "generic_lightning_casting": {
     "sounds": [
-      "spell_engine:casting_lightning"
+      "spell_engine:generic_lightning_casting"
     ]
   },
-  "casting_soul": {
+  "generic_soul_casting": {
     "sounds": [
-      "spell_engine:casting_soul"
+      "spell_engine:generic_soul_casting"
     ]
   },
-  "release_arcane": {
+  "generic_arcane_release": {
     "sounds": [
-      "spell_engine:release_arcane"
+      "spell_engine:generic_arcane_release"
     ]
   },
-  "release_fire": {
+  "generic_fire_release": {
     "sounds": [
-      "spell_engine:release_fire"
+      "spell_engine:generic_fire_release"
     ]
   },
-  "release_frost": {
+  "generic_frost_release": {
     "sounds": [
-      "spell_engine:release_frost"
+      "spell_engine:generic_frost_release"
     ]
   },
-  "release_healing": {
+  "generic_healing_release": {
     "sounds": [
-      "spell_engine:release_healing"
+      "spell_engine:generic_healing_release"
     ]
   },
-  "release_lightning": {
+  "generic_lightning_release": {
     "sounds": [
-      "spell_engine:release_lightning"
+      "spell_engine:generic_lightning_release"
     ]
   },
-  "release_soul": {
+  "generic_soul_release": {
     "sounds": [
-      "spell_engine:release_soul"
+      "spell_engine:generic_soul_release"
     ]
   },
 

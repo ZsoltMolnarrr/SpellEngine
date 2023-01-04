@@ -8,7 +8,7 @@
     "duration": 1,
     "animation": "spell_engine:one_handed_projectile_charge",
     "sound": {
-      "id": "spell_engine:casting_fire",
+      "id": "spell_engine:generic_fire_casting",
       "randomness": 0
     },
     "particles": [

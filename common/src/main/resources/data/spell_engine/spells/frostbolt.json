@@ -8,7 +8,7 @@
     "duration": 2.0,
     "animation": "spell_engine:one_handed_projectile_charge",
     "sound": {
-      "id": "spell_engine:casting_frost",
+      "id": "spell_engine:generic_frost_casting",
       "randomness": 0
     },
     "particles": [
@@ -50,7 +50,7 @@
     },
     "animation": "spell_engine:one_handed_projectile_release",
     "sound": {
-      "id": "spell_engine:release_frost",
+      "id": "spell_engine:generic_frost_release",
       "volume": 1.0,
       "pitch": 1.0,
       "randomness": 0.1
