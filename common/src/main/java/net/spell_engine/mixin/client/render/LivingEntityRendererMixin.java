@@ -58,12 +58,16 @@ public class LivingEntityRendererMixin {
             }
         }
 
-        for (var entry: SynchronizedStatusEffect.all(livingEntity).entrySet()) {
-            var rawId = entry.getKey();
-            var amplifier = entry.getValue();
-            var effect = Registry.STATUS_EFFECT.get(rawId);
-            if (effect instanceof CustomModelStatusEffect customEffect) {
-                 customEffect.renderEffect(amplifier, livingEntity, delta, matrixStack, vertexConsumerProvider, light);
+        var client = MinecraftClient.getInstance();
+        var isRenderingClientPlayerInFirstPerson = (livingEntity == client.player && !client.gameRenderer.getCamera().isThirdPerson());
+        if (!isRenderingClientPlayerInFirstPerson) {
+            for (var entry : SynchronizedStatusEffect.all(livingEntity).entrySet()) {
+                var rawId = entry.getKey();
+                var amplifier = entry.getValue();
+                var effect = Registry.STATUS_EFFECT.get(rawId);
+                if (effect instanceof CustomModelStatusEffect customEffect) {
+                    customEffect.renderEffect(amplifier, livingEntity, delta, matrixStack, vertexConsumerProvider, light);
+                }
             }
         }
     }
