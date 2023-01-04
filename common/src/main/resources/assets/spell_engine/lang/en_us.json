@@ -79,11 +79,12 @@
   "spell.spell_engine.fire_meteor.name": "Meteor",
   "spell.spell_engine.fire_meteor.description": "Crashes a meteor on the target, causing up to {damage} fire damage within {impact_range} blocks.",
 
-  "spell.spell_engine.ice_lance.name": "Ice Lance",
-  "spell.spell_engine.ice_lance.description": "Launches a bolt of frost dealing {damage} frost damage and slowing the target on impact.",
   "spell.spell_engine.frostbolt.name": "Frostbolt",
   "spell.spell_engine.frostbolt.description": "Launches a ball of frost dealing {damage} frost damage and slowing the target on impact.",
   "spell.spell_engine.frost_nova.name": "Frost Nova",
   "spell.spell_engine.frost_nova.description": "Launches a ball of frost dealing {damage} frost damage and slowing the target on impact.",
-  "effect.spell_engine.frozen": "Frozen"
+  "effect.spell_engine.frozen": "Frozen",
+  "spell.spell_engine.frost_shield.name": "Frost Shield",
+  "spell.spell_engine.frost_shield.description": "Gives protective shield. :)",
+  "effect.spell_engine.frost_shield": "Frost Shield"
 }

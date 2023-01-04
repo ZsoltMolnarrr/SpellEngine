@@ -9,6 +9,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Sound;
+import net.spell_engine.wizards.FrostShieldStatusEffect;
 
 import java.util.List;
 import java.util.Map;
@@ -51,7 +52,8 @@ public class SoundHelper {
         "frostbolt_impact",
         "frost_nova_release",
         "frost_nova_damage_impact",
-        "frost_nova_effect_impact"
+        "frost_nova_effect_impact",
+        "frost_shield_release"
     );
 
     public static Map<String, Float> soundDistances = Map.of(
@@ -67,6 +69,9 @@ public class SoundHelper {
                     : new SoundEvent(soundId, customTravelDistance);
             Registry.register(Registry.SOUND_EVENT, soundId, soundEvent);
         }
+
+        // TODO: Remove
+        Registry.register(Registry.SOUND_EVENT, FrostShieldStatusEffect.soundId, FrostShieldStatusEffect.sound);
     }
 
     public static void playSound(World world, Entity entity, Sound sound) {
@@ -75,18 +80,26 @@ public class SoundHelper {
         }
         try {
             var soundEvent = Registry.SOUND_EVENT.get(new Identifier(sound.id()));
-            world.playSound(
-                    (PlayerEntity)null,
-                    entity.getX(),
-                    entity.getY(),
-                    entity.getZ(),
-                    soundEvent,
-                    SoundCategory.PLAYERS,
-                    sound.volume(),
-                    sound.randomizedPitch());
+            playSoundEvent(world, entity, soundEvent, sound.volume(), sound.randomizedPitch());
         } catch (Exception e) {
             System.err.println("Failed to play sound: " + sound.id());
             e.printStackTrace();
         }
+    }
+
+    public static void playSoundEvent(World world, Entity entity, SoundEvent soundEvent) {
+        playSoundEvent(world, entity, soundEvent, 1, 1);
+    }
+
+    public static void playSoundEvent(World world, Entity entity, SoundEvent soundEvent, float volume, float pitch) {
+        world.playSound(
+                (PlayerEntity)null,
+                entity.getX(),
+                entity.getY(),
+                entity.getZ(),
+                soundEvent,
+                SoundCategory.PLAYERS,
+                volume,
+                pitch);
     }
 }

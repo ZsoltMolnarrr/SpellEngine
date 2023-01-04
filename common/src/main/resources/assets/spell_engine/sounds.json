@@ -165,5 +165,16 @@
     "sounds": [
       "spell_engine:frost_nova_effect_impact"
     ]
+  },
+
+  "frost_shield_release": {
+    "sounds": [
+      "spell_engine:frost_shield_release"
+    ]
+  },
+  "frost_shield_impact": {
+    "sounds": [
+      "spell_engine:frost_shield_impact"
+    ]
   }
 }

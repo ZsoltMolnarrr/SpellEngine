@@ -1,11 +1,15 @@
 package net.spell_engine.mixin;
 
+import net.minecraft.entity.EntityStatuses;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.utils.SoundHelper;
+import net.spell_engine.wizards.FrostShieldStatusEffect;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
@@ -26,5 +30,17 @@ public class LivingEntityFrostShield {
             cir.setReturnValue(true);
             cir.cancel();
         }
+    }
+
+    @ModifyArg(method = "damage", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;sendEntityStatus(Lnet/minecraft/entity/Entity;B)V"), index = 1)
+    private byte damage_sendEntityStatus_NoSendShieldEvent(byte status) {
+        if (status == EntityStatuses.BLOCK_WITH_SHIELD) {
+            var entity = (LivingEntity) ((Object)this);
+            if (entity.hasStatusEffect(SpellEngineMod.frostShield)) {
+                SoundHelper.playSoundEvent(entity.world, entity, FrostShieldStatusEffect.sound);
+                return 0; // `0` is unused, but make sure to check in `EntityStatuses`, when updating
+            }
+        }
+        return status;
     }
 }
