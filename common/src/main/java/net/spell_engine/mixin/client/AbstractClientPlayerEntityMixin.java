@@ -20,7 +20,7 @@ import net.spell_engine.client.sound.SpellCastingSound;
 import net.spell_engine.internals.SpellAnimationType;
 import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.mixin.LivingEntityAccessor;
-import net.spell_engine.utils.ParticleHelper;
+import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.StringUtil;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;

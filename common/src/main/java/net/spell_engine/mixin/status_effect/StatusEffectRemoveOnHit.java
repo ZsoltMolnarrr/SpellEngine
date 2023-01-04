@@ -1,4 +1,4 @@
-package net.spell_engine.mixin.statuseffect;
+package net.spell_engine.mixin.status_effect;
 
 import net.minecraft.entity.effect.StatusEffect;
 import net.spell_engine.api.status_effect.RemoveOnHitStatusEffect;

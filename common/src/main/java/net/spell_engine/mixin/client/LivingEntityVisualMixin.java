@@ -10,7 +10,7 @@ import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.beam.BeamEmitterEntity;
 import net.spell_engine.internals.Beam;
 import net.spell_engine.internals.SpellCasterEntity;
-import net.spell_engine.utils.ParticleHelper;
+import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.TargetHelper;
 import net.minecraft.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;

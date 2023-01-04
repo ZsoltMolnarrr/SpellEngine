@@ -1,4 +1,4 @@
-package net.spell_engine.mixin.statuseffect;
+package net.spell_engine.mixin.status_effect;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;

@@ -30,4 +30,3 @@ public class Enchantments_CombatSpells {
         return SpellEngineMod.enchantmentConfig.value;
     }
 }
-

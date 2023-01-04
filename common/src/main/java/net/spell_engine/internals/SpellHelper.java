@@ -17,10 +17,10 @@ import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.Enchantments_CombatSpells;
 import net.spell_engine.api.spell.Spell;
-import net.spell_engine.entity.LivingEntityExtension;
+import net.spell_engine.entity.LivingEntityKnockback;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.utils.AnimationHelper;
-import net.spell_engine.utils.ParticleHelper;
+import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.SoundHelper;
 import net.spell_engine.utils.TargetHelper;
 import net.spell_power.api.MagicSchool;
@@ -405,7 +405,7 @@ public class SpellHelper {
                     var vulnerability = SpellPower.Vulnerability.none;
                     var timeUntilRegen = target.timeUntilRegen;
                     if (target instanceof LivingEntity livingEntity) {
-                        ((LivingEntityExtension) livingEntity).setKnockbackMultiplier(context.hasOffset() ? 0 : knockbackMultiplier);
+                        ((LivingEntityKnockback) livingEntity).SpellEngine_setKnockbackMultiplier(context.hasOffset() ? 0 : knockbackMultiplier);
                         if (SpellEngineMod.config.bypass_iframes) {
                             target.timeUntilRegen = 0;
                         }
@@ -425,7 +425,7 @@ public class SpellHelper {
                     target.damage(SpellDamageSource.create(school, caster), (float) amount);
 
                     if (target instanceof LivingEntity livingEntity) {
-                        ((LivingEntityExtension)livingEntity).setKnockbackMultiplier(1F);
+                        ((LivingEntityKnockback)livingEntity).SpellEngine_setKnockbackMultiplier(1F);
                         target.timeUntilRegen = timeUntilRegen;
                         if (context.hasOffset()) {
                             var direction = context.knockbackDirection(livingEntity.getPos()).negate(); // Negate for smart Vanilla API :)
@@ -517,7 +517,7 @@ public class SpellHelper {
             System.err.println("Failed to perform impact effect");
             System.err.println(e.getMessage());
             if (target instanceof LivingEntity livingEntity) {
-                ((LivingEntityExtension)livingEntity).setKnockbackMultiplier(1F);
+                ((LivingEntityKnockback)livingEntity).SpellEngine_setKnockbackMultiplier(1F);
             }
         }
         return success;

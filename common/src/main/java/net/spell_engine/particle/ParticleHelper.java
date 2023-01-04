@@ -1,4 +1,4 @@
-package net.spell_engine.utils;
+package net.spell_engine.particle;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.Matrix4f;

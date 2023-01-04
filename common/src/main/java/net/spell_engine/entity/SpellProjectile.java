@@ -5,7 +5,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.render.FlyingSpellEntity;
 import net.spell_engine.internals.SpellHelper;
-import net.spell_engine.utils.ParticleHelper;
+import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.VectorHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;

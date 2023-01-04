@@ -11,8 +11,8 @@
     "LivingEntityMixin",
     "PlayerEntityMixin",
     "client.control.PlayerInventoryMixin",
-    "statuseffect.LivingEntityStatusEffectSync",
-    "statuseffect.StatusEffectRemoveOnHit"
+    "status_effect.LivingEntityStatusEffectSync",
+    "status_effect.StatusEffectRemoveOnHit"
   ],
   "client": [
     "client.AbstractClientPlayerEntityMixin",

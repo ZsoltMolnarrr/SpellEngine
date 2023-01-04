@@ -13,7 +13,7 @@ import net.spell_engine.api.spell.ParticleBatch;
 import net.spell_engine.api.status_effect.CustomModelStatusEffect;
 import net.spell_engine.api.status_effect.CustomParticleStatusEffect;
 import net.spell_engine.client.render.CustomLayers;
-import net.spell_engine.utils.ParticleHelper;
+import net.spell_engine.particle.ParticleHelper;
 import net.spell_power.api.statuseffects.SpellVulnerabilityStatusEffect;
 
 public class FrozenStatusEffect extends SpellVulnerabilityStatusEffect
