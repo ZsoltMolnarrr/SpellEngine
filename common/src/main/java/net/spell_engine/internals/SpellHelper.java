@@ -103,6 +103,10 @@ public class SpellHelper {
         return channelValueMultiplier(spell) != 0;
     }
 
+    public static boolean isInstant(Spell spell) {
+        return spell.cast.duration == 0;
+    }
+
     public static float channelValueMultiplier(Spell spell) {
         var ticks = spell.cast.channel_ticks;
         if (ticks <= 0) {
@@ -114,6 +118,10 @@ public class SpellHelper {
     public static void performSpell(World world, PlayerEntity caster, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCastAction action, int remainingUseTicks) {
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
+            return;
+        }
+        var casterPlayer = (SpellCasterEntity)caster;
+        if (casterPlayer.getCooldownManager().isCoolingDown(spellId)) {
             return;
         }
         var progress = getCastProgress(caster, remainingUseTicks, spell);
@@ -180,6 +188,10 @@ public class SpellHelper {
                         } else {
                             released = false;
                         }
+                    }
+                    case SELF -> {
+                        directImpact(world, caster, caster, spell, context);
+                        released = true;
                     }
                 }
             }

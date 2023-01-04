@@ -191,6 +191,8 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                     i += 1;
                 }
             }
+            case SELF -> {
+            }
         }
         var spellId = getCurrentSpellId();
         // System.out.println("Sending spell cast packet: " + new Packets.SpellRequest(action, spellId, slot, remainingUseTicks, targetIDs));
@@ -258,6 +260,9 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                         targets = List.of(caster);
                     }
                 }
+            }
+            case SELF -> {
+                // Nothing to do
             }
         }
         return targets;

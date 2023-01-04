@@ -56,7 +56,11 @@ public class SpellEngineMod {
                     -1F,
                     EntityAttributeModifier.Operation.MULTIPLY_TOTAL);
 
-    public static StatusEffect frostShield = new FrostShieldStatusEffect(StatusEffectCategory.BENEFICIAL, 0x99ccff);
+    public static StatusEffect frostShield = new FrostShieldStatusEffect(StatusEffectCategory.BENEFICIAL, 0x99ccff)
+            .addAttributeModifier(EntityAttributes.GENERIC_MOVEMENT_SPEED,
+                    "0563d59a-8c60-11ed-a1eb-0242ac120002",
+                    -0.5F,
+                    EntityAttributeModifier.Operation.MULTIPLY_TOTAL);
 
     public static void init() {
         AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));

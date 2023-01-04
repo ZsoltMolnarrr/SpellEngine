@@ -102,6 +102,7 @@ public class SpellTooltip {
                 case STATUS_EFFECT -> {
                     var statusEffect = impact.action.status_effect;
                     description = description.replace(effectAmplifierToken, "" + (statusEffect.amplifier + 1));
+                    description = description.replace(effectDurationToken, formattedNumber(statusEffect.duration));
                 }
             }
         }
@@ -109,18 +110,27 @@ public class SpellTooltip {
                 .append(Text.translatable(description))
                 .formatted(Formatting.GRAY));
 
-        var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
-        var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
-        var castTime = I18n.translate(castTimeKey).replace("{duration}", formattedNumber(castDuration));
-        lines.add(Text.literal(" ")
-                .append(Text.literal(castTime))
-                .formatted(Formatting.GOLD));
+        if (SpellHelper.isInstant(spell)) {
+            lines.add(Text.literal(" ")
+                    .append(Text.translatable("spell.tooltip.cast_instant"))
+                    .formatted(Formatting.GOLD));
+        } else {
+            var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
+            var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
+            var castTime = I18n.translate(castTimeKey).replace("{duration}", formattedNumber(castDuration));
+            lines.add(Text.literal(" ")
+                    .append(Text.literal(castTime))
+                    .formatted(Formatting.GOLD));
+        }
 
-        var rangeKey = keyWithPlural("spell.tooltip.range", spell.range);
-        var range = I18n.translate(rangeKey).replace("{range}", formattedNumber(spell.range));
-        lines.add(Text.literal(" ")
-                .append(Text.literal(range))
-                .formatted(Formatting.GOLD));
+
+        if (spell.range > 0) {
+            var rangeKey = keyWithPlural("spell.tooltip.range", spell.range);
+            var range = I18n.translate(rangeKey).replace("{range}", formattedNumber(spell.range));
+            lines.add(Text.literal(" ")
+                    .append(Text.literal(range))
+                    .formatted(Formatting.GOLD));
+        }
 
         var cooldownDuration = SpellHelper.getCooldownDuration(player, spell, itemStack);
         if (cooldownDuration > 0) {

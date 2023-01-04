@@ -21,7 +21,7 @@ public class Spell {
         public String animation;
         public Sound start_sound;
         public Sound sound;
-        public ParticleBatch[] particles;
+        public ParticleBatch[] particles = new ParticleBatch[]{};
     }
 
     public Release release;
@@ -30,7 +30,7 @@ public class Spell {
         public static class Target { public Target() { }
             public Type type;
             public enum Type {
-                AREA, BEAM, CURSOR, PROJECTILE, METEOR
+                AREA, BEAM, CURSOR, PROJECTILE, METEOR, SELF
             }
 
             public Area area;
@@ -114,7 +114,7 @@ public class Spell {
             }
         }
 
-        public ParticleBatch[] particles;
+        public ParticleBatch[] particles = new ParticleBatch[]{};
         public Sound sound;
     }
 
