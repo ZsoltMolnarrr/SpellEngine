@@ -7,6 +7,7 @@
     "AttributeAssigner_ItemStackMixin",
     "ItemStackMixin",
     "LivingEntityAccessor",
+    "LivingEntityFrostShield",
     "LivingEntityFrozen",
     "LivingEntityMixin",
     "PlayerEntityMixin",

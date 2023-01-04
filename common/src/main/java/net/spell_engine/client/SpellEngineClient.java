@@ -18,6 +18,8 @@ import net.spell_engine.config.HudConfig;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 import net.spell_engine.spellbinding.SpellBindingScreen;
 import net.spell_engine.spellbinding.SpellBindingScreenHandler;
+import net.spell_engine.wizards.FrostShieldStatusEffect;
+import net.spell_engine.wizards.FrozenStatusEffect;
 import net.tinyconfig.ConfigManager;
 
 import java.util.List;
@@ -52,7 +54,9 @@ public class SpellEngineClient {
                 new Identifier("spell_engine:arcane_missile"),
                 new Identifier("spell_engine:fireball_projectile"),
                 new Identifier("spell_engine:frostbolt_projectile"),
-                new Identifier("spell_engine:frost_trap")
+                FrozenStatusEffect.modelId,
+                FrostShieldStatusEffect.modelId_base,
+                FrostShieldStatusEffect.modelId_emissive
         ));
     }
 }

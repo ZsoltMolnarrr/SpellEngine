@@ -1,0 +1,74 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [64, 64],
+	"textures": {
+		"2": "spell_engine:spell_projectile/frost_shield",
+		"particle": "spell_engine:spell_projectile/frost_shield"
+	},
+	"elements": [
+		{
+			"name": "base",
+			"from": [0, 0, 0],
+			"to": [16, 31, 16],
+			"faces": {
+				"north": {"uv": [0, 0, 4, 7.75], "texture": "#2"},
+				"east": {"uv": [4, 0, 8, 7.75], "texture": "#2"},
+				"south": {"uv": [0, 7.75, 4, 15.5], "texture": "#2"},
+				"west": {"uv": [4, 7.75, 8, 15.5], "texture": "#2"},
+				"up": {"uv": [12, 4, 8, 0], "texture": "#2"},
+				"down": {"uv": [12, 4, 8, 8], "texture": "#2"}
+			}
+		}
+	],
+	"groups": [
+		0,
+		{
+			"name": "top_corner",
+			"origin": [-0.5, 31.5, 3],
+			"color": 0,
+			"children": []
+		},
+		{
+			"name": "top_corner",
+			"origin": [-0.5, 31.5, 3],
+			"color": 0,
+			"children": []
+		},
+		{
+			"name": "top_corner",
+			"origin": [-0.5, 31.5, 3],
+			"color": 0,
+			"children": []
+		},
+		{
+			"name": "top_corner",
+			"origin": [-0.5, 31.5, 3],
+			"color": 0,
+			"children": []
+		},
+		{
+			"name": "bottom_corner",
+			"origin": [-0.5, 31.5, 3],
+			"color": 0,
+			"children": []
+		},
+		{
+			"name": "bottom_corner",
+			"origin": [-0.5, 31.5, 3],
+			"color": 0,
+			"children": []
+		},
+		{
+			"name": "bottom_corner",
+			"origin": [-0.5, 31.5, 3],
+			"color": 0,
+			"children": []
+		},
+		{
+			"name": "bottom_corner",
+			"origin": [-0.5, 31.5, 3],
+			"color": 0,
+			"children": []
+		}
+	]
+}

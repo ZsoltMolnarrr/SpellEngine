@@ -27,6 +27,7 @@ import net.spell_engine.spellbinding.SpellBinding;
 import net.spell_engine.spellbinding.SpellBindingBlock;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 import net.spell_engine.spellbinding.SpellBindingScreenHandler;
+import net.spell_engine.wizards.FrostShieldStatusEffect;
 import net.spell_engine.wizards.FrozenStatusEffect;
 import net.spell_power.api.MagicSchool;
 import net.spell_power.api.SpellPower;
@@ -55,6 +56,8 @@ public class SpellEngineMod {
                     -1F,
                     EntityAttributeModifier.Operation.MULTIPLY_TOTAL);
 
+    public static StatusEffect frostShield = new FrostShieldStatusEffect(StatusEffectCategory.BENEFICIAL, 0x99ccff);
+
     public static void init() {
         AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
@@ -66,6 +69,7 @@ public class SpellEngineMod {
         Particles.register();
 
         Registry.register(Registry.STATUS_EFFECT, new Identifier("spell_engine:frozen"), frozen);
+        Registry.register(Registry.STATUS_EFFECT, new Identifier("spell_engine:frost_shield"), frostShield);
     }
 
     public static void registerSpellBinding() {

@@ -39,8 +39,12 @@ public class CustomLayers extends RenderLayer {
     });
 
     public static RenderLayer projectile(Identifier texture, boolean translucent) {
+        return projectile(texture, translucent, true);
+    }
+
+    public static RenderLayer projectile(Identifier texture, boolean translucent, boolean emissive) {
         MultiPhaseParameters multiPhaseParameters = MultiPhaseParameters.builder()
-                .shader(ENTITY_TRANSLUCENT_EMISSIVE_SHADER)
+                .shader(emissive ? ENTITY_TRANSLUCENT_EMISSIVE_SHADER : ENTITY_TRANSLUCENT_SHADER)
                 .texture(new RenderPhase.Texture((Identifier)texture, false, false))
                 .transparency(translucent ? TRANSLUCENT_TRANSPARENCY : NO_TRANSPARENCY)
                 .cull(DISABLE_CULLING)
