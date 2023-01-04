@@ -86,6 +86,6 @@
   "spell.spell_engine.frost_nova.description": "Freezes targets around you, causing {damage} frost spell damage and blocking their movement. Frozen targets are vulnerable to frost magic.",
   "effect.spell_engine.frozen": "Frozen",
   "spell.spell_engine.frost_shield.name": "Frost Shield",
-  "spell.spell_engine.frost_shield.description": "Protects you from attacks and projectiles for {effect_duration} seconds, but also slows down your movement.",
+  "spell.spell_engine.frost_shield.description": "Protects you from attacks, projectiles and fire for {effect_duration} seconds, but also slows down your movement.",
   "effect.spell_engine.frost_shield": "Frost Shield"
 }

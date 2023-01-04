@@ -10,14 +10,15 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
-public class LivingEntityFrostShield {
+public abstract class LivingEntityFrostShield {
+    private boolean hasFrostShield = false;
     @Inject(method = "isBlocking", at = @At("HEAD"), cancellable = true)
     private void isBlocking_HEAD_FrostShield(CallbackInfoReturnable<Boolean> cir) {
-        var entity = (LivingEntity) ((Object)this);
-        if (entity.hasStatusEffect(SpellEngineMod.frostShield)) {
+        if (hasFrostShield) {
             cir.setReturnValue(true);
             cir.cancel();
         }
@@ -26,7 +27,7 @@ public class LivingEntityFrostShield {
     @Inject(method = "blockedByShield", at = @At("HEAD"), cancellable = true)
     private void blockedByShield_HEAD_FrostShield(DamageSource source, CallbackInfoReturnable<Boolean> cir) {
         var entity = (LivingEntity) ((Object)this);
-        if (entity.hasStatusEffect(SpellEngineMod.frostShield) && !source.bypassesArmor()) {
+        if (hasFrostShield && !source.bypassesArmor()) {
             cir.setReturnValue(true);
             cir.cancel();
         }
@@ -36,11 +37,28 @@ public class LivingEntityFrostShield {
     private byte damage_sendEntityStatus_NoSendShieldEvent(byte status) {
         if (status == EntityStatuses.BLOCK_WITH_SHIELD) {
             var entity = (LivingEntity) ((Object)this);
-            if (entity.hasStatusEffect(SpellEngineMod.frostShield)) {
+            if (hasFrostShield) {
                 SoundHelper.playSoundEvent(entity.world, entity, FrostShieldStatusEffect.sound);
                 return 0; // `0` is unused, but make sure to check in `EntityStatuses`, when updating
             }
         }
         return status;
+    }
+
+    @Inject(method = "damage", at = @At("HEAD"), cancellable = true)
+    private void damage_HEAD_FrostShieldFireImmunity(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        if (hasFrostShield && source.isFire()) {
+            cir.setReturnValue(false);
+            cir.cancel();
+        }
+    }
+
+    @Inject(method = "baseTick", at = @At("TAIL"))
+    private void baseTick_TAIL_FrostShield(CallbackInfo ci) {
+        var entity = (LivingEntity) ((Object)this);
+        hasFrostShield = entity.hasStatusEffect(SpellEngineMod.frostShield);
+        if (hasFrostShield && entity.isOnFire()) {
+            entity.extinguish();
+        }
     }
 }
