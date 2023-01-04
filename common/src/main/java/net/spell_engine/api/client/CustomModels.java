@@ -29,6 +29,6 @@ public class CustomModels {
         }
         var buffer = vertexConsumers.getBuffer(renderLayer);
         matrices.translate(-0.5, -0.5, -0.5);
-        ((ItemRendererAccessor)itemRenderer).renderBakedItemModel(model, ItemStack.EMPTY, light, OverlayTexture.DEFAULT_UV, matrices, buffer);
+        ((ItemRendererAccessor)itemRenderer).SpellEngine_renderBakedItemModel(model, ItemStack.EMPTY, light, OverlayTexture.DEFAULT_UV, matrices, buffer);
     }
 }
