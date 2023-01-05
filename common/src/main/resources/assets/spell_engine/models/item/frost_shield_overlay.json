@@ -1,0 +1,23 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [64, 64],
+	"textures": {
+		"1": "spell_engine:spell_projectile/frost_shield_overlay",
+		"particle": "spell_engine:spell_projectile/frost_shield_overlay"
+	},
+	"elements": [
+		{
+			"name": "overlay",
+			"from": [0, 0, 0],
+			"to": [16, 31, 16],
+			"faces": {
+				"north": {"uv": [0, 0, 4, 7.75], "texture": "#1"},
+				"east": {"uv": [4, 0, 8, 7.75], "texture": "#1"},
+				"south": {"uv": [0, 7.75, 4, 15.5], "texture": "#1"},
+				"west": {"uv": [4, 7.75, 8, 15.5], "texture": "#1"},
+				"up": {"uv": [12, 4, 8, 0], "texture": "#1"},
+				"down": {"uv": [12, 4, 8, 8], "texture": "#1"}
+			}
+		}
+	]
+}

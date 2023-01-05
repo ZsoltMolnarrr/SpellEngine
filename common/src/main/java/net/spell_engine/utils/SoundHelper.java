@@ -33,8 +33,8 @@ public class SoundHelper {
         // Spell specific impact sounds
 
         "arcane_missile_release",
-        "arcane_blast_release",
         "arcane_missile_impact",
+        "arcane_blast_release",
         "arcane_blast_impact",
         "arcane_beam_start",
         "arcane_beam_casting",
@@ -57,7 +57,7 @@ public class SoundHelper {
     );
 
     public static Map<String, Float> soundDistances = Map.of(
-            "fire_meteor_impact", Float.valueOf(48F)
+        "fire_meteor_impact", Float.valueOf(48F)
     );
 
     public static void registerSounds() {

@@ -56,7 +56,7 @@ public class SpellEngineClient {
                 new Identifier("spell_engine:frostbolt_projectile"),
                 FrozenStatusEffect.modelId,
                 FrostShieldStatusEffect.modelId_base,
-                FrostShieldStatusEffect.modelId_emissive
+                FrostShieldStatusEffect.modelId_overlay
         ));
     }
 }
