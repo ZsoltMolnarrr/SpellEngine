@@ -424,14 +424,14 @@ public class SpellHelper {
                         vulnerability = SpellPower.getVulnerability(livingEntity, school);
                     }
 
-                    var damage = SpellPower.getSpellDamage(school, caster);
-                    var amount = damage.randomValue(vulnerability);
+                    var power = SpellPower.getSpellPower(school, caster);
+                    var amount = power.randomValue(vulnerability);
                     amount *= damageData.spell_power_coefficient;
                     amount *= context.total();
                     if (context.isChanneled()) {
                         amount *= SpellPower.getHaste(caster);
                     }
-                    particleMultiplier = damage.criticalDamage() + vulnerability.criticalDamageBonus();
+                    particleMultiplier = power.criticalDamage() + vulnerability.criticalDamageBonus();
 
                     caster.onAttacking(target);
                     target.damage(SpellDamageSource.create(school, caster), (float) amount);
@@ -452,9 +452,9 @@ public class SpellHelper {
                     }
                     if (target instanceof LivingEntity livingTarget) {
                         var healData = impact.action.heal;
-                        var healing = SpellPower.getSpellDamage(school, caster);
-                        particleMultiplier = healing.criticalDamage();
-                        var amount = healing.randomValue();
+                        var power = SpellPower.getSpellPower(school, caster);
+                        particleMultiplier = power.criticalDamage();
+                        var amount = power.randomValue();
                         amount *= healData.spell_power_coefficient;
                         amount *= context.total();
                         if (context.isChanneled()) {
@@ -539,7 +539,7 @@ public class SpellHelper {
         if (limit == null) {
             return true;
         }
-        var power = (float) SpellPower.getSpellDamage(school, caster).nonCriticalValue();
+        var power = (float) SpellPower.getSpellPower(school, caster).nonCriticalValue();
         float cap = limit.health_base + (power * limit.spell_power_multiplier);
         return cap >= target.getMaxHealth();
     }
@@ -563,15 +563,15 @@ public class SpellHelper {
             switch (impact.action.type) {
                 case DAMAGE -> {
                     var damageData = impact.action.damage;
-                    var result = SpellPower.getSpellDamage(school, caster, itemStack);
-                    var damage = new EstimatedValue(result.nonCriticalValue(), result.forcedCriticalValue())
+                    var power = SpellPower.getSpellPower(school, caster, itemStack);
+                    var damage = new EstimatedValue(power.nonCriticalValue(), power.forcedCriticalValue())
                             .multiply(damageData.spell_power_coefficient);
                     damageEffects.add(damage);
                 }
                 case HEAL -> {
                     var healData = impact.action.heal;
-                    var result = SpellPower.getSpellDamage(school, caster, itemStack);
-                    var healing = new EstimatedValue(result.nonCriticalValue(), result.forcedCriticalValue())
+                    var power = SpellPower.getSpellPower(school, caster, itemStack);
+                    var healing = new EstimatedValue(power.nonCriticalValue(), power.forcedCriticalValue())
                             .multiply(healData.spell_power_coefficient);
                     healEffects.add(healing);
                 }
