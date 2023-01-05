@@ -21,8 +21,7 @@ public class ClientPlayerInteractionManagerMixin {
             ItemStack itemStack = player.getStackInHand(hand);
             var object = (Object) itemStack;
             if (object instanceof SpellCasterItemStack stack) {
-                var container = stack.getSpellContainer();
-                if (container != null && container.isUsable()) {
+                if (InputHelper.canLockOnContainer(stack.getSpellContainer())) {
                     InputHelper.isLocked = true;
                     InputHelper.showLockedMessage("ESC");
                     cir.setReturnValue(ActionResult.PASS);

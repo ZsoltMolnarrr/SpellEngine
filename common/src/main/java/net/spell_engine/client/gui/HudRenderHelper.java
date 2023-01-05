@@ -52,20 +52,28 @@ public class HudRenderHelper {
         if (player != null) {
             var caster = (SpellCasterClient) player;
             var container = caster.getCurrentContainer();
+            var spell = caster.getCurrentSpell();
+            var spellId = caster.getCurrentSpellId();
+
             if (container != null && container.isUsable()) {
                 var cooldownManager = caster.getCooldownManager();
+
                 var spells = container.spell_ids.stream()
-                        .map(spellId -> new SpellHotBarWidget.SpellViewModel(SpellRender.iconTexture(new Identifier(spellId)), cooldownManager.getCooldownProgress(new Identifier(spellId), tickDelta)))
+                        .map(id -> new SpellHotBarWidget.SpellViewModel(SpellRender.iconTexture(new Identifier(id)), cooldownManager.getCooldownProgress(new Identifier(id), tickDelta)))
                         .collect(Collectors.toList());
                 int selected = caster.getSelectedSpellIndex(container);
+
+                if (clientConfig.collapseSpellHotbar && !InputHelper.isLocked && selected < spells.size()) {
+                    spells = List.of(spells.get(selected));
+                    selected = 0;
+                }
+
                 hotbarViewModel = new SpellHotBarWidget.ViewModel(spells, selected, Color.from(0xFFFFFF));
             } else {
                 hotbarViewModel = SpellHotBarWidget.ViewModel.empty;
             }
             renderHotbar = InputHelper.hotbarVisibility().spell();
 
-            var spell = caster.getCurrentSpell();
-            var spellId = caster.getCurrentSpellId();
             if (spell != null) {
                 castBarViewModel = new CastBarWidget.ViewModel(
                         spell.school.color(),
@@ -268,7 +276,10 @@ public class HudRenderHelper {
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
 
+            float barOpacity = (SpellEngineClient.config.indicateActiveHotbar && InputHelper.isLocked) ? 1F : 0.5F;
+
             // Background
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, barOpacity);
             RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
             DrawableHelper.drawTexture(matrixStack, (int) (origin.x), (int) (origin.y), 0, 0, slotWidth / 2, slotHeight, textureWidth, textureHeight);
             int middleElements = viewModel.spells.size() - 1;
@@ -278,6 +289,7 @@ public class HudRenderHelper {
             DrawableHelper.drawTexture(matrixStack, (int) (origin.x) + (slotWidth / 2) + (middleElements * slotWidth), (int) (origin.y), 170, 0, (slotHeight / 2) + 1, slotHeight, textureWidth, textureHeight);
 
             // Icons
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0F);
             var iconsOffset = new Vec2f(3,3);
             int iconSize = 16;
             for (int i = 0; i < viewModel.spells.size(); i++) {
@@ -293,12 +305,14 @@ public class HudRenderHelper {
             }
 
             // Selector
-            int selectorSize = 24;
-            RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
-            int x = ((int) origin.x) - 1 + (slotWidth * viewModel.selected);
-            int y = ((int) origin.y) - 1;
-            DrawableHelper.drawTexture(matrixStack, x, y, 0, 22, selectorSize, selectorSize, textureWidth, textureHeight);
-
+            if (viewModel.spells.size() > 1) {
+                int selectorSize = 24;
+                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, barOpacity);
+                RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
+                int x = ((int) origin.x) - 1 + (slotWidth * viewModel.selected);
+                int y = ((int) origin.y) - 1;
+                DrawableHelper.drawTexture(matrixStack, x, y, 0, 22, selectorSize, selectorSize, textureWidth, textureHeight);
+            }
 
             RenderSystem.disableBlend();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

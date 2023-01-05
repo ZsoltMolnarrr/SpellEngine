@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.internals.SpellCasterClient;
 
@@ -27,18 +28,24 @@ public class InputHelper {
         if (isLocked) {
             isLocked = false;
         } else {
-            if (skipValidation || hasUsableSpellContainer(client.player)) {
+            if (skipValidation || hasLockableSpellContainer(client.player)) {
                 isLocked = true;
             }
         }
     }
 
-    private static boolean hasUsableSpellContainer(PlayerEntity player) {
+    private static boolean hasLockableSpellContainer(PlayerEntity player) {
         if (player != null) {
             var container = ((SpellCasterClient)player).getCurrentContainer();
-            return container != null && container.isUsable();
+            return canLockOnContainer(container); // And only lock if more than 1 spell
         }
         return false;
+    }
+
+    public static boolean canLockOnContainer(SpellContainer container) {
+        return container != null
+                && container.isUsable() // Usable
+                && container.spell_ids.size() > 1; // And only lock if more than 1 spell
     }
 
     public static void showLockedMessage(String key) {

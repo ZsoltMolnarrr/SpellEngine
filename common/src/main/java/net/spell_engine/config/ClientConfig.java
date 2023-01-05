@@ -17,6 +17,10 @@ public class ClientConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip
     public boolean restartCastingWhenSwitchingSpell = false;
     @ConfigEntry.Gui.Tooltip
+    public boolean collapseSpellHotbar = true;
+    @ConfigEntry.Gui.Tooltip
+    public boolean indicateActiveHotbar = true;
+    @ConfigEntry.Gui.Tooltip
     public boolean showFocusedHotbarOnly = false;
     @ConfigEntry.Gui.Tooltip
     public boolean lockHotbarOnRightClick = false;
