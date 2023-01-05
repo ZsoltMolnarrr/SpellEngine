@@ -5,6 +5,7 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.SpellCasterItemStack;
 import net.spell_engine.internals.SpellHelper;
@@ -44,8 +45,11 @@ public class SpellTooltip {
                         .append(Text.literal(" " + limit))
                         .formatted(Formatting.GRAY));
                 var keybinding = Keybindings.hotbarModifier;
-                var showDetails = !keybinding.isUnbound() && InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(),
-                        keybinding.getDefaultKey().getCode());
+                var showDetails = SpellEngineClient.config.alwaysShowFullTooltip
+                        || (!keybinding.isUnbound() && InputUtil.isKeyPressed(
+                                MinecraftClient.getInstance().getWindow().getHandle(),
+                                keybinding.getDefaultKey().getCode())
+                        );
                 for (int i = 0; i < container.spell_ids.size(); i++) {
                     var spellId = new Identifier(container.spell_ids.get(i));
                     var info = spellInfo(spellId, player, itemStack, showDetails);

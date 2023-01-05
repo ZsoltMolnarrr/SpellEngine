@@ -22,4 +22,6 @@ public class ClientConfig implements ConfigData {
     public boolean lockHotbarOnRightClick = false;
     @ConfigEntry.Gui.Tooltip
     public boolean unlockHotbarOnEscape = false;
+    @ConfigEntry.Gui.Tooltip
+    public boolean alwaysShowFullTooltip = false;
 }
