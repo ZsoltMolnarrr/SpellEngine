@@ -29,7 +29,7 @@
         "vertical_range_multiplier": 0.5
       }
     },
-    "animation": "spell_engine:one_handed_projectile_release",
+    "animation": "spell_engine:one_handed_projectile_instant_release",
     "sound": {
       "id": "spell_engine:frost_nova_release"
     },

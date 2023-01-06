@@ -6,7 +6,7 @@
   },
   "cast": {
     "duration": 10,
-    "animation": "spell_engine:one_handed_projectile_charge",
+    "animation": "spell_engine:two_handed_channeling",
     "sound": {
       "id": "spell_engine:fire_breath_casting",
       "randomness": 0

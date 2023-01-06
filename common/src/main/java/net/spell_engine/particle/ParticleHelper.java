@@ -168,7 +168,7 @@ public class ParticleHelper {
             }
             case LAUNCH_POINT -> {
                 if (entity instanceof LivingEntity livingEntity) {
-                    return SpellHelper.launchPoint(livingEntity, 0.15F);
+                    return SpellHelper.launchPoint(livingEntity);
                 } else {
                     return entity.getPos().add(0, entity.getHeight() * 0.5F, 0);
                 }

@@ -299,8 +299,10 @@ public class SpellHelper {
     }
 
     public static Vec3d launchPoint(LivingEntity caster) {
-        return launchPoint(caster, 0.5F);
+        return launchPoint(caster, launchPointOffsetDefault);
     }
+
+    public static float launchPointOffsetDefault = 0.5F;
 
     public static Vec3d launchPoint(LivingEntity caster, float forward) {
         Vec3d look = caster.getRotationVector().multiply(forward * caster.getScaleFactor());

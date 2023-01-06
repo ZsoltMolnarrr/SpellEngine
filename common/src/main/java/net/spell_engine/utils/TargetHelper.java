@@ -208,7 +208,7 @@ public class TargetHelper {
     }
 
     public static Beam.Position castBeam(LivingEntity caster, Vec3d direction, float max) {
-        var start = SpellHelper.launchPoint(caster, 0.15F);
+        var start = SpellHelper.launchPoint(caster);
         var end = start.add(direction.multiply(max));
         var length = max;
         boolean hitBlock = false;

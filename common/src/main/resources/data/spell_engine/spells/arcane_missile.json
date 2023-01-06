@@ -46,7 +46,7 @@
         }
       }
     },
-    "animation": "spell_engine:one_handed_projectile_release",
+    "animation": "spell_engine:one_handed_projectile_charged_release",
     "sound": {
       "id": "spell_engine:arcane_missile_release"
     }

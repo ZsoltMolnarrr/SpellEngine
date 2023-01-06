@@ -48,12 +48,9 @@
         }
       }
     },
-    "animation": "spell_engine:one_handed_projectile_release",
+    "animation": "spell_engine:one_handed_projectile_charged_release",
     "sound": {
-      "id": "spell_engine:generic_frost_release",
-      "volume": 1.0,
-      "pitch": 1.0,
-      "randomness": 0.1
+      "id": "spell_engine:generic_frost_release"
     }
   },
   "impact": [

@@ -100,7 +100,7 @@
         }
       }
     },
-    "animation": "spell_engine:one_handed_projectile_release",
+    "animation": "spell_engine:one_handed_projectile_instant_release",
     "sound": {
       "id": "spell_engine:fire_meteor_release"
     }
