@@ -15,6 +15,8 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.Enchantments_CombatSpells;
+import net.spell_engine.api.status_effect.RemoveOnHit;
+import net.spell_engine.api.status_effect.Synchronized;
 import net.spell_engine.config.EnchantmentsConfig;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
@@ -70,6 +72,9 @@ public class SpellEngineMod {
         ServerNetwork.initializeHandlers();
         Particles.register();
 
+        ((Synchronized)frozen).setSynchronized(true);
+        ((RemoveOnHit)frozen).removedOnDirectHit(true);
+        ((Synchronized)frostShield).setSynchronized(true);
         Registry.register(Registry.STATUS_EFFECT, new Identifier("spell_engine:frozen"), frozen);
         Registry.register(Registry.STATUS_EFFECT, new Identifier("spell_engine:frost_shield"), frostShield);
     }

@@ -13,7 +13,7 @@ import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.status_effect.CustomModelStatusEffect;
-import net.spell_engine.api.status_effect.SynchronizedStatusEffect;
+import net.spell_engine.api.status_effect.Synchronized;
 import net.spell_engine.client.beam.BeamEmitterEntity;
 import net.spell_engine.client.render.BeamRenderer;
 import net.spell_engine.client.render.CustomLayers;
@@ -61,12 +61,12 @@ public class LivingEntityRendererMixin {
         var client = MinecraftClient.getInstance();
         var isRenderingClientPlayerInFirstPerson = (livingEntity == client.player && !client.gameRenderer.getCamera().isThirdPerson());
         if (!isRenderingClientPlayerInFirstPerson) {
-            for (var entry : SynchronizedStatusEffect.all(livingEntity).entrySet()) {
-                var rawId = entry.getKey();
-                var amplifier = entry.getValue();
-                var effect = Registry.STATUS_EFFECT.get(rawId);
-                if (effect instanceof CustomModelStatusEffect customEffect) {
-                    customEffect.renderEffect(amplifier, livingEntity, delta, matrixStack, vertexConsumerProvider, light);
+            for (var entry: Synchronized.effectsOf(livingEntity)) {
+                var effect = entry.effect();
+                var amplifier = entry.amplifier();
+                var renderer = CustomModelStatusEffect.renderer(effect);
+                if (renderer != null) {
+                    renderer.renderEffect(amplifier, livingEntity, delta, matrixStack, vertexConsumerProvider, light);
                 }
             }
         }

@@ -1,10 +1,12 @@
 package net.spell_engine.fabric.client;
 
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.gui.SpellTooltip;
+import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.client.particle.SpellHitParticle;
 import net.spell_engine.client.particle.GenericSpellParticle;
 import net.spell_engine.client.particle.SpellFlameParticle;
@@ -23,16 +25,17 @@ public class FabricClientMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         SpellEngineClient.initialize();
+        registerKeyBindings();
+
         HudRenderCallback.EVENT.register((MatrixStack matrixStack, float tickDelta) -> {
             HudRenderHelper.render(matrixStack, tickDelta);
         });
-
-        EntityRendererRegistry.register(SpellEngineMod.SPELL_PROJECTILE, (context) ->
-                new SpellProjectileRenderer(context));
-
         ItemTooltipCallback.EVENT.register((itemStack, context, lines) -> {
             SpellTooltip.addSpellInfo(itemStack, lines);
         });
+        EntityRendererRegistry.register(SpellEngineMod.SPELL_PROJECTILE, (context) ->
+                new SpellProjectileRenderer(context));
+
         registerParticleAppearances();
     }
 
@@ -55,11 +58,15 @@ public class FabricClientMod implements ClientModInitializer {
          * In this example, we'll use FlameParticle's Factory.*/
         ParticleFactoryRegistry.getInstance().register(Particles.arcane_hit.particleType, SpellHitParticle.ArcaneFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.arcane_spell.particleType, GenericSpellParticle.ArcaneSpellFactory::new);
-
         ParticleFactoryRegistry.getInstance().register(Particles.flame.particleType, SpellFlameParticle.Factory::new);
-
         ParticleFactoryRegistry.getInstance().register(Particles.snowflake.particleType, SpellSnowflakeParticle.Factory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.frost_hit.particleType, SpellHitParticle.FrostFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.frost_shard.particleType, SpellFlameParticle.FrostShard::new);
+    }
+
+    private void registerKeyBindings() {
+        for(var keybinding: Keybindings.all) {
+            KeyBindingHelper.registerKeyBinding(keybinding);
+        }
     }
 }

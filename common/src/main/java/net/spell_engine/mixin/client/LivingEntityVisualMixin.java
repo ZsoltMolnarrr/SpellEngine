@@ -5,7 +5,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.status_effect.CustomParticleStatusEffect;
-import net.spell_engine.api.status_effect.SynchronizedStatusEffect;
+import net.spell_engine.api.status_effect.Synchronized;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.beam.BeamEmitterEntity;
 import net.spell_engine.internals.Beam;
@@ -78,10 +78,9 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
             return;
         }
 
-        for (var entry: SynchronizedStatusEffect.all(livingEntity).entrySet()) {
-            var rawId = entry.getKey();
-            var amplifier = entry.getValue();
-            var effect = Registry.STATUS_EFFECT.get(rawId);
+        for (var entry: Synchronized.effectsOf(livingEntity)) {
+            var effect = entry.effect();
+            var amplifier = entry.amplifier();
             if (effect instanceof CustomParticleStatusEffect customEffect) {
                 customEffect.spawnParticles(livingEntity, amplifier);
             }

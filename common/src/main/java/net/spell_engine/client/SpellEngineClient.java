@@ -10,6 +10,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.client.CustomModels;
+import net.spell_engine.api.status_effect.CustomModelStatusEffect;
 import net.spell_engine.client.animation.AnimationRegistry;
 import net.spell_engine.client.render.SpellBindingBlockEntityRenderer;
 import net.spell_engine.config.ClientConfig;
@@ -18,8 +19,8 @@ import net.spell_engine.config.HudConfig;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 import net.spell_engine.spellbinding.SpellBindingScreen;
 import net.spell_engine.spellbinding.SpellBindingScreenHandler;
-import net.spell_engine.wizards.FrostShieldStatusEffect;
-import net.spell_engine.wizards.FrozenStatusEffect;
+import net.spell_engine.wizards.client.FrostShieldRenderer;
+import net.spell_engine.wizards.client.FrozenRenderer;
 import net.tinyconfig.ConfigManager;
 
 import java.util.List;
@@ -54,9 +55,12 @@ public class SpellEngineClient {
                 new Identifier("spell_engine:arcane_missile"),
                 new Identifier("spell_engine:fireball_projectile"),
                 new Identifier("spell_engine:frostbolt_projectile"),
-                FrozenStatusEffect.modelId,
-                FrostShieldStatusEffect.modelId_base,
-                FrostShieldStatusEffect.modelId_overlay
+                FrozenRenderer.modelId,
+                FrostShieldRenderer.modelId_base,
+                FrostShieldRenderer.modelId_overlay
         ));
+
+        CustomModelStatusEffect.register(SpellEngineMod.frozen, new FrozenRenderer());
+        CustomModelStatusEffect.register(SpellEngineMod.frostShield, new FrostShieldRenderer());
     }
 }

@@ -10,9 +10,9 @@
     "LivingEntityFrozen",
     "LivingEntityMixin",
     "PlayerEntityMixin",
-    "client.control.PlayerInventoryMixin",
     "status_effect.LivingEntityStatusEffectSync",
-    "status_effect.StatusEffectRemoveOnHit"
+    "status_effect.StatusEffectRemoveOnHit",
+    "status_effect.StatusEffectSynchronized"
   ],
   "client": [
     "client.AbstractClientPlayerEntityMixin",
@@ -23,6 +23,7 @@
     "client.control.InGameHudMixin",
     "client.control.KeybindingAccessor",
     "client.control.MinecraftClientMixin",
+    "client.control.PlayerInventoryMixin",
     "client.render.EntityMixin",
     "client.render.ItemRendererAccessor",
     "client.render.LivingEntityRendererMixin",
