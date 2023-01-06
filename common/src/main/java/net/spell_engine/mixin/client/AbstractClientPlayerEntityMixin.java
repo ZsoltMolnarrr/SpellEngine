@@ -72,11 +72,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             castSound = spell.cast.sound;
             // Rotate body towards look vector
             ((LivingEntityAccessor)player).invokeTurnHead(player.getHeadYaw(), 0);
-            // ParticleHelper.play(player.world, player, spell.cast.particles);
             for (var batch: spell.cast.particles) {
-                // System.out.println("updateSpellCastAnimationsOnTick - yaw: " + player.getYaw() + " pitch: " + getPitch());
-
-                // ParticleHelper.play(player.world, player, player.getYaw(), (getPitch() + 90) * -1, batch);
                 ParticleHelper.play(player.world, player, player.getYaw(), getPitch(), batch);
             }
         }
@@ -172,7 +168,6 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     }
 
     public void playSpellAnimation(SpellAnimationType type, String name) {
-        System.out.println("playSpellAnimation type: " + type + "  name:" + name);
         try {
             var stack = spellAnimationStackFor(type);
             if (name != null && !name.isEmpty()) {
@@ -181,6 +176,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
                 updateAnimationByCurrentActivity_SpellEngine(copy);
                 copy.torso.fullyEnablePart(true);
                 copy.head.pitch.setEnabled(false);
+                copy.head.yaw.setEnabled(false);
                 var mirror = isLeftHanded_SpellEngine();
 
                 var fadeIn = copy.beginTick;
@@ -189,8 +185,10 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
                         AbstractFadeModifier.standardFadeIn(fadeIn, Ease.INOUTSINE),
                         new KeyframeAnimationPlayer(copy.build(), 0));
             } else {
+                int fadeOutLength = 5;
                 stack.base.replaceAnimationWithFade(
-                        AbstractFadeModifier.standardFadeIn(5, Ease.INOUTSINE), null);
+                        AbstractFadeModifier.standardFadeIn(fadeOutLength, Ease.INOUTSINE), null);
+                stack.adjustment.fadeOut(fadeOutLength);
             }
         } catch (Exception e) {
             e.printStackTrace();

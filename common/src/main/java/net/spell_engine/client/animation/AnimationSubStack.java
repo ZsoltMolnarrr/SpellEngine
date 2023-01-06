@@ -9,10 +9,12 @@ public class AnimationSubStack {
     public final SpeedModifier speed = new SpeedModifier();
     public final MirrorModifier mirror = new MirrorModifier();
     public final ModifierLayer base = new ModifierLayer(null);
+    public AdjustmentModifier adjustment = null;
 
-    public AnimationSubStack(AbstractModifier adjustmentModifier) {
+    public AnimationSubStack(AdjustmentModifier adjustmentModifier) {
         mirror.setEnabled(false);
         if (adjustmentModifier != null) {
+            this.adjustment = adjustmentModifier;
             base.addModifier(adjustmentModifier, 0);
         }
         base.addModifier(speed, 0);
