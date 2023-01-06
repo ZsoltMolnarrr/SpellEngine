@@ -22,7 +22,6 @@ public class SpellCastSyncHelper {
         clearCasting(caster, PlayerLookup.tracking(caster));
     }
 
-
     public static void clearCasting(PlayerEntity caster, Collection<ServerPlayerEntity> trackingPlayers) {
         ((SpellCasterEntity)caster).setCurrentSpell(null);
         var packet = Packets.SpellCastSync.clear(caster.getId()).write();

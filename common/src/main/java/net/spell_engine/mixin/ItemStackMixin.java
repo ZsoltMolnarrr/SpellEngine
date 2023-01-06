@@ -1,6 +1,5 @@
 package net.spell_engine.mixin;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -11,12 +10,11 @@ import net.minecraft.util.UseAction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
-import net.spell_power.api.MagicSchool;
-import net.spell_power.api.enchantment.MagicalItemStack;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.*;
+import net.spell_power.api.MagicSchool;
+import net.spell_power.api.enchantment.MagicalItemStack;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,8 +25,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalItemStack {
     @Shadow public abstract Item getItem();
-
-    @Shadow @Final @Deprecated private Item item;
 
     private ItemStack itemStack() {
         return (ItemStack) ((Object)this);
@@ -102,20 +98,13 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     private void use_HEAD_SpellEngine(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
         // System.out.println("ItemStack use start");
         if (hand == Hand.OFF_HAND && !SpellEngineMod.config.offhand_casting_allowed) {
-            System.out.println("No offhand casting");
             return;
         }
         var itemStack = itemStack();
         var container = spellContainer();
         if (container == null) {
             if (user instanceof SpellCasterEntity caster && caster.getCurrentSpellId() != null) {
-                if (world.isClient) {
-                    var client = MinecraftClient.getInstance();
-                    client.interactionManager.stopUsingItem(client.player);
-                    caster.setCurrentSpell(null);
-                } else {
-                    SpellCastSyncHelper.clearCasting(user);
-                }
+                caster.clearCasting();
             }
             return;
         }
@@ -144,22 +133,19 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
         if (spell == null) {
             return;
         }
-        // System.out.println("ItemStack use tick B " + (world.isClient ? "CLIENT" : "SERVER"));
 
         if (user instanceof PlayerEntity player) {
-            var caster = (SpellCasterEntity)player;
-            if (caster.getCooldownManager().isCoolingDown(caster.getCurrentSpellId())) {
-                var client = MinecraftClient.getInstance();
-                client.interactionManager.stopUsingItem(client.player);
-                // player.clearActiveItem();
-                ci.cancel();
-                return;
-            }
-        }
-
-        if (world.isClient) {
-            if (user instanceof SpellCasterClient caster) {
-                caster.castTick(itemStack(), remainingUseTicks);
+            if (!world.isClient) {
+                // Server
+                var caster = (SpellCasterEntity)player;
+                if (!SpellHelper.canContinueToCastSpell(caster, caster.getCurrentSpellId())) {
+                    player.stopUsingItem();
+                }
+            } else {
+                // Client
+                if (user instanceof SpellCasterClient caster) {
+                    caster.castTick(itemStack(), remainingUseTicks);
+                }
             }
         }
 

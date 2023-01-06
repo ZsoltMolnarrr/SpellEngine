@@ -115,6 +115,10 @@ public class SpellHelper {
         return ((float)ticks) / 20F;
     }
 
+    public static boolean canContinueToCastSpell(SpellCasterEntity caster, Identifier spellId) {
+        return !caster.getCooldownManager().isCoolingDown(spellId);
+    }
+
     public static void performSpell(World world, PlayerEntity caster, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCastAction action, int remainingUseTicks) {
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {

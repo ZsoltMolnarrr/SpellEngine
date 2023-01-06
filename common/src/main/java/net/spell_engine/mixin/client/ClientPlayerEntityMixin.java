@@ -121,8 +121,11 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     @Override
     public void castTick(ItemStack itemStack, int remainingUseTicks) {
+        var caster = player();
+        var currentSpellId = getCurrentSpellId();
         var currentSpell = getCurrentSpell();
         if (currentSpell == null
+                || !SpellHelper.canContinueToCastSpell((SpellCasterEntity) caster, currentSpellId)
                 || (SpellEngineClient.config.restartCastingWhenSwitchingSpell
                     && !getCurrentSpellId().equals(spellIdFromItemStack(itemStack)))
         ) {
@@ -131,13 +134,13 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
 
         updateTargets();
-        var progress = SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell);
+        var progress = SpellHelper.getCastProgress(caster, remainingUseTicks, currentSpell);
         if (SpellHelper.isChanneled(currentSpell)) {
             var action = (progress >= 1) ? SpellCastAction.RELEASE : SpellCastAction.CHANNEL;
             cast(currentSpell, action, itemStack, remainingUseTicks);
         } else {
             if (SpellEngineClient.config.autoRelease
-                    && SpellHelper.getCastProgress(player(), remainingUseTicks, currentSpell) >= 1) {
+                    && SpellHelper.getCastProgress(caster, remainingUseTicks, currentSpell) >= 1) {
                 //cast(currentSpell, SpellCastAction.RELEASE, itemStack, remainingUseTicks);
                 stopItemUsage();
             }
@@ -206,6 +209,11 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
     }
 
+    public void stopSpellCasting() {
+        stopItemUsage();
+        endCasting();
+    }
+
     private void stopItemUsage() {
         var client = MinecraftClient.getInstance();
         client.interactionManager.stopUsingItem(client.player);
@@ -213,10 +221,11 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     private void endCasting() {
         player().clearActiveItem();
-        setCurrentSpell(null);
+        clearCasting();
     }
 
-    private void clearCasting() {
+    @Override
+    public void clearCasting() {
         setCurrentSpell(null);
     }
 

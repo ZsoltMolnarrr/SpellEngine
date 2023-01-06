@@ -52,6 +52,15 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     }
 
     @Override
+    public void clearCasting() {
+        var player = player();
+        if (!player.world.isClient) {
+            // Server
+            SpellCastSyncHelper.clearCasting(player);
+        }
+    }
+
+    @Override
     public SpellCooldownManager getCooldownManager() {
         return spellCooldownManager;
     }

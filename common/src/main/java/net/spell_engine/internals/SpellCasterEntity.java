@@ -10,6 +10,7 @@ public interface SpellCasterEntity {
     Spell getCurrentSpell();
     float getCurrentCastProgress();
     SpellCooldownManager getCooldownManager();
+    void clearCasting();
     boolean isBeaming();
     @Nullable
     Spell.Release.Target.Beam getBeam();

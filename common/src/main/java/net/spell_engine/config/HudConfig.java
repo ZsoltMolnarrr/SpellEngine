@@ -52,7 +52,7 @@ public class HudConfig { HudConfig() { }
         return new HudConfig(
                 new HudElement(
                         HudElement.Origin.BOTTOM,
-                        new Vec2f(0, -29)),
+                        new Vec2f(0, -27)),
                 new Part(
                         false,
                         new Vec2f(0, -12)),
