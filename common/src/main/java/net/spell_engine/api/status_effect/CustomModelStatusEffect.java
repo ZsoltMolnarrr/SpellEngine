@@ -15,7 +15,7 @@ public final class CustomModelStatusEffect {
         renderers.put(statusEffect, renderer);
     }
 
-    public static Renderer renderer(StatusEffect statusEffect) {
+    public static Renderer rendererOf(StatusEffect statusEffect) {
         return renderers.get(statusEffect);
     }
 

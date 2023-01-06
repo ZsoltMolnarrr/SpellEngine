@@ -10,7 +10,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.status_effect.CustomModelStatusEffect;
 import net.spell_engine.api.status_effect.Synchronized;
@@ -64,7 +63,7 @@ public class LivingEntityRendererMixin {
             for (var entry: Synchronized.effectsOf(livingEntity)) {
                 var effect = entry.effect();
                 var amplifier = entry.amplifier();
-                var renderer = CustomModelStatusEffect.renderer(effect);
+                var renderer = CustomModelStatusEffect.rendererOf(effect);
                 if (renderer != null) {
                     renderer.renderEffect(amplifier, livingEntity, delta, matrixStack, vertexConsumerProvider, light);
                 }

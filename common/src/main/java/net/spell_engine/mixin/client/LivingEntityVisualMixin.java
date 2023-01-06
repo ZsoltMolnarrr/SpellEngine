@@ -1,8 +1,6 @@
 package net.spell_engine.mixin.client;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.entity.LivingEntity;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.status_effect.CustomParticleStatusEffect;
 import net.spell_engine.api.status_effect.Synchronized;
@@ -12,22 +10,15 @@ import net.spell_engine.internals.Beam;
 import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.TargetHelper;
-import net.minecraft.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Map;
-
 @Mixin(LivingEntity.class)
 public class LivingEntityVisualMixin implements BeamEmitterEntity {
-    @Shadow @Final private Map<StatusEffect, StatusEffectInstance> activeStatusEffects;
-
     private LivingEntity livingEntity() {
         return (LivingEntity) ((Object) this);
     }
@@ -81,8 +72,9 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
         for (var entry: Synchronized.effectsOf(livingEntity)) {
             var effect = entry.effect();
             var amplifier = entry.amplifier();
-            if (effect instanceof CustomParticleStatusEffect customEffect) {
-                customEffect.spawnParticles(livingEntity, amplifier);
+            var spawner = CustomParticleStatusEffect.spawnerOf(effect);
+            if (spawner != null) {
+                spawner.spawnParticles(livingEntity, amplifier);
             }
         }
     }

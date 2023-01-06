@@ -11,6 +11,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.client.CustomModels;
 import net.spell_engine.api.status_effect.CustomModelStatusEffect;
+import net.spell_engine.api.status_effect.CustomParticleStatusEffect;
 import net.spell_engine.client.animation.AnimationRegistry;
 import net.spell_engine.client.render.SpellBindingBlockEntityRenderer;
 import net.spell_engine.config.ClientConfig;
@@ -61,6 +62,7 @@ public class SpellEngineClient {
         ));
 
         CustomModelStatusEffect.register(SpellEngineMod.frozen, new FrozenRenderer());
+        CustomParticleStatusEffect.register(SpellEngineMod.frozen, new FrozenRenderer());
         CustomModelStatusEffect.register(SpellEngineMod.frostShield, new FrostShieldRenderer());
     }
 }
