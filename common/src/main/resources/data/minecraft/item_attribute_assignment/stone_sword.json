@@ -1,9 +1,0 @@
-{
-  "attributes": [
-    {
-      "attribute" : "spell_power:frost",
-      "operation" : "ADDITION",
-      "value": 4
-    }
-  ]
-}

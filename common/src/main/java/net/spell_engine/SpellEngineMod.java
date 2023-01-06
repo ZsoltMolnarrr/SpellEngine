@@ -15,7 +15,6 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.Enchantments_CombatSpells;
-import net.spell_engine.attribute_assigner.AttributeAssigner;
 import net.spell_engine.config.EnchantmentsConfig;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
@@ -68,7 +67,6 @@ public class SpellEngineMod {
         enchantmentConfig.refresh();
 
         SpellRegistry.initialize();
-        AttributeAssigner.initialize();
         ServerNetwork.initializeHandlers();
         Particles.register();
 
