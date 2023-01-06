@@ -6,6 +6,8 @@ import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 
 @Config(name = "server")
 public class ServerConfig implements ConfigData {
+    @Comment("Spell caster items in the offhand can be used")
+    public boolean offhand_casting_allowed = false;
     @Comment("Allow spells to bypass invulnerability frames. This is required in order for high attack frequency spells (such as beams) to work.")
     public boolean bypass_iframes = true;
     @Comment("Spell haste reduces the cooldown time of abilities")

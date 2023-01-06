@@ -2,6 +2,7 @@ package net.spell_engine.mixin.client;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.Identifier;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.client.SpellEngineClient;
@@ -58,7 +59,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     public SpellContainer getCurrentContainer() {
         var container = containerFromItemStack(player().getMainHandStack());
-        if (container == null) {
+        if (container == null && SpellEngineMod.config.offhand_casting_allowed) {
             container = containerFromItemStack(player().getOffHandStack());
         }
         return container;

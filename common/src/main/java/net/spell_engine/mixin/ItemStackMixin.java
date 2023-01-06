@@ -10,6 +10,7 @@ import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import net.spell_engine.SpellEngineMod;
 import net.spell_power.api.MagicSchool;
 import net.spell_power.api.enchantment.MagicalItemStack;
 import net.spell_engine.api.spell.SpellContainer;
@@ -100,6 +101,10 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
     private void use_HEAD_SpellEngine(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
         // System.out.println("ItemStack use start");
+        if (hand == Hand.OFF_HAND && !SpellEngineMod.config.offhand_casting_allowed) {
+            System.out.println("No offhand casting");
+            return;
+        }
         var itemStack = itemStack();
         var container = spellContainer();
         if (container == null) {
