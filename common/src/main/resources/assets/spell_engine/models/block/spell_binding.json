@@ -3,8 +3,8 @@
   "textures": {
     "particle": "spell_engine:block/spell_binding_bottom",
     "bottom": "spell_engine:block/spell_binding_bottom",
-    "top": "spell_engine:block/spell_binding_top",
-    "side": "spell_engine:block/spell_binding_side"
+    "top": "spell_engine:block/spell_binding_table_top",
+    "side": "spell_engine:block/spell_binding_table_side"
   },
   "elements": [
     {
