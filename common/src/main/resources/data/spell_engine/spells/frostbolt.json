@@ -48,7 +48,7 @@
         }
       }
     },
-    "animation": "spell_engine:one_handed_projectile_charged_release",
+    "animation": "spell_engine:one_handed_projectile_release",
     "sound": {
       "id": "spell_engine:generic_frost_release"
     }

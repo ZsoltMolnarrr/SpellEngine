@@ -11,7 +11,7 @@
     "target": {
       "type": "SELF"
     },
-    "animation": "spell_engine:one_handed_projectile_instant_release",
+    "animation": "spell_engine:one_handed_area_release",
     "sound": {
       "id": "spell_engine:frost_shield_release"
     },

@@ -6,7 +6,7 @@
   },
   "cast": {
     "duration": 1,
-    "animation": "spell_engine:one_handed_projectile_charge",
+    "animation": "spell_engine:two_handed_channeling",
     "sound": {
       "id": "spell_engine:generic_arcane_casting",
       "randomness": 0
@@ -27,7 +27,7 @@
       "type": "CURSOR",
       "cursor": { }
     },
-    "animation": "spell_engine:one_handed_projectile_instant_release",
+    "animation": "spell_engine:one_handed_projectile_release",
     "sound": {
       "id": "spell_engine:arcane_missile_release"
     }
