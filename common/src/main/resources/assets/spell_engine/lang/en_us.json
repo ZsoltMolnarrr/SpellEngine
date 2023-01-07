@@ -71,28 +71,5 @@
   "gui.spell_engine.spell_binding.already_bound" : "Spell already bound",
   "gui.spell_engine.spell_binding.no_more_slots" : "No more spell slots",
   "gui.spell_engine.spell_binding.available" : "Bind spell",
-  "gui.spell_engine.spell_binding.level_req_fail" : "Level Requirement: %s",
-
-  "spell.spell_engine.arcane_missile.name": "Arcane Missile",
-  "spell.spell_engine.arcane_missile.description": "Shoots a bolt of energy, causing {damage} arcane spell damage.",
-  "spell.spell_engine.arcane_blast.name": "Arcane Blast",
-  "spell.spell_engine.arcane_blast.description": "Blasts the target, causing {damage} arcane damage. Grants Arcane Power, stacking up to {effect_amplifier} times.",
-  "spell.spell_engine.arcane_beam.name": "Arcane Beam",
-  "spell.spell_engine.arcane_beam.description": "Channels a beam of energy, dealing {damage} arcane damage every second. Consumes Arcane Power.",
-
-  "spell.spell_engine.fireball.name": "Fireball",
-  "spell.spell_engine.fireball.description": "Launches a ball of fire, causing {damage} fire spell damage.",
-  "spell.spell_engine.fire_breath.name": "Fire Breath",
-  "spell.spell_engine.fire_breath.description": "Incinerates targets in front, dealing up to {damage} fire spell damage every second.",
-  "spell.spell_engine.fire_meteor.name": "Meteor",
-  "spell.spell_engine.fire_meteor.description": "Crashes a meteor on the target, causing up to {damage} fire spell damage within {impact_range} blocks.",
-
-  "spell.spell_engine.frostbolt.name": "Frostbolt",
-  "spell.spell_engine.frostbolt.description": "Launches a ball of frost, causing {damage} frost spell damage and slowing the target on impact.",
-  "spell.spell_engine.frost_nova.name": "Frost Nova",
-  "spell.spell_engine.frost_nova.description": "Freezes targets around you, causing {damage} frost spell damage and blocking their movement. Frozen targets are vulnerable to frost magic.",
-  "effect.spell_engine.frozen": "Frozen",
-  "spell.spell_engine.frost_shield.name": "Frost Shield",
-  "spell.spell_engine.frost_shield.description": "Protects you from attacks, projectiles and fire for {effect_duration} seconds, but also slows down your movement.",
-  "effect.spell_engine.frost_shield": "Frost Shield"
+  "gui.spell_engine.spell_binding.level_req_fail" : "Level Requirement: %s"
 }

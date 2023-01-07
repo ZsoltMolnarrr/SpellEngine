@@ -28,7 +28,7 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
     implementation("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}")
-    modCompileOnly(files("../fabric/run/mods/spell_power-fabric-${spell_power_version}.jar"))
+    modImplementation(files("../fabric/run/mods/spell_power-fabric-${spell_power_version}.jar"))
 
     // Compatibility
     modCompileOnly("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }

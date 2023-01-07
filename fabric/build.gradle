@@ -50,7 +50,7 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
     shadowCommon(implementation("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}"))
-    modImplementation(files("./run/mods/spell_power-fabric-${project.spell_power_version}.jar"))
+    modImplementation(files("../fabric/run/mods/spell_power-fabric-${project.spell_power_version}.jar"))
 
     // Compatibility
     modCompileOnly("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }

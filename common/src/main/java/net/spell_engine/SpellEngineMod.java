@@ -6,17 +6,10 @@ import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.Enchantments_CombatSpells;
-import net.spell_engine.api.status_effect.RemoveOnHit;
-import net.spell_engine.api.status_effect.Synchronized;
 import net.spell_engine.config.EnchantmentsConfig;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
@@ -28,10 +21,6 @@ import net.spell_engine.spellbinding.SpellBinding;
 import net.spell_engine.spellbinding.SpellBindingBlock;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 import net.spell_engine.spellbinding.SpellBindingScreenHandler;
-import net.spell_engine.wizards.FrostShieldStatusEffect;
-import net.spell_engine.wizards.FrozenStatusEffect;
-import net.spell_power.api.MagicSchool;
-import net.spell_power.api.SpellPower;
 import net.tinyconfig.ConfigManager;
 
 public class SpellEngineMod {
@@ -50,19 +39,6 @@ public class SpellEngineMod {
             .build();
     public static EntityType<SpellProjectile> SPELL_PROJECTILE;
 
-    public static StatusEffect frozen = new FrozenStatusEffect(StatusEffectCategory.HARMFUL, 0x99ccff)
-            .setVulnerability(MagicSchool.FROST, new SpellPower.Vulnerability(0, 1F, 0F))
-            .addAttributeModifier(EntityAttributes.GENERIC_MOVEMENT_SPEED,
-                    "052f3166-8ae7-11ed-a1eb-0242ac120002",
-                    -1F,
-                    EntityAttributeModifier.Operation.MULTIPLY_TOTAL);
-
-    public static StatusEffect frostShield = new FrostShieldStatusEffect(StatusEffectCategory.BENEFICIAL, 0x99ccff)
-            .addAttributeModifier(EntityAttributes.GENERIC_MOVEMENT_SPEED,
-                    "0563d59a-8c60-11ed-a1eb-0242ac120002",
-                    -0.5F,
-                    EntityAttributeModifier.Operation.MULTIPLY_TOTAL);
-
     public static void init() {
         AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
@@ -71,12 +47,6 @@ public class SpellEngineMod {
         SpellRegistry.initialize();
         ServerNetwork.initializeHandlers();
         Particles.register();
-
-        ((Synchronized)frozen).setSynchronized(true);
-        ((RemoveOnHit)frozen).removedOnDirectHit(true);
-        ((Synchronized)frostShield).setSynchronized(true);
-        Registry.register(Registry.STATUS_EFFECT, new Identifier("spell_engine:frozen"), frozen);
-        Registry.register(Registry.STATUS_EFFECT, new Identifier("spell_engine:frost_shield"), frostShield);
     }
 
     public static void registerSpellBinding() {

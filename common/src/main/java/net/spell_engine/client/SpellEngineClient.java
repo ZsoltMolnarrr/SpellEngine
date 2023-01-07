@@ -48,21 +48,7 @@ public class SpellEngineClient {
             AnimationRegistry.load(resourceManager);
         });
 
-
         HandledScreens.register(SpellBindingScreenHandler.HANDLER_TYPE, SpellBindingScreen::new);
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
-
-        CustomModels.registerModelIds(List.of(
-                new Identifier("spell_engine:arcane_missile"),
-                new Identifier("spell_engine:fireball_projectile"),
-                new Identifier("spell_engine:frostbolt_projectile"),
-                FrozenRenderer.modelId,
-                FrostShieldRenderer.modelId_base,
-                FrostShieldRenderer.modelId_overlay
-        ));
-
-        CustomModelStatusEffect.register(SpellEngineMod.frozen, new FrozenRenderer());
-        CustomParticleStatusEffect.register(SpellEngineMod.frozen, new FrozenRenderer());
-        CustomModelStatusEffect.register(SpellEngineMod.frostShield, new FrostShieldRenderer());
     }
 }
