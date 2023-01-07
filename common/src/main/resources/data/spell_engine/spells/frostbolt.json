@@ -62,7 +62,7 @@
         }
       },
       "sound": {
-        "id": "spell_engine:frostbolt_impact"
+        "id": "spell_engine:generic_frost_impact"
       }
     },
     {

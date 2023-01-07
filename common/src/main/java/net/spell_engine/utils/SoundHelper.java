@@ -18,16 +18,22 @@ public class SoundHelper {
     public static List<String> soundKeys = List.of(
         "bind_spell",
         "generic_arcane_casting",
-        "generic_fire_casting",
-        "generic_frost_casting",
-        "generic_healing_casting",
-        "generic_lightning_casting",
-        "generic_soul_casting",
         "generic_arcane_release",
+
+        "generic_fire_casting",
         "generic_fire_release",
+
+        "generic_frost_casting",
         "generic_frost_release",
-        "generic_lightning_release",
+        "generic_frost_impact",
+
+        "generic_healing_casting",
         "generic_healing_release",
+
+        "generic_lightning_casting",
+        "generic_lightning_release",
+
+        "generic_soul_casting",
         "generic_soul_release",
 
         // Spell specific impact sounds
@@ -49,7 +55,6 @@ public class SoundHelper {
         "fire_meteor_release",
         "fire_meteor_impact",
 
-        "frostbolt_impact",
         "frost_nova_release",
         "frost_nova_damage_impact",
         "frost_nova_effect_impact",
