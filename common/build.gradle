@@ -22,16 +22,18 @@ dependencies {
     // modApi "dev.architectury:architectury:${rootProject.architectury_version_api}"
     modImplementation "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
 
+    // Dependencies
     modImplementation("dev.kosmx.player-anim:player-animation-lib:${project.player_anim_version}")
     modApi("me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}") {
         exclude(group: "net.fabricmc.fabric-api")
     }
     implementation("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}")
+    modCompileOnly(files("../fabric/run/mods/spell_power-fabric-${spell_power_version}.jar"))
 
+    // Compatibility
     modCompileOnly("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }
     //modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-fabric") { transitive false }
-    modCompileOnly(files("../fabric/run/mods/bettercombat-fabric-1.4.5+1.19.jar"))
-    modCompileOnly(files("../fabric/run/mods/spell_power-fabric-${spell_power_version}.jar"))
+    modCompileOnly(files("../fabric/run/mods/bettercombat-fabric-${project.better_combat_version}.jar"))
 }
 
 architectury {

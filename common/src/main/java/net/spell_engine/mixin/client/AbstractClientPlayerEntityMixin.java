@@ -8,8 +8,16 @@ import dev.kosmx.playerAnim.core.util.Ease;
 import dev.kosmx.playerAnim.core.util.Vec3f;
 import dev.kosmx.playerAnim.impl.IAnimatedPlayer;
 import net.bettercombat.api.animation.FirstPersonAnimation;
-import net.bettercombat.api.animation.FirstPersonAnimator;
 import net.bettercombat.client.animation.StateCollectionHelper;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.encryption.PlayerPublicKey;
+import net.minecraft.util.Arm;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.spell_engine.Platform;
 import net.spell_engine.api.spell.Sound;
 import net.spell_engine.client.animation.AdjustmentModifier;
@@ -22,15 +30,6 @@ import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.mixin.LivingEntityAccessor;
 import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.StringUtil;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.encryption.PlayerPublicKey;
-import net.minecraft.util.Arm;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -54,8 +53,9 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         stack.addAnimLayer(950, releaseAnimation.base);
         stack.addAnimLayer(900, castingAnimation.base);
         if (Platform.isModLoaded("bettercombat")) {
-            ((FirstPersonAnimator)this).addLayer(releaseAnimation.base);
-            ((FirstPersonAnimator)this).addLayer(castingAnimation.base);
+            var player = (AbstractClientPlayerEntity) ((Object) this);
+            FirstPersonAnimation.addLayer(player, releaseAnimation.base);
+            FirstPersonAnimation.addLayer(player, castingAnimation.base);
         }
     }
 

@@ -1,8 +1,8 @@
 {
   "parent": "block/block",
   "textures": {
-    "particle": "spell_engine:block/spell_binding_bottom",
-    "bottom": "spell_engine:block/spell_binding_bottom",
+    "particle": "spell_engine:block/spell_binding_table_bottom",
+    "bottom": "spell_engine:block/spell_binding_table_bottom",
     "top": "spell_engine:block/spell_binding_table_top",
     "side": "spell_engine:block/spell_binding_table_side"
   },
