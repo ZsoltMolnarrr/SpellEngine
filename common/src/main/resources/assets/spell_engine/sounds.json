@@ -4,34 +4,10 @@
       "spell_engine:bind_spell"
     ]
   },
+
   "generic_arcane_casting": {
     "sounds": [
       "spell_engine:generic_arcane_casting"
-    ]
-  },
-  "generic_fire_casting": {
-    "sounds": [
-      "spell_engine:generic_fire_casting"
-    ]
-  },
-  "generic_frost_casting": {
-    "sounds": [
-      "spell_engine:generic_frost_casting"
-    ]
-  },
-  "generic_healing_casting": {
-    "sounds": [
-      "spell_engine:generic_healing_casting"
-    ]
-  },
-  "generic_lightning_casting": {
-    "sounds": [
-      "spell_engine:generic_lightning_casting"
-    ]
-  },
-  "generic_soul_casting": {
-    "sounds": [
-      "spell_engine:generic_soul_casting"
     ]
   },
   "generic_arcane_release": {
@@ -39,9 +15,21 @@
       "spell_engine:generic_arcane_release"
     ]
   },
+
+  "generic_fire_casting": {
+    "sounds": [
+      "spell_engine:generic_fire_casting"
+    ]
+  },
   "generic_fire_release": {
     "sounds": [
       "spell_engine:generic_fire_release"
+    ]
+  },
+
+  "generic_frost_casting": {
+    "sounds": [
+      "spell_engine:generic_frost_casting"
     ]
   },
   "generic_frost_release": {
@@ -49,14 +37,37 @@
       "spell_engine:generic_frost_release"
     ]
   },
+  "generic_frost_impact": {
+    "sounds": [
+      "spell_engine:generic_frost_impact"
+    ]
+  },
+
+  "generic_healing_casting": {
+    "sounds": [
+      "spell_engine:generic_healing_casting"
+    ]
+  },
   "generic_healing_release": {
     "sounds": [
       "spell_engine:generic_healing_release"
     ]
   },
+
+  "generic_lightning_casting": {
+    "sounds": [
+      "spell_engine:generic_lightning_casting"
+    ]
+  },
   "generic_lightning_release": {
     "sounds": [
       "spell_engine:generic_lightning_release"
+    ]
+  },
+
+  "generic_soul_casting": {
+    "sounds": [
+      "spell_engine:generic_soul_casting"
     ]
   },
   "generic_soul_release": {
@@ -142,12 +153,6 @@
   "fire_meteor_impact": {
     "sounds": [
       "spell_engine:fire_meteor_impact"
-    ]
-  },
-
-  "frostbolt_impact": {
-    "sounds": [
-      "spell_engine:frostbolt_impact"
     ]
   },
 
