@@ -6,8 +6,6 @@
   "mixins": [
     "ItemStackMixin",
     "LivingEntityAccessor",
-    "LivingEntityFrostShield",
-    "LivingEntityFrozen",
     "LivingEntityMixin",
     "PlayerEntityMixin",
     "status_effect.LivingEntityStatusEffectSync",

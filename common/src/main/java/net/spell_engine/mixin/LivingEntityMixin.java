@@ -8,15 +8,15 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(LivingEntity.class)
 public class LivingEntityMixin implements LivingEntityKnockback {
-    private float customKnockbackMultiplier = 1;
+    private float customKnockbackMultiplier_SpellEngine = 1;
 
     @Override
     public void SpellEngine_setKnockbackMultiplier(float value) {
-        customKnockbackMultiplier = value;
+        customKnockbackMultiplier_SpellEngine = value;
     }
 
     @ModifyVariable(method = "takeKnockback", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     public double takeKnockback_HEAD_changeStrength(double knockbackStrength) {
-        return knockbackStrength * customKnockbackMultiplier;
+        return knockbackStrength * customKnockbackMultiplier_SpellEngine;
     }
 }
