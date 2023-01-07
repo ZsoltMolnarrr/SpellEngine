@@ -4,13 +4,10 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.spell.Spell;
-import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class SpellBinding {

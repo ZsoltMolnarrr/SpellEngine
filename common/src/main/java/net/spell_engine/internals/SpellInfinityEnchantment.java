@@ -1,11 +1,11 @@
 package net.spell_engine.internals;
 
-import net.spell_engine.SpellEngineMod;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentTarget;
 import net.minecraft.enchantment.MendingEnchantment;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
+import net.spell_engine.SpellEngineMod;
 import net.spell_power.api.enchantment.CustomConditionalEnchantment;
 import net.tinyconfig.models.EnchantmentConfig;
 

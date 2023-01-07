@@ -7,11 +7,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
-import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.client.CustomModels;
-import net.spell_engine.api.status_effect.CustomModelStatusEffect;
-import net.spell_engine.api.status_effect.CustomParticleStatusEffect;
 import net.spell_engine.client.animation.AnimationRegistry;
 import net.spell_engine.client.render.SpellBindingBlockEntityRenderer;
 import net.spell_engine.config.ClientConfig;
@@ -20,11 +16,7 @@ import net.spell_engine.config.HudConfig;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 import net.spell_engine.spellbinding.SpellBindingScreen;
 import net.spell_engine.spellbinding.SpellBindingScreenHandler;
-import net.spell_engine.wizards.client.FrostShieldRenderer;
-import net.spell_engine.wizards.client.FrozenRenderer;
 import net.tinyconfig.ConfigManager;
-
-import java.util.List;
 
 public class SpellEngineClient {
     public static ClientConfig config;

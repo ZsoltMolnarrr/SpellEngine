@@ -1,12 +1,11 @@
 package net.spell_engine.utils;
 
-import net.spell_engine.internals.SpellAnimationType;
-import net.spell_engine.network.Packets;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.spell_engine.internals.SpellAnimationType;
+import net.spell_engine.network.Packets;
 
 import java.util.Collection;
 

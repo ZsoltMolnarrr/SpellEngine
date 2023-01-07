@@ -6,8 +6,8 @@ import net.minecraft.client.particle.*;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.util.math.random.Random;
-import net.spell_power.api.MagicSchool;
 import net.spell_engine.client.util.Color;
+import net.spell_power.api.MagicSchool;
 
 public class GenericSpellParticle extends SpriteBillboardParticle  {
     private static final Random RANDOM = Random.create();

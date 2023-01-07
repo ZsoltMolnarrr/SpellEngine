@@ -1,6 +1,7 @@
 package net.spell_engine.client.render;
 
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.item.ItemRenderer;
@@ -8,14 +9,11 @@ import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.FlyingItemEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.client.CustomModels;
 import net.spell_engine.entity.SpellProjectile;
-import net.spell_engine.mixin.client.render.ItemRendererAccessor;
 
 
 // Mostly copied from: FlyingItemEntityRenderer

@@ -1,9 +1,5 @@
 package net.spell_engine.utils;
 
-import net.spell_engine.api.spell.Spell;
-import net.spell_engine.internals.Beam;
-import net.spell_engine.internals.SpellCasterClient;
-import net.spell_engine.internals.SpellHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -16,6 +12,10 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import net.spell_engine.api.spell.Spell;
+import net.spell_engine.internals.Beam;
+import net.spell_engine.internals.SpellCasterClient;
+import net.spell_engine.internals.SpellHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;

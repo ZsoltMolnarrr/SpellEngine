@@ -1,12 +1,6 @@
 package net.spell_engine.entity;
 
 import com.google.gson.Gson;
-import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.spell.Spell;
-import net.spell_engine.client.render.FlyingSpellEntity;
-import net.spell_engine.internals.SpellHelper;
-import net.spell_engine.particle.ParticleHelper;
-import net.spell_engine.utils.VectorHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -26,6 +20,12 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.spell.Spell;
+import net.spell_engine.client.render.FlyingSpellEntity;
+import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.particle.ParticleHelper;
+import net.spell_engine.utils.VectorHelper;
 
 
 public class SpellProjectile extends ProjectileEntity implements FlyingSpellEntity {

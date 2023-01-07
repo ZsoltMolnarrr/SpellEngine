@@ -1,14 +1,9 @@
 package net.spell_engine.particle;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Quaternion;
-import net.spell_engine.api.spell.ParticleBatch;
-import net.spell_engine.internals.SpellHelper;
-import net.spell_engine.network.Packets;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -16,6 +11,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import net.spell_engine.api.spell.ParticleBatch;
+import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.network.Packets;
 
 import java.util.ArrayList;
 import java.util.Collection;

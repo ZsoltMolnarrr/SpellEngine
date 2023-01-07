@@ -1,7 +1,7 @@
 package net.spell_engine.config;
 
-import net.spell_engine.client.gui.HudElement;
 import net.minecraft.util.math.Vec2f;
+import net.spell_engine.client.gui.HudElement;
 
 import java.util.List;
 

@@ -1,11 +1,11 @@
 package net.spell_engine.client.gui;
 
 import me.shedaniel.autoconfig.AutoConfig;
-import net.spell_engine.config.ClientConfigWrapper;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import net.spell_engine.config.ClientConfigWrapper;
 
 public class ConfigMenuScreen extends Screen {
     private Screen previous;

@@ -1,11 +1,14 @@
 package net.spell_engine.internals;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
-import net.spell_power.api.MagicSchool;
 import net.spell_engine.api.spell.SpellContainer;
+import net.spell_power.api.MagicSchool;
 
 import java.util.ArrayList;
 import java.util.Comparator;

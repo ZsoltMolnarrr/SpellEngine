@@ -1,7 +1,7 @@
 package net.spell_engine.mixin;
 
-import net.spell_engine.entity.LivingEntityKnockback;
 import net.minecraft.entity.LivingEntity;
+import net.spell_engine.entity.LivingEntityKnockback;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;

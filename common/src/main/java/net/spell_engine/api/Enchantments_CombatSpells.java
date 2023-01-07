@@ -1,11 +1,11 @@
 package net.spell_engine.api;
 
-import net.spell_engine.SpellEngineMod;
-import net.spell_engine.config.EnchantmentsConfig;
-import net.spell_engine.internals.SpellInfinityEnchantment;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.util.Identifier;
+import net.spell_engine.SpellEngineMod;
+import net.spell_engine.config.EnchantmentsConfig;
+import net.spell_engine.internals.SpellInfinityEnchantment;
 
 import java.util.HashMap;
 import java.util.Map;

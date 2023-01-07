@@ -1,18 +1,17 @@
 package net.spell_engine.network;
 
 import com.google.common.collect.Iterables;
-import net.minecraft.entity.player.PlayerEntity;
-import net.spell_engine.SpellEngineMod;
-import net.spell_engine.internals.SpellCastAction;
-import net.spell_engine.internals.SpellCasterEntity;
-import net.spell_engine.internals.SpellHelper;
-import net.spell_engine.internals.SpellRegistry;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
+import net.spell_engine.SpellEngineMod;
+import net.spell_engine.internals.SpellCastAction;
+import net.spell_engine.internals.SpellCasterEntity;
+import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.SpellRegistry;
 
 import java.util.ArrayList;
 import java.util.List;

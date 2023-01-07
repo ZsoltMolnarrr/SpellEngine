@@ -1,10 +1,10 @@
 package net.spell_engine.mixin.client.render;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.internals.SpellCasterClient;
 import net.spell_engine.utils.TargetHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

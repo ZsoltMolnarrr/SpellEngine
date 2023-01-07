@@ -1,15 +1,15 @@
 package net.spell_engine.network;
 
 import com.google.gson.Gson;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.ParticleBatch;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.internals.SpellAnimationType;
 import net.spell_engine.internals.SpellCastAction;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
