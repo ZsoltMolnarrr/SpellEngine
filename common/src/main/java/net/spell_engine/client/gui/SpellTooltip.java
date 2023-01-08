@@ -37,7 +37,7 @@ public class SpellTooltip {
             var container = stack.getSpellContainer();
             if(container != null && container.isValid()) {
                 var containerSize = container.max_spell_count;
-                if (containerSize == 1) {
+                if (container.max_spell_count == 1 && containerSize == 1) {
                     lines.add(Text.translatable("spell.tooltip.host.single")
                             .formatted(Formatting.GRAY));
                 } else {

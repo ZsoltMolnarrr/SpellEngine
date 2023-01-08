@@ -28,7 +28,7 @@ public class Keybindings {
         hotbarLock = new KeyBinding(
                 "keybindings." + SpellEngineMod.ID + ".hotbar_lock",
                 InputUtil.Type.KEYSYM,
-                InputUtil.UNKNOWN_KEY.getCode(),
+                InputUtil.GLFW_KEY_Z, // InputUtil.UNKNOWN_KEY.getCode(),
                 SpellEngineMod.modName());
 
         all = List.of(
