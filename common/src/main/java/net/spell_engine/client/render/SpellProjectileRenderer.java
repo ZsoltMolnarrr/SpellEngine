@@ -12,7 +12,8 @@ import net.minecraft.entity.FlyingItemEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3f;
-import net.spell_engine.api.client.CustomModels;
+import net.spell_engine.api.render.CustomLayers;
+import net.spell_engine.api.render.CustomModels;
 import net.spell_engine.entity.SpellProjectile;
 
 

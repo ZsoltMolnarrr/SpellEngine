@@ -15,7 +15,7 @@ import net.spell_engine.api.status_effect.CustomModelStatusEffect;
 import net.spell_engine.api.status_effect.Synchronized;
 import net.spell_engine.client.beam.BeamEmitterEntity;
 import net.spell_engine.client.render.BeamRenderer;
-import net.spell_engine.client.render.CustomLayers;
+import net.spell_engine.api.render.CustomLayers;
 import net.spell_engine.internals.Beam;
 import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.internals.SpellHelper;

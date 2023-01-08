@@ -1,4 +1,4 @@
-package net.spell_engine.client.render;
+package net.spell_engine.api.render;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;

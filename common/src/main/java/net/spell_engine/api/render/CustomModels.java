@@ -1,4 +1,4 @@
-package net.spell_engine.api.client;
+package net.spell_engine.api.render;
 
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
