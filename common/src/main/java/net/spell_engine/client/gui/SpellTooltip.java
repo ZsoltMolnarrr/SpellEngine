@@ -36,13 +36,18 @@ public class SpellTooltip {
         if ((Object)itemStack instanceof SpellCasterItemStack stack) {
             var container = stack.getSpellContainer();
             if(container != null && container.isValid()) {
-
-                var limit = I18n.translate("spell.tooltip.host.limit")
-                        .replace("{current}", "" + container.spell_ids.size())
-                        .replace("{max}", "" + container.max_spell_count);
-                lines.add(Text.translatable("spell.tooltip.host." + container.school.spellName())
-                        .append(Text.literal(" " + limit))
-                        .formatted(Formatting.GRAY));
+                var containerSize = container.max_spell_count;
+                if (containerSize == 1) {
+                    lines.add(Text.translatable("spell.tooltip.host.single")
+                            .formatted(Formatting.GRAY));
+                } else {
+                    var limit = I18n.translate("spell.tooltip.host.limit")
+                            .replace("{current}", "" + container.spell_ids.size())
+                            .replace("{max}", "" + containerSize);
+                    lines.add(Text.translatable("spell.tooltip.host." + container.school.spellName())
+                            .append(Text.literal(" " + limit))
+                            .formatted(Formatting.GRAY));
+                }
                 var keybinding = Keybindings.hotbarModifier;
                 var showDetails = SpellEngineClient.config.alwaysShowFullTooltip
                         || (!keybinding.isUnbound() && InputUtil.isKeyPressed(
