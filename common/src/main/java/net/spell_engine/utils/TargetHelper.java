@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
+import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.scoreboard.AbstractTeam;
@@ -41,6 +42,9 @@ public class TargetHelper {
         if (casterTeam == null || targetTeam == null) {
             if (caster instanceof PlayerEntity casterPlayer) {
                 if (target instanceof PlayerEntity targetEntity) {
+                    return Relation.FRIENDLY;
+                }
+                if (target instanceof AbstractDecorationEntity) {
                     return Relation.FRIENDLY;
                 }
             }
