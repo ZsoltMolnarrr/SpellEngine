@@ -61,7 +61,6 @@
   "text.autoconfig.spell_engine.option.client.unlockHotbarOnEscape.@Tooltip" : "Switch to back to item hotbar pressing ESC key",
   "text.autoconfig.spell_engine.option.client.collapseSpellHotbar" : "Minimize spell hotbar",
   "text.autoconfig.spell_engine.option.client.collapseSpellHotbar.@Tooltip" : "Collapse spell hotbar to show a single spell, when not focused",
-
   "text.autoconfig.spell_engine.option.client.alwaysShowFullTooltip" : "Always show full spell info on tooltip",
   "text.autoconfig.spell_engine.option.client.alwaysShowFullTooltip.@Tooltip" : "Show all spell details on item tooltips, without having to press a button",
 

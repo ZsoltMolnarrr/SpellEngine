@@ -31,6 +31,9 @@ public class TargetHelper {
     }
 
     public static Relation getRelation(LivingEntity caster, Entity target) {
+        if (caster == target) {
+            return Relation.FRIENDLY;
+        }
         var casterTeam = caster.getScoreboardTeam();
         var targetTeam = target.getScoreboardTeam();
         if (target instanceof Tameable tameable) {
@@ -42,7 +45,7 @@ public class TargetHelper {
         if (casterTeam == null || targetTeam == null) {
             if (caster instanceof PlayerEntity casterPlayer) {
                 if (target instanceof PlayerEntity targetEntity) {
-                    return Relation.FRIENDLY;
+                    return Relation.NEUTRAL;
                 }
                 if (target instanceof AbstractDecorationEntity) {
                     return Relation.FRIENDLY;
@@ -56,13 +59,12 @@ public class TargetHelper {
     public static boolean actionAllowed(boolean helpful, Relation relation, LivingEntity caster, Entity target) {
         switch (relation) {
             case FRIENDLY -> {
-                if (helpful) {
-                    return true;
-                } else {
-                    return allowedToHurt(caster, target);
-                }
+                return helpful; // helpful == true
             }
-            case NEUTRAL, HOSTILE -> {
+            case NEUTRAL -> {
+                return allowedToHurt(caster, target);
+            }
+            case HOSTILE -> {
                 return !helpful; // Only allowed in case harmful
             }
         }

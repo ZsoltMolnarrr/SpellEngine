@@ -413,11 +413,13 @@ public class SpellHelper {
         try {
             double particleMultiplier = 1 * context.total();
             var relation = TargetHelper.getRelation(caster, target);
+            System.out.println("Impact caster: " + caster.getName().toString() + " target: " + target.getName().getString() + " relation: " + relation);
             switch (impact.action.type) {
                 case DAMAGE -> {
                     if(!TargetHelper.actionAllowed(false, relation, caster, target)) {
                         return false;
                     }
+                    System.out.println("Attacking target");
                     var damageData = impact.action.damage;
                     var knockbackMultiplier = Math.max(0F, damageData.knockback * context.total());
                     var vulnerability = SpellPower.Vulnerability.none;

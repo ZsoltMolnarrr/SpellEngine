@@ -153,7 +153,7 @@ public class HudRenderHelper {
 
         public record ViewModel(int color, float progress, float castDuration, Identifier iconTexture, boolean allowTickDelta, boolean reverse) {
             public static ViewModel mock() {
-                return new ViewModel(0xFF3300, 0.5F, 1, SpellRender.iconTexture(new Identifier("spell_engine", "fireball")), false, false);
+                return new ViewModel(0xFF3300, 0.5F, 1, SpellRender.iconTexture(new Identifier("spell_engine", "dummy_spell")), false, false);
             }
         }
 
@@ -246,9 +246,9 @@ public class HudRenderHelper {
             public static ViewModel mock() {
                 return new ViewModel(
                         List.of(
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "fireball")), 0),
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "fireball")), 0),
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "fireball")), 0)
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0)
                         ),
                         1,
                         Color.from(0xFFFFFF)
