@@ -3,7 +3,7 @@
   "id": "spell_engine",
   "version": "${version}",
   "name": "Spell Engine",
-  "description": "Data driven spell API.",
+  "description": "Data driven magic library.",
   "authors": [
     "Daedelus"
   ],

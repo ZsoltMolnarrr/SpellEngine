@@ -29,7 +29,7 @@ Fancy audio and visuals
 In game features
 - 🔧 Spell selection and casting is visible on the HUD (fully player configurable)
 - 😌 QoL features included (such as automatic spell cast release)
-- ⛓️ Bind spells to eligible weapons
+- ⛓️ Add spells to eligible weapons using the Spell Binding Table
 
 # 🔧 Configuration
 
@@ -56,6 +56,7 @@ Add this mod as dependency into your build.gradle file.
 Install dependencies:
 - Spell Power
 - Player Animator
+- Cloth Config
 
 ## ⭐️ Creating a spell
 
