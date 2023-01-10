@@ -1,4 +1,4 @@
-package net.spell_engine.api;
+package net.spell_engine.api.enchantment;
 
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.EquipmentSlot;

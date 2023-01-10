@@ -8,9 +8,11 @@
     "LivingEntityAccessor",
     "LivingEntityMixin",
     "PlayerEntityMixin",
-    "status_effect.LivingEntityStatusEffectSync",
-    "status_effect.StatusEffectRemoveOnHit",
-    "status_effect.StatusEffectSynchronized"
+    "effect.LivingEntityStatusEffectSync",
+    "effect.StatusEffectRemoveOnHit",
+    "effect.StatusEffectSynchronized",
+    "enchant.EnchantmentHelperMixin",
+    "enchant.EnchantmentMixin"
   ],
   "client": [
     "client.AbstractClientPlayerEntityMixin",

@@ -5,11 +5,15 @@ import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.client.resource.language.I18n;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.registry.Registry;
-import net.spell_engine.api.Enchantments_CombatSpells;
+import net.spell_engine.api.enchantment.EnchantmentRestriction;
+import net.spell_engine.api.enchantment.Enchantments_CombatSpells;
+import net.spell_engine.api.item.StaffItem;
 import net.spell_engine.config.EnchantmentsConfig;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
@@ -47,6 +51,9 @@ public class SpellEngineMod {
         SpellRegistry.initialize();
         ServerNetwork.initializeHandlers();
         Particles.register();
+
+        EnchantmentRestriction.alleviate(Enchantments.KNOCKBACK, itemStack -> itemStack.getItem() instanceof StaffItem);
+        EnchantmentRestriction.alleviate(Enchantments.LOOTING, itemStack -> itemStack.getItem() instanceof StaffItem);
     }
 
     public static void registerSpellBinding() {

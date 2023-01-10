@@ -1,4 +1,4 @@
-package net.spell_engine.api.status_effect;
+package net.spell_engine.api.effect;
 
 import net.minecraft.entity.effect.StatusEffect;
 

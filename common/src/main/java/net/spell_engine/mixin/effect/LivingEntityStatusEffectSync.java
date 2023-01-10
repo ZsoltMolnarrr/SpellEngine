@@ -1,4 +1,4 @@
-package net.spell_engine.mixin.status_effect;
+package net.spell_engine.mixin.effect;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
@@ -7,7 +7,7 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.util.registry.Registry;
-import net.spell_engine.api.status_effect.Synchronized;
+import net.spell_engine.api.effect.Synchronized;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

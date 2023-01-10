@@ -15,7 +15,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.Enchantments_CombatSpells;
+import net.spell_engine.api.enchantment.Enchantments_CombatSpells;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.entity.LivingEntityKnockback;
 import net.spell_engine.entity.SpellProjectile;

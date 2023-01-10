@@ -1,10 +1,8 @@
 package net.spell_engine.fabric;
 
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.status_effect.RemoveOnHit;
-import net.spell_engine.client.input.Keybindings;
+import net.spell_engine.api.effect.RemoveOnHit;
 import net.spell_engine.entity.SpellProjectile;
 import net.fabricmc.api.ModInitializer;
 import net.spell_engine.utils.SoundHelper;
