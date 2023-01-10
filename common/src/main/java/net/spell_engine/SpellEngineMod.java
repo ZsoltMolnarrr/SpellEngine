@@ -9,10 +9,9 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.enchantment.EnchantmentRestriction;
-import net.spell_engine.api.enchantment.Enchantments_CombatSpells;
+import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
 import net.spell_engine.api.item.StaffItem;
 import net.spell_engine.config.EnchantmentsConfig;
 import net.spell_engine.config.ServerConfig;
@@ -65,7 +64,7 @@ public class SpellEngineMod {
 
     public static void registerEnchantments() {
         enchantmentConfig.value.apply();
-        for(var entry: Enchantments_CombatSpells.all.entrySet()) {
+        for(var entry: Enchantments_SpellEngine.all.entrySet()) {
             Registry.register(Registry.ENCHANTMENT, entry.getKey(), entry.getValue());
         }
     }

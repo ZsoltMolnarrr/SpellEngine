@@ -15,7 +15,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.enchantment.Enchantments_CombatSpells;
+import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.entity.LivingEntityKnockback;
 import net.spell_engine.entity.SpellProjectile;
@@ -40,7 +40,7 @@ public class SpellHelper {
     public static AmmoResult ammoForSpell(PlayerEntity player, Spell spell, ItemStack itemStack) {
         boolean satisfied = true;
         ItemStack ammo = null;
-        boolean ignoreAmmo = player.getAbilities().creativeMode || EnchantmentHelper.getLevel(Enchantments_CombatSpells.INFINITY, itemStack) > 0;
+        boolean ignoreAmmo = player.getAbilities().creativeMode || EnchantmentHelper.getLevel(Enchantments_SpellEngine.INFINITY, itemStack) > 0;
         if (!ignoreAmmo && spell.cost.item_id != null && !spell.cost.item_id.isEmpty()) {
             var id = new Identifier(spell.cost.item_id);
             var ammoItem = Registry.ITEM.get(id);

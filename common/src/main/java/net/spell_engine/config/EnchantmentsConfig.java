@@ -1,6 +1,6 @@
 package net.spell_engine.config;
 
-import net.spell_engine.api.enchantment.Enchantments_CombatSpells;
+import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
 import net.tinyconfig.models.EnchantmentConfig;
 
 public class EnchantmentsConfig {
@@ -11,6 +11,6 @@ public class EnchantmentsConfig {
     }
 
     public void apply() {
-        Enchantments_CombatSpells.INFINITY.config = infinity;
+        Enchantments_SpellEngine.INFINITY.config = infinity;
     }
 }

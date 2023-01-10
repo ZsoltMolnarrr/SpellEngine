@@ -12,6 +12,7 @@ public final class EnchantmentRestriction {
     }
     private static HashMap<Enchantment, ArrayList<Condition>> alleviations = new HashMap<>();
 
+    // If alleviating condition is met, the enchantment will be applicable ignoring additional checks
     public static void alleviate(Enchantment enchantment, Condition condition) {
         var conditions = alleviations.get(enchantment);
         if (conditions == null) {

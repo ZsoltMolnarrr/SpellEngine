@@ -10,7 +10,7 @@ import net.spell_engine.internals.SpellInfinityEnchantment;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Enchantments_CombatSpells {
+public class Enchantments_SpellEngine {
 
     // Damage enchants
 
