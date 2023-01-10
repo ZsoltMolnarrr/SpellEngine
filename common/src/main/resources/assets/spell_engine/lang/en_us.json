@@ -2,6 +2,7 @@
   "spell_engine.mod_name" : "Spell Engine",
   "enchantment.spell_engine.spell_infinity" : "Spell Infinity",
   "enchantment.spell_engine.spell_infinity.desc" : "Spells are free to cast",
+  "entity.spell_engine.spell_projectile": "Spell",
 
   "spell.tooltip.host.single": "Casts spell when used",
   "spell.tooltip.host.arcane": "Host of Arcane spells",

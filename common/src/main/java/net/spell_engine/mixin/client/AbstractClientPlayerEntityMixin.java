@@ -7,8 +7,6 @@ import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import dev.kosmx.playerAnim.core.util.Ease;
 import dev.kosmx.playerAnim.core.util.Vec3f;
 import dev.kosmx.playerAnim.impl.IAnimatedPlayer;
-import net.bettercombat.api.animation.FirstPersonAnimation;
-import net.bettercombat.client.animation.StateCollectionHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
@@ -20,11 +18,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.spell_engine.Platform;
 import net.spell_engine.api.spell.Sound;
-import net.spell_engine.client.animation.AdjustmentModifier;
-import net.spell_engine.client.animation.AnimatablePlayer;
-import net.spell_engine.client.animation.AnimationRegistry;
-import net.spell_engine.client.animation.AnimationSubStack;
+import net.spell_engine.client.animation.*;
 import net.spell_engine.client.sound.SpellCastingSound;
+import net.spell_engine.compatibility.BetterCombatCompatibility;
 import net.spell_engine.internals.SpellAnimationType;
 import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.mixin.LivingEntityAccessor;
@@ -52,11 +48,10 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         var stack = ((IAnimatedPlayer) this).getAnimationStack();
         stack.addAnimLayer(950, releaseAnimation.base);
         stack.addAnimLayer(900, castingAnimation.base);
-        if (Platform.isModLoaded("bettercombat")) {
-            var player = (AbstractClientPlayerEntity) ((Object) this);
-            FirstPersonAnimation.addLayer(player, releaseAnimation.base);
-            FirstPersonAnimation.addLayer(player, castingAnimation.base);
-        }
+
+        var player = (AbstractClientPlayerEntity) ((Object) this);
+        BetterCombatCompatibility.addFirstPersonAnimationLayer(player, releaseAnimation.base);
+        BetterCombatCompatibility.addFirstPersonAnimationLayer(player, castingAnimation.base);
     }
 
     @Override
@@ -123,7 +118,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             float offsetY = 0;
             float offsetZ = 0;
 
-            if (useFirstPersonAnimationAPI && FirstPersonAnimation.isRenderingAttackAnimationInFirstPerson()) {
+            if (useFirstPersonAnimationAPI && BetterCombatCompatibility.isRenderingAttackAnimationInFirstPerson()) {
                 var pitch = player.getPitch();
                 pitch = (float) Math.toRadians(pitch);
                 switch (partName) {

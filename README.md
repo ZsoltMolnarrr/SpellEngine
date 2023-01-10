@@ -49,6 +49,8 @@ Client side settings can be accessed in Main Menu > Mods > Spell Engien > Config
 
 ❗️ DOCUMENTATION IS INCOMPLETE!
 
+❗️ API IS NOT FINALIZED, MAY INTRODUCE BREAKING CHANGE AT ANY POINT.
+
 ## Installation
 
 Add this mod as dependency into your build.gradle file.
