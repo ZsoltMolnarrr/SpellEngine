@@ -23,14 +23,6 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
         return (LivingEntity) ((Object) this);
     }
 
-    @Inject(method = "isGlowing", at = @At("HEAD"), cancellable = true)
-    public void isGlowing_HEAD(CallbackInfoReturnable<Boolean> cir) {
-        if (TargetHelper.isTargetedByClientPlayer(livingEntity()) && SpellEngineClient.config.highlightTarget) {
-            cir.setReturnValue(true);
-            cir.cancel();
-        }
-    }
-
     @Nullable
     public Beam.Rendered lastRenderedBeam;
 

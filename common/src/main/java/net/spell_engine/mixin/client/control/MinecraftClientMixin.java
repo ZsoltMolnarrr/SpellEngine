@@ -2,11 +2,13 @@ package net.spell_engine.mixin.client.control;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.InputHelper;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.SpellCasterClient;
+import net.spell_engine.utils.TargetHelper;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MinecraftClient.class)
 public abstract class MinecraftClientMixin {
@@ -57,6 +60,14 @@ public abstract class MinecraftClientMixin {
         var container = ((SpellCasterClient)player).getCurrentContainer();
         if (container == null || !container.isUsable() || container.spell_ids.isEmpty()) {
             InputHelper.isLocked = false;
+        }
+    }
+
+    @Inject(method = "hasOutline", at = @At(value = "HEAD"), cancellable = true)
+    private void hasOutline_HEAD_SpellEngine(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        if(TargetHelper.isTargetedByClientPlayer(entity) && SpellEngineClient.config.highlightTarget) {
+            cir.setReturnValue(true);
+            cir.cancel();
         }
     }
 }
