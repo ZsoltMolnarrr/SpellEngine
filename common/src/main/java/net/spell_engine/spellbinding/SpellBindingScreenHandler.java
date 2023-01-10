@@ -174,7 +174,9 @@ public class SpellBindingScreenHandler extends ScreenHandler {
         return itemStack;
     }
 
-    private static Identifier soundId = new Identifier(SpellEngineMod.ID, "bind_spell");
+    public static Identifier soundId = new Identifier(SpellEngineMod.ID, "bind_spell");
+    public static SoundEvent soundEvent = new SoundEvent(soundId);
+
     @Override
     public boolean onButtonClick(PlayerEntity player, int id) {
         try {
@@ -205,7 +207,6 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                 applyLevelCost(player, binding.requirements.levelCost());
                 this.inventory.markDirty();
                 this.onContentChanged(this.inventory);
-                var soundEvent = new SoundEvent(soundId);
                 world.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
             });
 

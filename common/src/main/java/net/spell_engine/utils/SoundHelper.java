@@ -9,13 +9,13 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Sound;
+import net.spell_engine.spellbinding.SpellBindingScreenHandler;
 
 import java.util.List;
 import java.util.Map;
 
 public class SoundHelper {
     public static List<String> soundKeys = List.of(
-        "bind_spell",
         "generic_arcane_casting",
         "generic_arcane_release",
 
@@ -49,6 +49,7 @@ public class SoundHelper {
                     : new SoundEvent(soundId, customTravelDistance);
             Registry.register(Registry.SOUND_EVENT, soundId, soundEvent);
         }
+        Registry.register(Registry.SOUND_EVENT, SpellBindingScreenHandler.soundId, SpellBindingScreenHandler.soundEvent);
     }
 
     public static void playSound(World world, Entity entity, Sound sound) {
