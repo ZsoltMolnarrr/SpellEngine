@@ -7,4 +7,8 @@ public record Color(float red, float green, float blue) {
         float blue = ((float) (rgb & 0xFF)) / 255F;
         return new Color(red, green, blue);
     }
+
+    public static final Color RED = new Color(1, 0, 0);
+    public static final Color GREEN = new Color(1, 0, 0);
+    public static final Color BLUE = new Color(1, 0, 0);
 }

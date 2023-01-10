@@ -16,9 +16,11 @@ import net.spell_engine.client.input.InputHelper;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.client.util.Rect;
 import net.spell_engine.client.util.SpellRender;
+import net.spell_engine.client.util.TextureFile;
 import net.spell_engine.config.HudConfig;
 import net.spell_engine.internals.SpellCasterClient;
 import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.SpellRegistry;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,6 +44,7 @@ public class HudRenderHelper {
         var targetViewModel = TargetWidget.ViewModel.mock();
         boolean renderHotbar = true;
         var hotbarViewModel = SpellHotBarWidget.ViewModel.mock();
+        SpellHotBarWidget.ViewModel hotbarAccessories = null;
         CastBarWidget.ViewModel castBarViewModel = null;
         if (config) {
             castBarViewModel = CastBarWidget.ViewModel.mock();
@@ -52,18 +55,26 @@ public class HudRenderHelper {
         if (player != null) {
             var caster = (SpellCasterClient) player;
             var container = caster.getCurrentContainer();
-            var spell = caster.getCurrentSpell();
-            var spellId = caster.getCurrentSpellId();
+            var currentSpell = caster.getCurrentSpell();
+            var currentSpellId = caster.getCurrentSpellId();
 
             if (container != null && container.isUsable()) {
                 var cooldownManager = caster.getCooldownManager();
 
                 var spells = container.spell_ids.stream()
-                        .map(id -> new SpellHotBarWidget.SpellViewModel(SpellRender.iconTexture(new Identifier(id)), cooldownManager.getCooldownProgress(new Identifier(id), tickDelta)))
+                        .map(id -> {
+                            var spellId = new Identifier(id);
+                            var spell = SpellRegistry.getSpell(spellId);
+                            return new SpellHotBarWidget.SpellViewModel(
+                                SpellRender.iconTexture(spellId),
+                                cooldownManager.getCooldownProgress(new Identifier(id), tickDelta),
+                                Color.from(spell != null ? spell.school.color() : 0xFFFFFF));
+                        })
                         .collect(Collectors.toList());
                 int selected = caster.getSelectedSpellIndex(container);
 
                 if (clientConfig.collapseSpellHotbar && !InputHelper.isLocked && selected < spells.size()) {
+                    hotbarAccessories = new SpellHotBarWidget.ViewModel(spells, selected, Color.from(0xFFFFFF));
                     spells = List.of(spells.get(selected));
                     selected = 0;
                 }
@@ -74,14 +85,14 @@ public class HudRenderHelper {
             }
             renderHotbar = InputHelper.hotbarVisibility().spell();
 
-            if (spell != null) {
+            if (currentSpell != null) {
                 castBarViewModel = new CastBarWidget.ViewModel(
-                        spell.school.color(),
+                        currentSpell.school.color(),
                         caster.getCurrentCastProgress(),
-                        spell.cast.duration,
-                        SpellRender.iconTexture(spellId),
+                        currentSpell.cast.duration,
+                        SpellRender.iconTexture(currentSpellId),
                         true,
-                        SpellHelper.isChanneled(spell));
+                        SpellHelper.isChanneled(currentSpell));
             }
         }
 
@@ -100,6 +111,9 @@ public class HudRenderHelper {
 
         if (renderHotbar) {
             SpellHotBarWidget.render(matrixStack, screenWidth, screenHeight, hotbarViewModel);
+            if(hotbarAccessories != null) {
+                SpellHotBarWidget.renderAccessories(matrixStack, screenWidth, screenHeight, hotbarAccessories);
+            }
         }
     }
 
@@ -236,19 +250,21 @@ public class HudRenderHelper {
 
     public class SpellHotBarWidget {
         public static Rect lastRendered;
-        private static final Identifier WIDGETS_TEXTURE = new Identifier("textures/gui/widgets.png");
-        private static final int textureWidth = 256;
-        private static final int textureHeight = 256;
+        private static final TextureFile WIDGETS = new TextureFile(new Identifier("textures/gui/widgets.png"), 256, 256);
+        private static final TextureFile ACCESSORIES = new TextureFile(new Identifier(SpellEngineMod.ID, "textures/hud/hotbar_accessories.png"), 32, 16);
+        private static final int slotHeight = 22;
+        private static final int slotWidth = 20;
 
-        public record SpellViewModel(Identifier iconId, float cooldown) { }
+
+        public record SpellViewModel(Identifier iconId, float cooldown, Color color) { }
 
         public record ViewModel(List<SpellViewModel> spells, int selected, Color sliderColor) {
             public static ViewModel mock() {
                 return new ViewModel(
                         List.of(
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0),
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0),
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0)
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0, Color.RED),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0, Color.RED),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0, Color.RED)
                         ),
                         1,
                         Color.from(0xFFFFFF)
@@ -263,8 +279,6 @@ public class HudRenderHelper {
             if (viewModel.spells.isEmpty()) {
                 return;
             }
-            int slotHeight = 22;
-            int slotWidth = 20;
             float estimatedWidth = slotWidth * viewModel.spells.size();
             float estimatedHeight = slotHeight;
             var origin = config.origin
@@ -280,13 +294,13 @@ public class HudRenderHelper {
 
             // Background
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, barOpacity);
-            RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
-            DrawableHelper.drawTexture(matrixStack, (int) (origin.x), (int) (origin.y), 0, 0, slotWidth / 2, slotHeight, textureWidth, textureHeight);
+            RenderSystem.setShaderTexture(0, WIDGETS.id());
+            DrawableHelper.drawTexture(matrixStack, (int) (origin.x), (int) (origin.y), 0, 0, slotWidth / 2, slotHeight, WIDGETS.width(), WIDGETS.height());
             int middleElements = viewModel.spells.size() - 1;
             for (int i = 0; i < middleElements; i++) {
-                DrawableHelper.drawTexture(matrixStack, (int) (origin.x) + (slotWidth / 2) + (i * slotWidth), (int) (origin.y), slotWidth / 2, 0, slotWidth, slotHeight, textureWidth, textureHeight);
+                DrawableHelper.drawTexture(matrixStack, (int) (origin.x) + (slotWidth / 2) + (i * slotWidth), (int) (origin.y), slotWidth / 2, 0, slotWidth, slotHeight, WIDGETS.width(), WIDGETS.height());
             }
-            DrawableHelper.drawTexture(matrixStack, (int) (origin.x) + (slotWidth / 2) + (middleElements * slotWidth), (int) (origin.y), 170, 0, (slotHeight / 2) + 1, slotHeight, textureWidth, textureHeight);
+            DrawableHelper.drawTexture(matrixStack, (int) (origin.x) + (slotWidth / 2) + (middleElements * slotWidth), (int) (origin.y), 170, 0, (slotHeight / 2) + 1, slotHeight, WIDGETS.width(), WIDGETS.height());
 
             // Icons
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0F);
@@ -308,14 +322,50 @@ public class HudRenderHelper {
             if (viewModel.spells.size() > 1) {
                 int selectorSize = 24;
                 RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, barOpacity);
-                RenderSystem.setShaderTexture(0, WIDGETS_TEXTURE);
+                RenderSystem.setShaderTexture(0, WIDGETS.id());
                 int x = ((int) origin.x) - 1 + (slotWidth * viewModel.selected);
                 int y = ((int) origin.y) - 1;
-                DrawableHelper.drawTexture(matrixStack, x, y, 0, 22, selectorSize, selectorSize, textureWidth, textureHeight);
+                DrawableHelper.drawTexture(matrixStack, x, y, 0, 22, selectorSize, selectorSize, WIDGETS.width(), WIDGETS.height());
             }
 
             RenderSystem.disableBlend();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        }
+
+        public static void renderAccessories(MatrixStack matrixStack, int screenWidth, int screenHeight, ViewModel viewModel) {
+            if (viewModel.spells.size() < 2) {
+                return;
+            }
+
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+
+            var config = SpellEngineClient.hudConfig.value.hotbar;
+            var origin = config.origin
+                    .getPoint(screenWidth, screenHeight)
+                    .add(config.offset);
+
+            float barOpacity = (SpellEngineClient.config.indicateActiveHotbar && InputHelper.isLocked) ? 1F : 0.5F;
+            RenderSystem.setShaderTexture(0, ACCESSORIES.id());
+
+            var spacing = 7;
+            for (int i = 0; i < viewModel.spells.size(); i++) {
+                if (i == viewModel.selected) { continue; }
+                var spell = viewModel.spells.get(i);
+                var position = i - viewModel.selected;
+                int x = (int) (origin.x)
+                            + ( ((i < viewModel.selected) ? -1 : 1) * ((slotWidth-4) / 2) )
+                            - 7
+                            + (position * spacing);
+                int y = (int) origin.y - 8;
+
+                RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, barOpacity);
+                DrawableHelper.drawTexture(matrixStack, x, y, 0, 0, 16, 16, ACCESSORIES.width(), ACCESSORIES.height());
+                RenderSystem.setShaderColor(spell.color().red(), spell.color().green(), spell.color().blue(), 1F);
+                DrawableHelper.drawTexture(matrixStack, x, y, 16, 0, 16, 16, ACCESSORIES.width(), ACCESSORIES.height());
+            }
+            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1F);
+            RenderSystem.disableBlend();
         }
 
         private static void renderCooldown(float progress, int x, int y) {
