@@ -152,7 +152,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         this.drawButtons(matrices, mouseX, mouseY);
     }
 
-    private static int PAGE_SIZE = 3;
+    private static final int PAGE_SIZE = 3;
 
     private boolean isPagingEnabled() {
         return buttonViewModels.size() > PAGE_SIZE;
@@ -213,6 +213,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
             var rawId = handler.spellId[i];
             var cost = handler.spellCost[i];
             var requirement = handler.spellLevelRequirement[i];
+            // System.out.println("Server offers spell ID: " + rawId);
             var spellId = SpellRegistry.fromRawId(rawId);
             if (spellId.isEmpty()) { continue; }
             var id = spellId.get();

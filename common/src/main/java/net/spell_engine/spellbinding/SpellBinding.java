@@ -25,7 +25,9 @@ public class SpellBinding {
             return List.of();
         }
         return SpellRegistry.all().entrySet().stream()
-                .filter(entry -> entry.getValue().school == container.school)
+                .filter(entry -> entry.getValue().school == container.school
+                        && entry.getValue().learn != null
+                        && entry.getValue().learn.tier > 0)
                 .sorted(SpellContainerHelper.spellSorter)
                 .map(entry -> new Offer(
                     SpellRegistry.rawId(entry.getKey()),

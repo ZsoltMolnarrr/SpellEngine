@@ -12,10 +12,11 @@ import net.spell_engine.api.spell.SpellContainer;
 
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SpellRegistry {
-    private static Map<Identifier, Spell> spells = new HashMap();
-    private static Map<Identifier, SpellContainer> containers = new HashMap();
+    private static final Map<Identifier, Spell> spells = new HashMap();
+    private static final Map<Identifier, SpellContainer> containers = new HashMap();
 
     public static Map<Identifier, Spell> all() {
         return spells;
@@ -52,7 +53,9 @@ public class SpellRegistry {
                 e.printStackTrace();
             }
         }
-        spells = parsed;
+        spells.clear();
+        spells.putAll(parsed);
+        updateRawIds();
     }
 
     public static void loadContainers(ResourceManager resourceManager) {
@@ -77,7 +80,7 @@ public class SpellRegistry {
                 e.printStackTrace();
             }
         }
-        containers = parsed;
+        containers.putAll(parsed);
     }
 
     public static Spell spell(SpellContainer container, int selectedIndex) {
@@ -148,22 +151,41 @@ public class SpellRegistry {
         }
         var gson = new Gson();
         SyncFormat sync = gson.fromJson(json, SyncFormat.class);
+        spells.clear();
         sync.spells.forEach((key, value) -> {
             spells.put(new Identifier(key), value);
         });
         sync.containers.forEach((key, value) -> {
             containers.put(new Identifier(key), value);
         });
+        updateRawIds();
+    }
+
+    private static final Map<Identifier, Integer> rawMap = new HashMap<>();
+
+    private static void updateRawIds() {
+        rawMap.clear();
+        var sortedIDs = spells.keySet()
+                .stream()
+                .sorted(Comparator.comparing(Identifier::toString))
+                .toList();
+        int rawId = 1;
+        for(var id: sortedIDs) {
+            rawMap.put(id, rawId);
+            rawId += 1;
+        }
     }
 
     public static int rawId(Identifier identifier) {
-        return identifier.toString().hashCode();
+        return rawMap.get(identifier);
     }
 
     public static Optional<Identifier> fromRawId(int rawId) {
-        return spells.entrySet().stream()
-                .filter(entry -> rawId(entry.getKey()) == rawId)
-                .findFirst()
-                .map(entry -> entry.getKey());
+        for(var entry: rawMap.entrySet()) {
+            if(entry.getValue() == rawId) {
+                return Optional.of(entry.getKey());
+            }
+        }
+        return Optional.empty();
     }
 }
