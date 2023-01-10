@@ -36,14 +36,13 @@ public class SpellTooltip {
         if ((Object)itemStack instanceof SpellCasterItemStack stack) {
             var container = stack.getSpellContainer();
             if(container != null && container.isValid()) {
-                var containerSize = container.max_spell_count;
-                if (container.max_spell_count == 1 && containerSize == 1) {
+                if (container.max_spell_count == 1) {
                     lines.add(Text.translatable("spell.tooltip.host.single")
                             .formatted(Formatting.GRAY));
                 } else {
                     var limit = I18n.translate("spell.tooltip.host.limit")
                             .replace("{current}", "" + container.spell_ids.size())
-                            .replace("{max}", "" + containerSize);
+                            .replace("{max}", "" + container.max_spell_count);
                     lines.add(Text.translatable("spell.tooltip.host." + container.school.spellName())
                             .append(Text.literal(" " + limit))
                             .formatted(Formatting.GRAY));
@@ -64,7 +63,7 @@ public class SpellTooltip {
                         lines.addAll(info);
                     }
                 }
-                if (!showDetails && !keybinding.isUnbound()) {
+                if (!showDetails && !keybinding.isUnbound() && container.spell_ids.size() > 0) {
                     lines.add(Text.translatable("spell.tooltip.hold_for_details",
                             keybinding.getBoundKeyLocalizedText())
                             .formatted(Formatting.GRAY));
