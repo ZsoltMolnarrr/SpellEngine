@@ -30,4 +30,6 @@ public class ClientConfig implements ConfigData {
     public boolean unlockHotbarOnEscape = false;
     @ConfigEntry.Gui.Tooltip
     public boolean alwaysShowFullTooltip = false;
+    @ConfigEntry.Gui.Tooltip
+    public boolean showSpellBindingTooltip = true;
 }

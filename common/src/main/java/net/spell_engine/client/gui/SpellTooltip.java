@@ -33,6 +33,7 @@ public class SpellTooltip {
         if (player == null) {
             return;
         }
+        var config = SpellEngineClient.config;
         if ((Object)itemStack instanceof SpellCasterItemStack stack) {
             var container = stack.getSpellContainer();
             if(container != null && container.isValid()) {
@@ -48,7 +49,7 @@ public class SpellTooltip {
                             .formatted(Formatting.GRAY));
                 }
                 var keybinding = Keybindings.hotbarModifier;
-                var showDetails = SpellEngineClient.config.alwaysShowFullTooltip
+                var showDetails = config.alwaysShowFullTooltip
                         || (!keybinding.isUnbound() && InputUtil.isKeyPressed(
                                 MinecraftClient.getInstance().getWindow().getHandle(),
                                 keybinding.getDefaultKey().getCode())
@@ -66,6 +67,10 @@ public class SpellTooltip {
                 if (!showDetails && !keybinding.isUnbound() && container.spell_ids.size() > 0) {
                     lines.add(Text.translatable("spell.tooltip.hold_for_details",
                             keybinding.getBoundKeyLocalizedText())
+                            .formatted(Formatting.GRAY));
+                }
+                if (config.showSpellBindingTooltip && container.max_spell_count > 1 && container.spell_ids.size() == 0) {
+                    lines.add(Text.translatable("spell.tooltip.spell_binding_tip")
                             .formatted(Formatting.GRAY));
                 }
             }

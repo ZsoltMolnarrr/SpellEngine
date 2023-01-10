@@ -111,7 +111,7 @@ public class HudRenderHelper {
 
         if (renderHotbar) {
             SpellHotBarWidget.render(matrixStack, screenWidth, screenHeight, hotbarViewModel);
-            if(hotbarAccessories != null) {
+            if(clientConfig.collapsedIndicators && hotbarAccessories != null) {
                 SpellHotBarWidget.renderAccessories(matrixStack, screenWidth, screenHeight, hotbarAccessories);
             }
         }

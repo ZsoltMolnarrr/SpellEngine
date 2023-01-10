@@ -23,6 +23,7 @@
   "spell.tooltip.ammo": "Requires: {item}",
   "spell.tooltip.ammo.plural": "Requires: {item} (x{count})",
   "spell.tooltip.hold_for_details": "(Hold %1$s for details)",
+  "spell.tooltip.spell_binding_tip": "(Use Spell Binding Table to add spells)",
 
   "gui.spell_engine.config_menu" : "Spell Engine Config",
   "gui.spell_engine.close" : "Close",
@@ -64,8 +65,10 @@
   "text.autoconfig.spell_engine.option.client.collapseSpellHotbar.@Tooltip" : "Collapse spell hotbar to show a single spell, when not focused",
   "text.autoconfig.spell_engine.option.client.collapsedIndicators" : "Mini spell indicators",
   "text.autoconfig.spell_engine.option.client.collapsedIndicators.@Tooltip" : "Show small spell indicators when the spell hotbar is minimized",
-  "text.autoconfig.spell_engine.option.client.alwaysShowFullTooltip" : "Always show full spell info on tooltip",
+  "text.autoconfig.spell_engine.option.client.alwaysShowFullTooltip" : "Always show full spell tooltip",
   "text.autoconfig.spell_engine.option.client.alwaysShowFullTooltip.@Tooltip" : "Show all spell details on item tooltips, without having to press a button",
+  "text.autoconfig.spell_engine.option.client.showSpellBindingTooltip" : "Spell Binding hint",
+  "text.autoconfig.spell_engine.option.client.showSpellBindingTooltip.@Tooltip" : "Show Spell Binding Table hint to tooltip of empty staves",
 
   "gui.spell_engine.spell_binding" : "Spell Binding",
   "gui.spell_engine.spell_binding.title" : "Bind Spells",
