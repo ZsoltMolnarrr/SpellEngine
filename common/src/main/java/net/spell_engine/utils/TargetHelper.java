@@ -1,6 +1,5 @@
 package net.spell_engine.utils;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
@@ -94,7 +93,7 @@ public class TargetHelper {
             return !target.isSpectator() && target.canHit();
         }, range*range); // `range*range` is provided for squared distance comparison
         if (hitResult != null) {
-            if (hitResult.getPos() == null || raycastObstacleFree(start, hitResult.getPos())) {
+            if (hitResult.getPos() == null || raycastObstacleFree(caster, start, hitResult.getPos())) {
                 return hitResult.getEntity();
             }
         }
@@ -112,7 +111,7 @@ public class TargetHelper {
             return !target.isSpectator() && target.canHit();
         }, range*range); // `range*range` is provided for squared distance comparison
         return entitiesHit.stream()
-                .filter((hit) -> hit.position() == null || raycastObstacleFree(start, hit.position()))
+                .filter((hit) -> hit.position() == null || raycastObstacleFree(caster, start, hit.position()))
                 .sorted(new Comparator<EntityHit>() {
                     @Override
                     public int compare(EntityHit hit1, EntityHit hit2) {
@@ -191,24 +190,21 @@ public class TargetHelper {
                         || (VectorHelper.angleBetween(look, targetCenter.subtract(origin)) <= angle)
                         || (VectorHelper.angleBetween(look, distanceVector) <= angle)
                         )
-                    && (raycastObstacleFree(origin, targetCenter)
-                        || raycastObstacleFree(origin, origin.add(distanceVector) )
+                    && (raycastObstacleFree(centerEntity, origin, targetCenter)
+                        || raycastObstacleFree(centerEntity, origin, origin.add(distanceVector) )
                         );
         });
         return entities;
     }
 
-    private static boolean raycastObstacleFree(Vec3d start, Vec3d end) {
-        var client = MinecraftClient.getInstance();
-        var world = client.world;
-        var hit = client.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, client.player));
+    private static boolean raycastObstacleFree(Entity entity, Vec3d start, Vec3d end) {
+        var hit = entity.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
         return hit.getType() != HitResult.Type.BLOCK;
     }
 
-    public static boolean isTargetedByClientPlayer(Entity entity) {
-        if (entity.world.isClient) {
-            var clientPlayer = MinecraftClient.getInstance().player;
-            return ((SpellCasterClient) clientPlayer).getCurrentTargets().contains(entity);
+    public static boolean isTargetedByPlayer(Entity entity, PlayerEntity player) {
+        if (entity.world.isClient && player instanceof SpellCasterClient casterClient) {
+            return casterClient.getCurrentTargets().contains(entity);
         }
         return false;
     }

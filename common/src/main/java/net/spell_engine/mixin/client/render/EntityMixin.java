@@ -12,18 +12,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 public class EntityMixin {
-    private Entity entity() {
-        return (Entity) ((Object)this);
-    }
-
     @Inject(method = "getTeamColorValue", at = @At("HEAD"), cancellable = true)
-    public void getTeamColorValue_HEAD_SpellEngine(CallbackInfoReturnable<Integer> cir) {
-        if (TargetHelper.isTargetedByClientPlayer(entity()) && SpellEngineClient.config.useMagicColorForHighlight) {
+    private void getTeamColorValue_HEAD_SpellEngine(CallbackInfoReturnable<Integer> cir) {
+        var entity = (Entity) ((Object)this);
+        if (entity.world.isClient  && SpellEngineClient.config.useMagicColorForHighlight) {
             var clientPlayer = MinecraftClient.getInstance().player;
-            var spell = ((SpellCasterClient) clientPlayer).getCurrentSpell();
-            if (spell != null) {
-                cir.setReturnValue(spell.school.color());
-                cir.cancel();
+            if (TargetHelper.isTargetedByPlayer(entity, clientPlayer)) {
+                var spell = ((SpellCasterClient) clientPlayer).getCurrentSpell();
+                if (spell != null) {
+                    cir.setReturnValue(spell.school.color());
+                    cir.cancel();
+                }
             }
         }
     }
