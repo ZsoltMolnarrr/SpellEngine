@@ -9,6 +9,7 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
+import net.spell_power.api.MagicSchool;
 
 import java.io.InputStreamReader;
 import java.util.*;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 public class SpellRegistry {
     private static final Map<Identifier, Spell> spells = new HashMap();
     private static final Map<Identifier, SpellContainer> containers = new HashMap();
+    private static final Map<MagicSchool, Integer> spellCount = new HashMap<>();
 
     public static Map<Identifier, Spell> all() {
         return spells;
@@ -55,7 +57,7 @@ public class SpellRegistry {
         }
         spells.clear();
         spells.putAll(parsed);
-        updateRawIds();
+        spellsUpdated();
     }
 
     public static void loadContainers(ResourceManager resourceManager) {
@@ -81,6 +83,23 @@ public class SpellRegistry {
             }
         }
         containers.putAll(parsed);
+    }
+
+    private static void spellsUpdated() {
+        updateRawIds();
+        spellCount.clear();
+        for(var school: MagicSchool.values()) {
+            spellCount.put(school, 0);
+        }
+        for(var spell: spells.entrySet()) {
+            var school = spell.getValue().school;
+            var current = spellCount.get(school);
+            spellCount.put(school, current + 1);
+        }
+    }
+
+    public static int numberOfSpells(MagicSchool school) {
+        return spellCount.get(school);
     }
 
     public static Spell spell(SpellContainer container, int selectedIndex) {
@@ -158,7 +177,7 @@ public class SpellRegistry {
         sync.containers.forEach((key, value) -> {
             containers.put(new Identifier(key), value);
         });
-        updateRawIds();
+        spellsUpdated();
     }
 
     private static final Map<Identifier, Integer> rawMap = new HashMap<>();

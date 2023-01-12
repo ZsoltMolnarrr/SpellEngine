@@ -19,6 +19,8 @@ import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.entity.LivingEntityKnockback;
 import net.spell_engine.entity.SpellProjectile;
+import net.spell_engine.internals.criteria.SpellCastCriteria;
+import net.spell_engine.internals.criteria.SpellCastHistory;
 import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.AnimationHelper;
 import net.spell_engine.utils.SoundHelper;
@@ -235,6 +237,13 @@ public class SpellHelper {
                 if (spell.cost.effect_id != null) {
                     var effect = Registry.STATUS_EFFECT.get(new Identifier(spell.cost.effect_id));
                     caster.removeStatusEffect(effect);
+                }
+                // Advancement support
+                if (caster instanceof ServerPlayerEntity serverPlayer) {
+                    ((SpellCastHistory)serverPlayer).saveSpellCast(spell.school, spellId);
+                    if (((SpellCastHistory)serverPlayer).hasCastedAllOf(spell.school)) {
+                        SpellCastCriteria.INSTANCE.trigger(serverPlayer, spell.school);
+                    }
                 }
             }
         }

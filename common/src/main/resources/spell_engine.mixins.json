@@ -8,6 +8,7 @@
     "LivingEntityAccessor",
     "LivingEntityMixin",
     "PlayerEntityMixin",
+    "criteria.ServerPlayerSpellCastCriteria",
     "effect.LivingEntityStatusEffectSync",
     "effect.StatusEffectRemoveOnHit",
     "effect.StatusEffectSynchronized",
