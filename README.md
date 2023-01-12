@@ -39,7 +39,7 @@ Client side settings can be accessed via the [Mod Menu](https://github.com/Terra
 
 ### Forge
 
-Client side settings can be accessed in Main Menu > Mods > Spell Engien > Config.
+Client side settings can be accessed in Main Menu > Mods > Spell Engine > Config.
 
 ### Server
 

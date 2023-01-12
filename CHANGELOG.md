@@ -1,3 +1,7 @@
+# 0.9.3
+
+- Add Spell Binding advancement criteria
+
 # 0.9.2
 
 - Add Spell Hotbar indicator for minimized spells

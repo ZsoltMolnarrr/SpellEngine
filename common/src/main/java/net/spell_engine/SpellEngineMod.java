@@ -4,6 +4,7 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
@@ -20,10 +21,7 @@ import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.particle.Particles;
-import net.spell_engine.spellbinding.SpellBinding;
-import net.spell_engine.spellbinding.SpellBindingBlock;
-import net.spell_engine.spellbinding.SpellBindingBlockEntity;
-import net.spell_engine.spellbinding.SpellBindingScreenHandler;
+import net.spell_engine.spellbinding.*;
 import net.tinyconfig.ConfigManager;
 
 public class SpellEngineMod {
@@ -60,6 +58,7 @@ public class SpellEngineMod {
         Registry.register(Registry.BLOCK_ENTITY_TYPE, SpellBinding.ID, SpellBindingBlockEntity.ENTITY_TYPE);
         Registry.register(Registry.ITEM, SpellBinding.ID, new BlockItem(SpellBindingBlock.INSTANCE, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
         Registry.register(Registry.SCREEN_HANDLER, SpellBinding.ID, SpellBindingScreenHandler.HANDLER_TYPE);
+        Criteria.register(SpellBindingCriteria.INSTANCE);
     }
 
     public static void registerEnchantments() {

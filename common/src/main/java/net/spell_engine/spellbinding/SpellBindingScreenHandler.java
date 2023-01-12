@@ -208,6 +208,9 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                 this.inventory.markDirty();
                 this.onContentChanged(this.inventory);
                 world.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
+                if (player instanceof ServerPlayerEntity serverPlayer) {
+                    SpellBindingCriteria.INSTANCE.trigger(serverPlayer);
+                }
             });
 
             return true;
