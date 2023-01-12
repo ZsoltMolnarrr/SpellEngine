@@ -19,6 +19,7 @@ import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.SpellRegistry;
+import net.spell_engine.internals.criteria.EnchantmentSpecificCriteria;
 import net.spell_engine.internals.criteria.SpellCastCriteria;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.particle.Particles;
@@ -51,6 +52,7 @@ public class SpellEngineMod {
         Particles.register();
 
         Criteria.register(SpellCastCriteria.INSTANCE);
+        Criteria.register(EnchantmentSpecificCriteria.INSTANCE);
         EnchantmentRestriction.alleviate(Enchantments.KNOCKBACK, itemStack -> itemStack.getItem() instanceof StaffItem);
         EnchantmentRestriction.alleviate(Enchantments.LOOTING, itemStack -> itemStack.getItem() instanceof StaffItem);
     }

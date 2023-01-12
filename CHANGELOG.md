@@ -1,6 +1,7 @@
 # 0.9.3
 
 - Add Spell Binding advancement criteria
+- Add specific enchantment advancement criteria
 
 # 0.9.2
 
