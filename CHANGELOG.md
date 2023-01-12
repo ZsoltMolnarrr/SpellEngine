@@ -9,6 +9,7 @@
 - Fix crash when Better Combat is absent
 - Fix Spell Binding Table no offers in multiplayer
 - Fix Spell Binding Table disconnect in multiplayer
+- Fix server crashes
 
 # 0.9.1
 
