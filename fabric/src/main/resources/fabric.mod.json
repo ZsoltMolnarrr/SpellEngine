@@ -32,9 +32,9 @@
     "minecraft": ">=1.19.0 <1.19.3",
     "fabricloader": ">=0.14.0",
     "fabric": "*",
-    "cloth-config": ">=8.0.0",
-    "player-animator": ">=0.3.5",
-    "spell_power": ">=0.9.0"
+    "cloth-config": ">=${cloth_config_version}",
+    "player-animator": ">=${player_anim_version}",
+    "spell_power": ">=${spell_power_version}"
   },
   "breaks": {
     "bettercombat": "<1.5.4"
