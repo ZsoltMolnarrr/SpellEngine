@@ -1,6 +1,7 @@
 package net.spell_engine.api.item;
 
 import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -13,11 +14,14 @@ import net.minecraft.item.ToolMaterial;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class StaffItem extends ToolItem {
-    private final Multimap<EntityAttribute, EntityAttributeModifier> attributes;
+public class StaffItem extends ToolItem implements ConfigurableAttributes {
+    private Multimap<EntityAttribute, EntityAttributeModifier> attributes;
 
-    public StaffItem(ToolMaterial material, Multimap<EntityAttribute, EntityAttributeModifier> attributes, Settings settings) {
+    public StaffItem(ToolMaterial material, Settings settings) {
         super(material, settings);
+    }
+
+    public void setAttributes(Multimap<EntityAttribute, EntityAttributeModifier> attributes) {
         this.attributes = attributes;
     }
 
@@ -42,6 +46,9 @@ public class StaffItem extends ToolItem {
     }
 
     public Multimap<EntityAttribute, EntityAttributeModifier> getAttributeModifiers(EquipmentSlot slot) {
+        if (attributes == null) {
+            return super.getAttributeModifiers(slot);
+        }
         return slot == EquipmentSlot.MAINHAND ? attributes : super.getAttributeModifiers(slot);
     }
 }

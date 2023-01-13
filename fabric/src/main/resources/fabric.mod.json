@@ -37,7 +37,7 @@
     "spell_power": ">=0.9.0"
   },
   "breaks": {
-    "bettercombat": "<1.4.0"
+    "bettercombat": "<1.5.4"
   },
   "custom": {
     "modmenu": {
