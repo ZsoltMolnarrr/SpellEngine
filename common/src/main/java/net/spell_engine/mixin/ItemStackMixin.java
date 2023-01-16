@@ -162,6 +162,9 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
 
         if (world.isClient) {
             if (user instanceof SpellCasterClient caster) {
+                // WATCH OUT `LivingEntity.clearActiveItem` also calls `castRelease`
+                // using a mixin to the method `HEAD`
+                // This is to make sure the spell release is released even if switching to another item.
                 caster.castRelease(itemStack(), remainingUseTicks);
             }
         }

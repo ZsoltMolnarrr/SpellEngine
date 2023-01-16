@@ -210,8 +210,8 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     public void stopSpellCasting() {
-        stopItemUsage();
         endCasting();
+        stopItemUsage();
     }
 
     private void stopItemUsage() {
@@ -220,8 +220,8 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     private void endCasting() {
-        player().clearActiveItem();
         clearCasting();
+        player().clearActiveItem();
     }
 
     @Override

@@ -2,12 +2,18 @@ package net.spell_engine.mixin;
 
 import net.minecraft.entity.LivingEntity;
 import net.spell_engine.entity.LivingEntityKnockback;
+import net.spell_engine.internals.SpellCasterClient;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(LivingEntity.class)
-public class LivingEntityMixin implements LivingEntityKnockback {
+public abstract class LivingEntityMixin implements LivingEntityKnockback {
+    @Shadow public abstract int getItemUseTimeLeft();
+
     private float customKnockbackMultiplier_SpellEngine = 1;
 
     @Override
@@ -18,5 +24,15 @@ public class LivingEntityMixin implements LivingEntityKnockback {
     @ModifyVariable(method = "takeKnockback", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     public double takeKnockback_HEAD_changeStrength(double knockbackStrength) {
         return knockbackStrength * customKnockbackMultiplier_SpellEngine;
+    }
+
+    @Inject(method = "clearActiveItem", at = @At("HEAD"))
+    private void clearActiveItem_HEAD_SpellEngine(CallbackInfo ci) {
+        var entity = (LivingEntity) ((Object) this);
+        if (entity.world.isClient && entity instanceof SpellCasterClient caster) {
+            if (caster.getCurrentSpellId() != null) {
+                caster.castRelease(entity.getActiveItem(), getItemUseTimeLeft());
+            }
+        }
     }
 }
