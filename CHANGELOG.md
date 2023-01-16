@@ -2,6 +2,8 @@
 
 - Add Spell Binding advancement criteria
 - Add specific enchantment advancement criteria
+- Fix channeled spells not released when switching to other items
+- Remove some redundant configs
 
 # 0.9.2
 

@@ -28,12 +28,15 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
     implementation("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}")
-    modImplementation(files("../fabric/run/mods/spell_power-fabric-${spell_power_version}.jar"))
 
     // Compatibility
     modCompileOnly("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }
-    //modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-fabric") { transitive false }
-    modCompileOnly(files("../fabric/run/mods/bettercombat-fabric-${project.better_combat_version}.jar"))
+
+
+    modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-fabric")
+    modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-fabric") { transitive false }
+//    modImplementation(files("../fabric/run/mods/spell_power-fabric-${spell_power_version}.jar"))
+//    modCompileOnly(files("../fabric/run/mods/bettercombat-fabric-${project.better_combat_version}.jar"))
 }
 
 architectury {

@@ -147,7 +147,7 @@ public class HudRenderHelper {
                 var target = caster.getCurrentFirstTarget();
                 var text = "";
                 if (target != null
-                        && (SpellEngineClient.config.showTargetNameWhenMultiple || caster.getCurrentTargets().size() == 1)) {
+                        && (/* SpellEngineClient.config.showTargetNameWhenMultiple || */ caster.getCurrentTargets().size() == 1)) {
                     text = target.getName().getString();
                 }
                 return new ViewModel(text);

@@ -57,8 +57,6 @@ dependencies {
     modImplementation("dev.kosmx.player-anim:player-animation-lib-forge:${project.player_anim_version}")
     modApi("me.shedaniel.cloth:cloth-config-forge:${project.cloth_config_version}")
     shadowCommon(common("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}"))
-
-    modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-forge")
 }
 
 processResources {
