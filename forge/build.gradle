@@ -121,8 +121,9 @@ if(project.hasProperty('release_type')) {
     curseforge {
         apiKey = System.getenv("CURSEFORGE_API_KEY")
         project {
-            id = '678036'
-            changelog = ''
+            id = '807653'
+            changelog = changelog_last_section()
+            changelogType = 'markdown'
             releaseType = release_type
             addGameVersion "1.19"
             addGameVersion "1.19.1"
@@ -130,8 +131,10 @@ if(project.hasProperty('release_type')) {
             addGameVersion "Forge"
 
             relations {
+                requiredDependency 'fabric-api'
                 requiredDependency 'cloth-config'
                 requiredDependency 'playeranimator'
+                requiredDependency 'spell-power'
             }
 
             mainArtifact(remapJar)
@@ -146,7 +149,7 @@ if(project.hasProperty('release_type')) {
 
     modrinth {
         token = System.getenv("MODRINTH_API_KEY")
-        projectId = "combat-roll" // This can be the project ID or the slug. Either will work!
+        projectId = "spell-engine" // This can be the project ID or the slug. Either will work!
         versionName = "${version}" // You don't need to set this manually. Will fail if Modrinth has this version already
         versionNumber = "${version}-forge" // You don't need to set this manually. Will fail if Modrinth has this version already
         versionType = release_type // This is the default -- can also be `beta` or `alpha`
@@ -157,8 +160,9 @@ if(project.hasProperty('release_type')) {
             // scope.type
             // The scope can be `required`, `optional`, `incompatible`, or `embedded`
             // The type can either be `project` or `version`
-            required.project "cloth-config"
-            required.project "playeranimator"
+            required.project 'cloth-config'
+            required.project 'playeranimator'
+            required.project 'spell-power'
         }
     }
 }
