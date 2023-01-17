@@ -3,13 +3,11 @@ repositories {
     maven { url 'https://maven.shedaniel.me/' }
     maven { url 'https://maven.terraformersmc.com/' }
     maven { url 'https://jitpack.io' }
-    repositories {
-        maven {
-            name = 'Modrinth'
-            url = 'https://api.modrinth.com/maven'
-            content {
-                includeGroup 'maven.modrinth'
-            }
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+        content {
+            includeGroup 'maven.modrinth'
         }
     }
 }
