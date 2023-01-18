@@ -37,7 +37,8 @@
     "spell_power": ">=${spell_power_version}"
   },
   "breaks": {
-    "bettercombat": "<1.5.4"
+    "bettercombat": "<1.5.4",
+    "carryon": "*"
   },
   "custom": {
     "modmenu": {
