@@ -1,4 +1,5 @@
 # 0.9.4
+
 - Improve spell hotbar visibility in HUD config screen
 
 # 0.9.3

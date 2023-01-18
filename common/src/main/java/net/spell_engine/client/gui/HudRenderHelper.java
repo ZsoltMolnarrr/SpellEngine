@@ -82,11 +82,8 @@ public class HudRenderHelper {
                 hotbarViewModel = new SpellHotBarWidget.ViewModel(spells, selected, Color.from(0xFFFFFF));
             } else {
                 hotbarViewModel = SpellHotBarWidget.ViewModel.empty;
-                if (config) {
-                    hotbarViewModel = SpellHotBarWidget.ViewModel.mock();
-                }
             }
-            renderHotbar = InputHelper.hotbarVisibility().spell() || config;
+            renderHotbar = InputHelper.hotbarVisibility().spell();
 
             if (currentSpell != null) {
                 castBarViewModel = new CastBarWidget.ViewModel(
@@ -112,7 +109,10 @@ public class HudRenderHelper {
             TargetWidget.render(matrixStack, tickDelta, targetOffset, targetViewModel);
         }
 
-        if (renderHotbar) {
+        if (renderHotbar || config) {
+            if (config && (hotbarViewModel == null || hotbarViewModel.isEmpty())) {
+                hotbarViewModel = SpellHotBarWidget.ViewModel.mock();
+            }
             SpellHotBarWidget.render(matrixStack, screenWidth, screenHeight, hotbarViewModel);
             if(clientConfig.collapsedIndicators && hotbarAccessories != null) {
                 SpellHotBarWidget.renderAccessories(matrixStack, screenWidth, screenHeight, hotbarAccessories);
@@ -275,6 +275,10 @@ public class HudRenderHelper {
             }
 
             public static final ViewModel empty = new ViewModel(List.of(), 0, Color.from(0xFFFFFF));
+
+            public boolean isEmpty() {
+                return spells.isEmpty();
+            }
         }
 
         public static void render(MatrixStack matrixStack, int screenWidth, int screenHeight, ViewModel viewModel) {
