@@ -82,8 +82,11 @@ public class HudRenderHelper {
                 hotbarViewModel = new SpellHotBarWidget.ViewModel(spells, selected, Color.from(0xFFFFFF));
             } else {
                 hotbarViewModel = SpellHotBarWidget.ViewModel.empty;
+                if (config) {
+                    hotbarViewModel = SpellHotBarWidget.ViewModel.mock();
+                }
             }
-            renderHotbar = InputHelper.hotbarVisibility().spell();
+            renderHotbar = InputHelper.hotbarVisibility().spell() || config;
 
             if (currentSpell != null) {
                 castBarViewModel = new CastBarWidget.ViewModel(
