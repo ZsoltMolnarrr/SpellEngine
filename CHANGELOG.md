@@ -2,6 +2,7 @@
 
 - Improve spell hotbar visibility in HUD config screen
 - Specify Fabric API version requirement
+- Add breaks flag for Carry On :(
 
 # 0.9.3
 
