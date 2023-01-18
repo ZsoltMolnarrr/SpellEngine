@@ -1,6 +1,7 @@
 # 0.9.4
 
 - Improve spell hotbar visibility in HUD config screen
+- Specify Fabric API version requirement
 
 # 0.9.3
 

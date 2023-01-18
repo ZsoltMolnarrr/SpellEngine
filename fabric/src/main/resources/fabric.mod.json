@@ -31,7 +31,7 @@
   "depends": {
     "minecraft": ">=1.19.0 <1.19.3",
     "fabricloader": ">=0.14.0",
-    "fabric": "*",
+    "fabric": ">=${fabric_api_version}",
     "cloth-config": ">=${cloth_config_version}",
     "player-animator": ">=${player_anim_version}",
     "spell_power": ">=${spell_power_version}"
