@@ -197,6 +197,14 @@ public class TargetHelper {
         return entities;
     }
 
+    public static boolean isInLineOfSight(Entity attacker, Entity target) {
+        var origin = attacker.getEyePos();
+        var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
+        var distanceVector = VectorHelper.distanceVector(origin, target.getBoundingBox());
+        return raycastObstacleFree(attacker, origin, targetCenter)
+                || raycastObstacleFree(attacker, origin, origin.add(distanceVector));
+    }
+
     private static boolean raycastObstacleFree(Entity entity, Vec3d start, Vec3d end) {
         var hit = entity.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
         return hit.getType() != HitResult.Type.BLOCK;

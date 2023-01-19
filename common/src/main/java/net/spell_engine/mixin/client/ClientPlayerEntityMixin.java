@@ -281,7 +281,11 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
         if (fallbackToPreviousTargets && SpellEngineClient.config.stickyTarget
                 && targets.isEmpty()) {
-            targets = previousTargets;
+            targets = previousTargets.stream()
+                    .filter(entity -> {
+                        return TargetHelper.isInLineOfSight(caster, entity);
+                    })
+                    .toList();
         }
         return targets;
     }
