@@ -121,25 +121,25 @@ public class SpellHelper {
         return !caster.getCooldownManager().isCoolingDown(spellId);
     }
 
-    public static void performSpell(World world, PlayerEntity caster, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCastAction action, int remainingUseTicks) {
+    public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCastAction action, int remainingUseTicks) {
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
             return;
         }
-        var casterPlayer = (SpellCasterEntity)caster;
-        if (casterPlayer.getCooldownManager().isCoolingDown(spellId)) {
+        var caster = (SpellCasterEntity)player;
+        if (caster.getCooldownManager().isCoolingDown(spellId)) {
             return;
         }
-        var progress = getCastProgress(caster, remainingUseTicks, spell);
+        var progress = getCastProgress(player, remainingUseTicks, spell);
         var channelMultiplier = 1F;
         boolean shouldPerformImpact = true;
         Supplier<Collection<ServerPlayerEntity>> trackingPlayers = Suppliers.memoize(() -> { // Suppliers.memoize = Lazy
-            return PlayerLookup.tracking(caster);
+            return PlayerLookup.tracking(player);
         });
         switch (action) {
             case START -> {
-                SoundHelper.playSound(caster.world, caster, spell.cast.start_sound);
-                SpellCastSyncHelper.setCasting(caster, spellId, trackingPlayers.get());
+                SoundHelper.playSound(player.world, player, spell.cast.start_sound);
+                SpellCastSyncHelper.setCasting(player, spellId, trackingPlayers.get());
                 return;
             }
             case CHANNEL -> {
@@ -152,29 +152,29 @@ public class SpellHelper {
                 } else {
                     channelMultiplier = (progress >= 1) ? 1 : 0;
                 }
-                SpellCastSyncHelper.clearCasting(caster, trackingPlayers.get());
+                SpellCastSyncHelper.clearCasting(player, trackingPlayers.get());
             }
         }
-        var ammoResult = ammoForSpell(caster, spell, itemStack);
+        var ammoResult = ammoForSpell(player, spell, itemStack);
 
         if (channelMultiplier > 0 && ammoResult.satisfied()) {
             var targeting = spell.release.target;
             boolean released = action == SpellCastAction.RELEASE;
-            var context = new ImpactContext(channelMultiplier, 1F, null);
             if (shouldPerformImpact) {
+                var context = new ImpactContext(channelMultiplier, 1F, null, SpellPower.getSpellPower(spell.school, player));
                 switch (targeting.type) {
                     case AREA -> {
-                        var center = caster.getPos().add(0, caster.getHeight() / 2F, 0);
+                        var center = player.getPos().add(0, player.getHeight() / 2F, 0);
                         var area = spell.release.target.area;
-                        areaImpact(world, caster, targets, center, spell.range, area, false, spell, context);
+                        areaImpact(world, player, targets, center, spell.range, area, false, spell, context);
                     }
                     case BEAM -> {
-                        beamImpact(world, caster, targets, spell, context);
+                        beamImpact(world, player, targets, spell, context);
                     }
                     case CURSOR -> {
                         var target = targets.stream().findFirst();
                         if (target.isPresent()) {
-                            directImpact(world, caster, target.get(), spell, context);
+                            directImpact(world, player, target.get(), spell, context);
                         } else {
                             released = false;
                         }
@@ -185,49 +185,49 @@ public class SpellHelper {
                         if (entityFound.isPresent()) {
                             target = entityFound.get();
                         }
-                        shootProjectile(world, caster, target, spell);
+                        shootProjectile(world, player, target, spell, context);
                     }
                     case METEOR -> {
                         var target = targets.stream().findFirst();
                         if (target.isPresent()) {
-                            fallProjectile(world, caster, target.get(), spell);
+                            fallProjectile(world, player, target.get(), spell, context);
                         } else {
                             released = false;
                         }
                     }
                     case SELF -> {
-                        directImpact(world, caster, caster, spell, context);
+                        directImpact(world, player, player, spell, context);
                         released = true;
                     }
                 }
             }
             if (released) {
-                ParticleHelper.sendBatches(caster, spell.release.particles);
-                SoundHelper.playSound(world, caster, spell.release.sound);
-                AnimationHelper.sendAnimation(caster, trackingPlayers.get(), SpellAnimationType.RELEASE, spell.release.animation);
+                ParticleHelper.sendBatches(player, spell.release.particles);
+                SoundHelper.playSound(world, player, spell.release.sound);
+                AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellAnimationType.RELEASE, spell.release.animation);
                 // Consume things
                 // Cooldown
-                var duration = cooldownToSet(caster, spell, progress);
+                var duration = cooldownToSet(player, spell, progress);
                 if (duration > 0) {
-                    ((SpellCasterEntity) caster).getCooldownManager().set(spellId, Math.round(duration * 20F));
+                    ((SpellCasterEntity) player).getCooldownManager().set(spellId, Math.round(duration * 20F));
                 }
                 // Exhaust
-                caster.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
+                player.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
                 // Durability
                 if (SpellEngineMod.config.spell_cost_durability_allowed && spell.cost.durability > 0) {
-                    itemStack.damage(spell.cost.durability, caster, (player) -> {
-                        player.sendEquipmentBreakStatus(EquipmentSlot.MAINHAND);
-                        player.sendEquipmentBreakStatus(EquipmentSlot.OFFHAND);
+                    itemStack.damage(spell.cost.durability, player, (playerObj) -> {
+                        playerObj.sendEquipmentBreakStatus(EquipmentSlot.MAINHAND);
+                        playerObj.sendEquipmentBreakStatus(EquipmentSlot.OFFHAND);
                     });
                 }
                 // Item
                 if (SpellEngineMod.config.spell_cost_item_allowed && ammoResult.ammo != null) {
-                    for(int i = 0; i < caster.getInventory().size(); ++i) {
-                        var stack = caster.getInventory().getStack(i);
+                    for(int i = 0; i < player.getInventory().size(); ++i) {
+                        var stack = player.getInventory().getStack(i);
                         if (stack.isOf(ammoResult.ammo.getItem())) {
                             stack.decrement(1);
                             if (stack.isEmpty()) {
-                                caster.getInventory().removeOne(stack);
+                                player.getInventory().removeOne(stack);
                             }
                             break;
                         }
@@ -236,10 +236,10 @@ public class SpellHelper {
                 // Status effect
                 if (spell.cost.effect_id != null) {
                     var effect = Registry.STATUS_EFFECT.get(new Identifier(spell.cost.effect_id));
-                    caster.removeStatusEffect(effect);
+                    player.removeStatusEffect(effect);
                 }
                 // Advancement support
-                if (caster instanceof ServerPlayerEntity serverPlayer) {
+                if (player instanceof ServerPlayerEntity serverPlayer) {
                     ((SpellCastHistory)serverPlayer).saveSpellCast(spell.school, spellId);
                     if (((SpellCastHistory)serverPlayer).hasCastedAllOf(spell.school)) {
                         SpellCastCriteria.INSTANCE.trigger(serverPlayer, spell.school);
@@ -287,7 +287,7 @@ public class SpellHelper {
         }
     }
 
-    public static void fallImpact(LivingEntity caster, Entity projectile, Spell spell, Vec3d position) {
+    public static void fallImpact(LivingEntity caster, Entity projectile, Spell spell, Vec3d position, ImpactContext context) {
         var info = spell.release.target.meteor;
         var area = spell.release.target.area;
         if (info == null || area == null) {
@@ -298,7 +298,7 @@ public class SpellHelper {
         var targets = TargetHelper.targetsFromArea(projectile, center, range, area);
         ParticleHelper.sendBatches(projectile, info.impact_particles);
         SoundHelper.playSound(projectile.world, projectile, info.impact_sound);
-        areaImpact(projectile.world, caster, targets, center, range, area, true, spell, new ImpactContext());
+        areaImpact(projectile.world, caster, targets, center, range, area, true, spell, context);
     }
 
     public static float launchHeight(LivingEntity livingEntity) {
@@ -318,7 +318,7 @@ public class SpellHelper {
         return caster.getPos().add(0, launchHeight(caster), 0).add(look);
     }
 
-    private static void shootProjectile(World world, LivingEntity caster, Entity target, Spell spell) {
+    private static void shootProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
         if (world.isClient) {
             return;
         }
@@ -326,7 +326,7 @@ public class SpellHelper {
         var launchPoint = launchPoint(caster);
         var projectile = new SpellProjectile(world, caster,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
-                SpellProjectile.Behaviour.FLY, spell, target);
+                SpellProjectile.Behaviour.FLY, spell, target, context);
 
         var projectileData = spell.release.target.projectile;
         var velocity = projectileData.velocity;
@@ -344,7 +344,7 @@ public class SpellHelper {
         world.spawnEntity(projectile);
     }
 
-    private static void fallProjectile(World world, LivingEntity caster, Entity target, Spell spell) {
+    private static void fallProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
         if (world.isClient) {
             return;
         }
@@ -354,7 +354,7 @@ public class SpellHelper {
         var launchPoint = target.getPos().add(0, height, 0);
         var projectile = new SpellProjectile(world, caster,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
-                SpellProjectile.Behaviour.FALL, spell, target);
+                SpellProjectile.Behaviour.FALL, spell, target, context);
 
         var projectileData = spell.release.target.projectile;
 
@@ -378,21 +378,25 @@ public class SpellHelper {
         return performed;
     }
 
-    public record ImpactContext(float channel, float distance, @Nullable Vec3d offset) {
+    public record ImpactContext(float channel, float distance, @Nullable Vec3d offset, @Nullable SpellPower.Result power) {
         public ImpactContext() {
-            this(1, 1, null);
+            this(1, 1, null, null);
         }
 
         public ImpactContext channeled(float multiplier) {
-            return new ImpactContext(multiplier, distance, offset);
+            return new ImpactContext(multiplier, distance, offset, power);
         }
 
         public ImpactContext distance(float multiplier) {
-            return new ImpactContext(channel, multiplier, offset);
+            return new ImpactContext(channel, multiplier, offset, power);
         }
 
         public ImpactContext offset(Vec3d position) {
-            return new ImpactContext(channel, distance, position);
+            return new ImpactContext(channel, distance, position, power);
+        }
+
+        public ImpactContext power(SpellPower.Result spellPower) {
+            return new ImpactContext(channel, distance, offset, spellPower);
         }
 
         public boolean hasOffset() {
@@ -422,6 +426,10 @@ public class SpellHelper {
         try {
             double particleMultiplier = 1 * context.total();
             var relation = TargetHelper.getRelation(caster, target);
+            var power = context.power();
+            if (power == null) {
+                power = SpellPower.getSpellPower(school, caster);
+            }
             switch (impact.action.type) {
                 case DAMAGE -> {
                     if(!TargetHelper.actionAllowed(false, relation, caster, target)) {
@@ -438,8 +446,6 @@ public class SpellHelper {
                         }
                         vulnerability = SpellPower.getVulnerability(livingEntity, school);
                     }
-
-                    var power = SpellPower.getSpellPower(school, caster);
                     var amount = power.randomValue(vulnerability);
                     amount *= damageData.spell_power_coefficient;
                     amount *= context.total();
@@ -467,7 +473,6 @@ public class SpellHelper {
                     }
                     if (target instanceof LivingEntity livingTarget) {
                         var healData = impact.action.heal;
-                        var power = SpellPower.getSpellPower(school, caster);
                         particleMultiplier = power.criticalDamage();
                         var amount = power.randomValue();
                         amount *= healData.spell_power_coefficient;
@@ -495,7 +500,7 @@ public class SpellHelper {
                         if(!TargetHelper.actionAllowed(effect.isBeneficial(), relation, caster, target)) {
                             return false;
                         }
-                        if(!underApplyLimit(caster, livingTarget, school, data.apply_limit)) {
+                        if(!underApplyLimit(power, livingTarget, school, data.apply_limit)) {
                             return false;
                         }
                         var duration = Math.round(data.duration * 20F);
@@ -550,11 +555,11 @@ public class SpellHelper {
         return success;
     }
 
-    public static boolean underApplyLimit(LivingEntity caster, LivingEntity target, MagicSchool school, Spell.Impact.Action.StatusEffect.ApplyLimit limit) {
+    public static boolean underApplyLimit(SpellPower.Result spellPower, LivingEntity target, MagicSchool school, Spell.Impact.Action.StatusEffect.ApplyLimit limit) {
         if (limit == null) {
             return true;
         }
-        var power = (float) SpellPower.getSpellPower(school, caster).nonCriticalValue();
+        var power = (float) spellPower.nonCriticalValue();
         float cap = limit.health_base + (power * limit.spell_power_multiplier);
         return cap >= target.getMaxHealth();
     }

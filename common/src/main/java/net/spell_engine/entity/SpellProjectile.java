@@ -1,6 +1,7 @@
 package net.spell_engine.entity;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -25,12 +26,14 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.render.FlyingSpellEntity;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.particle.ParticleHelper;
+import net.spell_engine.utils.RecordsWithGson;
 import net.spell_engine.utils.VectorHelper;
 
 
 public class SpellProjectile extends ProjectileEntity implements FlyingSpellEntity {
     public float range = 128;
     private Spell spell;
+    private SpellHelper.ImpactContext context;
     private Entity followedTarget;
 
     public Vec3d previousVelocity;
@@ -49,12 +52,13 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
 
     public SpellProjectile(World world, LivingEntity caster, double x, double y, double z,
-                           Behaviour behaviour, Spell spell, Entity target) {
+                           Behaviour behaviour, Spell spell, Entity target, SpellHelper.ImpactContext context) {
         this(world, caster);
         this.setPosition(x, y, z);
         this.spell = spell;
         var projectileData = projectileData();
         var gson = new Gson();
+        this.context = context;
         this.getDataTracker().set(CLIENT_DATA, gson.toJson(projectileData));
         this.getDataTracker().set(BEHAVIOUR, behaviour.toString());
         setFollowedTarget(target);
@@ -214,7 +218,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             return;
         }
         if (owner instanceof LivingEntity livingEntity) {
-            SpellHelper.fallImpact(livingEntity, this, this.spell, this.getPos());
+            SpellHelper.fallImpact(livingEntity, this, this.spell, this.getPos(), context);
         }
     }
 
@@ -244,7 +248,11 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             var target = entityHitResult.getEntity();
             if (target != null && this.getOwner() != null && this.getOwner() instanceof LivingEntity caster) {
                 setFollowedTarget(null);
-                var performed = SpellHelper.performImpacts(world, caster, target, spell, new SpellHelper.ImpactContext());
+                var context = this.context;
+                if (context == null) {
+                    context = new SpellHelper.ImpactContext();
+                }
+                var performed = SpellHelper.performImpacts(world, caster, target, spell, context);
                 if (performed) {
                     this.kill();
                 }
@@ -253,6 +261,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
 
     private static String NBT_SPELL_DATA = "Spell.Data";
+    private static String NBT_IMPACT_CONTEXT = "Impact.Context";
 
     @Override
     protected void onBlockHit(BlockHitResult blockHitResult) {
@@ -264,6 +273,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         super.writeCustomDataToNbt(nbt);
         var gson = new Gson();
         nbt.putString(NBT_SPELL_DATA, gson.toJson(spell));
+        nbt.putString(NBT_IMPACT_CONTEXT, gson.toJson(context));
     }
 
     public void readCustomDataFromNbt(NbtCompound nbt) {
@@ -272,6 +282,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             try {
                 var gson = new Gson();
                 this.spell = gson.fromJson(nbt.getString(NBT_SPELL_DATA), Spell.class);
+                var recordReader = new GsonBuilder()
+                        .registerTypeAdapterFactory(new RecordsWithGson.RecordTypeAdapterFactory())
+                        .create();
+                this.context = recordReader.fromJson(nbt.getString(NBT_IMPACT_CONTEXT), SpellHelper.ImpactContext.class);
             } catch (Exception e) {
                 System.err.println("SpellProjectile - Failed to read spell data from NBT");
             }

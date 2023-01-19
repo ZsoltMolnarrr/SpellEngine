@@ -1,3 +1,7 @@
+# 0.9.5
+
+- Add spell power caching
+
 # 0.9.4
 
 - Improve spell hotbar visibility in HUD config screen
