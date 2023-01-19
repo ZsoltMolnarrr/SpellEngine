@@ -98,7 +98,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         }
     }
 
-    private Entity getFollowedTarget() {
+    public Entity getFollowedTarget() {
         Entity entityReference = null;
         if (world.isClient) {
             var id = this.getDataTracker().get(TARGET_ID);
@@ -252,13 +252,43 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 if (context == null) {
                     context = new SpellHelper.ImpactContext();
                 }
-                var performed = SpellHelper.performImpacts(world, caster, target, spell, context);
+                var performed = SpellHelper.performImpacts(world, caster, target, spell, context.position(new Vec3d(prevX, prevY, prevZ)));
                 if (performed) {
                     this.kill();
                 }
             }
         }
     }
+
+    // MARK: Helper
+
+    public Spell getSpell() {
+        return spell;
+    }
+
+    public SpellHelper.ImpactContext getImpactContext() {
+        return context;
+    }
+
+    // MARK: FlyingSpellEntity
+
+    public Spell.ProjectileData.Client renderData() {
+        var data = projectileData();
+        if (data != null) {
+            return projectileData().client_data;
+        }
+        return null;
+    }
+
+    @Override
+    public ItemStack getStack() {
+        if (projectileData() != null && projectileData().client_data != null) {
+            return Registry.ITEM.get(new Identifier(projectileData().client_data.model_id)).getDefaultStack();
+        }
+        return ItemStack.EMPTY;
+    }
+
+    // MARK: NBT (Persistence)
 
     private static String NBT_SPELL_DATA = "Spell.Data";
     private static String NBT_IMPACT_CONTEXT = "Impact.Context";
@@ -292,21 +322,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         }
     }
 
-    public Spell.ProjectileData.Client renderData() {
-        var data = projectileData();
-        if (data != null) {
-            return projectileData().client_data;
-        }
-        return null;
-    }
-
-    @Override
-    public ItemStack getStack() {
-        if (projectileData() != null && projectileData().client_data != null) {
-            return Registry.ITEM.get(new Identifier(projectileData().client_data.model_id)).getDefaultStack();
-        }
-        return ItemStack.EMPTY;
-    }
+    // MARK: DataTracker (client-server sync)
 
     @Override
     protected void initDataTracker() {

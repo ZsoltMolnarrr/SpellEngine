@@ -1,6 +1,7 @@
 # 0.9.5
 
 - Add spell power caching
+- Fix spell projectiles knocking back targets at incorrect angle
 
 # 0.9.4
 

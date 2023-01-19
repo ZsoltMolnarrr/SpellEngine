@@ -282,7 +282,7 @@ public class SpellHelper {
             }
             performImpacts(world, caster, target, spell, context
                     .distance(distanceBasedMultiplier)
-                    .offset(offset ? center : null)
+                    .position(offset ? center : null)
             );
         }
     }
@@ -378,33 +378,33 @@ public class SpellHelper {
         return performed;
     }
 
-    public record ImpactContext(float channel, float distance, @Nullable Vec3d offset, @Nullable SpellPower.Result power) {
+    public record ImpactContext(float channel, float distance, @Nullable Vec3d position, SpellPower.Result power) {
         public ImpactContext() {
             this(1, 1, null, null);
         }
 
         public ImpactContext channeled(float multiplier) {
-            return new ImpactContext(multiplier, distance, offset, power);
+            return new ImpactContext(multiplier, distance, position, power);
         }
 
         public ImpactContext distance(float multiplier) {
-            return new ImpactContext(channel, multiplier, offset, power);
+            return new ImpactContext(channel, multiplier, position, power);
         }
 
-        public ImpactContext offset(Vec3d position) {
+        public ImpactContext position(Vec3d position) {
             return new ImpactContext(channel, distance, position, power);
         }
 
         public ImpactContext power(SpellPower.Result spellPower) {
-            return new ImpactContext(channel, distance, offset, spellPower);
+            return new ImpactContext(channel, distance, position, spellPower);
         }
 
         public boolean hasOffset() {
-            return offset != null;
+            return position != null;
         }
 
         public Vec3d knockbackDirection(Vec3d targetPosition) {
-            return targetPosition.subtract(offset).normalize();
+            return targetPosition.subtract(position).normalize();
         }
 
         public boolean isChanneled() {
