@@ -245,11 +245,14 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     private List<Entity> findTargets(Spell currentSpell) {
         var caster = player();
+        var previousTargets = this.targets;
         List<Entity> targets = List.of();
         if (currentSpell == null) {
             return targets;
         }
-        switch (currentSpell.release.target.type) {
+        boolean fallbackToPreviousTargets = false;
+        var targetType = currentSpell.release.target.type;
+        switch (targetType) {
             case AREA -> {
                 targets = TargetHelper.targetsFromArea(caster, currentSpell.range, currentSpell.release.target.area);
             }
@@ -257,6 +260,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 targets = TargetHelper.targetsFromRaycast(caster, currentSpell.range);
             }
             case CURSOR, PROJECTILE, METEOR -> {
+                fallbackToPreviousTargets = targetType != Spell.Release.Target.Type.PROJECTILE; // All of these except `PROJECTILE`
                 var target = TargetHelper.targetFromRaycast(caster, currentSpell.range);
                 if (target != null) {
                     targets = List.of(target);
@@ -274,6 +278,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             case SELF -> {
                 // Nothing to do
             }
+        }
+        if (fallbackToPreviousTargets && SpellEngineClient.config.stickyTarget
+                && targets.isEmpty()) {
+            targets = previousTargets;
         }
         return targets;
     }
