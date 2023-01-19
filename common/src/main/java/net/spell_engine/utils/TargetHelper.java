@@ -4,6 +4,9 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.decoration.AbstractDecorationEntity;
+import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.scoreboard.AbstractTeam;
@@ -12,6 +15,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.Beam;
 import net.spell_engine.internals.SpellCasterClient;
@@ -25,50 +29,88 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class TargetHelper {
+    public enum Intent {
+        HELPFUL, HARMFUL
+    }
+    public enum TargetingMode {
+        DIRECT, AREA
+    }
     public enum Relation {
-        FRIENDLY, NEUTRAL, HOSTILE
+        FRIENDLY, NEUTRAL, HOSTILE;
+
+        public static Relation coalesce(Relation value, Relation fallback) {
+            if (value != null) {
+                return value;
+            }
+            return fallback;
+        }
     }
 
-    public static Relation getRelation(LivingEntity caster, Entity target) {
-        if (caster == target) {
+    public static Relation getRelation(LivingEntity attacker, Entity target) {
+        if (attacker == target) {
             return Relation.FRIENDLY;
         }
-        var casterTeam = caster.getScoreboardTeam();
+        var casterTeam = attacker.getScoreboardTeam();
         var targetTeam = target.getScoreboardTeam();
         if (target instanceof Tameable tameable) {
             var owner = tameable.getOwner();
             if (owner != null) {
-                return getRelation(caster, owner);
+                return getRelation(attacker, owner);
             }
         }
+        var config = SpellEngineMod.config;
         if (casterTeam == null || targetTeam == null) {
-            if (caster instanceof PlayerEntity casterPlayer) {
-                if (target instanceof PlayerEntity targetEntity) {
-                    return Relation.NEUTRAL;
-                }
-                if (target instanceof AbstractDecorationEntity) {
-                    return Relation.FRIENDLY;
-                }
+            if (target instanceof PlayerEntity) {
+                return Relation.coalesce(config.player_relation_to_teamless_players, Relation.NEUTRAL);
             }
-            return Relation.NEUTRAL;
+            if (target instanceof VillagerEntity) {
+                return Relation.coalesce(config.player_relation_to_villagers, Relation.NEUTRAL);
+            }
+            if (target instanceof PassiveEntity) {
+                return Relation.coalesce(config.player_relation_to_passives, Relation.HOSTILE);
+            }
+            if (target instanceof HostileEntity) {
+                return Relation.coalesce(config.player_relation_to_hostiles, Relation.HOSTILE);
+            }
+            if (target instanceof AbstractDecorationEntity) {
+                return Relation.NEUTRAL;
+            }
+            return Relation.coalesce(config.player_relation_to_other, Relation.HOSTILE);
+        } else {
+            return attacker.isTeammate(target) ? Relation.FRIENDLY : Relation.HOSTILE;
         }
-        return caster.isTeammate(target) ? Relation.FRIENDLY : Relation.HOSTILE;
     }
 
-    public static boolean actionAllowed(boolean helpful, Relation relation, LivingEntity caster, Entity target) {
+    // Make sure this complies with comment in `ServerConfig`
+    private static boolean[][] TABLE_OF_ULTIMATE_JUSTICE = {
+            { false, true, true, },
+            { false, false, true },
+            { true, true, false },
+            { true, false, false },
+    };
+
+    public static boolean actionAllowed(TargetingMode targetingMode, Intent intent, LivingEntity attacker, Entity target) {
+        var relation = getRelation(attacker, target);
+        int row = 0;
+        int column = 0;
+        if (intent == Intent.HELPFUL) {
+            row += 2;
+        }
+        if (targetingMode == TargetingMode.AREA) {
+            row += 1;
+        }
         switch (relation) {
             case FRIENDLY -> {
-                return helpful; // helpful == true
+                column = 0;
             }
             case NEUTRAL -> {
-                return allowedToHurt(caster, target);
+                column = 1;
             }
             case HOSTILE -> {
-                return !helpful; // Only allowed in case harmful
+                column = 2;
             }
         }
-        assert true;
-        return true;
+        return TABLE_OF_ULTIMATE_JUSTICE[row][column];
     }
 
     // Generalized copy of shouldDamagePlayer

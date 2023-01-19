@@ -3,6 +3,7 @@ package net.spell_engine.config;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
+import net.spell_engine.utils.TargetHelper;
 
 @Config(name = "server")
 public class ServerConfig implements ConfigData {
@@ -18,4 +19,22 @@ public class ServerConfig implements ConfigData {
     public boolean spell_cost_item_allowed = true;
     @Comment("Spells should damage items on use. Set `false` to disable.")
     public boolean spell_cost_durability_allowed = true;
+
+    @Comment("""
+            Allow actions based on relations:
+            +----------------+-----------+----------+----------+
+            |                | FRIENDLY  | NEUTRAL  | HOSTILE  |
+            +----------------+-----------+----------+----------+
+            | DIRECT DAMAGE  | 🚫        | ✅      | ✅       |
+            | AREA DAMAGE    | 🚫        | 🚫      | ✅       |
+            | DIRECT HEALING | ✅        | ✅      | 🚫       |
+            | AREA HEALING   | ✅        | 🚫      | 🚫       |
+            +----------------+-----------+----------+----------+
+            Entities within the same team are considered FRIENDLY
+            """)
+    public TargetHelper.Relation player_relation_to_teamless_players = TargetHelper.Relation.NEUTRAL;
+    public TargetHelper.Relation player_relation_to_villagers = TargetHelper.Relation.NEUTRAL;
+    public TargetHelper.Relation player_relation_to_passives = TargetHelper.Relation.HOSTILE;
+    public TargetHelper.Relation player_relation_to_hostiles = TargetHelper.Relation.HOSTILE;
+    public TargetHelper.Relation player_relation_to_other = TargetHelper.Relation.HOSTILE;
 }

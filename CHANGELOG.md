@@ -2,6 +2,7 @@
 
 - Add spell power caching
 - Add sticky targets
+- Add proper friend or foe logic with configuration
 - Fix spell projectiles knocking back targets at incorrect angle
 
 # 0.9.4

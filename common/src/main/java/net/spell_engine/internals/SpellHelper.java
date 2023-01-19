@@ -161,15 +161,19 @@ public class SpellHelper {
             var targeting = spell.release.target;
             boolean released = action == SpellCastAction.RELEASE;
             if (shouldPerformImpact) {
-                var context = new ImpactContext(channelMultiplier, 1F, null, SpellPower.getSpellPower(spell.school, player));
+                var context = new ImpactContext(channelMultiplier,
+                        1F,
+                        null,
+                        SpellPower.getSpellPower(spell.school, player),
+                        TargetHelper.TargetingMode.DIRECT);
                 switch (targeting.type) {
                     case AREA -> {
                         var center = player.getPos().add(0, player.getHeight() / 2F, 0);
                         var area = spell.release.target.area;
-                        areaImpact(world, player, targets, center, spell.range, area, false, spell, context);
+                        areaImpact(world, player, targets, center, spell.range, area, false, spell, context.target(TargetHelper.TargetingMode.AREA));
                     }
                     case BEAM -> {
-                        beamImpact(world, player, targets, spell, context);
+                        beamImpact(world, player, targets, spell, context.target(TargetHelper.TargetingMode.AREA));
                     }
                     case CURSOR -> {
                         var target = targets.stream().findFirst();
@@ -190,7 +194,7 @@ public class SpellHelper {
                     case METEOR -> {
                         var target = targets.stream().findFirst();
                         if (target.isPresent()) {
-                            fallProjectile(world, player, target.get(), spell, context);
+                            fallProjectile(world, player, target.get(), spell, context.target(TargetHelper.TargetingMode.AREA));
                         } else {
                             released = false;
                         }
@@ -378,25 +382,29 @@ public class SpellHelper {
         return performed;
     }
 
-    public record ImpactContext(float channel, float distance, @Nullable Vec3d position, SpellPower.Result power) {
+    public record ImpactContext(float channel, float distance, @Nullable Vec3d position, SpellPower.Result power, TargetHelper.TargetingMode targetingMode) {
         public ImpactContext() {
-            this(1, 1, null, null);
+            this(1, 1, null, null, TargetHelper.TargetingMode.DIRECT);
         }
 
         public ImpactContext channeled(float multiplier) {
-            return new ImpactContext(multiplier, distance, position, power);
+            return new ImpactContext(multiplier, distance, position, power, targetingMode);
         }
 
         public ImpactContext distance(float multiplier) {
-            return new ImpactContext(channel, multiplier, position, power);
+            return new ImpactContext(channel, multiplier, position, power, targetingMode);
         }
 
         public ImpactContext position(Vec3d position) {
-            return new ImpactContext(channel, distance, position, power);
+            return new ImpactContext(channel, distance, position, power, targetingMode);
         }
 
         public ImpactContext power(SpellPower.Result spellPower) {
-            return new ImpactContext(channel, distance, position, spellPower);
+            return new ImpactContext(channel, distance, position, spellPower, targetingMode);
+        }
+
+        public ImpactContext target(TargetHelper.TargetingMode targetingMode) {
+            return new ImpactContext(channel, distance, position, power, targetingMode);
         }
 
         public boolean hasOffset() {
@@ -430,11 +438,20 @@ public class SpellHelper {
             if (power == null) {
                 power = SpellPower.getSpellPower(school, caster);
             }
+
+            if (impact.action.type == Spell.Impact.Action.Type.STATUS_EFFECT) {
+                var data = impact.action.status_effect;
+                if (data.apply_to_caster) {
+                    target = caster;
+                }
+            }
+
+            if (!TargetHelper.actionAllowed(context.targetingMode(), intent(impact.action), caster, target)) {
+                return false;
+            }
+
             switch (impact.action.type) {
                 case DAMAGE -> {
-                    if(!TargetHelper.actionAllowed(false, relation, caster, target)) {
-                        return false;
-                    }
                     var damageData = impact.action.damage;
                     var knockbackMultiplier = Math.max(0F, damageData.knockback * context.total());
                     var vulnerability = SpellPower.Vulnerability.none;
@@ -468,9 +485,6 @@ public class SpellHelper {
                     success = true;
                 }
                 case HEAL -> {
-                    if(!TargetHelper.actionAllowed(true, relation, caster, target)) {
-                        return false;
-                    }
                     if (target instanceof LivingEntity livingTarget) {
                         var healData = impact.action.heal;
                         particleMultiplier = power.criticalDamage();
@@ -487,19 +501,9 @@ public class SpellHelper {
                 }
                 case STATUS_EFFECT -> {
                     var data = impact.action.status_effect;
-                    LivingEntity livingTarget = null;
-                    if (data.apply_to_caster) {
-                        livingTarget = caster;
-                        relation = TargetHelper.Relation.FRIENDLY;
-                    } else if (target instanceof LivingEntity livingEntity) {
-                        livingTarget = livingEntity;
-                    }
-                    if (livingTarget != null) {
+                    if (target instanceof LivingEntity livingTarget) {
                         var id = new Identifier(data.effect_id);
                         var effect = Registry.STATUS_EFFECT.get(id);
-                        if(!TargetHelper.actionAllowed(effect.isBeneficial(), relation, caster, target)) {
-                            return false;
-                        }
                         if(!underApplyLimit(power, livingTarget, school, data.apply_limit)) {
                             return false;
                         }
@@ -527,9 +531,6 @@ public class SpellHelper {
                     }
                 }
                 case FIRE -> {
-                    if(!TargetHelper.actionAllowed(false, relation, caster, target)) {
-                        return false;
-                    }
                     var data = impact.action.fire;
                     target.setOnFireFor(data.duration);
                     if (target.getFireTicks() > 0) {
@@ -553,6 +554,25 @@ public class SpellHelper {
             }
         }
         return success;
+    }
+
+    public static TargetHelper.Intent intent(Spell.Impact.Action action) {
+        switch (action.type) {
+            case DAMAGE, FIRE -> {
+                return TargetHelper.Intent.HARMFUL;
+            }
+            case HEAL -> {
+                return TargetHelper.Intent.HELPFUL;
+            }
+            case STATUS_EFFECT -> {
+                var data = action.status_effect;
+                var id = new Identifier(data.effect_id);
+                var effect = Registry.STATUS_EFFECT.get(id);
+                return effect.isBeneficial() ? TargetHelper.Intent.HELPFUL : TargetHelper.Intent.HARMFUL;
+            }
+        }
+        assert true;
+        return null;
     }
 
     public static boolean underApplyLimit(SpellPower.Result spellPower, LivingEntity target, MagicSchool school, Spell.Impact.Action.StatusEffect.ApplyLimit limit) {
