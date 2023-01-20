@@ -19,6 +19,8 @@ public class ServerConfig implements ConfigData {
     public boolean spell_cost_item_allowed = true;
     @Comment("Spells should damage items on use. Set `false` to disable.")
     public boolean spell_cost_durability_allowed = true;
+    @Comment("If set true, a Fireball doesn't collide with an ally, a healing projectile doesn't collide with an enemy")
+    public boolean projectiles_pass_thru_irrelevant_targets = true;
 
     @Comment("""
             Allow actions based on relations:

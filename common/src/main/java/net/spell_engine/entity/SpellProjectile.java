@@ -27,6 +27,7 @@ import net.spell_engine.client.render.FlyingSpellEntity;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.RecordsWithGson;
+import net.spell_engine.utils.TargetHelper;
 import net.spell_engine.utils.VectorHelper;
 
 
@@ -168,13 +169,35 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         if (this.world.isClient || (entity == null || !entity.isRemoved()) && this.world.isChunkLoaded(this.getBlockPos())) {
             super.tick();
 
-            HitResult hitResult = ProjectileUtil.getCollision(this, this::canHit);
-            if (hitResult.getType() != HitResult.Type.MISS) {
-                switch (behaviour) {
-                    case FLY -> {
-                        this.onCollision(hitResult);
-                    }
-                    case FALL -> {
+            if (!world.isClient) {
+                HitResult hitResult = ProjectileUtil.getCollision(this, this::canHit);
+                if (hitResult.getType() != HitResult.Type.MISS) {
+                    switch (behaviour) {
+                        case FLY -> {
+                            boolean shouldCollideWithEntity = true;
+                            System.out.println("XXX A");
+                            if (hitResult.getType() == HitResult.Type.ENTITY) {
+                                System.out.println("XXX B");
+                                var target = ((EntityHitResult) hitResult).getEntity();
+                                if (SpellEngineMod.config.projectiles_pass_thru_irrelevant_targets
+                                        && spell.impact.length > 0
+                                        && getOwner() instanceof LivingEntity owner) {
+                                    System.out.println("XXX C");
+                                    var intent = SpellHelper.intent(spell.impact[0].action);
+                                    shouldCollideWithEntity = TargetHelper.actionAllowed(TargetHelper.TargetingMode.DIRECT, intent, owner, target);
+                                    System.out.println("XXX D " + shouldCollideWithEntity);
+                                }
+                            }
+                            if (shouldCollideWithEntity) {
+                                this.onCollision(hitResult);
+                                System.out.println("XXX E");
+                            } else {
+                                System.out.println("XXX F");
+                                this.setFollowedTarget(null);
+                            }
+                        }
+                        case FALL -> {
+                        }
                     }
                 }
             }
