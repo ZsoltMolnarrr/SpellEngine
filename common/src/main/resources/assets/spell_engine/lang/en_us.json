@@ -51,6 +51,8 @@
   "text.autoconfig.spell_engine.option.client.highlightTarget.@Tooltip" : "Render glowing effect on targeted entity",
   "text.autoconfig.spell_engine.option.client.stickyTarget" : "Sticky target",
   "text.autoconfig.spell_engine.option.client.stickyTarget.@Tooltip" : "Keep targeting the last entity aimed at, until releasing or cancelling",
+  "text.autoconfig.spell_engine.option.client.stickyTarget" : "Filter invalid targets",
+  "text.autoconfig.spell_engine.option.client.stickyTarget.@Tooltip" : "Prevent targeting allies with hostile spells, enemies with helpful spells",
   "text.autoconfig.spell_engine.option.client.restartCastingWhenSwitchingSpell" : "Restart when switching spell",
   "text.autoconfig.spell_engine.option.client.restartCastingWhenSwitchingSpell.@Tooltip" : "Immediately cancel currently casted spell and restart casting in case switching",
   "text.autoconfig.spell_engine.option.client.useMagicColorForHighlight" : "Use magic color for highlight",

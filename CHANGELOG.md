@@ -2,8 +2,9 @@
 
 - Add spell power caching
 - Add sticky targets
-- Add proper friend or foe logic with configuration (now consistent with Better Combat)
-- Add teammates being able to shoot projectiles through each other
+- Add filtering invalid targets 
+- Add proper friend or foe logic (configurable, now consistent with Better Combat)
+- Add teammates being able to shoot projectiles through each other (configurable)
 - Fix spell projectiles knocking back targets at incorrect angle
 
 # 0.9.4

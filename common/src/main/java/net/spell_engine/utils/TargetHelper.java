@@ -124,7 +124,7 @@ public class TargetHelper {
         }
     }
 
-    public static Entity targetFromRaycast(Entity caster, float range) {
+    public static Entity targetFromRaycast(Entity caster, float range, Predicate<Entity> predicate) {
         Vec3d start = caster.getEyePos();
         Vec3d look = caster.getRotationVec(1.0F)
                 .normalize()
@@ -132,7 +132,7 @@ public class TargetHelper {
         Vec3d end = start.add(look);
         Box searchAABB = caster.getBoundingBox().expand(range, range, range);
         var hitResult = ProjectileUtil.raycast(caster, start, end, searchAABB, (target) -> {
-            return !target.isSpectator() && target.canHit();
+            return !target.isSpectator() && target.canHit() && predicate.test(target);
         }, range*range); // `range*range` is provided for squared distance comparison
         if (hitResult != null) {
             if (hitResult.getPos() == null || raycastObstacleFree(caster, start, hitResult.getPos())) {
@@ -142,7 +142,7 @@ public class TargetHelper {
         return null;
     }
 
-    public static List<Entity> targetsFromRaycast(Entity caster, float range) {
+    public static List<Entity> targetsFromRaycast(Entity caster, float range, Predicate<Entity> predicate) {
         Vec3d start = caster.getEyePos();
         Vec3d look = caster.getRotationVec(1.0F)
                 .normalize()
@@ -150,7 +150,7 @@ public class TargetHelper {
         Vec3d end = start.add(look);
         Box searchAABB = caster.getBoundingBox().expand(range, range, range);
         var entitiesHit = TargetHelper.raycastMultiple(caster, start, end, searchAABB, (target) -> {
-            return !target.isSpectator() && target.canHit();
+            return !target.isSpectator() && target.canHit() && predicate.test(target);
         }, range*range); // `range*range` is provided for squared distance comparison
         return entitiesHit.stream()
                 .filter((hit) -> hit.position() == null || raycastObstacleFree(caster, start, hit.position()))
@@ -208,12 +208,12 @@ public class TargetHelper {
         return entities;
     }
 
-    public static List<Entity> targetsFromArea(Entity caster, float range, Spell.Release.Target.Area area) {
+    public static List<Entity> targetsFromArea(Entity caster, float range, Spell.Release.Target.Area area, @Nullable Predicate<Entity> predicate) {
         var origin = caster.getEyePos();
-        return targetsFromArea(caster, origin, range, area);
+        return targetsFromArea(caster, origin, range, area, predicate);
     }
 
-    public static List<Entity> targetsFromArea(Entity centerEntity, Vec3d origin, float range, Spell.Release.Target.Area area) {
+    public static List<Entity> targetsFromArea(Entity centerEntity, Vec3d origin, float range, Spell.Release.Target.Area area, @Nullable Predicate<Entity> predicate) {
         var horizontal = range * area.horizontal_range_multiplier;
         var vertical = range * area.vertical_range_multiplier;
         var box = centerEntity.getBoundingBox().expand(
@@ -227,6 +227,7 @@ public class TargetHelper {
             var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
             var distanceVector = VectorHelper.distanceVector(origin, target.getBoundingBox());
             return !target.isSpectator() && target.canHit()
+                    && (predicate == null || predicate.test(target))
                     && target.squaredDistanceTo(centerEntity) <= squaredDistance
                     && ((angle <= 0)
                         || (VectorHelper.angleBetween(look, targetCenter.subtract(origin)) <= angle)

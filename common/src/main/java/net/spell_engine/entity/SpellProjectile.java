@@ -175,24 +175,19 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                     switch (behaviour) {
                         case FLY -> {
                             boolean shouldCollideWithEntity = true;
-                            System.out.println("XXX A");
                             if (hitResult.getType() == HitResult.Type.ENTITY) {
-                                System.out.println("XXX B");
                                 var target = ((EntityHitResult) hitResult).getEntity();
                                 if (SpellEngineMod.config.projectiles_pass_thru_irrelevant_targets
+                                        && spell != null
                                         && spell.impact.length > 0
                                         && getOwner() instanceof LivingEntity owner) {
-                                    System.out.println("XXX C");
-                                    var intent = SpellHelper.intent(spell.impact[0].action);
+                                    var intent = SpellHelper.intent(spell);
                                     shouldCollideWithEntity = TargetHelper.actionAllowed(TargetHelper.TargetingMode.DIRECT, intent, owner, target);
-                                    System.out.println("XXX D " + shouldCollideWithEntity);
                                 }
                             }
                             if (shouldCollideWithEntity) {
                                 this.onCollision(hitResult);
-                                System.out.println("XXX E");
                             } else {
-                                System.out.println("XXX F");
                                 this.setFollowedTarget(null);
                             }
                         }

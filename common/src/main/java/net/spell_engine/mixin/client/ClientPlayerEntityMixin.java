@@ -24,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 @Mixin(ClientPlayerEntity.class)
 public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
@@ -251,17 +252,22 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             return targets;
         }
         boolean fallbackToPreviousTargets = false;
+        var targetingMode = SpellHelper.selectionTargetingMode(currentSpell);
         var targetType = currentSpell.release.target.type;
+        var intent = SpellHelper.intent(currentSpell);
+        Predicate<Entity> selectionPredicate = (target) -> {
+            return !SpellEngineClient.config.filterInvalidTargets || TargetHelper.actionAllowed(targetingMode, intent, caster, target);
+        };
         switch (targetType) {
             case AREA -> {
-                targets = TargetHelper.targetsFromArea(caster, currentSpell.range, currentSpell.release.target.area);
+                targets = TargetHelper.targetsFromArea(caster, currentSpell.range, currentSpell.release.target.area, selectionPredicate);
             }
             case BEAM -> {
-                targets = TargetHelper.targetsFromRaycast(caster, currentSpell.range);
+                targets = TargetHelper.targetsFromRaycast(caster, currentSpell.range, selectionPredicate);
             }
             case CURSOR, PROJECTILE, METEOR -> {
                 fallbackToPreviousTargets = targetType != Spell.Release.Target.Type.PROJECTILE; // All of these except `PROJECTILE`
-                var target = TargetHelper.targetFromRaycast(caster, currentSpell.range);
+                var target = TargetHelper.targetFromRaycast(caster, currentSpell.range, selectionPredicate);
                 if (target != null) {
                     targets = List.of(target);
                 } else {

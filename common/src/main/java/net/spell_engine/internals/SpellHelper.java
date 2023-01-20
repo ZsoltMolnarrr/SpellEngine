@@ -165,15 +165,15 @@ public class SpellHelper {
                         1F,
                         null,
                         SpellPower.getSpellPower(spell.school, player),
-                        TargetHelper.TargetingMode.DIRECT);
+                        impactTargetingMode(spell));
                 switch (targeting.type) {
                     case AREA -> {
                         var center = player.getPos().add(0, player.getHeight() / 2F, 0);
                         var area = spell.release.target.area;
-                        areaImpact(world, player, targets, center, spell.range, area, false, spell, context.target(TargetHelper.TargetingMode.AREA));
+                        areaImpact(world, player, targets, center, spell.range, area, false, spell, context);
                     }
                     case BEAM -> {
-                        beamImpact(world, player, targets, spell, context.target(TargetHelper.TargetingMode.AREA));
+                        beamImpact(world, player, targets, spell, context);
                     }
                     case CURSOR -> {
                         var target = targets.stream().findFirst();
@@ -194,7 +194,7 @@ public class SpellHelper {
                     case METEOR -> {
                         var target = targets.stream().findFirst();
                         if (target.isPresent()) {
-                            fallProjectile(world, player, target.get(), spell, context.target(TargetHelper.TargetingMode.AREA));
+                            fallProjectile(world, player, target.get(), spell, context);
                         } else {
                             released = false;
                         }
@@ -299,7 +299,7 @@ public class SpellHelper {
         }
         var center = position.add(0, 1, 0);
         var range = info.impact_range;
-        var targets = TargetHelper.targetsFromArea(projectile, center, range, area);
+        var targets = TargetHelper.targetsFromArea(projectile, center, range, area, null);
         ParticleHelper.sendBatches(projectile, info.impact_particles);
         SoundHelper.playSound(projectile.world, projectile, info.impact_sound);
         areaImpact(projectile.world, caster, targets, center, range, area, true, spell, context);
@@ -554,6 +554,41 @@ public class SpellHelper {
             }
         }
         return success;
+    }
+
+    public static TargetHelper.TargetingMode selectionTargetingMode(Spell spell) {
+        switch (spell.release.target.type) {
+            case AREA, BEAM -> {
+                return TargetHelper.TargetingMode.AREA;
+            }
+            case CURSOR, PROJECTILE, METEOR, SELF -> {
+                return TargetHelper.TargetingMode.DIRECT;
+            }
+        }
+        assert true;
+        return null;
+    }
+
+
+    public static TargetHelper.TargetingMode impactTargetingMode(Spell spell) {
+        switch (spell.release.target.type) {
+            case AREA, BEAM, METEOR -> {
+                return TargetHelper.TargetingMode.AREA;
+            }
+            case CURSOR, PROJECTILE, SELF -> {
+                return TargetHelper.TargetingMode.DIRECT;
+            }
+        }
+        assert true;
+        return null;
+    }
+
+    public static TargetHelper.Intent intent(Spell spell) {
+        for (var impact: spell.impact) {
+            return intent(impact.action);
+        }
+        assert true;
+        return null;
     }
 
     public static TargetHelper.Intent intent(Spell.Impact.Action action) {
