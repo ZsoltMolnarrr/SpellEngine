@@ -4,15 +4,20 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.toast.TutorialToast;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.client.SpellEngineClient;
+import net.spell_engine.client.input.InputHelper;
+import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.*;
 import net.spell_engine.network.Packets;
 import net.spell_engine.utils.TargetHelper;
@@ -30,10 +35,7 @@ import java.util.function.Predicate;
 public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     @Shadow @Final public ClientPlayNetworkHandler networkHandler;
 
-    @Shadow public abstract boolean isUsingItem();
-
     @Shadow @Final protected MinecraftClient client;
-    @Shadow private boolean usingItem;
     private int selectedSpellIndex = 0;
 
     private List<Entity> targets = List.of();
@@ -296,6 +298,9 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return targets;
     }
 
+    private int tutorialToastTicks = 0;
+    private TutorialToast tutorialToast;
+
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL_SpellEngine(CallbackInfo ci) {
         var player = player();
@@ -313,6 +318,30 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                     player.getYaw(), player.getPitch(),
                     player.isOnGround())
             );
+        }
+
+        if (!SpellEngineClient.tutorial.value.spell_hotbar_shown) {
+            var container = SpellContainerHelper.containerFromItemStack(player.getMainHandStack());
+            if (InputHelper.canLockOnContainer(container)) {
+                var keybinding = Keybindings.hotbarLock;
+                var description = Text.translatable("tutorial.spell_hotbar.unbound");
+                if (!keybinding.isUnbound()) {
+                    var key = Text.of(keybinding.getBoundKeyLocalizedText().getString().toUpperCase()).copy().formatted(Formatting.BOLD);
+                    description = Text.translatable("tutorial.spell_hotbar.description", key);
+                }
+                this.tutorialToast = new TutorialToast(TutorialToast.Type.MOVEMENT_KEYS, Text.translatable("tutorial.spell_hotbar.title"), description, false);
+                this.tutorialToastTicks = 140;
+                this.client.getToastManager().add(tutorialToast);
+                SpellEngineClient.tutorial.value.spell_hotbar_shown = true;
+                SpellEngineClient.tutorial.save();
+            }
+        }
+        if (tutorialToastTicks > 0) {
+            tutorialToastTicks -= 1;
+            if (tutorialToastTicks == 0 && tutorialToast != null) {
+                tutorialToast.hide();
+                tutorialToast = null;
+            }
         }
     }
 }

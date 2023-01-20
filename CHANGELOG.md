@@ -5,6 +5,7 @@
 - Add filtering invalid targets 
 - Add proper friend or foe logic (configurable, now consistent with Better Combat)
 - Add teammates being able to shoot projectiles through each other (configurable)
+- Add spell hotbar control hint, update default client config
 - Fix spell projectiles knocking back targets at incorrect angle
 
 # 0.9.4
