@@ -62,7 +62,7 @@ public class TargetHelper {
             return Relation.NEUTRAL;
         }
         var config = SpellEngineMod.config;
-        if (casterTeam == null && targetTeam == null) {
+        if (casterTeam == null || targetTeam == null) {
             if (target instanceof PlayerEntity) {
                 return Relation.coalesce(config.player_relation_to_teamless_players, Relation.NEUTRAL);
             }
