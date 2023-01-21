@@ -48,6 +48,7 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
     shadowCommon(implementation("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}"))
+    shadowCommon(implementation("com.github.LlamaLad7:MixinExtras:${project.mixin_extras_version}"))
 
     // Compatibility
     modCompileOnly("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }
@@ -70,6 +71,7 @@ shadowJar {
     configurations = [project.configurations.shadowCommon]
     classifier "dev-shadow"
     relocate 'net.tinyconfig', 'net.spell_engine.tinyconfig'
+    relocate 'com.llamalad7.mixinextras', 'net.spell_engine.mixinextras'
 }
 
 remapJar {

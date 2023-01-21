@@ -1,5 +1,6 @@
 package net.spell_engine.mixin.client.control;
 
+import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
@@ -15,7 +16,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -23,19 +23,36 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MinecraftClientMixin {
     @Shadow @Nullable public ClientPlayerEntity player;
 
-    @Redirect(method = "handleInputEvents", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerInventory;selectedSlot:I", opcode = Opcodes.PUTFIELD))
-    private void handleInputEvents_OverrideNumberKeys(PlayerInventory instance, int index) {
+//    @Redirect(method = "handleInputEvents", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerInventory;selectedSlot:I", opcode = Opcodes.PUTFIELD))
+//    private void handleInputEvents_OverrideNumberKeys(PlayerInventory instance, int index) {
+//        if (InputHelper.shouldControlSpellHotbar()) {
+//            var caster = ((SpellCasterClient)player);
+//            var container = caster.getCurrentContainer();
+//            if (container != null && container.isUsable()) {
+//                if (index >= container.spell_ids.size()) {
+//                    return;
+//                }
+//            }
+//            caster.setSelectedSpellIndex(index);
+//        } else {
+//            instance.selectedSlot = index;
+//        }
+//    }
+
+    @WrapWithCondition(method = "handleInputEvents", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerInventory;selectedSlot:I", ordinal = 0, opcode = Opcodes.PUTFIELD))
+    private boolean handleInputEvents_OverrideNumberKeys(PlayerInventory instance, int index) {
         if (InputHelper.shouldControlSpellHotbar()) {
             var caster = ((SpellCasterClient)player);
             var container = caster.getCurrentContainer();
             if (container != null && container.isUsable()) {
                 if (index >= container.spell_ids.size()) {
-                    return;
+                    return false;
                 }
             }
             caster.setSelectedSpellIndex(index);
+            return false;
         } else {
-            instance.selectedSlot = index;
+            return true;
         }
     }
 

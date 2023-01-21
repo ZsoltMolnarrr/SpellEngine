@@ -32,6 +32,7 @@
     "client.render.ModelLoaderMixin",
     "client.render.TexturedRenderLayersMixin"
   ],
+  "plugin": "net.spell_engine.mixin.SpellEngineMixinExtras",
   "injectors": {
     "defaultRequire": 1
   }
