@@ -1,6 +1,7 @@
 # 0.9.6
 
 - Fix empty nbt tag causes items not to stack #5
+- Improve mixin compatibility, lift breaks on Carry On
 
 # 0.9.5
 
