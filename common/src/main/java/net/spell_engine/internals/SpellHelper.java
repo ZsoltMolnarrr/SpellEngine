@@ -17,7 +17,7 @@ import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
 import net.spell_engine.api.spell.Spell;
-import net.spell_engine.entity.LivingEntityKnockback;
+import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.criteria.SpellCastCriteria;
 import net.spell_engine.internals.criteria.SpellCastHistory;
@@ -457,7 +457,7 @@ public class SpellHelper {
                     var vulnerability = SpellPower.Vulnerability.none;
                     var timeUntilRegen = target.timeUntilRegen;
                     if (target instanceof LivingEntity livingEntity) {
-                        ((LivingEntityKnockback) livingEntity).SpellEngine_setKnockbackMultiplier(context.hasOffset() ? 0 : knockbackMultiplier);
+                        ((ConfigurableKnockback) livingEntity).setKnockbackMultiplier_SpellEngine(context.hasOffset() ? 0 : knockbackMultiplier);
                         if (SpellEngineMod.config.bypass_iframes) {
                             target.timeUntilRegen = 0;
                         }
@@ -475,7 +475,7 @@ public class SpellHelper {
                     target.damage(SpellDamageSource.create(school, caster), (float) amount);
 
                     if (target instanceof LivingEntity livingEntity) {
-                        ((LivingEntityKnockback)livingEntity).SpellEngine_setKnockbackMultiplier(1F);
+                        ((ConfigurableKnockback)livingEntity).setKnockbackMultiplier_SpellEngine(1F);
                         target.timeUntilRegen = timeUntilRegen;
                         if (context.hasOffset()) {
                             var direction = context.knockbackDirection(livingEntity.getPos()).negate(); // Negate for smart Vanilla API :)
@@ -550,7 +550,7 @@ public class SpellHelper {
             System.err.println("Failed to perform impact effect");
             System.err.println(e.getMessage());
             if (target instanceof LivingEntity livingEntity) {
-                ((LivingEntityKnockback)livingEntity).SpellEngine_setKnockbackMultiplier(1F);
+                ((ConfigurableKnockback)livingEntity).setKnockbackMultiplier_SpellEngine(1F);
             }
         }
         return success;
