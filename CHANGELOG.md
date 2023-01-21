@@ -1,3 +1,7 @@
+# 0.9.6
+
+- Fix empty nbt tag causes items not to stack #5
+
 # 0.9.5
 
 - Add spell power caching
