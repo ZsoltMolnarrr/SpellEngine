@@ -31,6 +31,7 @@ public class FabricMod implements ModInitializer {
     public void onInitialize() {
         SpellEngineMod.init();
         SpellEngineMod.registerEnchantments();
+        SpellEngineMod.registerStatusEffects();
         SpellEngineMod.registerSpellBinding();
         SoundHelper.registerSounds();
 

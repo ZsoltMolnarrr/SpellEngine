@@ -39,6 +39,14 @@
   "gui.spell_engine.icon" : "Icon",
   "gui.spell_engine.bar_width" : "Bar width",
 
+  "effect.spell_engine.fire_silence": "Silence of Fire",
+  "effect.spell_engine.frost_silence": "Silence of Frost",
+  "effect.spell_engine.arcane_silence": "Silence of the Arcane",
+  "effect.spell_engine.soul_silence": "Silence of the Soul",
+  "effect.spell_engine.lightning_silence": "Silence of Lightning",
+  "effect.spell_engine.healing_silence": "Silence of the Healer",
+  "effect.spell_engine.silence": "Silence of All",
+
   "hud.leave_spell_hotbar": "Press %1$s to leave",
 
   "keybindings.spell_engine.tooltip_details" : "Tooltip spell details",

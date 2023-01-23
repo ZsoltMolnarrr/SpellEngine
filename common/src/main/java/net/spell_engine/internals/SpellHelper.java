@@ -237,7 +237,7 @@ public class SpellHelper {
                         }
                     }
                 }
-                // Status effect
+                // Status mob_effect
                 if (spell.cost.effect_id != null) {
                     var effect = Registry.STATUS_EFFECT.get(new Identifier(spell.cost.effect_id));
                     player.removeStatusEffect(effect);
@@ -547,7 +547,7 @@ public class SpellHelper {
                 }
             }
         } catch (Exception e) {
-            System.err.println("Failed to perform impact effect");
+            System.err.println("Failed to perform impact mob_effect");
             System.err.println(e.getMessage());
             if (target instanceof LivingEntity livingEntity) {
                 ((ConfigurableKnockback)livingEntity).setKnockbackMultiplier_SpellEngine(1F);

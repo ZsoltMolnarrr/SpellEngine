@@ -1,6 +1,7 @@
 package net.spell_engine.mixin;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -11,6 +12,8 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.SpellContainer;
+import net.spell_engine.effect.SilenceEffect;
+import net.spell_engine.effect.StatusEffects_SpellEngine;
 import net.spell_engine.internals.*;
 import net.spell_power.api.MagicSchool;
 import net.spell_power.api.enchantment.MagicalItemStack;
@@ -21,6 +24,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Arrays;
 
 @Mixin(ItemStack.class)
 public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalItemStack {
@@ -105,13 +110,26 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
         }
         var itemStack = itemStack();
         var container = spellContainer();
+
         if (container == null) {
             if (user instanceof SpellCasterEntity caster && caster.getCurrentSpellId() != null) {
                 caster.clearCasting();
             }
+
             return;
         }
+        else{
+            if( Arrays.stream(user.getStatusEffects().toArray()).anyMatch(effect -> ((StatusEffectInstance) effect).getEffectType() instanceof SilenceEffect silenceEffect
+                    && (silenceEffect.getSchool() == null
+                    || silenceEffect.getSchool() == container.school))){
+
+                cir.setReturnValue(TypedActionResult.fail(itemStack()));
+                cir.cancel();
+                return;
+            }
+        }
         if (world.isClient) {
+
             if (user instanceof SpellCasterClient caster) {
                 if (!caster.hasAmmoToStart(container, itemStack) || caster.isOnCooldown(container)) {
                     cir.setReturnValue(TypedActionResult.fail(itemStack()));
@@ -142,6 +160,11 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
                 // Server
                 var caster = (SpellCasterEntity)player;
                 if (!SpellHelper.canContinueToCastSpell(caster, caster.getCurrentSpellId())) {
+                    player.stopUsingItem();
+                }
+                if(caster.getCurrentSpell() != null && Arrays.stream(user.getStatusEffects().toArray()).anyMatch(effect -> ((StatusEffectInstance) effect).getEffectType() instanceof SilenceEffect silenceEffect
+                        && (silenceEffect.getSchool() == null
+                        || silenceEffect.getSchool() == caster.getCurrentSpell().school))){
                     player.stopUsingItem();
                 }
             } else {

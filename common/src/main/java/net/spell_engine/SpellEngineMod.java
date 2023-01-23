@@ -8,8 +8,11 @@ import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.enchantment.EnchantmentRestriction;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
@@ -17,6 +20,8 @@ import net.spell_engine.api.item.StaffItem;
 import net.spell_engine.config.EnchantmentsConfig;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
+import net.spell_engine.effect.SilenceEffect;
+import net.spell_engine.effect.StatusEffects_SpellEngine;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.internals.criteria.EnchantmentSpecificCriteria;
@@ -24,6 +29,7 @@ import net.spell_engine.internals.criteria.SpellCastCriteria;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.particle.Particles;
 import net.spell_engine.spellbinding.*;
+import net.spell_power.api.MagicSchool;
 import net.tinyconfig.ConfigManager;
 
 public class SpellEngineMod {
@@ -69,6 +75,11 @@ public class SpellEngineMod {
         enchantmentConfig.value.apply();
         for(var entry: Enchantments_SpellEngine.all.entrySet()) {
             Registry.register(Registry.ENCHANTMENT, entry.getKey(), entry.getValue());
+        }
+    }
+    public static void registerStatusEffects() {
+        for(var entry: StatusEffects_SpellEngine.SILENCES.entrySet()) {
+            Registry.register(Registry.STATUS_EFFECT,entry.getKey(),entry.getValue());
         }
     }
 }
