@@ -55,10 +55,26 @@ Client side settings can be accessed in Main Menu > Mods > Spell Engine > Config
 
 Add this mod as dependency into your build.gradle file.
 
+```groovy
+maven {
+    name = 'Modrinth'
+    url = 'https://api.modrinth.com/maven'
+    content {
+        includeGroup 'maven.modrinth'
+    }
+}
+```
+
+```groovy
+modImplementation("maven.modrinth:spell-engine:${project.spell_engine_version}-fabric")
+```
+
 Install dependencies:
-- Spell Power
-- Player Animator
-- Cloth Config
+- [Spell Power](https://github.com/ZsoltMolnarrr/SpellPower)
+- [Player Animator](https://github.com/KosmX/minecraftPlayerAnimator)
+- [Cloth Config](https://github.com/shedaniel/cloth-config)
+  
+(Can be done locally by putting release jars into `/run/fabric/mods`, or can be resolved from maven and like Spell Engine.)
 
 ## ⭐️ Creating a spell
 
