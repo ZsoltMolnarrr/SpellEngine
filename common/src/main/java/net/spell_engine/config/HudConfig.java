@@ -5,19 +5,28 @@ import net.spell_engine.client.gui.HudElement;
 
 import java.util.List;
 
-public class HudConfig { HudConfig() { }
-    public HudElement base;
-    public Part target;
-    public Part icon;
-    public int bar_width;
+public class HudConfig { public HudConfig() { }
+    public CastBar castbar;
+    public static class CastBar { public CastBar() { }
+        public HudElement base;
+        public Part target;
+        public Part icon;
+        public int width;
+        public CastBar(HudElement base, Part target, Part icon, int bar_width) {
+            this.base = base;
+            this.target = target;
+            this.icon = icon;
+            this.width = bar_width;
+        }
 
+        public CastBar copy() {
+            return new CastBar(base.copy(), target.copy(), icon.copy(), width);
+        }
+    }
     public HudElement hotbar;
 
-    public HudConfig(HudElement base, Part target, Part icon, int bar_width, HudElement hotbar) {
-        this.base = base;
-        this.target = target;
-        this.icon = icon;
-        this.bar_width = bar_width;
+    public HudConfig(CastBar castbar, HudElement hotbar) {
+        this.castbar = castbar;
         this.hotbar = hotbar;
     }
 
@@ -35,7 +44,7 @@ public class HudConfig { HudConfig() { }
     }
 
     public HudConfig copy() {
-        return new HudConfig(base.copy(), target.copy(), icon.copy(), bar_width, hotbar.copy());
+        return new HudConfig(castbar.copy(), hotbar.copy());
     }
 
     // MARK: Default and Presets
@@ -50,16 +59,18 @@ public class HudConfig { HudConfig() { }
 
     private static HudConfig overXPBar() {
         return new HudConfig(
-                new HudElement(
+                new CastBar(
+                    new HudElement(
                         HudElement.Origin.BOTTOM,
                         new Vec2f(0, -27)),
-                new Part(
+                    new Part(
                         false,
                         new Vec2f(0, -12)),
-                new Part(
+                    new Part(
                         true,
                         new Vec2f(-8, -25)),
-                172,
+                    172
+                ),
                 defaultHotBar());
     }
 
@@ -114,10 +125,12 @@ public class HudConfig { HudConfig() { }
         }
 
         return new HudConfig(
-                new HudElement(origin, offset),
-                target,
-                icon,
-                barWidth,
+                new CastBar(
+                    new HudElement(origin, offset),
+                    target,
+                    icon,
+                    barWidth
+                ),
                 defaultHotBar());
     }
 
@@ -135,5 +148,9 @@ public class HudConfig { HudConfig() { }
 
     private static Vec2f iconRight(int barWidth) {
         return new Vec2f((barWidth / 2) + 10, -6);
+    }
+
+    public boolean isValid() {
+        return castbar != null && hotbar != null;
     }
 }

@@ -151,10 +151,10 @@ public class HudConfigScreen extends Screen {
     private HudConfig.Part partData(Part partType) {
         switch (partType) {
             case TARGET -> {
-                return config().target;
+                return config().castbar.target;
             }
             case ICON -> {
-                return config().icon;
+                return config().castbar.icon;
             }
         }
         assert true;
@@ -164,10 +164,10 @@ public class HudConfigScreen extends Screen {
     private void changeBarWidth(boolean increase) {
         var diff = increase ? 1 : -1;
         var config = SpellEngineClient.hudConfig.value;
-        if (!increase && config.bar_width <= 0) {
+        if (!increase && config.castbar.width <= 0) {
             return;
         }
-        config.bar_width += diff;
+        config.castbar.width += diff;
     }
 
     private boolean partsVisible() {
@@ -249,9 +249,9 @@ public class HudConfigScreen extends Screen {
             var config = SpellEngineClient.hudConfig.value;
             switch (dragged) {
                 case CAST_BAR -> {
-                    config.base.offset = new Vec2f(
-                            (float) (config.base.offset.x + deltaX),
-                            (float) (config.base.offset.y + deltaY));
+                    config.castbar.base.offset = new Vec2f(
+                            (float) (config.castbar.base.offset.x + deltaX),
+                            (float) (config.castbar.base.offset.y + deltaY));
 
                 }
                 case HOT_BAR -> {

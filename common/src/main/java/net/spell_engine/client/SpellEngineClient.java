@@ -27,6 +27,7 @@ public class SpellEngineClient {
             .builder()
             .setDirectory(SpellEngineMod.ID)
             .sanitize(true)
+            .validate(HudConfig::isValid)
             .build();
     public static ConfigManager<Tutorial> tutorial = new ConfigManager<Tutorial>
             ("spell_engine_tutorial", new Tutorial())

@@ -98,14 +98,14 @@ public class HudRenderHelper {
 
         var screenWidth = client.getWindow().getScaledWidth();
         var screenHeight = client.getWindow().getScaledHeight();
-        var originPoint = hudConfig.base.origin.getPoint(screenWidth, screenHeight);
-        var baseOffset = originPoint.add(hudConfig.base.offset);
+        var originPoint = hudConfig.castbar.base.origin.getPoint(screenWidth, screenHeight);
+        var baseOffset = originPoint.add(hudConfig.castbar.base.offset);
         if (castBarViewModel != null) {
             CastBarWidget.render(matrixStack, tickDelta, hudConfig, baseOffset, castBarViewModel);
         }
 
-        if (hudConfig.target.visible) {
-            var targetOffset = baseOffset.add(hudConfig.target.offset);
+        if (hudConfig.castbar.target.visible) {
+            var targetOffset = baseOffset.add(hudConfig.castbar.target.offset);
             TargetWidget.render(matrixStack, tickDelta, targetOffset, targetViewModel);
         }
 
@@ -175,7 +175,7 @@ public class HudRenderHelper {
         }
 
         public static void render(MatrixStack matrixStack, float tickDelta, HudConfig hudConfig, Vec2f starting, ViewModel viewModel) {
-            var barWidth = hudConfig.bar_width;
+            var barWidth = hudConfig.castbar.width;
             var totalWidth = barWidth + minWidth;
             var totalHeight = barHeight;
             int x = (int) (starting.x - (totalWidth / 2));
@@ -199,9 +199,9 @@ public class HudRenderHelper {
             var progress = viewModel.reverse() ? (1F - viewModel.progress - partialProgress) : (viewModel.progress + partialProgress);
             renderBar(matrixStack, barWidth, false, progress, x, y);
 
-            if (hudConfig.icon.visible && viewModel.iconTexture != null) {
-                x = (int) (starting.x + hudConfig.icon.offset.x);
-                y = (int) (starting.y + hudConfig.icon.offset.y);
+            if (hudConfig.castbar.icon.visible && viewModel.iconTexture != null) {
+                x = (int) (starting.x + hudConfig.castbar.icon.offset.x);
+                y = (int) (starting.y + hudConfig.castbar.icon.offset.y);
                 RenderSystem.setShaderTexture(0, viewModel.iconTexture);
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
                 DrawableHelper.drawTexture(matrixStack, x, y, 0, 0, spellIconSize, spellIconSize, spellIconSize, spellIconSize);
