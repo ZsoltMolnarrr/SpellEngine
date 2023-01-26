@@ -29,7 +29,6 @@
     "client.render.EntityMixin",
     "client.render.ItemRendererAccessor",
     "client.render.LivingEntityRendererMixin",
-    "client.render.ModelLoaderMixin",
     "client.render.TexturedRenderLayersMixin"
   ],
   "plugin": "net.spell_engine.mixin.SpellEngineMixinExtras",

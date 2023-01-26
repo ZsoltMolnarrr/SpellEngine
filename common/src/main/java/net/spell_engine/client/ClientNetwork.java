@@ -19,7 +19,6 @@ public class ClientNetwork {
 
         ClientPlayNetworking.registerGlobalReceiver(Packets.SpellRegistrySync.ID, (client, handler, buf, responseSender) -> {
             SpellRegistry.decodeContent(buf);
-            CustomModelRegistry.load();
         });
 
         ClientPlayNetworking.registerGlobalReceiver(Packets.ParticleBatches.ID, (client, handler, buf, responseSender) -> {

@@ -1,3 +1,7 @@
+# 0.9.7
+
+- Changed custom model registration behaviour, no longer defaults to item subfolder (braking change!)
+
 # 0.9.6
 
 - Fix empty nbt tag causes items not to stack #5
