@@ -1,6 +1,8 @@
 # 0.9.7
 
-- Changed custom model registration behaviour, no longer defaults to item subfolder (braking change!)
+- Changed custom model registration behaviour, no longer defaults to item subfolder (API breaking change!)
+- Improve HUD config data structure
+- Fix mixin extras error for dependent projects
 
 # 0.9.6
 
