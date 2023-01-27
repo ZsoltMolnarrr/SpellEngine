@@ -2,7 +2,9 @@
 
 - Changed custom model registration behaviour, no longer defaults to item subfolder (API breaking change!)
 - Improve HUD config data structure
+- Improve spell cast synchronization
 - Fix mixin extras error for dependent projects
+- Fix spell caster items preventing shield blocking
 
 # 0.9.6
 

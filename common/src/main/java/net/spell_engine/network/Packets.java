@@ -3,6 +3,7 @@ package net.spell_engine.network;
 import com.google.gson.Gson;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
@@ -38,11 +39,12 @@ public class Packets {
         }
     }
 
-    public record SpellRequest(SpellCastAction action, Identifier spellId, int slot, int remainingUseTicks, int[] targets) {
+    public record SpellRequest(Hand hand, SpellCastAction action, Identifier spellId, int slot, int remainingUseTicks, int[] targets) {
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "release_request");
 
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();
+            buffer.writeEnumConstant(hand);
             buffer.writeEnumConstant(action);
             buffer.writeString(spellId.toString());
             buffer.writeInt(slot);
@@ -51,12 +53,13 @@ public class Packets {
             return buffer;
         }
         public static SpellRequest read(PacketByteBuf buffer) {
+            var hand = buffer.readEnumConstant(Hand.class);
             var action = buffer.readEnumConstant(SpellCastAction.class);
             var spellId = new Identifier(buffer.readString());
             var slot = buffer.readInt();
             var remainingUseTicks = buffer.readInt();
             var targets = buffer.readIntArray();
-            return new SpellRequest(action, spellId, slot, remainingUseTicks, targets);
+            return new SpellRequest(hand, action, spellId, slot, remainingUseTicks, targets);
         }
     }
 

@@ -11,6 +11,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
@@ -101,24 +102,18 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return firstTarget();
     }
 
-    public boolean isOnCooldown(SpellContainer container) {
-        var spellId = SpellRegistry.spellId(container, selectedSpellIndex);
-        return getCooldownManager().isCoolingDown(spellId);
-    }
-
-    public boolean hasAmmoToStart(SpellContainer container, ItemStack itemStack) {
-        var spell = SpellRegistry.spell(container, selectedSpellIndex);
-        return spell != null && SpellHelper.ammoForSpell(player(), spell, itemStack).satisfied();
+    public Identifier getSelectedSpellId(SpellContainer container){
+        return SpellRegistry.spellId(container, selectedSpellIndex);
     }
 
     @Override
-    public void castStart(SpellContainer container, ItemStack itemStack, int remainingUseTicks) {
+    public void castStart(SpellContainer container, Hand hand, ItemStack itemStack, int remainingUseTicks) {
         var caster = player();
         var slot = findSlot(caster, itemStack);
         var spellId = SpellRegistry.spellId(container, selectedSpellIndex);
         ClientPlayNetworking.send(
                 Packets.SpellRequest.ID,
-                new Packets.SpellRequest(SpellCastAction.START, spellId, slot, remainingUseTicks, new int[]{}).write());
+                new Packets.SpellRequest(hand, SpellCastAction.START, spellId, slot, remainingUseTicks, new int[]{}).write());
         setCurrentSpell(spellId);
     }
 
@@ -140,7 +135,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         var progress = SpellHelper.getCastProgress(caster, remainingUseTicks, currentSpell);
         if (SpellHelper.isChanneled(currentSpell)) {
             var action = (progress >= 1) ? SpellCastAction.RELEASE : SpellCastAction.CHANNEL;
-            cast(currentSpell, action, itemStack, remainingUseTicks);
+            cast(currentSpell, action, Hand.MAIN_HAND, itemStack, remainingUseTicks);
         } else {
             if (SpellEngineClient.config.autoRelease
                     && SpellHelper.getCastProgress(caster, remainingUseTicks, currentSpell) >= 1) {
@@ -153,10 +148,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     @Override
     public void castRelease(ItemStack itemStack, int remainingUseTicks) {
         updateTargets();
-        cast(getCurrentSpell(), SpellCastAction.RELEASE, itemStack, remainingUseTicks);
+        cast(getCurrentSpell(), SpellCastAction.RELEASE, Hand.MAIN_HAND, itemStack, remainingUseTicks);
     }
 
-    private void cast(Spell spell, SpellCastAction action, ItemStack itemStack, int remainingUseTicks) {
+    private void cast(Spell spell, SpellCastAction action, Hand hand, ItemStack itemStack, int remainingUseTicks) {
         if (spell == null) {
             return;
         }
@@ -173,9 +168,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 shouldEndCasting = progress >= 1;
             }
             case RELEASE -> {
-//                if (!isChannelled && progress < 1) {
-//                    return;
-//                }
                 shouldEndCasting = true;
             }
         }
@@ -205,7 +197,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         // System.out.println("Sending spell cast packet: " + new Packets.SpellRequest(action, spellId, slot, remainingUseTicks, targetIDs));
         ClientPlayNetworking.send(
                 Packets.SpellRequest.ID,
-                new Packets.SpellRequest(action, spellId, slot, remainingUseTicks, targetIDs).write());
+                new Packets.SpellRequest(hand, action, spellId, slot, remainingUseTicks, targetIDs).write());
 
         if (shouldEndCasting) {
             endCasting();

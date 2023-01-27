@@ -4,14 +4,16 @@ import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.spell_engine.network.Packets;
 
 import java.util.Collection;
 
 public class SpellCastSyncHelper {
-    public static void setCasting(PlayerEntity caster, Identifier spellId, Collection<ServerPlayerEntity> trackingPlayers) {
+    public static void setCasting(PlayerEntity caster, Hand hand, Identifier spellId, Collection<ServerPlayerEntity> trackingPlayers) {
         ((SpellCasterEntity)caster).setCurrentSpell(spellId);
+        caster.setCurrentHand(hand);
         var packet = new Packets.SpellCastSync(caster.getId(), spellId).write();
         trackingPlayers.forEach(serverPlayer -> {
             ServerPlayNetworking.send(serverPlayer, Packets.SpellCastSync.ID, packet);

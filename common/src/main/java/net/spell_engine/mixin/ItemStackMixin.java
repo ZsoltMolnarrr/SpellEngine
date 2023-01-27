@@ -10,6 +10,7 @@ import net.minecraft.util.UseAction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.*;
 import net.spell_power.api.MagicSchool;
@@ -111,19 +112,30 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
             }
             return;
         }
+        var attempt = SpellHelper.AttemptResult.NONE;
         if (world.isClient) {
             if (user instanceof SpellCasterClient caster) {
-                if (!caster.hasAmmoToStart(container, itemStack) || caster.isOnCooldown(container)) {
-                    cir.setReturnValue(TypedActionResult.fail(itemStack()));
-                    cir.cancel();
-                    return;
-                } else {
-                    caster.castStart(container, itemStack, SpellHelper.maximumUseTicks);
+                var spellId = caster.getSelectedSpellId(container);
+                attempt = SpellHelper.tryCasting(user, itemStack, spellId);
+                if (attempt.isSuccess()) {
+                    caster.castStart(container, hand, itemStack, SpellHelper.maximumUseTicks);
                 }
             }
+        } else {
+            var spellId = ((SpellCasterEntity)user).getCurrentSpellId();
+            if (spellId != null) {
+                attempt = SpellHelper.tryCasting(user, itemStack, spellId);
+            }
         }
-        cir.setReturnValue(TypedActionResult.consume(itemStack()));
-        user.setCurrentHand(hand);
+
+        if (attempt.isSuccess()) {
+            cir.setReturnValue(TypedActionResult.consume(itemStack()));
+            user.setCurrentHand(hand);
+        } else if (attempt.isFail()) {
+            cir.setReturnValue(TypedActionResult.fail(itemStack()));
+        } else {
+            cir.setReturnValue(TypedActionResult.pass(itemStack()));
+        }
         cir.cancel();
     }
 

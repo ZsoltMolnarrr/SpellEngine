@@ -10,6 +10,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
@@ -37,6 +38,31 @@ import java.util.function.Supplier;
 
 public class SpellHelper {
     public static int maximumUseTicks = 72000;
+
+    public enum AttemptResult {
+        SUCCESS, MISSING_ITEM, ON_COOLDOWN, NONE;
+        public boolean isSuccess() {
+            return this == SUCCESS;
+        }
+        public boolean isFail() {
+            return this != SUCCESS && this != NONE;
+        }
+    }
+    public static AttemptResult tryCasting(PlayerEntity player, ItemStack itemStack, Identifier spellId) {
+        var caster = (SpellCasterEntity)player;
+        var spell = SpellRegistry.getSpell(spellId);
+        if (spell == null) {
+            return AttemptResult.NONE;
+        }
+        if (caster.getCooldownManager().isCoolingDown(spellId)) {
+            return AttemptResult.ON_COOLDOWN;
+        }
+        var ammo = SpellHelper.ammoForSpell(player, spell, itemStack);
+        if (!ammo.satisfied()) {
+            return AttemptResult.MISSING_ITEM;
+        }
+        return AttemptResult.SUCCESS;
+    }
 
     public record AmmoResult(boolean satisfied, ItemStack ammo) { }
     public static AmmoResult ammoForSpell(PlayerEntity player, Spell spell, ItemStack itemStack) {
@@ -121,7 +147,7 @@ public class SpellHelper {
         return !caster.getCooldownManager().isCoolingDown(spellId);
     }
 
-    public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCastAction action, int remainingUseTicks) {
+    public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCastAction action, Hand hand, int remainingUseTicks) {
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
             return;
@@ -139,7 +165,7 @@ public class SpellHelper {
         switch (action) {
             case START -> {
                 SoundHelper.playSound(player.world, player, spell.cast.start_sound);
-                SpellCastSyncHelper.setCasting(player, spellId, trackingPlayers.get());
+                SpellCastSyncHelper.setCasting(player, hand, spellId, trackingPlayers.get());
                 return;
             }
             case CHANNEL -> {
