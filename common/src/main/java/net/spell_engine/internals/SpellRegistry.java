@@ -13,14 +13,21 @@ import net.spell_power.api.MagicSchool;
 
 import java.io.InputStreamReader;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SpellRegistry {
-    private static final Map<Identifier, Spell> spells = new HashMap();
+    public static class Entry { public Entry() { }
+        public Spell spell;
+        public int rawId;
+        public Entry(Spell spell, int rawId) {
+            this.spell = spell;
+            this.rawId = rawId;
+        }
+    }
+    private static final Map<Identifier, Entry> spells = new HashMap();
     private static final Map<Identifier, SpellContainer> containers = new HashMap();
     private static final Map<MagicSchool, Integer> spellCount = new HashMap<>();
 
-    public static Map<Identifier, Spell> all() {
+    public static Map<Identifier, Entry> all() {
         return spells;
     }
 
@@ -34,8 +41,9 @@ public class SpellRegistry {
 
     public static void loadSpells(ResourceManager resourceManager) {
         var gson = new Gson();
-        Map<Identifier, Spell> parsed = new HashMap();
+        Map<Identifier, Entry> parsed = new HashMap();
         // Reading all attribute files
+        int rawId = 1;
         var directory = "spells";
         for (var entry : resourceManager.findResources(directory, fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
             var identifier = entry.getKey();
@@ -48,7 +56,7 @@ public class SpellRegistry {
                         .toString().replace(directory + "/", "");
                 id = id.substring(0, id.lastIndexOf('.'));
                 Validator.validate(container);
-                parsed.put(new Identifier(id), container);
+                parsed.put(new Identifier(id), new Entry(container, rawId++));
                 // System.out.println("loaded spell - id: " + id +  " spell: " + gson.toJson(container));
             } catch (Exception e) {
                 System.err.println("Failed to parse spell: " + identifier);
@@ -82,17 +90,18 @@ public class SpellRegistry {
                 e.printStackTrace();
             }
         }
+        containers.clear();
         containers.putAll(parsed);
     }
 
     private static void spellsUpdated() {
-        updateRawIds();
+        updateReverseMap();
         spellCount.clear();
         for(var school: MagicSchool.values()) {
             spellCount.put(school, 0);
         }
         for(var spell: spells.entrySet()) {
-            var school = spell.getValue().school;
+            var school = spell.getValue().spell.school;
             var current = spellCount.get(school);
             spellCount.put(school, current + 1);
         }
@@ -123,13 +132,13 @@ public class SpellRegistry {
     }
 
     public static Spell getSpell(Identifier spellId) {
-        return spells.get(spellId);
+        return spells.get(spellId).spell;
     }
 
     public static PacketByteBuf encoded = PacketByteBufs.create();
 
     public static class SyncFormat { public SyncFormat() { }
-        private Map<String, Spell> spells = new HashMap();
+        private Map<String, Entry> spells = new HashMap();
         private Map<String, SpellContainer> containers = new HashMap();
     }
 
@@ -180,30 +189,27 @@ public class SpellRegistry {
         spellsUpdated();
     }
 
-    private static final Map<Identifier, Integer> rawMap = new HashMap<>();
+    private record ReverseEntry(Identifier identifier, Spell spell) { }
+    private static final Map<Integer, ReverseEntry> reverseMap = new HashMap<>();
 
-    private static void updateRawIds() {
-        rawMap.clear();
-        var sortedIDs = spells.keySet()
-                .stream()
-                .sorted(Comparator.comparing(Identifier::toString))
-                .toList();
-        int rawId = 1;
-        for(var id: sortedIDs) {
-            rawMap.put(id, rawId);
-            rawId += 1;
+    private static void updateReverseMap() {
+        reverseMap.clear();
+        for (var entry: spells.entrySet()) {
+            var id = entry.getKey();
+            var spell = entry.getValue().spell;
+            var rawId = entry.getValue().rawId;
+            reverseMap.put(rawId, new ReverseEntry(id, spell));
         }
     }
 
     public static int rawId(Identifier identifier) {
-        return rawMap.get(identifier);
+        return spells.get(identifier).rawId;
     }
 
     public static Optional<Identifier> fromRawId(int rawId) {
-        for(var entry: rawMap.entrySet()) {
-            if(entry.getValue() == rawId) {
-                return Optional.of(entry.getKey());
-            }
+        var reverseEntry = reverseMap.get(rawId);
+        if (reverseEntry != null) {
+            return Optional.of(reverseEntry.identifier);
         }
         return Optional.empty();
     }

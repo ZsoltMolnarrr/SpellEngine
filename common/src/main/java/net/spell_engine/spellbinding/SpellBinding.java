@@ -8,6 +8,7 @@ import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SpellBinding {
@@ -25,6 +26,7 @@ public class SpellBinding {
             return List.of();
         }
         return SpellRegistry.all().entrySet().stream()
+                .map(entry -> Map.entry(entry.getKey(), entry.getValue().spell))
                 .filter(entry -> entry.getValue().school == container.school
                         && entry.getValue().learn != null
                         && entry.getValue().learn.tier > 0)

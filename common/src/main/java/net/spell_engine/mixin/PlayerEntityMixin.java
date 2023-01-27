@@ -24,17 +24,17 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     }
 
     private final SpellCooldownManager spellCooldownManager = new SpellCooldownManager(player());
-    private static final TrackedData<String> SPELL_ENGINE_SELECTED_SPELL = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.STRING);
+    private static final TrackedData<Integer> SPELL_ENGINE_SELECTED_SPELL = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
     @Inject(method = "initDataTracker", at = @At("TAIL"))
     private void initDataTracker_TAIL_SpellEngine_SyncEffects(CallbackInfo ci) {
-        player().getDataTracker().startTracking(SPELL_ENGINE_SELECTED_SPELL, "");
+        player().getDataTracker().startTracking(SPELL_ENGINE_SELECTED_SPELL, 0);
     }
 
 //    private Identifier currentSpell;
 
     public void setCurrentSpellId(Identifier spellId) {
-        player().getDataTracker().set(SPELL_ENGINE_SELECTED_SPELL, spellId != null ? spellId.toString() : "");
+        player().getDataTracker().set(SPELL_ENGINE_SELECTED_SPELL, spellId != null ? SpellRegistry.rawId(spellId) : 0);
     }
 
     @Override
@@ -42,8 +42,8 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         var player = player();
         if (player.isUsingItem()) {
             var value = player.getDataTracker().get(SPELL_ENGINE_SELECTED_SPELL);
-            if (!value.isEmpty()) {
-                return new Identifier(value);
+            if (value != 0) {
+                return SpellRegistry.fromRawId(value).orElse(null);
             }
         }
         return null;
