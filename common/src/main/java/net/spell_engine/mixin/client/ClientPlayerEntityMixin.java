@@ -49,6 +49,25 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return targets.stream().findFirst().orElse(null);
     }
 
+    // MARK: SpellCasterEntity overrides
+
+    private Identifier currentSpell;
+
+    @Override
+    public void setCurrentSpellId(Identifier spellId) {
+        currentSpell = spellId;
+    }
+
+    @Override
+    public Identifier getCurrentSpellId() {
+        if (player().isUsingItem()) {
+            return currentSpell;
+        }
+        return null;
+    }
+
+    // MARK: SpellCasterClient
+
     public void changeSelectedSpellIndex(int delta) {
         selectedSpellIndex += delta;
     }
@@ -114,7 +133,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         ClientPlayNetworking.send(
                 Packets.SpellRequest.ID,
                 new Packets.SpellRequest(hand, SpellCastAction.START, spellId, slot, remainingUseTicks, new int[]{}).write());
-        setCurrentSpell(spellId);
+        setCurrentSpellId(spellId);
     }
 
     @Override
@@ -204,11 +223,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
     }
 
-    public void stopSpellCasting() {
-        endCasting();
-        stopItemUsage();
-    }
-
     private void stopItemUsage() {
         var client = MinecraftClient.getInstance();
         client.interactionManager.stopUsingItem(client.player);
@@ -221,7 +235,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     @Override
     public void clearCasting() {
-        setCurrentSpell(null);
+        setCurrentSpellId(null);
     }
 
     private int findSlot(PlayerEntity player, ItemStack stack) {

@@ -1,5 +1,9 @@
 package net.spell_engine.mixin;
 
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.data.DataTracker;
+import net.minecraft.entity.data.TrackedData;
+import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
@@ -19,25 +23,37 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         return (PlayerEntity) ((Object) this);
     }
 
-    private Identifier currentSpell;
     private final SpellCooldownManager spellCooldownManager = new SpellCooldownManager(player());
+    private static final TrackedData<String> SPELL_ENGINE_SELECTED_SPELL = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.STRING);
 
-    public void setCurrentSpell(Identifier spellId) {
-        currentSpell = spellId;
+    @Inject(method = "initDataTracker", at = @At("TAIL"))
+    private void initDataTracker_TAIL_SpellEngine_SyncEffects(CallbackInfo ci) {
+        player().getDataTracker().startTracking(SPELL_ENGINE_SELECTED_SPELL, "");
+    }
+
+//    private Identifier currentSpell;
+
+    public void setCurrentSpellId(Identifier spellId) {
+        player().getDataTracker().set(SPELL_ENGINE_SELECTED_SPELL, spellId != null ? spellId.toString() : "");
     }
 
     @Override
     public Identifier getCurrentSpellId() {
-        if (player().isUsingItem()) {
-            return currentSpell;
+        var player = player();
+        if (player.isUsingItem()) {
+            var value = player.getDataTracker().get(SPELL_ENGINE_SELECTED_SPELL);
+            if (!value.isEmpty()) {
+                return new Identifier(value);
+            }
         }
         return null;
     }
 
     @Override
     public Spell getCurrentSpell() {
-        if (player().isUsingItem()) {
-            return SpellRegistry.getSpell(currentSpell);
+        var id = getCurrentSpellId();
+        if (id != null) {
+            return SpellRegistry.getSpell(id);
         }
         return null;
     }
@@ -70,8 +86,8 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         var player = player();
         if (player.world.isClient) {
             ((AnimatablePlayer)player()).updateSpellCastAnimationsOnTick();
-            if (!player.isUsingItem() && currentSpell != null) {
-            }
+//            if (!player.isUsingItem() && currentSpell != null) {
+//            }
         } else {
             // Server side
             if (!player.isUsingItem() || SpellContainerHelper.containerFromItemStack(player.getActiveItem()) == null) {

@@ -4,7 +4,6 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.animation.AnimatablePlayer;
-import net.spell_engine.client.render.CustomModelRegistry;
 import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.network.Packets;
@@ -27,20 +26,6 @@ public class ClientNetwork {
             client.execute(() -> {
                 for(var instruction: instructions) {
                     instruction.perform(client.world);
-                }
-            });
-        });
-
-        ClientPlayNetworking.registerGlobalReceiver(Packets.SpellCastSync.ID, (client, handler, buf, responseSender) -> {
-            var packet = Packets.SpellCastSync.read(buf);
-            client.execute(() -> {
-                var entity = client.world.getEntityById(packet.playerId());
-                if (entity instanceof SpellCasterEntity caster) {
-                    if (packet.spellId().equals(Packets.SpellCastSync.CLEAR_SYMBOL)) {
-                        caster.setCurrentSpell(null);
-                    } else {
-                        caster.setCurrentSpell(packet.spellId());
-                    }
                 }
             });
         });

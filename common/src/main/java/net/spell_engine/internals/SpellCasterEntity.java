@@ -5,7 +5,7 @@ import net.spell_engine.api.spell.Spell;
 import org.jetbrains.annotations.Nullable;
 
 public interface SpellCasterEntity {
-    void setCurrentSpell(Identifier spellId);
+    void setCurrentSpellId(Identifier spellId);
     Identifier getCurrentSpellId();
     Spell getCurrentSpell();
     float getCurrentCastProgress();

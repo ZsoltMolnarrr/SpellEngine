@@ -12,12 +12,8 @@ import java.util.Collection;
 
 public class SpellCastSyncHelper {
     public static void setCasting(PlayerEntity caster, Hand hand, Identifier spellId, Collection<ServerPlayerEntity> trackingPlayers) {
-        ((SpellCasterEntity)caster).setCurrentSpell(spellId);
+        ((SpellCasterEntity)caster).setCurrentSpellId(spellId);
         caster.setCurrentHand(hand);
-        var packet = new Packets.SpellCastSync(caster.getId(), spellId).write();
-        trackingPlayers.forEach(serverPlayer -> {
-            ServerPlayNetworking.send(serverPlayer, Packets.SpellCastSync.ID, packet);
-        });
     }
 
     public static void clearCasting(PlayerEntity caster) {
@@ -25,10 +21,6 @@ public class SpellCastSyncHelper {
     }
 
     public static void clearCasting(PlayerEntity caster, Collection<ServerPlayerEntity> trackingPlayers) {
-        ((SpellCasterEntity)caster).setCurrentSpell(null);
-        var packet = Packets.SpellCastSync.clear(caster.getId()).write();
-        trackingPlayers.forEach(serverPlayer -> {
-            ServerPlayNetworking.send(serverPlayer, Packets.SpellCastSync.ID, packet);
-        });
+        ((SpellCasterEntity)caster).setCurrentSpellId(null);
     }
 }

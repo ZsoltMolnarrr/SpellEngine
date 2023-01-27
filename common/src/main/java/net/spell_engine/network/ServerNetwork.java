@@ -42,9 +42,6 @@ public class ServerNetwork {
                         targets.add(entity);
                     }
                 }
-                if (packet.action() == SpellCastAction.START) {
-                    ((SpellCasterEntity) player).setCurrentSpell(packet.spellId());
-                }
                 SpellHelper.performSpell(world, player, packet.spellId(), targets, stack, packet.action(), packet.hand(), packet.remainingUseTicks());
             });
         });
