@@ -4,13 +4,13 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.spell_engine.internals.SpellAnimationType;
+import net.spell_engine.internals.SpellCast;
 import net.spell_engine.network.Packets;
 
 import java.util.Collection;
 
 public class AnimationHelper {
-    public static void sendAnimation(PlayerEntity animatedPlayer, Collection<ServerPlayerEntity> trackingPlayers, SpellAnimationType type, String name) {
+    public static void sendAnimation(PlayerEntity animatedPlayer, Collection<ServerPlayerEntity> trackingPlayers, SpellCast.Animation type, String name) {
         if (name == null || name.isEmpty()) {
             return;
         }

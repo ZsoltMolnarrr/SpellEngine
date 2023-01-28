@@ -25,9 +25,12 @@ public class HudConfig { public HudConfig() { }
     }
     public HudElement hotbar;
 
-    public HudConfig(CastBar castbar, HudElement hotbar) {
+    public HudElement error_message;
+
+    public HudConfig(CastBar castbar, HudElement hotbar, HudElement error_message) {
         this.castbar = castbar;
         this.hotbar = hotbar;
+        this.error_message = error_message;
     }
 
     public static class Part { public Part() { }
@@ -44,13 +47,17 @@ public class HudConfig { public HudConfig() { }
     }
 
     public HudConfig copy() {
-        return new HudConfig(castbar.copy(), hotbar.copy());
+        return new HudConfig(castbar.copy(), hotbar.copy(), error_message.copy());
     }
 
     // MARK: Default and Presets
 
     public static HudElement defaultHotBar() {
         return new HudElement(HudElement.Origin.BOTTOM, new Vec2f(-160, -11));
+    }
+
+    public static HudElement defaultErrorMessage() {
+        return new HudElement(HudElement.Origin.BOTTOM, new Vec2f(0, -80));
     }
 
     public static HudConfig createDefault() {
@@ -71,7 +78,8 @@ public class HudConfig { public HudConfig() { }
                         new Vec2f(-8, -25)),
                     172
                 ),
-                defaultHotBar());
+                defaultHotBar(),
+                defaultErrorMessage());
     }
 
     public static final List<HudConfig> presets = List.of(
@@ -131,7 +139,8 @@ public class HudConfig { public HudConfig() { }
                     icon,
                     barWidth
                 ),
-                defaultHotBar());
+                defaultHotBar(),
+                defaultErrorMessage());
     }
 
     private static Vec2f targetOffsetUp() {
@@ -151,6 +160,6 @@ public class HudConfig { public HudConfig() { }
     }
 
     public boolean isValid() {
-        return castbar != null && hotbar != null;
+        return castbar != null && hotbar != null && error_message != null;
     }
 }

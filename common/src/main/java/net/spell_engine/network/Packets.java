@@ -9,15 +9,14 @@ import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.ParticleBatch;
 import net.spell_engine.config.ServerConfig;
-import net.spell_engine.internals.SpellAnimationType;
-import net.spell_engine.internals.SpellCastAction;
+import net.spell_engine.internals.SpellCast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Packets {
 
-    public record SpellRequest(Hand hand, SpellCastAction action, Identifier spellId, int slot, int remainingUseTicks, int[] targets) {
+    public record SpellRequest(Hand hand, SpellCast.Action action, Identifier spellId, int slot, int remainingUseTicks, int[] targets) {
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "release_request");
 
         public PacketByteBuf write() {
@@ -32,7 +31,7 @@ public class Packets {
         }
         public static SpellRequest read(PacketByteBuf buffer) {
             var hand = buffer.readEnumConstant(Hand.class);
-            var action = buffer.readEnumConstant(SpellCastAction.class);
+            var action = buffer.readEnumConstant(SpellCast.Action.class);
             var spellId = new Identifier(buffer.readString());
             var slot = buffer.readInt();
             var remainingUseTicks = buffer.readInt();
@@ -57,7 +56,7 @@ public class Packets {
         }
     }
 
-    public record SpellAnimation(int playerId, SpellAnimationType type, String name) {
+    public record SpellAnimation(int playerId, SpellCast.Animation type, String name) {
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "spell_animation");
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();
@@ -69,7 +68,7 @@ public class Packets {
 
         public static SpellAnimation read(PacketByteBuf buffer) {
             int playerId = buffer.readInt();
-            var type = SpellAnimationType.values()[buffer.readInt()];
+            var type = SpellCast.Animation.values()[buffer.readInt()];
             var name = buffer.readString();
             return new SpellAnimation(playerId, type, name);
         }

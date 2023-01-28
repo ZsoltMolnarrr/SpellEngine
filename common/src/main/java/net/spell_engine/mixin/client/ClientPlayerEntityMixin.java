@@ -17,6 +17,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.client.SpellEngineClient;
+import net.spell_engine.client.gui.HudMessages;
 import net.spell_engine.client.input.InputHelper;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.*;
@@ -126,13 +127,20 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     @Override
+    public void castAttempt(SpellCast.AttemptResult attemptResult) {
+        if (attemptResult.isFail()) {
+            HudMessages.INSTANCE.error(attemptResult.toString());
+        }
+    }
+
+    @Override
     public void castStart(SpellContainer container, Hand hand, ItemStack itemStack, int remainingUseTicks) {
         var caster = player();
         var slot = findSlot(caster, itemStack);
         var spellId = SpellRegistry.spellId(container, selectedSpellIndex);
         ClientPlayNetworking.send(
                 Packets.SpellRequest.ID,
-                new Packets.SpellRequest(hand, SpellCastAction.START, spellId, slot, remainingUseTicks, new int[]{}).write());
+                new Packets.SpellRequest(hand, SpellCast.Action.START, spellId, slot, remainingUseTicks, new int[]{}).write());
         setCurrentSpellId(spellId);
     }
 
@@ -153,12 +161,12 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         updateTargets();
         var progress = SpellHelper.getCastProgress(caster, remainingUseTicks, currentSpell);
         if (SpellHelper.isChanneled(currentSpell)) {
-            var action = (progress >= 1) ? SpellCastAction.RELEASE : SpellCastAction.CHANNEL;
+            var action = (progress >= 1) ? SpellCast.Action.RELEASE : SpellCast.Action.CHANNEL;
             cast(currentSpell, action, Hand.MAIN_HAND, itemStack, remainingUseTicks);
         } else {
             if (SpellEngineClient.config.autoRelease
                     && SpellHelper.getCastProgress(caster, remainingUseTicks, currentSpell) >= 1) {
-                //cast(currentSpell, SpellCastAction.RELEASE, itemStack, remainingUseTicks);
+                //cast(currentSpell, SpellCast.Action.RELEASE, itemStack, remainingUseTicks);
                 stopItemUsage();
             }
         }
@@ -167,10 +175,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     @Override
     public void castRelease(ItemStack itemStack, int remainingUseTicks) {
         updateTargets();
-        cast(getCurrentSpell(), SpellCastAction.RELEASE, Hand.MAIN_HAND, itemStack, remainingUseTicks);
+        cast(getCurrentSpell(), SpellCast.Action.RELEASE, Hand.MAIN_HAND, itemStack, remainingUseTicks);
     }
 
-    private void cast(Spell spell, SpellCastAction action, Hand hand, ItemStack itemStack, int remainingUseTicks) {
+    private void cast(Spell spell, SpellCast.Action action, Hand hand, ItemStack itemStack, int remainingUseTicks) {
         if (spell == null) {
             return;
         }

@@ -1,5 +1,6 @@
 # 0.9.7
 
+- Add spell cast attempt failure reason to HUD
 - Changed custom model registration behaviour, no longer defaults to item subfolder (API breaking change!)
 - Improve HUD config data structure
 - Improve spell cast synchronization

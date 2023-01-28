@@ -1,8 +1,8 @@
 package net.spell_engine.client.animation;
 
-import net.spell_engine.internals.SpellAnimationType;
+import net.spell_engine.internals.SpellCast;
 
 public interface AnimatablePlayer {
-    void playSpellAnimation(SpellAnimationType type, String name);
+    void playSpellAnimation(SpellCast.Animation type, String name);
     void updateSpellCastAnimationsOnTick();
 }

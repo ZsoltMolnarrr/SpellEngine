@@ -6,6 +6,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.spell_engine.client.SpellEngineClient;
+import net.spell_engine.client.gui.HudMessages;
 import net.spell_engine.client.input.InputHelper;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.SpellCasterClient;
@@ -78,6 +79,7 @@ public abstract class MinecraftClientMixin {
         if (container == null || !container.isUsable() || container.spell_ids.isEmpty()) {
             InputHelper.isLocked = false;
         }
+        HudMessages.INSTANCE.tick();
     }
 
     @Inject(method = "hasOutline", at = @At(value = "HEAD"), cancellable = true)

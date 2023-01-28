@@ -10,7 +10,6 @@ import net.minecraft.util.UseAction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.*;
 import net.spell_power.api.MagicSchool;
@@ -112,11 +111,12 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
             }
             return;
         }
-        var attempt = SpellHelper.AttemptResult.NONE;
+        var attempt = SpellCast.AttemptResult.NONE;
         if (world.isClient) {
             if (user instanceof SpellCasterClient caster) {
                 var spellId = caster.getSelectedSpellId(container);
                 attempt = SpellHelper.tryCasting(user, itemStack, spellId);
+                caster.castAttempt(attempt);
                 if (attempt.isSuccess()) {
                     caster.castStart(container, hand, itemStack, SpellHelper.maximumUseTicks);
                 }

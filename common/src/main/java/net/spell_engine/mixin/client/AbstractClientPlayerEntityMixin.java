@@ -21,7 +21,7 @@ import net.spell_engine.api.spell.Sound;
 import net.spell_engine.client.animation.*;
 import net.spell_engine.client.sound.SpellCastingSound;
 import net.spell_engine.compatibility.BetterCombatCompatibility;
-import net.spell_engine.internals.SpellAnimationType;
+import net.spell_engine.internals.SpellCast;
 import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.mixin.LivingEntityAccessor;
 import net.spell_engine.particle.ParticleHelper;
@@ -78,7 +78,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     private String lastCastAnimationName;
     private void updateCastingAnimation(String animationName) {
         if (!StringUtil.matching(animationName, lastCastAnimationName)) {
-            playSpellAnimation(SpellAnimationType.CASTING, animationName);
+            playSpellAnimation(SpellCast.Animation.CASTING, animationName);
         }
         lastCastAnimationName = animationName;
     }
@@ -162,7 +162,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         }
     }
 
-    public void playSpellAnimation(SpellAnimationType type, String name) {
+    public void playSpellAnimation(SpellCast.Animation type, String name) {
         try {
             var stack = spellAnimationStackFor(type);
             if (name != null && !name.isEmpty()) {
@@ -190,7 +190,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         }
     }
 
-    private AnimationSubStack spellAnimationStackFor(SpellAnimationType type) {
+    private AnimationSubStack spellAnimationStackFor(SpellCast.Animation type) {
         switch (type) {
             case CASTING -> {
                 return castingAnimation;

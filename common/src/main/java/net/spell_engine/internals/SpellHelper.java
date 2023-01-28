@@ -39,29 +39,20 @@ import java.util.function.Supplier;
 public class SpellHelper {
     public static int maximumUseTicks = 72000;
 
-    public enum AttemptResult {
-        SUCCESS, MISSING_ITEM, ON_COOLDOWN, NONE;
-        public boolean isSuccess() {
-            return this == SUCCESS;
-        }
-        public boolean isFail() {
-            return this != SUCCESS && this != NONE;
-        }
-    }
-    public static AttemptResult tryCasting(PlayerEntity player, ItemStack itemStack, Identifier spellId) {
+    public static SpellCast.AttemptResult tryCasting(PlayerEntity player, ItemStack itemStack, Identifier spellId) {
         var caster = (SpellCasterEntity)player;
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
-            return AttemptResult.NONE;
+            return SpellCast.AttemptResult.NONE;
         }
         if (caster.getCooldownManager().isCoolingDown(spellId)) {
-            return AttemptResult.ON_COOLDOWN;
+            return SpellCast.AttemptResult.ON_COOLDOWN;
         }
         var ammo = SpellHelper.ammoForSpell(player, spell, itemStack);
         if (!ammo.satisfied()) {
-            return AttemptResult.MISSING_ITEM;
+            return SpellCast.AttemptResult.MISSING_ITEM;
         }
-        return AttemptResult.SUCCESS;
+        return SpellCast.AttemptResult.SUCCESS;
     }
 
     public record AmmoResult(boolean satisfied, ItemStack ammo) { }
@@ -147,7 +138,7 @@ public class SpellHelper {
         return !caster.getCooldownManager().isCoolingDown(spellId);
     }
 
-    public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCastAction action, Hand hand, int remainingUseTicks) {
+    public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCast.Action action, Hand hand, int remainingUseTicks) {
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
             return;
@@ -185,7 +176,7 @@ public class SpellHelper {
 
         if (channelMultiplier > 0 && ammoResult.satisfied()) {
             var targeting = spell.release.target;
-            boolean released = action == SpellCastAction.RELEASE;
+            boolean released = action == SpellCast.Action.RELEASE;
             if (shouldPerformImpact) {
                 var context = new ImpactContext(channelMultiplier,
                         1F,
@@ -234,7 +225,7 @@ public class SpellHelper {
             if (released) {
                 ParticleHelper.sendBatches(player, spell.release.particles);
                 SoundHelper.playSound(world, player, spell.release.sound);
-                AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellAnimationType.RELEASE, spell.release.animation);
+                AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation);
                 // Consume things
                 // Cooldown
                 var duration = cooldownToSet(player, spell, progress);

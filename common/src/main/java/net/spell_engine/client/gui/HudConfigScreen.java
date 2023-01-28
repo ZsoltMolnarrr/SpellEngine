@@ -220,7 +220,7 @@ public class HudConfigScreen extends Screen {
 
     private Dragged dragged;
     private enum Dragged {
-        CAST_BAR, HOT_BAR
+        CAST_BAR, HOT_BAR, ERROR_MESSAGE
     }
 
     @Override
@@ -231,6 +231,10 @@ public class HudConfigScreen extends Screen {
         }
         if (HudRenderHelper.SpellHotBarWidget.lastRendered != null && HudRenderHelper.SpellHotBarWidget.lastRendered.contains(mouseX, mouseY)) {
             dragged = Dragged.HOT_BAR;
+            return true;
+        }
+        if (HudRenderHelper.ErrorMessageWidget.lastRendered != null && HudRenderHelper.ErrorMessageWidget.lastRendered.contains(mouseX, mouseY)) {
+            dragged = Dragged.ERROR_MESSAGE;
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -258,6 +262,11 @@ public class HudConfigScreen extends Screen {
                     config.hotbar.offset = new Vec2f(
                             (float) (config.hotbar.offset.x + deltaX),
                             (float) (config.hotbar.offset.y + deltaY));
+                }
+                case ERROR_MESSAGE -> {
+                    config.error_message.offset = new Vec2f(
+                            (float) (config.error_message.offset.x + deltaX),
+                            (float) (config.error_message.offset.y + deltaY));
                 }
             }
         }

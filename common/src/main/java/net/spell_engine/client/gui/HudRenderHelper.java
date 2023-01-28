@@ -7,6 +7,8 @@ import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
@@ -44,6 +46,7 @@ public class HudRenderHelper {
         var targetViewModel = TargetWidget.ViewModel.mock();
         boolean renderHotbar = true;
         var hotbarViewModel = SpellHotBarWidget.ViewModel.mock();
+        var errorViewModel = ErrorMessageWidget.ViewModel.mock();
         SpellHotBarWidget.ViewModel hotbarAccessories = null;
         CastBarWidget.ViewModel castBarViewModel = null;
         if (config) {
@@ -94,6 +97,16 @@ public class HudRenderHelper {
                         true,
                         SpellHelper.isChanneled(currentSpell));
             }
+
+            if (!config) {
+                var hudMessages = HudMessages.INSTANCE;
+                var error = hudMessages.currentError();
+                if (error != null && error.durationLeft > 0) {
+                    errorViewModel = ErrorMessageWidget.ViewModel.from(error.message, error.durationLeft, error.fadeOut, tickDelta);
+                } else {
+                    errorViewModel = null;
+                }
+            }
         }
 
         var screenWidth = client.getWindow().getScaledWidth();
@@ -117,6 +130,10 @@ public class HudRenderHelper {
             if(clientConfig.collapsedIndicators && hotbarAccessories != null) {
                 SpellHotBarWidget.renderAccessories(matrixStack, screenWidth, screenHeight, hotbarAccessories);
             }
+        }
+
+        if (errorViewModel != null) {
+            ErrorMessageWidget.render(matrixStack, hudConfig, screenWidth, screenHeight, errorViewModel);
         }
     }
 
@@ -395,6 +412,45 @@ public class HudRenderHelper {
             buffer.vertex(x + width, y + height, 0.0).color(red, green, blue, alpha).next();
             buffer.vertex(x + width, y + 0, 0.0).color(red, green, blue, alpha).next();
             BufferRenderer.drawWithShader(buffer.end());
+        }
+    }
+
+    public static class ErrorMessageWidget {
+        public static Rect lastRendered;
+
+        public record ViewModel(Text message, float opacity) {
+            public static ViewModel mock() {
+                return new ViewModel(Text.literal("Error Message!").formatted(Formatting.RED), 1F);
+            }
+
+            public static ViewModel from(Text message, int durationLeft, int fadeOut, float tickDelta) {
+                float tick = ((float)durationLeft) - tickDelta;
+                float opacity = tick > fadeOut ? 1F : (tick / fadeOut);
+                return new ViewModel(message, opacity);
+            }
+        }
+
+        public static void render(MatrixStack matrixStack, HudConfig hudConfig, int screenWidth, int screenHeight, ViewModel viewModel) {
+            int alpha = (int) (viewModel.opacity * 255);
+            if (alpha < 10) { return; }
+            // System.out.println("Rendering opacity: " + viewModel.opacity + " alpha: " + alpha);
+            MinecraftClient client = MinecraftClient.getInstance();
+            var textRenderer = client.inGameHud.getTextRenderer();
+            int textWidth = textRenderer.getWidth(viewModel.message);
+            int textHeight = textRenderer.fontHeight;
+            var config = hudConfig.error_message;
+            var origin = config.origin
+                    .getPoint(screenWidth, screenHeight)
+                    .add(config.offset);
+
+            int x = (int) (origin.x - (textWidth / 2F));
+            int y = (int) origin.y;
+            lastRendered = new Rect(new Vec2f(x ,y), new Vec2f(x + textWidth,y + textHeight));
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            InGameHud.fill(matrixStack, x - 2, y - 2, x + textWidth + 2, y + textRenderer.fontHeight + 2, client.options.getTextBackgroundColor(0));
+            textRenderer.drawWithShadow(matrixStack, viewModel.message(), x, y, 0xFFFFFF + (alpha << 24)); // color is ARGB
+            RenderSystem.disableBlend();
         }
     }
 }

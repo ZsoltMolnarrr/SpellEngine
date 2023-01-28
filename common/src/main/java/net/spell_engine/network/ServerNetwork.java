@@ -8,7 +8,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.internals.SpellCastAction;
+import net.spell_engine.internals.SpellCast.Action;
 import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;

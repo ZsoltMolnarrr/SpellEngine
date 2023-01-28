@@ -1,6 +1,5 @@
 package net.spell_engine.mixin;
 
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -30,8 +29,6 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     private void initDataTracker_TAIL_SpellEngine_SyncEffects(CallbackInfo ci) {
         player().getDataTracker().startTracking(SPELL_ENGINE_SELECTED_SPELL, 0);
     }
-
-//    private Identifier currentSpell;
 
     public void setCurrentSpellId(Identifier spellId) {
         player().getDataTracker().set(SPELL_ENGINE_SELECTED_SPELL, spellId != null ? SpellRegistry.rawId(spellId) : 0);
