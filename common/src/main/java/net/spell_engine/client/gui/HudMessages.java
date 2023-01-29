@@ -1,5 +1,6 @@
 package net.spell_engine.client.gui;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -14,7 +15,14 @@ public class HudMessages {
     private ErrorMessageState currentError;
 
     private static final String castAttemptPrefix = "hud.cast_attempt_error.";
+    private boolean attemptDisplayed = false;
     public void castAttemptError(SpellCast.Attempt attempt) {
+        if (attemptDisplayed) {
+            return;
+        }
+        if (attempt.isSuccess() || attempt.isFail()) {
+            attemptDisplayed = true;
+        }
         if (!attempt.isFail() || !SpellEngineClient.config.showSpellCastErrors) { return; }
         var translationKey = castAttemptPrefix + attempt.result().toString().toLowerCase();
         MutableText message = null;
@@ -55,6 +63,10 @@ public class HudMessages {
             } else {
                 currentError.durationLeft -= 1;
             }
+        }
+        var client = MinecraftClient.getInstance();
+        if (!client.options.useKey.isPressed()) {
+            attemptDisplayed = false;
         }
     }
 
