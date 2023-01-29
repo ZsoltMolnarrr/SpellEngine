@@ -9,6 +9,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_power.api.MagicSchool;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -29,6 +30,14 @@ public class SpellContainerHelper {
             }
         }
         return null;
+    }
+
+    @Nullable
+    public static Identifier spellId(SpellContainer container, int selectedIndex) {
+        if (container == null || !container.isUsable()) {
+            return null;
+        }
+        return new Identifier(container.spellId(selectedIndex));
     }
 
     public static SpellContainer addSpell(Identifier spellId, SpellContainer container) {

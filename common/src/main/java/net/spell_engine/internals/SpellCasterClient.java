@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.SpellContainer;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ public interface SpellCasterClient extends SpellCasterEntity {
     void setSelectedSpellIndex(int index);
     void changeSelectedSpellIndex(int delta);
     int getSelectedSpellIndex(SpellContainer container);
-    Identifier getSelectedSpellId(SpellContainer container);
+    @Nullable Identifier getSelectedSpellId(SpellContainer container);
     SpellContainer getCurrentContainer();
     void castAttempt(SpellCast.Attempt result);
     void castStart(SpellContainer spell, Hand hand, ItemStack itemStack, int remainingUseTicks);

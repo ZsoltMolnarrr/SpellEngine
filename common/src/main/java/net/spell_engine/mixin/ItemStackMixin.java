@@ -105,7 +105,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
         }
         var itemStack = itemStack();
         var container = spellContainer();
-        if (container == null) {
+        if (container == null || !container.isUsable()) {
             if (user instanceof SpellCasterEntity caster && caster.getCurrentSpellId() != null) {
                 caster.clearCasting();
             }

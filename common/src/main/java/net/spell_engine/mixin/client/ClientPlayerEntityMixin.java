@@ -23,6 +23,7 @@ import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.*;
 import net.spell_engine.network.Packets;
 import net.spell_engine.utils.TargetHelper;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -103,12 +104,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return null;
     }
 
+    @Nullable
     private Identifier spellIdFromItemStack(ItemStack itemStack) {
         var container = containerFromItemStack(itemStack);
-        if (container == null || !container.isUsable()) {
-            return null;
-        }
-        return new Identifier(container.spellId(selectedSpellIndex));
+        return SpellContainerHelper.spellId(container, selectedSpellIndex);
     }
 
     public List<Entity> getCurrentTargets() {
@@ -122,8 +121,9 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return firstTarget();
     }
 
-    public Identifier getSelectedSpellId(SpellContainer container){
-        return SpellRegistry.spellId(container, selectedSpellIndex);
+    @Nullable
+    public Identifier getSelectedSpellId(SpellContainer container) {
+        return SpellContainerHelper.spellId(container, selectedSpellIndex);
     }
 
     @Override
@@ -135,7 +135,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     public void castStart(SpellContainer container, Hand hand, ItemStack itemStack, int remainingUseTicks) {
         var caster = player();
         var slot = findSlot(caster, itemStack);
-        var spellId = SpellRegistry.spellId(container, selectedSpellIndex);
+        var spellId = SpellContainerHelper.spellId(container, selectedSpellIndex);
         ClientPlayNetworking.send(
                 Packets.SpellRequest.ID,
                 new Packets.SpellRequest(hand, SpellCast.Action.START, spellId, slot, remainingUseTicks, new int[]{}).write());

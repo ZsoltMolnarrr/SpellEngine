@@ -23,8 +23,8 @@ public class SpellRegistry {
             this.rawId = rawId;
         }
     }
-    private static final Map<Identifier, Entry> spells = new HashMap();
-    private static final Map<Identifier, SpellContainer> containers = new HashMap();
+    private static final Map<Identifier, Entry> spells = new HashMap<>();
+    private static final Map<Identifier, SpellContainer> containers = new HashMap<>();
     private static final Map<MagicSchool, Integer> spellCount = new HashMap<>();
 
     public static Map<Identifier, Entry> all() {
@@ -41,7 +41,7 @@ public class SpellRegistry {
 
     public static void loadSpells(ResourceManager resourceManager) {
         var gson = new Gson();
-        Map<Identifier, Entry> parsed = new HashMap();
+        Map<Identifier, Entry> parsed = new HashMap<>();
         // Reading all attribute files
         int rawId = 1;
         var directory = "spells";
@@ -70,7 +70,7 @@ public class SpellRegistry {
 
     public static void loadContainers(ResourceManager resourceManager) {
         var gson = new Gson();
-        Map<Identifier, SpellContainer> parsed = new HashMap();
+        Map<Identifier, SpellContainer> parsed = new HashMap<>();
         // Reading all attribute files
         var directory = "item_spell_assignment";
         for (var entry : resourceManager.findResources(directory, fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
@@ -111,19 +111,6 @@ public class SpellRegistry {
         return spellCount.get(school);
     }
 
-    public static Spell spell(SpellContainer container, int selectedIndex) {
-        var string = container.spellId(selectedIndex);
-        if (string == null) {
-            return null;
-        }
-        var spellId = new Identifier(string);
-        return getSpell(spellId);
-    }
-
-    public static Identifier spellId(SpellContainer container, int selectedIndex) {
-        return new Identifier(container.spellId(selectedIndex));
-    }
-
     public static SpellContainer containerForItem(Identifier itemId) {
         if (itemId == null) {
             return null;
@@ -132,14 +119,18 @@ public class SpellRegistry {
     }
 
     public static Spell getSpell(Identifier spellId) {
-        return spells.get(spellId).spell;
+        var entry = spells.get(spellId);
+        if (entry != null) {
+            return entry.spell;
+        }
+        return null;
     }
 
     public static PacketByteBuf encoded = PacketByteBufs.create();
 
     public static class SyncFormat { public SyncFormat() { }
-        private Map<String, Entry> spells = new HashMap();
-        private Map<String, SpellContainer> containers = new HashMap();
+        public Map<String, Entry> spells = new HashMap<>();
+        public Map<String, SpellContainer> containers = new HashMap<>();
     }
 
     private static void encodeContent() {
