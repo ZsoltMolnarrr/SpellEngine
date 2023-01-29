@@ -1,7 +1,10 @@
 package net.spell_engine.client.gui;
 
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.spell_engine.client.SpellEngineClient;
+import net.spell_engine.internals.SpellCast;
 
 public class HudMessages {
     public static final HudMessages INSTANCE = new HudMessages();
@@ -10,12 +13,39 @@ public class HudMessages {
 
     private ErrorMessageState currentError;
 
+    private static final String castAttemptPrefix = "hud.cast_attempt_error.";
+    public void castAttemptError(SpellCast.Attempt attempt) {
+        if (!attempt.isFail() || !SpellEngineClient.config.showSpellCastErrors) { return; }
+        var translationKey = castAttemptPrefix + attempt.result().toString().toLowerCase();
+        MutableText message = null;
+        switch (attempt.result()) {
+            case MISSING_ITEM -> {
+                var itemName = attempt.missingItem().item().getName().getString();
+                message = Text.translatable(translationKey, itemName);
+            }
+            case ON_COOLDOWN -> {
+                message = Text.translatable(translationKey);
+            }
+        }
+        if (message != null) {
+            error(message.formatted(Formatting.RED));
+        }
+    }
+
     public void error(String message) {
         error(message, DEFAULT_ERROR_MESSAGE_DURATION, DEFAULT_ERROR_MESSAGE_FADEOUT);
     }
 
     public void error(String message, int duration, int fadeOut) {
         currentError = new ErrorMessageState(message, duration, fadeOut);
+    }
+
+    public void error(Text text) {
+        error(text, DEFAULT_ERROR_MESSAGE_DURATION, DEFAULT_ERROR_MESSAGE_FADEOUT);
+    }
+
+    public void error(Text text, int duration, int fadeOut) {
+        currentError = new ErrorMessageState(text, duration, fadeOut);
     }
 
     public void tick() {
@@ -34,6 +64,13 @@ public class HudMessages {
             this.durationLeft = durationLeft;
             this.fadeOut = fadeOut;
         }
+
+        public ErrorMessageState(Text message, int durationLeft, int fadeOut) {
+            this.message = message;
+            this.durationLeft = durationLeft;
+            this.fadeOut = fadeOut;
+        }
+
         public Text message;
         public int durationLeft;
         public int fadeOut;

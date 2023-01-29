@@ -40,6 +40,8 @@
   "gui.spell_engine.bar_width" : "Bar width",
 
   "hud.leave_spell_hotbar": "Press %1$s to leave",
+  "hud.cast_attempt_error.missing_item": "Missing %1$s",
+  "hud.cast_attempt_error.on_cooldown": "On Cooldown",
 
   "keybindings.spell_engine.tooltip_details" : "Tooltip spell details",
   "keybindings.spell_engine.hotbar_modifier" : "Control spell hotbar",
@@ -76,6 +78,8 @@
   "text.autoconfig.spell_engine.option.client.alwaysShowFullTooltip.@Tooltip" : "Show all spell details on item tooltips, without having to press a button",
   "text.autoconfig.spell_engine.option.client.showSpellBindingTooltip" : "Spell Binding hint",
   "text.autoconfig.spell_engine.option.client.showSpellBindingTooltip.@Tooltip" : "Show Spell Binding Table hint to tooltip of empty staves",
+  "text.autoconfig.spell_engine.option.client.showSpellCastErrors" : "Spell cast error messages",
+  "text.autoconfig.spell_engine.option.client.showSpellCastErrors.@Tooltip" : "Show error message on HUD about the failure of spell cast attempts",
 
   "gui.spell_engine.spell_binding" : "Spell Binding",
   "gui.spell_engine.spell_binding.title" : "Bind Spells",

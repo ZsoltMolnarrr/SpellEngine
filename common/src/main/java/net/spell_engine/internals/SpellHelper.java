@@ -39,20 +39,20 @@ import java.util.function.Supplier;
 public class SpellHelper {
     public static int maximumUseTicks = 72000;
 
-    public static SpellCast.AttemptResult tryCasting(PlayerEntity player, ItemStack itemStack, Identifier spellId) {
+    public static SpellCast.Attempt attemptCasting(PlayerEntity player, ItemStack itemStack, Identifier spellId) {
         var caster = (SpellCasterEntity)player;
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
-            return SpellCast.AttemptResult.NONE;
+            return SpellCast.Attempt.none();
         }
         if (caster.getCooldownManager().isCoolingDown(spellId)) {
-            return SpellCast.AttemptResult.ON_COOLDOWN;
+            return SpellCast.Attempt.failOnCooldown(new SpellCast.Attempt.OnCooldownInfo());
         }
-        var ammo = SpellHelper.ammoForSpell(player, spell, itemStack);
-        if (!ammo.satisfied()) {
-            return SpellCast.AttemptResult.MISSING_ITEM;
+        var ammoResult = SpellHelper.ammoForSpell(player, spell, itemStack);
+        if (!ammoResult.satisfied()) {
+            return SpellCast.Attempt.failMissingItem(new SpellCast.Attempt.MissingItemInfo(ammoResult.ammo.getItem()));
         }
-        return SpellCast.AttemptResult.SUCCESS;
+        return SpellCast.Attempt.success();
     }
 
     public record AmmoResult(boolean satisfied, ItemStack ammo) { }

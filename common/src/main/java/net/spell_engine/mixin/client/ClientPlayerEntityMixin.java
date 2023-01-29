@@ -127,10 +127,8 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     @Override
-    public void castAttempt(SpellCast.AttemptResult attemptResult) {
-        if (attemptResult.isFail()) {
-            HudMessages.INSTANCE.error(attemptResult.toString());
-        }
+    public void castAttempt(SpellCast.Attempt result) {
+        HudMessages.INSTANCE.castAttemptError(result);
     }
 
     @Override

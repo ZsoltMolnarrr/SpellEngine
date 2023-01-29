@@ -39,4 +39,6 @@ public class ClientConfig implements ConfigData {
     public boolean alwaysShowFullTooltip = false;
     @ConfigEntry.Gui.Tooltip
     public boolean showSpellBindingTooltip = true;
+    @ConfigEntry.Gui.Tooltip
+    public boolean showSpellCastErrors = true;
 }

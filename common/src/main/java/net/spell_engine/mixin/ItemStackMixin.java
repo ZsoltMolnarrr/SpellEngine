@@ -111,11 +111,11 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
             }
             return;
         }
-        var attempt = SpellCast.AttemptResult.NONE;
+        var attempt = SpellCast.Attempt.none();
         if (world.isClient) {
             if (user instanceof SpellCasterClient caster) {
                 var spellId = caster.getSelectedSpellId(container);
-                attempt = SpellHelper.tryCasting(user, itemStack, spellId);
+                attempt = SpellHelper.attemptCasting(user, itemStack, spellId);
                 caster.castAttempt(attempt);
                 if (attempt.isSuccess()) {
                     caster.castStart(container, hand, itemStack, SpellHelper.maximumUseTicks);
@@ -124,7 +124,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
         } else {
             var spellId = ((SpellCasterEntity)user).getCurrentSpellId();
             if (spellId != null) {
-                attempt = SpellHelper.tryCasting(user, itemStack, spellId);
+                attempt = SpellHelper.attemptCasting(user, itemStack, spellId);
             }
         }
 
