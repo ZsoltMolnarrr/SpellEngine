@@ -1,3 +1,7 @@
+# 0.9.9
+
+- Add Shoulder Surfing adaptive crosshair support 
+
 # 0.9.8
 
 - Update dependencies
