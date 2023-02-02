@@ -1,3 +1,8 @@
+# 0.9.8
+
+- Update dependencies
+- Make Better Combat mandatory due to beam render glitch
+
 # 0.9.7
 
 - Add spell cast attempt failure reason to HUD
