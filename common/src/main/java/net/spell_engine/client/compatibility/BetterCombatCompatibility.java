@@ -1,4 +1,4 @@
-package net.spell_engine.compatibility;
+package net.spell_engine.client.compatibility;
 
 import dev.kosmx.playerAnim.api.layered.ModifierLayer;
 import net.bettercombat.api.animation.FirstPersonAnimation;

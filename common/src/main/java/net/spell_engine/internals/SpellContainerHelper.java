@@ -86,11 +86,16 @@ public class SpellContainerHelper {
         }
     };
 
-    // MARK: NBT Codec
-
     public static boolean hasValidContainer(ItemStack itemStack) {
         return containerFromItemStack(itemStack) != null;
     }
+
+    public static boolean hasUsableContainer(ItemStack itemStack) {
+        var container = containerFromItemStack(itemStack);
+        return container != null && container.isUsable();
+    }
+
+    // MARK: NBT Codec
 
     public static final String NBT_KEY_CONTAINER = "spell_container";
     private static final String NBT_KEY_SCHOOL = "school";

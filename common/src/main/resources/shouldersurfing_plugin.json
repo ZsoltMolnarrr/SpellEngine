@@ -1,0 +1,3 @@
+{
+  "entrypoint": "net.spell_engine.client.compatibility.ShoulderSurfingCompatibility"
+}

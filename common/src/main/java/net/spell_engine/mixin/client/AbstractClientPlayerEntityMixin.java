@@ -20,7 +20,7 @@ import net.spell_engine.Platform;
 import net.spell_engine.api.spell.Sound;
 import net.spell_engine.client.animation.*;
 import net.spell_engine.client.sound.SpellCastingSound;
-import net.spell_engine.compatibility.BetterCombatCompatibility;
+import net.spell_engine.client.compatibility.BetterCombatCompatibility;
 import net.spell_engine.internals.SpellCast;
 import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.mixin.LivingEntityAccessor;

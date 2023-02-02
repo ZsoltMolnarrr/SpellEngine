@@ -34,6 +34,12 @@ repositories {
             includeGroup 'maven.modrinth'
         }
     }
+    maven {
+        url "https://www.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 dependencies {
@@ -56,6 +62,7 @@ dependencies {
     // Compatibility
     modCompileOnly("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }
     modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-fabric") { transitive false }
+    modImplementation("curse.maven:shoulder-surfing-reloaded-243190:${shoulder_surfing_file_id}")
 }
 
 processResources {
