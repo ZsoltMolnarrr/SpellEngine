@@ -29,14 +29,12 @@ dependencies {
     implementation("com.github.LlamaLad7:MixinExtras:${project.mixin_extras_version}")
     annotationProcessor("com.github.LlamaLad7:MixinExtras:${project.mixin_extras_version}")
 
+    modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-fabric")
+//    modImplementation(files("../fabric/run/mods/dev/spell_power-fabric-${project.spell_power_version}.jar"))
+
     // Compatibility
     modCompileOnly("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }
-
-
-    modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-fabric")
     modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-fabric") { transitive false }
-//    modImplementation(files("../fabric/run/mods/spell_power-fabric-${spell_power_version}.jar"))
-//    modCompileOnly(files("../fabric/run/mods/bettercombat-fabric-${project.better_combat_version}.jar"))
 }
 
 architectury {
