@@ -31,7 +31,7 @@
     "client.render.LivingEntityRendererMixin",
     "client.render.TexturedRenderLayersMixin"
   ],
-  "plugin": "net.spell_engine.mixin.SpellEngineMixinExtras",
+  "plugin": "net.spell_engine.mixin.SpellEngineMixinPlugin",
   "injectors": {
     "defaultRequire": 1
   }

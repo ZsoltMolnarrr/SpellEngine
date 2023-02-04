@@ -1,13 +1,14 @@
 package net.spell_engine.mixin;
 
 import com.llamalad7.mixinextras.MixinExtrasBootstrap;
+import net.spell_engine.Platform;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 
 import java.util.List;
 import java.util.Set;
 
-public class SpellEngineMixinExtras implements IMixinConfigPlugin {
+public class SpellEngineMixinPlugin implements IMixinConfigPlugin {
     @Override
     public void onLoad(String mixinPackage) {
         MixinExtrasBootstrap.init();
