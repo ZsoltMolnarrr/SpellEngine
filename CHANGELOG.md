@@ -1,3 +1,7 @@
+# 0.9.10
+
+- Fix sound stuck casting sound when swapping hands 
+
 # 0.9.9
 
 - Add Shoulder Surfing adaptive crosshair support 
