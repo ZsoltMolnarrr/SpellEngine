@@ -11,6 +11,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.api.spell.SpellPool;
 import net.spell_power.api.MagicSchool;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStreamReader;
 import java.util.*;
@@ -88,7 +89,7 @@ public class SpellRegistry {
                         .toString().replace(directory + "/", "");
                 id = id.substring(0, id.lastIndexOf('.'));
                 parsed.put(new Identifier(id), pool);
-                // System.out.println("loaded assignment - id: " + id +  " assignment: " + container.spell);
+                System.out.println("loaded pool - " + id +  " ids: " + pool.spell_ids);
             } catch (Exception e) {
                 System.err.println("Failed to parse spell_pool: " + identifier);
                 e.printStackTrace();
@@ -159,6 +160,11 @@ public class SpellRegistry {
             return entry.spell;
         }
         return null;
+    }
+
+    @Nullable
+    public static SpellPool spellPool(Identifier id) {
+        return pools.get(id);
     }
 
     public static PacketByteBuf encoded = PacketByteBufs.create();

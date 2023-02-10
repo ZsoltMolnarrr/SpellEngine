@@ -15,6 +15,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.SpellCasterItemStack;
+import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
 
@@ -44,7 +45,7 @@ public class SpellTooltip {
                     var limit = I18n.translate("spell.tooltip.host.limit")
                             .replace("{current}", "" + container.spell_ids.size())
                             .replace("{max}", "" + container.max_spell_count);
-                    lines.add(Text.translatable("spell.tooltip.host." + container.school.spellName())
+                    lines.add(Text.translatable("spell.tooltip.host." + SpellContainerHelper.getPool(container).firstSchool().spellName())
                             .append(Text.literal(" " + limit))
                             .formatted(Formatting.GRAY));
                 }

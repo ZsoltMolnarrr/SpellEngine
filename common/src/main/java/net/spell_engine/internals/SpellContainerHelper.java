@@ -8,6 +8,7 @@ import net.minecraft.nbt.NbtString;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
+import net.spell_engine.api.spell.SpellPool;
 import net.spell_power.api.MagicSchool;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,6 +19,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SpellContainerHelper {
+
+    @Nullable
+    public static SpellPool getPool(SpellContainer container) {
+        if (container != null && container.pool != null) {
+            var id = new Identifier(container.pool);
+            return SpellRegistry.spellPool(id);
+        }
+        return null;
+    }
+
     public static SpellContainer containerFromItemStack(ItemStack itemStack) {
         if (itemStack.isEmpty()) {
             return null;
@@ -99,11 +110,12 @@ public class SpellContainerHelper {
 
     public static final String NBT_KEY_CONTAINER = "spell_container";
     private static final String NBT_KEY_SCHOOL = "school";
+    private static final String NBT_KEY_POOL = "pool";
     private static final String NBT_KEY_MAX_SPELL_COUNT = "max_spell_count";
     private static final String NBT_KEY_SPELL_IDS = "spell_ids";
     public static NbtCompound toNBT(SpellContainer container) {
         var object = new NbtCompound();
-        object.putString(NBT_KEY_SCHOOL, container.school.toString());
+        object.putString(NBT_KEY_POOL, container.pool);
         object.putInt(NBT_KEY_MAX_SPELL_COUNT, container.max_spell_count);
         var spellList = new NbtList();
         for (var spellId: container.spell_ids) {
@@ -117,21 +129,20 @@ public class SpellContainerHelper {
     public static SpellContainer fromNBT(NbtCompound nbt) {
         var container = nbt.getCompound(NBT_KEY_CONTAINER);
         if (container == null
-                || !container.contains(NBT_KEY_SCHOOL)
+                || !container.contains(NBT_KEY_POOL)
                 || !container.contains(NBT_KEY_MAX_SPELL_COUNT)
                 || !container.contains(NBT_KEY_SPELL_IDS)) {
             return null;
         }
         try {
-            var schoolString = container.getString(NBT_KEY_SCHOOL);
-            var school = MagicSchool.valueOf(schoolString);
+            var pool = container.getString(NBT_KEY_POOL);
             var max_spell_count = container.getInt(NBT_KEY_MAX_SPELL_COUNT);
             var spellIds = new ArrayList<String>();
             var spellList = container.getList(NBT_KEY_SPELL_IDS, NbtElement.STRING_TYPE);
             for (int i = 0; i < spellList.size(); i++) {
                 spellIds.add(spellList.getString(i));
             }
-            return new SpellContainer(school, max_spell_count, spellIds);
+            return new SpellContainer(pool, max_spell_count, spellIds);
         } catch (Exception e) {
             System.err.println("Failed to decode spell container from NBT: " + e.getMessage());
         }

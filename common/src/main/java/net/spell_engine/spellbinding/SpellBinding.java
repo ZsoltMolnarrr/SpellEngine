@@ -4,9 +4,11 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,13 +24,16 @@ public class SpellBinding {
 
     public static List<Offer> offersFor(ItemStack itemStack, int libraryPower) {
         var container = SpellContainerHelper.containerFromItemStack(itemStack);
-        if (container == null) {
+        var pool = SpellContainerHelper.getPool(container);
+        if (container == null || pool == null || pool.spellIds().isEmpty()) {
             return List.of();
         }
-        return SpellRegistry.all().entrySet().stream()
-                .map(entry -> Map.entry(entry.getKey(), entry.getValue().spell))
-                .filter(entry -> entry.getValue().school == container.school
-                        && entry.getValue().learn != null
+        var spells = new HashMap<Identifier, Spell>();
+        for (var id: pool.spellIds()) {
+            spells.put(id, SpellRegistry.getSpell(id));
+        }
+        return spells.entrySet().stream()
+                .filter(entry -> entry.getValue().learn != null
                         && entry.getValue().learn.tier > 0)
                 .sorted(SpellContainerHelper.spellSorter)
                 .map(entry -> new Offer(
