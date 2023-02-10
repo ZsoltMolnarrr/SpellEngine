@@ -9,10 +9,12 @@ import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
+import net.spell_engine.api.spell.SpellPool;
 import net.spell_power.api.MagicSchool;
 
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SpellRegistry {
     public static class Entry { public Entry() { }
@@ -24,6 +26,7 @@ public class SpellRegistry {
         }
     }
     private static final Map<Identifier, Entry> spells = new HashMap<>();
+    private static final Map<Identifier, SpellPool> pools = new HashMap<>();
     private static final Map<Identifier, SpellContainer> containers = new HashMap<>();
     private static final Map<MagicSchool, Integer> spellCount = new HashMap<>();
 
@@ -34,6 +37,7 @@ public class SpellRegistry {
     public static void initialize() {
         ServerLifecycleEvents.SERVER_STARTED.register((minecraftServer) -> {
             loadSpells(minecraftServer.getResourceManager());
+            loadPools(minecraftServer.getResourceManager());
             loadContainers(minecraftServer.getResourceManager());
             encodeContent();
         });
@@ -66,6 +70,37 @@ public class SpellRegistry {
         spells.clear();
         spells.putAll(parsed);
         spellsUpdated();
+    }
+
+    public static void loadPools(ResourceManager resourceManager) {
+        var gson = new Gson();
+        Map<Identifier, SpellPool.DataFormat> parsed = new HashMap<>();
+        // Reading all attribute files
+        var directory = "spell_pools";
+        for (var entry : resourceManager.findResources(directory, fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
+            var identifier = entry.getKey();
+            var resource = entry.getValue();
+            try {
+                // System.out.println("Checking resource: " + identifier);
+                JsonReader reader = new JsonReader(new InputStreamReader(resource.getInputStream()));
+                SpellPool.DataFormat pool = gson.fromJson(reader, SpellPool.DataFormat.class);
+                var id = identifier
+                        .toString().replace(directory + "/", "");
+                id = id.substring(0, id.lastIndexOf('.'));
+                parsed.put(new Identifier(id), pool);
+                // System.out.println("loaded assignment - id: " + id +  " assignment: " + container.spell);
+            } catch (Exception e) {
+                System.err.println("Failed to parse spell_pool: " + identifier);
+                e.printStackTrace();
+            }
+        }
+        Map<Identifier, Spell> spellFlat = spells.entrySet()
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().spell));
+        pools.clear();
+        for (var entry: parsed.entrySet()) {
+            pools.put(entry.getKey(), SpellPool.fromData(entry.getValue(), spellFlat));
+        }
     }
 
     public static void loadContainers(ResourceManager resourceManager) {
@@ -130,6 +165,7 @@ public class SpellRegistry {
 
     public static class SyncFormat { public SyncFormat() { }
         public Map<String, Entry> spells = new HashMap<>();
+        public Map<String, SpellPool.SyncFormat> pools = new HashMap<>();
         public Map<String, SpellContainer> containers = new HashMap<>();
     }
 
@@ -140,6 +176,9 @@ public class SpellRegistry {
         var sync = new SyncFormat();
         spells.forEach((key, value) -> {
             sync.spells.put(key.toString(), value);
+        });
+        pools.forEach((key, value) -> {
+            sync.pools.put(key.toString(), value.toSync());
         });
         containers.forEach((key, value) -> {
             sync.containers.put(key.toString(), value);
@@ -173,6 +212,9 @@ public class SpellRegistry {
         spells.clear();
         sync.spells.forEach((key, value) -> {
             spells.put(new Identifier(key), value);
+        });
+        sync.pools.forEach((key, value) -> {
+            pools.put(new Identifier(key), SpellPool.fromSync(value));
         });
         sync.containers.forEach((key, value) -> {
             containers.put(new Identifier(key), value);
