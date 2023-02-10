@@ -89,7 +89,7 @@ public class SpellRegistry {
                         .toString().replace(directory + "/", "");
                 id = id.substring(0, id.lastIndexOf('.'));
                 parsed.put(new Identifier(id), pool);
-                System.out.println("loaded pool - " + id +  " ids: " + pool.spell_ids);
+                // System.out.println("loaded pool - " + id +  " ids: " + pool.spell_ids);
             } catch (Exception e) {
                 System.err.println("Failed to parse spell_pool: " + identifier);
                 e.printStackTrace();
@@ -108,7 +108,7 @@ public class SpellRegistry {
         var gson = new Gson();
         Map<Identifier, SpellContainer> parsed = new HashMap<>();
         // Reading all attribute files
-        var directory = "item_spell_assignment";
+        var directory = "spell_assignments";
         for (var entry : resourceManager.findResources(directory, fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
             var identifier = entry.getKey();
             var resource = entry.getValue();
@@ -122,7 +122,7 @@ public class SpellRegistry {
                 parsed.put(new Identifier(id), container);
                 // System.out.println("loaded assignment - id: " + id +  " assignment: " + container.spell);
             } catch (Exception e) {
-                System.err.println("Failed to parse item_spell_assignment: " + identifier);
+                System.err.println("Failed to parse spell_assignment: " + identifier);
                 e.printStackTrace();
             }
         }

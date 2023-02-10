@@ -144,14 +144,40 @@ public class FrostShieldRenderer implements CustomModelStatusEffect.Renderer {
 
 ## 🪄 Assigning spells to items
 
-Assign zero, one or more spells to an item, by creating a JSON file at: `resources/data/MOD_ID/item_spell_assignment/ITEM_ID.json`.
+### Create a pool of spells
+
+Create your pool, by creating a JSON file at: `resources/data/MOD_ID/spell_pools/ITEM_ID.json`.
+
+Example, an arbitrary set spells:
+```json
+{
+  "spell_ids": [
+    "wizards:fireball",
+    "wizards:fire_breath",
+    "wizards:fire_meteor"
+  ]
+}
+```
+
+Example, all spells of a specified magic school:
+```json
+{
+  "all_of_schools": ["FIRE"]
+}
+```
+
+The two solutions can be combined.
+
+### Assign to the item
+
+Assign zero, one or more spells to an item, by creating a JSON file at: `resources/data/MOD_ID/spell_assignments/ITEM_ID.json`.
 
 Your JSON file will be parsed into a [Spell Container](common/src/main/java/net/spell_engine/api/spell/SpellContainer.java).
 
 Example wand (one spell assigned, no more can be added)
 ```
 {
-  "school": "FIRE",
+  "pool": "FIRE",
   "max_spell_count": 1,
   "spell_ids": [ "MOD_ID:SPELL_ID" ]
 }
