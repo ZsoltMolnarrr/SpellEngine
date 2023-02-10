@@ -1,5 +1,6 @@
 # 0.9.10
 
+- Change spell assignment by introducing spell pools (API breaking change!)
 - Fix sound stuck casting sound when swapping hands 
 
 # 0.9.9

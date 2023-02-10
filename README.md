@@ -146,7 +146,7 @@ public class FrostShieldRenderer implements CustomModelStatusEffect.Renderer {
 
 ### Create a pool of spells
 
-Create your pool, by creating a JSON file at: `resources/data/MOD_ID/spell_pools/ITEM_ID.json`.
+Create your pool, by creating a JSON file at: `resources/data/MOD_ID/spell_pools/POOL_ID.json`.
 
 Example, an arbitrary set spells:
 ```json
@@ -177,7 +177,7 @@ Your JSON file will be parsed into a [Spell Container](common/src/main/java/net/
 Example wand (one spell assigned, no more can be added)
 ```
 {
-  "pool": "FIRE",
+  "pool": "MODID:POOL_ID",
   "max_spell_count": 1,
   "spell_ids": [ "MOD_ID:SPELL_ID" ]
 }
@@ -186,7 +186,7 @@ Example wand (one spell assigned, no more can be added)
 Example staff (zero spell assigned, 3 can be added)
 ```
 {
-  "school": "FIRE",
+  "pool": "MODID:POOL_ID",
   "max_spell_count": 3,
   "spell_ids": [ ]
 }
