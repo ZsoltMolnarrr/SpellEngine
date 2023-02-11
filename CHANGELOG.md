@@ -1,5 +1,7 @@
 # 0.9.10
 
+All spell bindings have been reset due to a major API change! We apologize for the inconvenience.
+
 - Change spell assignment by introducing spell pools (API breaking change!)
 - Fix sound stuck casting sound when swapping hands 
 

@@ -109,7 +109,6 @@ public class SpellContainerHelper {
     // MARK: NBT Codec
 
     public static final String NBT_KEY_CONTAINER = "spell_container";
-    private static final String NBT_KEY_SCHOOL = "school";
     private static final String NBT_KEY_POOL = "pool";
     private static final String NBT_KEY_MAX_SPELL_COUNT = "max_spell_count";
     private static final String NBT_KEY_SPELL_IDS = "spell_ids";
