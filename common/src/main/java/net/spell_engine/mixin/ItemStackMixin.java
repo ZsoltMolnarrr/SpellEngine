@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ItemStack.class)
-public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalItemStack {
+public abstract class ItemStackMixin implements SpellCasterItemStack {
     @Shadow public abstract Item getItem();
 
     private ItemStack itemStack() {
@@ -53,17 +53,6 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
         var item = getItem();
         var id = Registry.ITEM.getId(item);
         return SpellRegistry.containerForItem(id);
-    }
-
-    // MagicalItemStack
-
-    public @Nullable MagicSchool getMagicSchool() {
-        var container = spellContainer();
-        var pool = SpellContainerHelper.getPool(container);
-        if (pool != null && !pool.isEmpty()) {
-            return pool.firstSchool();
-        }
-        return null;
     }
 
     // SpellCasterItemStack

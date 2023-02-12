@@ -18,12 +18,14 @@ import net.spell_engine.config.EnchantmentsConfig;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
 import net.spell_engine.entity.SpellProjectile;
+import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.internals.criteria.EnchantmentSpecificCriteria;
 import net.spell_engine.internals.criteria.SpellCastCriteria;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.particle.Particles;
 import net.spell_engine.spellbinding.*;
+import net.spell_power.api.enchantment.SpellPowerEnchanting;
 import net.tinyconfig.ConfigManager;
 
 public class SpellEngineMod {
@@ -55,6 +57,7 @@ public class SpellEngineMod {
         Criteria.register(EnchantmentSpecificCriteria.INSTANCE);
         EnchantmentRestriction.alleviate(Enchantments.KNOCKBACK, itemStack -> itemStack.getItem() instanceof StaffItem);
         EnchantmentRestriction.alleviate(Enchantments.LOOTING, itemStack -> itemStack.getItem() instanceof StaffItem);
+        SpellPowerEnchanting.allowForWeapon(SpellContainerHelper::hasValidContainer);
     }
 
     public static void registerSpellBinding() {
