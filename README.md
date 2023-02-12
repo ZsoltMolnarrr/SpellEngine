@@ -177,8 +177,6 @@ Your JSON file will be parsed into a [Spell Container](common/src/main/java/net/
 Example wand (one spell assigned, no more can be added)
 ```
 {
-  "pool": "MODID:POOL_ID",
-  "max_spell_count": 1,
   "spell_ids": [ "MOD_ID:SPELL_ID" ]
 }
 ```

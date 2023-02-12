@@ -1,3 +1,8 @@
+# 0.9.11
+
+- Allow no pool in spell containers if spell id list is non-empty (wands)
+- Simplify tooltip headers
+
 # 0.9.10
 
 All spell bindings have been reset due to a major API change! We apologize for the inconvenience.

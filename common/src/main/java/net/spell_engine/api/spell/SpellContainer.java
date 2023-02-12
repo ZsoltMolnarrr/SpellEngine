@@ -5,7 +5,7 @@ import java.util.List;
 
 public class SpellContainer { public SpellContainer() { }
     public String pool;
-    public int max_spell_count;
+    public int max_spell_count = 1;
     public List<String> spell_ids;
 
     public SpellContainer(String pool, int max_spell_count, List<String> spell_ids) {
