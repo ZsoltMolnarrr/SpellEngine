@@ -60,7 +60,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack, MagicalIte
     public @Nullable MagicSchool getMagicSchool() {
         var container = spellContainer();
         var pool = SpellContainerHelper.getPool(container);
-        if (pool != null) {
+        if (pool != null && !pool.isEmpty()) {
             return pool.firstSchool();
         }
         return null;

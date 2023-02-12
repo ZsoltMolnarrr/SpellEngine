@@ -10,6 +10,12 @@ import java.util.Map;
 
 public record SpellPool(List<Identifier> spellIds, List<MagicSchool> schools) {
 
+    public static final SpellPool empty = new SpellPool(List.of(), List.of());
+
+    public boolean isEmpty() {
+        return spellIds.isEmpty();
+    }
+
     // MARK: Helpers
 
     @Nullable

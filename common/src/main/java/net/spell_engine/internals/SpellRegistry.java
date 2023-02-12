@@ -162,9 +162,9 @@ public class SpellRegistry {
         return null;
     }
 
-    @Nullable
     public static SpellPool spellPool(Identifier id) {
-        return pools.get(id);
+        var pool = pools.get(id);
+        return pool != null ? pool : SpellPool.empty;
     }
 
     public static PacketByteBuf encoded = PacketByteBufs.create();

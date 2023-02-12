@@ -20,13 +20,12 @@ import java.util.stream.Collectors;
 
 public class SpellContainerHelper {
 
-    @Nullable
     public static SpellPool getPool(SpellContainer container) {
         if (container != null && container.pool != null) {
             var id = new Identifier(container.pool);
             return SpellRegistry.spellPool(id);
         }
-        return null;
+        return SpellPool.empty;
     }
 
     public static SpellContainer containerFromItemStack(ItemStack itemStack) {
@@ -114,7 +113,9 @@ public class SpellContainerHelper {
     private static final String NBT_KEY_SPELL_IDS = "spell_ids";
     public static NbtCompound toNBT(SpellContainer container) {
         var object = new NbtCompound();
-        object.putString(NBT_KEY_POOL, container.pool);
+        if (container.pool != null) {
+            object.putString(NBT_KEY_POOL, container.pool);
+        }
         object.putInt(NBT_KEY_MAX_SPELL_COUNT, container.max_spell_count);
         var spellList = new NbtList();
         for (var spellId: container.spell_ids) {
@@ -128,13 +129,15 @@ public class SpellContainerHelper {
     public static SpellContainer fromNBT(NbtCompound nbt) {
         var container = nbt.getCompound(NBT_KEY_CONTAINER);
         if (container == null
-                || !container.contains(NBT_KEY_POOL)
                 || !container.contains(NBT_KEY_MAX_SPELL_COUNT)
                 || !container.contains(NBT_KEY_SPELL_IDS)) {
             return null;
         }
         try {
-            var pool = container.getString(NBT_KEY_POOL);
+            String pool = null;
+            if (container.contains(NBT_KEY_POOL)) {
+                pool = container.getString(NBT_KEY_POOL);
+            }
             var max_spell_count = container.getInt(NBT_KEY_MAX_SPELL_COUNT);
             var spellIds = new ArrayList<String>();
             var spellList = container.getList(NBT_KEY_SPELL_IDS, NbtElement.STRING_TYPE);

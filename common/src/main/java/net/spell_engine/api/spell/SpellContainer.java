@@ -31,7 +31,9 @@ public class SpellContainer { public SpellContainer() { }
     }
 
     public boolean isValid() {
-        return pool != null && spell_ids != null && max_spell_count > 0;
+        return max_spell_count > 0 && spell_ids != null
+                // Valid pool (staves) or non-empty spell list (wands)
+                && ( (pool != null && !pool.isEmpty()) || !spell_ids.isEmpty() );
     }
 
     public boolean isUsable() {
