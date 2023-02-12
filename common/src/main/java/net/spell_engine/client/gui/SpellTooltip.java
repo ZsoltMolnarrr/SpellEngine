@@ -45,7 +45,7 @@ public class SpellTooltip {
                     var limit = I18n.translate("spell.tooltip.host.limit")
                             .replace("{current}", "" + container.spell_ids.size())
                             .replace("{max}", "" + container.max_spell_count);
-                    lines.add(Text.translatable("spell.tooltip.host." + SpellContainerHelper.getPool(container).firstSchool().spellName())
+                    lines.add(Text.translatable("spell.tooltip.host.multiple")
                             .append(Text.literal(" " + limit))
                             .formatted(Formatting.GRAY));
                 }
