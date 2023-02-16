@@ -6,6 +6,7 @@ import net.minecraft.client.particle.*;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.DefaultParticleType;
 import net.spell_engine.client.util.Color;
+import net.spell_power.api.MagicSchool;
 
 @Environment(value= EnvType.CLIENT)
 public class SpellFlameParticle extends AbstractSlowingParticle {
@@ -37,17 +38,17 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
 
 
     @Environment(EnvType.CLIENT)
-    public static class Factory implements ParticleFactory<DefaultParticleType> {
+    public static class FlameFactory implements ParticleFactory<DefaultParticleType> {
         private final SpriteProvider spriteProvider;
 
-        public Factory(SpriteProvider spriteProvider) {
+        public FlameFactory(SpriteProvider spriteProvider) {
             this.spriteProvider = spriteProvider;
         }
 
         public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var flameParticle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
-            flameParticle.setSprite(this.spriteProvider);
-            return flameParticle;
+            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
+            particle.setSprite(this.spriteProvider);
+            return particle;
         }
     }
 
@@ -72,4 +73,22 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
         }
     }
 
+
+    @Environment(EnvType.CLIENT)
+    public static class HealingFactory implements ParticleFactory<DefaultParticleType> {
+        private final SpriteProvider spriteProvider;
+        public static Color color = Color.from(MagicSchool.HEALING.color());
+
+        public HealingFactory(SpriteProvider spriteProvider) {
+            this.spriteProvider = spriteProvider;
+        }
+
+        public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
+            particle.setSprite(this.spriteProvider);
+            float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
+            particle.setColor(color.red() * j, color.green() * j, color.blue() * j);
+            return particle;
+        }
+    }
 }

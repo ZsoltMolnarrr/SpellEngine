@@ -37,15 +37,14 @@ public class SpellHitParticle extends SpriteBillboardParticle {
         return 255;
     }
 
-    @Environment(EnvType.CLIENT)
-    public static class FrostFactory implements ParticleFactory<DefaultParticleType> {
+    public static class GenericFactory implements ParticleFactory<DefaultParticleType> {
         private final SpriteProvider spriteProvider;
+        public final Color color;
 
-        public FrostFactory(SpriteProvider spriteProvider) {
+        public GenericFactory(SpriteProvider spriteProvider, Color color) {
             this.spriteProvider = spriteProvider;
+            this.color = color;
         }
-
-        public static Color color = Color.from(0x66ccff);
 
         public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
             var particle = new SpellHitParticle(clientWorld, d, e, f, g, h, i);
@@ -60,25 +59,23 @@ public class SpellHitParticle extends SpriteBillboardParticle {
     }
 
     @Environment(EnvType.CLIENT)
-    public static class ArcaneFactory implements ParticleFactory<DefaultParticleType> {
-        private final SpriteProvider spriteProvider;
-
-        public ArcaneFactory(SpriteProvider spriteProvider) {
-            this.spriteProvider = spriteProvider;
+    public static class FrostFactory extends GenericFactory {
+        public FrostFactory(SpriteProvider spriteProvider) {
+            super(spriteProvider, Color.from(0x66ccff));
         }
+    }
 
-        public static Color color = Color.from(MagicSchool.ARCANE.color());
+    @Environment(EnvType.CLIENT)
+    public static class ArcaneFactory extends GenericFactory {
+        public ArcaneFactory(SpriteProvider spriteProvider) {
+            super(spriteProvider, Color.from(MagicSchool.ARCANE.color()));
+        }
+    }
 
-        public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var particle = new SpellHitParticle(clientWorld, d, e, f, g, h, i);
-            particle.setSprite(this.spriteProvider);
-            float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
-            // 0xff66ff
-            particle.setColor(color.red() * j, color.green() * j, color.blue() * j);
-            particle.velocityY += clientWorld.random.nextFloat() * 0.5F;
-            particle.alpha = 0.75F;
-            particle.maxAge *= 2;
-            return particle;
+    @Environment(EnvType.CLIENT)
+    public static class HolyFactory extends GenericFactory {
+        public HolyFactory(SpriteProvider spriteProvider) {
+            super(spriteProvider, Color.from(0xffff99));
         }
     }
 }

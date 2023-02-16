@@ -1,7 +1,6 @@
 package net.spell_engine.mixin;
 
 import com.llamalad7.mixinextras.MixinExtrasBootstrap;
-import net.spell_engine.Platform;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 

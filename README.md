@@ -117,7 +117,7 @@ CustomModels.registerModelIds(List.of(
 
 Custom model projectiles can be used by just referencing the registered projectile model.
 
-##### Projectiles
+##### Status effects
 
 Custom models can be used to be rendered over entities affected by custom status effects.
 
@@ -191,3 +191,12 @@ Example staff (zero spell assigned, 3 can be added)
 ```
 
 When an item has an assigned Spell Container, it will be eligible for Spell Power enchantments.
+
+## ✨ Audio and visuals
+
+Spell Engine has multiple kind of assets built in: 
+- Sound effects (you can find the available sounds [here](common/src/main/java/net/spell_engine/utils/SoundHelper.java))
+- Particle effects (you can find the available effects [here](common/src/main/java/net/spell_engine/particle/Particles.java))
+- Player Animations (you can find the available animations [here](common/src/main/resources/assets/spell_engine/spell_animations))
+
+These assets are referenced in spell json files, by using their Identifier.

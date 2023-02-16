@@ -5,6 +5,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.spell_engine.SpellEngineMod;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Particles {
@@ -30,18 +31,28 @@ public class Particles {
         }
     }
 
-//    public static final ParticleEntry arcane_spark = new ParticleEntry("arcane_spark");
-    public static final ParticleEntry arcane_spell = new ParticleEntry("arcane_spell");
-    public static final ParticleEntry arcane_hit = new ParticleEntry("arcane_hit").customTexture();;
-    public static final ParticleEntry flame = new ParticleEntry("flame");
-    public static final ParticleEntry frost_hit = new ParticleEntry("frost_hit").customTexture();
-    public static final ParticleEntry frost_shard = new ParticleEntry("frost_shard").customTexture();
-    public static final ParticleEntry snowflake = new ParticleEntry("snowflake");
-
-    public static final List<ParticleEntry> all;
-    static {
-        all = List.of(arcane_spell, arcane_hit, flame, frost_hit, frost_shard, snowflake);
+    private static final ArrayList<ParticleEntry> all = new ArrayList<>();
+    public static List<ParticleEntry> all() {
+        return all;
     }
+
+    private static ParticleEntry particle(String name) {
+        var entry = new ParticleEntry(name);
+        all.add(entry);
+        return entry;
+    }
+
+
+    //    public static final ParticleEntry arcane_spark = new ParticleEntry("arcane_spark");
+    public static final ParticleEntry arcane_spell = particle("arcane_spell");
+    public static final ParticleEntry arcane_hit = particle("arcane_hit").customTexture();
+    public static final ParticleEntry healing_ascend = particle("healing_ascend").customTexture();
+    public static final ParticleEntry holy_hit = particle("holy_hit").customTexture();
+    public static final ParticleEntry flame = particle("flame");
+    public static final ParticleEntry frost_hit = particle("frost_hit").customTexture();
+    public static final ParticleEntry frost_shard = particle("frost_shard").customTexture();
+    public static final ParticleEntry snowflake = particle("snowflake");
+
 
     public static void register() {
         for(var entry: all) {
