@@ -13,7 +13,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.enchantment.EnchantmentRestriction;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
-import net.spell_engine.api.item.StaffItem;
+import net.spell_engine.api.item.weapon.StaffItem;
 import net.spell_engine.config.EnchantmentsConfig;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;

@@ -2,6 +2,7 @@
 
 - Allow no pool in spell containers if spell id list is non-empty (wands)
 - Simplify tooltip headers
+- Add entry and config definitions of armors and weapons to API package
 
 # 0.9.10
 

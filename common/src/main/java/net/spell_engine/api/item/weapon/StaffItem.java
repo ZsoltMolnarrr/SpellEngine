@@ -1,4 +1,4 @@
-package net.spell_engine.api.item;
+package net.spell_engine.api.item.weapon;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
@@ -13,6 +13,7 @@ import net.minecraft.item.ToolItem;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.spell_engine.api.item.ConfigurableAttributes;
 
 public class StaffItem extends ToolItem implements ConfigurableAttributes {
     private Multimap<EntityAttribute, EntityAttributeModifier> attributes;
