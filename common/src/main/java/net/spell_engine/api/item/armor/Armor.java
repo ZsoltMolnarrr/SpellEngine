@@ -109,6 +109,12 @@ public class Armor {
             return (Ingredient)this.repairIngredientSupplier.get();
         }
 
+        public String name() {
+            return this.name;
+        }
+
+        // Avoid using this, because this gets remapped
+        @Deprecated
         public String getName() {
             return this.name;
         }
