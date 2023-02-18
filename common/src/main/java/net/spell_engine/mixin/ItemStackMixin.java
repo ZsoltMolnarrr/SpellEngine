@@ -11,6 +11,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.SpellContainer;
+import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.*;
 import net.spell_power.api.MagicSchool;
 import net.spell_power.api.enchantment.MagicalItemStack;
@@ -103,6 +104,11 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
         }
         var attempt = SpellCast.Attempt.none();
         if (world.isClient) {
+            if (hand == Hand.MAIN_HAND
+                    && !user.getOffHandStack().isEmpty()
+                    && Keybindings.hotbarModifier.isPressed()) {
+                return; // Allow offhand item to work
+            }
             if (user instanceof SpellCasterClient caster) {
                 var spellId = caster.getSelectedSpellId(container);
                 attempt = SpellHelper.attemptCasting(user, itemStack, spellId);
