@@ -106,6 +106,14 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
             return;
         }
 
+        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) user).actionImpairing();
+        if (!actionsAllowed.players().canCastSpell()) {
+            cir.setReturnValue(TypedActionResult.fail(itemStack()));
+            cir.cancel();
+            HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
+            return;
+        }
+
         var attempt = SpellCast.Attempt.none();
         if (world.isClient) {
             if (hand == Hand.MAIN_HAND
@@ -126,14 +134,6 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
             if (spellId != null) {
                 attempt = SpellHelper.attemptCasting(user, itemStack, spellId);
             }
-        }
-
-        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) user).actionImpairing();
-        if (!actionsAllowed.players().canCastSpell()) {
-            cir.setReturnValue(TypedActionResult.fail(itemStack()));
-            cir.cancel();
-            HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
-            return;
         }
 
         if (attempt.isSuccess()) {
