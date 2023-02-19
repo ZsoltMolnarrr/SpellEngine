@@ -9,6 +9,10 @@ public interface Synchronized {
     boolean shouldSynchronize();
     StatusEffect setSynchronized(boolean value);
 
+    static void configure(StatusEffect effect, boolean isSynchronized) {
+        ((Synchronized)effect).setSynchronized(isSynchronized);
+    }
+
     record Effect(StatusEffect effect, int amplifier) { }
     static List<Effect> effectsOf(LivingEntity entity) {
         return ((Provider)entity).SpellEngine_syncedStatusEffects();

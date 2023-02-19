@@ -24,32 +24,33 @@ public record EntityActionsAllowed(
         STUN
     }
 
-    public static final EntityActionsAllowed any = new EntityActionsAllowed(true, true,
+    public static final EntityActionsAllowed ANY = new EntityActionsAllowed(true, true,
             new PlayersAllowed(true, true, true),
             new MobsAllowed(true),
             SemanticType.NONE);
 
-    public static final EntityActionsAllowed silence = new EntityActionsAllowed(true, true,
+    public static final EntityActionsAllowed SILENCE = new EntityActionsAllowed(true, true,
             new PlayersAllowed(true, true, false),
             new MobsAllowed(true),
             SemanticType.SILENCE);
 
-    public static final EntityActionsAllowed incapacitate = new EntityActionsAllowed(true, true,
+    public static final EntityActionsAllowed INCAPACITATE = new EntityActionsAllowed(true, true,
             new PlayersAllowed(false, false, false),
             new MobsAllowed(false),
             SemanticType.INCAPACITATE);
 
-    public static final EntityActionsAllowed stun = new EntityActionsAllowed(false, false,
+    public static final EntityActionsAllowed STUN = new EntityActionsAllowed(false, false,
             new PlayersAllowed(false, false, false),
             new MobsAllowed(false),
             SemanticType.STUN);
 
     public interface ControlledEntity {
         EntityActionsAllowed actionImpairing();
+        void updateEntityActionsAllowed();
     }
 
     public static EntityActionsAllowed fromEffects(Collection<StatusEffect> effects) {
-        var initial = EntityActionsAllowed.any;
+        var initial = EntityActionsAllowed.ANY;
         var limiters = effects.stream()
                 .map(effect -> ((ActionImpairing)effect).actionsAllowed())
                 .filter(Objects::nonNull)
@@ -65,14 +66,14 @@ public record EntityActionsAllowed(
         var canUseAI = initial.mobs().canUseAI();
         var reason = initial.reason();
 
-        for (var actionsAllowed: limiters) {
-            canJump = canJump && actionsAllowed.canJump();
-            canMove = canJump && actionsAllowed.canMove();
-            canAttack = canAttack && initial.players().canAttack();
-            canUseItem = canUseItem && initial.players().canUseItem();
-            canCastSpell = canCastSpell && initial.players().canCastSpell();
-            canUseAI = canUseAI && initial.mobs().canUseAI();
-            reason = (actionsAllowed.reason().ordinal() > reason.ordinal()) ? actionsAllowed.reason() : reason;
+        for (var impairing: limiters) {
+            canJump = canJump && impairing.canJump();
+            canMove = canMove && impairing.canMove();
+            canAttack = canAttack && impairing.players().canAttack();
+            canUseItem = canUseItem && impairing.players().canUseItem();
+            canCastSpell = canCastSpell && impairing.players().canCastSpell();
+            canUseAI = canUseAI && impairing.mobs().canUseAI();
+            reason = (impairing.reason().ordinal() > reason.ordinal()) ? impairing.reason() : reason;
         }
 
         return new EntityActionsAllowed(canJump, canMove,
