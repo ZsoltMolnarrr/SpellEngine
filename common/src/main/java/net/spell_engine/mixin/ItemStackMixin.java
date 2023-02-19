@@ -13,6 +13,7 @@ import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.SpellContainer;
+import net.spell_engine.client.gui.HudMessages;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.*;
 import net.spell_power.api.MagicSchool;
@@ -131,6 +132,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
         if (!actionsAllowed.players().canCastSpell()) {
             cir.setReturnValue(TypedActionResult.fail(itemStack()));
             cir.cancel();
+            HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
             return;
         }
 

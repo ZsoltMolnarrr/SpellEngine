@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.internals.SpellCast;
 
@@ -38,6 +39,10 @@ public class HudMessages {
         if (message != null) {
             error(message.formatted(Formatting.RED));
         }
+    }
+
+    public void actionImpaired(EntityActionsAllowed.SemanticType reason) {
+        error(reason.toString());
     }
 
     public void error(String message) {

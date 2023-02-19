@@ -7,6 +7,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.client.SpellEngineClient;
+import net.spell_engine.client.gui.HudMessages;
 import net.spell_engine.client.input.InputHelper;
 import net.spell_engine.internals.SpellCasterItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,6 +23,7 @@ public class ClientPlayerInteractionManagerMixin {
         if (!actionsAllowed.players().canUseItem()) {
             cir.setReturnValue(ActionResult.FAIL);
             cir.cancel();
+            HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
             return;
         }
         if(SpellEngineClient.config.lockHotbarOnRightClick && !InputHelper.isLocked) {
