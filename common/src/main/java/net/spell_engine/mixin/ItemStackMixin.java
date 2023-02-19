@@ -4,12 +4,14 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.*;
@@ -102,6 +104,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
             }
             return;
         }
+
         var attempt = SpellCast.Attempt.none();
         if (world.isClient) {
             if (hand == Hand.MAIN_HAND
@@ -122,6 +125,13 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
             if (spellId != null) {
                 attempt = SpellHelper.attemptCasting(user, itemStack, spellId);
             }
+        }
+
+        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) user).actionImpairing();
+        if (!actionsAllowed.players().canCastSpell()) {
+            cir.setReturnValue(TypedActionResult.fail(itemStack()));
+            cir.cancel();
+            return;
         }
 
         if (attempt.isSuccess()) {

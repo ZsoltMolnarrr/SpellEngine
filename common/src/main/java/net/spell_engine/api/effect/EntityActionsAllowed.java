@@ -7,25 +7,42 @@ import java.util.Objects;
 
 public record EntityActionsAllowed(
         boolean canJump,
-        boolean canAttack,
-        boolean canUseItem,
-        boolean canCastSpell,
+        boolean canMove,
+        PlayersAllowed players,
+        MobsAllowed mobs,
         SemanticType reason) {
 
-    public enum SemanticType { // Default ordinal is used for strength ordering
+    public record PlayersAllowed(boolean canAttack, boolean canUseItem, boolean canCastSpell) { }
+    public record MobsAllowed(boolean canUseAI) { }
+    // Additional mob limits could be added:
+    // Mob configurables via Control overrides: canLook, canMove, canJump
+
+    public enum SemanticType { // Default ordinal is used for strength ordering (resulting UI priority)
         NONE,
         SILENCE,
         INCAPACITATE,
         STUN
     }
 
-    public static final EntityActionsAllowed any = new EntityActionsAllowed(true, true, true, true, SemanticType.NONE);
+    public static final EntityActionsAllowed any = new EntityActionsAllowed(true, true,
+            new PlayersAllowed(true, true, true),
+            new MobsAllowed(true),
+            SemanticType.NONE);
 
-    public static final EntityActionsAllowed silence = new EntityActionsAllowed(true, true, true, false, SemanticType.SILENCE);
+    public static final EntityActionsAllowed silence = new EntityActionsAllowed(true, true,
+            new PlayersAllowed(true, true, false),
+            new MobsAllowed(true),
+            SemanticType.SILENCE);
 
-    public static final EntityActionsAllowed incapacitate = new EntityActionsAllowed(true, false, false, false, SemanticType.INCAPACITATE);
+    public static final EntityActionsAllowed incapacitate = new EntityActionsAllowed(true, true,
+            new PlayersAllowed(false, false, false),
+            new MobsAllowed(false),
+            SemanticType.INCAPACITATE);
 
-    public static final EntityActionsAllowed stun = new EntityActionsAllowed(false, false, false, false, SemanticType.STUN);
+    public static final EntityActionsAllowed stun = new EntityActionsAllowed(false, false,
+            new PlayersAllowed(false, false, false),
+            new MobsAllowed(false),
+            SemanticType.STUN);
 
     public interface ControlledEntity {
         EntityActionsAllowed actionImpairing();
@@ -41,19 +58,26 @@ public record EntityActionsAllowed(
             return initial;
         }
         var canJump = initial.canJump();
-        var canAttack = initial.canAttack();
-        var canUseItem = initial.canUseItem();
-        var canCastSpell = initial.canCastSpell();
+        var canMove = initial.canMove();
+        var canAttack = initial.players().canAttack();
+        var canUseItem = initial.players().canUseItem();
+        var canCastSpell = initial.players().canCastSpell();
+        var canUseAI = initial.mobs().canUseAI();
         var reason = initial.reason();
 
         for (var actionsAllowed: limiters) {
             canJump = canJump && actionsAllowed.canJump();
-            canAttack = canAttack && actionsAllowed.canAttack();
-            canUseItem = canUseItem && actionsAllowed.canUseItem();
-            canCastSpell = canCastSpell && actionsAllowed.canCastSpell();
+            canMove = canJump && actionsAllowed.canMove();
+            canAttack = canAttack && initial.players().canAttack();
+            canUseItem = canUseItem && initial.players().canUseItem();
+            canCastSpell = canCastSpell && initial.players().canCastSpell();
+            canUseAI = canUseAI && initial.mobs().canUseAI();
             reason = (actionsAllowed.reason().ordinal() > reason.ordinal()) ? actionsAllowed.reason() : reason;
         }
 
-        return new EntityActionsAllowed(canJump, canAttack, canUseItem, canCastSpell, reason);
+        return new EntityActionsAllowed(canJump, canMove,
+                new PlayersAllowed(canAttack, canUseItem, canCastSpell),
+                new MobsAllowed(canUseAI),
+                reason);
     }
 }
