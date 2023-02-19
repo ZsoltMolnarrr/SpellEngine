@@ -39,4 +39,13 @@ public class MinecraftClientActionImpairing {
             HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
         }
     }
+
+    @Inject(method = "doItemUse", at = @At("HEAD"), cancellable = true)
+    private void doItemUse_HEAD_SpellEngine_ActionImpair(CallbackInfo ci) {
+        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) player).actionImpairing();
+        if (!actionsAllowed.players().canAttack()) {
+            ci.cancel();
+            HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
+        }
+    }
 }

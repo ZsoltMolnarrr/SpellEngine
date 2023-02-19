@@ -1,6 +1,7 @@
 package net.spell_engine.client.gui;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -42,7 +43,7 @@ public class HudMessages {
     }
 
     public void actionImpaired(EntityActionsAllowed.SemanticType reason) {
-        error(reason.toString());
+        error(I18n.translate("hud.action_impaired." + reason.toString().toLowerCase()));
     }
 
     public void error(String message) {

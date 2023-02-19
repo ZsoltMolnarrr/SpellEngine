@@ -37,6 +37,9 @@
   "hud.leave_spell_hotbar": "Press %1$s to leave",
   "hud.cast_attempt_error.missing_item": "Missing %1$s",
   "hud.cast_attempt_error.on_cooldown": "On Cooldown",
+  "hud.action_impaired.silence": "Silenced",
+  "hud.action_impaired.incapacitate": "Incapacitated",
+  "hud.action_impaired.stun": "Stunned",
 
   "keybindings.spell_engine.tooltip_details" : "Tooltip spell details",
   "keybindings.spell_engine.hotbar_modifier" : "Control spell hotbar",
