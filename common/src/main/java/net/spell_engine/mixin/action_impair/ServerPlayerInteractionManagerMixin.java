@@ -16,8 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ServerPlayerInteractionManagerMixin {
     @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
     private void interactItem_HEAD_SpellEngine(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) player).actionImpairing();
-        if (!actionsAllowed.players().canUseItem()) {
+        if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ITEM_USE)) {
             cir.setReturnValue(ActionResult.FAIL);
             cir.cancel();
         }

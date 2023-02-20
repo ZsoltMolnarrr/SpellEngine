@@ -3,7 +3,6 @@ package net.spell_engine.mixin.client.action_impair;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.spell_engine.api.effect.EntityActionsAllowed;
-import net.spell_engine.client.gui.HudMessages;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -20,11 +19,9 @@ public class MinecraftClientActionImpairing {
 
     @Inject(method = "doAttack", at = @At("HEAD"), cancellable = true)
     private void doAttack_HEAD_SpellEngine_ActionImpair(CallbackInfoReturnable<Boolean> cir) {
-        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) player).actionImpairing();
-        if (!actionsAllowed.players().canAttack()) {
-            cir.cancel();
+        if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ATTACK, true)) {
             cir.setReturnValue(false);
-            HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
+            cir.cancel();
         }
     }
 
@@ -33,19 +30,15 @@ public class MinecraftClientActionImpairing {
         if (!breaking) {
             return;
         }
-        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) player).actionImpairing();
-        if (!actionsAllowed.players().canAttack()) {
+        if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ATTACK, true)) {
             ci.cancel();
-            HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
         }
     }
 
     @Inject(method = "doItemUse", at = @At("HEAD"), cancellable = true)
     private void doItemUse_HEAD_SpellEngine_ActionImpair(CallbackInfo ci) {
-        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) player).actionImpairing();
-        if (!actionsAllowed.players().canAttack()) {
+        if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ITEM_USE, true)) {
             ci.cancel();
-            HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
         }
     }
 }

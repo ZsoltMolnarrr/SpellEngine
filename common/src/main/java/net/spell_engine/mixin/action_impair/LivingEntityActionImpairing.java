@@ -3,7 +3,6 @@ package net.spell_engine.mixin.action_impair;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,16 +19,16 @@ public abstract class LivingEntityActionImpairing implements EntityActionsAllowe
 
     @Inject(method = "jump", at = @At("HEAD"), cancellable = true)
     private void jump_HEAD_Spell_Engine(CallbackInfo ci) {
-        var actionsAllowed = actionImpairing();
-        if (!actionsAllowed.canJump()) {
+        if (EntityActionsAllowed.isImpaired((LivingEntity) ((Object) this),
+                EntityActionsAllowed.Common.JUMP)) {
             ci.cancel();
         }
     }
 
     @Inject(method = "tickActiveItemStack", at = @At("HEAD"), cancellable = true)
     private void tickActiveItemStack_HEAD_SpellEngine(CallbackInfo ci) {
-        var actionsAllowed = actionImpairing();
-        if (!actionsAllowed.players().canUseItem()) {
+        if (EntityActionsAllowed.isImpaired((LivingEntity) ((Object) this),
+                EntityActionsAllowed.Player.ITEM_USE)) {
             clearActiveItem();
             ci.cancel();
         }

@@ -1,6 +1,8 @@
 package net.spell_engine.api.effect;
 
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
+import net.spell_engine.client.gui.HudMessages;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -80,5 +82,56 @@ public record EntityActionsAllowed(
                 new PlayersAllowed(canAttack, canUseItem, canCastSpell),
                 new MobsAllowed(canUseAI),
                 reason);
+    }
+
+    public enum Common { MOVE, JUMP }
+    public static boolean isImpaired(LivingEntity entity, Common action) {
+        var actionsAllowed = ((ControlledEntity)entity).actionImpairing();
+        var allowed = true;
+        switch (action) {
+            case MOVE -> {
+                allowed = actionsAllowed.canMove();
+            }
+            case JUMP -> {
+                allowed = actionsAllowed.canJump();
+            }
+        }
+        return !allowed;
+    }
+
+    public enum Player { ATTACK, ITEM_USE, CAST_SPELL }
+    public static boolean isImpaired(LivingEntity player, Player action) {
+        return isImpaired(player, action, false);
+    }
+    public static boolean isImpaired(LivingEntity player, Player action, boolean showError) {
+        var allowed = true;
+        var actionsAllowed = ((ControlledEntity)player).actionImpairing();
+        switch (action) {
+            case ATTACK -> {
+                allowed = actionsAllowed.players().canAttack();
+            }
+            case ITEM_USE -> {
+                allowed = actionsAllowed.players().canUseItem();
+            }
+            case CAST_SPELL -> {
+                allowed = actionsAllowed.players().canCastSpell();
+            }
+        }
+        if (player.world.isClient && showError && !allowed) {
+            HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
+        }
+        return !allowed;
+    }
+
+    public enum Mob { USE_AI }
+    public static boolean isImpaired(LivingEntity entity, Mob action) {
+        var actionsAllowed = ((ControlledEntity)entity).actionImpairing();
+        var allowed = true;
+        switch (action) {
+            case USE_AI -> {
+                allowed = actionsAllowed.mobs().canUseAI();
+            }
+        }
+        return !allowed;
     }
 }

@@ -12,8 +12,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class PlayerEntityActionImpairing {
     @Inject(method = "attack", at = @At("HEAD"), cancellable = true)
     private void attack_HEAD_SpellEngine(Entity target, CallbackInfo ci) {
-        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) this).actionImpairing();
-        if (!actionsAllowed.players().canAttack()) {
+        if (EntityActionsAllowed.isImpaired((PlayerEntity) ((Object) this),
+                EntityActionsAllowed.Player.ATTACK)) {
             ci.cancel();
         }
     }

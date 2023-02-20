@@ -11,17 +11,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class MobEntityActionImpairing {
     @Inject(method = "isAiDisabled", at = @At("HEAD"), cancellable = true)
     private void isAiDisabled_HEAD_SpellEngine(CallbackInfoReturnable<Boolean> cir) {
-        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) this).actionImpairing();
-        if (!actionsAllowed.mobs().canUseAI()) {
-            cir.setReturnValue(true);
+        if (EntityActionsAllowed.isImpaired((MobEntity) ((Object) this),
+                EntityActionsAllowed.Mob.USE_AI)) {
+            cir.setReturnValue(false);
             cir.cancel();
         }
     }
 
     @Inject(method = "canMoveVoluntarily", at = @At("HEAD"), cancellable = true)
     private void canMoveVoluntarily_HEAD_SpellEngine(CallbackInfoReturnable<Boolean> cir) {
-        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) this).actionImpairing();
-        if (!actionsAllowed.canMove()) {
+        if (EntityActionsAllowed.isImpaired((MobEntity) ((Object) this),
+                EntityActionsAllowed.Common.MOVE)) {
             cir.setReturnValue(false);
             cir.cancel();
         }

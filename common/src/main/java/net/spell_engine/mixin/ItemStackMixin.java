@@ -4,7 +4,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
@@ -13,11 +12,8 @@ import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.SpellContainer;
-import net.spell_engine.client.gui.HudMessages;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.*;
-import net.spell_power.api.MagicSchool;
-import net.spell_power.api.enchantment.MagicalItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -106,11 +102,9 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
             return;
         }
 
-        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) user).actionImpairing();
-        if (!actionsAllowed.players().canCastSpell()) {
+        if (EntityActionsAllowed.isImpaired(user, EntityActionsAllowed.Player.CAST_SPELL, true)) {
             cir.setReturnValue(TypedActionResult.fail(itemStack()));
             cir.cancel();
-            HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
             return;
         }
 

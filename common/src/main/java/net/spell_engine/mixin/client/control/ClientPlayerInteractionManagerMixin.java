@@ -19,12 +19,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ClientPlayerInteractionManagerMixin {
     @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
     public void interactItem_HEAD_LockHotbar(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) player).actionImpairing();
-        if (!actionsAllowed.players().canUseItem()) {
+        if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ITEM_USE, true)) {
             cir.setReturnValue(ActionResult.FAIL);
             cir.cancel();
-            HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
-            return;
         }
         if(SpellEngineClient.config.lockHotbarOnRightClick && !InputHelper.isLocked) {
             ItemStack itemStack = player.getStackInHand(hand);

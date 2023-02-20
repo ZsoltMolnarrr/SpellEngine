@@ -13,8 +13,7 @@ public class ClientPlayerActionImpairing {
     @Inject(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/input/Input;tick(ZF)V", shift = At.Shift.AFTER))
     private void tickMovement_ModifyInput_SpellEngine_ActionImpairing(CallbackInfo ci) {
         var clientPlayer = (ClientPlayerEntity)((Object)this);
-        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) clientPlayer).actionImpairing();
-        if (!actionsAllowed.canMove()) {
+        if (EntityActionsAllowed.isImpaired(clientPlayer, EntityActionsAllowed.Common.MOVE)) {
             clientPlayer.input.movementForward = 0;
             clientPlayer.input.movementSideways = 0;
         }
@@ -27,8 +26,8 @@ public class ClientPlayerActionImpairing {
 
     @Inject(method = "canMoveVoluntarily", at = @At("HEAD"), cancellable = true)
     private void canMoveVoluntarily_HEAD_SpellEngine(CallbackInfoReturnable<Boolean> cir) {
-        var actionsAllowed = ((EntityActionsAllowed.ControlledEntity) this).actionImpairing();
-        if (!actionsAllowed.canMove()) {
+        var clientPlayer = (ClientPlayerEntity)((Object)this);
+        if (EntityActionsAllowed.isImpaired(clientPlayer, EntityActionsAllowed.Common.MOVE)) {
             cir.setReturnValue(false);
             cir.cancel();
         }
