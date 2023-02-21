@@ -6,7 +6,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientPlayerEntity.class)
 public class ClientPlayerActionImpairing {
@@ -22,14 +21,5 @@ public class ClientPlayerActionImpairing {
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick_TAIL_SpellEngine_ActionImpairing(CallbackInfo ci) {
         ((EntityActionsAllowed.ControlledEntity)this).updateEntityActionsAllowed();
-    }
-
-    @Inject(method = "canMoveVoluntarily", at = @At("HEAD"), cancellable = true)
-    private void canMoveVoluntarily_HEAD_SpellEngine(CallbackInfoReturnable<Boolean> cir) {
-        var clientPlayer = (ClientPlayerEntity)((Object)this);
-        if (EntityActionsAllowed.isImpaired(clientPlayer, EntityActionsAllowed.Common.MOVE)) {
-            cir.setReturnValue(false);
-            cir.cancel();
-        }
     }
 }

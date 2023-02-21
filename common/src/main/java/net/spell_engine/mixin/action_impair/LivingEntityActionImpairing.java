@@ -26,15 +26,6 @@ public abstract class LivingEntityActionImpairing implements EntityActionsAllowe
         }
     }
 
-    @Inject(method = "tickActiveItemStack", at = @At("HEAD"), cancellable = true)
-    private void tickActiveItemStack_HEAD_SpellEngine(CallbackInfo ci) {
-        if (EntityActionsAllowed.isImpaired((LivingEntity) ((Object) this),
-                EntityActionsAllowed.Player.ITEM_USE)) {
-            clearActiveItem();
-            ci.cancel();
-        }
-    }
-
     @Inject(method = "isImmobile", at = @At("HEAD"), cancellable = true)
     private void isImmobile_HEAD_SpellEngine(CallbackInfoReturnable<Boolean> cir) {
         if (EntityActionsAllowed.isImpaired((LivingEntity) ((Object) this),
@@ -44,6 +35,14 @@ public abstract class LivingEntityActionImpairing implements EntityActionsAllowe
         }
     }
 
+    @Inject(method = "tickActiveItemStack", at = @At("HEAD"), cancellable = true)
+    private void tickActiveItemStack_HEAD_SpellEngine(CallbackInfo ci) {
+        if (EntityActionsAllowed.isImpaired((LivingEntity) ((Object) this),
+                EntityActionsAllowed.Player.ITEM_USE)) {
+            clearActiveItem();
+            ci.cancel();
+        }
+    }
 
     // MARK: Actions Allowed (CC)
 
