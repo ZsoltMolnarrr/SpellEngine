@@ -17,13 +17,4 @@ public class MobEntityActionImpairing {
             cir.cancel();
         }
     }
-
-    @Inject(method = "canMoveVoluntarily", at = @At("HEAD"), cancellable = true)
-    private void canMoveVoluntarily_HEAD_SpellEngine(CallbackInfoReturnable<Boolean> cir) {
-        if (EntityActionsAllowed.isImpaired((MobEntity) ((Object) this),
-                EntityActionsAllowed.Common.MOVE)) {
-            cir.setReturnValue(false);
-            cir.cancel();
-        }
-    }
 }

@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
 
@@ -33,6 +34,16 @@ public abstract class LivingEntityActionImpairing implements EntityActionsAllowe
             ci.cancel();
         }
     }
+
+    @Inject(method = "isImmobile", at = @At("HEAD"), cancellable = true)
+    private void isImmobile_HEAD_SpellEngine(CallbackInfoReturnable<Boolean> cir) {
+        if (EntityActionsAllowed.isImpaired((LivingEntity) ((Object) this),
+                EntityActionsAllowed.Common.MOVE)) {
+            cir.setReturnValue(true);
+            cir.cancel();
+        }
+    }
+
 
     // MARK: Actions Allowed (CC)
 
