@@ -1,10 +1,12 @@
 # 0.9.11
 
-- Add entry and config definitions of armors and weapons to API package
 - Add new particle effects
+- Add action impairing status effect system (aka CC, for example: Stun, Silence)
+- Add entry and config definitions of armors and weapons to API package
 - Allow offhand items to be used while ALT is held (such as Bow, Shield)
 - Allow no pool in spell containers if spell id list is non-empty (wands)
 - Simplify tooltip headers
+- Remove dependency to Better Combat (first person animations are now supported by PlayerAnimator)
 
 # 0.9.10
 

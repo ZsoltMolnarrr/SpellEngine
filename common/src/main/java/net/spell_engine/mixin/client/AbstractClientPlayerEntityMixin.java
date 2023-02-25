@@ -1,6 +1,7 @@
 package net.spell_engine.mixin.client;
 
 import com.mojang.authlib.GameProfile;
+import dev.kosmx.playerAnim.api.firstPerson.FirstPersonMode;
 import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
 import dev.kosmx.playerAnim.api.layered.modifier.AbstractFadeModifier;
 import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
@@ -16,11 +17,9 @@ import net.minecraft.util.Arm;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.spell_engine.Platform;
 import net.spell_engine.api.spell.Sound;
 import net.spell_engine.client.animation.*;
 import net.spell_engine.client.sound.SpellCastingSound;
-import net.spell_engine.client.compatibility.BetterCombatCompatibility;
 import net.spell_engine.internals.SpellCast;
 import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.mixin.LivingEntityAccessor;
@@ -48,10 +47,6 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         var stack = ((IAnimatedPlayer) this).getAnimationStack();
         stack.addAnimLayer(950, releaseAnimation.base);
         stack.addAnimLayer(900, castingAnimation.base);
-
-        var player = (AbstractClientPlayerEntity) ((Object) this);
-        BetterCombatCompatibility.addFirstPersonAnimationLayer(player, releaseAnimation.base);
-        BetterCombatCompatibility.addFirstPersonAnimationLayer(player, castingAnimation.base);
     }
 
     @Override
@@ -107,7 +102,6 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
 
     private AdjustmentModifier createPitchAdjustment_SpellEngine() {
         var player = (PlayerEntity)this;
-        var useFirstPersonAnimationAPI = Platform.isModLoaded("bettercombat");
         return new AdjustmentModifier((partName) -> {
             // System.out.println("Player pitch: " + player.getPitch());
             float rotationX = 0;
@@ -117,7 +111,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             float offsetY = 0;
             float offsetZ = 0;
 
-            if (useFirstPersonAnimationAPI && BetterCombatCompatibility.isRenderingAttackAnimationInFirstPerson()) {
+            if (FirstPersonMode.isFirstPersonPass()) {
                 var pitch = player.getPitch();
                 pitch = (float) Math.toRadians(pitch);
                 switch (partName) {
@@ -177,7 +171,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
                 stack.mirror.setEnabled(mirror);
                 stack.base.replaceAnimationWithFade(
                         AbstractFadeModifier.standardFadeIn(fadeIn, Ease.INOUTSINE),
-                        new KeyframeAnimationPlayer(copy.build(), 0));
+                        new KeyframeAnimationPlayer(copy.build(), 0).setFirstPersonMode(FirstPersonMode.THIRD_PERSON_MODEL));
             } else {
                 int fadeOutLength = 5;
                 stack.base.replaceAnimationWithFade(
