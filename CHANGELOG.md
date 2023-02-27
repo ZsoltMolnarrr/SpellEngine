@@ -1,6 +1,7 @@
 # 0.9.12
 
 - Fix server launch crash
+- Fix Spell Binding Table mining properties
 
 # 0.9.11
 

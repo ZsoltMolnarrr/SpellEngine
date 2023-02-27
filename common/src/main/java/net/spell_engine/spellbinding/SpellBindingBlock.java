@@ -1,5 +1,6 @@
 package net.spell_engine.spellbinding;
 
+import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -24,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class SpellBindingBlock extends BlockWithEntity {
-    public static SpellBindingBlock INSTANCE = new SpellBindingBlock(AbstractBlock.Settings.of(Material.STONE, MapColor.RED).requiresTool().luminance(state -> 7).strength(5.0f, 1200.0f));
+    public static SpellBindingBlock INSTANCE = new SpellBindingBlock(FabricBlockSettings.of(Material.STONE).strength(5.0f));
 
     protected static final VoxelShape SHAPE = Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
     public static final List<BlockPos> BOOKSHELF_OFFSETS = BlockPos.stream(-2, 0, -2, 2, 1, 2).filter(pos -> Math.abs(pos.getX()) == 2 || Math.abs(pos.getZ()) == 2).map(BlockPos::toImmutable).toList();
