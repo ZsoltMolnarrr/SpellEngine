@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public interface SpellCasterClient extends SpellCasterEntity {
+    boolean isHotbarModifierPressed();
     List<Entity> getCurrentTargets();
     Entity getCurrentFirstTarget();
     void setSelectedSpellIndex(int index);

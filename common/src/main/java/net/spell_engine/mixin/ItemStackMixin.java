@@ -12,7 +12,6 @@ import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.SpellContainer;
-import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.*;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -110,12 +109,12 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
 
         var attempt = SpellCast.Attempt.none();
         if (world.isClient) {
-            if (hand == Hand.MAIN_HAND
-                    && !user.getOffHandStack().isEmpty()
-                    && Keybindings.hotbarModifier.isPressed()) {
-                return; // Allow offhand item to work
-            }
             if (user instanceof SpellCasterClient caster) {
+                if (hand == Hand.MAIN_HAND
+                        && !user.getOffHandStack().isEmpty()
+                        && caster.isHotbarModifierPressed()) {
+                    return; // Allow offhand item to work
+                }
                 var spellId = caster.getSelectedSpellId(container);
                 attempt = SpellHelper.attemptCasting(user, itemStack, spellId);
                 caster.castAttempt(attempt);

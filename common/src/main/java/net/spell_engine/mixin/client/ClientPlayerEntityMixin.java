@@ -70,6 +70,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     // MARK: SpellCasterClient
 
+    public boolean isHotbarModifierPressed() {
+        return Keybindings.hotbarModifier.isPressed();
+    }
+
     public void changeSelectedSpellIndex(int delta) {
         selectedSpellIndex += delta;
     }

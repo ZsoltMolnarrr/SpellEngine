@@ -1,3 +1,7 @@
+# 0.9.12
+
+- Fix server launch crash
+
 # 0.9.11
 
 - Add new particle effects
