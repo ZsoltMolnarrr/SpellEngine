@@ -36,9 +36,6 @@
     "player-animator": ">=0.9.9",
     "spell_power": ">=${spell_power_version}"
   },
-  "breaks": {
-    "bettercombat": "<1.5.4"
-  },
   "custom": {
     "modmenu": {
       "links": {

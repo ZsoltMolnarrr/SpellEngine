@@ -17,6 +17,7 @@ import net.spell_engine.api.item.ConfigurableAttributes;
 import net.spell_engine.api.item.ItemConfig;
 import net.spell_power.api.attributes.SpellAttributes;
 import net.spell_power.api.enchantment.MagicArmorEnchanting;
+import net.spell_power.api.enchantment.SpellPowerEnchanting;
 
 import java.util.*;
 import java.util.function.Function;
@@ -51,7 +52,7 @@ public class Armor {
         public void register() {
             for (var piece: pieces()) {
                 Registry.register(Registry.ITEM, idOf(piece), piece);
-                MagicArmorEnchanting.register(piece);
+                SpellPowerEnchanting.registerArmor(piece);
             }
         }
     }
