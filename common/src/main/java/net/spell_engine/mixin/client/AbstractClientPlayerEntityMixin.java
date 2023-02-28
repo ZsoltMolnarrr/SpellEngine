@@ -20,6 +20,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.Sound;
 import net.spell_engine.client.animation.*;
+import net.spell_engine.client.compatibility.FirstPersonModelCompatibility;
 import net.spell_engine.client.sound.SpellCastingSound;
 import net.spell_engine.internals.SpellCast;
 import net.spell_engine.internals.SpellCasterEntity;
@@ -172,7 +173,11 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
                 stack.mirror.setEnabled(mirror);
                 stack.base.replaceAnimationWithFade(
                         AbstractFadeModifier.standardFadeIn(fadeIn, Ease.INOUTSINE),
-                        new KeyframeAnimationPlayer(copy.build(), 0).setFirstPersonMode(FirstPersonMode.THIRD_PERSON_MODEL));
+                        new KeyframeAnimationPlayer(copy.build(), 0)
+                                .setFirstPersonMode(
+                                        FirstPersonModelCompatibility.isActive() ?
+                                        FirstPersonMode.NONE :
+                                        FirstPersonMode.THIRD_PERSON_MODEL));
             } else {
                 int fadeOutLength = 5;
                 stack.base.replaceAnimationWithFade(

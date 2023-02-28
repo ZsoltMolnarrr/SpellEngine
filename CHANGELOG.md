@@ -1,5 +1,6 @@
 # 0.9.13
 
+- Add FirstPersonModel support
 - Remove use deprecated Spell Power API
 
 # 0.9.12

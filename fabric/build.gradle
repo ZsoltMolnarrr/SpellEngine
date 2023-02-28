@@ -63,6 +63,7 @@ dependencies {
     modCompileOnly("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }
     modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-fabric") { transitive false }
     modImplementation("curse.maven:shoulder-surfing-reloaded-243190:${shoulder_surfing_file_id}")
+    modCompileOnly("maven.modrinth:first-person-model:${project.fpm_version}")
 }
 
 processResources {
