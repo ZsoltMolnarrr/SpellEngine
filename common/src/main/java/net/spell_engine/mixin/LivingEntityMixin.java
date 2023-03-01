@@ -36,7 +36,7 @@ public abstract class LivingEntityMixin implements ConfigurableKnockback {
         var entity = (LivingEntity) ((Object) this);
         if (entity.world.isClient && entity instanceof SpellCasterClient caster) {
             if (caster.getCurrentSpellId() != null) {
-                System.out.println("Client clearActiveItem (castRelease)" + " | time: " + entity.age);
+                // System.out.println("Client clearActiveItem (castRelease)" + " | time: " + entity.age);
                 caster.castRelease(entity.getActiveItem(), getItemUseTimeLeft());
             }
         }
