@@ -40,6 +40,10 @@ public class SpellHelper {
     public static int maximumUseTicks = 72000; // = 1 hour
 
     public static SpellCast.Attempt attemptCasting(PlayerEntity player, ItemStack itemStack, Identifier spellId) {
+        return attemptCasting(player, itemStack, spellId, true);
+    }
+
+    public static SpellCast.Attempt attemptCasting(PlayerEntity player, ItemStack itemStack, Identifier spellId, boolean checkAmmo) {
         var caster = (SpellCasterEntity)player;
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
@@ -48,9 +52,11 @@ public class SpellHelper {
         if (caster.getCooldownManager().isCoolingDown(spellId)) {
             return SpellCast.Attempt.failOnCooldown(new SpellCast.Attempt.OnCooldownInfo());
         }
-        var ammoResult = SpellHelper.ammoForSpell(player, spell, itemStack);
-        if (!ammoResult.satisfied()) {
-            return SpellCast.Attempt.failMissingItem(new SpellCast.Attempt.MissingItemInfo(ammoResult.ammo.getItem()));
+        if (checkAmmo) {
+            var ammoResult = SpellHelper.ammoForSpell(player, spell, itemStack);
+            if (!ammoResult.satisfied()) {
+                return SpellCast.Attempt.failMissingItem(new SpellCast.Attempt.MissingItemInfo(ammoResult.ammo.getItem()));
+            }
         }
         return SpellCast.Attempt.success();
     }

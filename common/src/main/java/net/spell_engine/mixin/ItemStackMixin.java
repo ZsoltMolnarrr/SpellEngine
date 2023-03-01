@@ -155,7 +155,8 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
 
         if (user instanceof PlayerEntity player) {
             var caster = (SpellCasterEntity)player;
-            var attempt = SpellHelper.attemptCasting(player, itemStack(), caster.getCurrentSpellId());
+            var checkAmmo = world.isClient; // Ammo check is expensive, avoid checking it on the server
+            var attempt = SpellHelper.attemptCasting(player, itemStack(), caster.getCurrentSpellId(), checkAmmo);
             if (attempt.isSuccess()) {
                 if (world.isClient) {
                     if (user instanceof SpellCasterClient casterClient) {
