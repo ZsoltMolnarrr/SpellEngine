@@ -1,6 +1,7 @@
 # 0.9.14
 
 - Improve spell cast sync
+- Prevent spam click cheesing channelled spells
 
 # 0.9.13
 

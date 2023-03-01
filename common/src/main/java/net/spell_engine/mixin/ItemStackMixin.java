@@ -91,7 +91,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
 
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
     private void use_HEAD_SpellEngine(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-        System.out.println("ItemStack use start " + (world.isClient ? "CLIENT" : "SERVER") + " | time: " + user.age);
+        // System.out.println("ItemStack use start " + (world.isClient ? "CLIENT" : "SERVER") + " | time: " + user.age);
         if (hand == Hand.OFF_HAND && !SpellEngineMod.config.offhand_casting_allowed) {
             return;
         }
@@ -155,7 +155,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
 
         if (user instanceof PlayerEntity player) {
             var caster = (SpellCasterEntity)player;
-            var checkAmmo = world.isClient; // Ammo check is expensive, avoid checking it on the server
+            var checkAmmo = world.isClient; // Ammo check is expensive, avoid it on server
             var attempt = SpellHelper.attemptCasting(player, itemStack(), caster.getCurrentSpellId(), checkAmmo);
             if (attempt.isSuccess()) {
                 if (world.isClient) {

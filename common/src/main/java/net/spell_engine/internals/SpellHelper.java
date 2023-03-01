@@ -121,7 +121,9 @@ public class SpellHelper {
     }
 
     public static boolean isChannelTickDue(Spell spell, int remainingUseTicks) {
-        return (remainingUseTicks % spell.cast.channel_ticks) == 0;
+        var currentTick = maximumUseTicks - remainingUseTicks;
+        return currentTick >= spell.cast.channel_ticks
+                && (currentTick % spell.cast.channel_ticks) == 0;
     }
 
     public static boolean isChanneled(Spell spell) {
