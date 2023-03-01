@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class SpellHelper {
-    public static int maximumUseTicks = 72000;
+    public static int maximumUseTicks = 72000; // = 1 hour
 
     public static SpellCast.Attempt attemptCasting(PlayerEntity player, ItemStack itemStack, Identifier spellId) {
         var caster = (SpellCasterEntity)player;
@@ -132,10 +132,6 @@ public class SpellHelper {
             return 0;
         }
         return ((float)ticks) / 20F;
-    }
-
-    public static boolean canContinueToCastSpell(SpellCasterEntity caster, Identifier spellId) {
-        return !caster.getCooldownManager().isCoolingDown(spellId);
     }
 
     public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCast.Action action, Hand hand, int remainingUseTicks) {

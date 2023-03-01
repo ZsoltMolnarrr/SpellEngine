@@ -20,6 +20,6 @@ public interface SpellCasterClient extends SpellCasterEntity {
     SpellContainer getCurrentContainer();
     void castAttempt(SpellCast.Attempt result);
     void castStart(SpellContainer spell, Hand hand, ItemStack itemStack, int remainingUseTicks);
-    void castTick(ItemStack itemStack, int remainingUseTicks);
+    void castTick(ItemStack itemStack, Hand hand, int remainingUseTicks);
     void castRelease(ItemStack itemStack, int remainingUseTicks);
 }

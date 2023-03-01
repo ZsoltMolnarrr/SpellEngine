@@ -66,6 +66,9 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
     @Inject(method = "isUsedOnRelease", at = @At("HEAD"), cancellable = true)
     private void isUsedOnRelease_HEAD_SpellEngine(CallbackInfoReturnable<Boolean> cir) {
         if (spellContainer() == null) { return; }
+        // This would make the `useTick` function called upon release
+        // The problem is, there is no way to distinguish inside `useTick` where it was called from
+        // Hence this is not used.
         cir.setReturnValue(false);
         cir.cancel();
     }
@@ -88,7 +91,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
 
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
     private void use_HEAD_SpellEngine(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
-        // System.out.println("ItemStack use start");
+        System.out.println("ItemStack use start " + (world.isClient ? "CLIENT" : "SERVER") + " | time: " + user.age);
         if (hand == Hand.OFF_HAND && !SpellEngineMod.config.offhand_casting_allowed) {
             return;
         }
@@ -144,24 +147,23 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
 
     @Inject(method = "usageTick", at = @At("HEAD"), cancellable = true)
     private void usageTick_HEAD_SpellEngine(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
-        // System.out.println("ItemStack use tick A " + (world.isClient ? "CLIENT" : "SERVER"));
+        // System.out.println("ItemStack use tick " + (world.isClient ? "CLIENT" : "SERVER") + " | time: " + user.age);
         var spell = spellContainer();
         if (spell == null) {
             return;
         }
 
         if (user instanceof PlayerEntity player) {
-            if (!world.isClient) {
-                // Server
-                var caster = (SpellCasterEntity)player;
-                if (!SpellHelper.canContinueToCastSpell(caster, caster.getCurrentSpellId())) {
-                    player.stopUsingItem();
+            var caster = (SpellCasterEntity)player;
+            var attempt = SpellHelper.attemptCasting(player, itemStack(), caster.getCurrentSpellId());
+            if (attempt.isSuccess()) {
+                if (world.isClient) {
+                    if (user instanceof SpellCasterClient casterClient) {
+                        casterClient.castTick(itemStack(), user.getActiveHand(), remainingUseTicks);
+                    }
                 }
             } else {
-                // Client
-                if (user instanceof SpellCasterClient caster) {
-                    caster.castTick(itemStack(), remainingUseTicks);
-                }
+                player.stopUsingItem();
             }
         }
 
@@ -172,7 +174,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
 
     @Inject(method = "onStoppedUsing", at = @At("HEAD"), cancellable = true)
     private void onStoppedUsing_HEAD_SpellEngine(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
-        // System.out.println("ItemStack use stop");
+        // System.out.println("ItemStack use stop "  + (world.isClient ? "CLIENT" : "SERVER") + " | time: " + user.age);
         var spell = spellContainer();
         if (spell == null) { return; }
 

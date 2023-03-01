@@ -137,9 +137,13 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     @Override
     public void castStart(SpellContainer container, Hand hand, ItemStack itemStack, int remainingUseTicks) {
+        var spellId = SpellContainerHelper.spellId(container, selectedSpellIndex);
+        selectSpell(spellId, hand, itemStack, remainingUseTicks);
+    }
+
+    private void selectSpell(Identifier spellId, Hand hand, ItemStack itemStack, int remainingUseTicks) {
         var caster = player();
         var slot = findSlot(caster, itemStack);
-        var spellId = SpellContainerHelper.spellId(container, selectedSpellIndex);
         ClientPlayNetworking.send(
                 Packets.SpellRequest.ID,
                 new Packets.SpellRequest(hand, SpellCast.Action.START, spellId, slot, remainingUseTicks, new int[]{}).write());
@@ -147,14 +151,13 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     @Override
-    public void castTick(ItemStack itemStack, int remainingUseTicks) {
+    public void castTick(ItemStack itemStack, Hand hand, int remainingUseTicks) {
         var caster = player();
         var currentSpellId = getCurrentSpellId();
         var currentSpell = getCurrentSpell();
         if (currentSpell == null
-                || !SpellHelper.canContinueToCastSpell((SpellCasterEntity) caster, currentSpellId)
                 || (SpellEngineClient.config.restartCastingWhenSwitchingSpell
-                    && !getCurrentSpellId().equals(spellIdFromItemStack(itemStack)))
+                    && !currentSpellId.equals(spellIdFromItemStack(itemStack)))
         ) {
             stopItemUsage();
             return;
@@ -229,7 +232,8 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 new Packets.SpellRequest(hand, action, spellId, slot, remainingUseTicks, targetIDs).write());
 
         if (shouldEndCasting) {
-            endCasting();
+            // endCasting();
+            clearCasting();
         }
     }
 
