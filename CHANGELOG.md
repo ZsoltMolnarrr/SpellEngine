@@ -1,3 +1,7 @@
+# 0.9.14
+
+- Improve spell cast sync
+
 # 0.9.13
 
 - Add FirstPersonModel support
