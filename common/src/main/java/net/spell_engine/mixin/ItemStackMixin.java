@@ -148,8 +148,8 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
     @Inject(method = "usageTick", at = @At("HEAD"), cancellable = true)
     private void usageTick_HEAD_SpellEngine(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
         // System.out.println("ItemStack use tick " + (world.isClient ? "CLIENT" : "SERVER") + " | time: " + user.age);
-        var spell = spellContainer();
-        if (spell == null) {
+        var container = spellContainer();
+        if (container == null) {
             return;
         }
 
@@ -176,15 +176,15 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
     @Inject(method = "onStoppedUsing", at = @At("HEAD"), cancellable = true)
     private void onStoppedUsing_HEAD_SpellEngine(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
         // System.out.println("ItemStack use stop "  + (world.isClient ? "CLIENT" : "SERVER") + " | time: " + user.age);
-        var spell = spellContainer();
-        if (spell == null) { return; }
+        var container = spellContainer();
+        if (container == null) { return; }
 
         if (world.isClient) {
             if (user instanceof SpellCasterClient caster) {
                 // WATCH OUT `LivingEntity.clearActiveItem` also calls `castRelease`
                 // using a mixin to the method `HEAD`
                 // This is to make sure the spell release is released even if switching to another item.
-                caster.castRelease(itemStack(), remainingUseTicks);
+                caster.castRelease(itemStack(), user.getActiveHand(), remainingUseTicks);
             }
         }
 

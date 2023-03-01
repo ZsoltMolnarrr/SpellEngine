@@ -152,6 +152,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     @Override
     public void castTick(ItemStack itemStack, Hand hand, int remainingUseTicks) {
+        // System.out.println("Spell cast tick: " + (SpellHelper.maximumUseTicks - remainingUseTicks));
         var caster = player();
         var currentSpellId = getCurrentSpellId();
         var currentSpell = getCurrentSpell();
@@ -166,21 +167,23 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         updateTargets();
         var progress = SpellHelper.getCastProgress(caster, remainingUseTicks, currentSpell);
         if (SpellHelper.isChanneled(currentSpell)) {
-            var action = (progress >= 1) ? SpellCast.Action.RELEASE : SpellCast.Action.CHANNEL;
-            cast(currentSpell, action, Hand.MAIN_HAND, itemStack, remainingUseTicks);
+            cast(currentSpell, SpellCast.Action.CHANNEL, hand, itemStack, remainingUseTicks);
+            if (progress >= 1) {
+                // System.out.println("Channeled, stop");
+                stopItemUsage(); // Triggers cast release (via: Player -> ItemStack(onStoppedUsing) -> castRelease)
+            }
         } else {
             if (SpellEngineClient.config.autoRelease
                     && SpellHelper.getCastProgress(caster, remainingUseTicks, currentSpell) >= 1) {
-                //cast(currentSpell, SpellCast.Action.RELEASE, itemStack, remainingUseTicks);
-                stopItemUsage();
+                stopItemUsage(); // Triggers cast release (via: Player -> ItemStack(onStoppedUsing) -> castRelease)
             }
         }
     }
 
     @Override
-    public void castRelease(ItemStack itemStack, int remainingUseTicks) {
+    public void castRelease(ItemStack itemStack, Hand hand, int remainingUseTicks) {
         updateTargets();
-        cast(getCurrentSpell(), SpellCast.Action.RELEASE, Hand.MAIN_HAND, itemStack, remainingUseTicks);
+        cast(getCurrentSpell(), SpellCast.Action.RELEASE, hand, itemStack, remainingUseTicks);
     }
 
     private void cast(Spell spell, SpellCast.Action action, Hand hand, ItemStack itemStack, int remainingUseTicks) {
@@ -197,7 +200,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                         || !SpellHelper.isChannelTickDue(spell, remainingUseTicks)) {
                     return;
                 }
-                shouldEndCasting = progress >= 1;
             }
             case RELEASE -> {
                 shouldEndCasting = true;
