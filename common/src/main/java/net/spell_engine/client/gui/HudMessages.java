@@ -9,6 +9,8 @@ import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.internals.SpellCast;
 
+import java.util.Locale;
+
 public class HudMessages {
     public static final HudMessages INSTANCE = new HudMessages();
     public static final int DEFAULT_ERROR_MESSAGE_DURATION = 20;
@@ -26,7 +28,7 @@ public class HudMessages {
             attemptDisplayed = true;
         }
         if (!attempt.isFail() || !SpellEngineClient.config.showSpellCastErrors) { return; }
-        var translationKey = castAttemptPrefix + attempt.result().toString().toLowerCase();
+        var translationKey = castAttemptPrefix + attempt.result().toString().toLowerCase(Locale.ENGLISH);
         MutableText message = null;
         switch (attempt.result()) {
             case MISSING_ITEM -> {
@@ -43,7 +45,7 @@ public class HudMessages {
     }
 
     public void actionImpaired(EntityActionsAllowed.SemanticType reason) {
-        error(I18n.translate("hud.action_impaired." + reason.toString().toLowerCase()));
+        error(I18n.translate("hud.action_impaired." + reason.toString().toLowerCase(Locale.ENGLISH)));
     }
 
     public void error(String message) {

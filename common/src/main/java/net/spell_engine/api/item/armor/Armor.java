@@ -16,7 +16,6 @@ import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.item.ConfigurableAttributes;
 import net.spell_engine.api.item.ItemConfig;
 import net.spell_power.api.attributes.SpellAttributes;
-import net.spell_power.api.enchantment.MagicArmorEnchanting;
 import net.spell_power.api.enchantment.SpellPowerEnchanting;
 
 import java.util.*;

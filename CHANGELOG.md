@@ -1,3 +1,7 @@
+# 0.9.15
+
+- Fix issues for Turkish machines
+
 # 0.9.14
 
 - Improve spell cast sync
