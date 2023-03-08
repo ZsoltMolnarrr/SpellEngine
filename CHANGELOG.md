@@ -1,6 +1,7 @@
 # 0.9.15
 
-- Fix issues for Turkish machines
+- Add Ukrainian translation, thanks to un_roman
+- Fix issues for Turkish players
 
 # 0.9.14
 
