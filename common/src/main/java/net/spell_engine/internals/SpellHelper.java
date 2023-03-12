@@ -65,7 +65,9 @@ public class SpellHelper {
     public static AmmoResult ammoForSpell(PlayerEntity player, Spell spell, ItemStack itemStack) {
         boolean satisfied = true;
         ItemStack ammo = null;
-        boolean ignoreAmmo = player.getAbilities().creativeMode || EnchantmentHelper.getLevel(Enchantments_SpellEngine.INFINITY, itemStack) > 0;
+        boolean ignoreAmmo = player.getAbilities().creativeMode
+                || EnchantmentHelper.getLevel(Enchantments_SpellEngine.INFINITY, itemStack) > 0
+                || !SpellEngineMod.config.spell_cost_item_allowed;
         if (!ignoreAmmo && spell.cost.item_id != null && !spell.cost.item_id.isEmpty()) {
             var id = new Identifier(spell.cost.item_id);
             var ammoItem = Registry.ITEM.get(id);
@@ -247,7 +249,7 @@ public class SpellHelper {
                     });
                 }
                 // Item
-                if (SpellEngineMod.config.spell_cost_item_allowed && ammoResult.ammo != null) {
+                if (ammoResult.ammo != null) {
                     for(int i = 0; i < player.getInventory().size(); ++i) {
                         var stack = player.getInventory().getStack(i);
                         if (stack.isOf(ammoResult.ammo.getItem())) {
