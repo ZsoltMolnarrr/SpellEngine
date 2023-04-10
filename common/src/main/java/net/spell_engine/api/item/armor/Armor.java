@@ -60,10 +60,22 @@ public class Armor {
         public String name() {
             return material.getName();
         }
+
+        @Deprecated
         public <T extends ArmorItem> Armor.Set<T> armorSet(Function<CustomMaterial, Armor.Set<T>> factory, ArrayList<Entry> entries) {
             var armorSet = factory.apply(material);
             entries.add(new Entry(material, armorSet, defaults));
             return armorSet;
+        }
+
+        public <T extends ArmorItem> Entry bundle(Function<CustomMaterial, Armor.Set<T>> factory) {
+            var armorSet = factory.apply(material);
+            return new Entry(material, armorSet, defaults);
+        }
+
+        public <T extends ArmorItem> Entry put(ArrayList<Entry> list) {
+            list.add(this);
+            return this;
         }
     }
 
