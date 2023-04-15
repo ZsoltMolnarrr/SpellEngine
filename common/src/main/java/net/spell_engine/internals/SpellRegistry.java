@@ -11,7 +11,6 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.api.spell.SpellPool;
 import net.spell_power.api.MagicSchool;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStreamReader;
 import java.util.*;

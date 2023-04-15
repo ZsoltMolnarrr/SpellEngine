@@ -91,4 +91,22 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
             return particle;
         }
     }
+
+    @Environment(EnvType.CLIENT)
+    public static class HolyFactory implements ParticleFactory<DefaultParticleType> {
+        private final SpriteProvider spriteProvider;
+        public static Color color = Color.from(0xffffcc);
+
+        public HolyFactory(SpriteProvider spriteProvider) {
+            this.spriteProvider = spriteProvider;
+        }
+
+        public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
+            particle.setSprite(this.spriteProvider);
+            float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
+            particle.setColor(color.red() * j, color.green() * j, color.blue() * j);
+            return particle;
+        }
+    }
 }

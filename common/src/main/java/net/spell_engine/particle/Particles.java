@@ -47,6 +47,7 @@ public class Particles {
     public static final ParticleEntry arcane_spell = particle("arcane_spell");
     public static final ParticleEntry arcane_hit = particle("arcane_hit").customTexture();
     public static final ParticleEntry healing_ascend = particle("healing_ascend").customTexture();
+    public static final ParticleEntry holy_ascend = particle("holy_ascend").customTexture();
     public static final ParticleEntry holy_hit = particle("holy_hit").customTexture();
     public static final ParticleEntry flame = particle("flame");
     public static final ParticleEntry frost_hit = particle("frost_hit").customTexture();
