@@ -25,10 +25,10 @@ public class SpellSnowflakeParticle extends SnowflakeParticle {
     }
 
     @Environment(value=EnvType.CLIENT)
-    public static class Factory implements ParticleFactory<DefaultParticleType> {
+    public static class FrostFactory implements ParticleFactory<DefaultParticleType> {
         private final SpriteProvider spriteProvider;
 
-        public Factory(SpriteProvider spriteProvider) {
+        public FrostFactory(SpriteProvider spriteProvider) {
             this.spriteProvider = spriteProvider;
         }
 
@@ -42,4 +42,24 @@ public class SpellSnowflakeParticle extends SnowflakeParticle {
             return particle;
         }
     }
+
+    @Environment(value=EnvType.CLIENT)
+    public static class HolyFactory implements ParticleFactory<DefaultParticleType> {
+        private final SpriteProvider spriteProvider;
+
+        public HolyFactory(SpriteProvider spriteProvider) {
+            this.spriteProvider = spriteProvider;
+        }
+
+        public static Color color = Color.from(0xffffcc);
+
+        @Override
+        public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+            var particle = new SpellSnowflakeParticle(clientWorld, d, e, f, g, h, i, this.spriteProvider);
+            particle.setColor(color.red(), color.green(), color.red());
+            particle.alpha = 0.75F;
+            return particle;
+        }
+    }
+
 }
