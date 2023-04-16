@@ -8,6 +8,7 @@ import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.util.registry.Registry;
@@ -58,6 +59,10 @@ public class SpellEngineMod {
         EnchantmentRestriction.alleviate(Enchantments.KNOCKBACK, itemStack -> itemStack.getItem() instanceof StaffItem);
         EnchantmentRestriction.alleviate(Enchantments.LOOTING, itemStack -> itemStack.getItem() instanceof StaffItem);
         SpellPowerEnchanting.allowForWeapon(SpellContainerHelper::hasValidContainer);
+
+        // Sync attack power to client so physical attack damage spells can be estimated.
+        // Probably several other mods perform this operation, but its no problem.
+        EntityAttributes.GENERIC_ATTACK_DAMAGE.setTracked(true);
     }
 
     public static void registerSpellBinding() {
