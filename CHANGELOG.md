@@ -4,6 +4,8 @@
 - Add new particles
 - Set `generic.attack_damage` vanilla attribute to be synchronized over to clients
 - Extend armor and weapon creation API
+- Extend particle effect JSON API
+- Area effects can now target the caster too
 - Fix use spell_cost_item_allowed still requiring at least 1 rune
 
 # 0.9.15

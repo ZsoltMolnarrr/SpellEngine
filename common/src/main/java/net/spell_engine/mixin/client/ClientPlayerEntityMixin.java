@@ -289,6 +289,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         switch (targetType) {
             case AREA -> {
                 targets = TargetHelper.targetsFromArea(caster, currentSpell.range, currentSpell.release.target.area, selectionPredicate);
+                var area = currentSpell.release.target.area;
+                if (area != null && area.include_caster) {
+                    targets.add(caster);
+                }
             }
             case BEAM -> {
                 targets = TargetHelper.targetsFromRaycast(caster, currentSpell.range, selectionPredicate);

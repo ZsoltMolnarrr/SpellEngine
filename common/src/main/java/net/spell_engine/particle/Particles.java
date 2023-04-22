@@ -52,6 +52,7 @@ public class Particles {
 
     public static final ParticleEntry holy_spark = particle("holy_spark");
     public static final ParticleEntry holy_spark_mini = particle("holy_spark_mini");
+    public static final ParticleEntry holy_spell = particle("holy_spell");
     public static final ParticleEntry flame = particle("flame");
     public static final ParticleEntry frost_hit = particle("frost_hit").customTexture();
     public static final ParticleEntry frost_shard = particle("frost_shard").customTexture();

@@ -44,14 +44,14 @@ public class GenericSpellParticle extends SpriteBillboardParticle  {
     // MARK: Factories
 
     @Environment(EnvType.CLIENT)
-    public static class ArcaneSpellFactory implements ParticleFactory<DefaultParticleType> {
+    static class SpellFactory implements ParticleFactory<DefaultParticleType> {
         private final SpriteProvider spriteProvider;
+        public final Color color;
 
-        public ArcaneSpellFactory(SpriteProvider spriteProvider) {
+        public SpellFactory(SpriteProvider spriteProvider, Color color) {
             this.spriteProvider = spriteProvider;
+            this.color = color;
         }
-
-        public static Color color = Color.from(MagicSchool.ARCANE.color());
 
         public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
             var spellParticle = new GenericSpellParticle(clientWorld, d, e, f, g, h, i, this.spriteProvider);
@@ -60,6 +60,21 @@ public class GenericSpellParticle extends SpriteBillboardParticle  {
             spellParticle.setColor(color.red() * j, color.green() * j, color.blue() * j);
 //            spellParticle.alpha = 1F;
             return spellParticle;
+        }
+    }
+
+
+    @Environment(EnvType.CLIENT)
+    public static class ArcaneSpellFactory extends SpellFactory implements ParticleFactory<DefaultParticleType> {
+        public ArcaneSpellFactory(SpriteProvider spriteProvider) {
+            super(spriteProvider, Color.from(MagicSchool.ARCANE.color()));
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static class HolySpellFactory extends SpellFactory implements ParticleFactory<DefaultParticleType> {
+        public HolySpellFactory(SpriteProvider spriteProvider) {
+            super(spriteProvider, Color.from(0xffffcc));
         }
     }
 

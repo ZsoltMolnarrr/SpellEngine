@@ -35,10 +35,16 @@ public class ParticleBatch { public ParticleBatch() { }
     public float min_speed = 0;
     public float max_speed = 1;
     public float angle = 0;
+    public float extent = 0;
+
+    public ParticleBatch(String particle_id, Shape shape, Origin origin, Rotation rotation,
+                         float count, float min_speed, float max_speed, float angle) {
+        this(particle_id, shape, origin, rotation, count, min_speed, max_speed, angle, 0);
+    }
 
     public ParticleBatch(
             String particle_id, Shape shape, Origin origin, Rotation rotation,
-            float count, float min_speed, float max_speed, float angle) {
+            float count, float min_speed, float max_speed, float angle, float extent) {
         this.particle_id = particle_id;
         this.shape = shape;
         this.origin = origin;
@@ -47,6 +53,7 @@ public class ParticleBatch { public ParticleBatch() { }
         this.min_speed = min_speed;
         this.max_speed = max_speed;
         this.angle = angle;
+        this.extent = extent;
     }
 
     public ParticleBatch(ParticleBatch other) {
@@ -57,6 +64,7 @@ public class ParticleBatch { public ParticleBatch() { }
             other.count,
             other.min_speed,
             other.max_speed,
-            other.angle);
+            other.angle,
+            other.extent);
     }
 }

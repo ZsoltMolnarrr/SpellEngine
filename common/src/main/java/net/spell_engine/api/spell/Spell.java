@@ -40,6 +40,7 @@ public class Spell {
                 public float horizontal_range_multiplier = 1F;
                 public float vertical_range_multiplier = 1F;
                 public float angle_degrees = 0F;
+                public boolean include_caster = false;
             }
 
             public Beam beam;
