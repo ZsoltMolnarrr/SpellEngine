@@ -53,4 +53,8 @@ public class CustomLayers extends RenderLayer {
                 .build(false);
         return RenderLayer.of("entity_translucent_emissive", VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, true, true, multiPhaseParameters);
     }
+
+    public static RenderLayer create(String name, VertexFormat vertexFormat, VertexFormat.DrawMode drawMode, int expectedBufferSize, boolean hasCrumbling, boolean translucent, MultiPhaseParameters phases) {
+        return RenderLayer.of(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent, phases);
+    }
 }

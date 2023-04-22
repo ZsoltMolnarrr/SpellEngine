@@ -1,7 +1,6 @@
 package net.spell_engine.api.item.weapon;
 
 import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -9,13 +8,11 @@ import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ToolItem;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.spell_engine.api.item.ConfigurableAttributes;
 
-public class StaffItem extends ToolItem implements ConfigurableAttributes {
+public class StaffItem extends SpellWeaponItem {
     private Multimap<EntityAttribute, EntityAttributeModifier> attributes;
 
     public StaffItem(ToolMaterial material, Settings settings) {
