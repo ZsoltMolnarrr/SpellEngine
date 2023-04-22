@@ -1,3 +1,11 @@
+# 0.9.16
+
+- Add support for dual intent spells
+- Add new particles
+- Set `generic.attack_damage` vanilla attribute to be synchronized over to clients
+- Extend armor and weapon creation API
+- Fix use spell_cost_item_allowed still requiring at least 1 rune
+
 # 0.9.15
 
 - Add Ukrainian translation, thanks to un_roman

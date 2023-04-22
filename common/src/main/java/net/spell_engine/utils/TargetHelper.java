@@ -83,10 +83,11 @@ public class TargetHelper {
 
     // Make sure this complies with comment in `ServerConfig`
     private static boolean[][] TABLE_OF_ULTIMATE_JUSTICE = {
-            { false, true, true, },
-            { false, false, true },
-            { true, true, false },
-            { true, false, false },
+            // Friendly, Neutral, Hostile
+            { false, true, true, }, // Direct Damage
+            { false, false, true }, // Area Damage
+            { true, true, false },  // Direct Healing
+            { true, false, false }, // Area Healing
     };
 
     public static boolean actionAllowed(TargetingMode targetingMode, Intent intent, LivingEntity attacker, Entity target) {

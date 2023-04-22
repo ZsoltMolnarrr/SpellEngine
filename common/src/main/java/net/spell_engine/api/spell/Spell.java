@@ -71,6 +71,7 @@ public class Spell {
         public Sound sound;
     }
 
+    public boolean allow_mixed_intents = false;
     public Impact[] impact;
     public static class Impact { public Impact() { }
         public Action action;

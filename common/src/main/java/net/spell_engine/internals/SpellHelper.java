@@ -31,9 +31,7 @@ import net.spell_power.api.SpellDamageSource;
 import net.spell_power.api.SpellPower;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class SpellHelper {
@@ -399,9 +397,20 @@ public class SpellHelper {
     public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
         var performed = false;
         var trackers = PlayerLookup.tracking(target);
+
+        TargetHelper.Intent selectedIntent = null;
         for (var impact: spell.impact) {
+            var intent = intent(impact.action);
+            if (selectedIntent != null && selectedIntent != intent) {
+                // Filter out mixed intents
+                // So dual intent spells either damage or heal, and not do both
+                continue;
+            }
             var result = performImpact(world, caster, target, spell.school, impact, context, trackers);
             performed = performed || result;
+            if (result) {
+                selectedIntent = intent;
+            }
         }
         return performed;
     }
@@ -607,12 +616,13 @@ public class SpellHelper {
         return null;
     }
 
-    public static TargetHelper.Intent intent(Spell spell) {
+    public static EnumSet<TargetHelper.Intent> intents(Spell spell) {
+        var intents = new HashSet<TargetHelper.Intent>();
         for (var impact: spell.impact) {
-            return intent(impact.action);
+            intents.add(intent(impact.action));
+            //return intent(impact.action);
         }
-        assert true;
-        return null;
+        return EnumSet.copyOf(intents);
     }
 
     public static TargetHelper.Intent intent(Spell.Impact.Action action) {

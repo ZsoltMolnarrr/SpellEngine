@@ -181,8 +181,13 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                                         && spell != null
                                         && spell.impact.length > 0
                                         && getOwner() instanceof LivingEntity owner) {
-                                    var intent = SpellHelper.intent(spell);
-                                    shouldCollideWithEntity = TargetHelper.actionAllowed(TargetHelper.TargetingMode.DIRECT, intent, owner, target);
+                                    var intents = SpellHelper.intents(spell);
+
+                                    boolean intentAllows = false;
+                                    for (var intent: intents) {
+                                        intentAllows = intentAllows || TargetHelper.actionAllowed(TargetHelper.TargetingMode.DIRECT, intent, owner, target);
+                                    }
+                                    shouldCollideWithEntity = intentAllows;
                                 }
                             }
                             if (shouldCollideWithEntity) {

@@ -278,9 +278,13 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         boolean fallbackToPreviousTargets = false;
         var targetingMode = SpellHelper.selectionTargetingMode(currentSpell);
         var targetType = currentSpell.release.target.type;
-        var intent = SpellHelper.intent(currentSpell);
+        var intents = SpellHelper.intents(currentSpell);
         Predicate<Entity> selectionPredicate = (target) -> {
-            return !SpellEngineClient.config.filterInvalidTargets || TargetHelper.actionAllowed(targetingMode, intent, caster, target);
+            boolean intentAllows = false;
+            for (var intent: intents) {
+                intentAllows = intentAllows || TargetHelper.actionAllowed(targetingMode, intent, caster, target);
+            }
+            return !SpellEngineClient.config.filterInvalidTargets || intentAllows;
         };
         switch (targetType) {
             case AREA -> {
