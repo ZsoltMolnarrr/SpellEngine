@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "item": "spell_engine:spell_binding"
+    },
+    "title": {
+      "translate": "advancements.rpg_classes.spellbinder.title"
+    },
+    "description": {
+      "translate": "advancements.rpg_classes.spellbinder.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "parent": "rpg_classes:root",
+  "criteria": {
+    "bind": {
+      "trigger": "spell_engine:spell_binding"
+    }
+  },
+  "requirements": [
+    [
+      "bind"
+    ]
+  ]
+}

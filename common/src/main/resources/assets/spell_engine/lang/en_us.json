@@ -85,5 +85,14 @@
   "gui.spell_engine.spell_binding.already_bound" : "Spell already bound",
   "gui.spell_engine.spell_binding.no_more_slots" : "No more spell slots",
   "gui.spell_engine.spell_binding.available" : "Bind spell",
-  "gui.spell_engine.spell_binding.level_req_fail" : "Level Requirement: %s"
+  "gui.spell_engine.spell_binding.level_req_fail" : "Level Requirement: %s",
+
+  "advancements.rpg_classes.root.title": "Spells",
+  "advancements.rpg_classes.root.description": "Discover the art of magical combat!",
+  "advancements.rpg_classes.enchant_spell_infinity.title": "Free Energy",
+  "advancements.rpg_classes.enchant_spell_infinity.description": "Obtain Spell Infinity enchantment from the Enchanting Table",
+  "advancements.rpg_classes.rune_crafter.title": "Tears and Lamps",
+  "advancements.rpg_classes.rune_crafter.description": "Use the Rune Crafting Altar to get twice as many runes",
+  "advancements.rpg_classes.spellbinder.title": "Spellbinder",
+  "advancements.rpg_classes.spellbinder.description": "Bind a spell to an eligible magical weapon"
 }

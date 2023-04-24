@@ -83,5 +83,14 @@
   "gui.spell_engine.spell_binding.already_bound" : "法术已被绑定",
   "gui.spell_engine.spell_binding.no_more_slots" : "没有法术栏位",
   "gui.spell_engine.spell_binding.available" : "绑定法术",
-  "gui.spell_engine.spell_binding.level_req_fail" : "需求等级：%s"
+  "gui.spell_engine.spell_binding.level_req_fail" : "需求等级：%s",
+
+  "advancements.rpg_classes.root.title": "法术",
+  "advancements.rpg_classes.root.description": "用魔法摧毁你的敌人吧！",
+  "advancements.rpg_classes.rune_crafter.title": "泪与烛火",
+  "advancements.rpg_classes.rune_crafter.description": "使用符文制作祭坛来合成双倍量的符文",
+  "advancements.rpg_classes.spellbinder.title": "法术绑定",
+  "advancements.rpg_classes.spellbinder.description": "在可用的魔法武器上绑定一个法术",
+  "advancements.rpg_classes.enchant_spell_infinity.title": "无限能源",
+  "advancements.rpg_classes.enchant_spell_infinity.description": "在附魔台获得法术无限附魔"
 }

@@ -85,5 +85,14 @@
   "gui.spell_engine.spell_binding.already_bound" : "Закляття уже прив'язано",
   "gui.spell_engine.spell_binding.no_more_slots" : "Відсутні вільні віконця заклять",
   "gui.spell_engine.spell_binding.available" : "Прив'язати закляття",
-  "gui.spell_engine.spell_binding.level_req_fail" : "Потрібен рівень: %s"
+  "gui.spell_engine.spell_binding.level_req_fail" : "Потрібен рівень: %s",
+
+  "advancements.rpg_classes.root.title": "Заклинання",
+  "advancements.rpg_classes.root.description": "Відкрийте для себе мистецтво магічного бою!",
+  "advancements.rpg_classes.rune_crafter.title": "Сльози і лампи",
+  "advancements.rpg_classes.rune_crafter.description": "Використовуйте вівтар для створення рун, щоб отримати вдвічі більше рун",
+  "advancements.rpg_classes.spellbinder.title": "Заклинатель",
+  "advancements.rpg_classes.spellbinder.description": "Прив’яжіть заклинання до відповідної магічної зброї",
+  "advancements.rpg_classes.enchant_spell_infinity.title": "Безкоштовна енергія",
+  "advancements.rpg_classes.enchant_spell_infinity.description": "Отримайте зачарування безмежних чар із чародійського стола"
 }
