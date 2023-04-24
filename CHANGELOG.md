@@ -8,6 +8,11 @@
 - Area effects can now target the caster too
 - Fix use spell_cost_item_allowed still requiring at least 1 rune
 
+
+API breaking changes:
+- `spell.impact[].action.status_effect.apply_to_caster` was moved to `spell.impact[].action.apply_to_caster`
+
+
 # 0.9.15
 
 - Add Ukrainian translation, thanks to un_roman

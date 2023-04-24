@@ -78,6 +78,7 @@ public class Spell {
         public Action action;
         public static class Action { public Action() { }
             public Type type;
+            public boolean apply_to_caster = false;
             public enum Type {
                 DAMAGE, HEAL, STATUS_EFFECT, FIRE
             }
@@ -96,7 +97,6 @@ public class Spell {
                 public float duration = 10;
                 public int amplifier = 0;
                 public float amplifier_power_multiplier = 0;
-                public boolean apply_to_caster = false;
                 public ApplyMode apply_mode = ApplyMode.SET;
                 public enum ApplyMode { SET, ADD }
                 public ApplyLimit apply_limit;

@@ -401,7 +401,8 @@ public class SpellHelper {
         TargetHelper.Intent selectedIntent = null;
         for (var impact: spell.impact) {
             var intent = intent(impact.action);
-            if (selectedIntent != null && selectedIntent != intent) {
+            if (!impact.action.apply_to_caster // Only filtering for cases when another entity is actually targeted
+                    && (selectedIntent != null && selectedIntent != intent)) {
                 // Filter out mixed intents
                 // So dual intent spells either damage or heal, and not do both
                 continue;
@@ -472,11 +473,8 @@ public class SpellHelper {
                 power = SpellPower.getSpellPower(school, caster);
             }
 
-            if (impact.action.type == Spell.Impact.Action.Type.STATUS_EFFECT) {
-                var data = impact.action.status_effect;
-                if (data.apply_to_caster) {
-                    target = caster;
-                }
+            if (impact.action.apply_to_caster) {
+                target = caster;
             }
 
             if (!TargetHelper.actionAllowed(context.targetingMode(), intent(impact.action), caster, target)) {
