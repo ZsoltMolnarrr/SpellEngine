@@ -11,17 +11,16 @@ import net.minecraft.predicate.entity.EntityPredicate;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
-import net.spell_power.api.MagicSchool;
 
 public class SpellCastCriteria extends AbstractCriterion<SpellCastCriteria.Condition> {
     public static final Identifier ID = new Identifier(SpellEngineMod.ID, "spell_cast");
     public static final SpellCastCriteria INSTANCE = new SpellCastCriteria();
-    private static final String magic_school_key = "magic_school";
+    private static final String spell_pool = "spell_pool";
 
     @Override
     protected Condition conditionsFromJson(JsonObject obj, EntityPredicate.Extended playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
-        JsonElement element = obj.get(magic_school_key);
-        return new Condition(MagicSchool.valueOf(element.getAsString()));
+        JsonElement element = obj.get(spell_pool);
+        return new Condition(new Identifier(element.getAsString()));
     }
 
     @Override
@@ -29,26 +28,26 @@ public class SpellCastCriteria extends AbstractCriterion<SpellCastCriteria.Condi
         return ID;
     }
 
-    public void trigger(ServerPlayerEntity player, MagicSchool magicSchool) {
-        trigger(player, condition -> condition.test(magicSchool));
+    public void trigger(ServerPlayerEntity player, Identifier spellPoolId) {
+        trigger(player, condition -> condition.test(spellPoolId));
     }
 
     public static class Condition extends AbstractCriterionConditions {
-        MagicSchool magicSchool;
+        Identifier spellPoolId;
 
-        public Condition(MagicSchool magicSchool) {
+        public Condition(Identifier spellPoolId) {
             super(ID, EntityPredicate.Extended.EMPTY);
-            this.magicSchool = magicSchool;
+            this.spellPoolId = spellPoolId;
         }
 
-        public boolean test(MagicSchool magicSchool) {
-            return this.magicSchool == magicSchool;
+        public boolean test(Identifier spellPoolId) {
+            return this.spellPoolId.equals(spellPoolId);
         }
 
         @Override
         public JsonObject toJson(AdvancementEntityPredicateSerializer predicateSerializer) {
             JsonObject jsonObject = super.toJson(predicateSerializer);
-            jsonObject.add(magic_school_key, new JsonPrimitive(magicSchool.toString()));
+            jsonObject.add(spell_pool, new JsonPrimitive(spellPoolId.toString()));
             return jsonObject;
         }
     }

@@ -1,9 +1,9 @@
 package net.spell_engine.internals.criteria;
 
 import net.minecraft.util.Identifier;
-import net.spell_power.api.MagicSchool;
+
+import java.util.List;
 
 public interface SpellCastHistory {
-    void saveSpellCast(MagicSchool magicSchool, Identifier id);
-    boolean hasCastedAllOf(MagicSchool magicSchool);
+    void saveSpellCast(Identifier spell);
 }

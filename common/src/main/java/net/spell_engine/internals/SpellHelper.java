@@ -266,10 +266,7 @@ public class SpellHelper {
                 }
                 // Advancement support
                 if (player instanceof ServerPlayerEntity serverPlayer) {
-                    ((SpellCastHistory)serverPlayer).saveSpellCast(spell.school, spellId);
-                    if (((SpellCastHistory)serverPlayer).hasCastedAllOf(spell.school)) {
-                        SpellCastCriteria.INSTANCE.trigger(serverPlayer, spell.school);
-                    }
+                    ((SpellCastHistory)serverPlayer).saveSpellCast(spellId);
                 }
             }
         }
