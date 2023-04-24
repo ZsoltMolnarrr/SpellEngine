@@ -472,6 +472,9 @@ public class SpellHelper {
             if (power == null) {
                 power = SpellPower.getSpellPower(school, caster);
             }
+            if (power.baseValue() < impact.action.min_power) {
+                power = new SpellPower.Result(power.school(), impact.action.min_power, power.criticalChance(), power.criticalDamage());
+            }
 
             if (impact.action.apply_to_caster) {
                 target = caster;

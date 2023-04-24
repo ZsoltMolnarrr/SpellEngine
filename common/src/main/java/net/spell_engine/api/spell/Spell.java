@@ -79,6 +79,7 @@ public class Spell {
         public static class Action { public Action() { }
             public Type type;
             public boolean apply_to_caster = false;
+            public float min_power = 1;
             public enum Type {
                 DAMAGE, HEAL, STATUS_EFFECT, FIRE
             }

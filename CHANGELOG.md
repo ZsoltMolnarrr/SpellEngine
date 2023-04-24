@@ -1,17 +1,20 @@
 # 0.9.16
 
-- Add support for dual intent spells
-- Add new particles
 - Set `generic.attack_damage` vanilla attribute to be synchronized over to clients
-- Extend armor and weapon creation API
-- Extend particle effect JSON API
-- Area effects can now target the caster too
 - Fix use spell_cost_item_allowed still requiring at least 1 rune
-
 
 API breaking changes:
 - `spell.impact[].action.status_effect.apply_to_caster` was moved to `spell.impact[].action.apply_to_caster`
 
+JSON API changes:
+- Add min_power to `spell.impact[].action`
+- Area effects can now target the caster too
+- Add new particles
+- Add support for dual intent spells
+
+Java API changes:
+- Extend armor and weapon creation API
+- Extend particle effect JSON API
 
 # 0.9.15
 
