@@ -542,7 +542,7 @@ public class SpellHelper {
                         }
                         var duration = Math.round(data.duration * 20F);
                         // duration *= progressMultiplier; // ?????
-                        var amplifier = data.amplifier;
+                        var amplifier = data.amplifier + (int)(data.amplifier_power_multiplier * power.nonCriticalValue());
                         var showParticles = data.show_particles;
                         switch (data.apply_mode) {
                             case SET -> {

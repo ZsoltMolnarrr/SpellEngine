@@ -95,6 +95,7 @@ public class Spell {
                 public String effect_id;
                 public float duration = 10;
                 public int amplifier = 0;
+                public float amplifier_power_multiplier = 0;
                 public boolean apply_to_caster = false;
                 public ApplyMode apply_mode = ApplyMode.SET;
                 public enum ApplyMode { SET, ADD }
