@@ -305,13 +305,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 } else {
                     targets = List.of();
                 }
-                var cursor = currentSpell.release.target.cursor;
-                if (cursor != null) {
-                    var firstTarget = firstTarget();
-                    if (firstTarget == null && cursor.use_caster_as_fallback) {
-                        targets = List.of(caster);
-                    }
-                }
             }
             case SELF -> {
                 // Nothing to do
@@ -325,6 +318,14 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                     })
                     .toList();
         }
+
+        var cursor = currentSpell.release.target.cursor;
+        if (cursor != null) {
+            if (cursor.use_caster_as_fallback && targets.isEmpty()) {
+                targets = List.of(caster);
+            }
+        }
+
         return targets;
     }
 
