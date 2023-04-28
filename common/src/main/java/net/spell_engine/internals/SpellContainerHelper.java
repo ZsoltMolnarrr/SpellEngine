@@ -18,6 +18,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SpellContainerHelper {
+    public static Identifier getPoolId(SpellContainer container) {
+        if (container != null && container.pool != null) {
+            return new Identifier(container.pool);
+        }
+        return null;
+    }
 
     public static SpellPool getPool(SpellContainer container) {
         if (container != null && container.pool != null) {

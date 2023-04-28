@@ -209,7 +209,15 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                 this.onContentChanged(this.inventory);
                 world.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
                 if (player instanceof ServerPlayerEntity serverPlayer) {
-                    SpellBindingCriteria.INSTANCE.trigger(serverPlayer);
+                    var container = SpellContainerHelper.containerFromItemStack(weaponStack);
+                    var poolId = SpellContainerHelper.getPoolId(container);
+                    if (poolId != null) {
+                        var pool = SpellContainerHelper.getPool(container);
+                        var isComplete = container.spell_ids.size() == pool.spellIds().size();
+                        SpellBindingCriteria.INSTANCE.trigger(serverPlayer, poolId, isComplete);
+                    } else {
+                        SpellBindingCriteria.INSTANCE.trigger(serverPlayer, null, false);
+                    }
                 }
             });
 

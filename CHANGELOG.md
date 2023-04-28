@@ -1,10 +1,9 @@
 # 0.9.16
 
-- Add
+- Add `spell_pool` condition to spell binding advancement criteria
 - Remove advancements spell cast criteria (due to theoretical poor performance)
 - Set `generic.attack_damage` vanilla attribute to be synchronized over to clients
 - Fix use spell_cost_item_allowed still requiring at least 1 rune
-
 
 API breaking changes:
 - `spell.impact[].action.status_effect.apply_to_caster` was moved to `spell.impact[].action.apply_to_caster`
