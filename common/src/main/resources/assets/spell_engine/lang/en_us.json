@@ -94,5 +94,7 @@
   "advancements.rpg_classes.rune_crafter.title": "Tears and Lamps",
   "advancements.rpg_classes.rune_crafter.description": "Use the Rune Crafting Altar to get twice as many runes",
   "advancements.rpg_classes.spellbinder.title": "Spellbinder",
-  "advancements.rpg_classes.spellbinder.description": "Bind a spell to an eligible magical weapon"
+  "advancements.rpg_classes.spellbinder.description": "Bind a spell to an eligible magical weapon",
+  "advancements.rpg_classes.classes.title": "Choose your path",
+  "advancements.rpg_classes.classes.description": "Follow a path, to master the kind of magic you most desire"
 }

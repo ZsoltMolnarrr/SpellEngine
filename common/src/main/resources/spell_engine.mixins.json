@@ -13,7 +13,6 @@
     "action_impair.PlayerEntityActionImpairing",
     "action_impair.ServerPlayerInteractionManagerMixin",
     "criteria.EnchantedItemCriterionMixin",
-    "criteria.ServerPlayerSpellCastCriteria",
     "effect.LivingEntityStatusEffectSync",
     "effect.StatusEffectActionImpairing",
     "effect.StatusEffectRemoveOnHit",

@@ -1,5 +1,5 @@
 {
-  "school": "ARCANE",
+  "school": "HEALING",
   "range": 16,
   "learn": {
     "tier": 2
@@ -13,7 +13,7 @@
     },
     "particles": [
       {
-        "particle_id": "spell_engine:arcane_spell",
+        "particle_id": "spell_engine:holy_ascend",
         "shape": "PIPE",
         "origin": "FEET",
         "count": 1.0,
@@ -25,7 +25,9 @@
   "release": {
     "target": {
       "type": "CURSOR",
-      "cursor": { }
+      "cursor": {
+        "use_caster_as_fallback": true
+      }
     },
     "animation": "spell_engine:one_handed_projectile_release",
     "sound": {
@@ -33,6 +35,27 @@
     }
   },
   "impact": [
+    {
+      "action": {
+        "type": "HEAL",
+        "heal": {
+          "spell_power_coefficient": 0.5
+        }
+      },
+      "particles": [
+        {
+          "particle_id": "spell_engine:healing_ascend",
+          "shape": "SPHERE",
+          "origin": "CENTER",
+          "count": 30,
+          "min_speed": 0.2,
+          "max_speed": 0.7
+        }
+      ],
+      "sound": {
+        "id": "wizards:arcane_blast_impact"
+      }
+    },
     {
       "action": {
         "type": "DAMAGE",
@@ -43,12 +66,12 @@
       },
       "particles": [
         {
-          "particle_id": "spell_engine:healing_ascend",
-          "shape": "PIPE",
-          "origin": "FEET",
-          "count": 20.0,
-          "min_speed": 0.1,
-          "max_speed": 0.2
+          "particle_id": "spell_engine:holy_hit",
+          "shape": "SPHERE",
+          "origin": "CENTER",
+          "count": 30,
+          "min_speed": 0.2,
+          "max_speed": 0.7
         }
       ],
       "sound": {

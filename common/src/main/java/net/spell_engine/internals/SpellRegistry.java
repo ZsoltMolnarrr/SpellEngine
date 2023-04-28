@@ -170,10 +170,6 @@ public class SpellRegistry {
         return pool != null ? pool : SpellPool.empty;
     }
 
-    public static Collection<Identifier> poolsOfSpell(Identifier spellId) {
-        return reversePools.get(spellId);
-    }
-
     public static PacketByteBuf encoded = PacketByteBufs.create();
 
     public static class SyncFormat { public SyncFormat() { }
@@ -238,29 +234,13 @@ public class SpellRegistry {
     private record ReverseEntry(Identifier identifier, Spell spell) { }
     private static final Map<Integer, ReverseEntry> reverseSpells = new HashMap<>();
 
-    // Reverse of Spell pools is used to quickly find which pool is a spell in
-    // Key: Spell id, Value: Pool ids
-    private static final Map<Identifier, HashSet<Identifier>> reversePools = new HashMap<Identifier, HashSet<Identifier>>();
-
     private static void updateReverseMaps() {
         reverseSpells.clear();
-        reversePools.clear();
         for (var entry: spells.entrySet()) {
             var id = entry.getKey();
             var spell = entry.getValue().spell;
             var rawId = entry.getValue().rawId;
             reverseSpells.put(rawId, new ReverseEntry(id, spell));
-        }
-
-        for (var entry: pools.entrySet()) {
-            var poolId = entry.getKey();
-            var pool = entry.getValue();
-            for (var spellId: pool.spellIds()) {
-                if (reversePools.get(spellId) == null) {
-                    reversePools.put(spellId, new HashSet<Identifier>());
-                }
-                reversePools.get(spellId).add(poolId);
-            }
         }
     }
 
