@@ -164,6 +164,9 @@ public class Weapon {
                         config.attack_speed,
                         EntityAttributeModifier.Operation.ADDITION));
         for(var attribute: config.spell_attributes) {
+            if (attribute.value == 0) {
+                continue;
+            }
             try {
                 var entityAttribute = SpellAttributes.all.get(attribute.name).attribute;
                 builder.put(entityAttribute,
