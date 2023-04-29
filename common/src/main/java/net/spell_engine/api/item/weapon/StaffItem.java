@@ -8,11 +8,13 @@ import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ToolItem;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.spell_engine.api.item.ConfigurableAttributes;
 
-public class StaffItem extends SpellWeaponItem {
+public class StaffItem extends ToolItem implements ConfigurableAttributes {
     private Multimap<EntityAttribute, EntityAttributeModifier> attributes;
 
     public StaffItem(ToolMaterial material, Settings settings) {
