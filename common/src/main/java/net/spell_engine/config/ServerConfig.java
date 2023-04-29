@@ -24,18 +24,18 @@ public class ServerConfig implements ConfigData {
 
     @Comment("""
             Allow actions based on relations:
-            +----------------+-----------+----------+----------+
-            |                | FRIENDLY  | NEUTRAL  | HOSTILE  |
-            +----------------+-----------+----------+----------+
-            | DIRECT DAMAGE  | 🚫        | ✅      | ✅       |
-            | AREA DAMAGE    | 🚫        | 🚫      | ✅       |
-            | DIRECT HEALING | ✅        | ✅      | 🚫       |
-            | AREA HEALING   | ✅        | 🚫      | 🚫       |
-            +----------------+-----------+----------+----------+
-            Entities within the same team are considered FRIENDLY
+            +----------------+-----------+---------------+----------+----------+--------+
+            |                | FRIENDLY  | SEMI_FRIENDLY | NEUTRAL  | HOSTILE  | MIXED  |
+            +----------------+-----------+---------------+----------+----------+--------+
+            | DIRECT DAMAGE  | 🚫        | ✅            | ✅       | ✅       | ✅    |
+            | AREA DAMAGE    | 🚫        | 🚫            | 🚫       | ✅       | ✅    |
+            | DIRECT HEALING | ✅        | ✅            | ✅       | 🚫       | ✅    |
+            | AREA HEALING   | ✅        | ✅            | 🚫       | 🚫       | ✅    |
+            +----------------+-----------+---------------+----------+----------+--------+
+            Any entities within the same team are considered FRIENDLY for each other.
             """)
-    public TargetHelper.Relation player_relation_to_teamless_players = TargetHelper.Relation.NEUTRAL;
-    public TargetHelper.Relation player_relation_to_villagers = TargetHelper.Relation.NEUTRAL;
+    public TargetHelper.Relation player_relation_to_teamless_players = TargetHelper.Relation.SEMI_FRIENDLY;
+    public TargetHelper.Relation player_relation_to_villagers = TargetHelper.Relation.SEMI_FRIENDLY;
     public TargetHelper.Relation player_relation_to_passives = TargetHelper.Relation.HOSTILE;
     public TargetHelper.Relation player_relation_to_hostiles = TargetHelper.Relation.HOSTILE;
     public TargetHelper.Relation player_relation_to_other = TargetHelper.Relation.HOSTILE;

@@ -36,7 +36,7 @@ public class TargetHelper {
         DIRECT, AREA
     }
     public enum Relation {
-        FRIENDLY, NEUTRAL, HOSTILE;
+        FRIENDLY, SEMI_FRIENDLY, NEUTRAL, HOSTILE, MIXED;
 
         public static Relation coalesce(Relation value, Relation fallback) {
             if (value != null) {
@@ -82,33 +82,41 @@ public class TargetHelper {
     }
 
     // Make sure this complies with comment in `ServerConfig`
-    private static boolean[][] TABLE_OF_ULTIMATE_JUSTICE = {
-            // Friendly, Neutral, Hostile
-            { false, true, true, }, // Direct Damage
-            { false, false, true }, // Area Damage
-            { true, true, false },  // Direct Healing
-            { true, false, false }, // Area Healing
+    private static final boolean[][] TABLE_OF_ULTIMATE_JUSTICE = {
+            // FRIENDLY SEMI_FRIENDLY   NEUTRAL HOSTILE MIXED
+            { false,    true,           true,   true,   true }, // Direct Damage
+            { false,    false,          false,  true,   true }, // Area Damage
+            { true,     true,           true,   false,  true }, // Direct Healing
+            { true,     true,           false,  false,  true }, // Area Healing
     };
 
     public static boolean actionAllowed(TargetingMode targetingMode, Intent intent, LivingEntity attacker, Entity target) {
         var relation = getRelation(attacker, target);
+
         int row = 0;
-        int column = 0;
         if (intent == Intent.HELPFUL) {
             row += 2;
         }
         if (targetingMode == TargetingMode.AREA) {
             row += 1;
         }
+
+        int column = 0;
         switch (relation) {
             case FRIENDLY -> {
                 column = 0;
             }
-            case NEUTRAL -> {
+            case SEMI_FRIENDLY -> {
                 column = 1;
             }
-            case HOSTILE -> {
+            case NEUTRAL -> {
                 column = 2;
+            }
+            case HOSTILE -> {
+                column = 3;
+            }
+            case MIXED -> {
+                column = 4;
             }
         }
         return TABLE_OF_ULTIMATE_JUSTICE[row][column];

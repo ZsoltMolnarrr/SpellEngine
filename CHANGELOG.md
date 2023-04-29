@@ -1,5 +1,6 @@
 # 0.9.16
 
+- Add `SEMI_FRIENDLY` and `MIXED` entity relations
 - Add `spell_pool` condition to spell binding advancement criteria
 - Remove advancements spell cast criteria (due to theoretical poor performance)
 - Set `generic.attack_damage` vanilla attribute to be synchronized over to clients
