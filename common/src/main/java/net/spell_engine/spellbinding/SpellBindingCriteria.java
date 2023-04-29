@@ -35,9 +35,7 @@ public class SpellBindingCriteria extends AbstractCriterion<SpellBindingCriteria
     }
 
     public void trigger(ServerPlayerEntity player, Identifier spellPoolId, boolean isComplete) {
-        System.out.println("SpellBindingCriteria trigger isComplete: " + isComplete);
         trigger(player, condition -> {
-            System.out.println("SpellBindingCriteria test: " + condition.test(spellPoolId, isComplete));
             return condition.test(spellPoolId, isComplete);
         });
     }
