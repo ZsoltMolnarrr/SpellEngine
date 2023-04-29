@@ -19,6 +19,7 @@ JSON API changes:
 Java API changes:
 - Extend armor and weapon creation API
 - Extend particle effect JSON API
+- Add loot configuration API
 
 # 0.9.15
 
