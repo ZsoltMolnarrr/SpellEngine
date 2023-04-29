@@ -57,6 +57,7 @@ public class SpellEngineMod {
         Criteria.register(EnchantmentSpecificCriteria.INSTANCE);
         EnchantmentRestriction.alleviate(Enchantments.KNOCKBACK, itemStack -> itemStack.getItem() instanceof StaffItem);
         EnchantmentRestriction.alleviate(Enchantments.LOOTING, itemStack -> itemStack.getItem() instanceof StaffItem);
+        EnchantmentRestriction.alleviate(Enchantments.FIRE_ASPECT, itemStack -> itemStack.getItem() instanceof StaffItem);
         SpellPowerEnchanting.allowForWeapon(SpellContainerHelper::hasValidContainer);
 
         // Sync attack power to client so physical attack damage spells can be estimated.
