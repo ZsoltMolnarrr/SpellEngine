@@ -28,6 +28,8 @@ public class SoundHelper {
 
         "generic_healing_casting",
         "generic_healing_release",
+        "generic_healing_impact_1",
+        "generic_healing_impact_2",
 
         "generic_lightning_casting",
         "generic_lightning_release",

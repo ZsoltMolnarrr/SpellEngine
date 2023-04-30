@@ -53,6 +53,16 @@
       "spell_engine:generic_healing_release"
     ]
   },
+  "generic_healing_impact_1": {
+    "sounds": [
+      "spell_engine:generic_healing_impact_1"
+    ]
+  },
+  "generic_healing_impact_2": {
+    "sounds": [
+      "spell_engine:generic_healing_impact_2"
+    ]
+  },
 
   "generic_lightning_casting": {
     "sounds": [
