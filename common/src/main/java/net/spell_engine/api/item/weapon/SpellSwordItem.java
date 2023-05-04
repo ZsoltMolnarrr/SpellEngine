@@ -15,10 +15,17 @@ public class SpellSwordItem extends SpellWeaponItem {
     @Override
     public float getMiningSpeedMultiplier(ItemStack stack, BlockState state) {
         if (state.isOf(Blocks.COBWEB)) {
-            return 15.0F;
-        } else {
-            Material material = state.getMaterial();
-            return material != Material.PLANT && material != Material.REPLACEABLE_PLANT && !state.isIn(BlockTags.LEAVES) && material != Material.GOURD ? 1.0F : 1.5F;
+            return 15.0f;
         }
+        Material material = state.getMaterial();
+        if (material == Material.PLANT || material == Material.REPLACEABLE_PLANT || state.isIn(BlockTags.LEAVES) || material == Material.GOURD) {
+            return 1.5f;
+        }
+        return 1.0f;
+    }
+
+    @Override
+    public boolean isSuitableFor(BlockState state) {
+        return state.isOf(Blocks.COBWEB);
     }
 }

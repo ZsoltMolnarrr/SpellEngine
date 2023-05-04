@@ -1,3 +1,7 @@
+# 0.9.17
+
+- Fix spell swords not harvesting cobwebs fast enough
+
 # 0.9.16
 
 - Add `SEMI_FRIENDLY` and `MIXED` entity relations
