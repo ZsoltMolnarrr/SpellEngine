@@ -1,5 +1,7 @@
 package net.spell_engine.mixin.effect;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
@@ -7,6 +9,7 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 import net.spell_engine.api.effect.Synchronized;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityStatusEffectSync implements Synchronized.Provider {
+public abstract class LivingEntityStatusEffectSync extends Entity implements Synchronized.Provider {
     @Shadow
     @Final
     private Map<StatusEffect, StatusEffectInstance> activeStatusEffects;
@@ -28,19 +31,21 @@ public abstract class LivingEntityStatusEffectSync implements Synchronized.Provi
     private final ArrayList<Synchronized.Effect> SpellEngine_syncedStatusEffects = new ArrayList();
     private static final TrackedData<String> SPELL_ENGINE_SYNCED_EFFECTS = DataTracker.registerData(LivingEntity.class, TrackedDataHandlerRegistry.STRING);
 
+    public LivingEntityStatusEffectSync(EntityType<?> type, World world) {
+        super(type, world);
+    }
+
     @Inject(method = "initDataTracker", at = @At("TAIL"))
     private void initDataTracker_TAIL_SpellEngine_SyncEffects(CallbackInfo ci) {
-        var entity = (LivingEntity) ((Object) this);
-        entity.getDataTracker().startTracking(SPELL_ENGINE_SYNCED_EFFECTS, "");
+        dataTracker.startTracking(SPELL_ENGINE_SYNCED_EFFECTS, "");
     }
 
     @Inject(method = "updatePotionVisibility", at = @At("HEAD"))
     private void updatePotionVisibility_HEAD_SpellEngine_SyncEffects(CallbackInfo ci) {
-        var entity = (LivingEntity) ((Object) this);
         if (activeStatusEffects.isEmpty()) {
-            entity.getDataTracker().set(SPELL_ENGINE_SYNCED_EFFECTS, "");
+            dataTracker.set(SPELL_ENGINE_SYNCED_EFFECTS, "");
         } else {
-            entity.getDataTracker().set(SPELL_ENGINE_SYNCED_EFFECTS, SpellEngine_encodedStatusEffects());
+            dataTracker.set(SPELL_ENGINE_SYNCED_EFFECTS, SpellEngine_encodedStatusEffects());
         }
     }
 
@@ -69,8 +74,7 @@ public abstract class LivingEntityStatusEffectSync implements Synchronized.Provi
     }
 
     private List<Synchronized.Effect> SpellEngine_decodeStatusEffects() {
-        var entity = (LivingEntity) ((Object) this);
-        var string = entity.getDataTracker().get(SPELL_ENGINE_SYNCED_EFFECTS);
+        var string = dataTracker.get(SPELL_ENGINE_SYNCED_EFFECTS);
         var effects = new ArrayList<Synchronized.Effect>();
         for (var effect : string.split("-")) {
             var components = effect.split(":");
