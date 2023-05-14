@@ -27,6 +27,7 @@ public class SpellRegistry {
     }
     private static final Map<Identifier, Entry> spells = new HashMap<>();
     private static final Map<Identifier, SpellPool> pools = new HashMap<>();
+    public static final Map<Identifier, SpellContainer> book_containers = new HashMap<>();
     private static final Map<Identifier, SpellContainer> containers = new HashMap<>();
     private static final Map<MagicSchool, Integer> spellCount = new HashMap<>();
 
@@ -131,6 +132,7 @@ public class SpellRegistry {
         }
         containers.clear();
         containers.putAll(parsed);
+        containers.putAll(book_containers);
     }
 
     private static void spellsUpdated() {

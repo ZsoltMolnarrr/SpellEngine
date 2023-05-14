@@ -1,7 +1,6 @@
 repositories {
     maven { url 'https://maven.kosmx.dev/' }
     maven { url 'https://maven.shedaniel.me/' }
-    maven { url 'https://maven.terraformersmc.com/' }
     maven { url 'https://jitpack.io' }
     maven {
         name = 'Modrinth'
@@ -15,6 +14,14 @@ repositories {
         content {
             includeGroup "curse.maven"
         }
+    }
+    maven {
+        name = "TerraformersMC"
+        url = "https://maven.terraformersmc.com/"
+    }
+    maven {
+        name = "Ladysnake Libs"
+        url = "https://ladysnake.jfrog.io/artifactory/mods"
     }
 }
 
@@ -34,6 +41,7 @@ dependencies {
     implementation("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}")
     implementation("com.github.LlamaLad7:MixinExtras:${project.mixin_extras_version}")
     annotationProcessor("com.github.LlamaLad7:MixinExtras:${project.mixin_extras_version}")
+    modImplementation("dev.emi:trinkets:${trinkets_version}")
 
     modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-fabric")
 //    modImplementation(files("../fabric/run/mods/dev/spell_power-fabric-${project.spell_power_version}.jar"))

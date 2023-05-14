@@ -47,6 +47,15 @@ public class SpellContainerHelper {
         return null;
     }
 
+    public static void addContainerToItemStack(SpellContainer container, ItemStack itemStack) {
+        if (itemStack.isEmpty()) {
+            return;
+        }
+        var nbt = itemStack.getOrCreateNbt();
+        var nbtContainer = SpellContainerHelper.toNBT(container);
+        nbt.put(SpellContainerHelper.NBT_KEY_CONTAINER, nbtContainer);
+    }
+
     @Nullable
     public static Identifier spellId(SpellContainer container, int selectedIndex) {
         if (container == null || !container.isUsable()) {

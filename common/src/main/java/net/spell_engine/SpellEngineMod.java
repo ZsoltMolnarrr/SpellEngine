@@ -11,8 +11,10 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
+import net.spell_engine.api.item.trinket.SpellBooks;
 import net.spell_engine.api.item.weapon.StaffItem;
 import net.spell_engine.config.EnchantmentsConfig;
 import net.spell_engine.config.ServerConfig;
@@ -21,7 +23,6 @@ import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.internals.criteria.EnchantmentSpecificCriteria;
-import net.spell_engine.spellbinding.SpellBindingCriteria;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.particle.Particles;
 import net.spell_engine.spellbinding.*;
@@ -80,5 +81,13 @@ public class SpellEngineMod {
         for(var entry: Enchantments_SpellEngine.all.entrySet()) {
             Registry.register(Registry.ENCHANTMENT, entry.getKey(), entry.getValue());
         }
+    }
+
+    public static void registerItems() {
+        SpellBooks.createAndRegister(new Identifier("wizards:arcane"), ItemGroup.COMBAT);
+        SpellBooks.createAndRegister(new Identifier("wizards:fire"), ItemGroup.COMBAT);
+        SpellBooks.createAndRegister(new Identifier("wizards:frost"), ItemGroup.COMBAT);
+        SpellBooks.createAndRegister(new Identifier("paladins:paladin"), ItemGroup.COMBAT);
+        SpellBooks.createAndRegister(new Identifier("paladins:priest"), ItemGroup.COMBAT);
     }
 }

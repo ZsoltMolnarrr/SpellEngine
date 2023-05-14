@@ -45,6 +45,8 @@
   "keybindings.spell_engine.hotbar_modifier" : "Control spell hotbar",
   "keybindings.spell_engine.hotbar_lock" : "Switch to spell hotbar",
 
+  "trinkets.slot.charm.spell_book": "Spell Book",
+
   "text.autoconfig.spell_engine.title" : "Spell Engine",
   "text.autoconfig.spell_engine.option.client.autoRelease" : "Auto release",
   "text.autoconfig.spell_engine.option.client.autoRelease.@Tooltip" : "Automatically release spell when fully charged",
