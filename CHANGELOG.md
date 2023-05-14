@@ -1,3 +1,8 @@
+# 0.9.18
+
+- Refactor enchantment restriction internal API
+- Fix incompatibility with Taterzens #11 (samolego/Taterzens#132) - Thanks to Nillo-Code
+
 # 0.9.17
 
 - Fix spell swords not harvesting cobwebs fast enough
