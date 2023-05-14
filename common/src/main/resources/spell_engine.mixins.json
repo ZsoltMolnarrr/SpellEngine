@@ -16,9 +16,7 @@
     "effect.LivingEntityStatusEffectSync",
     "effect.StatusEffectActionImpairing",
     "effect.StatusEffectRemoveOnHit",
-    "effect.StatusEffectSynchronized",
-    "enchant.EnchantmentHelperMixin",
-    "enchant.EnchantmentMixin"
+    "effect.StatusEffectSynchronized"
   ],
   "client": [
     "client.AbstractClientPlayerEntityMixin",

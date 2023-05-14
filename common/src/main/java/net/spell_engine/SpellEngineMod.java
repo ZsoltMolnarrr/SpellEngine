@@ -12,7 +12,6 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.util.registry.Registry;
-import net.spell_engine.api.enchantment.EnchantmentRestriction;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
 import net.spell_engine.api.item.weapon.StaffItem;
 import net.spell_engine.config.EnchantmentsConfig;
@@ -26,6 +25,7 @@ import net.spell_engine.spellbinding.SpellBindingCriteria;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.particle.Particles;
 import net.spell_engine.spellbinding.*;
+import net.spell_power.api.enchantment.EnchantmentRestriction;
 import net.spell_power.api.enchantment.SpellPowerEnchanting;
 import net.tinyconfig.ConfigManager;
 
@@ -55,9 +55,11 @@ public class SpellEngineMod {
         Particles.register();
 
         Criteria.register(EnchantmentSpecificCriteria.INSTANCE);
-        EnchantmentRestriction.alleviate(Enchantments.KNOCKBACK, itemStack -> itemStack.getItem() instanceof StaffItem);
-        EnchantmentRestriction.alleviate(Enchantments.LOOTING, itemStack -> itemStack.getItem() instanceof StaffItem);
-        EnchantmentRestriction.alleviate(Enchantments.FIRE_ASPECT, itemStack -> itemStack.getItem() instanceof StaffItem);
+
+        EnchantmentRestriction.permit(Enchantments.KNOCKBACK, itemStack -> itemStack.getItem() instanceof StaffItem);
+        EnchantmentRestriction.permit(Enchantments.LOOTING, itemStack -> itemStack.getItem() instanceof StaffItem);
+        EnchantmentRestriction.permit(Enchantments.FIRE_ASPECT, itemStack -> itemStack.getItem() instanceof StaffItem);
+
         SpellPowerEnchanting.allowForWeapon(SpellContainerHelper::hasValidContainer);
 
         // Sync attack power to client so physical attack damage spells can be estimated.

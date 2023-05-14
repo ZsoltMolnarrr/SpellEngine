@@ -6,19 +6,17 @@ import net.minecraft.enchantment.MendingEnchantment;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.spell_engine.SpellEngineMod;
-import net.spell_power.api.enchantment.CustomConditionalEnchantment;
 import net.tinyconfig.models.EnchantmentConfig;
 
-public class SpellInfinityEnchantment extends Enchantment implements CustomConditionalEnchantment {
+public class SpellInfinityEnchantment extends Enchantment {
     public EnchantmentConfig config;
 
     public SpellInfinityEnchantment(Enchantment.Rarity weight, EnchantmentConfig config, EquipmentSlot... slotTypes) {
         super(weight, EnchantmentTarget.BREAKABLE, slotTypes);
         this.config = config;
-        this.setCondition(itemStack -> SpellEngineMod.config.spell_cost_item_allowed && itemStackHasSpell(itemStack));
     }
 
-    private static boolean itemStackHasSpell(ItemStack stack) {
+    public static boolean itemStackHasSpell(ItemStack stack) {
         var object = (Object)stack;
         if (object instanceof SpellCasterItemStack casterItemStack) {
             return casterItemStack.getSpellContainer() != null;
@@ -47,22 +45,5 @@ public class SpellInfinityEnchantment extends Enchantment implements CustomCondi
 
     public boolean canAccept(Enchantment other) {
         return (other instanceof MendingEnchantment) ? false : super.canAccept(other);
-    }
-
-    // MARK: CustomConditionalEnchantment
-
-    private Condition condition;
-
-    @Override
-    public void setCondition(Condition condition) {
-        this.condition = condition;
-    }
-
-    @Override
-    public boolean isAcceptableItem(ItemStack stack) {
-        if (condition != null) {
-            return condition.isAcceptableItem(stack);
-        }
-        return super.isAcceptableItem(stack);
     }
 }
