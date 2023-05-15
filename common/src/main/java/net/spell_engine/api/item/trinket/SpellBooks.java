@@ -7,18 +7,26 @@ import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.SpellRegistry;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SpellBooks {
 
+    private static ArrayList<SpellBookItem> all = new ArrayList<>();
+    public static List<SpellBookItem> all() {
+        return all;
+    }
+
     public static SpellBookItem create(Identifier poolId, ItemGroup itemGroup) {
         var container = new SpellContainer(poolId.toString(), 3, List.of());
         SpellRegistry.book_containers.put(itemIdFor(poolId), container);
-        return new SpellBookItem(poolId, new FabricItemSettings().maxCount(1).group(itemGroup));
+        var book = new SpellBookItem(poolId, new FabricItemSettings().maxCount(1).group(itemGroup));
+        all.add(book);
+        return book;
     }
 
     public static Identifier itemIdFor(Identifier poolId) {
-        return new Identifier(poolId.getNamespace(), "spell_book" + "." + poolId.getPath());
+        return new Identifier(poolId.getNamespace(), poolId.getPath() + "_spell_book");
     }
 
     public static void register(SpellBookItem spellBook) {

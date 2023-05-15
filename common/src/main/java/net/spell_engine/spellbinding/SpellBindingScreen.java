@@ -10,18 +10,23 @@ import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.util.SpellRender;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -204,7 +209,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         var lapisCount = handler.getLapisCount();
         var player = MinecraftClient.getInstance().player;
         var container = SpellContainerHelper.containerFromItemStack(itemStack);
-        if (container == null) {
+        if (container == null && handler.spellId[0] < SpellBinding.BOOK_MODE_OFFSET) {
             setButtons(buttons);
             return;
         }
@@ -213,22 +218,35 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
             var rawId = handler.spellId[i];
             var cost = handler.spellCost[i];
             var requirement = handler.spellLevelRequirement[i];
-            // System.out.println("Server offers spell ID: " + rawId);
-            var spellId = SpellRegistry.fromRawId(rawId);
-            if (spellId.isEmpty()) { continue; }
-            var id = spellId.get();
             boolean shown = (i >= pageOffset) && (i < (pageOffset + PAGE_SIZE));
-            var spell = new SpellInfo(
-                    id,
-                    SpellRender.iconTexture(id),
-                    Text.translatable(SpellTooltip.spellTranslationKey(id)));
-            SpellBinding.State bindingState = SpellBinding.State.of(id, itemStack, cost, requirement);
-            boolean isEnabled = bindingState.readyToApply(player, lapisCount);
-            var button = new ButtonViewModel(shown,
-                    originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + ((buttons.size() - pageOffset) * BUTTON_HEIGHT),
-                    BUTTON_WIDTH, BUTTON_HEIGHT,
-                    isEnabled, spell, bindingState);
-            buttons.add(button);
+            // System.out.println("Server offers spell ID: " + rawId);
+            if (rawId > SpellBinding.BOOK_MODE_OFFSET) {
+                var item = Registry.ITEM.get(rawId - SpellBinding.BOOK_MODE_OFFSET);
+                SpellBinding.State bindingState = SpellBinding.State.forBook(cost, requirement);
+                boolean isEnabled = bindingState.readyToApply(player, lapisCount);
+
+                var button = new ButtonViewModel(shown,
+                        originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + ((buttons.size() - pageOffset) * BUTTON_HEIGHT),
+                        BUTTON_WIDTH, BUTTON_HEIGHT,
+                        isEnabled, null, item, bindingState);
+                buttons.add(button);
+            } else {
+
+                var spellId = SpellRegistry.fromRawSpellId(rawId);
+                if (spellId.isEmpty()) { continue; }
+                var id = spellId.get();
+                var spell = new SpellInfo(
+                        id,
+                        SpellRender.iconTexture(id),
+                        Text.translatable(SpellTooltip.spellTranslationKey(id)));
+                SpellBinding.State bindingState = SpellBinding.State.of(id, itemStack, cost, requirement);
+                boolean isEnabled = bindingState.readyToApply(player, lapisCount);
+                var button = new ButtonViewModel(shown,
+                        originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + ((buttons.size() - pageOffset) * BUTTON_HEIGHT),
+                        BUTTON_WIDTH, BUTTON_HEIGHT,
+                        isEnabled, spell, null, bindingState);
+                buttons.add(button);
+            }
         }
         setButtons(buttons);
     }
@@ -249,7 +267,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 
     enum ButtonState { NORMAL, HOVER }
     record SpellInfo(Identifier id, Identifier icon, Text name) { }
-    record ButtonViewModel(boolean shown, int x, int y, int width, int height, boolean isEnabled, SpellInfo spell, SpellBinding.State binding) {
+    record ButtonViewModel(boolean shown, int x, int y, int width, int height, boolean isEnabled, @Nullable SpellInfo spell, @Nullable Item item, SpellBinding.State binding) {
         public boolean mouseOver(int mouseX, int mouseY) {
             if(!shown) { return false; }
             return (mouseX > x && mouseX < x + width) && (mouseY > y && mouseY < y + height);
@@ -294,11 +312,18 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         if (viewModel.binding.state == SpellBinding.State.ApplyState.NO_MORE_SLOT) {
             return;
         }
-        if (viewModel.spell != null) {
+        if (viewModel.spell != null || viewModel.item != null) {
             boolean alreadyApplied = viewModel.binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
             boolean isUnlocked = alreadyApplied || viewModel.isEnabled;
-            var spell = viewModel.spell;
-            textRenderer.drawWithShadow(matrices, spell.name,
+            var text = Text.of("");
+            if (viewModel.spell != null)  {
+                text = viewModel.spell.name();
+            }
+            if (viewModel.item != null) {
+                text = viewModel.item.getName();
+            }
+            // var spell = viewModel.spell;
+            textRenderer.drawWithShadow(matrices, text,
                     viewModel.x + viewModel.height, viewModel.y + SPELL_ICON_INDENT, isUnlocked ? 0xFFFFFF : 0x808080);
             var goodColor = viewModel.isEnabled ? COLOR_GOOD : COLOR_GOOD_BUT_DISABLED;
             if (!alreadyApplied) {
@@ -310,8 +335,8 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
             }
             RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, isUnlocked ? 1F : 0.5f);
             RenderSystem.enableBlend();
-            if (spell.icon != null) {
-                RenderSystem.setShaderTexture(0, spell.icon);
+            if (viewModel.spell != null && viewModel.spell.icon != null) {
+                RenderSystem.setShaderTexture(0, viewModel.spell.icon);
                 // int x, int y, int u, int v, int width, int height
                 DrawableHelper.drawTexture(matrices,
                         viewModel.x + SPELL_ICON_INDENT,
@@ -319,7 +344,15 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                         0, 0,
                         SPELL_ICON_SIZE, SPELL_ICON_SIZE, SPELL_ICON_SIZE, SPELL_ICON_SIZE);
             }
+            if (viewModel.item != null) {
+                // Draw item icon
+                this.itemRenderer.renderInGui(viewModel.item.getDefaultStack(),
+                        viewModel.x + SPELL_ICON_INDENT,
+                        viewModel.y + SPELL_ICON_INDENT);
+            }
             if (!alreadyApplied) {
+
+                matrices.translate(0, 0, 300);
                 RenderSystem.setShaderTexture(0, TEXTURE);
                 drawTexture(matrices,
                         viewModel.x + ORB_INDENT,
@@ -330,8 +363,10 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                     viewModel.x + ORB_INDENT + (Math.round(ORB_ICON_SIZE * 0.6)),
                     viewModel.y + viewModel.height - BOTTOM_TEXT_OFFSET,
                     viewModel.binding.requirements.hasEnoughLevelsToSpend(player) ? goodColor : COLOR_BAD);
+                matrices.translate(0, 0, -300);
             }
         }
+        RenderSystem.enableDepthTest();
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         RenderSystem.disableBlend();
     }

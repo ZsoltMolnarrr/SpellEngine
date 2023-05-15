@@ -2,15 +2,18 @@ package net.spell_engine.spellbinding;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.item.trinket.SpellBooks;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class SpellBinding {
@@ -19,10 +22,19 @@ public class SpellBinding {
     private static final float LIBRARY_POWER_BASE = 10;
     private static final float LIBRARY_POWER_MULTIPLIER = 1.5F;
     private static final int LIBRARY_POWER_CAP = 22;
+    public static final int BOOK_MODE_OFFSET = 100000;
 
     public record Offer(int id, int cost, int levelRequirement) {  }
 
     public static List<Offer> offersFor(ItemStack itemStack, int libraryPower) {
+        if (itemStack.getItem() == Items.BOOK) {
+            return SpellBooks.all()
+                    .stream()
+                    .sorted(Comparator.comparing(spellBookItem -> spellBookItem.poolId.toString()))
+                    .map(book -> new Offer(Registry.ITEM.getRawId(book) + BOOK_MODE_OFFSET, 1, 3))
+                    .toList();
+        }
+
         var container = SpellContainerHelper.containerFromItemStack(itemStack);
         var pool = SpellContainerHelper.getPool(container);
         if (container == null || pool == null || pool.spellIds().isEmpty()) {
@@ -37,7 +49,7 @@ public class SpellBinding {
                         && entry.getValue().learn.tier > 0)
                 .sorted(SpellContainerHelper.spellSorter)
                 .map(entry -> new Offer(
-                    SpellRegistry.rawId(entry.getKey()),
+                    SpellRegistry.rawSpellId(entry.getKey()),
                     entry.getValue().learn.tier * entry.getValue().learn.level_cost_per_tier,
                     entry.getValue().learn.tier * entry.getValue().learn.level_requirement_per_tier
                 ))
@@ -77,7 +89,7 @@ public class SpellBinding {
         }
 
         public static State of(int spellId, ItemStack itemStack, int cost, int requiredLevel) {
-            var validId = SpellRegistry.fromRawId(spellId);
+            var validId = SpellRegistry.fromRawSpellId(spellId);
             if (validId.isEmpty()) {
                 return new State(ApplyState.INVALID, null);
             }
@@ -105,6 +117,13 @@ public class SpellBinding {
             return state == SpellBinding.State.ApplyState.APPLICABLE
                     && requirements != null
                     && requirements.satisfiedFor(player, lapisCount);
+        }
+
+        public static State forBook(int cost, int requiredLevel) {
+            int lapisCost = cost;
+            int levelCost = cost;
+            var requirements = new Requirements(0, levelCost, requiredLevel);
+            return new State(ApplyState.APPLICABLE, requirements);
         }
     }
 }

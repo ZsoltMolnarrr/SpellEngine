@@ -17,26 +17,22 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class SpellRegistry {
-    public static class Entry { public Entry() { }
+    public static class SpellEntry { public SpellEntry() { }
         public Spell spell;
         public int rawId;
-        public Entry(Spell spell, int rawId) {
+        public SpellEntry(Spell spell, int rawId) {
             this.spell = spell;
             this.rawId = rawId;
         }
     }
-    private static final Map<Identifier, Entry> spells = new HashMap<>();
+    private static final Map<Identifier, SpellEntry> spells = new HashMap<>();
     private static final Map<Identifier, SpellPool> pools = new HashMap<>();
     public static final Map<Identifier, SpellContainer> book_containers = new HashMap<>();
     private static final Map<Identifier, SpellContainer> containers = new HashMap<>();
     private static final Map<MagicSchool, Integer> spellCount = new HashMap<>();
 
-    public static Map<Identifier, Entry> all() {
+    public static Map<Identifier, SpellEntry> all() {
         return spells;
-    }
-
-    public static Map<Identifier, SpellPool> pools() {
-        return pools;
     }
 
     public static void initialize() {
@@ -50,7 +46,7 @@ public class SpellRegistry {
 
     public static void loadSpells(ResourceManager resourceManager) {
         var gson = new Gson();
-        Map<Identifier, Entry> parsed = new HashMap<>();
+        Map<Identifier, SpellEntry> parsed = new HashMap<>();
         // Reading all attribute files
         int rawId = 1;
         var directory = "spells";
@@ -65,7 +61,7 @@ public class SpellRegistry {
                         .toString().replace(directory + "/", "");
                 id = id.substring(0, id.lastIndexOf('.'));
                 Validator.validate(container);
-                parsed.put(new Identifier(id), new Entry(container, rawId++));
+                parsed.put(new Identifier(id), new SpellEntry(container, rawId++));
                 // System.out.println("loaded spell - id: " + id +  " spell: " + gson.toJson(container));
             } catch (Exception e) {
                 System.err.println("Failed to parse spell: " + identifier);
@@ -175,7 +171,7 @@ public class SpellRegistry {
     public static PacketByteBuf encoded = PacketByteBufs.create();
 
     public static class SyncFormat { public SyncFormat() { }
-        public Map<String, Entry> spells = new HashMap<>();
+        public Map<String, SpellEntry> spells = new HashMap<>();
         public Map<String, SpellPool.SyncFormat> pools = new HashMap<>();
         public Map<String, SpellContainer> containers = new HashMap<>();
     }
@@ -246,11 +242,11 @@ public class SpellRegistry {
         }
     }
 
-    public static int rawId(Identifier identifier) {
+    public static int rawSpellId(Identifier identifier) {
         return spells.get(identifier).rawId;
     }
 
-    public static Optional<Identifier> fromRawId(int rawId) {
+    public static Optional<Identifier> fromRawSpellId(int rawId) {
         var reverseEntry = reverseSpells.get(rawId);
         if (reverseEntry != null) {
             return Optional.of(reverseEntry.identifier);

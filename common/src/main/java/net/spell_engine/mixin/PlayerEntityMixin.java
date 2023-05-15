@@ -31,7 +31,7 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     }
 
     public void setCurrentSpellId(Identifier spellId) {
-        player().getDataTracker().set(SPELL_ENGINE_SELECTED_SPELL, spellId != null ? SpellRegistry.rawId(spellId) : 0);
+        player().getDataTracker().set(SPELL_ENGINE_SELECTED_SPELL, spellId != null ? SpellRegistry.rawSpellId(spellId) : 0);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         if (player.isUsingItem()) {
             var value = player.getDataTracker().get(SPELL_ENGINE_SELECTED_SPELL);
             if (value != 0) {
-                return SpellRegistry.fromRawId(value).orElse(null);
+                return SpellRegistry.fromRawSpellId(value).orElse(null);
             }
         }
         return null;

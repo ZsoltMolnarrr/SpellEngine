@@ -14,6 +14,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
@@ -46,7 +47,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
         this.addSlot(new Slot(this.inventory, 0, 15, 47) {
             @Override
             public boolean canInsert(ItemStack stack) {
-                return SpellContainerHelper.hasValidContainer(stack);
+                return stack.getItem() == Items.BOOK || SpellContainerHelper.hasValidContainer(stack);
             }
 
             @Override
@@ -91,7 +92,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
             return;
         }
         ItemStack itemStack = inventory.getStack(0);
-        if (itemStack.isEmpty() || !SpellContainerHelper.hasValidContainer(itemStack)) {
+        if (itemStack.isEmpty() || !(SpellContainerHelper.hasValidContainer(itemStack) || itemStack.getItem() == Items.BOOK)) {
             for (int i = 0; i < MAXIMUM_SPELL_COUNT; ++i) {
                 this.spellId[i] = 0;
                 this.spellCost[i] = 0;
@@ -186,40 +187,66 @@ public class SpellBindingScreenHandler extends ScreenHandler {
             var lapisCount = getLapisCount();
             var weaponStack = getStacks().get(0);
             var lapisStack = getStacks().get(1);
-            var spellIdOptional = SpellRegistry.fromRawId(rawId);
-            if (spellIdOptional.isEmpty()) {
-                return false;
-            }
-            var spellId = spellIdOptional.get();
-            var binding = SpellBinding.State.of(spellId, weaponStack, cost, requiredLevel);
-            if (binding.state == SpellBinding.State.ApplyState.INVALID) {
-                return false;
-            }
-            if (!binding.readyToApply(player, lapisCount)) {
-                return false;
-            }
-            this.context.run((world, pos) -> {
-                SpellContainerHelper.addSpell(spellId, weaponStack);
 
-                if (!player.isCreative()) {
-                    lapisStack.decrement(binding.requirements.lapisCost());
+            if (rawId < SpellBinding.BOOK_MODE_OFFSET) {
+
+                var spellIdOptional = SpellRegistry.fromRawSpellId(rawId);
+                if (spellIdOptional.isEmpty()) {
+                    return false;
                 }
-                applyLevelCost(player, binding.requirements.levelCost());
-                this.inventory.markDirty();
-                this.onContentChanged(this.inventory);
-                world.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
-                if (player instanceof ServerPlayerEntity serverPlayer) {
-                    var container = SpellContainerHelper.containerFromItemStack(weaponStack);
-                    var poolId = SpellContainerHelper.getPoolId(container);
-                    if (poolId != null) {
-                        var pool = SpellContainerHelper.getPool(container);
-                        var isComplete = container.spell_ids.size() == pool.spellIds().size();
-                        SpellBindingCriteria.INSTANCE.trigger(serverPlayer, poolId, isComplete);
-                    } else {
-                        SpellBindingCriteria.INSTANCE.trigger(serverPlayer, null, false);
+                var spellId = spellIdOptional.get();
+                var binding = SpellBinding.State.of(spellId, weaponStack, cost, requiredLevel);
+                if (binding.state == SpellBinding.State.ApplyState.INVALID) {
+                    return false;
+                }
+                if (!binding.readyToApply(player, lapisCount)) {
+                    return false;
+                }
+                this.context.run((world, pos) -> {
+                    SpellContainerHelper.addSpell(spellId, weaponStack);
+
+                    if (!player.isCreative()) {
+                        lapisStack.decrement(binding.requirements.lapisCost());
                     }
+                    applyLevelCost(player, binding.requirements.levelCost());
+                    this.inventory.markDirty();
+                    this.onContentChanged(this.inventory);
+                    world.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
+                    if (player instanceof ServerPlayerEntity serverPlayer) {
+                        var container = SpellContainerHelper.containerFromItemStack(weaponStack);
+                        var poolId = SpellContainerHelper.getPoolId(container);
+                        if (poolId != null) {
+                            var pool = SpellContainerHelper.getPool(container);
+                            var isComplete = container.spell_ids.size() == pool.spellIds().size();
+                            SpellBindingCriteria.INSTANCE.trigger(serverPlayer, poolId, isComplete);
+                        } else {
+                            SpellBindingCriteria.INSTANCE.trigger(serverPlayer, null, false);
+                        }
+                    }
+                });
+
+            } else {
+                var item = Registry.ITEM.get(rawId - SpellBinding.BOOK_MODE_OFFSET);
+                var binding = SpellBinding.State.forBook(cost, requiredLevel);
+                if (binding.state == SpellBinding.State.ApplyState.INVALID) {
+                    return false;
                 }
-            });
+                if (!binding.readyToApply(player, lapisCount)) {
+                    return false;
+                }
+
+                this.context.run((world, pos) -> {
+                    this.slots.get(0).setStack(item.getDefaultStack());
+                    if (!player.isCreative()) {
+                        lapisStack.decrement(binding.requirements.lapisCost());
+                    }
+                    applyLevelCost(player, binding.requirements.levelCost());
+                    this.inventory.markDirty();
+                    this.onContentChanged(this.inventory);
+                    world.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
+                });
+            }
+
 
             return true;
         } catch (Exception e) {
