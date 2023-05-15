@@ -105,7 +105,8 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     @Nullable
     private Identifier spellIdFromItemStack(ItemStack itemStack) {
-        var container = containerFromItemStack(itemStack);
+        var player = player();
+        var container = SpellContainerHelper.containerWithProxy(itemStack, player);
         return SpellContainerHelper.spellId(container, selectedSpellIndex);
     }
 

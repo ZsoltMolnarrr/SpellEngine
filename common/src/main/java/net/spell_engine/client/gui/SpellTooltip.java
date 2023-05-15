@@ -38,19 +38,26 @@ public class SpellTooltip {
         if ((Object)itemStack instanceof SpellCasterItemStack stack) {
             var container = stack.getSpellContainer();
             if(container != null && container.isValid()) {
-                if (container.max_spell_count == 1) {
-                    lines.add(Text.translatable("spell.tooltip.host.single")
+                if (container.is_proxy) {
+                    lines.add(Text.translatable("spell.tooltip.host.proxy")
                             .formatted(Formatting.GRAY));
-                } else {
-                    String limit = "";
-                    if (container.pool != null && container.max_spell_count > 0) {
-                        limit = I18n.translate("spell.tooltip.host.limit")
-                                .replace("{current}", "" + container.spell_ids.size())
-                                .replace("{max}", "" + container.max_spell_count);
+                }
+
+                if (container.spell_ids.size() > 0) {
+                    if (container.pool == null) {
+                        lines.add(Text.translatable("spell.tooltip.host.pre_loaded")
+                                .formatted(Formatting.GRAY));
+                    } else {
+                        String limit = "";
+                        if (container.pool != null && container.max_spell_count > 0) {
+                            limit = I18n.translate("spell.tooltip.host.limit")
+                                    .replace("{current}", "" + container.spell_ids.size())
+                                    .replace("{max}", "" + container.max_spell_count);
+                        }
+                        lines.add(Text.translatable("spell.tooltip.host.bindable")
+                                .append(Text.literal(" " + limit))
+                                .formatted(Formatting.GRAY));
                     }
-                    lines.add(Text.translatable("spell.tooltip.host.multiple")
-                            .append(Text.literal(" " + limit))
-                            .formatted(Formatting.GRAY));
                 }
                 var keybinding = Keybindings.hotbarModifier;
                 var showDetails = config.alwaysShowFullTooltip
@@ -73,7 +80,7 @@ public class SpellTooltip {
                             keybinding.getBoundKeyLocalizedText())
                             .formatted(Formatting.GRAY));
                 }
-                if (config.showSpellBindingTooltip && container.max_spell_count > 1 && container.spell_ids.size() == 0) {
+                if (config.showSpellBindingTooltip && container.pool != null && container.spell_ids.size() == 0) {
                     lines.add(Text.translatable("spell.tooltip.spell_binding_tip")
                             .formatted(Formatting.GRAY));
                 }

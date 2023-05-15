@@ -7,8 +7,9 @@
   "tutorial.spell_hotbar.description": "Press %1$s",
   "tutorial.spell_hotbar.unbound": "Bind a key!",
 
-  "spell.tooltip.host.single": "Cast spell upon use",
-  "spell.tooltip.host.multiple": "Host of spells",
+  "spell.tooltip.host.proxy": "Casts spells from equipped Spell Book",
+  "spell.tooltip.host.pre_loaded": "Cast spell upon use",
+  "spell.tooltip.host.bindable": "Host of spells",
   "spell.tooltip.host.limit": "({current}/{max})",
   "spell.tooltip.cast_instant": "Instant cast",
   "spell.tooltip.cast_time": "Cast Time: {duration} second",
