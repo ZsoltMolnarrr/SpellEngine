@@ -10,14 +10,19 @@
       "translate": "advancements.rpg_classes.classes.description"
     },
     "frame": "task",
-    "show_toast": false,
-    "announce_to_chat": false,
+    "show_toast": true,
+    "announce_to_chat": true,
     "hidden": false
   },
   "parent": "rpg_classes:root",
   "criteria": {
-    "always": {
-      "trigger": "minecraft:tick"
+    "book": {
+      "trigger": "spell_engine:spell_book_creation"
     }
-  }
+  },
+  "requirements": [
+    [
+      "book"
+    ]
+  ]
 }

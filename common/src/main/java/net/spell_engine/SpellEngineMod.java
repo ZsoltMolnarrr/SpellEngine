@@ -74,6 +74,7 @@ public class SpellEngineMod {
         Registry.register(Registry.ITEM, SpellBinding.ID, new BlockItem(SpellBindingBlock.INSTANCE, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
         Registry.register(Registry.SCREEN_HANDLER, SpellBinding.ID, SpellBindingScreenHandler.HANDLER_TYPE);
         Criteria.register(SpellBindingCriteria.INSTANCE);
+        Criteria.register(SpellBookCreationCriteria.INSTANCE);
     }
 
     public static void registerEnchantments() {

@@ -31,7 +31,10 @@ public class SpellBinding {
             return SpellBooks.all()
                     .stream()
                     .sorted(Comparator.comparing(spellBookItem -> spellBookItem.poolId.toString()))
-                    .map(book -> new Offer(Registry.ITEM.getRawId(book) + BOOK_MODE_OFFSET, 1, 3))
+                    .map(book -> new Offer(
+                            Registry.ITEM.getRawId(book) + BOOK_MODE_OFFSET,
+                            SpellEngineMod.config.spell_book_binding_level_cost,
+                            SpellEngineMod.config.spell_book_binding_level_requirement))
                     .toList();
         }
 
@@ -120,9 +123,7 @@ public class SpellBinding {
         }
 
         public static State forBook(int cost, int requiredLevel) {
-            int lapisCost = cost;
-            int levelCost = cost;
-            var requirements = new Requirements(0, levelCost, requiredLevel);
+            var requirements = new Requirements(0, cost, requiredLevel);
             return new State(ApplyState.APPLICABLE, requirements);
         }
     }

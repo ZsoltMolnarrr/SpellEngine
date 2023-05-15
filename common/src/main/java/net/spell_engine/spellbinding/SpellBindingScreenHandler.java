@@ -227,6 +227,12 @@ public class SpellBindingScreenHandler extends ScreenHandler {
 
             } else {
                 var item = Registry.ITEM.get(rawId - SpellBinding.BOOK_MODE_OFFSET);
+                var itemStack = item.getDefaultStack();
+                var container = SpellContainerHelper.containerFromItemStack(itemStack);
+                if (container == null || !container.isValid() || container.pool == null) {
+                    return false;
+                }
+                var poolId = new Identifier(container.pool);
                 var binding = SpellBinding.State.forBook(cost, requiredLevel);
                 if (binding.state == SpellBinding.State.ApplyState.INVALID) {
                     return false;
@@ -236,7 +242,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                 }
 
                 this.context.run((world, pos) -> {
-                    this.slots.get(0).setStack(item.getDefaultStack());
+                    this.slots.get(0).setStack(itemStack);
                     if (!player.isCreative()) {
                         lapisStack.decrement(binding.requirements.lapisCost());
                     }
@@ -244,9 +250,12 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                     this.inventory.markDirty();
                     this.onContentChanged(this.inventory);
                     world.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
+
+                    if (player instanceof ServerPlayerEntity serverPlayer) {
+                        SpellBookCreationCriteria.INSTANCE.trigger(serverPlayer, poolId);
+                    }
                 });
             }
-
 
             return true;
         } catch (Exception e) {
