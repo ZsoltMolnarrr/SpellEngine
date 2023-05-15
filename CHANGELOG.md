@@ -1,7 +1,10 @@
 # 0.9.18
 
+- Add Spell Book system (requires on Trinkets mod)
+- Add Spell Book creation advancement criteria
 - Refactor enchantment restriction internal API
 - Fix incompatibility with Taterzens #11 (samolego/Taterzens#132) - Thanks to Nillo-Code
+- Fix keybind for viewing spell info #12
 
 # 0.9.17
 

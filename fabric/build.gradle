@@ -147,6 +147,7 @@ if(project.hasProperty('release_type')) {
                 requiredDependency 'cloth-config'
                 requiredDependency 'playeranimator'
                 requiredDependency 'spell-power'
+                requiredDependency 'trinkets'
             }
 
             mainArtifact(remapJar)
@@ -176,6 +177,7 @@ if(project.hasProperty('release_type')) {
             required.project 'cloth-config'
             required.project 'playeranimator'
             required.project 'spell-power'
+            required.project 'trinkets'
         }
     }
 
