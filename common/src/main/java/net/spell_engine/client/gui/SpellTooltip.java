@@ -43,7 +43,7 @@ public class SpellTooltip {
                             .formatted(Formatting.GRAY));
                 } else {
                     String limit = "";
-                    if (container.pool != null) {
+                    if (container.pool != null && container.max_spell_count > 0) {
                         limit = I18n.translate("spell.tooltip.host.limit")
                                 .replace("{current}", "" + container.spell_ids.size())
                                 .replace("{max}", "" + container.max_spell_count);

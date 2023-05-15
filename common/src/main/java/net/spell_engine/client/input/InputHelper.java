@@ -34,7 +34,7 @@ public class InputHelper {
         }
     }
 
-    private static boolean hasLockableSpellContainer(PlayerEntity player) {
+    public static boolean hasLockableSpellContainer(PlayerEntity player) {
         if (player != null) {
             var container = ((SpellCasterClient)player).getCurrentContainer();
             return canLockOnContainer(container); // And only lock if more than 1 spell

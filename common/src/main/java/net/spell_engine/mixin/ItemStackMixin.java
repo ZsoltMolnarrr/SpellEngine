@@ -96,7 +96,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
             return;
         }
         var itemStack = itemStack();
-        var container = spellContainer();
+        var container = SpellContainerHelper.containerWithProxy(spellContainer(), user);
         if (container == null || !container.isUsable()) {
             if (user instanceof SpellCasterEntity caster && caster.getCurrentSpellId() != null) {
                 caster.clearCasting();
@@ -154,6 +154,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
         }
 
         if (user instanceof PlayerEntity player) {
+            //container = SpellContainerHelper.containerWithProxy(spellContainer(), player);
             var caster = (SpellCasterEntity)player;
             var checkAmmo = world.isClient; // Ammo check is expensive, avoid it on server
             var attempt = SpellHelper.attemptCasting(player, itemStack(), caster.getCurrentSpellId(), checkAmmo);

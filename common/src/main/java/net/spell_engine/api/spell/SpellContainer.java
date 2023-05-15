@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SpellContainer { public SpellContainer() { }
+    public boolean is_proxy = false;
+    public int max_spell_count = 0;
     public String pool;
-    public int max_spell_count = 1;
-    public List<String> spell_ids;
+    public List<String> spell_ids = List.of();
 
-    public SpellContainer(String pool, int max_spell_count, List<String> spell_ids) {
+    public SpellContainer(boolean is_proxy, String pool, int max_spell_count, List<String> spell_ids) {
+        this.is_proxy = is_proxy;
         this.pool = pool;
         this.max_spell_count = max_spell_count;
         this.spell_ids = spell_ids;
@@ -31,9 +33,13 @@ public class SpellContainer { public SpellContainer() { }
     }
 
     public boolean isValid() {
-        return max_spell_count > 0 && spell_ids != null
-                // Valid pool (staves) or non-empty spell list (wands)
-                && ( (pool != null && !pool.isEmpty()) || !spell_ids.isEmpty() );
+        if (is_proxy) {
+            return true;
+        }
+        if (max_spell_count < 0) {
+            return false;
+        }
+        return !spell_ids.isEmpty() || (pool != null && !pool.isEmpty());
     }
 
     public boolean isUsable() {
@@ -41,6 +47,6 @@ public class SpellContainer { public SpellContainer() { }
     }
 
     public SpellContainer copy() {
-        return new SpellContainer(pool, max_spell_count, new ArrayList<>(spell_ids));
+        return new SpellContainer(is_proxy, pool, max_spell_count, new ArrayList<>(spell_ids));
     }
 }

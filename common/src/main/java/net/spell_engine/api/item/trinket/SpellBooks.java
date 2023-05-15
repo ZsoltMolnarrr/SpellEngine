@@ -18,7 +18,7 @@ public class SpellBooks {
     }
 
     public static SpellBookItem create(Identifier poolId, ItemGroup itemGroup) {
-        var container = new SpellContainer(poolId.toString(), 3, List.of());
+        var container = new SpellContainer(false, poolId.toString(), 0, List.of());
         SpellRegistry.book_containers.put(itemIdFor(poolId), container);
         var book = new SpellBookItem(poolId, new FabricItemSettings().maxCount(1).group(itemGroup));
         all.add(book);

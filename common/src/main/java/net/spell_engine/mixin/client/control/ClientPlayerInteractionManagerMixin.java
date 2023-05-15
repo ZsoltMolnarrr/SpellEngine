@@ -24,15 +24,11 @@ public class ClientPlayerInteractionManagerMixin {
             cir.cancel();
         }
         if(SpellEngineClient.config.lockHotbarOnRightClick && !InputHelper.isLocked) {
-            ItemStack itemStack = player.getStackInHand(hand);
-            var object = (Object) itemStack;
-            if (object instanceof SpellCasterItemStack stack) {
-                if (InputHelper.canLockOnContainer(stack.getSpellContainer())) {
-                    InputHelper.isLocked = true;
-                    InputHelper.showLockedMessage("ESC");
-                    cir.setReturnValue(ActionResult.PASS);
-                    cir.cancel();
-                }
+            if (InputHelper.hasLockableSpellContainer(player)) {
+                InputHelper.isLocked = true;
+                InputHelper.showLockedMessage("ESC");
+                cir.setReturnValue(ActionResult.PASS);
+                cir.cancel();
             }
         }
     }

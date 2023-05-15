@@ -87,25 +87,20 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     public SpellContainer getCurrentContainer() {
-        var container = containerFromItemStack(player().getMainHandStack());
+        var player = player();
+        var casterStack = player.getMainHandStack();
+        var container = containerFromItemStack(casterStack);
         if (container == null && SpellEngineMod.config.offhand_casting_allowed) {
             container = containerFromItemStack(player().getOffHandStack());
         }
-        return container;
+        return SpellContainerHelper.containerWithProxy(container, player);
     }
 
     private SpellContainer containerFromItemStack(ItemStack itemStack) {
         if (itemStack.isEmpty()) {
             return null;
         }
-        var object = (Object)itemStack;
-        if (object instanceof SpellCasterItemStack stack) {
-            var container = stack.getSpellContainer();
-            if (container != null && container.isValid()) {
-                return container;
-            }
-        }
-        return null;
+        return SpellContainerHelper.containerFromItemStack(itemStack);
     }
 
     @Nullable
@@ -352,7 +347,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
 
         if (!SpellEngineClient.tutorial.value.spell_hotbar_shown) {
-            var container = SpellContainerHelper.containerFromItemStack(player.getMainHandStack());
+            var container = SpellContainerHelper.containerWithProxy(player.getMainHandStack(), player);
             if (InputHelper.canLockOnContainer(container)) {
                 var keybinding = Keybindings.hotbarLock;
                 var description = Text.translatable("tutorial.spell_hotbar.unbound");

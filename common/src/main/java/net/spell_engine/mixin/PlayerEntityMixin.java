@@ -87,7 +87,7 @@ public class PlayerEntityMixin implements SpellCasterEntity {
 //            }
         } else {
             // Server side
-            if (!player.isUsingItem() || SpellContainerHelper.containerFromItemStack(player.getActiveItem()) == null) {
+            if (!player.isUsingItem() || SpellContainerHelper.containerWithProxy(player.getActiveItem(), player) == null) {
                 SpellCastSyncHelper.clearCasting(player);
             }
         }

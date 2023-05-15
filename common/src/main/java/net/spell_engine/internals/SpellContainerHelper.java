@@ -1,5 +1,7 @@
 package net.spell_engine.internals;
 
+import dev.emi.trinkets.api.TrinketsApi;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -11,11 +13,9 @@ import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.api.spell.SpellPool;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SpellContainerHelper {
     public static Identifier getPoolId(SpellContainer container) {
@@ -32,6 +32,31 @@ public class SpellContainerHelper {
         }
         return SpellPool.empty;
     }
+
+    public static SpellContainer containerWithProxy(ItemStack itemStack, PlayerEntity player) {
+        var weaponContainer = containerFromItemStack(itemStack);
+        return containerWithProxy(weaponContainer, player);
+    }
+
+    public static SpellContainer containerWithProxy(SpellContainer proxyContainer, PlayerEntity player) {
+        var component = TrinketsApi.getTrinketComponent(player);
+        if (proxyContainer!= null && proxyContainer.is_proxy && component.isPresent()) {
+            var asd = component.get();
+            var spellBookSlot = asd.getInventory().get("charm").get("spell_book");
+            var spellBookStack = spellBookSlot.getStack(0);
+            if (!spellBookStack.isEmpty()) {
+                var spellBookContainer = containerFromItemStack(spellBookStack);
+
+                var mergedSpellIds = Stream.of(proxyContainer.spell_ids, spellBookContainer.spell_ids)
+                        .flatMap(Collection::stream)
+                        .toList();
+
+                return new SpellContainer(false, null, 0, mergedSpellIds);
+            }
+        }
+        return proxyContainer;
+    }
+
 
     public static SpellContainer containerFromItemStack(ItemStack itemStack) {
         if (itemStack.isEmpty()) {
@@ -122,11 +147,15 @@ public class SpellContainerHelper {
     // MARK: NBT Codec
 
     public static final String NBT_KEY_CONTAINER = "spell_container";
+    private static final String NBT_KEY_PROXY = "is_proxy";
     private static final String NBT_KEY_POOL = "pool";
     private static final String NBT_KEY_MAX_SPELL_COUNT = "max_spell_count";
     private static final String NBT_KEY_SPELL_IDS = "spell_ids";
     public static NbtCompound toNBT(SpellContainer container) {
         var object = new NbtCompound();
+        if (container.is_proxy) {
+            object.putBoolean(NBT_KEY_PROXY, container.is_proxy);
+        }
         if (container.pool != null) {
             object.putString(NBT_KEY_POOL, container.pool);
         }
@@ -148,6 +177,10 @@ public class SpellContainerHelper {
             return null;
         }
         try {
+            boolean is_proxy = false;
+            if (container.contains(NBT_KEY_PROXY)) {
+                is_proxy = container.getBoolean(NBT_KEY_PROXY);
+            }
             String pool = null;
             if (container.contains(NBT_KEY_POOL)) {
                 pool = container.getString(NBT_KEY_POOL);
@@ -158,7 +191,7 @@ public class SpellContainerHelper {
             for (int i = 0; i < spellList.size(); i++) {
                 spellIds.add(spellList.getString(i));
             }
-            return new SpellContainer(pool, max_spell_count, spellIds);
+            return new SpellContainer(is_proxy, pool, max_spell_count, spellIds);
         } catch (Exception e) {
             System.err.println("Failed to decode spell container from NBT: " + e.getMessage());
         }
