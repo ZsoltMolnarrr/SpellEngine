@@ -17,6 +17,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
+import net.spell_engine.api.item.trinket.SpellBookItem;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.SpellProjectile;
@@ -652,7 +653,8 @@ public class SpellHelper {
         var damageEffects = new ArrayList<EstimatedValue>();
         var healEffects = new ArrayList<EstimatedValue>();
 
-        var replaceAttributes = caster.getMainHandStack() != itemStack;
+        boolean forSpellBook = itemStack.getItem() instanceof SpellBookItem;
+        var replaceAttributes = (caster.getMainHandStack() != itemStack && !forSpellBook);
         var heldAttributes = caster.getMainHandStack().getAttributeModifiers(EquipmentSlot.MAINHAND);
         var itemAttributes = itemStack.getAttributeModifiers(EquipmentSlot.MAINHAND);
         if (replaceAttributes) {
@@ -664,14 +666,14 @@ public class SpellHelper {
             switch (impact.action.type) {
                 case DAMAGE -> {
                     var damageData = impact.action.damage;
-                    var power = SpellPower.getSpellPower(school, caster, itemStack);
+                    var power = SpellPower.getSpellPower(school, caster, forSpellBook ? null : itemStack);
                     var damage = new EstimatedValue(power.nonCriticalValue(), power.forcedCriticalValue())
                             .multiply(damageData.spell_power_coefficient);
                     damageEffects.add(damage);
                 }
                 case HEAL -> {
                     var healData = impact.action.heal;
-                    var power = SpellPower.getSpellPower(school, caster, itemStack);
+                    var power = SpellPower.getSpellPower(school, caster, forSpellBook ? null : itemStack);
                     var healing = new EstimatedValue(power.nonCriticalValue(), power.forcedCriticalValue())
                             .multiply(healData.spell_power_coefficient);
                     healEffects.add(healing);
