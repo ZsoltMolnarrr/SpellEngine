@@ -1,6 +1,7 @@
 package net.spell_engine.client.gui;
 
 import com.ibm.icu.text.DecimalFormat;
+import net.fabricmc.fabric.mixin.client.keybinding.KeyBindingAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.InputUtil;
@@ -15,7 +16,6 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.SpellCasterItemStack;
-import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
 
@@ -56,7 +56,7 @@ public class SpellTooltip {
                 var showDetails = config.alwaysShowFullTooltip
                         || (!keybinding.isUnbound() && InputUtil.isKeyPressed(
                                 MinecraftClient.getInstance().getWindow().getHandle(),
-                                keybinding.getDefaultKey().getCode())
+                                ((KeyBindingAccessor) keybinding).fabric_getBoundKey().getCode())
                         );
                 for (int i = 0; i < container.spell_ids.size(); i++) {
                     var spellId = new Identifier(container.spell_ids.get(i));
