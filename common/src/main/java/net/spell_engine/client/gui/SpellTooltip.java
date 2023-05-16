@@ -80,7 +80,7 @@ public class SpellTooltip {
                             keybinding.getBoundKeyLocalizedText())
                             .formatted(Formatting.GRAY));
                 }
-                if (config.showSpellBindingTooltip && container.pool != null && container.spell_ids.size() == 0) {
+                if (config.showSpellBindingTooltip && container.pool != null) {
                     lines.add(Text.translatable("spell.tooltip.spell_binding_tip")
                             .formatted(Formatting.GRAY));
                 }
