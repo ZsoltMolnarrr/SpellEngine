@@ -49,6 +49,7 @@ public class SpellContainerHelper {
 
                 var mergedSpellIds = Stream.of(proxyContainer.spell_ids, spellBookContainer.spell_ids)
                         .flatMap(Collection::stream)
+                        .distinct()
                         .toList();
 
                 return new SpellContainer(false, null, 0, mergedSpellIds);
