@@ -10,6 +10,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.api.spell.SpellPool;
+import net.spell_engine.utils.WeaponCompatibility;
 import net.spell_power.api.MagicSchool;
 
 import java.io.InputStreamReader;
@@ -28,7 +29,7 @@ public class SpellRegistry {
     private static final Map<Identifier, SpellEntry> spells = new HashMap<>();
     private static final Map<Identifier, SpellPool> pools = new HashMap<>();
     public static final Map<Identifier, SpellContainer> book_containers = new HashMap<>();
-    private static final Map<Identifier, SpellContainer> containers = new HashMap<>();
+    public static final Map<Identifier, SpellContainer> containers = new HashMap<>();
     private static final Map<MagicSchool, Integer> spellCount = new HashMap<>();
 
     public static Map<Identifier, SpellEntry> all() {
@@ -40,6 +41,7 @@ public class SpellRegistry {
             loadSpells(minecraftServer.getResourceManager());
             loadPools(minecraftServer.getResourceManager());
             loadContainers(minecraftServer.getResourceManager());
+            WeaponCompatibility.initialize();
             encodeContent();
         });
     }

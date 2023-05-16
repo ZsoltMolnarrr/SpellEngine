@@ -44,6 +44,7 @@ public class SpellEngineMod {
             .setDirectory(ID)
             .sanitize(true)
             .build();
+
     public static EntityType<SpellProjectile> SPELL_PROJECTILE;
 
     public static void init() {
