@@ -45,7 +45,7 @@ public class SpellTooltip {
 
                 if (container.spell_ids.size() > 0) {
                     if (container.pool == null) {
-                        lines.add(Text.translatable("spell.tooltip.host.pre_loaded")
+                        lines.add(Text.translatable(container.is_proxy ? "spell.tooltip.host.additional" : "spell.tooltip.host.pre_loaded")
                                 .formatted(Formatting.GRAY));
                     } else {
                         String limit = "";

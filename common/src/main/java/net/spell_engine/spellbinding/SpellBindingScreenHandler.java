@@ -47,7 +47,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
         this.addSlot(new Slot(this.inventory, 0, 15, 47) {
             @Override
             public boolean canInsert(ItemStack stack) {
-                return stack.getItem() == Items.BOOK || SpellContainerHelper.hasValidContainer(stack);
+                return stack.getItem() == Items.BOOK || SpellContainerHelper.hasBindableContainer(stack);
             }
 
             @Override

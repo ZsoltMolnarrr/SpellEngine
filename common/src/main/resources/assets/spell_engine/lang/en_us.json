@@ -8,6 +8,7 @@
   "tutorial.spell_hotbar.unbound": "Bind a key!",
 
   "spell.tooltip.host.proxy": "Casts spells from equipped Spell Book",
+  "spell.tooltip.host.additional": "Additional spells:",
   "spell.tooltip.host.pre_loaded": "Cast spell upon use",
   "spell.tooltip.host.bindable": "Host of spells",
   "spell.tooltip.host.limit": "({current}/{max})",

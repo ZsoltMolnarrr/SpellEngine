@@ -140,6 +140,11 @@ public class SpellContainerHelper {
         return containerFromItemStack(itemStack) != null;
     }
 
+    public static boolean hasBindableContainer(ItemStack itemStack) {
+        var container = containerFromItemStack(itemStack);
+        return container != null && container.pool != null && !container.pool.isEmpty();
+    }
+
     public static boolean hasUsableContainer(ItemStack itemStack) {
         var container = containerFromItemStack(itemStack);
         return container != null && container.isUsable();
