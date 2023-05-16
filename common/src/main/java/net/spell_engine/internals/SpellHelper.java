@@ -18,6 +18,7 @@ import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
 import net.spell_engine.api.item.trinket.SpellBookItem;
+import net.spell_engine.api.spell.CustomSpellHandler;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.SpellProjectile;
@@ -187,42 +188,51 @@ public class SpellHelper {
                         null,
                         SpellPower.getSpellPower(spell.school, player),
                         impactTargetingMode(spell));
-                switch (targeting.type) {
-                    case AREA -> {
-                        var center = player.getPos().add(0, player.getHeight() / 2F, 0);
-                        var area = spell.release.target.area;
-                        areaImpact(world, player, targets, center, spell.range, area, false, spell, context);
+                if (spell.release.custom_impact) {
+                    var handler = CustomSpellHandler.handlers.get(spellId);
+                    released = false;
+                    if (handler != null) {
+                        released = handler.apply(new CustomSpellHandler.Data(
+                                player, targets, itemStack, action, hand, remainingUseTicks, context));
                     }
-                    case BEAM -> {
-                        beamImpact(world, player, targets, spell, context);
-                    }
-                    case CURSOR -> {
-                        var target = targets.stream().findFirst();
-                        if (target.isPresent()) {
-                            directImpact(world, player, target.get(), spell, context);
-                        } else {
-                            released = false;
+                } else {
+                    switch (targeting.type) {
+                        case AREA -> {
+                            var center = player.getPos().add(0, player.getHeight() / 2F, 0);
+                            var area = spell.release.target.area;
+                            areaImpact(world, player, targets, center, spell.range, area, false, spell, context);
                         }
-                    }
-                    case PROJECTILE -> {
-                        Entity target = null;
-                        var entityFound = targets.stream().findFirst();
-                        if (entityFound.isPresent()) {
-                            target = entityFound.get();
+                        case BEAM -> {
+                            beamImpact(world, player, targets, spell, context);
                         }
-                        shootProjectile(world, player, target, spell, context);
-                    }
-                    case METEOR -> {
-                        var target = targets.stream().findFirst();
-                        if (target.isPresent()) {
-                            fallProjectile(world, player, target.get(), spell, context);
-                        } else {
-                            released = false;
+                        case CURSOR -> {
+                            var target = targets.stream().findFirst();
+                            if (target.isPresent()) {
+                                directImpact(world, player, target.get(), spell, context);
+                            } else {
+                                released = false;
+                            }
                         }
-                    }
-                    case SELF -> {
-                        directImpact(world, player, player, spell, context);
-                        released = true;
+                        case PROJECTILE -> {
+                            Entity target = null;
+                            var entityFound = targets.stream().findFirst();
+                            if (entityFound.isPresent()) {
+                                target = entityFound.get();
+                            }
+                            shootProjectile(world, player, target, spell, context);
+                        }
+                        case METEOR -> {
+                            var target = targets.stream().findFirst();
+                            if (target.isPresent()) {
+                                fallProjectile(world, player, target.get(), spell, context);
+                            } else {
+                                released = false;
+                            }
+                        }
+                        case SELF -> {
+                            directImpact(world, player, player, spell, context);
+                            released = true;
+                        }
                     }
                 }
             }

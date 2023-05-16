@@ -27,6 +27,7 @@ public class Spell {
     public Release release;
     public static class Release { public Release() { }
         public Target target;
+        public boolean custom_impact = false;
         public static class Target { public Target() { }
             public Type type;
             public enum Type {
