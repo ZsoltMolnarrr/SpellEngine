@@ -11,6 +11,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
+import net.spell_engine.api.item.trinket.SpellBookItem;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.*;
 import org.jetbrains.annotations.Nullable;
@@ -97,7 +98,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
         }
         var itemStack = itemStack();
         var container = SpellContainerHelper.containerWithProxy(spellContainer(), user);
-        if (container == null || !container.isUsable()) {
+        if (container == null || !container.isUsable() || itemStack.getItem() instanceof SpellBookItem) {
             if (user instanceof SpellCasterEntity caster && caster.getCurrentSpellId() != null) {
                 caster.clearCasting();
             }

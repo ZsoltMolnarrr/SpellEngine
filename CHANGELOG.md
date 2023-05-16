@@ -2,6 +2,7 @@
 
 - Add Spell Book system (requires on Trinkets mod)
 - Add Spell Book creation advancement criteria
+- Add spell casting capability for weapons (data pack compatible, server configurable: `add_spell_casting_to_swords`, `add_spell_casting_regex`)  
 - Refactor enchantment restriction internal API
 - Fix incompatibility with Taterzens #11 (samolego/Taterzens#132) - Thanks to Nillo-Code
 - Fix keybind for viewing spell info #12
