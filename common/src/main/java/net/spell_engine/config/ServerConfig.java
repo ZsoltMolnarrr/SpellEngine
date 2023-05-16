@@ -24,9 +24,9 @@ public class ServerConfig implements ConfigData {
     public int spell_book_binding_level_requirement = 3;
     public int spell_book_binding_level_cost = 1;
 
-    @Comment("Apply Spell casting from Spell Book capability to anything that subclasses Sword")
+    @Comment("Apply `Spell Casting from Spell Book` capability to anything that subclasses Sword")
     public boolean add_spell_casting_to_swords = true;
-    @Comment("Apply Spell casting from Spell Book capability to any item matching this regex. (Not applied of empty)")
+    @Comment("Apply `Spell Casting from Spell Book` capability to any item matching this regex. (Not applied of empty)")
     public String add_spell_casting_regex = "";
 
     @Comment("""
