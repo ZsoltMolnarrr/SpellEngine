@@ -62,7 +62,7 @@ dependencies {
     }
     shadowCommon(implementation("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}"))
     include(implementation("com.github.LlamaLad7:MixinExtras:${project.mixin_extras_version}"))
-    modImplementation("dev.emi:trinkets:${trinkets_version}")
+    modImplementation("dev.emi:trinkets:${project.trinkets_version}")
 
     modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-fabric")
 //    modImplementation(files("../fabric/run/mods/dev/spell_power-fabric-${project.spell_power_version}.jar"))

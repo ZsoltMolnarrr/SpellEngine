@@ -2,6 +2,7 @@ package net.spell_engine.internals;
 
 import dev.emi.trinkets.api.TrinketsApi;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -41,9 +42,10 @@ public class SpellContainerHelper {
     public static SpellContainer containerWithProxy(SpellContainer proxyContainer, PlayerEntity player) {
         var component = TrinketsApi.getTrinketComponent(player);
         if (proxyContainer!= null && proxyContainer.is_proxy && component.isPresent()) {
-            var asd = component.get();
-            var spellBookSlot = asd.getInventory().get("charm").get("spell_book");
-            var spellBookStack = spellBookSlot.getStack(0);
+            var trinketComponent = component.get();
+            var spellBookSlot = trinketComponent.getInventory().get("charm").get("spell_book");
+            // Up casting to `Inventory` so dependent mod workspace don't crash on mapping error (dev env only)
+            var spellBookStack = ((Inventory)spellBookSlot).getStack(0);
             if (!spellBookStack.isEmpty()) {
                 var spellBookContainer = containerFromItemStack(spellBookStack);
 

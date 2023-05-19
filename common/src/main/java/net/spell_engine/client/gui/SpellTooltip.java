@@ -43,7 +43,7 @@ public class SpellTooltip {
                             .formatted(Formatting.GRAY));
                 }
 
-                if (container.spell_ids.size() > 0) {
+                if (container.spell_ids.size() > 0 || container.pool != null) {
                     if (container.pool == null) {
                         lines.add(Text.translatable(container.is_proxy ? "spell.tooltip.host.additional" : "spell.tooltip.host.pre_loaded")
                                 .formatted(Formatting.GRAY));
