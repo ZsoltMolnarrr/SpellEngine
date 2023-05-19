@@ -84,12 +84,4 @@ public class SpellEngineMod {
             Registry.register(Registry.ENCHANTMENT, entry.getKey(), entry.getValue());
         }
     }
-
-    public static void registerItems() {
-        SpellBooks.createAndRegister(new Identifier("wizards:arcane"), ItemGroup.COMBAT);
-        SpellBooks.createAndRegister(new Identifier("wizards:fire"), ItemGroup.COMBAT);
-        SpellBooks.createAndRegister(new Identifier("wizards:frost"), ItemGroup.COMBAT);
-        SpellBooks.createAndRegister(new Identifier("paladins:paladin"), ItemGroup.COMBAT);
-        SpellBooks.createAndRegister(new Identifier("paladins:priest"), ItemGroup.COMBAT);
-    }
 }
