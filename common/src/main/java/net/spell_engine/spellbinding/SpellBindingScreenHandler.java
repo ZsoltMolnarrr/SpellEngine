@@ -14,8 +14,8 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.item.trinket.SpellBooks;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 
@@ -33,6 +33,8 @@ public class SpellBindingScreenHandler extends ScreenHandler {
 
     private final ScreenHandlerContext context;
 
+    // MARK: Synchronized data
+    public final int[] mode = { SpellBinding.Mode.SPELL.ordinal() };
     public final int[] spellId = new int[MAXIMUM_SPELL_COUNT];
     public final int[] spellCost = new int[MAXIMUM_SPELL_COUNT];
     public final int[] spellLevelRequirement = new int[MAXIMUM_SPELL_COUNT];
@@ -76,6 +78,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
             this.addProperty(Property.create(this.spellCost, i));
             this.addProperty(Property.create(this.spellLevelRequirement, i));
         }
+        this.addProperty(Property.create(this.mode, 0));
     }
 
     public int getLapisCount() {
@@ -93,6 +96,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
         }
         ItemStack itemStack = inventory.getStack(0);
         if (itemStack.isEmpty() || !(SpellContainerHelper.hasValidContainer(itemStack) || itemStack.getItem() == Items.BOOK)) {
+            this.mode[0] = SpellBinding.Mode.SPELL.ordinal();
             for (int i = 0; i < MAXIMUM_SPELL_COUNT; ++i) {
                 this.spellId[i] = 0;
                 this.spellCost[i] = 0;
@@ -106,7 +110,9 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                     if (!EnchantingTableBlock.canAccessBookshelf(world, pos, blockPos)) continue;
                     ++libraryPower;
                 }
-                var offers = SpellBinding.offersFor(itemStack, libraryPower);
+                var offerResult = SpellBinding.offersFor(itemStack, libraryPower);
+                this.mode[0] = offerResult.mode().ordinal();
+                var offers = offerResult.offers();
                 for (int i = 0; i < MAXIMUM_SPELL_COUNT; ++i) {
                     if (i < offers.size()) {
                         var offer = offers.get(i);
@@ -181,6 +187,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
     @Override
     public boolean onButtonClick(PlayerEntity player, int id) {
         try {
+            var mode = SpellBinding.Mode.values()[this.mode[0]];
             var rawId = spellId[id];
             var cost = spellCost[id];
             var requiredLevel = spellLevelRequirement[id];
@@ -188,75 +195,77 @@ public class SpellBindingScreenHandler extends ScreenHandler {
             var weaponStack = getStacks().get(0);
             var lapisStack = getStacks().get(1);
 
-            if (rawId < SpellBinding.BOOK_MODE_OFFSET) {
+            switch (mode) {
 
-                var spellIdOptional = SpellRegistry.fromRawSpellId(rawId);
-                if (spellIdOptional.isEmpty()) {
-                    return false;
-                }
-                var spellId = spellIdOptional.get();
-                var binding = SpellBinding.State.of(spellId, weaponStack, cost, requiredLevel);
-                if (binding.state == SpellBinding.State.ApplyState.INVALID) {
-                    return false;
-                }
-                if (!binding.readyToApply(player, lapisCount)) {
-                    return false;
-                }
-                this.context.run((world, pos) -> {
-                    SpellContainerHelper.addSpell(spellId, weaponStack);
-
-                    if (!player.isCreative()) {
-                        lapisStack.decrement(binding.requirements.lapisCost());
+                case SPELL -> {
+                    var spellIdOptional = SpellRegistry.fromRawSpellId(rawId);
+                    if (spellIdOptional.isEmpty()) {
+                        return false;
                     }
-                    applyLevelCost(player, binding.requirements.levelCost());
-                    this.inventory.markDirty();
-                    this.onContentChanged(this.inventory);
-                    world.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
-                    if (player instanceof ServerPlayerEntity serverPlayer) {
-                        var container = SpellContainerHelper.containerFromItemStack(weaponStack);
-                        var poolId = SpellContainerHelper.getPoolId(container);
-                        if (poolId != null) {
-                            var pool = SpellContainerHelper.getPool(container);
-                            var isComplete = container.spell_ids.size() == pool.spellIds().size();
-                            SpellBindingCriteria.INSTANCE.trigger(serverPlayer, poolId, isComplete);
-                        } else {
-                            SpellBindingCriteria.INSTANCE.trigger(serverPlayer, null, false);
+                    var spellId = spellIdOptional.get();
+                    var binding = SpellBinding.State.of(spellId, weaponStack, cost, requiredLevel);
+                    if (binding.state == SpellBinding.State.ApplyState.INVALID) {
+                        return false;
+                    }
+                    if (!binding.readyToApply(player, lapisCount)) {
+                        return false;
+                    }
+                    this.context.run((world, pos) -> {
+                        SpellContainerHelper.addSpell(spellId, weaponStack);
+
+                        if (!player.isCreative()) {
+                            lapisStack.decrement(binding.requirements.lapisCost());
                         }
-                    }
-                });
-
-            } else {
-                var item = Registry.ITEM.get(rawId - SpellBinding.BOOK_MODE_OFFSET);
-                var itemStack = item.getDefaultStack();
-                var container = SpellContainerHelper.containerFromItemStack(itemStack);
-                if (container == null || !container.isValid() || container.pool == null) {
-                    return false;
+                        applyLevelCost(player, binding.requirements.levelCost());
+                        this.inventory.markDirty();
+                        this.onContentChanged(this.inventory);
+                        world.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
+                        if (player instanceof ServerPlayerEntity serverPlayer) {
+                            var container = SpellContainerHelper.containerFromItemStack(weaponStack);
+                            var poolId = SpellContainerHelper.getPoolId(container);
+                            if (poolId != null) {
+                                var pool = SpellContainerHelper.getPool(container);
+                                var isComplete = container.spell_ids.size() == pool.spellIds().size();
+                                SpellBindingCriteria.INSTANCE.trigger(serverPlayer, poolId, isComplete);
+                            } else {
+                                SpellBindingCriteria.INSTANCE.trigger(serverPlayer, null, false);
+                            }
+                        }
+                    });
                 }
-                var poolId = new Identifier(container.pool);
-                var binding = SpellBinding.State.forBook(cost, requiredLevel);
-                if (binding.state == SpellBinding.State.ApplyState.INVALID) {
-                    return false;
-                }
-                if (!binding.readyToApply(player, lapisCount)) {
-                    return false;
-                }
-
-                this.context.run((world, pos) -> {
-                    this.slots.get(0).setStack(itemStack);
-                    if (!player.isCreative()) {
-                        lapisStack.decrement(binding.requirements.lapisCost());
+                case BOOK -> {
+                    var item = SpellBooks.sorted().get(rawId - SpellBinding.BOOK_OFFSET);
+                    var itemStack = item.getDefaultStack();
+                    var container = SpellContainerHelper.containerFromItemStack(itemStack);
+                    if (container == null || !container.isValid() || container.pool == null) {
+                        return false;
                     }
-                    applyLevelCost(player, binding.requirements.levelCost());
-                    this.inventory.markDirty();
-                    this.onContentChanged(this.inventory);
-                    world.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
-
-                    if (player instanceof ServerPlayerEntity serverPlayer) {
-                        SpellBookCreationCriteria.INSTANCE.trigger(serverPlayer, poolId);
+                    var poolId = new Identifier(container.pool);
+                    var binding = SpellBinding.State.forBook(cost, requiredLevel);
+                    if (binding.state == SpellBinding.State.ApplyState.INVALID) {
+                        return false;
                     }
-                });
+                    if (!binding.readyToApply(player, lapisCount)) {
+                        return false;
+                    }
+
+                    this.context.run((world, pos) -> {
+                        this.slots.get(0).setStack(itemStack);
+                        if (!player.isCreative()) {
+                            lapisStack.decrement(binding.requirements.lapisCost());
+                        }
+                        applyLevelCost(player, binding.requirements.levelCost());
+                        this.inventory.markDirty();
+                        this.onContentChanged(this.inventory);
+                        world.playSound(null, pos, soundEvent, SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
+
+                        if (player instanceof ServerPlayerEntity serverPlayer) {
+                            SpellBookCreationCriteria.INSTANCE.trigger(serverPlayer, poolId);
+                        }
+                    });
+
+                }
             }
-
             return true;
         } catch (Exception e) {
             System.err.println(e.getMessage());

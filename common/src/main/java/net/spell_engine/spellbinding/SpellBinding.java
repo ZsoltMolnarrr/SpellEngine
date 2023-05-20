@@ -4,14 +4,13 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.trinket.SpellBooks;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 
-import java.util.Comparator;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,32 +21,35 @@ public class SpellBinding {
     private static final float LIBRARY_POWER_BASE = 10;
     private static final float LIBRARY_POWER_MULTIPLIER = 1.5F;
     private static final int LIBRARY_POWER_CAP = 22;
-    public static final int BOOK_MODE_OFFSET = 100000;
-
+    public static final int BOOK_OFFSET = 1;
+    public enum Mode { SPELL, BOOK }
     public record Offer(int id, int cost, int levelRequirement) {  }
+    public record OfferResult(Mode mode, List<Offer> offers) { }
 
-    public static List<Offer> offersFor(ItemStack itemStack, int libraryPower) {
+    public static OfferResult offersFor(ItemStack itemStack, int libraryPower) {
         if (itemStack.getItem() == Items.BOOK) {
-            return SpellBooks.all()
-                    .stream()
-                    .sorted(Comparator.comparing(spellBookItem -> spellBookItem.poolId.toString()))
-                    .map(book -> new Offer(
-                            Registry.ITEM.getRawId(book) + BOOK_MODE_OFFSET,
-                            SpellEngineMod.config.spell_book_binding_level_cost,
-                            SpellEngineMod.config.spell_book_binding_level_requirement))
-                    .toList();
+            var books = SpellBooks.sorted();
+            var offers = new ArrayList<Offer>();
+            for (int i = 0; i < books.size(); ++i) {
+                offers.add(new Offer(
+                        i + BOOK_OFFSET,
+                        SpellEngineMod.config.spell_book_binding_level_cost,
+                        SpellEngineMod.config.spell_book_binding_level_requirement));
+            }
+            return new OfferResult(Mode.BOOK, offers);
         }
 
         var container = SpellContainerHelper.containerFromItemStack(itemStack);
         var pool = SpellContainerHelper.getPool(container);
         if (container == null || pool == null || pool.spellIds().isEmpty()) {
-            return List.of();
+            return new OfferResult(Mode.SPELL, List.of());
         }
         var spells = new HashMap<Identifier, Spell>();
         for (var id: pool.spellIds()) {
             spells.put(id, SpellRegistry.getSpell(id));
         }
-        return spells.entrySet().stream()
+        return new OfferResult(Mode.SPELL,
+                spells.entrySet().stream()
                 .filter(entry -> entry.getValue().learn != null
                         && entry.getValue().learn.tier > 0)
                 .sorted(SpellContainerHelper.spellSorter)
@@ -58,7 +60,8 @@ public class SpellBinding {
                 ))
                 .filter(offer -> (libraryPower == LIBRARY_POWER_CAP)
                         || ((LIBRARY_POWER_BASE + libraryPower * LIBRARY_POWER_MULTIPLIER) >= offer.levelRequirement))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())
+        );
     }
 
     public static class State {

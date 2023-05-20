@@ -1,3 +1,7 @@
+# 0.9.18
+
+- Fix Spell Book creation in multiplayer
+
 # 0.9.17
 
 - Add Spell Book system (requires on Trinkets mod)

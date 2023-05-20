@@ -8,13 +8,17 @@ import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.SpellRegistry;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SpellBooks {
-
-    private static ArrayList<SpellBookItem> all = new ArrayList<>();
-    public static List<SpellBookItem> all() {
-        return all;
+    private static final ArrayList<SpellBookItem> all = new ArrayList<>();
+    public static List<SpellBookItem> sorted() {
+        return SpellBooks.all
+                .stream()
+                .sorted(Comparator.comparing(spellBookItem -> spellBookItem.poolId.toString()))
+                .collect(Collectors.toList());
     }
 
     public static SpellBookItem create(Identifier poolId, ItemGroup itemGroup) {

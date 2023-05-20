@@ -18,11 +18,10 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.item.trinket.SpellBooks;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.util.SpellRender;
-import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 import org.jetbrains.annotations.Nullable;
 
@@ -205,45 +204,45 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         var buttons = new ArrayList<ButtonViewModel>();
         var itemStack = handler.getStacks().get(0);
         var lapisCount = handler.getLapisCount();
+        var mode = SpellBinding.Mode.values()[handler.mode[0]];
         var player = MinecraftClient.getInstance().player;
-        var container = SpellContainerHelper.containerFromItemStack(itemStack);
-        if (container == null && handler.spellId[0] < SpellBinding.BOOK_MODE_OFFSET) {
-            setButtons(buttons);
-            return;
-        }
 
         for (int i = 0; i < SpellBindingScreenHandler.MAXIMUM_SPELL_COUNT; i++) {
             var rawId = handler.spellId[i];
             var cost = handler.spellCost[i];
             var requirement = handler.spellLevelRequirement[i];
             boolean shown = (i >= pageOffset) && (i < (pageOffset + PAGE_SIZE));
-            // System.out.println("Server offers spell ID: " + rawId);
-            if (rawId > SpellBinding.BOOK_MODE_OFFSET) {
-                var item = Registry.ITEM.get(rawId - SpellBinding.BOOK_MODE_OFFSET);
-                SpellBinding.State bindingState = SpellBinding.State.forBook(cost, requirement);
-                boolean isEnabled = bindingState.readyToApply(player, lapisCount);
+            // System.out.println("Server offers spell ID: " + rawId + " | mode: " + mode);
+            switch (mode) {
+                case SPELL -> {
+                    var spellId = SpellRegistry.fromRawSpellId(rawId);
+                    if (spellId.isEmpty()) { continue; }
+                    var id = spellId.get();
+                    var spell = new SpellInfo(
+                            id,
+                            SpellRender.iconTexture(id),
+                            Text.translatable(SpellTooltip.spellTranslationKey(id)));
+                    SpellBinding.State bindingState = SpellBinding.State.of(id, itemStack, cost, requirement);
+                    boolean isEnabled = bindingState.readyToApply(player, lapisCount);
+                    var button = new ButtonViewModel(shown,
+                            originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + ((buttons.size() - pageOffset) * BUTTON_HEIGHT),
+                            BUTTON_WIDTH, BUTTON_HEIGHT,
+                            isEnabled, spell, null, bindingState);
+                    buttons.add(button);
 
-                var button = new ButtonViewModel(shown,
-                        originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + ((buttons.size() - pageOffset) * BUTTON_HEIGHT),
-                        BUTTON_WIDTH, BUTTON_HEIGHT,
-                        isEnabled, null, item, bindingState);
-                buttons.add(button);
-            } else {
+                }
+                case BOOK -> {
+                    if (rawId < SpellBinding.BOOK_OFFSET) continue; // Filter blank offers
+                    var item = SpellBooks.sorted().get(rawId - SpellBinding.BOOK_OFFSET);
+                    SpellBinding.State bindingState = SpellBinding.State.forBook(cost, requirement);
+                    boolean isEnabled = bindingState.readyToApply(player, lapisCount);
 
-                var spellId = SpellRegistry.fromRawSpellId(rawId);
-                if (spellId.isEmpty()) { continue; }
-                var id = spellId.get();
-                var spell = new SpellInfo(
-                        id,
-                        SpellRender.iconTexture(id),
-                        Text.translatable(SpellTooltip.spellTranslationKey(id)));
-                SpellBinding.State bindingState = SpellBinding.State.of(id, itemStack, cost, requirement);
-                boolean isEnabled = bindingState.readyToApply(player, lapisCount);
-                var button = new ButtonViewModel(shown,
-                        originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + ((buttons.size() - pageOffset) * BUTTON_HEIGHT),
-                        BUTTON_WIDTH, BUTTON_HEIGHT,
-                        isEnabled, spell, null, bindingState);
-                buttons.add(button);
+                    var button = new ButtonViewModel(shown,
+                            originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + ((buttons.size() - pageOffset) * BUTTON_HEIGHT),
+                            BUTTON_WIDTH, BUTTON_HEIGHT,
+                            isEnabled, null, item, bindingState);
+                    buttons.add(button);
+                }
             }
         }
         setButtons(buttons);
