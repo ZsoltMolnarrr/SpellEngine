@@ -86,6 +86,18 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return container.cappedIndex(selectedSpellIndex);
     }
 
+    public SpellContainer.Hosted getCurrentContainerWithHost() {
+        var player = player();
+        var casterStack = player.getMainHandStack();
+        var container = containerFromItemStack(casterStack);
+        if (container == null && SpellEngineMod.config.offhand_casting_allowed) {
+            casterStack = player().getOffHandStack();
+            container = containerFromItemStack(casterStack);
+        }
+        var combinedContainer = SpellContainerHelper.containerWithProxy(container, player);
+        return new SpellContainer.Hosted(casterStack, combinedContainer);
+    }
+
     public SpellContainer getCurrentContainer() {
         var player = player();
         var casterStack = player.getMainHandStack();

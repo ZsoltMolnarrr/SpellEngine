@@ -1,5 +1,7 @@
 package net.spell_engine.api.spell;
 
+import net.minecraft.item.ItemStack;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,4 +51,6 @@ public class SpellContainer { public SpellContainer() { }
     public SpellContainer copy() {
         return new SpellContainer(is_proxy, pool, max_spell_count, new ArrayList<>(spell_ids));
     }
+
+    public record Hosted(ItemStack host, SpellContainer container) { }
 }
