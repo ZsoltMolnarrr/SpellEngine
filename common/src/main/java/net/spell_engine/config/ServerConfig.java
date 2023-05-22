@@ -28,6 +28,8 @@ public class ServerConfig implements ConfigData {
     public boolean add_spell_casting_to_swords = true;
     @Comment("Apply `Spell Casting from Spell Book` capability to any item matching this regex. (Not applied of empty)")
     public String add_spell_casting_regex = "";
+    @Comment("Do not apply `Spell Casting from Spell Book` capability to any item matching this regex. (Not applied of empty)")
+    public String blacklist_spell_casting_regex = "";
 
     @Comment("""
             Allow actions based on relations:

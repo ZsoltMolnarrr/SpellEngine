@@ -15,13 +15,15 @@ public class WeaponCompatibility {
         var config = SpellEngineMod.config;
         var proxyContainer = new SpellContainer(true, null, 0, List.of());
         for(var itemId: Registry.ITEM.getIds()) {
+            var itemIdString = itemId.toString();
+            if (matches(itemIdString, config.blacklist_spell_casting_regex)) {
+                continue;
+            }
             var item = Registry.ITEM.get(itemId);
             boolean addProxy = false;
             if (config.add_spell_casting_to_swords && item instanceof SwordItem) {
                 addProxy = true;
-            } else if (config.add_spell_casting_regex != null
-                    && !config.add_spell_casting_regex.isEmpty()
-                    && matches(itemId.toString(), config.add_spell_casting_regex)) {
+            } else if (matches(itemIdString, config.add_spell_casting_regex)) {
                 addProxy = true;
             }
             if (addProxy) {

@@ -1,3 +1,7 @@
+# 0.9.19
+
+- Add fallback compat blacklist regex
+
 # 0.9.18
 
 - Fix Spell Book creation in multiplayer
