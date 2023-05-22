@@ -45,7 +45,46 @@ Client side settings can be accessed in Main Menu > Mods > Spell Engine > Config
 
 **Server side** configuration can be found in the `config` directory, after running the game with the mod installed.
 
-# 🔨 Using it as a mod developer
+# 🤝 Compatibility for third party content
+
+## 🗡️ Adding spell casting capability for weapons
+
+Spell Engine is primarily data-driven, to specify what spells an item can cast, create a JSON file at: `data/MOD_ID/spell_assignments/ITEM_NAME.json`. (For example: `data/minecraft/spell_assignments/golden_axe.json`)
+
+Example: enable "Casts spells from equipped Spell Book" for a specific item 
+```
+{
+  "is_proxy": true
+}
+```
+
+Example: pre-bind spells to a specific item
+```
+{
+  "spell_ids": [ "wizards:fireball" ]
+}
+```
+
+Example: allow spell binding from a specific spell pool to a specific item 
+```
+{
+  "pool": "wizards:fire"
+}
+```
+
+Any combination of these features above can be made.
+
+For example: an item that allows casting from the equipped Spell Book, has Frostbolt and Frost Nova spell pre-bound, and arcane spells can be bound to it 
+```
+{
+  "is_proxy": true
+  "spell_ids": [ "wizards:frostbolt", "wizards:frost_nova" ],
+  "pool": "wizards:arcane"
+}
+```
+
+
+# 🔨 Using Spell Engine as mod developer
 
 ❗️ DOCUMENTATION IS INCOMPLETE!
 
