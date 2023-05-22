@@ -1,3 +1,7 @@
+# 0.9.20
+
+- Increase Spell Binding table offer count cap (from 10, to 32)
+
 # 0.9.19
 
 - Add fallback compat blacklist regex

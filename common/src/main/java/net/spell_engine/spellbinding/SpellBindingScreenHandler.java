@@ -21,7 +21,7 @@ import net.spell_engine.internals.SpellRegistry;
 
 public class SpellBindingScreenHandler extends ScreenHandler {
     public static final ScreenHandlerType<SpellBindingScreenHandler> HANDLER_TYPE = new ScreenHandlerType(SpellBindingScreenHandler::new);
-    public static final int MAXIMUM_SPELL_COUNT = 10;
+    public static final int MAXIMUM_SPELL_COUNT = 32;
     // State
     private final Inventory inventory = new SimpleInventory(2) {
         @Override
