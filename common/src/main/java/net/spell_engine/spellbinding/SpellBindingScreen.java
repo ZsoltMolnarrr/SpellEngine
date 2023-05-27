@@ -148,6 +148,10 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         int originX = (this.width - this.backgroundWidth) / 2;
         int originY = (this.height - this.backgroundHeight) / 2;
         this.drawTexture(matrices, originX, originY, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        var bindingSlot = handler.slots.get(0);
+        if (bindingSlot.getStack().isEmpty()) {
+            this.drawTexture(matrices, originX + bindingSlot.x, originY + bindingSlot.y, 240, 0, 16, 16);
+        }
         DiffuseLighting.enableGuiDepthLighting();
         this.updatePageControls();
         this.updateButtons(originX, originY);

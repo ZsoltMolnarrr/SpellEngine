@@ -1,3 +1,7 @@
+# 0.9.21
+
+- Add book placeholder icon to Spell Binding table GUI
+
 # 0.9.20
 
 - Increase Spell Binding table offer count cap (from 10, to 32)
