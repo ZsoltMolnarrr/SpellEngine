@@ -1,6 +1,7 @@
 # 0.9.21
 
 - Add book placeholder icon to Spell Binding table GUI
+- Disable spell haste for generic weapons
 
 # 0.9.20
 
