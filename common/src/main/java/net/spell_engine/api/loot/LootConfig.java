@@ -10,6 +10,21 @@ public class LootConfig {
         public float chance = 1F;
         public float bonus_roll_chance = 1.2F;
         public int weight = 1;
+        public Enchant enchant = null;
+        public static class Enchant { public Enchant() { }
+            public float min_power = 1;
+            public float max_power = 30;
+            public boolean allow_treasure = true;
+
+            public Enchant(float min_power, float max_power) {
+                this.min_power = min_power;
+                this.max_power = max_power;
+            }
+
+            public boolean isValid() {
+                return min_power > 0 && max_power > min_power;
+            }
+        }
 
         public ItemGroup(List<String> ids, int weight) {
             this.ids = ids;
@@ -25,6 +40,16 @@ public class LootConfig {
 
         public ItemGroup chance(float chance_multiplier) {
             this.chance = chance_multiplier;
+            return this;
+        }
+
+        public ItemGroup enchant() {
+            this.enchant = new Enchant();
+            return this;
+        }
+
+        public ItemGroup enchant(int min, int max) {
+            this.enchant = new Enchant(min, max);
             return this;
         }
     }

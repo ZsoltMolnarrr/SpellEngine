@@ -4,8 +4,10 @@ import net.minecraft.item.Item;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTable;
 import net.minecraft.loot.entry.ItemEntry;
+import net.minecraft.loot.function.EnchantWithLevelsLootFunction;
 import net.minecraft.loot.provider.number.BinomialLootNumberProvider;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
+import net.minecraft.loot.provider.number.UniformLootNumberProvider;
 import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -26,7 +28,17 @@ public class LootHelper {
                 for (var entryId: group.ids) {
                     var item = entries.get(entryId);
                     if (item == null) { continue; }
-                    lootPoolBuilder.with(ItemEntry.builder(item).weight(group.weight));
+                    var itemEntry = ItemEntry.builder(item)
+                            .weight(group.weight);
+
+                    if (group.enchant != null && group.enchant.isValid()) {
+                        var enchantFunction = EnchantWithLevelsLootFunction.builder(UniformLootNumberProvider.create(group.enchant.min_power, group.enchant.max_power));
+                        if (group.enchant.allow_treasure) {
+                            enchantFunction.allowTreasureEnchantments();
+                        }
+                        itemEntry.apply(enchantFunction);
+                    }
+                    lootPoolBuilder.with(itemEntry);
                 }
                 tableBuilder.pool(lootPoolBuilder.build());
             }
