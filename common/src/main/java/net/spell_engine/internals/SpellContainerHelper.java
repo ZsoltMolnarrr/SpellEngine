@@ -48,13 +48,14 @@ public class SpellContainerHelper {
             var spellBookStack = ((Inventory)spellBookSlot).getStack(0);
             if (!spellBookStack.isEmpty()) {
                 var spellBookContainer = containerFromItemStack(spellBookStack);
+                if (spellBookContainer != null) {
+                    var mergedSpellIds = Stream.of(proxyContainer.spell_ids, spellBookContainer.spell_ids)
+                            .flatMap(Collection::stream)
+                            .distinct()
+                            .toList();
 
-                var mergedSpellIds = Stream.of(proxyContainer.spell_ids, spellBookContainer.spell_ids)
-                        .flatMap(Collection::stream)
-                        .distinct()
-                        .toList();
-
-                return new SpellContainer(false, null, 0, mergedSpellIds);
+                    return new SpellContainer(false, null, 0, mergedSpellIds);
+                }
             }
         }
         return proxyContainer;

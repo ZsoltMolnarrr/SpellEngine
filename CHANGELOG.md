@@ -1,3 +1,7 @@
+# 0.9.22
+
+- Fix crash with Artifacts #16
+
 # 0.9.21
 
 - Add book placeholder icon to Spell Binding table GUI
