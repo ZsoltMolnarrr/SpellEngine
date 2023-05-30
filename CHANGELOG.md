@@ -1,6 +1,7 @@
 # 0.9.23
 
 - Improve spell tooltip footer
+- Fix spell damage estimation when having zero spell power
 
 # 0.9.22
 

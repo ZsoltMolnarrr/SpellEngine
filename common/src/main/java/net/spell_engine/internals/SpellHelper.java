@@ -673,17 +673,19 @@ public class SpellHelper {
         }
 
         for (var impact: spell.impact) {
+            var power = SpellPower.getSpellPower(school, caster, forSpellBook ? null : itemStack);
+            if (power.baseValue() < impact.action.min_power) {
+                power = new SpellPower.Result(power.school(), impact.action.min_power, power.criticalChance(), power.criticalDamage());
+            }
             switch (impact.action.type) {
                 case DAMAGE -> {
                     var damageData = impact.action.damage;
-                    var power = SpellPower.getSpellPower(school, caster, forSpellBook ? null : itemStack);
                     var damage = new EstimatedValue(power.nonCriticalValue(), power.forcedCriticalValue())
                             .multiply(damageData.spell_power_coefficient);
                     damageEffects.add(damage);
                 }
                 case HEAL -> {
                     var healData = impact.action.heal;
-                    var power = SpellPower.getSpellPower(school, caster, forSpellBook ? null : itemStack);
                     var healing = new EstimatedValue(power.nonCriticalValue(), power.forcedCriticalValue())
                             .multiply(healData.spell_power_coefficient);
                     healEffects.add(healing);
