@@ -75,14 +75,16 @@ public class SpellTooltip {
                         lines.addAll(info);
                     }
                 }
-                if (!showDetails && !keybinding.isUnbound() && container.spell_ids.size() > 0) {
-                    lines.add(Text.translatable("spell.tooltip.hold_for_details",
-                            keybinding.getBoundKeyLocalizedText())
-                            .formatted(Formatting.GRAY));
-                }
-                if (config.showSpellBindingTooltip && container.pool != null) {
-                    lines.add(Text.translatable("spell.tooltip.spell_binding_tip")
-                            .formatted(Formatting.GRAY));
+                if (!showDetails) {
+                    if (!keybinding.isUnbound() && container.spell_ids.size() > 0) {
+                        lines.add(Text.translatable("spell.tooltip.hold_for_details",
+                                        keybinding.getBoundKeyLocalizedText())
+                                .formatted(Formatting.GRAY));
+                    }
+                    if (config.showSpellBindingTooltip && container.pool != null) {
+                        lines.add(Text.translatable("spell.tooltip.spell_binding_tip")
+                                .formatted(Formatting.GRAY));
+                    }
                 }
             }
         }

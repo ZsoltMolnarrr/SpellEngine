@@ -1,3 +1,7 @@
+# 0.9.23
+
+- Improve spell tooltip footer
+
 # 0.9.22
 
 - Fix crash with Artifacts #16
