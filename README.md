@@ -47,6 +47,11 @@ Client side settings can be accessed in Main Menu > Mods > Spell Engine > Config
 
 # 🤝 Compatibility for third party content
 
+## 🤖 Automatic compatibility
+
+Sword like weapons are automatically picked up, and assigned _spell casting from spell book_ capability.
+This feature is turned on by default, it can be disabled in `config/spell_engine/server/json5`, black listing and white listing are also supported in form of regex. 
+
 ## 🗡️ Adding spell casting capability for weapons
 
 Spell Engine is primarily data-driven, to specify what spells an item can cast, create a JSON file at: `data/MOD_ID/spell_assignments/ITEM_NAME.json`. (For example: `data/minecraft/spell_assignments/golden_axe.json`)
@@ -85,7 +90,7 @@ For example: an item that allows casting from the equipped Spell Book, has Frost
 
 ### 🗡️ Disabling spell casting capability for weapons
 
-Spell casting for weapons can be disabled, with an empty data file. 
+Spell casting for weapons can be disabled, with an empty data file.
 
 Example - Disabling spell casting for Stone Sword:
 `data/minecraft/spell_assignments/stone_sword.json`
@@ -93,6 +98,7 @@ Example - Disabling spell casting for Stone Sword:
 { }
 ```
 
+In this case even automatic compatibility won't be able to assign any spell casting capability to the item.
 
 # 🔨 Using Spell Engine as mod developer
 
