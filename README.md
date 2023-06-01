@@ -83,6 +83,16 @@ For example: an item that allows casting from the equipped Spell Book, has Frost
 }
 ```
 
+### 🗡️ Disabling spell casting capability for weapons
+
+Spell casting for weapons can be disabled, with an empty data file. 
+
+Example - Disabling spell casting for Stone Sword:
+`data/minecraft/spell_assignments/stone_sword.json`
+```
+{ }
+```
+
 
 # 🔨 Using Spell Engine as mod developer
 
