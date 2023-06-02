@@ -37,10 +37,6 @@ In game features
 
 Client side settings can be accessed via the [Mod Menu](https://github.com/TerraformersMC/ModMenu).
 
-### Forge
-
-Client side settings can be accessed in Main Menu > Mods > Spell Engine > Config.
-
 ### Server
 
 **Server side** configuration can be found in the `config` directory, after running the game with the mod installed.
@@ -50,7 +46,7 @@ Client side settings can be accessed in Main Menu > Mods > Spell Engine > Config
 ## 🤖 Automatic compatibility
 
 Sword like weapons are automatically picked up, and assigned _spell casting from spell book_ capability.
-This feature is turned on by default, it can be disabled in `config/spell_engine/server/json5`, black listing and white listing are also supported in form of regex. 
+This feature is turned on by default, it can be disabled in `config/spell_engine/server.json5`, black listing and white listing are also supported in form of regex. 
 
 ## 🗡️ Adding spell casting capability for weapons
 
