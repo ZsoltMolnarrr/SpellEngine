@@ -1,6 +1,7 @@
 # 0.9.24
 
 - Add Spell Binding Table item hint
+- Fix stunned horses being able to walk around, thanks to Noaaan!
 
 # 0.9.23
 
