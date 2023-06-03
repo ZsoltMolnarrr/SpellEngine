@@ -1,6 +1,6 @@
 # 0.9.24
 
-- Spell Binding Table item hint include Spell Book
+- Add Spell Binding Table item hint
 
 # 0.9.23
 

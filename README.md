@@ -84,7 +84,7 @@ For example: an item that allows casting from the equipped Spell Book, has Frost
 }
 ```
 
-### 🗡️ Disabling spell casting capability for weapons
+### 🚫 Disabling spell casting capability for weapons
 
 Spell casting for weapons can be disabled, with an empty data file.
 
@@ -95,6 +95,30 @@ Example - Disabling spell casting for Stone Sword:
 ```
 
 In this case even automatic compatibility won't be able to assign any spell casting capability to the item.
+
+## ✨ Adding spell power attributes for items
+
+Install [Spell Power Attributes](https://github.com/ZsoltMolnarrr/SpellPower), use its Java API.
+
+Example:
+```
+// You will not a mutable attribute modifier multimap
+ImmutableMultimap.Builder<EntityAttribute, EntityAttributeModifier> builder = ImmutableMultimap.builder();
+
+// +3  Fire Spell Power
+builder.put(EntityAttributes_SpellPower.POWER.get(MagicSchool.FIRE),
+                        new EntityAttributeModifier(
+                                "Modifier name",
+                                3,
+                                EntityAttributeModifier.Operation.ADDITION));
+
+// +5% Spell Critical Chance
+builder.put(EntityAttributes_SpellPower.CRITICAL_CHANCE,
+                        new EntityAttributeModifier(
+                                "Modifier name",
+                                0.05,
+                                EntityAttributeModifier.Operation.MULTIPLY_BASE));
+```
 
 # 🔨 Using Spell Engine as mod developer
 
