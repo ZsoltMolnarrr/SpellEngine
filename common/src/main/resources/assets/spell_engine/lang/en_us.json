@@ -86,6 +86,7 @@
   "gui.spell_engine.spell_binding" : "Spell Binding",
   "gui.spell_engine.spell_binding.title" : "Bind Spells",
   "block.spell_engine.spell_binding": "Spell Binding Table",
+  "block.spell_engine.spell_binding.description": "Use it to create and fill Spell Books.",
   "gui.spell_engine.spell_binding.already_bound" : "Spell already bound",
   "gui.spell_engine.spell_binding.no_more_slots" : "No more spell slots",
   "gui.spell_engine.spell_binding.available" : "Bind spell",

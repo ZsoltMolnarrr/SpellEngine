@@ -1,3 +1,7 @@
+# 0.9.24
+
+- Spell Binding Table item hint include Spell Book
+
 # 0.9.23
 
 - Improve spell tooltip footer
