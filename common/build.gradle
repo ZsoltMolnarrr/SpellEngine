@@ -19,10 +19,6 @@ repositories {
         name = "TerraformersMC"
         url = "https://maven.terraformersmc.com/"
     }
-    maven {
-        name = "Ladysnake Libs"
-        url = "https://ladysnake.jfrog.io/artifactory/mods"
-    }
 }
 
 dependencies {
@@ -41,7 +37,10 @@ dependencies {
     implementation("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}")
     implementation("com.github.LlamaLad7:MixinExtras:${project.mixin_extras_version}")
     annotationProcessor("com.github.LlamaLad7:MixinExtras:${project.mixin_extras_version}")
-    modImplementation("dev.emi:trinkets:${project.trinkets_version}")
+
+    //modImplementation("dev.emi:trinkets:${project.trinkets_version}")
+    modImplementation("maven.modrinth:cardinal-components-api:${project.cardinal_components_api_version}")
+    modImplementation("maven.modrinth:trinkets:${project.trinkets_version}")
 
     modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-fabric")
 //    modImplementation(files("../fabric/run/mods/dev/spell_power-fabric-${project.spell_power_version}.jar"))
