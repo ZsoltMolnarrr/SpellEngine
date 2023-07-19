@@ -9,7 +9,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.effect.CustomModelStatusEffect;
 import net.spell_engine.api.effect.Synchronized;
@@ -50,7 +49,7 @@ public class LivingEntityRendererMixin {
                 lookVector = lookVector.multiply(beamPosition.length());
                 Vec3d to = from.add(lookVector);
 
-                renderBeam(matrixStack, vertexConsumerProvider, beamAppearance, from, to, offset, livingEntity.world.getTime(), delta);
+                renderBeam(matrixStack, vertexConsumerProvider, beamAppearance, from, to, offset, livingEntity.getWorld().getTime(), delta);
                 ((BeamEmitterEntity)livingEntity).setLastRenderedBeam(new Beam.Rendered(beamPosition, beamAppearance));
             } else {
                 ((BeamEmitterEntity)livingEntity).setLastRenderedBeam(null);
@@ -87,11 +86,11 @@ public class LivingEntityRendererMixin {
         beamVector = beamVector.normalize();
         float n = (float)Math.acos(beamVector.y);
         float o = (float)Math.atan2(beamVector.z, beamVector.x);
-        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion((1.5707964F - o) * 57.295776F));
-        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(n * 57.295776F));
-        matrixStack.translate(0, offset.z, 0); // At this point everything is so rotated, we need to translate along y to move along z
-
-        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(absoluteTime * 2.25F - 45.0F));
+//        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion((1.5707964F - o) * 57.295776F));
+//        matrixStack.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(n * 57.295776F));
+//        matrixStack.translate(0, offset.z, 0); // At this point everything is so rotated, we need to translate along y to move along z
+//
+//        matrixStack.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(absoluteTime * 2.25F - 45.0F));
 
         var texture = new Identifier(beam.texture_id);
         var color = beam.color_rgba;

@@ -117,7 +117,7 @@ public record EntityActionsAllowed(
                 allowed = actionsAllowed.players().canCastSpell();
             }
         }
-        if (player.world.isClient && showError && !allowed) {
+        if (player.getWorld().isClient && showError && !allowed) {
             HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
         }
         return !allowed;

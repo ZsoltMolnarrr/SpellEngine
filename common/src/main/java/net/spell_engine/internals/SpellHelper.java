@@ -9,11 +9,11 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
@@ -68,7 +68,7 @@ public class SpellHelper {
                 || !SpellEngineMod.config.spell_cost_item_allowed;
         if (!ignoreAmmo && spell.cost.item_id != null && !spell.cost.item_id.isEmpty()) {
             var id = new Identifier(spell.cost.item_id);
-            var ammoItem = Registry.ITEM.get(id);
+            var ammoItem = Registries.ITEM.get(id);
             if(ammoItem != null) {
                 ammo = ammoItem.getDefaultStack();
                 satisfied = player.getInventory().contains(ammo);
@@ -160,7 +160,7 @@ public class SpellHelper {
         });
         switch (action) {
             case START -> {
-                SoundHelper.playSound(player.world, player, spell.cast.start_sound);
+                SoundHelper.playSound(player.getWorld(), player, spell.cast.start_sound);
                 SpellCastSyncHelper.setCasting(player, hand, spellId, trackingPlayers.get());
                 return;
             }
@@ -270,7 +270,7 @@ public class SpellHelper {
                 }
                 // Status effect
                 if (spell.cost.effect_id != null) {
-                    var effect = Registry.STATUS_EFFECT.get(new Identifier(spell.cost.effect_id));
+                    var effect = Registries.STATUS_EFFECT.get(new Identifier(spell.cost.effect_id));
                     player.removeStatusEffect(effect);
                 }
             }
@@ -325,8 +325,8 @@ public class SpellHelper {
         var range = info.impact_range;
         var targets = TargetHelper.targetsFromArea(projectile, center, range, area, null);
         ParticleHelper.sendBatches(projectile, info.impact_particles);
-        SoundHelper.playSound(projectile.world, projectile, info.impact_sound);
-        areaImpact(projectile.world, caster, targets, center, range, area, true, spell, context);
+        SoundHelper.playSound(projectile.getWorld(), projectile, info.impact_sound);
+        areaImpact(projectile.getWorld(), caster, targets, center, range, area, true, spell, context);
     }
 
     public static float launchHeight(LivingEntity livingEntity) {
@@ -539,7 +539,7 @@ public class SpellHelper {
                     var data = impact.action.status_effect;
                     if (target instanceof LivingEntity livingTarget) {
                         var id = new Identifier(data.effect_id);
-                        var effect = Registry.STATUS_EFFECT.get(id);
+                        var effect = Registries.STATUS_EFFECT.get(id);
                         if(!underApplyLimit(power, livingTarget, school, data.apply_limit)) {
                             return false;
                         }
@@ -639,7 +639,7 @@ public class SpellHelper {
             case STATUS_EFFECT -> {
                 var data = action.status_effect;
                 var id = new Identifier(data.effect_id);
-                var effect = Registry.STATUS_EFFECT.get(id);
+                var effect = Registries.STATUS_EFFECT.get(id);
                 return effect.isBeneficial() ? TargetHelper.Intent.HELPFUL : TargetHelper.Intent.HARMFUL;
             }
         }

@@ -1,9 +1,12 @@
 package net.spell_engine.api.item.trinket;
 
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.SpellRegistry;
 
@@ -21,10 +24,10 @@ public class SpellBooks {
                 .collect(Collectors.toList());
     }
 
-    public static SpellBookItem create(Identifier poolId, ItemGroup itemGroup) {
+    public static SpellBookItem create(Identifier poolId) {
         var container = new SpellContainer(false, poolId.toString(), 0, List.of());
         SpellRegistry.book_containers.put(itemIdFor(poolId), container);
-        var book = new SpellBookItem(poolId, new FabricItemSettings().maxCount(1).group(itemGroup));
+        var book = new SpellBookItem(poolId, new FabricItemSettings().maxCount(1));
         all.add(book);
         return book;
     }
@@ -34,10 +37,14 @@ public class SpellBooks {
     }
 
     public static void register(SpellBookItem spellBook) {
-        Registry.register(Registry.ITEM, itemIdFor(spellBook.poolId), spellBook);
+        Registry.register(Registries.ITEM, itemIdFor(spellBook.poolId), spellBook);
     }
 
-    public static void createAndRegister(Identifier poolId, ItemGroup itemGroup) {
-        register(create(poolId, itemGroup));
+    public static void createAndRegister(Identifier poolId, RegistryKey<ItemGroup> itemGroupKey) {
+        var item = create(poolId);
+        ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register(content -> {
+            content.add(item);
+        });
+        register(item);
     }
 }

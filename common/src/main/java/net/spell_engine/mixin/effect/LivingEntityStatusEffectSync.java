@@ -8,7 +8,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 import net.minecraft.world.World;
 import net.spell_engine.api.effect.Synchronized;
 import org.spongepowered.asm.mixin.Final;
@@ -61,7 +61,7 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
         for (var entry : activeStatusEffects.entrySet()) {
             var effect = entry.getKey();
             if (((Synchronized)effect).shouldSynchronize()) {
-                int id = Registry.STATUS_EFFECT.getRawId(entry.getKey());
+                int id = Registries.STATUS_EFFECT.getRawId(entry.getKey());
                 int amplifier = entry.getValue().getAmplifier();
                 if (i > 0) {
                     builder.append("-");
@@ -83,7 +83,7 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
             }
             int rawId = Integer.valueOf(components[0]);
             int amplifier = Integer.valueOf(components[1]);
-            effects.add(new Synchronized.Effect(Registry.STATUS_EFFECT.get(rawId), amplifier));
+            effects.add(new Synchronized.Effect(Registries.STATUS_EFFECT.get(rawId), amplifier));
         }
         return effects;
     }

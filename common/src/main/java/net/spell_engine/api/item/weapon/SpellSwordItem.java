@@ -2,10 +2,9 @@ package net.spell_engine.api.item.weapon;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.Material;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ToolMaterial;
-import net.minecraft.tag.BlockTags;
+import net.minecraft.registry.tag.BlockTags;
 
 public class SpellSwordItem extends SpellWeaponItem {
     public SpellSwordItem(ToolMaterial material, Settings settings) {
@@ -15,13 +14,10 @@ public class SpellSwordItem extends SpellWeaponItem {
     @Override
     public float getMiningSpeedMultiplier(ItemStack stack, BlockState state) {
         if (state.isOf(Blocks.COBWEB)) {
-            return 15.0f;
+            return 15.0F;
+        } else {
+            return state.isIn(BlockTags.SWORD_EFFICIENT) ? 1.5F : 1.0F;
         }
-        Material material = state.getMaterial();
-        if (material == Material.PLANT || material == Material.REPLACEABLE_PLANT || state.isIn(BlockTags.LEAVES) || material == Material.GOURD) {
-            return 1.5f;
-        }
-        return 1.0f;
     }
 
     @Override

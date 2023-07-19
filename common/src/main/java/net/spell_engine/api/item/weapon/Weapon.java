@@ -9,9 +9,10 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.item.ToolMaterials;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.Platform;
 import net.spell_engine.api.item.ConfigurableAttributes;
 import net.spell_engine.api.item.ItemConfig;
@@ -145,7 +146,7 @@ public class Weapon {
             if (!entry.isRequiredModInstalled()) { continue; }
             var item = entry.item();
             ((ConfigurableAttributes)item).setAttributes(attributesFrom(config));
-            Registry.register(Registry.ITEM, entry.id(), item);
+            Registry.register(Registries.ITEM, entry.id(), item);
         }
     }
 

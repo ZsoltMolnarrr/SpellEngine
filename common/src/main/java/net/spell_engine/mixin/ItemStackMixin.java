@@ -4,10 +4,10 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.UseAction;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
@@ -51,7 +51,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
     @Nullable
     private SpellContainer spellContainerDefault() {
         var item = getItem();
-        var id = Registry.ITEM.getId(item);
+        var id = Registries.ITEM.getId(item);
         return SpellRegistry.containerForItem(id);
     }
 

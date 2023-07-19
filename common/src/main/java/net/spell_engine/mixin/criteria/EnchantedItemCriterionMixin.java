@@ -3,8 +3,8 @@ package net.spell_engine.mixin.criteria;
 import net.minecraft.advancement.criterion.EnchantedItemCriterion;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.internals.criteria.EnchantmentSpecificCriteria;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,7 +18,7 @@ public class EnchantedItemCriterionMixin {
         var enchants = EnchantmentHelper.get(stack);
         for(var entry: enchants.entrySet()) {
             var enchantment = entry.getKey();
-            var id = Registry.ENCHANTMENT.getId(enchantment);
+            var id = Registries.ENCHANTMENT.getId(enchantment);
             if (id != null) {
                 EnchantmentSpecificCriteria.INSTANCE.trigger(player, id.toString());
             }

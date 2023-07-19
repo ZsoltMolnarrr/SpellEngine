@@ -9,10 +9,11 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ArmorMaterial;
 import net.minecraft.recipe.Ingredient;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.api.item.ConfigurableAttributes;
 import net.spell_engine.api.item.ItemConfig;
 import net.spell_power.api.attributes.SpellAttributes;
@@ -50,7 +51,7 @@ public class Armor {
 
         public void register() {
             for (var piece: pieces()) {
-                Registry.register(Registry.ITEM, idOf(piece), piece);
+                Registry.register(Registries.ITEM, idOf(piece), piece);
                 SpellPowerEnchanting.registerArmor(piece);
             }
         }
@@ -80,7 +81,12 @@ public class Armor {
     }
 
     public static class CustomMaterial implements ArmorMaterial {
-        private static final int[] BASE_DURABILITY = new int[]{13, 15, 16, 11};
+        private static final EnumMap<ArmorItem.Type, Integer> BASE_DURABILITY = new EnumMap<ArmorItem.Type, Integer>(Map.of(
+                ArmorItem.Type.BOOTS, 13,
+                ArmorItem.Type.LEGGINGS, 15,
+                ArmorItem.Type.CHESTPLATE, 16,
+                ArmorItem.Type.HELMET, 11
+        ));
         private final String name;
         private final int durabilityMultiplier;
         private final int enchantability;
@@ -89,7 +95,7 @@ public class Armor {
 
 
         // MARK: Configurables
-        private int[] armor;
+        private EnumMap<ArmorItem.Type, Integer> protectionAmounts;
         private float toughness;
         private float knockbackResistance;
 
@@ -100,13 +106,22 @@ public class Armor {
             this.equipSound = equipSound;
             this.repairIngredientSupplier = new Lazy(repairIngredientSupplier);
 
-            this.armor = new int[]{0, 0, 0, 0};
+            this.protectionAmounts = new EnumMap<ArmorItem.Type, Integer>(Map.of(
+                    ArmorItem.Type.BOOTS, 0,
+                    ArmorItem.Type.LEGGINGS, 0,
+                    ArmorItem.Type.CHESTPLATE, 0,
+                    ArmorItem.Type.HELMET, 0
+            ));
             this.toughness = 0;
             this.knockbackResistance = 0;
         }
 
-        public int getDurability(EquipmentSlot slot) {
-            return BASE_DURABILITY[slot.getEntitySlotId()] * this.durabilityMultiplier;
+        public int getDurability(ArmorItem.Type type) {
+            return (Integer)BASE_DURABILITY.get(type) * this.durabilityMultiplier;
+        }
+
+        public int getProtection(ArmorItem.Type type) {
+            return (Integer)this.protectionAmounts.get(type);
         }
 
         public int getEnchantability() {
@@ -131,10 +146,6 @@ public class Armor {
             return this.name;
         }
 
-        public int getProtectionAmount(EquipmentSlot slot) {
-            return this.armor[slot.getEntitySlotId()];
-        }
-
         public float getToughness() {
             return this.toughness;
         }
@@ -146,13 +157,16 @@ public class Armor {
         public void configure(ItemConfig.ArmorSet config) {
             this.toughness = config.armor_toughness;
             this.knockbackResistance = config.knockback_resistance;
-            this.armor = new int[]{config.head.armor, config.chest.armor, config.legs.armor, config.feet.armor};
+            this.protectionAmounts = new EnumMap<ArmorItem.Type, Integer>(Map.of(
+                    ArmorItem.Type.BOOTS, config.feet.armor,
+                    ArmorItem.Type.LEGGINGS, config.legs.armor,
+                    ArmorItem.Type.CHESTPLATE, config.chest.armor,
+                    ArmorItem.Type.HELMET, config.head.armor
+            ));
         }
     }
 
-
     // MARK: Registration
-
 
     public static void register(Map<String, ItemConfig.ArmorSet> configs, List<Entry> entries) {
         for(var entry: entries) {

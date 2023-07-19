@@ -14,12 +14,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
@@ -66,7 +66,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
 
     private Spell.ProjectileData projectileData() {
-        if (world.isClient) {
+        if (getWorld().isClient) {
             return clientSyncedData;
         } else {
             return spell.release.target.projectile;
@@ -91,7 +91,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     private void setFollowedTarget(Entity target) {
         followedTarget = target;
         var id = 0;
-        if (!world.isClient) {
+        if (!getWorld().isClient) {
             if (target != null) {
                 id = target.getId();
             }
@@ -101,10 +101,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     public Entity getFollowedTarget() {
         Entity entityReference = null;
-        if (world.isClient) {
+        if (getWorld().isClient) {
             var id = this.getDataTracker().get(TARGET_ID);
             if (id != null && id != 0) {
-                entityReference = world.getEntityById(id);
+                entityReference = getWorld().getEntityById(id);
             }
         } else {
             entityReference = followedTarget;
@@ -137,10 +137,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     public void tick() {
         Entity entity = this.getOwner();
         var behaviour = behaviour();
-        if (world.isClient) {
+        if (getWorld().isClient) {
             updateClientSideData();
         }
-        if (!this.world.isClient) {
+        if (!this.getWorld().isClient) {
             switch (behaviour) {
                 case FLY -> {
                     if (distanceTraveled >= range || age > 1200) { // 1200 ticks = 1 minute
@@ -166,10 +166,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             }
         }
         this.previousVelocity = new Vec3d(getVelocity().x, getVelocity().y, getVelocity().z);
-        if (this.world.isClient || (entity == null || !entity.isRemoved()) && this.world.isChunkLoaded(this.getBlockPos())) {
+        if (this.getWorld().isClient || (entity == null || !entity.isRemoved()) && this.getWorld().isChunkLoaded(this.getBlockPos())) {
             super.tick();
 
-            if (!world.isClient) {
+            if (!getWorld().isClient) {
                 HitResult hitResult = ProjectileUtil.getCollision(this, this::canHit);
                 if (hitResult.getType() != HitResult.Type.MISS) {
                     switch (behaviour) {
@@ -214,16 +214,16 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             if (this.isTouchingWater()) {
                 for(int i = 0; i < 4; ++i) {
                     float h = 0.25F;
-                    this.world.addParticle(ParticleTypes.BUBBLE, d - velocity.x * 0.25, e - velocity.y * 0.25, f - velocity.z * 0.25, velocity.x, velocity.y, velocity.z);
+                    this.getWorld().addParticle(ParticleTypes.BUBBLE, d - velocity.x * 0.25, e - velocity.y * 0.25, f - velocity.z * 0.25, velocity.x, velocity.y, velocity.z);
                 }
                 g = 0.8F;
             }
             // this.setVelocity(vec3d.add(this.powerX, this.powerY, this.powerZ).multiply((double)g));
 
-            if (world.isClient) {
+            if (getWorld().isClient) {
                 if (projectileData() != null) {
                     for (var travel_particles : projectileData().client_data.travel_particles) {
-                        ParticleHelper.play(world, this, getYaw(), getPitch(), travel_particles);
+                        ParticleHelper.play(getWorld(), this, getYaw(), getPitch(), travel_particles);
                     }
                 }
             }
@@ -267,7 +267,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     @Override
     protected void onEntityHit(EntityHitResult entityHitResult) {
-        if (!world.isClient) {
+        if (!getWorld().isClient) {
             var target = entityHitResult.getEntity();
             if (target != null && this.getOwner() != null && this.getOwner() instanceof LivingEntity caster) {
                 setFollowedTarget(null);
@@ -275,7 +275,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 if (context == null) {
                     context = new SpellHelper.ImpactContext();
                 }
-                var performed = SpellHelper.performImpacts(world, caster, target, spell, context.position(new Vec3d(prevX, prevY, prevZ)));
+                var performed = SpellHelper.performImpacts(getWorld(), caster, target, spell, context.position(new Vec3d(prevX, prevY, prevZ)));
                 if (performed) {
                     this.kill();
                 }
@@ -306,7 +306,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     @Override
     public ItemStack getStack() {
         if (projectileData() != null && projectileData().client_data != null) {
-            return Registry.ITEM.get(new Identifier(projectileData().client_data.model_id)).getDefaultStack();
+            return Registries.ITEM.get(new Identifier(projectileData().client_data.model_id)).getDefaultStack();
         }
         return ItemStack.EMPTY;
     }
