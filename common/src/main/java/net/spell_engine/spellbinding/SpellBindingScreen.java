@@ -211,43 +211,50 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         var mode = SpellBinding.Mode.values()[handler.mode[0]];
         var player = MinecraftClient.getInstance().player;
 
-        for (int i = 0; i < SpellBindingScreenHandler.MAXIMUM_SPELL_COUNT; i++) {
-            var rawId = handler.spellId[i];
-            var cost = handler.spellCost[i];
-            var requirement = handler.spellLevelRequirement[i];
-            boolean shown = (i >= pageOffset) && (i < (pageOffset + PAGE_SIZE));
-            // System.out.println("Server offers spell ID: " + rawId + " | mode: " + mode);
-            switch (mode) {
-                case SPELL -> {
-                    var spellId = SpellRegistry.fromRawSpellId(rawId);
-                    if (spellId.isEmpty()) { continue; }
-                    var id = spellId.get();
-                    var spell = new SpellInfo(
-                            id,
-                            SpellRender.iconTexture(id),
-                            Text.translatable(SpellTooltip.spellTranslationKey(id)));
-                    SpellBinding.State bindingState = SpellBinding.State.of(id, itemStack, cost, requirement);
-                    boolean isEnabled = bindingState.readyToApply(player, lapisCount);
-                    var button = new ButtonViewModel(shown,
-                            originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + ((buttons.size() - pageOffset) * BUTTON_HEIGHT),
-                            BUTTON_WIDTH, BUTTON_HEIGHT,
-                            isEnabled, spell, null, bindingState);
-                    buttons.add(button);
+        try {
+            for (int i = 0; i < SpellBindingScreenHandler.MAXIMUM_SPELL_COUNT; i++) {
+                var rawId = handler.spellId[i];
+                var cost = handler.spellCost[i];
+                var requirement = handler.spellLevelRequirement[i];
+                boolean shown = (i >= pageOffset) && (i < (pageOffset + PAGE_SIZE));
+                // System.out.println("Server offers spell ID: " + rawId + " | mode: " + mode);
+                switch (mode) {
+                    case SPELL -> {
+                        var spellId = SpellRegistry.fromRawSpellId(rawId);
+                        if (spellId.isEmpty()) {
+                            continue;
+                        }
+                        var id = spellId.get();
+                        var spell = new SpellInfo(
+                                id,
+                                SpellRender.iconTexture(id),
+                                Text.translatable(SpellTooltip.spellTranslationKey(id)));
+                        SpellBinding.State bindingState = SpellBinding.State.of(id, itemStack, cost, requirement);
+                        boolean isEnabled = bindingState.readyToApply(player, lapisCount);
+                        var button = new ButtonViewModel(shown,
+                                originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + ((buttons.size() - pageOffset) * BUTTON_HEIGHT),
+                                BUTTON_WIDTH, BUTTON_HEIGHT,
+                                isEnabled, spell, null, bindingState);
+                        buttons.add(button);
 
-                }
-                case BOOK -> {
-                    if (rawId < SpellBinding.BOOK_OFFSET) continue; // Filter blank offers
-                    var item = SpellBooks.sorted().get(rawId - SpellBinding.BOOK_OFFSET);
-                    SpellBinding.State bindingState = SpellBinding.State.forBook(cost, requirement);
-                    boolean isEnabled = bindingState.readyToApply(player, lapisCount);
+                    }
+                    case BOOK -> {
+                        if (rawId < SpellBinding.BOOK_OFFSET) continue; // Filter blank offers
+                        var item = SpellBooks.sorted().get(rawId - SpellBinding.BOOK_OFFSET);
+                        SpellBinding.State bindingState = SpellBinding.State.forBook(cost, requirement);
+                        boolean isEnabled = bindingState.readyToApply(player, lapisCount);
 
-                    var button = new ButtonViewModel(shown,
-                            originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + ((buttons.size() - pageOffset) * BUTTON_HEIGHT),
-                            BUTTON_WIDTH, BUTTON_HEIGHT,
-                            isEnabled, null, item, bindingState);
-                    buttons.add(button);
+                        var button = new ButtonViewModel(shown,
+                                originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + ((buttons.size() - pageOffset) * BUTTON_HEIGHT),
+                                BUTTON_WIDTH, BUTTON_HEIGHT,
+                                isEnabled, null, item, bindingState);
+                        buttons.add(button);
+                    }
                 }
             }
+        } catch (Exception e) {
+            System.err.println("Error when updating Spell Binding Screen buttons");
+            System.err.println(e.getMessage());
         }
         setButtons(buttons);
     }

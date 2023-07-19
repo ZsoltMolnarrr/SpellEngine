@@ -1,3 +1,7 @@
+# 0.9.25
+
+- Add protection against random crashes caused by UI #19
+
 # 0.9.24
 
 - Add Spell Binding Table item hint
