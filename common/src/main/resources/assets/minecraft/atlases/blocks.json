@@ -3,6 +3,16 @@
     {
       "type": "single",
       "resource": "spell_engine:entity/spell_binding_book"
+    },
+    {
+      "type": "directory",
+      "source": "spell_effect",
+      "prefix": "spell_effect/"
+    },
+    {
+      "type": "directory",
+      "source": "spell_projectile",
+      "prefix": "spell_projectile/"
     }
   ]
 }
