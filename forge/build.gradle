@@ -1,7 +1,13 @@
 plugins {
     id "com.github.johnrengelman.shadow" version "7.1.2"
     id "com.matthewprenger.cursegradle" version "1.4.0"
-    id "com.modrinth.minotaur" version "2.+"
+    id "com.modrinth.minotaur" version "2.4.4"
+}
+
+loom {
+    forge {
+        mixinConfig "spell_engine.mixins.json"
+    }
 }
 
 architectury {
@@ -14,7 +20,6 @@ loom {
     forge {
         convertAccessWideners = true
         extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
-        mixinConfig "spell_engine.mixins.json"
     }
 }
 
@@ -63,7 +68,7 @@ processResources {
 shadowJar {
     exclude "fabric.mod.json"
     configurations = [project.configurations.shadowCommon]
-    archiveClassifier.set("dev-shadow")
+    classifier "dev-shadow"
     relocate 'net.fabricmc', 'net.spell_engine.fabricmc'
     relocate 'net.tinyconfig', 'net.spell_engine.tinyconfig'
 }
@@ -71,11 +76,11 @@ shadowJar {
 remapJar {
     input.set shadowJar.archiveFile
     dependsOn shadowJar
-    archiveClassifier.set(null)
+    classifier null
 }
 
 jar {
-    archiveClassifier.set("dev")
+    classifier "dev"
 }
 
 sourcesJar {

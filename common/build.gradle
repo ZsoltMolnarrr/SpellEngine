@@ -25,14 +25,6 @@ repositories {
     }
 }
 
-architectury {
-    common("fabric","forge")
-}
-
-loom {
-    accessWidenerPath = file("src/main/resources/spell_engine.accesswidener")
-}
-
 dependencies {
     // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
     // Do NOT use other classes from fabric loader
@@ -58,6 +50,10 @@ dependencies {
     modCompileOnly("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }
     modImplementation("curse.maven:shoulder-surfing-reloaded-243190:${shoulder_surfing_file_id}")
     modCompileOnly("maven.modrinth:first-person-model:${project.fpm_version}")
+}
+
+architectury {
+    common()
 }
 
 publishing {
