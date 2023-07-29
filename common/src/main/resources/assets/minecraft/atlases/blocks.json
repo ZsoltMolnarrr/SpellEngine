@@ -1,0 +1,8 @@
+{
+  "sources": [
+    {
+      "type": "single",
+      "resource": "spell_engine:entity/spell_binding_book"
+    }
+  ]
+}

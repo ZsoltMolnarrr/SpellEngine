@@ -11,7 +11,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.FlyingItemEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.RotationAxis;
 import net.spell_engine.api.render.CustomLayers;
 import net.spell_engine.api.render.CustomModels;
 import net.spell_engine.entity.SpellProjectile;
@@ -47,7 +47,7 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
                 switch (renderData.render) {
                     case FLAT -> {
                         matrices.multiply(this.dispatcher.getRotation());
-                        matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0F));
+                        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
                     }
                     case DEEP -> {
                         var velocity = entity.getVelocity();
@@ -57,14 +57,14 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
                         velocity = velocity.normalize();
                         var directionBasedYaw = Math.toDegrees(Math.atan2(velocity.x, velocity.z)) + 180F; //entity.getYaw();
                         var directionBasedPitch = Math.toDegrees(Math.asin(velocity.y));
-                        matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion((float) directionBasedYaw));
-                        matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion((float) directionBasedPitch));
+                        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees((float) directionBasedYaw));
+                        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees((float) directionBasedPitch));
                     }
                 }
 
-                var time = entity.world.getTime();
+                var time = entity.getWorld().getTime();
                 var absoluteTime = (float)time + tickDelta;
-                matrices.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(absoluteTime * renderData.rotate_degrees_per_tick));
+                matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(absoluteTime * renderData.rotate_degrees_per_tick));
                 matrices.scale(renderData.scale, renderData.scale, renderData.scale);
                 if (renderData.model_id != null && !renderData.model_id.isEmpty()) {
                     var modelId = new Identifier(renderData.model_id);

@@ -1,7 +1,7 @@
 package net.spell_engine.utils;
 
 import net.minecraft.item.SwordItem;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.internals.SpellRegistry;
@@ -14,12 +14,12 @@ public class WeaponCompatibility {
     public static void initialize() {
         var config = SpellEngineMod.config;
         var proxyContainer = new SpellContainer(true, null, 0, List.of());
-        for(var itemId: Registry.ITEM.getIds()) {
+        for(var itemId: Registries.ITEM.getIds()) {
             var itemIdString = itemId.toString();
             if (matches(itemIdString, config.blacklist_spell_casting_regex)) {
                 continue;
             }
-            var item = Registry.ITEM.get(itemId);
+            var item = Registries.ITEM.get(itemId);
             boolean addProxy = false;
             if (config.add_spell_casting_to_swords && item instanceof SwordItem) {
                 addProxy = true;

@@ -68,7 +68,7 @@ dependencies {
 //    modImplementation(files("../fabric/run/mods/dev/spell_power-fabric-${project.spell_power_version}.jar"))
 
     // Compatibility
-    modCompileOnly("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }
+    modImplementation("com.terraformersmc:modmenu:${rootProject.mod_menu_version}")
     modImplementation("curse.maven:shoulder-surfing-reloaded-243190:${shoulder_surfing_file_id}")
     modCompileOnly("maven.modrinth:first-person-model:${project.fpm_version}")
 }

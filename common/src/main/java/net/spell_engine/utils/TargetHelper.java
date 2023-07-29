@@ -180,7 +180,7 @@ public class TargetHelper {
 
     @Nullable
     private static List<EntityHit> raycastMultiple(Entity sourceEntity, Vec3d min, Vec3d max, Box searchBox, Predicate<Entity> predicate, double squaredDistance) {
-        World world = sourceEntity.world;
+        World world = sourceEntity.getWorld();
         double e = squaredDistance;
         // Entity entity2 = null;
         List<EntityHit> entities = new ArrayList<>();
@@ -232,7 +232,7 @@ public class TargetHelper {
         var squaredDistance = range * range;
         var look = centerEntity.getRotationVector();
         var angle = area.angle_degrees / 2F;
-        var entities = centerEntity.world.getOtherEntities(centerEntity, box, (target) -> {
+        var entities = centerEntity.getWorld().getOtherEntities(centerEntity, box, (target) -> {
             var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
             var distanceVector = VectorHelper.distanceVector(origin, target.getBoundingBox());
             return !target.isSpectator() && target.canHit()
@@ -258,12 +258,12 @@ public class TargetHelper {
     }
 
     private static boolean raycastObstacleFree(Entity entity, Vec3d start, Vec3d end) {
-        var hit = entity.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
+        var hit = entity.getWorld().raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
         return hit.getType() != HitResult.Type.BLOCK;
     }
 
     public static boolean isTargetedByPlayer(Entity entity, PlayerEntity player) {
-        if (entity.world.isClient && player instanceof SpellCasterClient casterClient) {
+        if (entity.getWorld().isClient && player instanceof SpellCasterClient casterClient) {
             return casterClient.getCurrentTargets().contains(entity);
         }
         return false;
@@ -274,7 +274,7 @@ public class TargetHelper {
         var end = start.add(direction.multiply(max));
         var length = max;
         boolean hitBlock = false;
-        var hit = caster.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, caster));
+        var hit = caster.getWorld().raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, caster));
         if (hit.getType() == HitResult.Type.BLOCK) {
             hitBlock = true;
             end = hit.getPos();

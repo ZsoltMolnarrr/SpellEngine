@@ -67,7 +67,7 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     @Override
     public void clearCasting() {
         var player = player();
-        if (!player.world.isClient) {
+        if (!player.getWorld().isClient) {
             // Server
             SpellCastSyncHelper.clearCasting(player);
         }
@@ -81,7 +81,7 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL_SpellEngine(CallbackInfo ci) {
         var player = player();
-        if (player.world.isClient) {
+        if (player.getWorld().isClient) {
             ((AnimatablePlayer)player()).updateSpellCastAnimationsOnTick();
 //            if (!player.isUsingItem() && currentSpell != null) {
 //            }

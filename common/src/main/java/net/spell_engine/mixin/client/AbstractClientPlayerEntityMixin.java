@@ -27,7 +27,6 @@ import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.mixin.LivingEntityAccessor;
 import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.StringUtil;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -37,15 +36,15 @@ import java.util.Optional;
 
 @Mixin(AbstractClientPlayerEntity.class)
 public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity implements AnimatablePlayer {
-    public AbstractClientPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile, @Nullable PlayerPublicKey publicKey) {
-        super(world, pos, yaw, gameProfile, publicKey);
+    public AbstractClientPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
+        super(world, pos, yaw, gameProfile);
     }
 
     private final AnimationSubStack castingAnimation = new AnimationSubStack(createPitchAdjustment_SpellEngine());
     private final AnimationSubStack releaseAnimation = new AnimationSubStack(createPitchAdjustment_SpellEngine());
 
     @Inject(method = "<init>", at = @At("TAIL"))
-    private void postInit_SpellEngine(ClientWorld world, GameProfile profile, PlayerPublicKey publicKey, CallbackInfo ci) {
+    private void postInit_SpellEngine(ClientWorld world, GameProfile profile, CallbackInfo ci) {
         var stack = ((IAnimatedPlayer) this).getAnimationStack();
         stack.addAnimLayer(950, releaseAnimation.base);
         stack.addAnimLayer(900, castingAnimation.base);
@@ -65,7 +64,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             // Rotate body towards look vector
             ((LivingEntityAccessor)player).invokeTurnHead(player.getHeadYaw(), 0);
             for (var batch: spell.cast.particles) {
-                ParticleHelper.play(player.world, player, player.getYaw(), getPitch(), batch);
+                ParticleHelper.play(player.getWorld(), player, player.getYaw(), getPitch(), batch);
             }
         }
         updateCastingAnimation(castAnimationName);

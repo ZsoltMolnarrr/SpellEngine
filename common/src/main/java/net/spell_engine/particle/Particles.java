@@ -1,8 +1,9 @@
 package net.spell_engine.particle;
 
 import net.minecraft.particle.DefaultParticleType;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.SpellEngineMod;
 
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public class Particles {
 
     public static void register() {
         for(var entry: all) {
-            Registry.register(Registry.PARTICLE_TYPE, entry.id, entry.particleType);
+            Registry.register(Registries.PARTICLE_TYPE, entry.id, entry.particleType);
         }
     }
 }

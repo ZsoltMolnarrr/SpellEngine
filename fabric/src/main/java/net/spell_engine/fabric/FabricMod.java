@@ -7,20 +7,19 @@ import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.fabricmc.fabric.api.util.TriState;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.SpawnGroup;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.RemoveOnHit;
 import net.spell_engine.api.item.trinket.SpellBookItem;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.utils.SoundHelper;
 
-import static net.minecraft.util.registry.Registry.ENTITY_TYPE;
-
 public class FabricMod implements ModInitializer {
     static {
         SpellEngineMod.SPELL_PROJECTILE = Registry.register(
-                ENTITY_TYPE,
+                Registries.ENTITY_TYPE,
                 new Identifier(SpellEngineMod.ID, "spell_projectile"),
                 FabricEntityTypeBuilder.<SpellProjectile>create(SpawnGroup.MISC, SpellProjectile::new)
                         .dimensions(EntityDimensions.fixed(0.25F, 0.25F)) // dimensions in Minecraft units of the render

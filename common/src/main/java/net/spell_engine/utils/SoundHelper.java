@@ -2,10 +2,11 @@ package net.spell_engine.utils;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Sound;
@@ -47,11 +48,11 @@ public class SoundHelper {
             var soundId = new Identifier(SpellEngineMod.ID, soundKey);
             var customTravelDistance = soundDistances.get(soundKey);
             var soundEvent = (customTravelDistance == null)
-                    ? new SoundEvent(soundId)
-                    : new SoundEvent(soundId, customTravelDistance);
-            Registry.register(Registry.SOUND_EVENT, soundId, soundEvent);
+                    ? SoundEvent.of(soundId)
+                    : SoundEvent.of(soundId, customTravelDistance);
+            Registry.register(Registries.SOUND_EVENT, soundId, soundEvent);
         }
-        Registry.register(Registry.SOUND_EVENT, SpellBindingScreenHandler.soundId, SpellBindingScreenHandler.soundEvent);
+        Registry.register(Registries.SOUND_EVENT, SpellBindingScreenHandler.soundId, SpellBindingScreenHandler.soundEvent);
     }
 
     public static void playSound(World world, Entity entity, Sound sound) {
@@ -59,7 +60,7 @@ public class SoundHelper {
             return;
         }
         try {
-            var soundEvent = Registry.SOUND_EVENT.get(new Identifier(sound.id()));
+            var soundEvent = Registries.SOUND_EVENT.get(new Identifier(sound.id()));
             playSoundEvent(world, entity, soundEvent, sound.volume(), sound.randomizedPitch());
         } catch (Exception e) {
             System.err.println("Failed to play sound: " + sound.id());
