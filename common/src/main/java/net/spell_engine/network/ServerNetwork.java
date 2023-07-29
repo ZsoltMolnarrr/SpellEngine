@@ -27,7 +27,7 @@ public class ServerNetwork {
         });
 
         ServerPlayNetworking.registerGlobalReceiver(Packets.SpellRequest.ID, (server, player, handler, buf, responseSender) -> {
-            ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.world)
+            ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
                     .orNull();
             if (world == null || world.isClient) {
                 return;

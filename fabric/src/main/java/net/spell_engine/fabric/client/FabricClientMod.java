@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.spell_engine.SpellEngineMod;
@@ -29,8 +30,8 @@ public class FabricClientMod implements ClientModInitializer {
         SpellEngineClient.initialize();
         registerKeyBindings();
 
-        HudRenderCallback.EVENT.register((MatrixStack matrixStack, float tickDelta) -> {
-            HudRenderHelper.render(matrixStack, tickDelta);
+        HudRenderCallback.EVENT.register((DrawContext context, float tickDelta) -> {
+            HudRenderHelper.render(context, tickDelta);
         });
         ItemTooltipCallback.EVENT.register((itemStack, context, lines) -> {
             SpellTooltip.addSpellInfo(itemStack, lines);
@@ -46,13 +47,13 @@ public class FabricClientMod implements ClientModInitializer {
          * Modify the namespace and particle id accordingly.
          *
          * This is only used if you plan to add your own textures for the particle. Otherwise, remove  this.*/
-        ClientSpriteRegistryCallback.event(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).register(((atlasTexture, registry) -> {
-            for(var entry: Particles.all()) {
-                if (entry.usesCustomTexture) {
-                    registry.register(entry.id);
-                }
-            }
-        }));
+//        ClientSpriteRegistryCallback.event(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).register(((atlasTexture, registry) -> {
+//            for(var entry: Particles.all()) {
+//                if (entry.usesCustomTexture) {
+//                    registry.register(entry.id);
+//                }
+//            }
+//        }));
 
         /* Registers our particle client-side.
          * First argument is our particle's instance, created previously on ExampleMod.

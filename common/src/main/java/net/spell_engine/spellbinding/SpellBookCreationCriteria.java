@@ -7,6 +7,7 @@ import net.minecraft.advancement.criterion.AbstractCriterionConditions;
 import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
 import net.minecraft.predicate.entity.AdvancementEntityPredicateSerializer;
 import net.minecraft.predicate.entity.EntityPredicate;
+import net.minecraft.predicate.entity.LootContextPredicate;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
@@ -16,7 +17,7 @@ public class SpellBookCreationCriteria extends AbstractCriterion<SpellBookCreati
     public static final SpellBookCreationCriteria INSTANCE = new SpellBookCreationCriteria();
 
     @Override
-    protected Condition conditionsFromJson(JsonObject obj, EntityPredicate.Extended playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
+    protected Condition conditionsFromJson(JsonObject obj, LootContextPredicate playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
         var condition = new Condition();
         var element = obj.get("spell_pool");
         if (element != null) {
@@ -39,7 +40,7 @@ public class SpellBookCreationCriteria extends AbstractCriterion<SpellBookCreati
     public static class Condition extends AbstractCriterionConditions {
         Identifier spellPool = null;
         public Condition() {
-            super(ID, EntityPredicate.Extended.EMPTY);
+            super(ID, LootContextPredicate.EMPTY);
         }
 
         public boolean test(Identifier usedSpellPool) {

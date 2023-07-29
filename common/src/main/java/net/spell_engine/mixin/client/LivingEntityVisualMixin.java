@@ -36,7 +36,7 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
             beam = caster.getBeam();
         }
         var renderedBeam = lastRenderedBeam;
-        if (livingEntity.world.isClient && beam != null && renderedBeam != null) {
+        if (livingEntity.getWorld().isClient && beam != null && renderedBeam != null) {
             var position = renderedBeam.position();
             var appearance = renderedBeam.appearance();
 
@@ -44,7 +44,7 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
 
             if (position.hitBlock()) {
                 for (var batch : appearance.block_hit_particles) {
-                    ParticleHelper.play(livingEntity.world, position.end(),
+                    ParticleHelper.play(livingEntity.getWorld(), position.end(),
                             appearance.width * 2, yaw, livingEntity.getPitch(), batch);
                 }
             }
@@ -54,7 +54,7 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
     @Inject(method = "tickStatusEffects", at = @At("TAIL"))
     private void tickStatusEffects_TAIL_SpellEngine_CustomParticles(CallbackInfo ci) {
         var livingEntity = livingEntity();
-        if (!livingEntity.isAlive() || !livingEntity.world.isClient()) {
+        if (!livingEntity.isAlive() || !livingEntity.getWorld().isClient()) {
             return;
         }
 

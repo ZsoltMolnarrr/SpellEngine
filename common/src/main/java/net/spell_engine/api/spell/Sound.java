@@ -80,7 +80,7 @@ public final class Sound {
 
     @Override
     public String toString() {
-        return "SoundV2[" +
+        return "Sound[" +
                 "id=" + id + ", " +
                 "volume=" + volume + ", " +
                 "pitch=" + pitch + ", " +

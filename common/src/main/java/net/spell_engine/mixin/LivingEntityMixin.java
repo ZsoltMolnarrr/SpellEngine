@@ -34,7 +34,7 @@ public abstract class LivingEntityMixin implements ConfigurableKnockback {
     @Inject(method = "clearActiveItem", at = @At("HEAD"))
     private void clearActiveItem_HEAD_SpellEngine(CallbackInfo ci) {
         var entity = (LivingEntity) ((Object) this);
-        if (entity.world.isClient && entity instanceof SpellCasterClient caster) {
+        if (entity.getWorld().isClient && entity instanceof SpellCasterClient caster) {
             if (caster.getCurrentSpellId() != null) {
                 // System.out.println("Client clearActiveItem (castRelease)" + " | time: " + entity.age);
                 caster.castRelease(entity.getActiveItem(), entity.getActiveHand(), getItemUseTimeLeft());

@@ -6,11 +6,10 @@ import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.client.render.CustomModelRegistry;
 import net.spell_engine.mixin.client.render.ItemRendererAccessor;
 
@@ -25,7 +24,7 @@ public class CustomModels {
                               MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int seed) {
         var model = BakedModelManagerHelper.getModel(MinecraftClient.getInstance().getBakedModelManager(), modelId);
         if (model == null) {
-            var stack = Registry.ITEM.get(modelId).getDefaultStack();
+            var stack = Registries.ITEM.get(modelId).getDefaultStack();
             if (!stack.isEmpty()) {
                 model = itemRenderer.getModel(stack, null, null, seed);
             }

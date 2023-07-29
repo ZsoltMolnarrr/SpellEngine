@@ -6,10 +6,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleEffect;
+import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.ParticleBatch;
 import net.spell_engine.internals.SpellHelper;
@@ -86,7 +86,7 @@ public class ParticleHelper {
     public static void play(World world, Vec3d origin, float width, float yaw, float pitch, ParticleBatch batch) {
         try {
             var id = new Identifier(batch.particle_id);
-            var particle = (ParticleEffect) Registry.PARTICLE_TYPE.get(id);
+            var particle = (ParticleEffect) Registries.PARTICLE_TYPE.get(id);
             var count = batch.count;
             var dynamicallyOffset = requiresDynamicOffset(batch);
             var defaultOrigin = origin.add(offset(width, batch.extent, batch.shape, batch.rotation, yaw, pitch));
@@ -124,7 +124,7 @@ public class ParticleHelper {
             }
 
             var id = new Identifier(batch.particle_id);
-            var particle = (ParticleEffect) Registry.PARTICLE_TYPE.get(id);
+            var particle = (ParticleEffect) Registries.PARTICLE_TYPE.get(id);
             var count = batch.count;
             var dynamicallyOffset = requiresDynamicOffset(batch);
             var defaultOrigin = origin.add(offset(width, batch.extent, batch.shape, batch.rotation, yaw, pitch));

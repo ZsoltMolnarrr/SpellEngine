@@ -3,7 +3,7 @@ package net.spell_engine;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
-import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.enchantment.Enchantments;
@@ -11,9 +11,9 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.ArmorItem;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.item.ItemGroups;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
 import net.spell_engine.api.item.weapon.StaffItem;
 import net.spell_engine.config.EnchantmentsConfig;
@@ -82,10 +82,13 @@ public class SpellEngineMod {
     }
 
     public static void registerSpellBinding() {
-        Registry.register(Registry.BLOCK, SpellBinding.ID, SpellBindingBlock.INSTANCE);
-        Registry.register(Registry.BLOCK_ENTITY_TYPE, SpellBinding.ID, SpellBindingBlockEntity.ENTITY_TYPE);
-        Registry.register(Registry.ITEM, SpellBinding.ID, new BlockItem(SpellBindingBlock.INSTANCE, new FabricItemSettings().group(ItemGroup.DECORATIONS)));
-        Registry.register(Registry.SCREEN_HANDLER, SpellBinding.ID, SpellBindingScreenHandler.HANDLER_TYPE);
+        Registry.register(Registries.BLOCK, SpellBinding.ID, SpellBindingBlock.INSTANCE);
+        Registry.register(Registries.BLOCK_ENTITY_TYPE, SpellBinding.ID, SpellBindingBlockEntity.ENTITY_TYPE);
+        Registry.register(Registries.ITEM, SpellBinding.ID, SpellBindingBlock.ITEM);
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register(content -> {
+            content.add(SpellBindingBlock.ITEM);
+        });
+        Registry.register(Registries.SCREEN_HANDLER, SpellBinding.ID, SpellBindingScreenHandler.HANDLER_TYPE);
         Criteria.register(SpellBindingCriteria.INSTANCE);
         Criteria.register(SpellBookCreationCriteria.INSTANCE);
     }
@@ -93,7 +96,7 @@ public class SpellEngineMod {
     public static void registerEnchantments() {
         enchantmentConfig.value.apply();
         for(var entry: Enchantments_SpellEngine.all.entrySet()) {
-            Registry.register(Registry.ENCHANTMENT, entry.getKey(), entry.getValue());
+            Registry.register(Registries.ENCHANTMENT, entry.getKey(), entry.getValue());
         }
     }
 }

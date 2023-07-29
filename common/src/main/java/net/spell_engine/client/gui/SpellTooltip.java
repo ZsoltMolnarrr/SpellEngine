@@ -8,10 +8,10 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
@@ -177,7 +177,7 @@ public class SpellTooltip {
             showItemCost = config.spell_cost_item_allowed;
         }
         if (showItemCost && spell.cost != null && spell.cost.item_id != null && !spell.cost.item_id.isEmpty()) {
-            var item = Registry.ITEM.get(new Identifier(spell.cost.item_id));
+            var item = Registries.ITEM.get(new Identifier(spell.cost.item_id));
             if (item != Items.AIR) {
                 var ammoKey = keyWithPlural("spell.tooltip.ammo", 1); // Add variable ammo count later
                 var itemName = I18n.translate(item.getTranslationKey());

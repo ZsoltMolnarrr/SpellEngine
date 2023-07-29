@@ -8,9 +8,7 @@ import net.minecraft.loot.function.EnchantWithLevelsLootFunction;
 import net.minecraft.loot.provider.number.BinomialLootNumberProvider;
 import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
 import net.minecraft.loot.provider.number.UniformLootNumberProvider;
-import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import java.util.HashMap;
 
@@ -45,7 +43,7 @@ public class LootHelper {
         }
     }
 
-    private static TagKey<Item> itemTagKey(String id) {
-        return TagKey.of(Registry.ITEM_KEY, new Identifier(id));
-    }
+//    private static TagKey<Item> itemTagKey(String id) {
+//        return TagKey.of(Registries.ITEM, new Identifier(id));
+//    }
 }

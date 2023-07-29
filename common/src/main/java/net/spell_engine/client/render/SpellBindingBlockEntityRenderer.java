@@ -14,7 +14,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.RotationAxis;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 
@@ -35,7 +35,7 @@ public class SpellBindingBlockEntityRenderer implements BlockEntityRenderer<Spel
         matrixStack.push();
         matrixStack.translate(0.5, 0.75, 0.5);
         float g = (float)blockEntity.ticks + f;
-        matrixStack.translate(0.0, (double)(0.1F + MathHelper.sin(g * 0.1F) * 0.01F), 0.0);
+        matrixStack.translate(0.0F, 0.1F + MathHelper.sin(g * 0.1F) * 0.01F, 0.0F);
 
         float h;
         for(h = blockEntity.bookRotation - blockEntity.lastBookRotation; h >= 3.1415927F; h -= 6.2831855F) {
@@ -46,8 +46,8 @@ public class SpellBindingBlockEntityRenderer implements BlockEntityRenderer<Spel
         }
 
         float k = blockEntity.lastBookRotation + h * f;
-        matrixStack.multiply(Vec3f.POSITIVE_Y.getRadialQuaternion(-k));
-        matrixStack.multiply(Vec3f.POSITIVE_Z.getDegreesQuaternion(80.0F));
+        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotation(-k));
+        matrixStack.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(80.0F));
         float l = MathHelper.lerp(f, blockEntity.pageAngle, blockEntity.nextPageAngle);
         float m = MathHelper.fractionalPart(l + 0.25F) * 1.6F - 0.3F;
         float n = MathHelper.fractionalPart(l + 0.75F) * 1.6F - 0.3F;

@@ -7,7 +7,7 @@ import net.minecraft.advancement.criterion.AbstractCriterion;
 import net.minecraft.advancement.criterion.AbstractCriterionConditions;
 import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
 import net.minecraft.predicate.entity.AdvancementEntityPredicateSerializer;
-import net.minecraft.predicate.entity.EntityPredicate;
+import net.minecraft.predicate.entity.LootContextPredicate;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
@@ -16,7 +16,7 @@ public class SpellBindingCriteria extends AbstractCriterion<SpellBindingCriteria
     public static final SpellBindingCriteria INSTANCE = new SpellBindingCriteria();
 
     @Override
-    protected Condition conditionsFromJson(JsonObject obj, EntityPredicate.Extended playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
+    protected Condition conditionsFromJson(JsonObject obj, LootContextPredicate playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
         var condition = new Condition();
         JsonElement element = obj.get("complete");
         if (element != null) {
@@ -45,7 +45,7 @@ public class SpellBindingCriteria extends AbstractCriterion<SpellBindingCriteria
         boolean complete = false;
         Identifier spellPool = null;
         public Condition() {
-            super(SpellBinding.ID, EntityPredicate.Extended.EMPTY);
+            super(SpellBinding.ID, LootContextPredicate.EMPTY);
         }
 
         public boolean test(Identifier usedSpellPool, boolean isComplete) {

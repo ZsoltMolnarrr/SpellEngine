@@ -7,6 +7,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.screen.*;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -20,7 +21,7 @@ import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 
 public class SpellBindingScreenHandler extends ScreenHandler {
-    public static final ScreenHandlerType<SpellBindingScreenHandler> HANDLER_TYPE = new ScreenHandlerType(SpellBindingScreenHandler::new);
+    public static final ScreenHandlerType<SpellBindingScreenHandler> HANDLER_TYPE = new ScreenHandlerType(SpellBindingScreenHandler::new, FeatureFlags.VANILLA_FEATURES);
     public static final int MAXIMUM_SPELL_COUNT = 32;
     // State
     private final Inventory inventory = new SimpleInventory(2) {
@@ -106,8 +107,8 @@ public class SpellBindingScreenHandler extends ScreenHandler {
             this.context.run((world, pos) -> {
                 int j;
                 int libraryPower = 0;
-                for (BlockPos blockPos : EnchantingTableBlock.BOOKSHELF_OFFSETS) {
-                    if (!EnchantingTableBlock.canAccessBookshelf(world, pos, blockPos)) continue;
+                for (BlockPos blockPos : EnchantingTableBlock.POWER_PROVIDER_OFFSETS) {
+                    if (!EnchantingTableBlock.canAccessPowerProvider(world, pos, blockPos)) continue;
                     ++libraryPower;
                 }
                 var offerResult = SpellBinding.offersFor(itemStack, libraryPower);
@@ -136,13 +137,13 @@ public class SpellBindingScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public void close(PlayerEntity player) {
-        super.close(player);
+    public void onClosed(PlayerEntity player) {
+        super.onClosed(player);
         this.context.run((world, pos) -> this.dropInventory(player, this.inventory));
     }
 
     @Override
-    public ItemStack transferSlot(PlayerEntity player, int index) {
+    public ItemStack quickMove(PlayerEntity player, int index) {
         ItemStack itemStack = ItemStack.EMPTY;
         Slot slot = (Slot) this.slots.get(index);
         if (slot != null && slot.hasStack()) {
@@ -182,7 +183,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
     }
 
     public static Identifier soundId = new Identifier(SpellEngineMod.ID, "bind_spell");
-    public static SoundEvent soundEvent = new SoundEvent(soundId);
+    public static SoundEvent soundEvent = SoundEvent.of(soundId);
 
     @Override
     public boolean onButtonClick(PlayerEntity player, int id) {

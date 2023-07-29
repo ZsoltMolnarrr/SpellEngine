@@ -2,10 +2,7 @@ package net.spell_engine.api.render;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderPhase;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.*;
 import net.minecraft.util.Identifier;
 
 public class CustomLayers extends RenderLayer {
@@ -15,7 +12,7 @@ public class CustomLayers extends RenderLayer {
 
     public static RenderLayer beam(Identifier texture, boolean cull, boolean transparent) {
         MultiPhaseParameters multiPhaseParameters = MultiPhaseParameters.builder()
-                .shader(BEACON_BEAM_SHADER)
+//                .shader(BEACON_BEAM_SHADER)
                 .cull(cull ? ENABLE_CULLING : DISABLE_CULLING)
                 .texture(new RenderPhase.Texture(texture, false, false))
                 .transparency(transparent ? BEAM_TRANSPARENCY : NO_TRANSPARENCY)
@@ -44,7 +41,7 @@ public class CustomLayers extends RenderLayer {
 
     public static RenderLayer projectile(Identifier texture, boolean translucent, boolean emissive) {
         MultiPhaseParameters multiPhaseParameters = MultiPhaseParameters.builder()
-                .shader(emissive ? ENTITY_TRANSLUCENT_EMISSIVE_SHADER : ENTITY_TRANSLUCENT_SHADER)
+//                .shader(emissive ? ENTITY_TRANSLUCENT_EMISSIVE_SHADER : ENTITY_TRANSLUCENT_SHADER)
                 .texture(new RenderPhase.Texture((Identifier)texture, false, false))
                 .transparency(translucent ? TRANSLUCENT_TRANSPARENCY : NO_TRANSPARENCY)
                 .cull(DISABLE_CULLING)

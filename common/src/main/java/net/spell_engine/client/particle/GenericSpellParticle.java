@@ -17,7 +17,7 @@ public class GenericSpellParticle extends SpriteBillboardParticle  {
         super(world, x, y, z, 0.5 - RANDOM.nextDouble(), velocityY, 0.5 - RANDOM.nextDouble());
         this.velocityMultiplier = 0.96F;
         this.gravityStrength = -0.1F;
-        this.field_28787 = true;
+        this.ascending = true;
         this.spriteProvider = spriteProvider;
         this.velocityY *= 0.2;
         if (velocityX == 0.0 && velocityZ == 0.0) {

@@ -1,6 +1,7 @@
 package net.spell_engine.client.gui;
 
 import me.shedaniel.autoconfig.AutoConfig;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -22,23 +23,36 @@ public class ConfigMenuScreen extends Screen {
         var buttonCenterX = (width / 2) - (buttonWidth / 2);
         var buttonCenterY = (height / 2) - (buttonHeight / 2);
 
-        addDrawableChild(new ButtonWidget(buttonCenterX, buttonCenterY - 30, buttonWidth, buttonHeight, Text.translatable("gui.spell_engine.close"), button -> {
-            close();
-        }));
-        addDrawableChild(new ButtonWidget(buttonCenterX, buttonCenterY, buttonWidth, buttonHeight, Text.translatable("gui.spell_engine.settings"), button -> {
-            client.setScreen(AutoConfig.getConfigScreen(ClientConfigWrapper.class, this).get());
-        }));
-        addDrawableChild(new ButtonWidget(buttonCenterX, buttonCenterY + 30, buttonWidth, buttonHeight, Text.translatable("gui.spell_engine.hud"), button -> {
-            client.setScreen(new HudConfigScreen(this));
-        }));
+        addDrawableChild(
+                ButtonWidget.builder(Text.translatable("gui.spell_engine.close"), button -> { close(); })
+                        .position(buttonCenterX, buttonCenterY - 30)
+                        .size(buttonWidth, buttonHeight)
+                        .build()
+        );
+        addDrawableChild(
+                ButtonWidget.builder(Text.translatable("gui.spell_engine.settings"), button -> {
+                    client.setScreen(AutoConfig.getConfigScreen(ClientConfigWrapper.class, this).get());
+                })
+                .position(buttonCenterX, buttonCenterY)
+                .size(buttonWidth, buttonHeight)
+                .build()
+        );
+        addDrawableChild(
+                ButtonWidget.builder(Text.translatable("gui.spell_engine.hud"), button -> {
+                            client.setScreen(new HudConfigScreen(this));
+                        })
+                        .position(buttonCenterX, buttonCenterY + 30)
+                        .size(buttonWidth, buttonHeight)
+                        .build()
+        );
     }
 
     public void close() {
         this.client.setScreen(previous);
     }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        renderBackground(matrices);
-        super.render(matrices, mouseX, mouseY, delta);
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackground(context);
+        super.render(context, mouseX, mouseY, delta);
     }
 }

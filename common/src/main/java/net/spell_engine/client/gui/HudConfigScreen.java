@@ -1,5 +1,6 @@
 package net.spell_engine.client.gui;
 
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.CheckboxWidget;
@@ -39,21 +40,35 @@ public class HudConfigScreen extends Screen {
         var centerX = (width / 2);
         var centerY = (height / 2);
 
-        addDrawableChild(new ButtonWidget(5, 5, buttonHeight, buttonHeight, Text.translatable("x"), button -> {
-            close();
-        }));
+
+
+        addDrawableChild(
+                ButtonWidget.builder(Text.translatable("x"), button -> { close(); })
+                        .position(5, 5)
+                        .size(buttonHeight, buttonHeight)
+                        .build()
+        );
 
         int y = centerY - 50;
 
-        addDrawableChild(new ButtonWidget(centerX - padding - buttonWidth - (buttonWidth/2), y, buttonWidth, buttonHeight, Text.translatable("gui.spell_engine.parts"), button -> {
-            this.toggleParts();
-        }));
-        addDrawableChild(new ButtonWidget(centerX - (buttonWidth/2), y, buttonWidth, buttonHeight, Text.translatable("gui.spell_engine.preset"), button -> {
-            this.nextPreset();
-        }));
-        addDrawableChild(new ButtonWidget(centerX + padding + buttonWidth - (buttonWidth/2), y, buttonWidth, buttonHeight, Text.translatable("gui.spell_engine.reset"), button -> {
-            this.reset();
-        }));
+        addDrawableChild(
+                ButtonWidget.builder(Text.translatable("gui.spell_engine.parts"), button -> { this.toggleParts(); })
+                        .position(centerX - padding - buttonWidth - (buttonWidth/2), y)
+                        .size(buttonWidth, buttonHeight)
+                        .build()
+        );
+        addDrawableChild(
+                ButtonWidget.builder(Text.translatable("gui.spell_engine.preset"), button -> { this.nextPreset(); })
+                        .position(centerX - (buttonWidth/2), y)
+                        .size(buttonWidth, buttonHeight)
+                        .build()
+        );
+        addDrawableChild(
+                ButtonWidget.builder(Text.translatable("gui.spell_engine.reset"), button -> { this.reset(); })
+                        .position(centerX + padding + buttonWidth - (buttonWidth/2), y)
+                        .size(buttonWidth, buttonHeight)
+                        .build()
+        );
 
         setupPartButtons();
     }
@@ -94,21 +109,33 @@ public class HudConfigScreen extends Screen {
         checkBoxes.put(part, checkBox);
 
         x += buttonSize + spacing;
-        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.of("←"), button -> {
-            move(part, Direction.LEFT);
-        }));
+        addDrawableChild(
+                ButtonWidget.builder(Text.of("←"), button -> { move(part, Direction.LEFT); })
+                        .position(x, y)
+                        .size(buttonSize, buttonSize)
+                        .build()
+        );
         x += buttonSize + spacing;
-        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.of("↑"), button -> {
-            move(part, Direction.UP);
-        }));
+        addDrawableChild(
+                ButtonWidget.builder(Text.of("↑"), button -> { move(part, Direction.UP); })
+                        .position(x, y)
+                        .size(buttonSize, buttonSize)
+                        .build()
+        );
         x += buttonSize + spacing;
-        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.of("↓"), button -> {
-            move(part, Direction.DOWN);
-        }));
+        addDrawableChild(
+                ButtonWidget.builder(Text.of("↓"), button -> { move(part, Direction.DOWN); })
+                        .position(x, y)
+                        .size(buttonSize, buttonSize)
+                        .build()
+        );
         x += buttonSize + spacing;
-        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.of("→"), button -> {
-            move(part, Direction.RIGHT);
-        }));
+        addDrawableChild(
+                ButtonWidget.builder(Text.of("→"), button -> { move(part, Direction.RIGHT); })
+                        .position(x, y)
+                        .size(buttonSize, buttonSize)
+                        .build()
+        );
         return buttons;
     }
 
@@ -116,13 +143,19 @@ public class HudConfigScreen extends Screen {
         var buttons = new ArrayList<ButtonWidget>();
         var buttonSize = 20;
         var spacing = 8;
-        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.translatable("-"), button -> {
-            changeBarWidth(false);
-        }));
+        addDrawableChild(
+                ButtonWidget.builder(Text.of("-"), button -> { changeBarWidth(false); })
+                        .position(x, y)
+                        .size(buttonSize, buttonSize)
+                        .build()
+        );
         x += buttonSize + spacing;
-        buttons.add(new ButtonWidget(x, y, buttonSize, buttonSize, Text.translatable("+"), button -> {
-            changeBarWidth(true);
-        }));
+        addDrawableChild(
+                ButtonWidget.builder(Text.of("+"), button -> { changeBarWidth(true); })
+                        .position(x, y)
+                        .size(buttonSize, buttonSize)
+                        .build()
+        );
         return buttons;
     }
 
@@ -190,10 +223,10 @@ public class HudConfigScreen extends Screen {
         this.client.setScreen(previous);
     }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        renderBackground(matrices);
-        HudRenderHelper.render(matrices, delta, true);
-        super.render(matrices, mouseX, mouseY, delta);
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackground(context);
+        HudRenderHelper.render(context, delta, true);
+        super.render(context, mouseX, mouseY, delta);
         if (partsVisible()) {
             var bigButtonWidth = 60;
             var centerX = (width / 2);
@@ -201,21 +234,21 @@ public class HudConfigScreen extends Screen {
             var lineSpacing = 28;
             int x = centerX - (bigButtonWidth/2) - 8;
             int y = centerY - 20 + 6;
-            rightAlignedText(matrices, x, y, "gui.spell_engine.target");
+            rightAlignedText(context, x, y, "gui.spell_engine.target");
             y += lineSpacing;
-            rightAlignedText(matrices, x, y, "gui.spell_engine.icon");
+            rightAlignedText(context, x, y, "gui.spell_engine.icon");
             y += lineSpacing;
-            rightAlignedText(matrices, x, y, "gui.spell_engine.bar_width");
+            rightAlignedText(context, x, y, "gui.spell_engine.bar_width");
         }
         for (var entry: checkBoxes.entrySet()) {
             partData(entry.getKey()).visible = entry.getValue().isChecked();
         }
     }
 
-    private void rightAlignedText(MatrixStack matrices, int x, int y, String text) {
+    private void rightAlignedText(DrawContext context, int x, int y, String text) {
         var translated = I18n.translate(text);
         var width = textRenderer.getWidth(translated);
-        textRenderer.draw(matrices, translated, x - width, y, 0xFFFFFF);
+        context.drawText(textRenderer, translated, x - width, y, 0xFFFFFF, false);
     }
 
     private Dragged dragged;

@@ -7,7 +7,7 @@ import net.minecraft.advancement.criterion.AbstractCriterion;
 import net.minecraft.advancement.criterion.AbstractCriterionConditions;
 import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
 import net.minecraft.predicate.entity.AdvancementEntityPredicateSerializer;
-import net.minecraft.predicate.entity.EntityPredicate;
+import net.minecraft.predicate.entity.LootContextPredicate;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
@@ -18,7 +18,7 @@ public class EnchantmentSpecificCriteria extends AbstractCriterion<EnchantmentSp
     private static final String enchant_id_key = "enchant_id";
 
     @Override
-    protected Condition conditionsFromJson(JsonObject obj, EntityPredicate.Extended playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
+    protected Condition conditionsFromJson(JsonObject obj, LootContextPredicate playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
         JsonElement element = obj.get(enchant_id_key);
         return new EnchantmentSpecificCriteria.Condition(element.getAsString());
     }
@@ -36,7 +36,7 @@ public class EnchantmentSpecificCriteria extends AbstractCriterion<EnchantmentSp
         String enchantId;
 
         public Condition(String enchantId) {
-            super(ID, EntityPredicate.Extended.EMPTY);
+            super(ID, LootContextPredicate.EMPTY);
             this.enchantId = enchantId;
         }
 

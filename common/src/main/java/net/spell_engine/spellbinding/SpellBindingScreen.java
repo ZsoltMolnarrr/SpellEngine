@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.DiffuseLighting;
@@ -51,13 +51,22 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         var y = originY + 3;
         var width = 16;
         var height = 10;
-        upButton = new ButtonWidget(x , y, width, height, Text.of("↑"), button -> {
-            this.pageUp();
-        });
+
+        ButtonWidget.builder(Text.of("↑"), button -> { this.pageUp(); })
+                .position(x , y)
+                .size(width, height)
+                .build();
+
+
+        upButton = ButtonWidget.builder(Text.of("↑"), button -> { this.pageUp(); })
+                .position(x , y)
+                .size(width, height)
+                .build();
         upButton.visible = false;
-        downButton = new ButtonWidget(x, y + (PAGE_SIZE * BUTTON_HEIGHT) + height + 1, width, height, Text.of("↓"), button -> {
-            this.pageDown();
-        });
+        downButton = ButtonWidget.builder(Text.of("↓"), button -> { this.pageDown(); })
+                .position(x , y + (PAGE_SIZE * BUTTON_HEIGHT) + height + 1)
+                .size(width, height)
+                .build();
         downButton.visible = false;
         this.addDrawableChild(upButton);
         this.addDrawableChild(downButton);
@@ -81,11 +90,11 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         delta = this.client.getTickDelta();
-        this.renderBackground(matrices);
-        super.render(matrices, mouseX, mouseY, delta);
-        this.drawMouseoverTooltip(matrices, mouseX, mouseY);
+        this.renderBackground(context);
+        super.render(context, mouseX, mouseY, delta);
+        this.drawMouseoverTooltip(context, mouseX, mouseY);
         var player = MinecraftClient.getInstance().player;
         var lapisCount = handler.getLapisCount();
         var itemStack = handler.getStacks().get(0);
@@ -133,29 +142,31 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                     tooltip.add(Text.literal(" "));
                     tooltip.addAll(SpellTooltip.spellInfo(button.spell.id(), player, itemStack, true));
                 }
-                this.renderTooltip(matrices, tooltip, mouseX, mouseY);
+                context.drawTooltip(textRenderer, tooltip, mouseX, mouseY);
                 break;
             }
         }
     }
 
     @Override
-    protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
+    protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
         DiffuseLighting.disableGuiDepthLighting();
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.setShaderTexture(0, TEXTURE);
+//        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+//        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+//        RenderSystem.setShaderTexture(0, TEXTURE);
         int originX = (this.width - this.backgroundWidth) / 2;
         int originY = (this.height - this.backgroundHeight) / 2;
-        this.drawTexture(matrices, originX, originY, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        context.drawTexture(TEXTURE, originX, originY, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        // this.drawTexture(matrices, originX, originY, 0, 0, this.backgroundWidth, this.backgroundHeight);
         var bindingSlot = handler.slots.get(0);
         if (bindingSlot.getStack().isEmpty()) {
-            this.drawTexture(matrices, originX + bindingSlot.x, originY + bindingSlot.y, 240, 0, 16, 16);
+            context.drawTexture(TEXTURE, originX + bindingSlot.x, originY + bindingSlot.y, 240, 0, 16, 16);
+            // this.drawTexture(matrices, originX + bindingSlot.x, originY + bindingSlot.y, 240, 0, 16, 16);
         }
         DiffuseLighting.enableGuiDepthLighting();
         this.updatePageControls();
         this.updateButtons(originX, originY);
-        this.drawButtons(matrices, mouseX, mouseY);
+        this.drawButtons(context, mouseX, mouseY);
     }
 
     private static final int PAGE_SIZE = 3;
@@ -266,10 +277,10 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         buttonViewModels = buttons;
     }
 
-    private void drawButtons(MatrixStack matrices, int mouseX, int mouseY) {
+    private void drawButtons(DrawContext context, int mouseX, int mouseY) {
         for(var button: buttonViewModels) {
             var state = button.mouseOver(mouseX, mouseY) ? ButtonState.HOVER : ButtonState.NORMAL;
-            drawSpellButton(matrices, button, state);
+            drawSpellButton(context, button, state);
         }
     }
 
@@ -296,7 +307,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     private static final int COLOR_GOOD = 0x36ff00;
     private static final int COLOR_BAD = 0xfc5c5c;
     private static final int COLOR_GOOD_BUT_DISABLED = 0x48890e;
-    private void drawSpellButton(MatrixStack matrices, ButtonViewModel viewModel, ButtonState state) {
+    private void drawSpellButton(DrawContext context, ButtonViewModel viewModel, ButtonState state) {
         if(!viewModel.shown) { return; }
         var player = MinecraftClient.getInstance().player;
         int u = BUTTON_TEXTURE_U;
@@ -313,10 +324,10 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         } else {
             v += viewModel.height;
         }
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, TEXTURE);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        drawTexture(matrices, viewModel.x, viewModel.y, u, v, viewModel.width, viewModel.height);
+//        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+//        RenderSystem.setShaderTexture(0, TEXTURE);
+//        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        context.drawTexture(TEXTURE, viewModel.x, viewModel.y, u, v, viewModel.width, viewModel.height);
         if (viewModel.binding.state == SpellBinding.State.ApplyState.NO_MORE_SLOT) {
             return;
         }
@@ -331,22 +342,21 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                 text = viewModel.item.getName();
             }
             // var spell = viewModel.spell;
-            textRenderer.drawWithShadow(matrices, text,
+            context.drawTextWithShadow(textRenderer, text,
                     viewModel.x + viewModel.height, viewModel.y + SPELL_ICON_INDENT, isUnlocked ? 0xFFFFFF : 0x808080);
             var goodColor = viewModel.isEnabled ? COLOR_GOOD : COLOR_GOOD_BUT_DISABLED;
             if (!alreadyApplied) {
                 String levelRequirement = "" + viewModel.binding.requirements.requiredLevel();
-                textRenderer.drawWithShadow(matrices, levelRequirement,
+                context.drawTextWithShadow(textRenderer, levelRequirement,
                         viewModel.x + viewModel.width - 2 - textRenderer.getWidth(levelRequirement),
                         viewModel.y + viewModel.height - BOTTOM_TEXT_OFFSET,
                         viewModel.binding.requirements.metRequiredLevel(player) ? goodColor : COLOR_BAD);
             }
-            RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, isUnlocked ? 1F : 0.5f);
+            context.setShaderColor(1.0f, 1.0f, 1.0f, isUnlocked ? 1F : 0.5f);
             RenderSystem.enableBlend();
             if (viewModel.spell != null && viewModel.spell.icon != null) {
-                RenderSystem.setShaderTexture(0, viewModel.spell.icon);
                 // int x, int y, int u, int v, int width, int height
-                DrawableHelper.drawTexture(matrices,
+                context.drawTexture(viewModel.spell.icon,
                         viewModel.x + SPELL_ICON_INDENT,
                         viewModel.y + SPELL_ICON_INDENT,
                         0, 0,
@@ -354,24 +364,25 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
             }
             if (viewModel.item != null) {
                 // Draw item icon
-                this.itemRenderer.renderInGui(viewModel.item.getDefaultStack(),
+                context.drawItem(viewModel.item.getDefaultStack(),
                         viewModel.x + SPELL_ICON_INDENT,
                         viewModel.y + SPELL_ICON_INDENT);
             }
             if (!alreadyApplied) {
-
-                matrices.translate(0, 0, 300);
+                context.getMatrices().translate(0, 0, 300);
                 RenderSystem.setShaderTexture(0, TEXTURE);
-                drawTexture(matrices,
+                context.drawTexture(TEXTURE,
                         viewModel.x + ORB_INDENT,
                         viewModel.y + viewModel.height - ORB_ICON_SIZE - ORB_INDENT,
                         ORB_TEXTURE_U, ORB_TEXTURE_V, ORB_ICON_SIZE, ORB_ICON_SIZE);
                 String levelCost = "" + viewModel.binding.requirements.levelCost();
-                textRenderer.drawWithShadow(matrices, levelCost,
-                    viewModel.x + ORB_INDENT + (Math.round(ORB_ICON_SIZE * 0.6)),
-                    viewModel.y + viewModel.height - BOTTOM_TEXT_OFFSET,
-                    viewModel.binding.requirements.hasEnoughLevelsToSpend(player) ? goodColor : COLOR_BAD);
-                matrices.translate(0, 0, -300);
+                context.drawTextWithShadow(
+                        textRenderer,
+                        levelCost,
+                        (int) (viewModel.x + ORB_INDENT + (Math.round(ORB_ICON_SIZE * 0.6))),
+                        viewModel.y + viewModel.height - BOTTOM_TEXT_OFFSET,
+                        viewModel.binding.requirements.hasEnoughLevelsToSpend(player) ? goodColor : COLOR_BAD);
+                context.getMatrices().translate(0, 0, -300);
             }
         }
         RenderSystem.enableDepthTest();

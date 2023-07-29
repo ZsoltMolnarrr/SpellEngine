@@ -1,5 +1,6 @@
 package net.spell_engine.spellbinding;
 
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -8,6 +9,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.screen.NamedScreenHandlerFactory;
@@ -28,7 +30,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class SpellBindingBlock extends BlockWithEntity {
-    public static SpellBindingBlock INSTANCE = new SpellBindingBlock(FabricBlockSettings.of(Material.STONE).strength(5.0f));
+    public static SpellBindingBlock INSTANCE = new SpellBindingBlock(FabricBlockSettings.create().hardness(4F).nonOpaque());
+    public static final BlockItem ITEM = new BlockItem(INSTANCE, new FabricItemSettings());
 
     protected static final VoxelShape SHAPE = Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
     public static final List<BlockPos> BOOKSHELF_OFFSETS = BlockPos.stream(-2, 0, -2, 2, 1, 2).filter(pos -> Math.abs(pos.getX()) == 2 || Math.abs(pos.getZ()) == 2).map(BlockPos::toImmutable).toList();
