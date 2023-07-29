@@ -12,7 +12,7 @@ public class CustomLayers extends RenderLayer {
 
     public static RenderLayer beam(Identifier texture, boolean cull, boolean transparent) {
         MultiPhaseParameters multiPhaseParameters = MultiPhaseParameters.builder()
-//                .shader(BEACON_BEAM_SHADER)
+                .program(BEACON_BEAM_PROGRAM)
                 .cull(cull ? ENABLE_CULLING : DISABLE_CULLING)
                 .texture(new RenderPhase.Texture(texture, false, false))
                 .transparency(transparent ? BEAM_TRANSPARENCY : NO_TRANSPARENCY)
@@ -41,7 +41,7 @@ public class CustomLayers extends RenderLayer {
 
     public static RenderLayer projectile(Identifier texture, boolean translucent, boolean emissive) {
         MultiPhaseParameters multiPhaseParameters = MultiPhaseParameters.builder()
-//                .shader(emissive ? ENTITY_TRANSLUCENT_EMISSIVE_SHADER : ENTITY_TRANSLUCENT_SHADER)
+                .program(emissive ? ENTITY_TRANSLUCENT_EMISSIVE_PROGRAM : ENTITY_TRANSLUCENT_PROGRAM)
                 .texture(new RenderPhase.Texture((Identifier)texture, false, false))
                 .transparency(translucent ? TRANSLUCENT_TRANSPARENCY : NO_TRANSPARENCY)
                 .cull(DISABLE_CULLING)
