@@ -12,7 +12,7 @@ import net.spell_engine.SpellEngineMod;
 public class ForgeEvents {
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (!event.getEntity().world.isClient())
+        if (!event.getEntity().getWorld().isClient())
             ServerPlayConnectionEvents.onPlayerJoined.forEach((action) -> action.onPlayReady(
                     ((ServerPlayerEntity) event.getEntity()).networkHandler,
                     (id, data) -> ServerPlayNetworking.send((ServerPlayerEntity) event.getEntity(), id, data),

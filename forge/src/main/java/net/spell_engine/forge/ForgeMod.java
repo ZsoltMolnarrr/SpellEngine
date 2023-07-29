@@ -47,7 +47,7 @@ public class ForgeMod {
 
     private void registerSounds() {
         for (var soundKey: SoundHelper.soundKeys) {
-            SOUNDS.register(soundKey, () -> new SoundEvent(new Identifier(SpellEngineMod.ID, soundKey)));
+            SOUNDS.register(soundKey, () -> SoundEvent.of(new Identifier(SpellEngineMod.ID, soundKey)));
         }
     }
 }

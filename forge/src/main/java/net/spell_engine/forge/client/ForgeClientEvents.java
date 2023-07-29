@@ -11,6 +11,6 @@ import net.spell_engine.client.gui.HudRenderHelper;
 public class ForgeClientEvents {
     @SubscribeEvent
     public static void onRenderHud(RenderGuiEvent.Post event){
-        HudRenderHelper.render(event.getPoseStack(), event.getPartialTick());
+        HudRenderHelper.render(event.getGuiGraphics(), event.getPartialTick());
     }
 }
