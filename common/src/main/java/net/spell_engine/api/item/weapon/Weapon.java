@@ -2,15 +2,18 @@ package net.spell_engine.api.item.weapon;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.item.ToolMaterials;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
 import net.spell_engine.Platform;
@@ -136,7 +139,7 @@ public class Weapon {
 
     // MARK: Registration
 
-    public static void register(Map<String, ItemConfig.Weapon> configs, List<Entry> entries) {
+    public static void register(Map<String, ItemConfig.Weapon> configs, List<Entry> entries, RegistryKey<ItemGroup> itemGroupKey) {
         for(var entry: entries) {
             var config = configs.get(entry.name);
             if (config == null) {
@@ -148,6 +151,11 @@ public class Weapon {
             ((ConfigurableAttributes)item).setAttributes(attributesFrom(config));
             Registry.register(Registries.ITEM, entry.id(), item);
         }
+        ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register(content -> {
+            for(var entry: entries) {
+                content.add(entry.item());
+            }
+        });
     }
 
     private static Multimap<EntityAttribute, EntityAttributeModifier> attributesFrom(ItemConfig.Weapon config) {

@@ -2,15 +2,18 @@ package net.spell_engine.api.item.armor;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ArmorMaterial;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
@@ -49,11 +52,16 @@ public class Armor {
             return pieces().stream().map(piece -> idOf(piece).toString()).toList();
         }
 
-        public void register() {
+        public void register(RegistryKey<ItemGroup> itemGroupKey) {
             for (var piece: pieces()) {
                 Registry.register(Registries.ITEM, idOf(piece), piece);
                 SpellPowerEnchanting.registerArmor(piece);
             }
+            ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register(content -> {
+                for(var piece: pieces()) {
+                    content.add(piece);
+                }
+            });
         }
     }
 
@@ -168,7 +176,7 @@ public class Armor {
 
     // MARK: Registration
 
-    public static void register(Map<String, ItemConfig.ArmorSet> configs, List<Entry> entries) {
+    public static void register(Map<String, ItemConfig.ArmorSet> configs, List<Entry> entries, RegistryKey<ItemGroup> itemGroupKey) {
         for(var entry: entries) {
             var config = configs.get(entry.name());
             if (config == null) {
@@ -180,7 +188,7 @@ public class Armor {
                 var slot = ((ArmorItem)piece).getSlotType();
                 ((ConfigurableAttributes)piece).setAttributes(attributesFrom(config, slot));
             }
-            entry.armorSet().register();
+            entry.armorSet().register(itemGroupKey);
         }
     }
 

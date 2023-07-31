@@ -108,34 +108,40 @@ public class HudConfigScreen extends Screen {
         buttons.add(checkBox);
         checkBoxes.put(part, checkBox);
 
+        ButtonWidget but;
+
         x += buttonSize + spacing;
-        addDrawableChild(
-                ButtonWidget.builder(Text.of("←"), button -> { move(part, Direction.LEFT); })
-                        .position(x, y)
-                        .size(buttonSize, buttonSize)
-                        .build()
-        );
+        but = ButtonWidget.builder(Text.of("←"), button -> { move(part, Direction.LEFT); })
+                .position(x, y)
+                .size(buttonSize, buttonSize)
+                .build();
+        addDrawableChild(but);
+        buttons.add(but);
+
         x += buttonSize + spacing;
-        addDrawableChild(
-                ButtonWidget.builder(Text.of("↑"), button -> { move(part, Direction.UP); })
-                        .position(x, y)
-                        .size(buttonSize, buttonSize)
-                        .build()
-        );
+        but = ButtonWidget.builder(Text.of("↑"), button -> { move(part, Direction.UP); })
+                .position(x, y)
+                .size(buttonSize, buttonSize)
+                .build();
+        addDrawableChild(but);
+        buttons.add(but);
+
         x += buttonSize + spacing;
-        addDrawableChild(
-                ButtonWidget.builder(Text.of("↓"), button -> { move(part, Direction.DOWN); })
-                        .position(x, y)
-                        .size(buttonSize, buttonSize)
-                        .build()
-        );
+        but = ButtonWidget.builder(Text.of("↓"), button -> { move(part, Direction.DOWN); })
+                .position(x, y)
+                .size(buttonSize, buttonSize)
+                .build();
+        addDrawableChild(but);
+        buttons.add(but);
+
         x += buttonSize + spacing;
-        addDrawableChild(
-                ButtonWidget.builder(Text.of("→"), button -> { move(part, Direction.RIGHT); })
-                        .position(x, y)
-                        .size(buttonSize, buttonSize)
-                        .build()
-        );
+        but = ButtonWidget.builder(Text.of("→"), button -> { move(part, Direction.RIGHT); })
+                .position(x, y)
+                .size(buttonSize, buttonSize)
+                .build();
+        addDrawableChild(but);
+        buttons.add(but);
+
         return buttons;
     }
 
@@ -143,19 +149,23 @@ public class HudConfigScreen extends Screen {
         var buttons = new ArrayList<ButtonWidget>();
         var buttonSize = 20;
         var spacing = 8;
-        addDrawableChild(
-                ButtonWidget.builder(Text.of("-"), button -> { changeBarWidth(false); })
-                        .position(x, y)
-                        .size(buttonSize, buttonSize)
-                        .build()
-        );
+        ButtonWidget but;
+
+        but = ButtonWidget.builder(Text.of("-"), button -> { changeBarWidth(false); })
+                .position(x, y)
+                .size(buttonSize, buttonSize)
+                .build();
+        addDrawableChild(but);
+        buttons.add(but);
+
         x += buttonSize + spacing;
-        addDrawableChild(
-                ButtonWidget.builder(Text.of("+"), button -> { changeBarWidth(true); })
-                        .position(x, y)
-                        .size(buttonSize, buttonSize)
-                        .build()
-        );
+        but = ButtonWidget.builder(Text.of("+"), button -> { changeBarWidth(true); })
+                .position(x, y)
+                .size(buttonSize, buttonSize)
+                .build();
+        addDrawableChild(but);
+        buttons.add(but);
+
         return buttons;
     }
 
