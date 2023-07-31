@@ -148,6 +148,7 @@ Install dependencies:
 - [Spell Power](https://github.com/ZsoltMolnarrr/SpellPower)
 - [Player Animator](https://github.com/KosmX/minecraftPlayerAnimator)
 - [Cloth Config](https://github.com/shedaniel/cloth-config)
+- [Mixin Extras](https://github.com/LlamaLad7/MixinExtras) (no need to include in your mod, just have it present in the development environment)
   
 (Can be done locally by putting release jars into `/run/fabric/mods`, or can be resolved from maven and like Spell Engine.)
 
