@@ -5,6 +5,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.resource.featuretoggle.FeatureFlags;
@@ -236,7 +237,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                 }
                 case BOOK -> {
                     var item = SpellBooks.sorted().get(rawId - SpellBinding.BOOK_OFFSET);
-                    var itemStack = item.getDefaultStack();
+                    var itemStack = ((Item)item).getDefaultStack(); // Upcast to `Item` to make sure this line is remapped for other devs
                     var container = SpellContainerHelper.containerFromItemStack(itemStack);
                     if (container == null || !container.isValid() || container.pool == null) {
                         return false;
