@@ -1,3 +1,7 @@
+# 0.9.26
+
+- Support Minecraft 1.20.1
+
 # 0.9.25
 
 - Add protection against random crashes caused by UI #19
