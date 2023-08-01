@@ -82,6 +82,8 @@
   "text.autoconfig.spell_engine.option.client.showSpellBindingTooltip.@Tooltip" : "Show Spell Binding Table hint to tooltip of empty staves",
   "text.autoconfig.spell_engine.option.client.showSpellCastErrors" : "Spell cast error messages",
   "text.autoconfig.spell_engine.option.client.showSpellCastErrors.@Tooltip" : "Show error message on HUD about the failure of spell cast attempts",
+  "text.autoconfig.spell_engine.option.client.shoulderSurfingAdaptiveWhileUse" : "Shoulder Surfing bow-like behaviour",
+  "text.autoconfig.spell_engine.option.client.shoulderSurfingAdaptiveWhileUse.@Tooltip" : "Allow Shoulder Surfing Adaptive cursor for spell caster items, only while casting spells",
 
   "gui.spell_engine.spell_binding" : "Spell Binding",
   "gui.spell_engine.spell_binding.title" : "Bind Spells",

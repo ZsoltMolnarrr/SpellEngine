@@ -150,7 +150,7 @@ public class SpellContainerHelper {
 
     public static boolean hasUsableContainer(ItemStack itemStack) {
         var container = containerFromItemStack(itemStack);
-        return container != null && container.isUsable();
+        return container != null && (container.isUsable() || container.is_proxy);
     }
 
     // MARK: NBT Codec

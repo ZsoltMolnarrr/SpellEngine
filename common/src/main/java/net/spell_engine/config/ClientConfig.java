@@ -41,4 +41,6 @@ public class ClientConfig implements ConfigData {
     public boolean showSpellBindingTooltip = true;
     @ConfigEntry.Gui.Tooltip
     public boolean showSpellCastErrors = true;
+    @ConfigEntry.Gui.Tooltip
+    public boolean shoulderSurfingAdaptiveWhileUse = true;
 }

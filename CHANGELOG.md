@@ -1,3 +1,7 @@
+# 0.9.27
+
+- Restore and improve Shoulder Surfing compatibility
+
 # 0.9.26
 
 - Support Minecraft 1.20.1
