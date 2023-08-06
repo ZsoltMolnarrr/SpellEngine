@@ -9,6 +9,7 @@ import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.VillagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.registry.Registries;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
@@ -63,11 +64,10 @@ public class TargetHelper {
         }
         var config = SpellEngineMod.config;
         if (casterTeam == null || targetTeam == null) {
-            if (target instanceof PlayerEntity) {
-                return Relation.coalesce(config.player_relation_to_teamless_players, Relation.NEUTRAL);
-            }
-            if (target instanceof VillagerEntity) {
-                return Relation.coalesce(config.player_relation_to_villagers, Relation.NEUTRAL);
+            var id = Registries.ENTITY_TYPE.getId(target.getType());
+            var mappedRelation = config.player_relations.get(id.toString());
+            if (mappedRelation != null) {
+                return mappedRelation;
             }
             if (target instanceof PassiveEntity) {
                 return Relation.coalesce(config.player_relation_to_passives, Relation.HOSTILE);

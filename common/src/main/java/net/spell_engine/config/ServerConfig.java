@@ -5,6 +5,8 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 import net.spell_engine.utils.TargetHelper;
 
+import java.util.Map;
+
 @Config(name = "server")
 public class ServerConfig implements ConfigData {
     @Comment("Spell caster items in the offhand can be used")
@@ -32,7 +34,7 @@ public class ServerConfig implements ConfigData {
     public String blacklist_spell_casting_regex = "";
 
     @Comment("""
-            Allow actions based on relations:
+            Relations determine which cases the effect of a player casted spell can effect a target.
             +----------------+-----------+---------------+----------+----------+--------+
             |                | FRIENDLY  | SEMI_FRIENDLY | NEUTRAL  | HOSTILE  | MIXED  |
             +----------------+-----------+---------------+----------+----------+--------+
@@ -41,11 +43,24 @@ public class ServerConfig implements ConfigData {
             | DIRECT HEALING | ✅        | ✅            | ✅       | 🚫       | ✅    |
             | AREA HEALING   | ✅        | ✅            | 🚫       | 🚫       | ✅    |
             +----------------+-----------+---------------+----------+----------+--------+
-            Any entities within the same team are considered FRIENDLY for each other.
+            
+            The various relation related configs are being checked in the following order:
+            - `player_relations`
+            - `player_relation_to_passives`
+            - `player_relation_to_hostiles`
+            - `player_relation_to_other`
+            (The first relation to be found for the target will be applied.)
             """)
-    public TargetHelper.Relation player_relation_to_teamless_players = TargetHelper.Relation.SEMI_FRIENDLY;
-    public TargetHelper.Relation player_relation_to_villagers = TargetHelper.Relation.SEMI_FRIENDLY;
+    public Map<String, TargetHelper.Relation> player_relations = Map.of(
+            "minecraft:player", TargetHelper.Relation.SEMI_FRIENDLY,
+            "minecraft:villager", TargetHelper.Relation.SEMI_FRIENDLY,
+            "minecraft:iron_golem", TargetHelper.Relation.NEUTRAL,
+            "guardvillagers:guard", TargetHelper.Relation.SEMI_FRIENDLY
+    );
+    @Comment("Relation to unspecified entities those are instance of PassiveEntity(Yarn)")
     public TargetHelper.Relation player_relation_to_passives = TargetHelper.Relation.HOSTILE;
+    @Comment("Relation to unspecified entities those are instance of HostileEntity(Yarn)")
     public TargetHelper.Relation player_relation_to_hostiles = TargetHelper.Relation.HOSTILE;
+    @Comment("Fallback relation")
     public TargetHelper.Relation player_relation_to_other = TargetHelper.Relation.HOSTILE;
 }
