@@ -1,6 +1,7 @@
 # 0.9.27
 
 - Restore and improve Shoulder Surfing compatibility
+- Spell books can be removed from Spell Binding Table
 
 # 0.9.26
 

@@ -8,9 +8,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-public record SpellPool(List<Identifier> spellIds, List<MagicSchool> schools) {
+public record SpellPool(List<Identifier> spellIds, List<MagicSchool> schools, boolean craftable) {
 
-    public static final SpellPool empty = new SpellPool(List.of(), List.of());
+    public static final SpellPool empty = new SpellPool(List.of(), List.of(), true);
 
     public boolean isEmpty() {
         return spellIds.isEmpty();
@@ -28,6 +28,7 @@ public record SpellPool(List<Identifier> spellIds, List<MagicSchool> schools) {
     public static class DataFormat { public DataFormat() { }
         public List<String> spell_ids = List.of();
         public List<MagicSchool> all_of_schools = List.of();
+        public boolean creatable_as_spellbook = true;
     }
 
     public static SpellPool fromData(DataFormat json, Map<Identifier, Spell> spells) {
@@ -54,7 +55,7 @@ public record SpellPool(List<Identifier> spellIds, List<MagicSchool> schools) {
                 }
             }
         }
-        return new SpellPool(spellsIds.stream().toList(), schools.stream().toList());
+        return new SpellPool(spellsIds.stream().toList(), schools.stream().toList(), json.creatable_as_spellbook);
     }
 
     // MARK: Sync format
@@ -63,17 +64,21 @@ public record SpellPool(List<Identifier> spellIds, List<MagicSchool> schools) {
         var formatted = new SyncFormat();
         formatted.spell_ids = spellIds.stream().map(Identifier::toString).toList();
         formatted.schools = schools.stream().map(MagicSchool::toString).toList();
+        formatted.craftable = this.craftable();
         return formatted;
     }
 
     public static SpellPool fromSync(SyncFormat json) {
         return new SpellPool(
                 json.spell_ids.stream().map(Identifier::new).toList(),
-                json.schools.stream().map(MagicSchool::valueOf).toList());
+                json.schools.stream().map(MagicSchool::valueOf).toList(),
+                json.craftable
+                );
     }
 
     public static class SyncFormat { public SyncFormat() { }
         public List<String> spell_ids = List.of();
         public List<String> schools = List.of();
+        boolean craftable;
     }
 }

@@ -21,6 +21,10 @@ public class SpellBooks {
         return SpellBooks.all
                 .stream()
                 .sorted(Comparator.comparing(spellBookItem -> spellBookItem.poolId.toString()))
+                .filter(spellBookItem -> {
+                    var pool = SpellRegistry.spellPool(spellBookItem.poolId);
+                    return pool != null && pool.craftable();
+                })
                 .collect(Collectors.toList());
     }
 
