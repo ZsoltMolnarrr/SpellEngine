@@ -7,6 +7,11 @@
   "tutorial.spell_hotbar.description": "Натисніть %1$s",
   "tutorial.spell_hotbar.unbound": "Прив’язати кнопку!",
 
+  "spell.tooltip.host.proxy": "Застосовує закляття з екіпірованої книги заклинань",
+  "spell.tooltip.host.additional": "Додаткові закляття:",
+  "spell.tooltip.host.pre_loaded": "Накладає закляття при використані",
+  "spell.tooltip.host.bindable": "Безліч заклинань",
+  
   "spell.tooltip.host.single": "При використані викликає закляття",
   "spell.tooltip.host.multiple": "Утримує заклять",
   "spell.tooltip.host.limit": "({current}/{max})",
