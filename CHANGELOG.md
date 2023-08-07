@@ -1,6 +1,9 @@
-# 0.9.27
+# 0.9.28
 
 - Add configurable entity relations (by arbitrary entity id). Iron Golem and Guard Villagers included by default.
+
+# 0.9.27
+
 - Restore and improve Shoulder Surfing compatibility
 - Spell books can be removed from Spell Binding Table
 
