@@ -391,26 +391,9 @@ public class HudRenderHelper {
             var k = y + MathHelper.floor(16.0F * (1.0F - progress));
             var l = k + MathHelper.ceil(16.0F * progress);
             context.fill(RenderLayer.getGuiOverlay(), x, k, x + 16, l, Integer.MAX_VALUE);
-//            RenderSystem.disableDepthTest();
-//            RenderSystem.disableTexture();
-//            RenderSystem.enableBlend();
-//            RenderSystem.defaultBlendFunc();
-//            Tessellator tessellator2 = Tessellator.getInstance();
-//            BufferBuilder bufferBuilder2 = tessellator2.getBuffer();
-//            renderGuiQuad(bufferBuilder2, x, y + MathHelper.floor(16.0f * (1.0f - progress)), 16, MathHelper.ceil(16.0f * progress), 255, 255, 255, 127);
-//            RenderSystem.enableTexture();
-//            RenderSystem.enableDepthTest();
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
         }
-
-//        private static void renderGuiQuad(BufferBuilder buffer, int x, int y, int width, int height, int red, int green, int blue, int alpha) {
-//            RenderSystem.setShader(GameRenderer::getPositionColorShader);
-//            buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
-//            buffer.vertex(x + 0, y + 0, 0.0).color(red, green, blue, alpha).next();
-//            buffer.vertex(x + 0, y + height, 0.0).color(red, green, blue, alpha).next();
-//            buffer.vertex(x + width, y + height, 0.0).color(red, green, blue, alpha).next();
-//            buffer.vertex(x + width, y + 0, 0.0).color(red, green, blue, alpha).next();
-//            BufferRenderer.drawWithShader(buffer.end());
-//        }
     }
 
     public static class ErrorMessageWidget {

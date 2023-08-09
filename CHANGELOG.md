@@ -1,3 +1,7 @@
+# 0.9.29
+
+- Fix HUD render blend glitch
+
 # 0.9.28
 
 - Add configurable entity relations (by arbitrary entity id). Iron Golem and Guard Villagers included by default.
