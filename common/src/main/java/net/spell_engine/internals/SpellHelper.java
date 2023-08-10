@@ -352,11 +352,13 @@ public class SpellHelper {
         }
 
         var launchPoint = launchPoint(caster);
+        var projectileData = spell.release.target.projectile;
+        var mutablePerks = projectileData.perks.copy();
+
         var projectile = new SpellProjectile(world, caster,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
-                SpellProjectile.Behaviour.FLY, spell, target, context);
+                SpellProjectile.Behaviour.FLY, spell, target, context, mutablePerks);
 
-        var projectileData = spell.release.target.projectile;
         var velocity = projectileData.velocity;
         var divergence = projectileData.divergence;
         if (projectileData.inherit_shooter_velocity) {
@@ -380,11 +382,12 @@ public class SpellHelper {
         var meteor = spell.release.target.meteor;
         var height = meteor.launch_height;
         var launchPoint = target.getPos().add(0, height, 0);
+        var projectileData = spell.release.target.projectile;
+        var mutablePerks = projectileData.perks.copy();
+
         var projectile = new SpellProjectile(world, caster,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
-                SpellProjectile.Behaviour.FALL, spell, target, context);
-
-        var projectileData = spell.release.target.projectile;
+                SpellProjectile.Behaviour.FALL, spell, target, context, mutablePerks);
 
         projectile.setVelocity(new Vec3d(0, - projectileData.velocity, 0));
         projectile.setYaw(0);

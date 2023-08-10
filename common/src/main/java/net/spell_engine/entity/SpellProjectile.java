@@ -30,10 +30,16 @@ import net.spell_engine.utils.RecordsWithGson;
 import net.spell_engine.utils.TargetHelper;
 import net.spell_engine.utils.VectorHelper;
 
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Predicate;
+
 
 public class SpellProjectile extends ProjectileEntity implements FlyingSpellEntity {
     public float range = 128;
     private Spell spell;
+    private Spell.ProjectileData.Perks perks;
     private SpellHelper.ImpactContext context;
     private Entity followedTarget;
 
@@ -53,10 +59,11 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
 
     public SpellProjectile(World world, LivingEntity caster, double x, double y, double z,
-                           Behaviour behaviour, Spell spell, Entity target, SpellHelper.ImpactContext context) {
+                           Behaviour behaviour, Spell spell, Entity target, SpellHelper.ImpactContext context, Spell.ProjectileData.Perks mutablePerks) {
         this(world, caster);
         this.setPosition(x, y, z);
         this.spell = spell;
+        this.perks = mutablePerks;
         var projectileData = projectileData();
         var gson = new Gson();
         this.context = context;
@@ -88,7 +95,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         }
     }
 
-    private void setFollowedTarget(Entity target) {
+    public void setFollowedTarget(Entity target) {
         followedTarget = target;
         var id = 0;
         if (!getWorld().isClient) {
@@ -269,7 +276,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     protected void onEntityHit(EntityHitResult entityHitResult) {
         if (!getWorld().isClient) {
             var target = entityHitResult.getEntity();
-            if (target != null && this.getOwner() != null && this.getOwner() instanceof LivingEntity caster) {
+            if (target != null
+                    && !ricochetHistory.contains(target.getId())
+                    && this.getOwner() != null
+                    && this.getOwner() instanceof LivingEntity caster) {
                 setFollowedTarget(null);
                 var context = this.context;
                 if (context == null) {
@@ -277,11 +287,66 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 }
                 var performed = SpellHelper.performImpacts(getWorld(), caster, target, spell, context.position(new Vec3d(prevX, prevY, prevZ)));
                 if (performed) {
+                    if (ricochetFrom(target, caster)) {
+                        return;
+                    }
                     this.kill();
                 }
             }
         }
     }
+
+    // MARK: Perks
+    public static final float ricochetSearchRange = 5F;
+    protected Set<Integer> ricochetHistory = new HashSet<>();
+
+    /**
+     * Returns `true` if a new target is found to ricochet to
+     */
+    protected boolean ricochetFrom(Entity target, LivingEntity caster) {
+        if (perks.ricochet <= 0) {
+            return false;
+        }
+        // Save
+        ricochetHistory.add(target.getId());
+
+        // Find next target
+        var box = this.getBoundingBox().expand(
+                ricochetSearchRange,
+                ricochetSearchRange,
+                ricochetSearchRange);
+        var intents = SpellHelper.intents(spell);
+        Predicate<Entity> intentMatches = (entity) -> {
+            boolean intentAllows = false;
+            for (var intent: intents) {
+                intentAllows = intentAllows || TargetHelper.actionAllowed(TargetHelper.TargetingMode.DIRECT, intent, caster, entity);
+            }
+            return intentAllows;
+        };
+        var otherTargets = this.getWorld().getOtherEntities(this, box, (entity) -> {
+            return entity.isAttackable() && !ricochetHistory.contains(entity.getId()) && intentMatches.test(entity);
+        });
+        if (otherTargets.isEmpty()) {
+            this.setFollowedTarget(null);
+            return false;
+        }
+
+        otherTargets.sort(Comparator.comparingDouble(o -> o.squaredDistanceTo(target)));
+
+        // Set trajectory
+        var newTarget = otherTargets.get(0);
+        this.setFollowedTarget(newTarget);
+
+        var distanceVector = (newTarget.getPos().add(0, newTarget.getHeight() / 2F, 0))
+                .subtract(this.getPos().add(0, this.getHeight() / 2F, 0));
+        var newVelocity = distanceVector.normalize().multiply(this.getVelocity().length());
+        this.setVelocity(newVelocity);
+        this.velocityDirty = true;
+
+        this.perks.ricochet -= 1;
+        return true;
+    }
+
 
     // MARK: Helper
 
@@ -314,6 +379,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     // MARK: NBT (Persistence)
 
     private static String NBT_SPELL_DATA = "Spell.Data";
+    private static String NBT_PERKS = "Perks";
     private static String NBT_IMPACT_CONTEXT = "Impact.Context";
 
     @Override
@@ -327,6 +393,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         var gson = new Gson();
         nbt.putString(NBT_SPELL_DATA, gson.toJson(spell));
         nbt.putString(NBT_IMPACT_CONTEXT, gson.toJson(context));
+        nbt.putString(NBT_PERKS, gson.toJson(perks));
     }
 
     public void readCustomDataFromNbt(NbtCompound nbt) {
@@ -339,6 +406,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                         .registerTypeAdapterFactory(new RecordsWithGson.RecordTypeAdapterFactory())
                         .create();
                 this.context = recordReader.fromJson(nbt.getString(NBT_IMPACT_CONTEXT), SpellHelper.ImpactContext.class);
+                this.perks = gson.fromJson(nbt.getString(NBT_PERKS), Spell.ProjectileData.Perks.class);
             } catch (Exception e) {
                 System.err.println("SpellProjectile - Failed to read spell data from NBT");
             }

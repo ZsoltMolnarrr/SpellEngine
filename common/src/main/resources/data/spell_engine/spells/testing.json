@@ -1,85 +1,99 @@
 {
-  "school": "HEALING",
-  "range": 16,
+  "school": "FROST",
+  "range": 64,
   "learn": {
-    "tier": 2
+    "tier": 1
   },
   "cast": {
-    "duration": 1.5,
-    "animation": "spell_engine:two_handed_channeling",
+    "duration": 1.2,
+    "animation": "spell_engine:one_handed_projectile_charge",
     "sound": {
-      "id": "spell_engine:generic_arcane_casting",
+      "id": "spell_engine:generic_frost_casting",
       "randomness": 0
     },
     "particles": [
       {
-        "particle_id": "spell_engine:holy_ascend",
-        "shape": "PIPE",
-        "origin": "FEET",
-        "count": 1.0,
-        "min_speed": 0.05,
-        "max_speed": 0.1
+        "particle_id": "spell_engine:snowflake",
+        "shape": "PILLAR",
+        "origin": "CENTER",
+        "count": 0.5,
+        "min_speed": 0.1,
+        "max_speed": 0.2
       }
     ]
   },
   "release": {
     "target": {
-      "type": "CURSOR",
-      "cursor": {
-        "use_caster_as_fallback": true
+      "type": "PROJECTILE",
+      "projectile": {
+        "velocity": 1.0,
+        "divergence": 0.0,
+        "inherit_shooter_velocity": false,
+        "homing_angle": 2.0,
+        "perks": {
+          "ricochet": 2
+        },
+        "client_data": {
+          "travel_particles": [
+            {
+              "particle_id": "spell_engine:snowflake",
+              "shape": "CIRCLE",
+              "rotation": "LOOK",
+              "origin": "CENTER",
+              "count": 3.0,
+              "min_speed": 0.0,
+              "max_speed": 0.1
+            }
+          ],
+          "model_id": "wizards:projectile/frostbolt_projectile",
+          "render": "DEEP",
+          "scale": 0.75
+        }
       }
     },
     "animation": "spell_engine:one_handed_projectile_release",
     "sound": {
-      "id": "wizards:arcane_missile_release"
+      "id": "spell_engine:generic_frost_release"
     }
   },
   "impact": [
     {
       "action": {
-        "type": "HEAL",
-        "heal": {
-          "spell_power_coefficient": 0.5
+        "type": "DAMAGE",
+        "damage": {
+          "spell_power_coefficient": 0.8
         }
       },
-      "particles": [
-        {
-          "particle_id": "spell_engine:healing_ascend",
-          "shape": "SPHERE",
-          "origin": "CENTER",
-          "count": 30,
-          "min_speed": 0.2,
-          "max_speed": 0.7
-        }
-      ],
       "sound": {
-        "id": "wizards:arcane_blast_impact"
+        "id": "spell_engine:generic_frost_impact"
       }
     },
     {
       "action": {
-        "type": "DAMAGE",
-        "damage": {
-          "knockback": 0.5,
-          "spell_power_coefficient": 0.9
+        "type": "STATUS_EFFECT",
+        "status_effect": {
+          "effect_id": "slowness",
+          "duration": 5,
+          "amplifier": 0,
+          "apply_limit": {
+            "health_base": 100,
+            "spell_power_multiplier": 2
+          }
         }
       },
       "particles": [
         {
-          "particle_id": "spell_engine:holy_hit",
+          "particle_id": "spell_engine:frost_hit",
           "shape": "SPHERE",
           "origin": "CENTER",
-          "count": 30,
+          "count": 50.0,
           "min_speed": 0.2,
           "max_speed": 0.7
         }
-      ],
-      "sound": {
-        "id": "wizards:arcane_blast_impact"
-      }
+      ]
     }
   ],
   "cost": {
-    "item_id": "runes:arcane_stone"
+    "item_id": "runes:frost_stone"
   }
 }

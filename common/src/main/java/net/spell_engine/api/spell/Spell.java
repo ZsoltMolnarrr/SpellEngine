@@ -138,6 +138,26 @@ public class Spell {
         public float divergence = 0;
         public boolean inherit_shooter_velocity = false;
         public float homing_angle = 1F;
+
+        public Perks perks = new Perks();
+        public static class Perks { Perks() { }
+            public int ricochet = 0;
+            // Watch out to add new fields to `copy` function too!
+
+            public Perks copy() {
+                Perks copy = new Perks();
+                copy.ricochet = this.ricochet;
+                return copy;
+            }
+
+            @Override
+            public String toString() {
+                return "Perks{" +
+                        "ricochet=" + ricochet +
+                        '}';
+            }
+        }
+
         public Client client_data;
         public static class Client { public Client() { }
             public ParticleBatch[] travel_particles;
