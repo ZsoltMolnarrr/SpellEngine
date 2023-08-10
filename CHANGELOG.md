@@ -1,5 +1,6 @@
 # 0.9.29
 
+- Add italian translation by Zano1999 #21
 - Fix HUD render blend glitch
 
 # 0.9.28
