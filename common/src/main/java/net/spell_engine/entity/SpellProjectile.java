@@ -277,7 +277,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         if (!getWorld().isClient) {
             var target = entityHitResult.getEntity();
             if (target != null
-                    && !ricochetHistory.contains(target.getId())
+                    && !impactHistory.contains(target.getId())
                     && this.getOwner() != null
                     && this.getOwner() instanceof LivingEntity caster) {
                 setFollowedTarget(null);
@@ -290,6 +290,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                     if (ricochetFrom(target, caster)) {
                         return;
                     }
+                    if (pierced(target)) {
+                        return;
+                    }
                     this.kill();
                 }
             }
@@ -298,7 +301,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     // MARK: Perks
     public static final float ricochetSearchRange = 5F;
-    protected Set<Integer> ricochetHistory = new HashSet<>();
+    protected Set<Integer> impactHistory = new HashSet<>();
 
     /**
      * Returns `true` if a new target is found to ricochet to
@@ -308,7 +311,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             return false;
         }
         // Save
-        ricochetHistory.add(target.getId());
+        impactHistory.add(target.getId());
 
         // Find next target
         var box = this.getBoundingBox().expand(
@@ -324,7 +327,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             return intentAllows;
         };
         var otherTargets = this.getWorld().getOtherEntities(this, box, (entity) -> {
-            return entity.isAttackable() && !ricochetHistory.contains(entity.getId()) && intentMatches.test(entity);
+            return entity.isAttackable() && !impactHistory.contains(entity.getId()) && intentMatches.test(entity);
         });
         if (otherTargets.isEmpty()) {
             this.setFollowedTarget(null);
@@ -347,6 +350,18 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         return true;
     }
 
+    /**
+     * Returns `true` if can continue to travel
+     */
+    private boolean pierced(Entity target) {
+        if (perks.pierce <= 0) {
+            return false;
+        }
+        // Save
+        impactHistory.add(target.getId());
+        this.perks.pierce -= 1;
+        return true;
+    }
 
     // MARK: Helper
 
