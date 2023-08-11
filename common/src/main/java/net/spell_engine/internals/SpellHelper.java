@@ -35,7 +35,7 @@ import java.util.*;
 import java.util.function.Supplier;
 
 public class SpellHelper {
-    public static int maximumUseTicks = 72000; // = 1 hour
+    public static int maximumUseTicks = 72000; // 72000 ticks = 1 hour
 
     public static SpellCast.Attempt attemptCasting(PlayerEntity player, ItemStack itemStack, Identifier spellId) {
         return attemptCasting(player, itemStack, spellId, true);
