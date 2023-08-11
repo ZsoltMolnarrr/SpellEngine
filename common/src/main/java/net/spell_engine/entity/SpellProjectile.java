@@ -19,6 +19,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
@@ -141,7 +142,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         return Behaviour.valueOf(string);
     }
 
+    private boolean skipTravel = false;
+
     public void tick() {
+        skipTravel = false;
         Entity entity = this.getOwner();
         var behaviour = behaviour();
         if (getWorld().isClient) {
@@ -209,35 +213,37 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 }
             }
 
-            this.followTarget();
             this.checkBlockCollision();
+
             // Travel
-            Vec3d velocity = this.getVelocity();
-            double d = this.getX() + velocity.x;
-            double e = this.getY() + velocity.y;
-            double f = this.getZ() + velocity.z;
-            ProjectileUtil.setRotationFromVelocity(this, 0.2F);
+            if (!skipTravel) {
+                this.followTarget();
+                Vec3d velocity = this.getVelocity();
+                double d = this.getX() + velocity.x;
+                double e = this.getY() + velocity.y;
+                double f = this.getZ() + velocity.z;
+                ProjectileUtil.setRotationFromVelocity(this, 0.2F);
 
-            float g = this.getDrag();
-            if (this.isTouchingWater()) {
-                for(int i = 0; i < 4; ++i) {
-                    float h = 0.25F;
-                    this.getWorld().addParticle(ParticleTypes.BUBBLE, d - velocity.x * 0.25, e - velocity.y * 0.25, f - velocity.z * 0.25, velocity.x, velocity.y, velocity.z);
+                float g = this.getDrag();
+                if (this.isTouchingWater()) {
+                    for(int i = 0; i < 4; ++i) {
+                        float h = 0.25F;
+                        this.getWorld().addParticle(ParticleTypes.BUBBLE, d - velocity.x * 0.25, e - velocity.y * 0.25, f - velocity.z * 0.25, velocity.x, velocity.y, velocity.z);
+                    }
+                    g = 0.8F;
                 }
-                g = 0.8F;
-            }
-            // this.setVelocity(vec3d.add(this.powerX, this.powerY, this.powerZ).multiply((double)g));
 
-            if (getWorld().isClient) {
-                if (projectileData() != null) {
-                    for (var travel_particles : projectileData().client_data.travel_particles) {
-                        ParticleHelper.play(getWorld(), this, getYaw(), getPitch(), travel_particles);
+                if (getWorld().isClient) {
+                    if (projectileData() != null) {
+                        for (var travel_particles : projectileData().client_data.travel_particles) {
+                            ParticleHelper.play(getWorld(), this, getYaw(), getPitch(), travel_particles);
+                        }
                     }
                 }
-            }
 
-            this.setPosition(d, e, f);
-            this.distanceTraveled += velocity.length();
+                this.setPosition(d, e, f);
+                this.distanceTraveled += velocity.length();
+            }
         } else {
             this.discard();
         }
@@ -348,6 +354,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         this.velocityDirty = true;
 
         this.perks.ricochet -= 1;
+        if (perks.bounce_ricochet_sync) {
+            this.perks.bounce -= 1;
+        }
         return true;
     }
 
@@ -363,6 +372,64 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         impactHistory.add(target.getId());
         this.perks.pierce -= 1;
         return true;
+    }
+
+    private boolean bounceFrom(BlockHitResult blockHitResult) {
+        if (perks.bounce <= 0) {
+            return false;
+        }
+
+        var previousPosition = getPos();
+        var previousDirection = getVelocity();
+        var impactPosition = blockHitResult.getPos();
+        var impactSide = blockHitResult.getSide();
+        var speed = getVelocity().length();
+
+        Vec3d surfaceNormal = getSurfaceNormal(impactSide);
+        Vec3d newDirection = calculateBounceVector(previousDirection, surfaceNormal);
+
+        // Calculate the remaining distance the projectile should travel after bouncing
+        double remainingDistance = previousDirection.length() - (impactPosition.subtract(previousPosition)).length();
+
+        // Calculate the final position after the remaining distance
+        Vec3d finalPosition = impactPosition.add(newDirection.normalize().multiply(remainingDistance));
+
+        // Set the new position and velocity
+        this.setPos(finalPosition.getX(), finalPosition.getY(), finalPosition.getZ());
+        this.setVelocity(newDirection.multiply(speed));
+        ProjectileUtil.setRotationFromVelocity(this, 0.2F);
+
+        this.perks.bounce -= 1;
+        if (perks.bounce_ricochet_sync) {
+            this.perks.ricochet -= 1;
+        }
+        this.velocityDirty = true;
+        this.skipTravel = true;
+        return true;
+    }
+
+    public Vec3d calculateBounceVector(Vec3d previousDirection, Vec3d normal) {
+        // Calculate the reflection of the incident vector with respect to the surface normal
+        return previousDirection.subtract(normal.multiply(2.0 * previousDirection.dotProduct(normal)));
+    }
+
+    public Vec3d getSurfaceNormal(Direction blockSide) {
+        switch (blockSide) {
+            case DOWN:
+                return new Vec3d(0, -1, 0);
+            case UP:
+                return new Vec3d(0, 1, 0);
+            case NORTH:
+                return new Vec3d(0, 0, -1);
+            case SOUTH:
+                return new Vec3d(0, 0, 1);
+            case WEST:
+                return new Vec3d(-1, 0, 0);
+            case EAST:
+                return new Vec3d(1, 0, 0);
+            default:
+                return new Vec3d(0, 0, 0);
+        }
     }
 
     // MARK: Helper
@@ -402,6 +469,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     @Override
     protected void onBlockHit(BlockHitResult blockHitResult) {
         super.onBlockHit(blockHitResult);
+        if (bounceFrom(blockHitResult)) {
+            return;
+        }
         this.kill();
     }
 

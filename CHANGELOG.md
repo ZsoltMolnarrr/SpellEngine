@@ -1,6 +1,6 @@
 # 0.9.29
 
-- Add universal Spell Projectile perks: ricochet, pierce
+- Add universal Spell Projectile perks: ricochet, bounce, pierce
 - Add italian translation by Zano1999 #21
 - Fix right click to use abilities for blacklisted and datapack disabled items
 - Fix HUD render blend glitch

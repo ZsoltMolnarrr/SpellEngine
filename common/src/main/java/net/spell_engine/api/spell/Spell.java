@@ -142,22 +142,19 @@ public class Spell {
         public Perks perks = new Perks();
         public static class Perks { Perks() { }
             public int ricochet = 0;
+            public int bounce = 0;
+            public boolean bounce_ricochet_sync = true;
             public int pierce = 0;
+
             // Watch out to add new fields to `copy` function too!
 
             public Perks copy() {
                 Perks copy = new Perks();
                 copy.ricochet = this.ricochet;
+                copy.bounce = this.bounce;
+                copy.bounce_ricochet_sync = this.bounce_ricochet_sync;
                 copy.pierce = this.pierce;
                 return copy;
-            }
-
-            @Override
-            public String toString() {
-                return "Perks{" +
-                        "ricochet=" + ricochet +
-                        ", pierce=" + pierce +
-                        '}';
             }
         }
 
