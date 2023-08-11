@@ -346,7 +346,7 @@ public class SpellHelper {
         return caster.getPos().add(0, launchHeight(caster), 0).add(look);
     }
 
-    private static void shootProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
+    public static void shootProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
         if (world.isClient) {
             return;
         }
@@ -374,7 +374,7 @@ public class SpellHelper {
         world.spawnEntity(projectile);
     }
 
-    private static void fallProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
+    public static void fallProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
         if (world.isClient) {
             return;
         }
