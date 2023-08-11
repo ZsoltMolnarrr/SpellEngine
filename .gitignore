@@ -120,3 +120,4 @@ forge/run/
 !gradle-wrapper.jar
 
 *.blend1
+/common/src/main/resources/data/spell_engine/spells/
