@@ -211,6 +211,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
             this.followTarget();
             this.checkBlockCollision();
+            // Travel
             Vec3d velocity = this.getVelocity();
             double d = this.getX() + velocity.x;
             double e = this.getY() + velocity.y;
@@ -358,6 +359,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             return false;
         }
         // Save
+        setFollowedTarget(null);
         impactHistory.add(target.getId());
         this.perks.pierce -= 1;
         return true;
