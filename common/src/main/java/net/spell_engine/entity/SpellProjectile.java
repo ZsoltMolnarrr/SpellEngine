@@ -30,14 +30,18 @@ import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.RecordsWithGson;
 import net.spell_engine.utils.TargetHelper;
 import net.spell_engine.utils.VectorHelper;
+import oshi.util.platform.mac.SysctlUtil;
 
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Predicate;
 
 
 public class SpellProjectile extends ProjectileEntity implements FlyingSpellEntity {
+    private static Random random = new Random();
+
     public float range = 128;
     private Spell spell;
     private Spell.ProjectileData.Perks perks;
@@ -71,6 +75,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         this.getDataTracker().set(CLIENT_DATA, gson.toJson(projectileData));
         this.getDataTracker().set(BEHAVIOUR, behaviour.toString());
         setFollowedTarget(target);
+    }
+
+    public Spell.ProjectileData.Perks mutablePerks() {
+        return perks;
     }
 
     private Spell.ProjectileData projectileData() {
@@ -215,6 +223,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
             this.checkBlockCollision();
 
+            System.out.println("Spell projectile speed: " + getVelocity().length() + " isClient: " + getWorld().isClient());
+
             // Travel
             if (!skipTravel) {
                 this.followTarget();
@@ -259,6 +269,20 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         }
     }
 
+    // DEBUG ONLY - DELETE LATER
+    @Override
+    public void setVelocity(Vec3d velocity) {
+        super.setVelocity(velocity);
+        if (velocity.length() == 0) {
+            System.out.println("Velocity set to 0");
+            // Print call stack
+            var stackTrace = Thread.currentThread().getStackTrace();
+            for (var stackTraceElement : stackTrace) {
+                System.out.println(stackTraceElement);
+            }
+        }
+    }
+
     private void followTarget() {
         var target = getFollowedTarget();
         if (target != null && projectileData().homing_angle > 0) {
@@ -294,6 +318,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 }
                 var performed = SpellHelper.performImpacts(getWorld(), caster, target, spell, context.position(new Vec3d(prevX, prevY, prevZ)));
                 if (performed) {
+                    chainReactionFrom(target);
                     if (ricochetFrom(target, caster)) {
                         return;
                     }
@@ -307,24 +332,22 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
 
     // MARK: Perks
-    public static final float ricochetSearchRange = 5F;
     protected Set<Integer> impactHistory = new HashSet<>();
 
     /**
      * Returns `true` if a new target is found to ricochet to
      */
     protected boolean ricochetFrom(Entity target, LivingEntity caster) {
-        if (perks.ricochet <= 0) {
+        if (this.perks.ricochet <= 0) {
             return false;
         }
-        // Save
         impactHistory.add(target.getId());
 
         // Find next target
         var box = this.getBoundingBox().expand(
-                ricochetSearchRange,
-                ricochetSearchRange,
-                ricochetSearchRange);
+                this.perks.ricochet_range,
+                this.perks.ricochet_range,
+                this.perks.ricochet_range);
         var intents = SpellHelper.intents(spell);
         Predicate<Entity> intentMatches = (entity) -> {
             boolean intentAllows = false;
@@ -334,7 +357,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             return intentAllows;
         };
         var otherTargets = this.getWorld().getOtherEntities(this, box, (entity) -> {
-            return entity.isAttackable() && !impactHistory.contains(entity.getId()) && intentMatches.test(entity);
+            return entity.isAttackable()
+                    && !impactHistory.contains(entity.getId())
+                    && intentMatches.test(entity)
+                    && !entity.getPos().equals(target.getPos());
         });
         if (otherTargets.isEmpty()) {
             this.setFollowedTarget(null);
@@ -354,28 +380,28 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         this.velocityDirty = true;
 
         this.perks.ricochet -= 1;
-        if (perks.bounce_ricochet_sync) {
+        if (this.perks.bounce_ricochet_sync) {
             this.perks.bounce -= 1;
         }
         return true;
     }
 
     /**
-     * Returns `true` if can continue to travel
+     * Returns `true` if projectile can continue to travel
      */
     private boolean pierced(Entity target) {
-        if (perks.pierce <= 0) {
+        if (this.perks.pierce <= 0) {
             return false;
         }
         // Save
-        setFollowedTarget(null);
         impactHistory.add(target.getId());
+        setFollowedTarget(null);
         this.perks.pierce -= 1;
         return true;
     }
 
     private boolean bounceFrom(BlockHitResult blockHitResult) {
-        if (perks.bounce <= 0) {
+        if (this.perks.bounce <= 0) {
             return false;
         }
 
@@ -400,7 +426,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         ProjectileUtil.setRotationFromVelocity(this, 0.2F);
 
         this.perks.bounce -= 1;
-        if (perks.bounce_ricochet_sync) {
+        if (this.perks.bounce_ricochet_sync) {
             this.perks.ricochet -= 1;
         }
         this.velocityDirty = true;
@@ -414,21 +440,45 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
 
     public Vec3d getSurfaceNormal(Direction blockSide) {
-        switch (blockSide) {
-            case DOWN:
-                return new Vec3d(0, -1, 0);
-            case UP:
-                return new Vec3d(0, 1, 0);
-            case NORTH:
-                return new Vec3d(0, 0, -1);
-            case SOUTH:
-                return new Vec3d(0, 0, 1);
-            case WEST:
-                return new Vec3d(-1, 0, 0);
-            case EAST:
-                return new Vec3d(1, 0, 0);
-            default:
-                return new Vec3d(0, 0, 0);
+        return switch (blockSide) {
+            case DOWN -> new Vec3d(0, -1, 0);
+            case UP -> new Vec3d(0, 1, 0);
+            case NORTH -> new Vec3d(0, 0, -1);
+            case SOUTH -> new Vec3d(0, 0, 1);
+            case WEST -> new Vec3d(-1, 0, 0);
+            case EAST -> new Vec3d(1, 0, 0);
+        };
+    }
+    
+    private void chainReactionFrom(Entity target) {
+        if (this.perks.chain_reaction_size <= 0 || this.perks.chain_reaction_triggers <= 0 || impactHistory.contains(target)) {
+            return;
+        }
+        if (getWorld().isClient) {
+            return;
+        }
+
+        var position = this.getPos();
+        var spawnCount = this.perks.chain_reaction_size;
+        var launchVector = new Vec3d(1, 0, 0).multiply(this.getVelocity().length());
+        var launchAngle = 360 / spawnCount;
+        var launchAngleOffset = random.nextFloat() * launchAngle;
+
+        this.impactHistory.add(target.getId());
+        this.perks.chain_reaction_triggers -= 1;
+        this.perks.chain_reaction_size += this.perks.chain_reaction_increment;
+
+        for (int i = 0; i < spawnCount; i++) {
+            var projectile = new SpellProjectile(getWorld(), (LivingEntity)this.getOwner(),
+                    position.getX(), position.getY(), position.getZ(),
+                    this.behaviour(), spell, null, context, this.perks.copy());
+
+            var angle = launchAngle * i + launchAngleOffset;
+            projectile.setVelocity(launchVector.rotateY((float) Math.toRadians(angle)));
+            projectile.range = spell.range;
+            ProjectileUtil.setRotationFromVelocity(projectile, 0.2F);
+            projectile.impactHistory = new HashSet<>(this.impactHistory);
+            getWorld().spawnEntity(projectile);
         }
     }
 
@@ -480,7 +530,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         var gson = new Gson();
         nbt.putString(NBT_SPELL_DATA, gson.toJson(spell));
         nbt.putString(NBT_IMPACT_CONTEXT, gson.toJson(context));
-        nbt.putString(NBT_PERKS, gson.toJson(perks));
+        nbt.putString(NBT_PERKS, gson.toJson(this.perks));
     }
 
     public void readCustomDataFromNbt(NbtCompound nbt) {

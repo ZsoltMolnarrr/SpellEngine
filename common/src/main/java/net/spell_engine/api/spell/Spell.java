@@ -141,19 +141,33 @@ public class Spell {
 
         public Perks perks = new Perks();
         public static class Perks { Perks() { }
+            /// How many entities projectile can ricochet to
             public int ricochet = 0;
+            /// How far ricochet can look for a target
+            public float ricochet_range = 5;
+            /// How many times projectile can bounce off a wall
             public int bounce = 0;
+            /// Whether ricochet and bounce should be decremented together
             public boolean bounce_ricochet_sync = true;
+            /// How many entities projectile can go through
             public int pierce = 0;
-
-            // Watch out to add new fields to `copy` function too!
+            /// How many additional projectiles are spawned on impact
+            public int chain_reaction_size = 0;
+            /// How many generation of chain reaction projectiles are spawned
+            public int chain_reaction_triggers = 1;
+            /// How many more projectiles are spawned from chain reaction of a spawned projectile
+            public int chain_reaction_increment = -1;
 
             public Perks copy() {
                 Perks copy = new Perks();
                 copy.ricochet = this.ricochet;
+                copy.ricochet_range = this.ricochet_range;
                 copy.bounce = this.bounce;
                 copy.bounce_ricochet_sync = this.bounce_ricochet_sync;
                 copy.pierce = this.pierce;
+                copy.chain_reaction_size = this.chain_reaction_size;
+                copy.chain_reaction_triggers = this.chain_reaction_triggers;
+                copy.chain_reaction_increment = this.chain_reaction_increment;
                 return copy;
             }
         }
