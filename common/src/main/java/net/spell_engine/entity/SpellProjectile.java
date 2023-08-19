@@ -223,8 +223,6 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
             this.checkBlockCollision();
 
-            System.out.println("Spell projectile speed: " + getVelocity().length() + " isClient: " + getWorld().isClient());
-
             // Travel
             if (!skipTravel) {
                 this.followTarget();
@@ -266,20 +264,6 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         }
         if (owner instanceof LivingEntity livingEntity) {
             SpellHelper.fallImpact(livingEntity, this, this.spell, this.getPos(), context);
-        }
-    }
-
-    // DEBUG ONLY - DELETE LATER
-    @Override
-    public void setVelocity(Vec3d velocity) {
-        super.setVelocity(velocity);
-        if (velocity.length() == 0) {
-            System.out.println("Velocity set to 0");
-            // Print call stack
-            var stackTrace = Thread.currentThread().getStackTrace();
-            for (var stackTraceElement : stackTrace) {
-                System.out.println(stackTraceElement);
-            }
         }
     }
 
@@ -358,6 +342,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         };
         var otherTargets = this.getWorld().getOtherEntities(this, box, (entity) -> {
             return entity.isAttackable()
+                    && entity instanceof LivingEntity // Avoid targeting unliving entities like other projectiles
                     && !impactHistory.contains(entity.getId())
                     && intentMatches.test(entity)
                     && !entity.getPos().equals(target.getPos());
