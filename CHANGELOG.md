@@ -4,6 +4,7 @@
 - Add italian translation by Zano1999 #21
 - Fix right click to use abilities for blacklisted and datapack disabled items
 - Fix HUD render blend glitch
+- Update Fabric API model loading function use
 
 # 0.9.28
 
