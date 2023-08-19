@@ -1,6 +1,5 @@
 package net.spell_engine.api.render;
 
-import net.fabricmc.fabric.api.client.model.BakedModelManagerHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
@@ -22,7 +21,7 @@ public class CustomModels {
 
     public static void render(RenderLayer renderLayer, ItemRenderer itemRenderer, Identifier modelId,
                               MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int seed) {
-        var model = BakedModelManagerHelper.getModel(MinecraftClient.getInstance().getBakedModelManager(), modelId);
+        var model = MinecraftClient.getInstance().getBakedModelManager().getModel(modelId);
         if (model == null) {
             var stack = Registries.ITEM.get(modelId).getDefaultStack();
             if (!stack.isEmpty()) {
