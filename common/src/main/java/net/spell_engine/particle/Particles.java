@@ -50,10 +50,10 @@ public class Particles {
     public static final ParticleEntry healing_ascend = particle("healing_ascend").customTexture();
     public static final ParticleEntry holy_ascend = particle("holy_ascend").customTexture();
     public static final ParticleEntry holy_hit = particle("holy_hit").customTexture();
-
     public static final ParticleEntry holy_spark = particle("holy_spark");
     public static final ParticleEntry holy_spark_mini = particle("holy_spark_mini");
     public static final ParticleEntry holy_spell = particle("holy_spell");
+    public static final ParticleEntry fire_explosion = particle("fire_explosion").customTexture();
     public static final ParticleEntry flame = particle("flame");
     public static final ParticleEntry frost_hit = particle("frost_hit").customTexture();
     public static final ParticleEntry frost_shard = particle("frost_shard").customTexture();
