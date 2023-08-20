@@ -238,7 +238,6 @@ public class TargetHelper {
             return !target.isSpectator()
                     && target.canHit()
                     && (predicate == null || predicate.test(target))
-                    // && seeRange(centerEntity, target)
                     && targetCenter.squaredDistanceTo(origin) <= squaredDistance
                     && ((angle <= 0)
                         || (VectorHelper.angleBetween(look, targetCenter.subtract(origin)) <= angle)
