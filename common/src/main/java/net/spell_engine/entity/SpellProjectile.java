@@ -263,7 +263,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             return;
         }
         if (owner instanceof LivingEntity livingEntity) {
-            SpellHelper.fallImpact(livingEntity, this, this.spell, this.getPos(), context);
+            SpellHelper.fallImpact(livingEntity, this, this.spell, context.position(this.getPos()));
         }
     }
 
@@ -300,7 +300,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 if (context == null) {
                     context = new SpellHelper.ImpactContext();
                 }
-                var performed = SpellHelper.performImpacts(getWorld(), caster, target, spell, context.position(new Vec3d(prevX, prevY, prevZ)));
+                var performed = SpellHelper.projectileImpact(caster, this, target, spell, context.position(entityHitResult.getPos()));
                 if (performed) {
                     chainReactionFrom(target);
                     if (ricochetFrom(target, caster)) {

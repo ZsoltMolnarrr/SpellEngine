@@ -107,15 +107,15 @@ public class SpellTooltip {
 
         var description = I18n.translate(spellKeyPrefix(spellId) + ".description");
         var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);
-        switch (spell.release.target.type) {
-            case METEOR -> {
-                var meteor = spell.release.target.meteor;
-                if (meteor != null) {
-                    description = description.replace(impactRangeToken, formattedNumber(meteor.impact_range));
-                }
+
+        var projectile = spell.release.target.projectile;
+        if (projectile != null) {
+            var area_impact = projectile.area_impact;
+            if (area_impact != null) {
+                description = description.replace(impactRangeToken, formattedNumber(area_impact.radius));
             }
-            default -> { }
         }
+
         for (var impact: spell.impact) {
             switch (impact.action.type) {
                 case DAMAGE -> {

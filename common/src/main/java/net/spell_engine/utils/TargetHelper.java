@@ -232,7 +232,7 @@ public class TargetHelper {
         var squaredDistance = range * range;
         var look = centerEntity.getRotationVector();
         var angle = area.angle_degrees / 2F;
-        var entities = centerEntity.getWorld().getOtherEntities(centerEntity, box, (target) -> {
+        return centerEntity.getWorld().getOtherEntities(centerEntity, box, (target) -> {
             var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
             var distanceVector = VectorHelper.distanceVector(origin, target.getBoundingBox());
             return !target.isSpectator()
@@ -248,7 +248,6 @@ public class TargetHelper {
                         )
                     ;
         });
-        return entities;
     }
 
     public static boolean isInLineOfSight(Entity attacker, Entity target) {

@@ -2,6 +2,8 @@ package net.spell_engine.api.spell;
 
 import net.spell_power.api.MagicSchool;
 
+import javax.annotation.Nullable;
+
 public class Spell {
     // Structure
     public MagicSchool school;
@@ -63,9 +65,6 @@ public class Spell {
             public Meteor meteor;
             public static class Meteor {
                 public float launch_height = 10;
-                public float impact_range = 10;
-                public ParticleBatch[] impact_particles = new ParticleBatch[]{};
-                public Sound impact_sound;
             }
         }
         public String animation;
@@ -138,6 +137,16 @@ public class Spell {
         public float divergence = 0;
         public boolean inherit_shooter_velocity = false;
         public float homing_angle = 1F;
+
+        @Nullable
+        public AreaImpact area_impact;
+        public static class AreaImpact { public AreaImpact() { }
+            public float radius = 1F;
+            public Release.Target.Area area = new Release.Target.Area();
+            public ParticleBatch[] particles = new ParticleBatch[]{};
+            @Nullable
+            public Sound sound;
+        }
 
         public Perks perks = new Perks();
         public static class Perks { Perks() { }

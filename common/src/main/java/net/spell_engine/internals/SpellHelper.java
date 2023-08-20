@@ -315,18 +315,33 @@ public class SpellHelper {
         }
     }
 
-    public static void fallImpact(LivingEntity caster, Entity projectile, Spell spell, Vec3d position, ImpactContext context) {
-        var info = spell.release.target.meteor;
-        var area = spell.release.target.area;
-        if (info == null || area == null) {
-            return;
+    public static void fallImpact(LivingEntity caster, Entity projectile, Spell spell, ImpactContext context) {
+        var adjustedCenter = context.position().add(0, 1, 0); // Adding a bit of height to avoid raycast hitting the ground
+        performProjectileAreaEffect(caster, projectile, spell, context.position(adjustedCenter));
+    }
+
+    public static boolean projectileImpact(LivingEntity caster, Entity projectile, Entity target, Spell spell, ImpactContext context) {
+        var performed = performImpacts(projectile.getWorld(), caster, target, spell, context);
+
+        if (performed) {
+            performProjectileAreaEffect(caster, projectile, spell, context);
         }
-        var center = position.add(0, 1, 0);
-        var range = info.impact_range;
-        var targets = TargetHelper.targetsFromArea(projectile, center, range, area, null);
-        ParticleHelper.sendBatches(projectile, info.impact_particles);
-        SoundHelper.playSound(projectile.getWorld(), projectile, info.impact_sound);
-        areaImpact(projectile.getWorld(), caster, targets, center, range, area, true, spell, context);
+
+        return performed;
+    }
+
+    private static void performProjectileAreaEffect(LivingEntity caster, Entity projectile, Spell spell, ImpactContext context) {
+        var projectileData = spell.release.target.projectile;
+        if (projectileData != null) {
+            var area_impact = projectileData.area_impact;
+            if (area_impact != null) {
+                var center = context.position();
+                var targets = TargetHelper.targetsFromArea(projectile, center, area_impact.radius, area_impact.area, null);
+                areaImpact(projectile.getWorld(), caster, targets, center, area_impact.radius, area_impact.area, true, spell, context);
+                ParticleHelper.sendBatches(projectile, area_impact.particles);
+                SoundHelper.playSound(projectile.getWorld(), projectile, area_impact.sound);
+            }
+        }
     }
 
     public static float launchHeight(LivingEntity livingEntity) {

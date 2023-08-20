@@ -1,6 +1,7 @@
 # 0.9.29
 
 - Add universal Spell Projectile perks: ricochet, bounce, pierce
+- Add support for Spell Projectiles performing area effects
 - Add italian translation by Zano1999 #21
 - Improve area effect in-radius check
 - Fix right click to use abilities for blacklisted and datapack disabled items
