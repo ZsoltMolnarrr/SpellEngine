@@ -2,9 +2,10 @@
 
 - Add universal Spell Projectile perks: ricochet, bounce, pierce
 - Add italian translation by Zano1999 #21
+- Improve area effect in-radius check
 - Fix right click to use abilities for blacklisted and datapack disabled items
 - Fix HUD render blend glitch
-- Update Fabric API model loading function use
+- Migrate to new Fabric API model loading functions
 
 # 0.9.28
 

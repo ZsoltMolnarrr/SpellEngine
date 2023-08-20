@@ -235,16 +235,19 @@ public class TargetHelper {
         var entities = centerEntity.getWorld().getOtherEntities(centerEntity, box, (target) -> {
             var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
             var distanceVector = VectorHelper.distanceVector(origin, target.getBoundingBox());
-            return !target.isSpectator() && target.canHit()
+            return !target.isSpectator()
+                    && target.canHit()
                     && (predicate == null || predicate.test(target))
-                    && target.squaredDistanceTo(centerEntity) <= squaredDistance
+                    // && seeRange(centerEntity, target)
+                    && targetCenter.squaredDistanceTo(origin) <= squaredDistance
                     && ((angle <= 0)
                         || (VectorHelper.angleBetween(look, targetCenter.subtract(origin)) <= angle)
                         || (VectorHelper.angleBetween(look, distanceVector) <= angle)
                         )
                     && (raycastObstacleFree(centerEntity, origin, targetCenter)
-                        || raycastObstacleFree(centerEntity, origin, origin.add(distanceVector) )
-                        );
+                        || raycastObstacleFree(centerEntity, origin, origin.add(distanceVector))
+                        )
+                    ;
         });
         return entities;
     }
