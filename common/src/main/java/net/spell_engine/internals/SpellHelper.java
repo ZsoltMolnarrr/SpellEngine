@@ -317,26 +317,29 @@ public class SpellHelper {
 
     public static void fallImpact(LivingEntity caster, Entity projectile, Spell spell, ImpactContext context) {
         var adjustedCenter = context.position().add(0, 1, 0); // Adding a bit of height to avoid raycast hitting the ground
-        performProjectileAreaEffect(caster, projectile, spell, context.position(adjustedCenter));
+        performProjectileAreaEffect(caster, null, projectile, spell, context.position(adjustedCenter));
     }
 
     public static boolean projectileImpact(LivingEntity caster, Entity projectile, Entity target, Spell spell, ImpactContext context) {
         var performed = performImpacts(projectile.getWorld(), caster, target, spell, context);
 
         if (performed) {
-            performProjectileAreaEffect(caster, projectile, spell, context);
+            performProjectileAreaEffect(caster, target, projectile, spell, context);
         }
 
         return performed;
     }
 
-    private static void performProjectileAreaEffect(LivingEntity caster, Entity projectile, Spell spell, ImpactContext context) {
+    private static void performProjectileAreaEffect(LivingEntity caster, Entity previouslyHit, Entity projectile, Spell spell, ImpactContext context) {
         var projectileData = spell.release.target.projectile;
         if (projectileData != null) {
             var area_impact = projectileData.area_impact;
             if (area_impact != null) {
                 var center = context.position();
                 var targets = TargetHelper.targetsFromArea(projectile, center, area_impact.radius, area_impact.area, null);
+                if (previouslyHit != null) {
+                    targets.remove(previouslyHit);
+                }
                 areaImpact(projectile.getWorld(), caster, targets, center, area_impact.radius, area_impact.area, true, spell, context);
                 ParticleHelper.sendBatches(projectile, area_impact.particles);
                 SoundHelper.playSound(projectile.getWorld(), projectile, area_impact.sound);

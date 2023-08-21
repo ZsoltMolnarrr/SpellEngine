@@ -34,6 +34,7 @@ public class SpellExplosionParticle extends ExplosionLargeParticle {
             particle.red = 1F;
             particle.green = 1F;
             particle.blue = 1F;
+            particle.maxAge = 10;
             return particle;
         }
     }
