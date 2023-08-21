@@ -29,7 +29,12 @@ public class SpellExplosionParticle extends ExplosionLargeParticle {
         }
 
         public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            return new SpellExplosionParticle(clientWorld, d, e, f, g, this.spriteProvider);
+            var particle = new SpellExplosionParticle(clientWorld, d, e, f, g, this.spriteProvider);
+            particle.scale = 1.2F;
+            particle.red = 1F;
+            particle.green = 1F;
+            particle.blue = 1F;
+            return particle;
         }
     }
 }
