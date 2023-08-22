@@ -25,6 +25,9 @@ import java.util.List;
 public class SpellTooltip {
     private static final String damageToken = "{damage}";
     private static final String healToken = "{heal}";
+    private static final String rangeToken = "{range}";
+    private static final String durationToken = "{duration}";
+    private static final String itemToken = "{item}";
     private static final String effectDurationToken = "{effect_duration}";
     private static final String effectAmplifierToken = "{effect_amplifier}";
     private static final String impactRangeToken = "{impact_range}";
@@ -114,6 +117,22 @@ public class SpellTooltip {
             if (area_impact != null) {
                 description = description.replace(impactRangeToken, formattedNumber(area_impact.radius));
             }
+            var extra_launch = projectile.extra_launch;
+            if (extra_launch != null && extra_launch.count > 0) {
+                description = description.replace("{extra_launch}", formattedNumber(extra_launch.count));
+            }
+            if (projectile.perks.ricochet > 0) {
+                description = description.replace("{ricochet}", formattedNumber(projectile.perks.ricochet));
+            }
+            if (projectile.perks.bounce > 0) {
+                description = description.replace("{bounce}", formattedNumber(projectile.perks.bounce));
+            }
+            if (projectile.perks.pierce > 0) {
+                description = description.replace("{pierce}", formattedNumber(projectile.perks.pierce));
+            }
+            if (projectile.perks.chain_reaction_size > 0) {
+                description = description.replace("{chain_reaction_size}", formattedNumber(projectile.perks.chain_reaction_size));
+            }
         }
 
         for (var impact: spell.impact) {
@@ -142,7 +161,7 @@ public class SpellTooltip {
         } else {
             var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
             var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
-            var castTime = I18n.translate(castTimeKey).replace("{duration}", formattedNumber(castDuration));
+            var castTime = I18n.translate(castTimeKey).replace(durationToken, formattedNumber(castDuration));
             lines.add(Text.literal(" ")
                     .append(Text.literal(castTime))
                     .formatted(Formatting.GOLD));
@@ -151,7 +170,7 @@ public class SpellTooltip {
 
         if (spell.range > 0) {
             var rangeKey = keyWithPlural("spell.tooltip.range", spell.range);
-            var range = I18n.translate(rangeKey).replace("{range}", formattedNumber(spell.range));
+            var range = I18n.translate(rangeKey).replace(rangeToken, formattedNumber(spell.range));
             lines.add(Text.literal(" ")
                     .append(Text.literal(range))
                     .formatted(Formatting.GOLD));
@@ -164,7 +183,7 @@ public class SpellTooltip {
                 cooldown = I18n.translate("spell.tooltip.cooldown.proportional");
             } else {
                 var cooldownKey = keyWithPlural("spell.tooltip.cooldown", cooldownDuration);
-                cooldown = I18n.translate(cooldownKey).replace("{duration}", formattedNumber(cooldownDuration));
+                cooldown = I18n.translate(cooldownKey).replace(durationToken, formattedNumber(cooldownDuration));
             }
             lines.add(Text.literal(" ")
                     .append(Text.literal(cooldown))
@@ -181,7 +200,7 @@ public class SpellTooltip {
             if (item != Items.AIR) {
                 var ammoKey = keyWithPlural("spell.tooltip.ammo", 1); // Add variable ammo count later
                 var itemName = I18n.translate(item.getTranslationKey());
-                var ammo = I18n.translate(ammoKey).replace("{item}", itemName);
+                var ammo = I18n.translate(ammoKey).replace(itemToken, itemName);
                 var hasItem = SpellHelper.ammoForSpell(player, spell, itemStack).satisfied();
                 lines.add(Text.literal(" ")
                         .append(Text.literal(ammo).formatted(hasItem ? Formatting.GREEN : Formatting.RED)));
