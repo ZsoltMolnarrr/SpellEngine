@@ -139,6 +139,15 @@ public class Spell {
         public float homing_angle = 1F;
 
         @Nullable
+        public ExtraLaunch extra_launch;
+        public static class ExtraLaunch { public ExtraLaunch() { }
+            /// How many additional projectiles are spawned after launch
+            public int count = 0;
+            /// How many ticks after launch additional projectiles are spawned
+            public int delay = 2;
+        }
+
+        @Nullable
         public AreaImpact area_impact;
         public static class AreaImpact { public AreaImpact() { }
             public float radius = 1F;

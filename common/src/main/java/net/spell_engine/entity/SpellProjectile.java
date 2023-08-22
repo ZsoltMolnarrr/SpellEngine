@@ -20,6 +20,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
@@ -30,7 +31,6 @@ import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.RecordsWithGson;
 import net.spell_engine.utils.TargetHelper;
 import net.spell_engine.utils.VectorHelper;
-import oshi.util.platform.mac.SysctlUtil;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -102,6 +102,21 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         } catch (Exception e) {
             System.err.println("Spell Projectile - Failed to read clientSyncedData");
         }
+    }
+
+    public void setVelocity(double x, double y, double z, float speed, float spread, float divergence) {
+        var rotX = Math.toRadians(divergence * random.nextFloat(spread, 1F));
+        var rotY = Math.toRadians(360 * random.nextFloat());
+        Vec3d vec3d = (new Vec3d(x, y, z))
+                .rotateX((float) rotX)
+                .rotateY((float) rotY)
+                .multiply(speed);
+        this.setVelocity(vec3d);
+        double d = vec3d.horizontalLength();
+        this.setYaw((float)(MathHelper.atan2(vec3d.x, vec3d.z) * 57.2957763671875));
+        this.setPitch((float)(MathHelper.atan2(vec3d.y, d) * 57.2957763671875));
+        this.prevYaw = this.getYaw();
+        this.prevPitch = this.getPitch();
     }
 
     public void setFollowedTarget(Entity target) {

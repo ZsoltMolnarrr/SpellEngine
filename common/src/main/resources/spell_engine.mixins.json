@@ -8,6 +8,7 @@
     "LivingEntityAccessor",
     "LivingEntityMixin",
     "PlayerEntityMixin",
+    "ServerWorldMixin",
     "action_impair.AbstractHorseEntityMixin",
     "action_impair.LivingEntityActionImpairing",
     "action_impair.MobEntityActionImpairing",

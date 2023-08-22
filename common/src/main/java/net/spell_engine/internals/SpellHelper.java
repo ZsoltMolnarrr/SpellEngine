@@ -365,6 +365,10 @@ public class SpellHelper {
     }
 
     public static void shootProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
+        shootProjectile(world, caster, target, spell, context, true);
+    }
+
+    public static void shootProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context, boolean initial) {
         if (world.isClient) {
             return;
         }
@@ -390,9 +394,26 @@ public class SpellHelper {
         projectile.setYaw(caster.getYaw());
 
         world.spawnEntity(projectile);
+
+        var extraLaunch = projectileData.extra_launch;
+        if (initial && extraLaunch != null) {
+            for (int i = 0; i < extraLaunch.count; i++) {
+                var ticks = (i + 1) * extraLaunch.delay;
+                ((WorldScheduler)world).schedule(ticks, () -> {
+                    if (caster == null || !caster.isAlive()) {
+                        return;
+                    }
+                    shootProjectile(world, caster, target, spell, context, false);
+                });
+            }
+        }
     }
 
     public static void fallProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
+        fallProjectile(world, caster, target, spell, context, true);
+    }
+
+    public static void fallProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context, boolean initial) {
         if (world.isClient) {
             return;
         }
@@ -407,14 +428,33 @@ public class SpellHelper {
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
                 SpellProjectile.Behaviour.FALL, spell, target, context, mutablePerks);
 
-        projectile.setVelocity(new Vec3d(0, - projectileData.velocity, 0));
         projectile.setYaw(0);
+        projectile.setPitch(90);
+        if (!initial) {
+            projectile.setVelocity( 0, - 1, 0, projectileData.velocity, 0.5F, projectileData.divergence);
+            projectile.setFollowedTarget(null);
+        } else {
+            projectile.setVelocity(new Vec3d(0, - projectileData.velocity, 0));
+        }
+
         projectile.prevYaw = projectile.getYaw();
-        projectile.setPitch(-90);
         projectile.prevPitch = projectile.getPitch();
         projectile.range = height;
 
         world.spawnEntity(projectile);
+
+        var extraLaunch = projectileData.extra_launch;
+        if (initial && extraLaunch != null) {
+            for (int i = 0; i < extraLaunch.count; i++) {
+                var ticks = (i + 1) * extraLaunch.delay;
+                ((WorldScheduler)world).schedule(ticks, () -> {
+                    if (caster == null || !caster.isAlive()) {
+                        return;
+                    }
+                    fallProjectile(world, caster, target, spell, context, false);
+                });
+            }
+        }
     }
 
     public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
@@ -490,7 +530,6 @@ public class SpellHelper {
         var success = false;
         try {
             double particleMultiplier = 1 * context.total();
-            var relation = TargetHelper.getRelation(caster, target);
             var power = context.power();
             if (power == null) {
                 power = SpellPower.getSpellPower(school, caster);
