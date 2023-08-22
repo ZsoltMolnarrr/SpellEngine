@@ -2,6 +2,8 @@
 
 - Add universal Spell Projectile perks: ricochet, bounce, pierce
 - Add support for Spell Projectiles performing area effects
+- Add support for Spell Projectiles to be spawned multiple times
+- Add Spell Projectile launch events to Java API
 - Add italian translation by Zano1999 #21
 - Improve area effect in-radius check
 - Fix right click to use abilities for blacklisted and datapack disabled items

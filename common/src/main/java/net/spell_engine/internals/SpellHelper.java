@@ -20,6 +20,8 @@ import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
 import net.spell_engine.api.item.trinket.SpellBookItem;
 import net.spell_engine.api.spell.CustomSpellHandler;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.SpellEvents;
+import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.particle.ParticleHelper;
@@ -148,6 +150,7 @@ public class SpellHelper {
         if (spell == null) {
             return;
         }
+        var spellInfo = new SpellInfo(spell, spellId);
         var caster = (SpellCasterEntity)player;
         if (caster.getCooldownManager().isCoolingDown(spellId)) {
             return;
@@ -219,12 +222,12 @@ public class SpellHelper {
                             if (entityFound.isPresent()) {
                                 target = entityFound.get();
                             }
-                            shootProjectile(world, player, target, spell, context);
+                            shootProjectile(world, player, target, spellInfo, context);
                         }
                         case METEOR -> {
                             var target = targets.stream().findFirst();
                             if (target.isPresent()) {
-                                fallProjectile(world, player, target.get(), spell, context);
+                                fallProjectile(world, player, target.get(), spellInfo, context);
                             } else {
                                 released = false;
                             }
@@ -364,15 +367,16 @@ public class SpellHelper {
         return caster.getPos().add(0, launchHeight(caster), 0).add(look);
     }
 
-    public static void shootProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
-        shootProjectile(world, caster, target, spell, context, true);
+    public static void shootProjectile(World world, LivingEntity caster, Entity target, SpellInfo spellInfo, ImpactContext context) {
+        shootProjectile(world, caster, target, spellInfo, context, true);
     }
 
-    public static void shootProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context, boolean initial) {
+    public static void shootProjectile(World world, LivingEntity caster, Entity target, SpellInfo spellInfo, ImpactContext context, boolean initial) {
         if (world.isClient) {
             return;
         }
 
+        var spell = spellInfo.spell();
         var launchPoint = launchPoint(caster);
         var projectileData = spell.release.target.projectile;
         var mutablePerks = projectileData.perks.copy();
@@ -393,6 +397,10 @@ public class SpellHelper {
         projectile.getPitch(caster.getPitch());
         projectile.setYaw(caster.getYaw());
 
+
+        if (SpellEvents.PROJECTILE_SHOOT.isListened()) {
+            SpellEvents.PROJECTILE_SHOOT.invoke((listener) -> listener.onProjectileLaunch(new SpellEvents.ProjectileLaunchEvent(projectile, caster, target, spellInfo, context, initial)));
+        }
         world.spawnEntity(projectile);
 
         var extraLaunch = projectileData.extra_launch;
@@ -403,21 +411,22 @@ public class SpellHelper {
                     if (caster == null || !caster.isAlive()) {
                         return;
                     }
-                    shootProjectile(world, caster, target, spell, context, false);
+                    shootProjectile(world, caster, target, spellInfo, context, false);
                 });
             }
         }
     }
 
-    public static void fallProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
-        fallProjectile(world, caster, target, spell, context, true);
+    public static void fallProjectile(World world, LivingEntity caster, Entity target, SpellInfo spellInfo, ImpactContext context) {
+        fallProjectile(world, caster, target, spellInfo, context, true);
     }
 
-    public static void fallProjectile(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context, boolean initial) {
+    public static void fallProjectile(World world, LivingEntity caster, Entity target, SpellInfo spellInfo, ImpactContext context, boolean initial) {
         if (world.isClient) {
             return;
         }
 
+        var spell = spellInfo.spell();
         var meteor = spell.release.target.meteor;
         var height = meteor.launch_height;
         var launchPoint = target.getPos().add(0, height, 0);
@@ -441,6 +450,9 @@ public class SpellHelper {
         projectile.prevPitch = projectile.getPitch();
         projectile.range = height;
 
+        if (SpellEvents.PROJECTILE_FALL.isListened()) {
+            SpellEvents.PROJECTILE_FALL.invoke((listener) -> listener.onProjectileLaunch(new SpellEvents.ProjectileLaunchEvent(projectile, caster, target, spellInfo, context, initial)));
+        }
         world.spawnEntity(projectile);
 
         var extraLaunch = projectileData.extra_launch;
@@ -451,7 +463,7 @@ public class SpellHelper {
                     if (caster == null || !caster.isAlive()) {
                         return;
                     }
-                    fallProjectile(world, caster, target, spell, context, false);
+                    fallProjectile(world, caster, target, spellInfo, context, false);
                 });
             }
         }
