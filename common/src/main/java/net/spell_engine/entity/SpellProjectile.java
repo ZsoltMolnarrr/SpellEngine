@@ -77,6 +77,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         setFollowedTarget(target);
     }
 
+    /**
+     * A copy of the spell projectile perks, can be safely modified
+      */
     public Spell.ProjectileData.Perks mutablePerks() {
         return perks;
     }
