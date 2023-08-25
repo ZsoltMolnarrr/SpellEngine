@@ -139,15 +139,6 @@ public class Spell {
         public float homing_angle = 1F;
 
         @Nullable
-        public ExtraLaunch extra_launch;
-        public static class ExtraLaunch { public ExtraLaunch() { }
-            /// How many additional projectiles are spawned after launch
-            public int count = 0;
-            /// How many ticks after launch additional projectiles are spawned
-            public int delay = 2;
-        }
-
-        @Nullable
         public AreaImpact area_impact;
         public static class AreaImpact { public AreaImpact() { }
             public float radius = 1F;
@@ -175,6 +166,10 @@ public class Spell {
             public int chain_reaction_triggers = 1;
             /// How many more projectiles are spawned from chain reaction of a spawned projectile
             public int chain_reaction_increment = -1;
+            /// How many additional projectiles are spawned after launch
+            public int extra_launch_count = 0;
+            /// How many ticks after launch additional projectiles are spawned
+            public int extra_launch_delay = 2;
 
             public Perks copy() {
                 Perks copy = new Perks();
@@ -186,6 +181,8 @@ public class Spell {
                 copy.chain_reaction_size = this.chain_reaction_size;
                 copy.chain_reaction_triggers = this.chain_reaction_triggers;
                 copy.chain_reaction_increment = this.chain_reaction_increment;
+                copy.extra_launch_count = this.extra_launch_count;
+                copy.extra_launch_delay = this.extra_launch_delay;
                 return copy;
             }
         }

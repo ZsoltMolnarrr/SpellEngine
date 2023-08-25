@@ -403,10 +403,9 @@ public class SpellHelper {
         }
         world.spawnEntity(projectile);
 
-        var extraLaunch = projectileData.extra_launch;
-        if (initial && extraLaunch != null) {
-            for (int i = 0; i < extraLaunch.count; i++) {
-                var ticks = (i + 1) * extraLaunch.delay;
+        if (initial && projectile.mutablePerks().extra_launch_count > 0) {
+            for (int i = 0; i < projectile.mutablePerks().extra_launch_count; i++) {
+                var ticks = (i + 1) * projectile.mutablePerks().extra_launch_delay;
                 ((WorldScheduler)world).schedule(ticks, () -> {
                     if (caster == null || !caster.isAlive()) {
                         return;
@@ -455,10 +454,9 @@ public class SpellHelper {
         }
         world.spawnEntity(projectile);
 
-        var extraLaunch = projectileData.extra_launch;
-        if (initial && extraLaunch != null) {
-            for (int i = 0; i < extraLaunch.count; i++) {
-                var ticks = (i + 1) * extraLaunch.delay;
+        if (initial && projectile.mutablePerks().extra_launch_count > 0) {
+            for (int i = 0; i < projectile.mutablePerks().extra_launch_count; i++) {
+                var ticks = (i + 1) * projectile.mutablePerks().extra_launch_delay;
                 ((WorldScheduler)world).schedule(ticks, () -> {
                     if (caster == null || !caster.isAlive()) {
                         return;
