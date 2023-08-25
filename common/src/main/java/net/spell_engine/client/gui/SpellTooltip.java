@@ -117,9 +117,9 @@ public class SpellTooltip {
             if (area_impact != null) {
                 description = description.replace(impactRangeToken, formattedNumber(area_impact.radius));
             }
-            var extra_launch = projectile.extra_launch;
-            if (extra_launch != null && extra_launch.count > 0) {
-                description = description.replace("{extra_launch}", formattedNumber(extra_launch.count));
+            var extra_launch_count = projectile.perks.extra_launch_count;
+            if (extra_launch_count > 0) {
+                description = description.replace("{extra_launch}", formattedNumber(extra_launch_count));
             }
             if (projectile.perks.ricochet > 0) {
                 description = description.replace("{ricochet}", formattedNumber(projectile.perks.ricochet));
