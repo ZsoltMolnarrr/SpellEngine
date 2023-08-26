@@ -1,3 +1,7 @@
+# 0.9.30
+
+- Add safeguards against SpellProjectile perks being null
+
 # 0.9.29
 
 - Add universal Spell Projectile perks: ricochet, bounce, pierce

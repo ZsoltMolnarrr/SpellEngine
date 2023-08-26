@@ -340,7 +340,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
      * Returns `true` if a new target is found to ricochet to
      */
     protected boolean ricochetFrom(Entity target, LivingEntity caster) {
-        if (this.perks.ricochet <= 0) {
+        if (this.perks == null
+                || this.perks.ricochet <= 0) {
             return false;
         }
         impactHistory.add(target.getId());
@@ -393,7 +394,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
      * Returns `true` if projectile can continue to travel
      */
     private boolean pierced(Entity target) {
-        if (this.perks.pierce <= 0) {
+        if (this.perks == null
+                || this.perks.pierce <= 0) {
             return false;
         }
         // Save
@@ -404,7 +406,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
 
     private boolean bounceFrom(BlockHitResult blockHitResult) {
-        if (this.perks.bounce <= 0) {
+        if (this.perks == null
+                || this.perks.bounce <= 0) {
             return false;
         }
 
@@ -454,7 +457,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
     
     private void chainReactionFrom(Entity target) {
-        if (this.perks.chain_reaction_size <= 0 || this.perks.chain_reaction_triggers <= 0 || impactHistory.contains(target)) {
+        if (this.perks == null
+                || this.perks.chain_reaction_size <= 0
+                || this.perks.chain_reaction_triggers <= 0
+                || impactHistory.contains(target)) {
             return;
         }
         if (getWorld().isClient) {
