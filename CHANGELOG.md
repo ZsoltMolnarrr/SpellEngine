@@ -1,3 +1,7 @@
+# 0.9.31
+
+- Add Spell Projectile light emission data field
+
 # 0.9.30
 
 - Add safeguards against SpellProjectile perks being null
