@@ -3,6 +3,7 @@ package net.spell_engine.api.render;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.*;
+import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.util.Identifier;
 
 public class CustomLayers extends RenderLayer {
@@ -35,14 +36,43 @@ public class CustomLayers extends RenderLayer {
         RenderSystem.defaultBlendFunc();
     });
 
+    @Deprecated
     public static RenderLayer projectile(Identifier texture, boolean translucent) {
         return projectile(texture, translucent, true);
     }
 
+    @Deprecated
     public static RenderLayer projectile(Identifier texture, boolean translucent, boolean emissive) {
         MultiPhaseParameters multiPhaseParameters = MultiPhaseParameters.builder()
                 .program(emissive ? ENTITY_TRANSLUCENT_EMISSIVE_PROGRAM : ENTITY_TRANSLUCENT_PROGRAM)
                 .texture(new RenderPhase.Texture((Identifier)texture, false, false))
+                .transparency(translucent ? TRANSLUCENT_TRANSPARENCY : NO_TRANSPARENCY)
+                .cull(DISABLE_CULLING)
+                .writeMaskState(translucent ? COLOR_MASK : ALL_MASK)
+                .overlay(ENABLE_OVERLAY_COLOR)
+                .build(false);
+        return RenderLayer.of("entity_translucent_emissive", VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, true, true, multiPhaseParameters);
+    }
+
+
+
+    public static RenderLayer spellEffect(LightEmission lightEmission, boolean translucent) {
+        return spellObject(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, lightEmission, translucent);
+    }
+
+    public static RenderLayer projectile(LightEmission lightEmission) {
+        return spellObject(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, lightEmission, false);
+    }
+
+    public static RenderLayer spellObject(Identifier texture, LightEmission lightEmission, boolean translucent) {
+        RenderPhase.ShaderProgram shaderProgram = switch (lightEmission) {
+            case RADIATE -> ENTITY_TRANSLUCENT_EMISSIVE_PROGRAM;
+            case GLOW -> BEACON_BEAM_PROGRAM;
+            case NONE -> ENTITY_TRANSLUCENT_PROGRAM;
+        };
+        MultiPhaseParameters multiPhaseParameters = MultiPhaseParameters.builder()
+                .program(shaderProgram)
+                .texture(new RenderPhase.Texture(texture, false, false))
                 .transparency(translucent ? TRANSLUCENT_TRANSPARENCY : NO_TRANSPARENCY)
                 .cull(DISABLE_CULLING)
                 .writeMaskState(translucent ? COLOR_MASK : ALL_MASK)

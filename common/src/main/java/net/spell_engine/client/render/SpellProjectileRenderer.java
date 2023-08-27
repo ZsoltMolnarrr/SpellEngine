@@ -14,7 +14,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RotationAxis;
 import net.spell_engine.api.render.CustomLayers;
 import net.spell_engine.api.render.CustomModels;
+import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.entity.SpellProjectile;
+
+import java.util.Map;
 
 
 // Mostly copied from: FlyingItemEntityRenderer
@@ -68,7 +71,7 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
                 matrices.scale(renderData.scale, renderData.scale, renderData.scale);
                 if (renderData.model_id != null && !renderData.model_id.isEmpty()) {
                     var modelId = new Identifier(renderData.model_id);
-                    CustomModels.render(LAYER, itemRenderer, modelId, matrices, vertexConsumers, light, entity.getId());
+                    CustomModels.render(LAYERS.get(renderData.light_emission), itemRenderer, modelId, matrices, vertexConsumers, light, entity.getId());
                 }
             }
             matrices.pop();
@@ -76,7 +79,11 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
         }
     }
 
-    public static final RenderLayer LAYER = CustomLayers.projectile(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false);
+    private static final Map<LightEmission, RenderLayer> LAYERS = Map.of(
+            LightEmission.NONE, CustomLayers.projectile(LightEmission.NONE),
+            LightEmission.GLOW, CustomLayers.projectile(LightEmission.GLOW),
+            LightEmission.RADIATE, CustomLayers.projectile(LightEmission.RADIATE)
+    );
 
     public Identifier getTexture(Entity entity) {
         return SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE;

@@ -1,5 +1,6 @@
 package net.spell_engine.api.spell;
 
+import net.spell_engine.api.render.LightEmission;
 import net.spell_power.api.MagicSchool;
 
 import javax.annotation.Nullable;
@@ -191,6 +192,7 @@ public class Spell {
         public static class Client { public Client() { }
             public ParticleBatch[] travel_particles;
             public String model_id;
+            public LightEmission light_emission = LightEmission.GLOW;
             public float scale = 1F;
             public float rotate_degrees_per_tick = 2F;
             public RenderMode render = RenderMode.FLAT;
