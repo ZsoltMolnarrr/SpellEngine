@@ -141,7 +141,7 @@ maven {
 ```
 
 ```groovy
-modImplementation("maven.modrinth:spell-engine:${project.spell_engine_version}-fabric")
+modImplementation("maven.modrinth:spell-engine:${project.spell_engine_version}")
 ```
 
 Install dependencies:

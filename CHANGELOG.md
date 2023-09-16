@@ -1,5 +1,9 @@
 # 0.9.31
 
+- Remove Architechtury build toolchain, replaced with pure Fabric toolchain
+
+# 0.9.31
+
 - Add Spell Projectile light emission data field
 
 # 0.9.30

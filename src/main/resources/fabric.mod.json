@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "spell_engine",
+  "version": "${version}",
+  "name": "Spell Engine",
+  "description": "Data driven magic library.",
+  "authors": [
+    "Daedelus"
+  ],
+  "contact": {
+    "repo": "https://github.com/ZsoltMolnarrr/SpellEngine",
+    "issues": "https://github.com/ZsoltMolnarrr/SpellEngine/issues"
+  },
+  "license": "GPL-3.0",
+  "icon": "icon.png",
+  "environment": "*",
+  "accessWidener" : "spell_engine.accesswidener",
+  "entrypoints": {
+    "client": [
+      "net.spell_engine.fabric.client.FabricClientMod"
+    ],
+    "main": [
+      "net.spell_engine.fabric.FabricMod"
+    ],
+    "modmenu": [
+      "net.spell_engine.client.compatibility.ModMenuCompatibility"
+    ]
+  },
+  "mixins": [
+    "spell_engine.mixins.json"
+  ],
+  "depends": {
+    "minecraft": ">=1.20.0",
+    "fabricloader": ">=0.14.10",
+    "fabric": ">=${fabric_api_version}",
+    "cloth-config": ">=${cloth_config_version}",
+    "player-animator": ">=0.9.9",
+    "spell_power": ">=${spell_power_version}",
+    "trinkets": "*"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/KN9b3pjFTM"
+      }
+    }
+  }
+}
