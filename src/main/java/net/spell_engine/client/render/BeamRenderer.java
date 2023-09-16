@@ -5,6 +5,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.spell_engine.api.render.CustomLayers;
+import net.spell_engine.api.render.LightEmission;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
@@ -22,8 +23,10 @@ public class BeamRenderer extends RenderLayer {
         float shift = (float)Math.floorMod(time, 40) + tickDelta;
         float offset = MathHelper.fractionalPart(shift * 0.2f - (float)MathHelper.floor(shift * 0.1f)) * (- direction);
 
-        var innerRenderLayer = CustomLayers.beam(texture, true, true); //alpha < 250);
+//        var innerRenderLayer = CustomLayers.beam(texture, true, true); //alpha < 250);
         var outerRenderLayer = CustomLayers.beam(texture, false, true);
+        var innerRenderLayer = CustomLayers.spellObject(texture, LightEmission.RADIATE, false); //alpha < 250);
+//        var outerRenderLayer = CustomLayers.spellObject(texture, LightEmission.GLOW, true); //alpha < 250);
 
         var originalWidth = width;
         renderBeamLayer(matrices, vertexConsumers.getBuffer(innerRenderLayer),
@@ -34,7 +37,7 @@ public class BeamRenderer extends RenderLayer {
 
         width = originalWidth * 1.5F;
         renderBeamLayer(matrices, vertexConsumers.getBuffer(outerRenderLayer),
-                red, green, blue, alpha / 2,
+                red, green, blue, (int) (alpha * 0.75),
                 yOffset, height,
                 0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
                 0.0f, 1.0f, height, offset * 0.9F);

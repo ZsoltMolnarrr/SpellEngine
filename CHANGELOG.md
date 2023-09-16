@@ -1,5 +1,6 @@
-# 0.9.31
+# 0.9.32
 
+- Improve luminance of beam spells
 - Remove Architechtury build toolchain, replaced with pure Fabric toolchain
 
 # 0.9.31
