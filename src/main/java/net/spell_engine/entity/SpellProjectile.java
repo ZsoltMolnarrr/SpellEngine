@@ -355,7 +355,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         Predicate<Entity> intentMatches = (entity) -> {
             boolean intentAllows = false;
             for (var intent: intents) {
-                intentAllows = intentAllows || TargetHelper.actionAllowed(TargetHelper.TargetingMode.DIRECT, intent, caster, entity);
+                intentAllows = intentAllows || TargetHelper.actionAllowed(TargetHelper.TargetingMode.AREA, intent, caster, entity);
             }
             return intentAllows;
         };

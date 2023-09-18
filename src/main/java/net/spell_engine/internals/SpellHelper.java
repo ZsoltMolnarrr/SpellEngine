@@ -343,7 +343,7 @@ public class SpellHelper {
                 if (previouslyHit != null) {
                     targets.remove(previouslyHit);
                 }
-                areaImpact(projectile.getWorld(), caster, targets, center, area_impact.radius, area_impact.area, true, spell, context);
+                areaImpact(projectile.getWorld(), caster, targets, center, area_impact.radius, area_impact.area, true, spell, context.target(TargetHelper.TargetingMode.AREA));
                 ParticleHelper.sendBatches(projectile, area_impact.particles);
                 SoundHelper.playSound(projectile.getWorld(), projectile, area_impact.sound);
             }

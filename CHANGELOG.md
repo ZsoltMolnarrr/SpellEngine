@@ -1,7 +1,9 @@
 # 0.9.32
 
-- Improve luminance of beam spells
-- Remove Architechtury build toolchain, replaced with pure Fabric toolchain
+- Fix projectiles ricocheting to allies
+- Fix projectile area impacts affecting allies
+- Improve luminance of rendered beam spells
+- Remove Architechtury toolchain, replaced with pure Fabric toolchain
 
 # 0.9.31
 
