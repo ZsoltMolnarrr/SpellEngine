@@ -106,4 +106,14 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         }
         return null;
     }
+
+    @Override
+    public void v2_castSpell(Identifier spellId) {
+
+    }
+
+    @Override
+    public void v2_stopCasting() {
+
+    }
 }

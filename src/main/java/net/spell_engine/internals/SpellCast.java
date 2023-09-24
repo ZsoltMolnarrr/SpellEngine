@@ -1,6 +1,9 @@
 package net.spell_engine.internals;
 
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.Identifier;
+import net.spell_engine.api.spell.Spell;
 import org.jetbrains.annotations.Nullable;
 
 public class SpellCast {
@@ -34,6 +37,10 @@ public class SpellCast {
             return result != Result.SUCCESS && result != Result.NONE;
         }
     }
+
+    public record Duration(float speed, int length) { }
+    public record Process(Identifier id, Spell spell, ItemStack itemStack, float speed, int length) { }
+    public record Progress(Identifier id, Spell spell, float ratio, int length) { }
 
     public enum Action {
         START, CHANNEL, RELEASE

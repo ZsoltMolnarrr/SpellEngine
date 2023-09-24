@@ -14,6 +14,7 @@ import net.minecraft.util.math.Vec2f;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.InputHelper;
+import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.client.util.Rect;
 import net.spell_engine.client.util.SpellRender;
@@ -56,45 +57,31 @@ public class HudRenderHelper {
 
         if (player != null) {
             var caster = (SpellCasterClient) player;
-            var container = caster.getCurrentContainer();
-            var currentSpell = caster.getCurrentSpell();
-            var currentSpellId = caster.getCurrentSpellId();
 
-            if (container != null && container.isUsable()) {
-                var cooldownManager = caster.getCooldownManager();
-
-                var spells = container.spell_ids.stream()
-                        .map(id -> {
-                            var spellId = new Identifier(id);
-                            var spell = SpellRegistry.getSpell(spellId);
-                            return new SpellHotBarWidget.SpellViewModel(
-                                SpellRender.iconTexture(spellId),
-                                cooldownManager.getCooldownProgress(new Identifier(id), tickDelta),
-                                Color.from(spell != null ? spell.school.color() : 0xFFFFFF));
-                        })
-                        .collect(Collectors.toList());
-                int selected = caster.getSelectedSpellIndex(container);
-
-                if (clientConfig.collapseSpellHotbar && !InputHelper.isLocked && selected < spells.size()) {
-                    hotbarAccessories = new SpellHotBarWidget.ViewModel(spells, selected, Color.from(0xFFFFFF));
-                    spells = List.of(spells.get(selected));
-                    selected = 0;
-                }
-
-                hotbarViewModel = new SpellHotBarWidget.ViewModel(spells, selected, Color.from(0xFFFFFF));
-            } else {
+            if (SpellHotbar.INSTANCE.slots.isEmpty()) {
                 hotbarViewModel = SpellHotBarWidget.ViewModel.empty;
+            } else {
+                var cooldownManager = caster.getCooldownManager();
+                var spells = SpellHotbar.INSTANCE.slots.stream().map(slot -> {
+                    var info = slot.spell();
+                    return new SpellHotBarWidget.SpellViewModel(
+                            SpellRender.iconTexture(info.id()),
+                            cooldownManager.getCooldownProgress(new Identifier(info.id().toString()), tickDelta),
+                            Color.from(info.spell().school.color()));
+                }).collect(Collectors.toList());
+                hotbarViewModel = new SpellHotBarWidget.ViewModel(spells, 0, Color.from(0xFFFFFF));
             }
-            renderHotbar = InputHelper.hotbarVisibility().spell();
+            renderHotbar = true;
 
-            if (currentSpell != null) {
+            var spellCast = caster.v2_getSpellCastProgress();
+            if (spellCast != null) {
                 castBarViewModel = new CastBarWidget.ViewModel(
-                        currentSpell.school.color(),
-                        caster.getCurrentCastProgress(),
-                        currentSpell.cast.duration,
-                        SpellRender.iconTexture(currentSpellId),
+                        spellCast.spell().school.color(),
+                        spellCast.ratio(),
+                        spellCast.length(),
+                        SpellRender.iconTexture(spellCast.id()),
                         true,
-                        SpellHelper.isChanneled(currentSpell));
+                        SpellHelper.isChanneled(spellCast.spell()));
             }
 
             if (!config) {
@@ -209,7 +196,7 @@ public class HudRenderHelper {
             renderBar(context, barWidth, true, 1, x, y);
             float partialProgress = 0;
             if (viewModel.allowTickDelta && viewModel.castDuration > 0) {
-                partialProgress = tickDelta / (viewModel.castDuration * 20F);
+                partialProgress = tickDelta / viewModel.castDuration;
             }
             var progress = viewModel.reverse() ? (1F - viewModel.progress - partialProgress) : (viewModel.progress + partialProgress);
             renderBar(context, barWidth, false, progress, x, y);

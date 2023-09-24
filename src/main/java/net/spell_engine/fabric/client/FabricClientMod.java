@@ -75,7 +75,7 @@ public class FabricClientMod implements ClientModInitializer {
     }
 
     private void registerKeyBindings() {
-        for(var keybinding: Keybindings.all) {
+        for(var keybinding: Keybindings.all()) {
             KeyBindingHelper.registerKeyBinding(keybinding);
         }
     }

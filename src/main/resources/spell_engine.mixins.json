@@ -32,6 +32,8 @@
     "client.control.KeybindingAccessor",
     "client.control.MinecraftClientMixin",
     "client.control.PlayerInventoryMixin",
+    "client.control.SpellCastingMovement",
+    "client.control.SpellHotbarMinecraftClient",
     "client.render.EntityMixin",
     "client.render.ItemRendererAccessor",
     "client.render.LivingEntityRendererMixin",

@@ -68,6 +68,158 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return null;
     }
 
+
+
+    private int spellCastTicks = 0;
+    @Nullable private SpellCast.Process spellCastProcess;
+
+    private void setSpellCastProcess(SpellCast.Process process) {
+        if (process == null) {
+            spellCastTicks = 0;
+        }
+        spellCastProcess = process;
+    }
+
+    public SpellCast.Attempt v2_startSpellCast(ItemStack itemStack, Identifier spellId) {
+        var caster = player();
+        if (spellId == null) {
+            this.v2_cancelSpellCast();
+            return SpellCast.Attempt.none();
+        }
+        var spell = SpellRegistry.getSpell(spellId);
+        if ((spellCastProcess != null && spellCastProcess.id().equals(spellId))
+                || spell == null) {
+            return SpellCast.Attempt.none();
+        }
+        var attempt = SpellHelper.attemptCasting(caster, itemStack, spellId);
+        if (attempt.isSuccess()) {
+            var instant = spell.cast.duration <= 0;
+            if (instant) {
+                // Release spell
+                this.v2_releaseSpellCast(0, new SpellCast.Process(spellId, spell, itemStack, 1, 0),
+                        SpellCast.Action.START);
+            } else {
+                // Start casting
+                var details = SpellHelper.getCastTimeDetails(caster, spell);
+                setSpellCastProcess(new SpellCast.Process(spellId, spell, itemStack, details.speed(), details.length()));
+            }
+        }
+        if (attempt.isFail()) {
+            HudMessages.INSTANCE.castAttemptError(attempt);
+        }
+        return attempt;
+    }
+
+    @Nullable public SpellCast.Progress v2_getSpellCastProgress() {
+        if (spellCastProcess != null) {
+            var ratio = Math.min(((float)this.spellCastTicks) / spellCastProcess.length(), 1F);
+            return new SpellCast.Progress(spellCastProcess.id(), spellCastProcess.spell(), ratio, spellCastProcess.length());
+        }
+        return null;
+    }
+
+    public boolean v2_isCastingSpell() {
+        return spellCastProcess != null;
+    }
+
+    public void v2_cancelSpellCast() {
+        var process = spellCastProcess;
+        if (process != null) {
+            if (SpellHelper.isChanneled(process.spell())) {
+                var player = player();
+                var slot = findSlot(player, process.itemStack());
+                ClientPlayNetworking.send(
+                        Packets.SpellRequest.ID,
+                        new Packets.SpellRequest(Hand.MAIN_HAND, SpellCast.Action.RELEASE, process.id(), slot, 0, new int[]{}).write());
+            }
+        }
+
+        spellCastTicks = 0;
+        setSpellCastProcess(null);
+        targets = List.of();
+    }
+
+    private void v2_updateSpellCast() {
+        var process = spellCastProcess;
+        if (process != null) {
+            var player = player();
+            if (!player().isAlive()
+                    || player.getMainHandStack() != process.itemStack()
+                    || getCooldownManager().isCoolingDown(process.id())
+            ) {
+                v2_cancelSpellCast();
+                return;
+            }
+
+            targets = findTargets(process.spell());
+            var spell = process.spell();
+            spellCastTicks += 1;
+            if (SpellHelper.isChanneled(spell)) {
+                // Is channel tick due?
+                var offset = Math.round(spell.cast.channel_ticks * 0.5F);
+                var currentTick = spellCastTicks + offset;
+                var isDue = currentTick >= spell.cast.channel_ticks
+                        && (currentTick % spell.cast.channel_ticks) == 0;
+                if (isDue) {
+                    // Channel spell
+                    // TODO: Channeled spells cooldown handling
+                    v2_releaseSpellCast(spellCastTicks, process, SpellCast.Action.CHANNEL);
+                }
+            } else {
+                var isFinished = spellCastTicks >= process.length();
+                if (isFinished) {
+                    // Release spell
+                    v2_releaseSpellCast(spellCastTicks, process, SpellCast.Action.RELEASE);
+                }
+            }
+        } else {
+            targets = List.of();
+        }
+    }
+
+    private void v2_releaseSpellCast(int spellCastTicks, SpellCast.Process process, SpellCast.Action action) {
+        var caster = player();
+        var spellId = process.id();
+        var spell = process.spell();
+        var slot = findSlot(caster, process.itemStack());
+        var release = spell.release.target;
+        int[] targetIDs = new int[]{};
+        switch (release.type) {
+            case PROJECTILE, CURSOR, METEOR -> {
+                var firstTarget = firstTarget();
+                if (firstTarget != null) {
+                    targetIDs = new int[]{ firstTarget.getId() };
+                }
+            }
+            case AREA, BEAM -> {
+                targetIDs = new int[targets.size()];
+                int i = 0;
+                for (var target : targets) {
+                    targetIDs[i] = target.getId();
+                    i += 1;
+                }
+            }
+            case SELF -> {
+            }
+        }
+        // System.out.println("Sending spell cast packet: " + new Packets.SpellRequest(action, spellId, slot, remainingUseTicks, targetIDs));
+        ClientPlayNetworking.send(
+                Packets.SpellRequest.ID,
+                new Packets.SpellRequest(Hand.MAIN_HAND, action, spellId, slot, 0, targetIDs).write());
+        switch (action) {
+            case START -> {
+            }
+            case CHANNEL -> {
+                if (spellCastTicks >= process.length()) {
+                    v2_cancelSpellCast();
+                }
+            }
+            case RELEASE -> {
+                v2_cancelSpellCast();
+            }
+        }
+    }
+
     // MARK: SpellCasterClient
 
     public boolean isHotbarModifierPressed() {
@@ -342,12 +494,14 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL_SpellEngine(CallbackInfo ci) {
+        v2_updateSpellCast();
+
         var player = player();
         var spellIdFromActiveStack = spellIdFromItemStack(player.getActiveItem());
         boolean usingItem = player.isUsingItem();
-        if (!usingItem || spellIdFromActiveStack == null) {
-            targets = List.of();
-        }
+//        if (!usingItem || spellIdFromActiveStack == null) {
+//            targets = List.of();
+//        }
         if (spellIdFromActiveStack == null) {
             clearCasting();
         }

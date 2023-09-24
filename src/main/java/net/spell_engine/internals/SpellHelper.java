@@ -79,13 +79,17 @@ public class SpellHelper {
         return new AmmoResult(satisfied, ammo);
     }
 
+    public static float hasteAffectedValue(float value, float haste) {
+        return value / haste;
+    }
+
     public static float hasteAffectedValue(LivingEntity caster, float value) {
         return hasteAffectedValue(caster, value, null);
     }
 
     public static float hasteAffectedValue(LivingEntity caster, float value, ItemStack provisionedWeapon) {
         var haste = (float) SpellPower.getHaste(caster, provisionedWeapon);
-        return value / haste;
+        return hasteAffectedValue(value, haste);
     }
 
     public static float getCastDuration(LivingEntity caster, Spell spell) {
@@ -97,6 +101,12 @@ public class SpellHelper {
             return 0;
         }
         return hasteAffectedValue(caster, spell.cast.duration, provisionedWeapon);
+    }
+
+    public static SpellCast.Duration getCastTimeDetails(LivingEntity caster, Spell spell) {
+        var haste = (float) SpellPower.getHaste(caster, null);
+        var duration = hasteAffectedValue(spell.cast.duration, haste);
+        return new SpellCast.Duration(haste, Math.round(duration * 20F));
     }
 
     public static float getCastProgress(LivingEntity caster, int remainingUseTicks, Spell spell) {

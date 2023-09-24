@@ -23,4 +23,9 @@ public interface SpellCasterClient extends SpellCasterEntity {
     void castStart(SpellContainer spell, Hand hand, ItemStack itemStack, int remainingUseTicks);
     void castTick(ItemStack itemStack, Hand hand, int remainingUseTicks);
     void castRelease(ItemStack itemStack, Hand hand, int remainingUseTicks);
+
+    SpellCast.Attempt v2_startSpellCast(ItemStack itemStack, Identifier spellId);
+    @Nullable SpellCast.Progress v2_getSpellCastProgress();
+    boolean v2_isCastingSpell();
+    void v2_cancelSpellCast();
 }
