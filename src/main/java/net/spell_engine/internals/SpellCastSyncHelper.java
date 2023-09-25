@@ -1,12 +1,11 @@
 package net.spell_engine.internals;
 
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.spell_engine.network.Packets;
+import net.spell_engine.internals.casting.SpellCasterEntity;
 
 import java.util.Collection;
 

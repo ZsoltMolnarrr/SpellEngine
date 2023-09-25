@@ -3,7 +3,6 @@ package net.spell_engine.client.gui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.*;
 import net.minecraft.text.Text;
@@ -20,9 +19,8 @@ import net.spell_engine.client.util.Rect;
 import net.spell_engine.client.util.SpellRender;
 import net.spell_engine.client.util.TextureFile;
 import net.spell_engine.config.HudConfig;
-import net.spell_engine.internals.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.internals.SpellHelper;
-import net.spell_engine.internals.SpellRegistry;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -76,12 +74,13 @@ public class HudRenderHelper {
             var spellCast = caster.v2_getSpellCastProgress();
             if (spellCast != null) {
                 castBarViewModel = new CastBarWidget.ViewModel(
-                        spellCast.spell().school.color(),
+                        spellCast.process().spell().school.color(),
                         spellCast.ratio(),
-                        spellCast.length(),
-                        SpellRender.iconTexture(spellCast.id()),
+                        spellCast.process().length(),
+                        SpellRender.iconTexture(spellCast.process().id()),
                         true,
-                        SpellHelper.isChanneled(spellCast.spell()));
+                        SpellHelper.isChanneled(spellCast.process().spell())
+                );
             }
 
             if (!config) {

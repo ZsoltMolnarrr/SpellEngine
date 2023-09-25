@@ -8,6 +8,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.*;
+import net.spell_engine.internals.casting.SpellCasterEntity;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -105,15 +106,5 @@ public class PlayerEntityMixin implements SpellCasterEntity {
             return spell.release.target.beam;
         }
         return null;
-    }
-
-    @Override
-    public void v2_castSpell(Identifier spellId) {
-
-    }
-
-    @Override
-    public void v2_stopCasting() {
-
     }
 }

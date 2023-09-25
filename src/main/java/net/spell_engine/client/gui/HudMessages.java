@@ -7,7 +7,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.client.SpellEngineClient;
-import net.spell_engine.internals.SpellCast;
+import net.spell_engine.internals.casting.SpellCast;
 
 import java.util.Locale;
 

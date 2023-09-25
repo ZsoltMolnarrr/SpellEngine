@@ -21,6 +21,8 @@ import net.spell_engine.client.gui.HudMessages;
 import net.spell_engine.client.input.InputHelper;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.*;
+import net.spell_engine.internals.casting.SpellCast;
+import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.network.Packets;
 import net.spell_engine.utils.TargetHelper;
 import org.jetbrains.annotations.Nullable;
@@ -60,23 +62,36 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         currentSpell = spellId;
     }
 
+//    @Override
+//    public Identifier getCurrentSpellId() {
+//        if (player().isUsingItem()) {
+//            return currentSpell;
+//        }
+//        return null;
+//    }
+
     @Override
     public Identifier getCurrentSpellId() {
-        if (player().isUsingItem()) {
-            return currentSpell;
+        if (spellCastProcess != null) {
+            return spellCastProcess.id();
         }
         return null;
     }
 
+    @Override
+    public Spell getCurrentSpell() {
+        if (spellCastProcess != null) {
+            return spellCastProcess.spell();
+        }
+        return null;
+    }
 
 
     private int spellCastTicks = 0;
     @Nullable private SpellCast.Process spellCastProcess;
 
     private void setSpellCastProcess(SpellCast.Process process) {
-        if (process == null) {
-            spellCastTicks = 0;
-        }
+        spellCastTicks = 0;
         spellCastProcess = process;
     }
 
@@ -112,8 +127,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     @Nullable public SpellCast.Progress v2_getSpellCastProgress() {
         if (spellCastProcess != null) {
-            var ratio = Math.min(((float)this.spellCastTicks) / spellCastProcess.length(), 1F);
-            return new SpellCast.Progress(spellCastProcess.id(), spellCastProcess.spell(), ratio, spellCastProcess.length());
+            return spellCastProcess.progress(this.spellCastTicks);
         }
         return null;
     }
@@ -128,9 +142,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             if (SpellHelper.isChanneled(process.spell())) {
                 var player = player();
                 var slot = findSlot(player, process.itemStack());
+                var progress = process.progress(spellCastTicks);
                 ClientPlayNetworking.send(
                         Packets.SpellRequest.ID,
-                        new Packets.SpellRequest(Hand.MAIN_HAND, SpellCast.Action.RELEASE, process.id(), slot, 0, new int[]{}).write());
+                        new Packets.SpellRequest(Hand.MAIN_HAND, SpellCast.Action.RELEASE, process.id(), slot, progress.ratio(), new int[]{}).write());
             }
         }
 
@@ -162,7 +177,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                         && (currentTick % spell.cast.channel_ticks) == 0;
                 if (isDue) {
                     // Channel spell
-                    // TODO: Channeled spells cooldown handling
                     v2_releaseSpellCast(spellCastTicks, process, SpellCast.Action.CHANNEL);
                 }
             } else {
@@ -182,6 +196,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         var spellId = process.id();
         var spell = process.spell();
         var slot = findSlot(caster, process.itemStack());
+        var progress = process.progress(spellCastTicks);
         var release = spell.release.target;
         int[] targetIDs = new int[]{};
         switch (release.type) {
@@ -205,7 +220,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         // System.out.println("Sending spell cast packet: " + new Packets.SpellRequest(action, spellId, slot, remainingUseTicks, targetIDs));
         ClientPlayNetworking.send(
                 Packets.SpellRequest.ID,
-                new Packets.SpellRequest(Hand.MAIN_HAND, action, spellId, slot, 0, targetIDs).write());
+                new Packets.SpellRequest(Hand.MAIN_HAND, action, spellId, slot, progress.ratio(), targetIDs).write());
         switch (action) {
             case START -> {
             }
@@ -309,7 +324,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 new Packets.SpellRequest(hand, SpellCast.Action.START, spellId, slot, remainingUseTicks, new int[]{}).write());
         setCurrentSpellId(spellId);
     }
-
     @Override
     public void castTick(ItemStack itemStack, Hand hand, int remainingUseTicks) {
         // System.out.println("Spell cast tick: " + (SpellHelper.maximumUseTicks - remainingUseTicks));

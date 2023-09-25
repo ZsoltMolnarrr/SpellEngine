@@ -8,20 +8,22 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.client.SpellEngineClient;
-import net.spell_engine.internals.SpellCasterClient;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
+import net.spell_engine.internals.casting.SpellCast;
+import net.spell_engine.internals.casting.SpellCasterClient;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class SpellHotbar {
     public static SpellHotbar INSTANCE = new SpellHotbar();
 
     public List<Slot> slots = List.of();
-    public record Slot(SpellInfo spell, @Nullable KeyBinding keybinding) { }
+    public record Slot(SpellInfo spell, SpellCast.Mode castMode, @Nullable KeyBinding keybinding) { }
 
     public void update(ClientPlayerEntity player) {
         var slots = new ArrayList<Slot>();
@@ -32,7 +34,7 @@ public class SpellHotbar {
             for (int i = 0; i < spellIds.size(); i++) {
                 var spellId = new Identifier(spellIds.get(i));
                 var spell = SpellRegistry.getSpell(spellId);
-                slots.add(new Slot(new SpellInfo(spell, spellId), keyBinding(i)));
+                slots.add(new Slot(new SpellInfo(spell, spellId), SpellCast.Mode.from(spell), keyBinding(i)));
             }
         }
         this.slots = slots;
@@ -41,35 +43,66 @@ public class SpellHotbar {
     public boolean handle(ClientPlayerEntity player) {
         var caster = ((SpellCasterClient) player);
         var casted = caster.v2_getSpellCastProgress();
-        if (casted != null) {
-            var slot = slotForSpell(casted.id());
-            var needsToBeHeld = SpellHelper.isChanneled(casted.spell()) ?
-                    SpellEngineClient.config.holdToCastChannelled :
-                    SpellEngineClient.config.holdToCastCasted;
-            if (needsToBeHeld
-                    && slot != null
-                    && slot.keybinding != null
-                    && !slot.keybinding.isPressed()) {
-                caster.v2_cancelSpellCast();
+        var casterStack = player.getMainHandStack();
+        updateDebounced();
+        for(var slot: slots) {
+            if (slot.keybinding != null) {
+                var isPressed = slot.keybinding.isPressed();
+
+                switch (slot.castMode()) {
+                    case INSTANT -> {
+                        if (isPressed) {
+                            caster.v2_startSpellCast(casterStack, slot.spell.id());
+                            return true;
+                        }
+                    }
+                    case CHARGE, CHANNEL -> {
+                        if (casted != null && casted.process().id().equals(slot.spell.id())) {
+                            // The spell is already being casted
+                            var needsToBeHeld = SpellHelper.isChanneled(casted.process().spell()) ?
+                                    SpellEngineClient.config.holdToCastChannelled :
+                                    SpellEngineClient.config.holdToCastCharged;
+                            if (needsToBeHeld) {
+                                if (!isPressed) {
+                                    caster.v2_cancelSpellCast();
+                                    return true;
+                                }
+                            } else {
+                                if (isPressed && isReleased(slot.keybinding, Use.START)) {
+                                    caster.v2_cancelSpellCast();
+                                    debounce(slot.keybinding, Use.STOP);
+                                    return true;
+                                }
+                            }
+                        } else {
+                            // A different spell or no spell is being casted
+                            if (isPressed && isReleased(slot.keybinding, Use.STOP)) {
+                                caster.v2_startSpellCast(casterStack, slot.spell.id());
+                                debounce(slot.keybinding, Use.START);
+                                return true;
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        for(var slot: slots) {
-            if (slot.keybinding != null && slot.keybinding.isPressed()) {
-                caster.v2_startSpellCast(player.getMainHandStack(), slot.spell.id());
-                return true;
-            }
-        }
         return false;
     }
 
-    private Slot slotForSpell(Identifier spellId) {
-        for (var slot: slots) {
-            if (slot.spell.id().equals(spellId)) {
-                return slot;
-            }
-        }
-        return null;
+    private enum Use { START, STOP }
+    private HashMap<KeyBinding, Use> debounced = new HashMap<>();
+
+    private boolean isReleased(KeyBinding keybinding, Use use) {
+        return debounced.get(keybinding) != use;
+    }
+
+    private void debounce(KeyBinding keybinding, Use use) {
+        debounced.put(keybinding, use);
+    }
+
+    private void updateDebounced() {
+        debounced.entrySet().removeIf(entry -> !entry.getKey().isPressed());
     }
 
     private static @Nullable KeyBinding keyBinding(int index) {

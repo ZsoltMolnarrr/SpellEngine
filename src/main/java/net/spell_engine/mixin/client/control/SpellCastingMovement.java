@@ -3,7 +3,7 @@ package net.spell_engine.mixin.client.control;
 import net.minecraft.client.input.Input;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.internals.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCasterClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;

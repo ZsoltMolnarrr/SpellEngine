@@ -9,14 +9,14 @@ import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.ParticleBatch;
 import net.spell_engine.config.ServerConfig;
-import net.spell_engine.internals.SpellCast;
+import net.spell_engine.internals.casting.SpellCast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Packets {
 
-    public record SpellRequest(Hand hand, SpellCast.Action action, Identifier spellId, int slot, int remainingUseTicks, int[] targets) {
+    public record SpellRequest(Hand hand, SpellCast.Action action, Identifier spellId, int slot, float progress, int[] targets) {
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "release_request");
 
         public PacketByteBuf write() {
@@ -25,7 +25,7 @@ public class Packets {
             buffer.writeEnumConstant(action);
             buffer.writeString(spellId.toString());
             buffer.writeInt(slot);
-            buffer.writeInt(remainingUseTicks);
+            buffer.writeFloat(progress);
             buffer.writeIntArray(targets);
             return buffer;
         }
@@ -34,9 +34,9 @@ public class Packets {
             var action = buffer.readEnumConstant(SpellCast.Action.class);
             var spellId = new Identifier(buffer.readString());
             var slot = buffer.readInt();
-            var remainingUseTicks = buffer.readInt();
+            var progress = buffer.readFloat();
             var targets = buffer.readIntArray();
-            return new SpellRequest(hand, action, spellId, slot, remainingUseTicks, targets);
+            return new SpellRequest(hand, action, spellId, slot, progress, targets);
         }
     }
 

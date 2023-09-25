@@ -7,7 +7,7 @@ import net.minecraft.text.Text;
 import net.spell_engine.api.item.trinket.SpellBookItem;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.client.SpellEngineClient;
-import net.spell_engine.internals.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCasterClient;
 
 public class InputHelper {
     public static boolean isLocked = false;

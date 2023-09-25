@@ -24,6 +24,8 @@ import net.spell_engine.api.spell.SpellEvents;
 import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.SpellProjectile;
+import net.spell_engine.internals.casting.SpellCast;
+import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.AnimationHelper;
 import net.spell_engine.utils.SoundHelper;
@@ -155,7 +157,7 @@ public class SpellHelper {
         return ((float)ticks) / 20F;
     }
 
-    public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCast.Action action, Hand hand, int remainingUseTicks) {
+    public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCast.Action action, Hand hand, float progress) {
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
             return;
@@ -165,7 +167,8 @@ public class SpellHelper {
         if (caster.getCooldownManager().isCoolingDown(spellId)) {
             return;
         }
-        var progress = getCastProgress(player, remainingUseTicks, spell);
+        // Normalized progress in 0 to 1
+        progress = Math.max(Math.min(progress, 1F), 0F);
         var channelMultiplier = 1F;
         boolean shouldPerformImpact = true;
         Supplier<Collection<ServerPlayerEntity>> trackingPlayers = Suppliers.memoize(() -> { // Suppliers.memoize = Lazy
@@ -206,7 +209,7 @@ public class SpellHelper {
                     released = false;
                     if (handler != null) {
                         released = handler.apply(new CustomSpellHandler.Data(
-                                player, targets, itemStack, action, hand, remainingUseTicks, context));
+                                player, targets, itemStack, action, hand, progress, context));
                     }
                 } else {
                     switch (targeting.type) {

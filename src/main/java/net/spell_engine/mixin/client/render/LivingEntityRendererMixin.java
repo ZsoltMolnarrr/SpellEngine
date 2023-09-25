@@ -17,7 +17,7 @@ import net.spell_engine.client.beam.BeamEmitterEntity;
 import net.spell_engine.client.render.BeamRenderer;
 import net.spell_engine.api.render.CustomLayers;
 import net.spell_engine.internals.Beam;
-import net.spell_engine.internals.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.utils.TargetHelper;
 import org.spongepowered.asm.mixin.Mixin;

@@ -2,7 +2,7 @@ package net.spell_engine.mixin;
 
 import net.minecraft.entity.LivingEntity;
 import net.spell_engine.entity.ConfigurableKnockback;
-import net.spell_engine.internals.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCasterClient;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;

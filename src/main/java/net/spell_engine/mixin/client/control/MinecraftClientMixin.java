@@ -9,7 +9,7 @@ import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.HudMessages;
 import net.spell_engine.client.input.InputHelper;
 import net.spell_engine.client.input.Keybindings;
-import net.spell_engine.internals.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.utils.TargetHelper;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;

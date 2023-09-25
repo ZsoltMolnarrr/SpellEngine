@@ -11,7 +11,7 @@ public class ClientConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip
     public boolean holdToCastChannelled = true;
     @ConfigEntry.Gui.Tooltip
-    public boolean holdToCastCasted = false;
+    public boolean holdToCastCharged = false;
 
     @ConfigEntry.Gui.Tooltip
     public boolean highlightTarget = true;

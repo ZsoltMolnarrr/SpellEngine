@@ -8,8 +8,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.internals.SpellCast.Action;
-import net.spell_engine.internals.SpellCasterEntity;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
 
@@ -42,7 +40,7 @@ public class ServerNetwork {
                         targets.add(entity);
                     }
                 }
-                SpellHelper.performSpell(world, player, packet.spellId(), targets, stack, packet.action(), packet.hand(), packet.remainingUseTicks());
+                SpellHelper.performSpell(world, player, packet.spellId(), targets, stack, packet.action(), packet.hand(), packet.progress());
             });
         });
     }
