@@ -2,6 +2,7 @@ package net.spell_engine.client.input;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.player.PlayerEntity;
@@ -25,39 +26,64 @@ import java.util.List;
 public class SpellHotbar {
     public static SpellHotbar INSTANCE = new SpellHotbar();
 
-    public List<Slot> slots = List.of();
     public record Slot(SpellInfo spell, SpellCast.Mode castMode, @Nullable KeyBinding keybinding) { }
-
-
-
-    private void loadConflictingKeys() {
-        if (expectedConflictingKeys.isEmpty()) {
-            expectedConflictingKeys = List.of();
-        }
-    }
-
-    private List<KeyBinding> expectedConflictingKeys = List.of();
-    private HashMap<KeyBinding, KeyBinding> conflictingKeys = new HashMap<>();
-
-
-
-
-    public void update(ClientPlayerEntity player) {
-        var slots = new ArrayList<Slot>();
+    public List<Slot> slots = List.of();
+    public CategorizedSlots categorizedSlots = new CategorizedSlots(null, List.of());
+    public record CategorizedSlots(@Nullable Slot onUseKey, List<Slot> other) { }
+    public void update(ClientPlayerEntity player, GameOptions options) {
         var held = player.getMainHandStack();
         var container = container(player, held);
+
+        var slots = new ArrayList<Slot>();
+        var useKey = ((KeybindingAccessor) options.useKey).getBoundKey();
+        Slot onUseKey = null;
+        var otherSlots = new ArrayList<Slot>();
+
         if (container != null) {
             var spellIds = container.spell_ids;
             for (int i = 0; i < spellIds.size(); i++) {
                 var spellId = new Identifier(spellIds.get(i));
                 var spell = SpellRegistry.getSpell(spellId);
-                slots.add(new Slot(new SpellInfo(spell, spellId), SpellCast.Mode.from(spell), keyBinding(i)));
+                var keyBinding = keyBinding(i);
+
+                // Create slot
+                var slot = new Slot(new SpellInfo(spell, spellId), SpellCast.Mode.from(spell), keyBinding);
+
+                // Try to categorize slot based on keybinding
+                if (keyBinding != null) {
+                    var hotbarKey = ((KeybindingAccessor) keyBinding).getBoundKey();
+                    if (hotbarKey.equals(useKey)) {
+                        onUseKey = slot;
+                    } else {
+                        otherSlots.add(slot);
+                    }
+                }
+
+                // Save to all slots
+                slots.add(slot);
             }
         }
+
         this.slots = slots;
+        this.categorizedSlots = new CategorizedSlots(onUseKey, otherSlots);
+    }
+
+    private boolean handledKeyThisTick = false;
+    public void clearHandle() {
+        this.handledKeyThisTick = false;
     }
 
     @Nullable public KeyBinding handle(ClientPlayerEntity player) {
+        return handle(player, this.slots);
+    }
+
+    @Nullable public KeyBinding handle(ClientPlayerEntity player, @Nullable Slot slot) {
+        if (slot == null) { return null; }
+        return handle(player, List.of(slot));
+    }
+
+    @Nullable public KeyBinding handle(ClientPlayerEntity player, List<Slot> slots) {
+        if (handledKeyThisTick) { return null; }
         var caster = ((SpellCasterClient) player);
         var casted = caster.v2_getSpellCastProgress();
         var casterStack = player.getMainHandStack();

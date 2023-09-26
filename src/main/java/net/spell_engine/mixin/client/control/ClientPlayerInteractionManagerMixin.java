@@ -1,10 +1,13 @@
 package net.spell_engine.mixin.client.control;
 
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.spell_engine.api.effect.EntityActionsAllowed;
+import net.spell_engine.client.SpellEngineClient;
+import net.spell_engine.client.input.SpellHotbar;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -17,6 +20,12 @@ public class ClientPlayerInteractionManagerMixin {
         if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ITEM_USE, true)) {
             cir.setReturnValue(ActionResult.FAIL);
             cir.cancel();
+        }
+
+        if (!SpellEngineClient.config.useKeyHighPriority) {
+            if (player instanceof ClientPlayerEntity clientPlayer) {
+                SpellHotbar.INSTANCE.handle(clientPlayer, SpellHotbar.INSTANCE.categorizedSlots.onUseKey());
+            }
         }
 
         // Maybe handle useKey here?

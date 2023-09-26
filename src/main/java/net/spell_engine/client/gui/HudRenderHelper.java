@@ -12,7 +12,6 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
-import net.spell_engine.client.input.InputHelper;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.client.util.Rect;
@@ -112,9 +111,9 @@ public class HudRenderHelper {
                 hotbarViewModel = SpellHotBarWidget.ViewModel.mock();
             }
             SpellHotBarWidget.render(context, screenWidth, screenHeight, hotbarViewModel);
-            if(clientConfig.collapsedIndicators && hotbarAccessories != null) {
-                SpellHotBarWidget.renderAccessories(context, screenWidth, screenHeight, hotbarAccessories);
-            }
+//            if(clientConfig.collapsedIndicators && hotbarAccessories != null) {
+//                SpellHotBarWidget.renderAccessories(context, screenWidth, screenHeight, hotbarAccessories);
+//            }
         }
 
         if (errorViewModel != null) {
@@ -298,7 +297,8 @@ public class HudRenderHelper {
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
 
-            float barOpacity = (SpellEngineClient.config.indicateActiveHotbar && InputHelper.isLocked) ? 1F : 0.5F;
+            // float barOpacity = (SpellEngineClient.config.indicateActiveHotbar && InputHelper.isLocked) ? 1F : 0.5F;
+            float barOpacity = 1F;
 
             // Background
             context.setShaderColor(1.0f, 1.0f, 1.0f, barOpacity);
@@ -324,14 +324,14 @@ public class HudRenderHelper {
                 }
             }
 
-            // Selector
-            if (viewModel.spells.size() > 1) {
-                int selectorSize = 24;
-                context.setShaderColor(1.0f, 1.0f, 1.0f, barOpacity);
-                int x = ((int) origin.x) - 1 + (slotWidth * viewModel.selected);
-                int y = ((int) origin.y) - 1;
-                context.drawTexture(WIDGETS.id(), x, y, 0, 22, selectorSize, selectorSize, WIDGETS.width(), WIDGETS.height());
-            }
+//            // Selector
+//            if (viewModel.spells.size() > 1) {
+//                int selectorSize = 24;
+//                context.setShaderColor(1.0f, 1.0f, 1.0f, barOpacity);
+//                int x = ((int) origin.x) - 1 + (slotWidth * viewModel.selected);
+//                int y = ((int) origin.y) - 1;
+//                context.drawTexture(WIDGETS.id(), x, y, 0, 22, selectorSize, selectorSize, WIDGETS.width(), WIDGETS.height());
+//            }
 
             RenderSystem.disableBlend();
             context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -350,7 +350,8 @@ public class HudRenderHelper {
                     .getPoint(screenWidth, screenHeight)
                     .add(config.offset);
 
-            float barOpacity = (SpellEngineClient.config.indicateActiveHotbar && InputHelper.isLocked) ? 1F : 0.5F;
+            // float barOpacity = (SpellEngineClient.config.indicateActiveHotbar && InputHelper.isLocked) ? 1F : 0.5F;
+            float barOpacity = 1F;
 
             var spacing = 7;
             for (int i = 0; i < viewModel.spells.size(); i++) {

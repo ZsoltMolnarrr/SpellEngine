@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
+import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.client.input.SpellHotbar;
 import org.jetbrains.annotations.Nullable;
@@ -52,7 +53,10 @@ public class SpellHotbarMinecraftClient {
     @Inject(method = "tick", at = @At(value = "HEAD"))
     private void tick_HEAD_SpellHotbar(CallbackInfo ci) {
         if (player == null) { return; }
-        SpellHotbar.INSTANCE.update(player);
+        // Update the content of the Spell Hotbar
+        // This needs to run every tick because the player's held caster item may change any time
+        SpellHotbar.INSTANCE.update(player, options);
+        SpellHotbar.INSTANCE.clearHandle();
 
         // FIXME: Call these on event
         loadPotentiallyConflictingKeys();
@@ -62,7 +66,16 @@ public class SpellHotbarMinecraftClient {
     @Inject(method = "handleInputEvents", at = @At(value = "HEAD"), cancellable = true)
     private void handleInputEvents_HEAD_SpellHotbar(CallbackInfo ci) {
         if (player == null) { return; }
-        var handledKeybind = SpellHotbar.INSTANCE.handle(player);
+
+        // We might need to sync conflicting keys :(
+
+        KeyBinding handledKeybind = null;
+        if (SpellEngineClient.config.useKeyHighPriority) {
+            handledKeybind = SpellHotbar.INSTANCE.handle(player);
+        } else {
+            handledKeybind = SpellHotbar.INSTANCE.handle(player, SpellHotbar.INSTANCE.categorizedSlots.other());
+        }
+
         System.out.println("SpellHotbar handled: " + handledKeybind);
         if (handledKeybind != null) {
             for (var conflicting: conflictingKeys.values()) {

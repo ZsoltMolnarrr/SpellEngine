@@ -9,20 +9,18 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.TypedActionResult;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.HudMessages;
-import net.spell_engine.client.input.InputHelper;
 import net.spell_engine.client.input.Keybindings;
-import net.spell_engine.internals.*;
+import net.spell_engine.internals.SpellContainerHelper;
+import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.network.Packets;
@@ -336,13 +334,13 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         var caster = player();
         var currentSpellId = getCurrentSpellId();
         var currentSpell = getCurrentSpell();
-        if (currentSpell == null
-                || (SpellEngineClient.config.restartCastingWhenSwitchingSpell
-                    && !currentSpellId.equals(spellIdFromItemStack(itemStack)))
-        ) {
-            stopItemUsage();
-            return;
-        }
+//        if (currentSpell == null
+//                || (SpellEngineClient.config.restartCastingWhenSwitchingSpell
+//                    && !currentSpellId.equals(spellIdFromItemStack(itemStack)))
+//        ) {
+//            stopItemUsage();
+//            return;
+//        }
 
         updateTargets();
         var progress = SpellHelper.getCastProgress(caster, remainingUseTicks, currentSpell);
@@ -353,10 +351,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 stopItemUsage(); // Triggers cast release (via: Player -> ItemStack(onStoppedUsing) -> castRelease)
             }
         } else {
-            if (SpellEngineClient.config.autoRelease
-                    && SpellHelper.getCastProgress(caster, remainingUseTicks, currentSpell) >= 1) {
-                stopItemUsage(); // Triggers cast release (via: Player -> ItemStack(onStoppedUsing) -> castRelease)
-            }
+//            if (SpellEngineClient.config.autoRelease
+//                    && SpellHelper.getCastProgress(caster, remainingUseTicks, currentSpell) >= 1) {
+//                stopItemUsage(); // Triggers cast release (via: Player -> ItemStack(onStoppedUsing) -> castRelease)
+//            }
         }
     }
 
