@@ -13,7 +13,9 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.TypedActionResult;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.client.SpellEngineClient;
@@ -106,6 +108,9 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 || spell == null) {
             return SpellCast.Attempt.none();
         }
+        if (EntityActionsAllowed.isImpaired(caster, EntityActionsAllowed.Player.CAST_SPELL, true)) {
+            return SpellCast.Attempt.none();
+        }
         var attempt = SpellHelper.attemptCasting(caster, itemStack, spellId);
         if (attempt.isSuccess()) {
             var instant = spell.cast.duration <= 0;
@@ -161,6 +166,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             if (!player().isAlive()
                     || player.getMainHandStack() != process.itemStack()
                     || getCooldownManager().isCoolingDown(process.id())
+                    || EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.CAST_SPELL, true)
             ) {
                 v2_cancelSpellCast();
                 return;
@@ -529,19 +535,19 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
         if (!SpellEngineClient.tutorial.value.spell_hotbar_shown) {
             var container = SpellContainerHelper.containerWithProxy(player.getMainHandStack(), player);
-            if (InputHelper.canLockOnContainer(container)) {
-                var keybinding = Keybindings.hotbarLock;
-                var description = Text.translatable("tutorial.spell_hotbar.unbound");
-                if (!keybinding.isUnbound()) {
-                    var key = Text.of(keybinding.getBoundKeyLocalizedText().getString().toUpperCase()).copy().formatted(Formatting.BOLD);
-                    description = Text.translatable("tutorial.spell_hotbar.description", key);
-                }
-                this.tutorialToast = new TutorialToast(TutorialToast.Type.MOVEMENT_KEYS, Text.translatable("tutorial.spell_hotbar.title"), description, false);
-                this.tutorialToastTicks = 140;
-                this.client.getToastManager().add(tutorialToast);
-                SpellEngineClient.tutorial.value.spell_hotbar_shown = true;
-                SpellEngineClient.tutorial.save();
-            }
+//            if (InputHelper.canLockOnContainer(container)) {
+//                var keybinding = Keybindings.hotbarLock;
+//                var description = Text.translatable("tutorial.spell_hotbar.unbound");
+//                if (!keybinding.isUnbound()) {
+//                    var key = Text.of(keybinding.getBoundKeyLocalizedText().getString().toUpperCase()).copy().formatted(Formatting.BOLD);
+//                    description = Text.translatable("tutorial.spell_hotbar.description", key);
+//                }
+//                this.tutorialToast = new TutorialToast(TutorialToast.Type.MOVEMENT_KEYS, Text.translatable("tutorial.spell_hotbar.title"), description, false);
+//                this.tutorialToastTicks = 140;
+//                this.client.getToastManager().add(tutorialToast);
+//                SpellEngineClient.tutorial.value.spell_hotbar_shown = true;
+//                SpellEngineClient.tutorial.save();
+//            }
         }
         if (tutorialToastTicks > 0) {
             tutorialToastTicks -= 1;

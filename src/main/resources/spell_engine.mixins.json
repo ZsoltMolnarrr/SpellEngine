@@ -30,7 +30,7 @@
     "client.control.ClientPlayerInteractionManagerMixin",
     "client.control.InGameHudMixin",
     "client.control.KeybindingAccessor",
-    "client.control.MinecraftClientMixin",
+    "client.render.TargetHighlightMinecraftClient",
     "client.control.SpellCastingMovement",
     "client.control.SpellHotbarMinecraftClient",
     "client.render.EntityMixin",

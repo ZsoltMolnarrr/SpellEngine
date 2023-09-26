@@ -5,8 +5,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.spell_engine.api.effect.EntityActionsAllowed;
-import net.spell_engine.client.SpellEngineClient;
-import net.spell_engine.client.input.InputHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,13 +18,16 @@ public class ClientPlayerInteractionManagerMixin {
             cir.setReturnValue(ActionResult.FAIL);
             cir.cancel();
         }
-        if(SpellEngineClient.config.lockHotbarOnRightClick && !InputHelper.isLocked) {
-            if (InputHelper.hasLockableSpellContainer(player)) {
-                InputHelper.isLocked = true;
-                InputHelper.showLockedMessage("ESC");
-                cir.setReturnValue(ActionResult.PASS);
-                cir.cancel();
-            }
-        }
+
+        // Maybe handle useKey here?
+
+//        if(SpellEngineClient.config.lockHotbarOnRightClick && !InputHelper.isLocked) {
+//            if (InputHelper.hasLockableSpellContainer(player)) {
+//                InputHelper.isLocked = true;
+//                InputHelper.showLockedMessage("ESC");
+//                cir.setReturnValue(ActionResult.PASS);
+//                cir.cancel();
+//            }
+//        }
     }
 }
