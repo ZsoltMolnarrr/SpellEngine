@@ -50,6 +50,22 @@ public class SpellHotbarMinecraftClient {
         }
     }
 
+    private void handleConflictingKeys() {
+        // Special treat for `options.useKey` since it is no longer
+        // getting state updates after conflicting key is assigned
+        var useKey = ((KeybindingAccessor) options.useKey).getBoundKey();
+        var keybind = Keybindings
+                .spellHotbar
+                .stream()
+                .filter(keyBinding -> { return ((KeybindingAccessor) keyBinding).getBoundKey().equals(useKey); })
+                .findFirst();
+        if (keybind.isPresent()) {
+            // Expecting `options.useKey` state not to be updated due to conflicting key
+            options.useKey.setPressed(keybind.get().isPressed());
+            System.out.println("options.useKey.setPressed(" + options.useKey.isPressed() + ")");
+        }
+    }
+
     @Inject(method = "tick", at = @At(value = "HEAD"))
     private void tick_HEAD_SpellHotbar(CallbackInfo ci) {
         if (player == null) { return; }
@@ -67,7 +83,7 @@ public class SpellHotbarMinecraftClient {
     private void handleInputEvents_HEAD_SpellHotbar(CallbackInfo ci) {
         if (player == null) { return; }
 
-        // We might need to sync conflicting keys :(
+        handleConflictingKeys();
 
         KeyBinding handledKeybind = null;
         if (SpellEngineClient.config.useKeyHighPriority) {
