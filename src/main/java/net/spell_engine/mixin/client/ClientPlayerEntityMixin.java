@@ -500,52 +500,16 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return targets;
     }
 
-    private int tutorialToastTicks = 0;
-    private TutorialToast tutorialToast;
-
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL_SpellEngine(CallbackInfo ci) {
         v2_updateSpellCast();
-
         var player = player();
-        var spellIdFromActiveStack = spellIdFromItemStack(player.getActiveItem());
-        boolean usingItem = player.isUsingItem();
-//        if (!usingItem || spellIdFromActiveStack == null) {
-//            targets = List.of();
-//        }
-        if (spellIdFromActiveStack == null) {
-            clearCasting();
-        }
         if (isBeaming()) {
             networkHandler.sendPacket(new PlayerMoveC2SPacket.Full(
                     player.getX(), player.getY(), player.getZ(),
                     player.getYaw(), player.getPitch(),
                     player.isOnGround())
             );
-        }
-
-        if (!SpellEngineClient.tutorial.value.spell_hotbar_shown) {
-            var container = SpellContainerHelper.containerWithProxy(player.getMainHandStack(), player);
-//            if (InputHelper.canLockOnContainer(container)) {
-//                var keybinding = Keybindings.hotbarLock;
-//                var description = Text.translatable("tutorial.spell_hotbar.unbound");
-//                if (!keybinding.isUnbound()) {
-//                    var key = Text.of(keybinding.getBoundKeyLocalizedText().getString().toUpperCase()).copy().formatted(Formatting.BOLD);
-//                    description = Text.translatable("tutorial.spell_hotbar.description", key);
-//                }
-//                this.tutorialToast = new TutorialToast(TutorialToast.Type.MOVEMENT_KEYS, Text.translatable("tutorial.spell_hotbar.title"), description, false);
-//                this.tutorialToastTicks = 140;
-//                this.client.getToastManager().add(tutorialToast);
-//                SpellEngineClient.tutorial.value.spell_hotbar_shown = true;
-//                SpellEngineClient.tutorial.save();
-//            }
-        }
-        if (tutorialToastTicks > 0) {
-            tutorialToastTicks -= 1;
-            if (tutorialToastTicks == 0 && tutorialToast != null) {
-                tutorialToast.hide();
-                tutorialToast = null;
-            }
         }
     }
 }
