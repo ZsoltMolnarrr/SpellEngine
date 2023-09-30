@@ -90,9 +90,12 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     private int spellCastTicks = 0;
     @Nullable private SpellCast.Process spellCastProcess;
 
-    private void setSpellCastProcess(SpellCast.Process process) {
+    private void setSpellCastProcess(SpellCast.Process process, boolean sync) {
         spellCastTicks = 0;
         spellCastProcess = process;
+        if (sync) {
+            // TODO: Send packet to server
+        }
     }
 
     public SpellCast.Attempt v2_startSpellCast(ItemStack itemStack, Identifier spellId) {
@@ -111,6 +114,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
         var attempt = SpellHelper.attemptCasting(caster, itemStack, spellId);
         if (attempt.isSuccess()) {
+            if (spellCastProcess != null) {
+                // Cancel previous spell
+                v2_cancelSpellCast(false);
+            }
             var instant = spell.cast.duration <= 0;
             if (instant) {
                 // Release spell
@@ -119,7 +126,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             } else {
                 // Start casting
                 var details = SpellHelper.getCastTimeDetails(caster, spell);
-                setSpellCastProcess(new SpellCast.Process(spellId, spell, itemStack, details.speed(), details.length()));
+                setSpellCastProcess(new SpellCast.Process(spellId, spell, itemStack, details.speed(), details.length()), true);
             }
         }
         if (attempt.isFail()) {
@@ -140,6 +147,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     public void v2_cancelSpellCast() {
+        v2_cancelSpellCast(true);
+    }
+
+    public void v2_cancelSpellCast(boolean syncProcess) {
         var process = spellCastProcess;
         if (process != null) {
             if (SpellHelper.isChanneled(process.spell())) {
@@ -153,7 +164,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
 
         spellCastTicks = 0;
-        setSpellCastProcess(null);
+        setSpellCastProcess(null, syncProcess);
         targets = List.of();
     }
 
