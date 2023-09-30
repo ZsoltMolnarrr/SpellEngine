@@ -1,5 +1,6 @@
 package net.spell_engine.mixin.client.control;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerEntity;
@@ -8,13 +9,17 @@ import net.minecraft.util.Hand;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.SpellHotbar;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ClientPlayerInteractionManager.class)
 public class ClientPlayerInteractionManagerMixin {
+    @Shadow @Final private MinecraftClient client;
+
     @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
     public void interactItem_HEAD_LockHotbar(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ITEM_USE, true)) {
@@ -22,21 +27,10 @@ public class ClientPlayerInteractionManagerMixin {
             cir.cancel();
         }
 
-//        if (!SpellEngineClient.config.useKeyHighPriority) {
-//            if (player instanceof ClientPlayerEntity clientPlayer) {
-//                SpellHotbar.INSTANCE.handle(clientPlayer, SpellHotbar.INSTANCE.categorizedSlots.onUseKey());
-//            }
-//        }
-
-        // Maybe handle useKey here?
-
-//        if(SpellEngineClient.config.lockHotbarOnRightClick && !InputHelper.isLocked) {
-//            if (InputHelper.hasLockableSpellContainer(player)) {
-//                InputHelper.isLocked = true;
-//                InputHelper.showLockedMessage("ESC");
-//                cir.setReturnValue(ActionResult.PASS);
-//                cir.cancel();
-//            }
-//        }
+        if (!SpellEngineClient.config.useKeyHighPriority) {
+            if (player instanceof ClientPlayerEntity clientPlayer) {
+                SpellHotbar.INSTANCE.handle(clientPlayer, SpellHotbar.INSTANCE.structuredSlots.onUseKey(), client.options);
+            }
+        }
     }
 }

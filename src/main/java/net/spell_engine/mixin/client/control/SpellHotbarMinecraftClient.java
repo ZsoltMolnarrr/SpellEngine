@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
+import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.client.input.WrappedKeybinding;
 import org.jetbrains.annotations.Nullable;
@@ -21,7 +22,6 @@ import java.util.Map;
 public class SpellHotbarMinecraftClient {
     @Shadow @Nullable public ClientPlayerEntity player;
     @Shadow @Final public GameOptions options;
-
     @Shadow private int itemUseCooldown;
 
     @Inject(method = "tick", at = @At(value = "HEAD"))
@@ -29,15 +29,22 @@ public class SpellHotbarMinecraftClient {
         if (player == null) { return; }
         // Update the content of the Spell Hotbar
         // This needs to run every tick because the player's held caster item may change any time
-        SpellHotbar.INSTANCE.update(player);
+        SpellHotbar.INSTANCE.update(player, options);
+        SpellHotbar.INSTANCE.prepare();
     }
 
-    @Nullable private WrappedKeybinding.VanillaAlternative.Category spellHotbarHandle = null;
+    @Nullable private WrappedKeybinding.Category spellHotbarHandle = null;
     @Inject(method = "handleInputEvents", at = @At(value = "HEAD"))
     private void handleInputEvents_HEAD_SpellHotbar(CallbackInfo ci) {
         spellHotbarHandle = null;
         if (player == null || options == null || itemUseCooldown > 0) { return; }
-        spellHotbarHandle = SpellHotbar.INSTANCE.handle(player, options);
+
+        if (SpellEngineClient.config.useKeyHighPriority) {
+            spellHotbarHandle = SpellHotbar.INSTANCE.handle(player, options);
+        } else {
+            spellHotbarHandle = SpellHotbar.INSTANCE.handle(player, SpellHotbar.INSTANCE.structuredSlots.other(), options);
+        }
+
         pushConflictingPressState(spellHotbarHandle, false);
     }
 
@@ -48,7 +55,7 @@ public class SpellHotbarMinecraftClient {
     }
 
     private Map<KeyBinding, Boolean> conflictingPressState = new HashMap<>();
-    private void pushConflictingPressState(WrappedKeybinding.VanillaAlternative.Category spellHotbarHandle, boolean value) {
+    private void pushConflictingPressState(WrappedKeybinding.Category spellHotbarHandle, boolean value) {
         if (spellHotbarHandle != null) {
             switch (spellHotbarHandle) {
                 case USE_KEY -> {

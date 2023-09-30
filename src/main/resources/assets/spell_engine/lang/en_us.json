@@ -55,6 +55,10 @@
 
   "text.autoconfig.spell_engine.title" : "Spell Engine",
 
+  "text.autoconfig.spell_engine.option.client.holdToCastChannelled" : "Hold to cast CHANNELLED spells",
+  "text.autoconfig.spell_engine.option.client.holdToCastChannelled.@Tooltip" : "This applies for channeled spells only! If enabled, the spell casting stops when releasing the key, otherwise when the key is pressed again",
+  "text.autoconfig.spell_engine.option.client.holdToCastCharged" : "Hold to cast CHARGED spells",
+  "text.autoconfig.spell_engine.option.client.holdToCastCharged.@Tooltip" : "This applies for charged spells only! If enabled, the spell casting stops when releasing the key, otherwise when the key is pressed again",
   "text.autoconfig.spell_engine.option.client.spellHotbar_1_defer" : "Spell Hotbar Slot 1 fallback",
   "text.autoconfig.spell_engine.option.client.spellHotbar_1_defer.@Tooltip" : "Spell Hotbar Slot 1 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
   "text.autoconfig.spell_engine.option.client.spellHotbar_2_defer" : "Spell Hotbar Slot 2 fallback",
@@ -63,7 +67,8 @@
   "text.autoconfig.spell_engine.option.client.spellHotbar_3_defer.@Tooltip" : "Spell Hotbar Slot 3 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
   "text.autoconfig.spell_engine.option.client.spellHotbar_4_defer" : "Spell Hotbar Slot 4 fallback",
   "text.autoconfig.spell_engine.option.client.spellHotbar_4_defer.@Tooltip" : "Spell Hotbar Slot 4 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
-
+  "text.autoconfig.spell_engine.option.client.useKeyHighPriority" : "Prioritize casting spell for 'use' keybind",
+  "text.autoconfig.spell_engine.option.client.useKeyHighPriority.@Tooltip" : "Tries to cast spells instead of interacting blocks and entities",
   "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple" : "Show target name when multiple",
   "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple.@Tooltip" : "Show target name when more than one entity is being targeted",
   "text.autoconfig.spell_engine.option.client.highlightTarget" : "Highlight target",

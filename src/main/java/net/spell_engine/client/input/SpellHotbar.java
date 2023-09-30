@@ -14,6 +14,7 @@ import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterClient;
+import net.spell_engine.mixin.client.control.KeybindingAccessor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -25,11 +26,18 @@ public class SpellHotbar {
 
     public record Slot(SpellInfo spell, SpellCast.Mode castMode, @Nullable WrappedKeybinding keybinding) { }
     public List<Slot> slots = List.of();
-    public void update(ClientPlayerEntity player) {
+    public StructuredSlots structuredSlots = new StructuredSlots(null, List.of());
+    public record StructuredSlots(@Nullable Slot onUseKey, List<Slot> other) { }
+
+    public void update(ClientPlayerEntity player, GameOptions options) {
         var held = player.getMainHandStack();
         var container = container(player, held);
 
         var slots = new ArrayList<Slot>();
+        var useKey = ((KeybindingAccessor) options.useKey).getBoundKey();
+        Slot onUseKey = null;
+        var otherSlots = new ArrayList<Slot>();
+
         var allBindings = Keybindings.Wrapped.all();
 
         if (container != null) {
@@ -44,19 +52,50 @@ public class SpellHotbar {
 
                 // Create slot
                 var slot = new Slot(new SpellInfo(spell, spellId), SpellCast.Mode.from(spell), keyBinding);
+
+                // Try to categorize slot based on keybinding
+                if (keyBinding != null) {
+                    var unwrapped = keyBinding.get(options);
+                    if (unwrapped != null) {
+                        var hotbarKey = ((KeybindingAccessor) unwrapped.keyBinding()).getBoundKey();
+
+                        if (hotbarKey.equals(useKey)) {
+                            onUseKey = slot;
+                        } else {
+                            otherSlots.add(slot);
+                        }
+                    }
+                }
+
                 // Save to all slots
                 slots.add(slot);
             }
         }
 
+        this.structuredSlots = new StructuredSlots(onUseKey, otherSlots);
         this.slots = slots;
     }
 
-    @Nullable public WrappedKeybinding.VanillaAlternative.Category handle(ClientPlayerEntity player, GameOptions options) {
+    private boolean handledKeyThisTick = false;
+    public void prepare() {
+        this.handledKeyThisTick = false;
+        this.updateDebounced();
+    }
+
+    @Nullable public WrappedKeybinding.Category handle(ClientPlayerEntity player, GameOptions options) {
+        return handle(player, this.slots, options);
+    }
+
+    @Nullable public WrappedKeybinding.Category handle(ClientPlayerEntity player, @Nullable Slot slot, GameOptions options) {
+        if (slot == null) { return null; }
+        return handle(player, List.of(slot), options);
+    }
+
+    @Nullable public WrappedKeybinding.Category handle(ClientPlayerEntity player, List<Slot> slots, GameOptions options) {
+        if (handledKeyThisTick) { return null; }
         var caster = ((SpellCasterClient) player);
         var casted = caster.v2_getSpellCastProgress();
         var casterStack = player.getMainHandStack();
-        updateDebounced();
         for(var slot: slots) {
             if (slot.keybinding != null) {
                 var unwrapped = slot.keybinding.get(options);
@@ -69,6 +108,7 @@ public class SpellHotbar {
                     case INSTANT -> {
                         if (pressed) {
                             caster.v2_startSpellCast(casterStack, slot.spell.id());
+                            handledKeyThisTick = true;
                             return handle;
                         }
                     }
@@ -81,12 +121,14 @@ public class SpellHotbar {
                             if (needsToBeHeld) {
                                 if (!pressed) {
                                     caster.v2_cancelSpellCast();
+                                    handledKeyThisTick = true;
                                     return handle;
                                 }
                             } else {
                                 if (pressed && isReleased(keyBinding, UseCase.START)) {
                                     caster.v2_cancelSpellCast();
                                     debounce(keyBinding, UseCase.STOP);
+                                    handledKeyThisTick = true;
                                     return handle;
                                 }
                             }
@@ -95,12 +137,14 @@ public class SpellHotbar {
                             if (pressed && isReleased(keyBinding, UseCase.STOP)) {
                                 caster.v2_startSpellCast(casterStack, slot.spell.id());
                                 debounce(keyBinding, UseCase.START);
+                                handledKeyThisTick = true;
                                 return handle;
                             }
                         }
                     }
                 }
                 if (pressed) {
+                    handledKeyThisTick = true;
                     return handle;
                 }
             }

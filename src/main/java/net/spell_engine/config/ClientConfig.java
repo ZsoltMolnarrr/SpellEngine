@@ -13,8 +13,6 @@ public class ClientConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip
     public boolean holdToCastCharged = true;
     @ConfigEntry.Gui.Tooltip
-    public boolean useKeyHighPriority = true;
-    @ConfigEntry.Gui.Tooltip
     @Nullable
     public WrappedKeybinding.VanillaAlternative spellHotbar_1_defer = WrappedKeybinding.VanillaAlternative.USE_KEY;
     @ConfigEntry.Gui.Tooltip
@@ -23,6 +21,8 @@ public class ClientConfig implements ConfigData {
     public WrappedKeybinding.VanillaAlternative spellHotbar_3_defer = WrappedKeybinding.VanillaAlternative.HOTBAR_KEY_3;
     @ConfigEntry.Gui.Tooltip
     public WrappedKeybinding.VanillaAlternative spellHotbar_4_defer = WrappedKeybinding.VanillaAlternative.HOTBAR_KEY_4;
+    @ConfigEntry.Gui.Tooltip
+    public boolean useKeyHighPriority = true;
     @ConfigEntry.Gui.Tooltip
     public boolean highlightTarget = true;
     @ConfigEntry.Gui.Tooltip

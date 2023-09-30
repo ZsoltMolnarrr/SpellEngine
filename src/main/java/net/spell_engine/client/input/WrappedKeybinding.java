@@ -7,6 +7,11 @@ import net.spell_engine.mixin.client.control.KeybindingAccessor;
 import org.jetbrains.annotations.Nullable;
 
 public class WrappedKeybinding {
+    public enum Category {
+        USE_KEY,
+        ITEM_HOTBAR_KEY;
+    }
+
     public enum VanillaAlternative {
         NONE(null),
         USE_KEY(Category.USE_KEY),
@@ -19,11 +24,6 @@ public class WrappedKeybinding {
 
         VanillaAlternative(Category category) {
             this.category = category;
-        }
-
-        public enum Category {
-            USE_KEY,
-            ITEM_HOTBAR_KEY;
         }
 
         @Nullable
@@ -52,7 +52,7 @@ public class WrappedKeybinding {
         this.alternative = alternative;
     }
 
-    public record Unwrapped(KeyBinding keyBinding, @Nullable VanillaAlternative.Category vanillaHandle) { }
+    public record Unwrapped(KeyBinding keyBinding, @Nullable Category vanillaHandle) { }
     @Nullable
     public Unwrapped get(GameOptions options) {
         var assignedKey = ((KeybindingAccessor)original).getBoundKey();
