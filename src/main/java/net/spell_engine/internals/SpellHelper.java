@@ -157,6 +157,21 @@ public class SpellHelper {
         return ((float)ticks) / 20F;
     }
 
+    public static void startCasting(PlayerEntity player, Identifier spellId, float speed, int length) {
+        var spell = SpellRegistry.getSpell(spellId);
+        if (spell == null) {
+            return;
+        }
+        var itemStack = player.getMainHandStack();
+        var attempt = attemptCasting(player, itemStack, spellId);
+        if (!attempt.isSuccess()) {
+            return;
+        }
+        var process = new SpellCast.Process(spellId, spell, itemStack, speed, length);
+        SpellCastSyncHelper.setCasting(player, process);
+        SoundHelper.playSound(player.getWorld(), player, spell.cast.start_sound);
+    }
+
     public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCast.Action action, Hand hand, float progress) {
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
@@ -176,8 +191,7 @@ public class SpellHelper {
         });
         switch (action) {
             case START -> {
-                SoundHelper.playSound(player.getWorld(), player, spell.cast.start_sound);
-                SpellCastSyncHelper.setCasting(player, hand, spellId, trackingPlayers.get());
+                // TODO: Remove
                 return;
             }
             case CHANNEL -> {
@@ -190,7 +204,7 @@ public class SpellHelper {
                 } else {
                     channelMultiplier = (progress >= 1) ? 1 : 0;
                 }
-                SpellCastSyncHelper.clearCasting(player, trackingPlayers.get());
+                SpellCastSyncHelper.clearCasting(player);
             }
         }
         var ammoResult = ammoForSpell(player, spell, itemStack);

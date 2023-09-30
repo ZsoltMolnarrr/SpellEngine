@@ -6,11 +6,12 @@ import net.spell_engine.internals.SpellCooldownManager;
 import org.jetbrains.annotations.Nullable;
 
 public interface SpellCasterEntity {
-    void setCurrentSpellId(Identifier spellId);
-    float getCurrentCastProgress();
     SpellCooldownManager getCooldownManager();
-    void clearCasting();
+    void clearCasting(); // TODO: Remove
 
+
+    void setSpellCastProcess(@Nullable SpellCast.Process process);
+    @Nullable SpellCast.Process getSpellCastProcess();
 
     Identifier getCurrentSpellId();
     Spell getCurrentSpell();

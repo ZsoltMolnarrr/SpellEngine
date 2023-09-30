@@ -59,7 +59,9 @@ public class SpellCast {
     }
 
     public enum Action {
-        START, CHANNEL, RELEASE
+        START,
+        CHANNEL,
+        RELEASE
     }
 
     public enum Animation {

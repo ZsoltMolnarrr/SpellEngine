@@ -8,6 +8,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.internals.SpellCastSyncHelper;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
 
@@ -22,6 +23,22 @@ public class ServerNetwork {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             sender.sendPacket(Packets.SpellRegistrySync.ID, SpellRegistry.encoded);
             sender.sendPacket(Packets.ConfigSync.ID, configSerialized);
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(Packets.SpellCastSync.ID, (server, player, handler, buf, responseSender) -> {
+            ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
+                    .orNull();
+            if (world == null || world.isClient) {
+                return;
+            }
+            var packet = Packets.SpellCastSync.read(buf);
+            world.getServer().executeSync(() -> {
+                if (packet.spellId() == null) {
+                    SpellCastSyncHelper.clearCasting(player);
+                } else {
+                    SpellHelper.startCasting(player, packet.spellId(), packet.speed(), packet.length());
+                }
+            });
         });
 
         ServerPlayNetworking.registerGlobalReceiver(Packets.SpellRequest.ID, (server, player, handler, buf, responseSender) -> {

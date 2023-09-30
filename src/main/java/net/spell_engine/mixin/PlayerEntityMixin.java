@@ -8,6 +8,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.*;
+import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,8 +32,22 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         player().getDataTracker().startTracking(SPELL_ENGINE_SELECTED_SPELL, 0);
     }
 
-    public void setCurrentSpellId(Identifier spellId) {
+    private SpellCast.Process serverSide_SpellCastProcess = null;
+    public void setSpellCastProcess(@Nullable SpellCast.Process process) {
+        serverSide_SpellCastProcess = process;
+        Identifier spellId = null;
+        if (process != null) {
+            spellId = process.id();
+        }
         player().getDataTracker().set(SPELL_ENGINE_SELECTED_SPELL, spellId != null ? SpellRegistry.rawSpellId(spellId) : 0);
+    }
+
+    @Nullable public SpellCast.Process getSpellCastProcess() {
+        return serverSide_SpellCastProcess;
+    }
+
+    public void clearCasting() { // TODO: Most likely remove
+        serverSide_SpellCastProcess = null;
     }
 
     @Override
@@ -56,23 +71,6 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         return null;
     }
 
-    @Override
-    public float getCurrentCastProgress() {
-        var spell = getCurrentSpell();
-        if (spell != null) {
-            return SpellHelper.getCastProgress(player(), player().getItemUseTimeLeft(), spell);
-        }
-        return 0;
-    }
-
-    @Override
-    public void clearCasting() {
-        var player = player();
-        if (!player.getWorld().isClient) {
-            // Server
-            SpellCastSyncHelper.clearCasting(player);
-        }
-    }
 
     @Override
     public SpellCooldownManager getCooldownManager() {

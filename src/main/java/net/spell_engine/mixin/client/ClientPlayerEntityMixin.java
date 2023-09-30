@@ -34,6 +34,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 @Mixin(ClientPlayerEntity.class)
@@ -57,18 +58,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     private Identifier currentSpell;
 
-    @Override
-    public void setCurrentSpellId(Identifier spellId) {
-        currentSpell = spellId;
-    }
-
-//    @Override
-//    public Identifier getCurrentSpellId() {
-//        if (player().isUsingItem()) {
-//            return currentSpell;
-//        }
-//        return null;
-//    }
 
     @Override
     public Identifier getCurrentSpellId() {
@@ -90,11 +79,23 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     private int spellCastTicks = 0;
     @Nullable private SpellCast.Process spellCastProcess;
 
-    private void setSpellCastProcess(SpellCast.Process process, boolean sync) {
+    private void setSpellCastProcess(SpellCast.Process newValue, boolean sync) {
+        var oldValue = spellCastProcess;
         spellCastTicks = 0;
-        spellCastProcess = process;
-        if (sync) {
-            // TODO: Send packet to server
+        spellCastProcess = newValue;
+        if (sync && Objects.equals(oldValue, newValue)) {
+            Identifier id = null;
+            float speed = 0;
+            int length = 0;
+            if (newValue != null) {
+                id = newValue.id();
+                speed = newValue.speed();
+                length = newValue.length();
+            }
+            ClientPlayNetworking.send(
+                    Packets.SpellCastSync.ID,
+                    new Packets.SpellCastSync(id, speed, length).write()
+            );
         }
     }
 
@@ -331,7 +332,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         ClientPlayNetworking.send(
                 Packets.SpellRequest.ID,
                 new Packets.SpellRequest(hand, SpellCast.Action.START, spellId, slot, remainingUseTicks, new int[]{}).write());
-        setCurrentSpellId(spellId);
+        // setCurrentSpellId(spellId);
     }
     public void castTick(ItemStack itemStack, Hand hand, int remainingUseTicks) {
         // System.out.println("Spell cast tick: " + (SpellHelper.maximumUseTicks - remainingUseTicks));
@@ -429,11 +430,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     private void endCasting() {
         clearCasting();
         player().clearActiveItem();
-    }
-
-    @Override
-    public void clearCasting() {
-        setCurrentSpellId(null);
     }
 
     private int findSlot(PlayerEntity player, ItemStack stack) {

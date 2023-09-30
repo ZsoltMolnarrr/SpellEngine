@@ -16,6 +16,24 @@ import java.util.List;
 
 public class Packets {
 
+    public record SpellCastSync(Identifier spellId, float speed, int length) {
+        public static Identifier ID = new Identifier(SpellEngineMod.ID, "cast_sync");
+
+        public PacketByteBuf write() {
+            PacketByteBuf buffer = PacketByteBufs.create();
+            buffer.writeString(spellId.toString());
+            buffer.writeFloat(speed);
+            buffer.writeInt(length);
+            return buffer;
+        }
+        public static SpellCastSync read(PacketByteBuf buffer) {
+            var spellId = new Identifier(buffer.readString());
+            var speed = buffer.readFloat();
+            var length = buffer.readInt();
+            return new SpellCastSync(spellId, speed, length);
+        }
+    }
+
     public record SpellRequest(Hand hand, SpellCast.Action action, Identifier spellId, int slot, float progress, int[] targets) {
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "release_request");
 
