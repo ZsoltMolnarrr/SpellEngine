@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.*;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -20,8 +21,10 @@ import net.spell_engine.client.util.TextureFile;
 import net.spell_engine.config.HudConfig;
 import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.internals.SpellHelper;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 public class HudRenderHelper {
@@ -64,9 +67,9 @@ public class HudRenderHelper {
                     return new SpellHotBarWidget.SpellViewModel(
                             SpellRender.iconTexture(info.id()),
                             cooldownManager.getCooldownProgress(new Identifier(info.id().toString()), tickDelta),
-                            Color.from(info.spell().school.color()));
+                            SpellHotBarWidget.KeyBindingViewModel.from(slot.getKeyBinding(client.options)));
                 }).collect(Collectors.toList());
-                hotbarViewModel = new SpellHotBarWidget.ViewModel(spells, 0, Color.from(0xFFFFFF));
+                hotbarViewModel = new SpellHotBarWidget.ViewModel(spells);
             }
             renderHotbar = true;
 
@@ -258,23 +261,46 @@ public class HudRenderHelper {
         private static final int slotHeight = 22;
         private static final int slotWidth = 20;
 
+        public record KeyBindingViewModel(String label) {
+            public static KeyBindingViewModel from(@Nullable KeyBinding keyBinding) {
+                if (keyBinding == null) {
+                    return new KeyBindingViewModel("");
+                }
+                var label = keyBinding.getBoundKeyLocalizedText()
+                        .getString()
+                        .toUpperCase(Locale.US);
+                label = acronym(label, 3);
+                return new KeyBindingViewModel(label);
+            }
+        }
 
-        public record SpellViewModel(Identifier iconId, float cooldown, Color color) { }
+        private static String acronym(String phrase, int maxLength) {
+            StringBuilder result = new StringBuilder();
+            for (String token : phrase.split("\\s+")) {
+                result.append(token.toUpperCase().charAt(0));
+            }
+            var resultString = result.toString();
+            // Make the result at most 3 characters long
+            if (resultString.length() > maxLength) {
+                resultString = resultString.substring(0, maxLength);
+            }
+            return result.toString();
+        }
 
-        public record ViewModel(List<SpellViewModel> spells, int selected, Color sliderColor) {
+        public record SpellViewModel(Identifier iconId, float cooldown, KeyBindingViewModel keybinding) { }
+
+        public record ViewModel(List<SpellViewModel> spells) {
             public static ViewModel mock() {
                 return new ViewModel(
                         List.of(
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0, Color.RED),
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0, Color.RED),
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0, Color.RED)
-                        ),
-                        1,
-                        Color.from(0xFFFFFF)
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0, new KeyBindingViewModel("1")),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0, new KeyBindingViewModel("2")),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0, new KeyBindingViewModel("3"))
+                        )
                 );
             }
 
-            public static final ViewModel empty = new ViewModel(List.of(), 0, Color.from(0xFFFFFF));
+            public static final ViewModel empty = new ViewModel(List.of());
 
             public boolean isEmpty() {
                 return spells.isEmpty();
@@ -283,6 +309,8 @@ public class HudRenderHelper {
 
         public static void render(DrawContext context, int screenWidth, int screenHeight, ViewModel viewModel) {
             var config = SpellEngineClient.hudConfig.value.hotbar;
+            MinecraftClient client = MinecraftClient.getInstance();
+            var textRenderer = client.inGameHud.getTextRenderer();
             if (viewModel.spells.isEmpty()) {
                 return;
             }
@@ -317,9 +345,16 @@ public class HudRenderHelper {
                 var spell = viewModel.spells.get(i);
                 int x = (int) (origin.x + iconsOffset.x) + ((slotWidth) * i);
                 int y = (int) (origin.y + iconsOffset.y);
-                context.drawTexture(spell.iconId, x, y, 0, 0, iconSize, iconSize, iconSize, iconSize);
 
+                // Keybinding
+                if (spell.keybinding() != null) {
+                    context.drawCenteredTextWithShadow(textRenderer, spell.keybinding().label, x + (iconSize / 2), (int)origin.y - 8, 0xFFFFFF);
+                }
+
+                // Icon
+                context.drawTexture(spell.iconId, x, y, 0, 0, iconSize, iconSize, iconSize, iconSize);
                 if (spell.cooldown > 0) {
+                    // Cooldown
                     renderCooldown(context, spell.cooldown, x, y);
                 }
             }
@@ -335,42 +370,6 @@ public class HudRenderHelper {
 
             RenderSystem.disableBlend();
             context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        }
-
-        public static void renderAccessories(DrawContext context, int screenWidth, int screenHeight, ViewModel viewModel) {
-            if (viewModel.spells.size() < 2) {
-                return;
-            }
-
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-
-            var config = SpellEngineClient.hudConfig.value.hotbar;
-            var origin = config.origin
-                    .getPoint(screenWidth, screenHeight)
-                    .add(config.offset);
-
-            // float barOpacity = (SpellEngineClient.config.indicateActiveHotbar && InputHelper.isLocked) ? 1F : 0.5F;
-            float barOpacity = 1F;
-
-            var spacing = 7;
-            for (int i = 0; i < viewModel.spells.size(); i++) {
-                if (i == viewModel.selected) { continue; }
-                var spell = viewModel.spells.get(i);
-                var position = i - viewModel.selected;
-                int x = (int) (origin.x)
-                            + ( ((i < viewModel.selected) ? -1 : 1) * ((slotWidth-4) / 2) )
-                            - 7
-                            + (position * spacing);
-                int y = (int) origin.y - 8;
-
-                context.setShaderColor(1.0f, 1.0f, 1.0f, barOpacity);
-                context.drawTexture(ACCESSORIES.id(), x, y, 0, 0, 16, 16, ACCESSORIES.width(), ACCESSORIES.height());
-                context.setShaderColor(spell.color().red(), spell.color().green(), spell.color().blue(), 1F);
-                context.drawTexture(ACCESSORIES.id(), x, y, 16, 0, 16, 16, ACCESSORIES.width(), ACCESSORIES.height());
-            }
-            context.setShaderColor(1.0f, 1.0f, 1.0f, 1F);
-            RenderSystem.disableBlend();
         }
 
         private static void renderCooldown(DrawContext context, float progress, int x, int y) {
