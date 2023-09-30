@@ -5,6 +5,7 @@ import com.teamderpy.shouldersurfing.api.IShoulderSurfingRegistrar;
 import net.minecraft.client.MinecraftClient;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.internals.SpellContainerHelper;
+import net.spell_engine.internals.casting.SpellCasterClient;
 
 public class ShoulderSurfingCompatibility implements IShoulderSurfingPlugin {
     private static final int toleranceTicks = 3;
@@ -15,7 +16,7 @@ public class ShoulderSurfingCompatibility implements IShoulderSurfingPlugin {
             if (SpellContainerHelper.hasUsableContainer(itemStack)) {
                 var player = MinecraftClient.getInstance().player;
                 if (player != null & SpellEngineClient.config.shoulderSurfingAdaptiveWhileUse) {
-                    var casting = player.isUsingItem();
+                    var casting = ((SpellCasterClient)player).v2_getSpellCastProgress() != null;
                     if (casting) {
                         this.setTicks(player.age);
                     }
