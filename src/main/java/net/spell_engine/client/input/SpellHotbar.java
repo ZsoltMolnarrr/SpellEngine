@@ -24,7 +24,17 @@ import java.util.List;
 public class SpellHotbar {
     public static SpellHotbar INSTANCE = new SpellHotbar();
 
-    public record Slot(SpellInfo spell, SpellCast.Mode castMode, @Nullable WrappedKeybinding keybinding) { }
+    public record Slot(SpellInfo spell, SpellCast.Mode castMode, @Nullable WrappedKeybinding keybinding) {
+        @Nullable public KeyBinding getKeyBinding(GameOptions options) {
+            if (keybinding != null) {
+                var unwrapped = keybinding.get(options);
+                if (unwrapped != null) {
+                    return unwrapped.keyBinding();
+                }
+            }
+            return null;
+        }
+    }
     public List<Slot> slots = List.of();
     public StructuredSlots structuredSlots = new StructuredSlots(null, List.of());
     public record StructuredSlots(@Nullable Slot onUseKey, List<Slot> other) { }

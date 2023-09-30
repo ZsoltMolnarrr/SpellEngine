@@ -1,13 +1,16 @@
 package net.spell_engine.mixin.client.control;
 
+import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.entity.player.PlayerInventory;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.client.input.WrappedKeybinding;
 import org.jetbrains.annotations.Nullable;
+import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,20 +27,16 @@ public class SpellHotbarMinecraftClient {
     @Shadow @Final public GameOptions options;
     @Shadow private int itemUseCooldown;
 
-    @Inject(method = "tick", at = @At(value = "HEAD"))
-    private void tick_HEAD_SpellHotbar(CallbackInfo ci) {
-        if (player == null) { return; }
-        // Update the content of the Spell Hotbar
-        // This needs to run every tick because the player's held caster item may change any time
-        SpellHotbar.INSTANCE.update(player, options);
-        SpellHotbar.INSTANCE.prepare();
-    }
-
     @Nullable private WrappedKeybinding.Category spellHotbarHandle = null;
     @Inject(method = "handleInputEvents", at = @At(value = "HEAD"))
     private void handleInputEvents_HEAD_SpellHotbar(CallbackInfo ci) {
         spellHotbarHandle = null;
         if (player == null || options == null || itemUseCooldown > 0) { return; }
+
+        // Update the content of the Spell Hotbar
+        // This needs to run every tick because the player's held caster item may change any time
+        SpellHotbar.INSTANCE.update(player, options);
+        SpellHotbar.INSTANCE.prepare();
 
         if (SpellEngineClient.config.useKeyHighPriority) {
             spellHotbarHandle = SpellHotbar.INSTANCE.handle(player, options);
@@ -63,13 +62,16 @@ public class SpellHotbarMinecraftClient {
                     options.useKey.setPressed(value);
                 }
                 case ITEM_HOTBAR_KEY -> {
-                    for (var hotbarKey : options.hotbarKeys) {
-                        conflictingPressState.put(hotbarKey, hotbarKey.isPressed());
-                        hotbarKey.setPressed(value);
-                        if (!value) {
-                            ((KeybindingAccessor) hotbarKey).spellEngine_reset();
-                        }
-                    }
+                    // This case is better handled by `handleInputEvents_OverrideNumberKeys`
+                    break;
+
+//                    for (var hotbarKey : options.hotbarKeys) {
+//                        conflictingPressState.put(hotbarKey, hotbarKey.isPressed());
+//                        hotbarKey.setPressed(value);
+//                        if (!value) {
+//                            ((KeybindingAccessor) hotbarKey).spellEngine_reset();
+//                        }
+//                    }
                 }
             }
         }
@@ -80,5 +82,23 @@ public class SpellHotbarMinecraftClient {
             entry.getKey().setPressed(entry.getValue());
         }
         conflictingPressState.clear();
+    }
+
+    @WrapWithCondition(method = "handleInputEvents", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerInventory;selectedSlot:I", ordinal = 0, opcode = Opcodes.PUTFIELD))
+    private boolean handleInputEvents_OverrideNumberKeys(PlayerInventory instance, int index) {
+        var shouldControlSpellHotbar = false;
+        for (var slot: SpellHotbar.INSTANCE.slots) {
+            var keyBinding = slot.getKeyBinding(options);
+            if (options.hotbarKeys[index] == keyBinding) {
+                shouldControlSpellHotbar = true;
+                break;
+            }
+        }
+
+        if (shouldControlSpellHotbar) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }
