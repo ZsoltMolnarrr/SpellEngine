@@ -22,6 +22,18 @@ public class ClientConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip
     public WrappedKeybinding.VanillaAlternative spellHotbar_4_defer = WrappedKeybinding.VanillaAlternative.HOTBAR_KEY_4;
     @ConfigEntry.Gui.Tooltip
+    public WrappedKeybinding.VanillaAlternative spellHotbar_5_defer = WrappedKeybinding.VanillaAlternative.HOTBAR_KEY_5;
+    @ConfigEntry.Gui.Tooltip
+    public WrappedKeybinding.VanillaAlternative spellHotbar_6_defer = WrappedKeybinding.VanillaAlternative.HOTBAR_KEY_6;
+    @ConfigEntry.Gui.Tooltip
+    public WrappedKeybinding.VanillaAlternative spellHotbar_7_defer = WrappedKeybinding.VanillaAlternative.HOTBAR_KEY_7;
+    @ConfigEntry.Gui.Tooltip
+    public WrappedKeybinding.VanillaAlternative spellHotbar_8_defer = WrappedKeybinding.VanillaAlternative.HOTBAR_KEY_8;
+    @ConfigEntry.Gui.Tooltip
+    public WrappedKeybinding.VanillaAlternative spellHotbar_9_defer = WrappedKeybinding.VanillaAlternative.HOTBAR_KEY_9;
+
+
+    @ConfigEntry.Gui.Tooltip
     public boolean useKeyHighPriority = true;
     @ConfigEntry.Gui.Tooltip
     public boolean highlightTarget = true;

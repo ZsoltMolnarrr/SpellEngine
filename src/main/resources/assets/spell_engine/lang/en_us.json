@@ -50,6 +50,11 @@
   "keybindings.spell_engine.spell_hotbar_2" : "Spell Hotbar Slot 2",
   "keybindings.spell_engine.spell_hotbar_3" : "Spell Hotbar Slot 3",
   "keybindings.spell_engine.spell_hotbar_4" : "Spell Hotbar Slot 4",
+  "keybindings.spell_engine.spell_hotbar_5" : "Spell Hotbar Slot 5",
+  "keybindings.spell_engine.spell_hotbar_6" : "Spell Hotbar Slot 6",
+  "keybindings.spell_engine.spell_hotbar_7" : "Spell Hotbar Slot 7",
+  "keybindings.spell_engine.spell_hotbar_8" : "Spell Hotbar Slot 8",
+  "keybindings.spell_engine.spell_hotbar_9" : "Spell Hotbar Slot 9",
 
   "trinkets.slot.charm.spell_book": "Spell Book",
 
@@ -67,8 +72,20 @@
   "text.autoconfig.spell_engine.option.client.spellHotbar_3_defer.@Tooltip" : "Spell Hotbar Slot 3 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
   "text.autoconfig.spell_engine.option.client.spellHotbar_4_defer" : "Spell Hotbar Slot 4 fallback",
   "text.autoconfig.spell_engine.option.client.spellHotbar_4_defer.@Tooltip" : "Spell Hotbar Slot 4 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_5_defer" : "Spell Hotbar Slot 5 fallback",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_5_defer.@Tooltip" : "Spell Hotbar Slot 5 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_6_defer" : "Spell Hotbar Slot 6 fallback",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_6_defer.@Tooltip" : "Spell Hotbar Slot 6 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_7_defer" : "Spell Hotbar Slot 7 fallback",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_7_defer.@Tooltip" : "Spell Hotbar Slot 7 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_8_defer" : "Spell Hotbar Slot 8 fallback",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_8_defer.@Tooltip" : "Spell Hotbar Slot 8 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_9_defer" : "Spell Hotbar Slot 9 fallback",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_9_defer.@Tooltip" : "Spell Hotbar Slot 9 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
+
   "text.autoconfig.spell_engine.option.client.useKeyHighPriority" : "Prioritize casting spell for 'use' keybind",
-  "text.autoconfig.spell_engine.option.client.useKeyHighPriority.@Tooltip" : "Tries to cast spells instead of interacting blocks and entities",
+  "text.autoconfig.spell_engine.option.client.useKeyHighPriority.@Tooltip" : "Spell on the 'use' keybind will try to cast spells before interacting blocks and entities",
+
   "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple" : "Show target name when multiple",
   "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple.@Tooltip" : "Show target name when more than one entity is being targeted",
   "text.autoconfig.spell_engine.option.client.highlightTarget" : "Highlight target",

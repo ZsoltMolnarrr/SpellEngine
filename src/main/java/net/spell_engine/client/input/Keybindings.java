@@ -14,17 +14,20 @@ public class Keybindings {
         return mutableAll;
     }
     public static final ArrayList<KeyBinding> mutableAll = new ArrayList<>();
-    public static final ArrayList<KeyBinding> spellHotbar = new ArrayList<>();
 
     private static KeyBinding add(KeyBinding keyBinding) {
         mutableAll.add(keyBinding);
         return keyBinding;
     }
 
-    private static KeyBinding hotbar(KeyBinding keyBinding) {
-        var key = add(keyBinding);
-        spellHotbar.add(key);
-        return keyBinding;
+    private static KeyBinding hotbarKey(int number) {
+        var key = new KeyBinding(
+                "keybindings." + SpellEngineMod.ID + ".spell_hotbar_" + number,
+                InputUtil.Type.KEYSYM,
+                InputUtil.UNKNOWN_KEY.getCode(),
+                SpellEngineMod.modName());
+        add(key);
+        return key;
     }
 
     public static KeyBinding hotbarModifier = add(new KeyBinding(
@@ -33,26 +36,15 @@ public class Keybindings {
             InputUtil.GLFW_KEY_LEFT_ALT,
             SpellEngineMod.modName()));
 
-    public static KeyBinding spell_hotbar_1 = hotbar(new KeyBinding(
-            "keybindings." + SpellEngineMod.ID + ".spell_hotbar_1",
-            InputUtil.Type.KEYSYM,
-            InputUtil.UNKNOWN_KEY.getCode(),
-            SpellEngineMod.modName()));
-    public static KeyBinding spell_hotbar_2 = hotbar(new KeyBinding(
-            "keybindings." + SpellEngineMod.ID + ".spell_hotbar_2",
-            InputUtil.Type.KEYSYM,
-            InputUtil.UNKNOWN_KEY.getCode(),
-            SpellEngineMod.modName()));
-    public static KeyBinding spell_hotbar_3 = hotbar(new KeyBinding(
-            "keybindings." + SpellEngineMod.ID + ".spell_hotbar_3",
-            InputUtil.Type.KEYSYM,
-            InputUtil.UNKNOWN_KEY.getCode(),
-            SpellEngineMod.modName()));
-    public static KeyBinding spell_hotbar_4 = hotbar(new KeyBinding(
-            "keybindings." + SpellEngineMod.ID + ".spell_hotbar_4",
-            InputUtil.Type.KEYSYM,
-            InputUtil.UNKNOWN_KEY.getCode(),
-            SpellEngineMod.modName()));
+    public static KeyBinding spell_hotbar_1 = hotbarKey(1);
+    public static KeyBinding spell_hotbar_2 = hotbarKey(2);
+    public static KeyBinding spell_hotbar_3 = hotbarKey(3);
+    public static KeyBinding spell_hotbar_4 = hotbarKey(4);
+    public static KeyBinding spell_hotbar_5 = hotbarKey(5);
+    public static KeyBinding spell_hotbar_6 = hotbarKey(6);
+    public static KeyBinding spell_hotbar_7 = hotbarKey(7);
+    public static KeyBinding spell_hotbar_8 = hotbarKey(8);
+    public static KeyBinding spell_hotbar_9 = hotbarKey(9);
 
     public static class Wrapped {
         public static List<WrappedKeybinding> all() {
@@ -60,7 +52,12 @@ public class Keybindings {
                     new WrappedKeybinding(Keybindings.spell_hotbar_1, SpellEngineClient.config.spellHotbar_1_defer),
                     new WrappedKeybinding(Keybindings.spell_hotbar_2, SpellEngineClient.config.spellHotbar_2_defer),
                     new WrappedKeybinding(Keybindings.spell_hotbar_3, SpellEngineClient.config.spellHotbar_3_defer),
-                    new WrappedKeybinding(Keybindings.spell_hotbar_4, SpellEngineClient.config.spellHotbar_4_defer)
+                    new WrappedKeybinding(Keybindings.spell_hotbar_4, SpellEngineClient.config.spellHotbar_4_defer),
+                    new WrappedKeybinding(Keybindings.spell_hotbar_5, SpellEngineClient.config.spellHotbar_5_defer),
+                    new WrappedKeybinding(Keybindings.spell_hotbar_6, SpellEngineClient.config.spellHotbar_6_defer),
+                    new WrappedKeybinding(Keybindings.spell_hotbar_7, SpellEngineClient.config.spellHotbar_7_defer),
+                    new WrappedKeybinding(Keybindings.spell_hotbar_8, SpellEngineClient.config.spellHotbar_8_defer),
+                    new WrappedKeybinding(Keybindings.spell_hotbar_9, SpellEngineClient.config.spellHotbar_9_defer)
             );
         }
     }
