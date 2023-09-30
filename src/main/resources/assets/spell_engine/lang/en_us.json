@@ -46,10 +46,24 @@
   "keybindings.spell_engine.tooltip_details" : "Tooltip spell details",
   "keybindings.spell_engine.hotbar_modifier" : "Control spell hotbar",
   "keybindings.spell_engine.hotbar_lock" : "Switch to spell hotbar",
+  "keybindings.spell_engine.spell_hotbar_1" : "Spell Hotbar Slot 1",
+  "keybindings.spell_engine.spell_hotbar_2" : "Spell Hotbar Slot 2",
+  "keybindings.spell_engine.spell_hotbar_3" : "Spell Hotbar Slot 3",
+  "keybindings.spell_engine.spell_hotbar_4" : "Spell Hotbar Slot 4",
 
   "trinkets.slot.charm.spell_book": "Spell Book",
 
   "text.autoconfig.spell_engine.title" : "Spell Engine",
+
+  "text.autoconfig.spell_engine.option.client.spellHotbar_1_defer" : "Spell Hotbar Slot 1 fallback",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_1_defer.@Tooltip" : "Spell Hotbar Slot 1 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_2_defer" : "Spell Hotbar Slot 2 fallback",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_2_defer.@Tooltip" : "Spell Hotbar Slot 1 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_3_defer" : "Spell Hotbar Slot 3 fallback",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_3_defer.@Tooltip" : "Spell Hotbar Slot 3 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_4_defer" : "Spell Hotbar Slot 4 fallback",
+  "text.autoconfig.spell_engine.option.client.spellHotbar_4_defer.@Tooltip" : "Spell Hotbar Slot 4 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
+
   "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple" : "Show target name when multiple",
   "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple.@Tooltip" : "Show target name when more than one entity is being targeted",
   "text.autoconfig.spell_engine.option.client.highlightTarget" : "Highlight target",

@@ -10,14 +10,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public interface SpellCasterClient extends SpellCasterEntity {
-    boolean isHotbarModifierPressed();
-    void setSelectedSpellIndex(int index);
-    @Nullable Identifier getSelectedSpellId(SpellContainer container);
-    SpellContainer getCurrentContainer();
-    SpellContainer.Hosted getCurrentContainerWithHost();
-    void castAttempt(SpellCast.Attempt result);
-    void castStart(SpellContainer spell, Hand hand, ItemStack itemStack, int remainingUseTicks);
-    void castTick(ItemStack itemStack, Hand hand, int remainingUseTicks);
     void castRelease(ItemStack itemStack, Hand hand, int remainingUseTicks);
 
 

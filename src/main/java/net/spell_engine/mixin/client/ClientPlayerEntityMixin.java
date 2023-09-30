@@ -241,10 +241,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     // MARK: SpellCasterClient
 
-    public boolean isHotbarModifierPressed() {
-        return Keybindings.hotbarModifier.isPressed();
-    }
-
     public void changeSelectedSpellIndex(int delta) {
         selectedSpellIndex += delta;
     }
@@ -309,12 +305,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return SpellContainerHelper.spellId(container, selectedSpellIndex);
     }
 
-    @Override
     public void castAttempt(SpellCast.Attempt result) {
         HudMessages.INSTANCE.castAttemptError(result);
     }
 
-    @Override
     public void castStart(SpellContainer container, Hand hand, ItemStack itemStack, int remainingUseTicks) {
         var spellId = SpellContainerHelper.spellId(container, selectedSpellIndex);
         selectSpell(spellId, hand, itemStack, remainingUseTicks);
@@ -328,7 +322,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 new Packets.SpellRequest(hand, SpellCast.Action.START, spellId, slot, remainingUseTicks, new int[]{}).write());
         setCurrentSpellId(spellId);
     }
-    @Override
     public void castTick(ItemStack itemStack, Hand hand, int remainingUseTicks) {
         // System.out.println("Spell cast tick: " + (SpellHelper.maximumUseTicks - remainingUseTicks));
         var caster = player();

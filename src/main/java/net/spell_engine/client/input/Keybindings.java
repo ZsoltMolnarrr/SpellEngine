@@ -1,8 +1,10 @@
 package net.spell_engine.client.input;
 
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.InputUtil;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.client.SpellEngineClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,32 +32,36 @@ public class Keybindings {
             InputUtil.Type.KEYSYM,
             InputUtil.GLFW_KEY_LEFT_ALT,
             SpellEngineMod.modName()));
-    public static KeyBinding hotbarLock = add(new KeyBinding(
-                "keybindings." + SpellEngineMod.ID + ".hotbar_lock",
-                InputUtil.Type.KEYSYM,
-                InputUtil.GLFW_KEY_Z, // InputUtil.UNKNOWN_KEY.getCode(),
-                SpellEngineMod.modName()));
 
     public static KeyBinding spell_hotbar_1 = hotbar(new KeyBinding(
             "keybindings." + SpellEngineMod.ID + ".spell_hotbar_1",
             InputUtil.Type.KEYSYM,
-            InputUtil.GLFW_KEY_1,
+            InputUtil.UNKNOWN_KEY.getCode(),
             SpellEngineMod.modName()));
     public static KeyBinding spell_hotbar_2 = hotbar(new KeyBinding(
             "keybindings." + SpellEngineMod.ID + ".spell_hotbar_2",
             InputUtil.Type.KEYSYM,
-            InputUtil.GLFW_KEY_2,
+            InputUtil.UNKNOWN_KEY.getCode(),
             SpellEngineMod.modName()));
-
     public static KeyBinding spell_hotbar_3 = hotbar(new KeyBinding(
             "keybindings." + SpellEngineMod.ID + ".spell_hotbar_3",
             InputUtil.Type.KEYSYM,
-            InputUtil.GLFW_KEY_3,
+            InputUtil.UNKNOWN_KEY.getCode(),
             SpellEngineMod.modName()));
-
     public static KeyBinding spell_hotbar_4 = hotbar(new KeyBinding(
             "keybindings." + SpellEngineMod.ID + ".spell_hotbar_4",
             InputUtil.Type.KEYSYM,
-            InputUtil.GLFW_KEY_4,
+            InputUtil.UNKNOWN_KEY.getCode(),
             SpellEngineMod.modName()));
+
+    public static class Wrapped {
+        public static List<WrappedKeybinding> all() {
+            return List.of(
+                    new WrappedKeybinding(Keybindings.spell_hotbar_1, SpellEngineClient.config.spellHotbar_1_defer),
+                    new WrappedKeybinding(Keybindings.spell_hotbar_2, SpellEngineClient.config.spellHotbar_2_defer),
+                    new WrappedKeybinding(Keybindings.spell_hotbar_3, SpellEngineClient.config.spellHotbar_3_defer),
+                    new WrappedKeybinding(Keybindings.spell_hotbar_4, SpellEngineClient.config.spellHotbar_4_defer)
+            );
+        }
+    }
 }

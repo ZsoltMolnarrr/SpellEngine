@@ -22,11 +22,11 @@ public class ClientPlayerInteractionManagerMixin {
             cir.cancel();
         }
 
-        if (!SpellEngineClient.config.useKeyHighPriority) {
-            if (player instanceof ClientPlayerEntity clientPlayer) {
-                SpellHotbar.INSTANCE.handle(clientPlayer, SpellHotbar.INSTANCE.categorizedSlots.onUseKey());
-            }
-        }
+//        if (!SpellEngineClient.config.useKeyHighPriority) {
+//            if (player instanceof ClientPlayerEntity clientPlayer) {
+//                SpellHotbar.INSTANCE.handle(clientPlayer, SpellHotbar.INSTANCE.categorizedSlots.onUseKey());
+//            }
+//        }
 
         // Maybe handle useKey here?
 

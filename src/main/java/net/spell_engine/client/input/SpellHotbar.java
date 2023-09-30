@@ -1,10 +1,8 @@
 package net.spell_engine.client.input;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
@@ -16,7 +14,6 @@ import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterClient;
-import net.spell_engine.mixin.client.control.KeybindingAccessor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -26,81 +23,53 @@ import java.util.List;
 public class SpellHotbar {
     public static SpellHotbar INSTANCE = new SpellHotbar();
 
-    public record Slot(SpellInfo spell, SpellCast.Mode castMode, @Nullable KeyBinding keybinding) { }
+    public record Slot(SpellInfo spell, SpellCast.Mode castMode, @Nullable WrappedKeybinding keybinding) { }
     public List<Slot> slots = List.of();
-    public CategorizedSlots categorizedSlots = new CategorizedSlots(null, List.of());
-    public record CategorizedSlots(@Nullable Slot onUseKey, List<Slot> other) { }
-    public void update(ClientPlayerEntity player, GameOptions options) {
+    public void update(ClientPlayerEntity player) {
         var held = player.getMainHandStack();
         var container = container(player, held);
 
         var slots = new ArrayList<Slot>();
-        var useKey = ((KeybindingAccessor) options.useKey).getBoundKey();
-        Slot onUseKey = null;
-        var otherSlots = new ArrayList<Slot>();
+        var allBindings = Keybindings.Wrapped.all();
 
         if (container != null) {
             var spellIds = container.spell_ids;
             for (int i = 0; i < spellIds.size(); i++) {
                 var spellId = new Identifier(spellIds.get(i));
                 var spell = SpellRegistry.getSpell(spellId);
-                var keyBinding = keyBinding(i);
+                WrappedKeybinding keyBinding = null;
+                if (i < allBindings.size()) {
+                    keyBinding = allBindings.get(i);
+                }
 
                 // Create slot
                 var slot = new Slot(new SpellInfo(spell, spellId), SpellCast.Mode.from(spell), keyBinding);
-
-                // Try to categorize slot based on keybinding
-                if (keyBinding != null) {
-                    var hotbarKey = ((KeybindingAccessor) keyBinding).getBoundKey();
-                    if (hotbarKey.equals(useKey)) {
-                        onUseKey = slot;
-                    } else {
-                        otherSlots.add(slot);
-                    }
-                }
-
                 // Save to all slots
                 slots.add(slot);
             }
         }
 
         this.slots = slots;
-        this.categorizedSlots = new CategorizedSlots(onUseKey, otherSlots);
     }
 
-    private boolean handledKeyThisTick = false;
-    public void clearHandle() {
-        this.handledKeyThisTick = false;
-    }
-
-    @Nullable public KeyBinding handle(ClientPlayerEntity player) {
-        return handle(player, this.slots);
-    }
-
-    @Nullable public KeyBinding handle(ClientPlayerEntity player, @Nullable Slot slot) {
-        if (slot == null) { return null; }
-        return handle(player, List.of(slot));
-    }
-
-    @Nullable public KeyBinding handle(ClientPlayerEntity player, List<Slot> slots) {
-        if (handledKeyThisTick) { return null; }
+    @Nullable public WrappedKeybinding.VanillaAlternative.Category handle(ClientPlayerEntity player, GameOptions options) {
         var caster = ((SpellCasterClient) player);
         var casted = caster.v2_getSpellCastProgress();
         var casterStack = player.getMainHandStack();
         updateDebounced();
         for(var slot: slots) {
             if (slot.keybinding != null) {
-                var hotbarKey = ((KeybindingAccessor) slot.keybinding).getBoundKey();
-                var pressed = hotbarKey.getCode() < 10
-                        ? slot.keybinding.isPressed()
-                        : InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), hotbarKey.getCode());
-                // var pressed = slot.keybinding.isPressed();
+                var unwrapped = slot.keybinding.get(options);
+                if (unwrapped == null) { continue; }
+                var keyBinding = unwrapped.keyBinding();
+                var pressed = keyBinding.isPressed();
+                var handle = unwrapped.vanillaHandle();
 
                 switch (slot.castMode()) {
                     case INSTANT -> {
                         if (pressed) {
                             caster.v2_startSpellCast(casterStack, slot.spell.id());
-                            return slot.keybinding;
+                            return handle;
                         }
                     }
                     case CHARGE, CHANNEL -> {
@@ -112,27 +81,27 @@ public class SpellHotbar {
                             if (needsToBeHeld) {
                                 if (!pressed) {
                                     caster.v2_cancelSpellCast();
-                                    return slot.keybinding;
+                                    return handle;
                                 }
                             } else {
-                                if (pressed && isReleased(slot.keybinding, Use.START)) {
+                                if (pressed && isReleased(keyBinding, UseCase.START)) {
                                     caster.v2_cancelSpellCast();
-                                    debounce(slot.keybinding, Use.STOP);
-                                    return slot.keybinding;
+                                    debounce(keyBinding, UseCase.STOP);
+                                    return handle;
                                 }
                             }
                         } else {
                             // A different spell or no spell is being casted
-                            if (pressed && isReleased(slot.keybinding, Use.STOP)) {
+                            if (pressed && isReleased(keyBinding, UseCase.STOP)) {
                                 caster.v2_startSpellCast(casterStack, slot.spell.id());
-                                debounce(slot.keybinding, Use.START);
-                                return slot.keybinding;
+                                debounce(keyBinding, UseCase.START);
+                                return handle;
                             }
                         }
                     }
                 }
                 if (pressed) {
-                    return slot.keybinding;
+                    return handle;
                 }
             }
         }
@@ -140,35 +109,19 @@ public class SpellHotbar {
         return null;
     }
 
-    private enum Use { START, STOP }
-    private HashMap<KeyBinding, Use> debounced = new HashMap<>();
+    private enum UseCase { START, STOP }
+    private HashMap<KeyBinding, UseCase> debounced = new HashMap<>();
 
-    private boolean isReleased(KeyBinding keybinding, Use use) {
+    private boolean isReleased(KeyBinding keybinding, UseCase use) {
         return debounced.get(keybinding) != use;
     }
 
-    private void debounce(KeyBinding keybinding, Use use) {
+    private void debounce(KeyBinding keybinding, UseCase use) {
         debounced.put(keybinding, use);
     }
 
     private void updateDebounced() {
-        // debounced.entrySet().removeIf(entry -> !entry.getKey().isPressed());
-
-        debounced.entrySet().removeIf(entry -> {
-            var keybinding = entry.getKey();
-            var hotbarKey = ((KeybindingAccessor) keybinding).getBoundKey();
-            var pressed = hotbarKey.getCode() < 10
-                    ? keybinding.isPressed()
-                    : InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(), hotbarKey.getCode());
-            return !pressed;
-        });
-    }
-
-    private static @Nullable KeyBinding keyBinding(int index) {
-        if (index < Keybindings.spellHotbar.size()) {
-            return Keybindings.spellHotbar.get(index);
-        }
-        return null;
+         debounced.entrySet().removeIf(entry -> !entry.getKey().isPressed());
     }
 
     private SpellContainer container(PlayerEntity player, ItemStack held) {
