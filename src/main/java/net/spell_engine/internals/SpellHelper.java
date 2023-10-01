@@ -39,8 +39,6 @@ import java.util.*;
 import java.util.function.Supplier;
 
 public class SpellHelper {
-    public static int maximumUseTicks = 72000; // 72000 ticks = 1 hour
-
     public static SpellCast.Attempt attemptCasting(PlayerEntity player, ItemStack itemStack, Identifier spellId) {
         return attemptCasting(player, itemStack, spellId, true);
     }
@@ -107,17 +105,10 @@ public class SpellHelper {
 
     public static SpellCast.Duration getCastTimeDetails(LivingEntity caster, Spell spell) {
         var haste = (float) SpellPower.getHaste(caster, null);
-        var duration = hasteAffectedValue(spell.cast.duration, haste);
+        var duration = spell.cast.haste_affected
+                ? hasteAffectedValue(spell.cast.duration, haste)
+                : spell.cast.duration;
         return new SpellCast.Duration(haste, Math.round(duration * 20F));
-    }
-
-    public static float getCastProgress(LivingEntity caster, int remainingUseTicks, Spell spell) {
-        if (spell.cast == null || spell.cast.duration <= 0) {
-            return 1F;
-        }
-        var elapsedTicks = maximumUseTicks - remainingUseTicks;
-        var hasteAffectedDuration = getCastDuration(caster, spell);
-        return Math.min(((float)elapsedTicks) / (hasteAffectedDuration * 20F), 1F);
     }
 
     public static float getCooldownDuration(LivingEntity caster, Spell spell) {
@@ -127,18 +118,11 @@ public class SpellHelper {
     public static float getCooldownDuration(LivingEntity caster, Spell spell, ItemStack provisionedWeapon) {
         var duration = spell.cost.cooldown_duration;
         if (duration > 0) {
-            if (SpellEngineMod.config.haste_affects_cooldown) {
+            if (SpellEngineMod.config.haste_affects_cooldown && spell.cost.cooldown_haste_affected) {
                 duration = hasteAffectedValue(caster, spell.cost.cooldown_duration, provisionedWeapon);
             }
         }
         return duration;
-    }
-
-    public static boolean isChannelTickDue(Spell spell, int remainingUseTicks) {
-        var offset = Math.round(spell.cast.channel_ticks * 0.5F);
-        var currentTick = maximumUseTicks - remainingUseTicks + offset;
-        return currentTick >= spell.cast.channel_ticks
-                && (currentTick % spell.cast.channel_ticks) == 0;
     }
 
     public static boolean isChanneled(Spell spell) {
