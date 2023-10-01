@@ -52,12 +52,9 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         if (process != null) {
             return process.id();
         }
-        var player = player();
-        if (player.isUsingItem()) {
-            var value = player.getDataTracker().get(SPELL_ENGINE_SELECTED_SPELL);
-            if (value != 0) {
-                return SpellRegistry.fromRawSpellId(value).orElse(null);
-            }
+        var rawValue = player().getDataTracker().get(SPELL_ENGINE_SELECTED_SPELL);
+        if (rawValue != 0) {
+            return SpellRegistry.fromRawSpellId(rawValue).orElse(null);
         }
         return null;
     }
