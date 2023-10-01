@@ -26,28 +26,34 @@ public class PlayerEntityMixin implements SpellCasterEntity {
 
     private final SpellCooldownManager spellCooldownManager = new SpellCooldownManager(player());
     private static final TrackedData<Integer> SPELL_ENGINE_SELECTED_SPELL = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<Float> SPELL_ENGINE_CASTING_SPEED = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.FLOAT);
 
     @Inject(method = "initDataTracker", at = @At("TAIL"))
     private void initDataTracker_TAIL_SpellEngine_SyncEffects(CallbackInfo ci) {
         player().getDataTracker().startTracking(SPELL_ENGINE_SELECTED_SPELL, 0);
+        player().getDataTracker().startTracking(SPELL_ENGINE_CASTING_SPEED, 1F);
     }
 
     private SpellCast.Process serverSide_SpellCastProcess = null;
     public void setSpellCastProcess(@Nullable SpellCast.Process process) {
         serverSide_SpellCastProcess = process;
-        Identifier spellId = null;
+        int rawSpellId = 0;
+        float speed = 1F;
         if (process != null) {
-            spellId = process.id();
+            if (process.id() != null) {
+                rawSpellId = SpellRegistry.rawSpellId(process.id());
+            }
+            speed = process.speed();
         }
-        player().getDataTracker().set(SPELL_ENGINE_SELECTED_SPELL, spellId != null ? SpellRegistry.rawSpellId(spellId) : 0);
+        player().getDataTracker().set(SPELL_ENGINE_SELECTED_SPELL, rawSpellId);
+        player().getDataTracker().set(SPELL_ENGINE_CASTING_SPEED, speed);
     }
 
     @Nullable public SpellCast.Process getSpellCastProcess() {
         return serverSide_SpellCastProcess;
     }
 
-    @Override
-    public Identifier getCurrentSpellId() {
+    private Identifier getCurrentSpellId() {
         var process = getSpellCastProcess();
         if (process != null) {
             return process.id();
@@ -70,6 +76,15 @@ public class PlayerEntityMixin implements SpellCasterEntity {
             return SpellRegistry.getSpell(id);
         }
         return null;
+    }
+
+    @Override
+    public float getCurrentCastingSpeed() {
+        var process = getSpellCastProcess();
+        if (process != null) {
+            return process.speed();
+        }
+        return player().getDataTracker().get(SPELL_ENGINE_CASTING_SPEED);
     }
 
     @Override

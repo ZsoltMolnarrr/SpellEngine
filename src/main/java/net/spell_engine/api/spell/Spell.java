@@ -18,7 +18,7 @@ public class Spell {
 
     public Cast cast = new Cast();
     public static class Cast { public Cast() { }
-        public boolean haste_affected = false;
+        public boolean haste_affected = true;
         public float duration = 0;
         public int channel_ticks = 0;
         public String animation;
@@ -131,7 +131,7 @@ public class Spell {
         public int durability = 1;
         public float cooldown_duration = 0;
         public boolean cooldown_proportional = false;
-        public boolean cooldown_haste_affected = false;
+        public boolean cooldown_haste_affected = true;
     }
 
     public static class ProjectileData { public ProjectileData() { }

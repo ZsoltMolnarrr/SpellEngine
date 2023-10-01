@@ -11,7 +11,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -104,10 +103,10 @@ public class SpellHelper {
     }
 
     public static SpellCast.Duration getCastTimeDetails(LivingEntity caster, Spell spell) {
-        var haste = (float) SpellPower.getHaste(caster, null);
-        var duration = spell.cast.haste_affected
-                ? hasteAffectedValue(spell.cast.duration, haste)
-                : spell.cast.duration;
+        var haste = spell.cast.haste_affected
+                ? (float) SpellPower.getHaste(caster, null)
+                : 1F;
+        var duration =  hasteAffectedValue(spell.cast.duration, haste);
         return new SpellCast.Duration(haste, Math.round(duration * 20F));
     }
 
@@ -151,6 +150,8 @@ public class SpellHelper {
         if (!attempt.isSuccess()) {
             return;
         }
+        // Allow clients to specify their haste without validation
+        // var details = SpellHelper.getCastTimeDetails(player, spell);
         var process = new SpellCast.Process(spellId, spell, itemStack, speed, length, player.getWorld().getTime());
         SpellCastSyncHelper.setCasting(player, process);
         SoundHelper.playSound(player.getWorld(), player, spell.cast.start_sound);
@@ -167,6 +168,7 @@ public class SpellHelper {
         if (!attempt.isSuccess()) {
             return;
         }
+        var castingSpeed = ((SpellCasterEntity)player).getCurrentCastingSpeed();
         // Normalized progress in 0 to 1
         progress = Math.max(Math.min(progress, 1F), 0F);
         var channelMultiplier = 1F;
@@ -250,7 +252,7 @@ public class SpellHelper {
             if (released) {
                 ParticleHelper.sendBatches(player, spell.release.particles);
                 SoundHelper.playSound(world, player, spell.release.sound);
-                AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation);
+                AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation, castingSpeed);
                 // Consume things
                 // Cooldown
                 imposeCooldown(player, spellId, spell, progress);

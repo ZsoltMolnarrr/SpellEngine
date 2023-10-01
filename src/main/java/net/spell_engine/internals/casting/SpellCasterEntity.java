@@ -11,9 +11,8 @@ public interface SpellCasterEntity {
     void setSpellCastProcess(@Nullable SpellCast.Process process);
     @Nullable SpellCast.Process getSpellCastProcess();
 
-    Identifier getCurrentSpellId();
     Spell getCurrentSpell();
-
+    float getCurrentCastingSpeed();
 
     boolean isBeaming();
     @Nullable

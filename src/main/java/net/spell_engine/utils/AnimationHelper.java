@@ -10,11 +10,11 @@ import net.spell_engine.network.Packets;
 import java.util.Collection;
 
 public class AnimationHelper {
-    public static void sendAnimation(PlayerEntity animatedPlayer, Collection<ServerPlayerEntity> trackingPlayers, SpellCast.Animation type, String name) {
+    public static void sendAnimation(PlayerEntity animatedPlayer, Collection<ServerPlayerEntity> trackingPlayers, SpellCast.Animation type, String name, float speed) {
         if (name == null || name.isEmpty()) {
             return;
         }
-        var packet = new Packets.SpellAnimation(animatedPlayer.getId(), type, name).write();
+        var packet = new Packets.SpellAnimation(animatedPlayer.getId(), type, name, speed).write();
         if (animatedPlayer instanceof ServerPlayerEntity serverPlayer) {
             sendPacketToPlayer(serverPlayer, packet);
         }

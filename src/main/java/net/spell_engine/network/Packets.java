@@ -78,13 +78,14 @@ public class Packets {
         }
     }
 
-    public record SpellAnimation(int playerId, SpellCast.Animation type, String name) {
+    public record SpellAnimation(int playerId, SpellCast.Animation type, String name, float speed) {
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "spell_animation");
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();
             buffer.writeInt(playerId);
             buffer.writeInt(type.ordinal());
             buffer.writeString(name);
+            buffer.writeFloat(speed);
             return buffer;
         }
 
@@ -92,7 +93,8 @@ public class Packets {
             int playerId = buffer.readInt();
             var type = SpellCast.Animation.values()[buffer.readInt()];
             var name = buffer.readString();
-            return new SpellAnimation(playerId, type, name);
+            var speed = buffer.readFloat();
+            return new SpellAnimation(playerId, type, name, speed);
         }
     }
 

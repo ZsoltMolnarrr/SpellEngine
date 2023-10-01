@@ -43,13 +43,9 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return targets.stream().findFirst().orElse(null);
     }
 
-
     @Override
-    public Identifier getCurrentSpellId() {
-        if (spellCastProcess != null) {
-            return spellCastProcess.id();
-        }
-        return null;
+    @Nullable public SpellCast.Process getSpellCastProcess() {
+        return spellCastProcess;
     }
 
     @Override
@@ -58,6 +54,14 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             return spellCastProcess.spell();
         }
         return null;
+    }
+
+    @Override
+    public float getCurrentCastingSpeed() {
+        if (spellCastProcess != null) {
+            return spellCastProcess.speed();
+        }
+        return 1F;
     }
 
     public boolean isCastingSpell() {
@@ -118,11 +122,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             }
         }
         return attempt;
-    }
-
-    @Override
-    @Nullable public SpellCast.Process getSpellCastProcess() {
-        return spellCastProcess;
     }
 
     @Nullable public SpellCast.Progress getSpellCastProgress() {
