@@ -9,6 +9,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.client.SpellEngineClient;
+import net.spell_engine.client.gui.HudMessages;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
@@ -20,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 public class SpellHotbar {
     public static SpellHotbar INSTANCE = new SpellHotbar();
@@ -86,9 +88,11 @@ public class SpellHotbar {
         this.slots = slots;
     }
 
-    private boolean handledKeyThisTick = false;
+    private KeyBinding handledKeyThisTick = null;
+    private KeyBinding handledKeyPreviousTick = null;
     public void prepare() {
-        this.handledKeyThisTick = false;
+        this.handledKeyPreviousTick = this.handledKeyThisTick;
+        this.handledKeyThisTick = null;
         this.updateDebounced();
     }
 
@@ -102,7 +106,7 @@ public class SpellHotbar {
     }
 
     @Nullable public WrappedKeybinding.Category handle(ClientPlayerEntity player, List<Slot> slots, GameOptions options) {
-        if (handledKeyThisTick) { return null; }
+        if (handledKeyThisTick != null) { return null; }
         if (Keybindings.ignore_spell_hotbar.isPressed()) { return null; }
         var caster = ((SpellCasterClient) player);
         var casted = caster.getSpellCastProgress();
@@ -118,8 +122,9 @@ public class SpellHotbar {
                 switch (slot.castMode()) {
                     case INSTANT -> {
                         if (pressed) {
-                            caster.startSpellCast(casterStack, slot.spell.id());
-                            handledKeyThisTick = true;
+                            var attempt = caster.startSpellCast(casterStack, slot.spell.id());
+                            displayAttempt(attempt, keyBinding);
+                            handledKeyThisTick = keyBinding;
                             return handle;
                         }
                     }
@@ -132,36 +137,44 @@ public class SpellHotbar {
                             if (needsToBeHeld) {
                                 if (!pressed) {
                                     caster.cancelSpellCast();
-                                    handledKeyThisTick = true;
+                                    handledKeyThisTick = keyBinding;
                                     return handle;
                                 }
                             } else {
                                 if (pressed && isReleased(keyBinding, UseCase.START)) {
                                     caster.cancelSpellCast();
                                     debounce(keyBinding, UseCase.STOP);
-                                    handledKeyThisTick = true;
+                                    handledKeyThisTick = keyBinding;
                                     return handle;
                                 }
                             }
                         } else {
                             // A different spell or no spell is being casted
                             if (pressed && isReleased(keyBinding, UseCase.STOP)) {
-                                caster.startSpellCast(casterStack, slot.spell.id());
+                                var attempt = caster.startSpellCast(casterStack, slot.spell.id());
+                                displayAttempt(attempt, keyBinding);
                                 debounce(keyBinding, UseCase.START);
-                                handledKeyThisTick = true;
+                                handledKeyThisTick = keyBinding;
                                 return handle;
                             }
                         }
                     }
                 }
                 if (pressed) {
-                    handledKeyThisTick = true;
+                    handledKeyThisTick = keyBinding;
                     return handle;
                 }
             }
         }
 
         return null;
+    }
+
+    private void displayAttempt(SpellCast.Attempt attempt, KeyBinding keyBinding) {
+        if (Objects.equals(keyBinding, handledKeyPreviousTick)) { return; }
+        if (attempt.isFail()) {
+            HudMessages.INSTANCE.castAttemptError(attempt);
+        }
     }
 
     private enum UseCase { START, STOP }

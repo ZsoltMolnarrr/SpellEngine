@@ -117,9 +117,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 setSpellCastProcess(new SpellCast.Process(spellId, spell, itemStack, details.speed(), details.length(), caster.getWorld().getTime()), true);
             }
         }
-        if (attempt.isFail()) {
-            HudMessages.INSTANCE.castAttemptError(attempt);
-        }
         return attempt;
     }
 
