@@ -34,7 +34,7 @@ public class ClientConfig implements ConfigData {
 
 
     @ConfigEntry.Gui.Tooltip
-    public boolean useKeyHighPriority = true;
+    public boolean useKeyHighPriority = false;
     @ConfigEntry.Gui.Tooltip
     public boolean highlightTarget = true;
     @ConfigEntry.Gui.Tooltip

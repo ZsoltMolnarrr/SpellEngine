@@ -29,7 +29,7 @@
     "client.action_impair.MinecraftClientActionImpairing",
     "client.control.ClientPlayerInteractionManagerMixin",
     "client.control.KeybindingAccessor",
-    "client.render.TargetHighlightMinecraftClient",
+    "client.render.MinecraftClientMixin",
     "client.control.SpellCastingMovement",
     "client.control.SpellHotbarMinecraftClient",
     "client.render.EntityMixin",
