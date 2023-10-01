@@ -141,11 +141,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         if (process != null) {
             if (SpellHelper.isChanneled(process.spell())) {
                 var player = player();
-                var slot = findSlot(player, process.itemStack());
                 var progress = process.progress(player.getWorld().getTime());
                 ClientPlayNetworking.send(
                         Packets.SpellRequest.ID,
-                        new Packets.SpellRequest(Hand.MAIN_HAND, SpellCast.Action.RELEASE, process.id(), slot, progress.ratio(), new int[]{}).write());
+                        new Packets.SpellRequest(SpellCast.Action.RELEASE, process.id(), progress.ratio(), new int[]{}).write());
             }
         }
 
@@ -192,10 +191,8 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     private void releaseSpellCast(SpellCast.Process process, SpellCast.Action action) {
-        var caster = player();
         var spellId = process.id();
         var spell = process.spell();
-        var slot = findSlot(caster, process.itemStack());
         var player = player();
         var progress = process.progress(player.getWorld().getTime());
         var release = spell.release.target;
@@ -220,7 +217,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
         ClientPlayNetworking.send(
                 Packets.SpellRequest.ID,
-                new Packets.SpellRequest(Hand.MAIN_HAND, action, spellId, slot, progress.ratio(), targetIDs).write());
+                new Packets.SpellRequest(action, spellId, progress.ratio(), targetIDs).write());
         switch (action) {
             case CHANNEL -> {
                 if (progress.ratio() >= 1) {

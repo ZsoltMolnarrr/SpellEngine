@@ -49,7 +49,6 @@ public class ServerNetwork {
             }
             var packet = Packets.SpellRequest.read(buf);
             world.getServer().executeSync(() -> {
-                var stack = player.getInventory().getStack(packet.slot());
                 List<Entity> targets = new ArrayList<>();
                 for (var targetId: packet.targets()) {
                     var entity = world.getEntityById(targetId);
@@ -57,7 +56,7 @@ public class ServerNetwork {
                         targets.add(entity);
                     }
                 }
-                SpellHelper.performSpell(world, player, packet.spellId(), targets, stack, packet.action(), packet.hand(), packet.progress());
+                SpellHelper.performSpell(world, player, packet.spellId(), targets, packet.action(), packet.progress());
             });
         });
     }

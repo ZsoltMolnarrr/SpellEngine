@@ -172,12 +172,13 @@ public class SpellHelper {
         SoundHelper.playSound(player.getWorld(), player, spell.cast.start_sound);
     }
 
-    public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCast.Action action, Hand hand, float progress) {
+    public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, SpellCast.Action action, float progress) {
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
             return;
         }
         var spellInfo = new SpellInfo(spell, spellId);
+        var itemStack = player.getMainHandStack();
         var attempt = attemptCasting(player, itemStack, spellId);
         if (!attempt.isSuccess()) {
             return;
@@ -219,7 +220,7 @@ public class SpellHelper {
                     released = false;
                     if (handler != null) {
                         released = handler.apply(new CustomSpellHandler.Data(
-                                player, targets, itemStack, action, hand, progress, context));
+                                player, targets, itemStack, action, progress, context));
                     }
                 } else {
                     switch (targeting.type) {

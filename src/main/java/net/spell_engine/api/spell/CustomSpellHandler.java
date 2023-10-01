@@ -21,7 +21,6 @@ public class CustomSpellHandler {
             List<Entity> targets,
             ItemStack itemStack,
             SpellCast.Action action,
-            Hand hand,
             float progress,
             SpellHelper.ImpactContext impactContext) { }
 

@@ -42,27 +42,23 @@ public class Packets {
         }
     }
 
-    public record SpellRequest(Hand hand, SpellCast.Action action, Identifier spellId, int slot, float progress, int[] targets) {
+    public record SpellRequest(SpellCast.Action action, Identifier spellId, float progress, int[] targets) {
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "release_request");
 
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();
-            buffer.writeEnumConstant(hand);
             buffer.writeEnumConstant(action);
             buffer.writeString(spellId.toString());
-            buffer.writeInt(slot);
             buffer.writeFloat(progress);
             buffer.writeIntArray(targets);
             return buffer;
         }
         public static SpellRequest read(PacketByteBuf buffer) {
-            var hand = buffer.readEnumConstant(Hand.class);
             var action = buffer.readEnumConstant(SpellCast.Action.class);
             var spellId = new Identifier(buffer.readString());
-            var slot = buffer.readInt();
             var progress = buffer.readFloat();
             var targets = buffer.readIntArray();
-            return new SpellRequest(hand, action, spellId, slot, progress, targets);
+            return new SpellRequest(action, spellId, progress, targets);
         }
     }
 
