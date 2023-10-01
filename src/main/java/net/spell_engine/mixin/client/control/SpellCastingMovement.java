@@ -19,7 +19,7 @@ public class SpellCastingMovement {
     private void tickMovement_ModifyInput(CallbackInfo ci) {
         var player = (ClientPlayerEntity) (Object) this;
         var caster = (SpellCasterClient) player;
-        if (caster.v2_isCastingSpell() && !player.hasVehicle()) {
+        if (caster.isCastingSpell() && !player.hasVehicle()) {
             var multiplier = SpellEngineMod.config.movement_speed_while_casting_spell;
             input.movementSideways *= multiplier;
             input.movementForward *= multiplier;

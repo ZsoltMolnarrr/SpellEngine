@@ -14,7 +14,6 @@ import net.minecraft.util.math.Vec2f;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.SpellHotbar;
-import net.spell_engine.client.util.Color;
 import net.spell_engine.client.util.Rect;
 import net.spell_engine.client.util.SpellRender;
 import net.spell_engine.client.util.TextureFile;
@@ -73,7 +72,7 @@ public class HudRenderHelper {
             }
             renderHotbar = true;
 
-            var spellCast = caster.v2_getSpellCastProgress();
+            var spellCast = caster.getSpellCastProgress();
             if (spellCast != null) {
                 castBarViewModel = new CastBarWidget.ViewModel(
                         spellCast.process().spell().school.color(),

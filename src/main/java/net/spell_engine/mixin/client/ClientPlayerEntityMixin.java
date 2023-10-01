@@ -61,7 +61,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return null;
     }
 
-    public boolean v2_isCastingSpell() {
+    public boolean isCastingSpell() {
         return spellCastProcess != null;
     }
 
@@ -86,10 +86,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
     }
 
-    public SpellCast.Attempt v2_startSpellCast(ItemStack itemStack, Identifier spellId) {
+    public SpellCast.Attempt startSpellCast(ItemStack itemStack, Identifier spellId) {
         var caster = player();
         if (spellId == null) {
-            this.v2_cancelSpellCast();
+            this.cancelSpellCast();
             return SpellCast.Attempt.none();
         }
         var spell = SpellRegistry.getSpell(spellId);
@@ -123,7 +123,12 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return attempt;
     }
 
-    @Nullable public SpellCast.Progress v2_getSpellCastProgress() {
+    @Override
+    @Nullable public SpellCast.Process getSpellCastProcess() {
+        return spellCastProcess;
+    }
+
+    @Nullable public SpellCast.Progress getSpellCastProgress() {
         if (spellCastProcess != null) {
             var player = player();
             return spellCastProcess.progress(player.getWorld().getTime());
@@ -131,7 +136,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return null;
     }
 
-    public void v2_cancelSpellCast() {
+    public void cancelSpellCast() {
         v2_cancelSpellCast(true);
     }
     public void v2_cancelSpellCast(boolean syncProcess) {
@@ -160,7 +165,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                     || getCooldownManager().isCoolingDown(process.id())
                     || EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.CAST_SPELL, true)
             ) {
-                v2_cancelSpellCast();
+                cancelSpellCast();
                 return;
             }
 
@@ -222,11 +227,11 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         switch (action) {
             case CHANNEL -> {
                 if (progress.ratio() >= 1) {
-                    v2_cancelSpellCast();
+                    cancelSpellCast();
                 }
             }
             case RELEASE -> {
-                v2_cancelSpellCast();
+                cancelSpellCast();
             }
         }
     }

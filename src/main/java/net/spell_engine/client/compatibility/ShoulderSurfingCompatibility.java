@@ -16,7 +16,7 @@ public class ShoulderSurfingCompatibility implements IShoulderSurfingPlugin {
             if (SpellContainerHelper.hasUsableContainer(itemStack)) {
                 var player = MinecraftClient.getInstance().player;
                 if (player != null & SpellEngineClient.config.shoulderSurfingAdaptiveWhileUse) {
-                    var casting = ((SpellCasterClient)player).v2_getSpellCastProgress() != null;
+                    var casting = ((SpellCasterClient)player).getSpellCastProgress() != null;
                     if (casting) {
                         this.setTicks(player.age);
                     }

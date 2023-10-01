@@ -64,7 +64,6 @@ public class SpellHotbarMinecraftClient {
                 case ITEM_HOTBAR_KEY -> {
                     // This case is better handled by `handleInputEvents_OverrideNumberKeys`
                     break;
-
 //                    for (var hotbarKey : options.hotbarKeys) {
 //                        conflictingPressState.put(hotbarKey, hotbarKey.isPressed());
 //                        hotbarKey.setPressed(value);

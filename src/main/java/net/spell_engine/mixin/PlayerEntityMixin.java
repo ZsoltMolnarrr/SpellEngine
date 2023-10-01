@@ -46,12 +46,12 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         return serverSide_SpellCastProcess;
     }
 
-    public void clearCasting() { // TODO: Most likely remove
-        serverSide_SpellCastProcess = null;
-    }
-
     @Override
     public Identifier getCurrentSpellId() {
+        var process = getSpellCastProcess();
+        if (process != null) {
+            return process.id();
+        }
         var player = player();
         if (player.isUsingItem()) {
             var value = player.getDataTracker().get(SPELL_ENGINE_SELECTED_SPELL);
@@ -64,6 +64,10 @@ public class PlayerEntityMixin implements SpellCasterEntity {
 
     @Override
     public Spell getCurrentSpell() {
+        var process = getSpellCastProcess();
+        if (process != null) {
+            return process.spell();
+        }
         var id = getCurrentSpellId();
         if (id != null) {
             return SpellRegistry.getSpell(id);
@@ -82,12 +86,13 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         var player = player();
         if (player.getWorld().isClient) {
             ((AnimatablePlayer)player()).updateSpellCastAnimationsOnTick();
-//            if (!player.isUsingItem() && currentSpell != null) {
-//            }
         } else {
             // Server side
-            if (!player.isUsingItem() || SpellContainerHelper.containerWithProxy(player.getActiveItem(), player) == null) {
-                SpellCastSyncHelper.clearCasting(player);
+            if (serverSide_SpellCastProcess != null) {
+                var castTicks = serverSide_SpellCastProcess.spellCastTicksSoFar(player.getWorld().getTime());
+                if (castTicks >= (serverSide_SpellCastProcess.length() * 1.5)) {
+                    SpellCastSyncHelper.clearCasting(player);
+                }
             }
         }
         spellCooldownManager.update();

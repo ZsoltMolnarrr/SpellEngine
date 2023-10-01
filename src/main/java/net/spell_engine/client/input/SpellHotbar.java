@@ -104,7 +104,7 @@ public class SpellHotbar {
     @Nullable public WrappedKeybinding.Category handle(ClientPlayerEntity player, List<Slot> slots, GameOptions options) {
         if (handledKeyThisTick) { return null; }
         var caster = ((SpellCasterClient) player);
-        var casted = caster.v2_getSpellCastProgress();
+        var casted = caster.getSpellCastProgress();
         var casterStack = player.getMainHandStack();
         for(var slot: slots) {
             if (slot.keybinding != null) {
@@ -117,7 +117,7 @@ public class SpellHotbar {
                 switch (slot.castMode()) {
                     case INSTANT -> {
                         if (pressed) {
-                            caster.v2_startSpellCast(casterStack, slot.spell.id());
+                            caster.startSpellCast(casterStack, slot.spell.id());
                             handledKeyThisTick = true;
                             return handle;
                         }
@@ -130,13 +130,13 @@ public class SpellHotbar {
                                     SpellEngineClient.config.holdToCastCharged;
                             if (needsToBeHeld) {
                                 if (!pressed) {
-                                    caster.v2_cancelSpellCast();
+                                    caster.cancelSpellCast();
                                     handledKeyThisTick = true;
                                     return handle;
                                 }
                             } else {
                                 if (pressed && isReleased(keyBinding, UseCase.START)) {
-                                    caster.v2_cancelSpellCast();
+                                    caster.cancelSpellCast();
                                     debounce(keyBinding, UseCase.STOP);
                                     handledKeyThisTick = true;
                                     return handle;
@@ -145,7 +145,7 @@ public class SpellHotbar {
                         } else {
                             // A different spell or no spell is being casted
                             if (pressed && isReleased(keyBinding, UseCase.STOP)) {
-                                caster.v2_startSpellCast(casterStack, slot.spell.id());
+                                caster.startSpellCast(casterStack, slot.spell.id());
                                 debounce(keyBinding, UseCase.START);
                                 handledKeyThisTick = true;
                                 return handle;

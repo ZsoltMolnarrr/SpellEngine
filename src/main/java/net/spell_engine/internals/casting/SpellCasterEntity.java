@@ -7,8 +7,6 @@ import org.jetbrains.annotations.Nullable;
 
 public interface SpellCasterEntity {
     SpellCooldownManager getCooldownManager();
-    void clearCasting(); // TODO: Remove
-
 
     void setSpellCastProcess(@Nullable SpellCast.Process process);
     @Nullable SpellCast.Process getSpellCastProcess();
