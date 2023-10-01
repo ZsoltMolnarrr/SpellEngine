@@ -103,6 +103,7 @@ public class SpellHotbar {
 
     @Nullable public WrappedKeybinding.Category handle(ClientPlayerEntity player, List<Slot> slots, GameOptions options) {
         if (handledKeyThisTick) { return null; }
+        if (Keybindings.ignore_spell_hotbar.isPressed()) { return null; }
         var caster = ((SpellCasterClient) player);
         var casted = caster.getSpellCastProgress();
         var casterStack = player.getMainHandStack();

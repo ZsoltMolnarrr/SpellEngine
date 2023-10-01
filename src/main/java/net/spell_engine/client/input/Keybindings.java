@@ -30,8 +30,8 @@ public class Keybindings {
         return key;
     }
 
-    public static KeyBinding hotbarModifier = add(new KeyBinding(
-            "keybindings." + SpellEngineMod.ID + ".hotbar_modifier",
+    public static KeyBinding ignore_spell_hotbar = add(new KeyBinding(
+            "keybindings." + SpellEngineMod.ID + ".ignore_spell_hotbar",
             InputUtil.Type.KEYSYM,
             InputUtil.GLFW_KEY_LEFT_ALT,
             SpellEngineMod.modName()));

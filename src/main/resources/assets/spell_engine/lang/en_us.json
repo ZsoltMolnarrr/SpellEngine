@@ -44,8 +44,7 @@
   "hud.action_impaired.stun": "Stunned",
 
   "keybindings.spell_engine.tooltip_details" : "Tooltip spell details",
-  "keybindings.spell_engine.hotbar_modifier" : "Control spell hotbar",
-  "keybindings.spell_engine.hotbar_lock" : "Switch to spell hotbar",
+  "keybindings.spell_engine.ignore_spell_hotbar" : "Bypass Spell Hotbar",
   "keybindings.spell_engine.spell_hotbar_1" : "Spell Hotbar Slot 1",
   "keybindings.spell_engine.spell_hotbar_2" : "Spell Hotbar Slot 2",
   "keybindings.spell_engine.spell_hotbar_3" : "Spell Hotbar Slot 3",
@@ -82,10 +81,8 @@
   "text.autoconfig.spell_engine.option.client.spellHotbar_8_defer.@Tooltip" : "Spell Hotbar Slot 8 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
   "text.autoconfig.spell_engine.option.client.spellHotbar_9_defer" : "Spell Hotbar Slot 9 fallback",
   "text.autoconfig.spell_engine.option.client.spellHotbar_9_defer.@Tooltip" : "Spell Hotbar Slot 9 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
-
   "text.autoconfig.spell_engine.option.client.useKeyHighPriority" : "Prioritize casting spell for 'use' keybind",
   "text.autoconfig.spell_engine.option.client.useKeyHighPriority.@Tooltip" : "Spell on the 'use' keybind will try to cast spells before interacting blocks and entities",
-
   "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple" : "Show target name when multiple",
   "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple.@Tooltip" : "Show target name when more than one entity is being targeted",
   "text.autoconfig.spell_engine.option.client.highlightTarget" : "Highlight target",

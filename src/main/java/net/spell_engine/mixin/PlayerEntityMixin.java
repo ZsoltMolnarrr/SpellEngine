@@ -75,7 +75,6 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         return null;
     }
 
-
     @Override
     public SpellCooldownManager getCooldownManager() {
         return spellCooldownManager;

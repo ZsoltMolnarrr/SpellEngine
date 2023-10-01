@@ -9,6 +9,7 @@ import net.minecraft.util.Hand;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.SpellHotbar;
+import net.spell_engine.internals.casting.SpellCasterClient;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,13 +23,19 @@ public class ClientPlayerInteractionManagerMixin {
 
     @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
     public void interactItem_HEAD_LockHotbar(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        if (!SpellEngineClient.config.useKeyHighPriority) {
-            if (player instanceof ClientPlayerEntity clientPlayer) {
+        if (player instanceof ClientPlayerEntity clientPlayer) {
+            if (!SpellEngineClient.config.useKeyHighPriority) {
                 var handled = SpellHotbar.INSTANCE.handle(clientPlayer, SpellHotbar.INSTANCE.structuredSlots.onUseKey(), client.options);
                 if (handled != null) {
                     cir.setReturnValue(ActionResult.FAIL);
                     cir.cancel();
                 }
+            }
+
+            var caster = (SpellCasterClient)clientPlayer;
+            if (caster.isCastingSpell()) {
+                cir.setReturnValue(ActionResult.FAIL);
+                cir.cancel();
             }
         }
 
