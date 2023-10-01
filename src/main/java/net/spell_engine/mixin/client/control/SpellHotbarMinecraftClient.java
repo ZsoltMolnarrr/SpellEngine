@@ -7,6 +7,7 @@ import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.entity.player.PlayerInventory;
 import net.spell_engine.client.SpellEngineClient;
+import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.client.input.WrappedKeybinding;
 import net.spell_engine.internals.casting.SpellCasterClient;
@@ -87,11 +88,13 @@ public class SpellHotbarMinecraftClient {
     @WrapWithCondition(method = "handleInputEvents", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerInventory;selectedSlot:I", ordinal = 0, opcode = Opcodes.PUTFIELD))
     private boolean handleInputEvents_OverrideNumberKeys(PlayerInventory instance, int index) {
         var shouldControlSpellHotbar = false;
-        for (var slot: SpellHotbar.INSTANCE.slots) {
-            var keyBinding = slot.getKeyBinding(options);
-            if (options.hotbarKeys[index] == keyBinding) {
-                shouldControlSpellHotbar = true;
-                break;
+        if (!Keybindings.bypass_spell_hotbar.isPressed()) {
+            for (var slot: SpellHotbar.INSTANCE.slots) {
+                var keyBinding = slot.getKeyBinding(options);
+                if (options.hotbarKeys[index] == keyBinding) {
+                    shouldControlSpellHotbar = true;
+                    break;
+                }
             }
         }
 

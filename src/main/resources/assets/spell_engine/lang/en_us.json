@@ -44,7 +44,7 @@
   "hud.action_impaired.stun": "Stunned",
 
   "keybindings.spell_engine.tooltip_details" : "Tooltip spell details",
-  "keybindings.spell_engine.ignore_spell_hotbar" : "Bypass Spell Hotbar",
+  "keybindings.spell_engine.bypass_spell_hotbar" : "Bypass Spell Hotbar",
   "keybindings.spell_engine.spell_hotbar_1" : "Spell Hotbar Slot 1",
   "keybindings.spell_engine.spell_hotbar_2" : "Spell Hotbar Slot 2",
   "keybindings.spell_engine.spell_hotbar_3" : "Spell Hotbar Slot 3",

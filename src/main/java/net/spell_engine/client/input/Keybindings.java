@@ -1,7 +1,6 @@
 package net.spell_engine.client.input;
 
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.InputUtil;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
@@ -30,8 +29,8 @@ public class Keybindings {
         return key;
     }
 
-    public static KeyBinding ignore_spell_hotbar = add(new KeyBinding(
-            "keybindings." + SpellEngineMod.ID + ".ignore_spell_hotbar",
+    public static KeyBinding bypass_spell_hotbar = add(new KeyBinding(
+            "keybindings." + SpellEngineMod.ID + ".bypass_spell_hotbar",
             InputUtil.Type.KEYSYM,
             InputUtil.GLFW_KEY_LEFT_ALT,
             SpellEngineMod.modName()));
