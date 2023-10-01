@@ -22,15 +22,19 @@ public class ClientPlayerInteractionManagerMixin {
 
     @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
     public void interactItem_HEAD_LockHotbar(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
+        if (!SpellEngineClient.config.useKeyHighPriority) {
+            if (player instanceof ClientPlayerEntity clientPlayer) {
+                var handled = SpellHotbar.INSTANCE.handle(clientPlayer, SpellHotbar.INSTANCE.structuredSlots.onUseKey(), client.options);
+                if (handled != null) {
+                    cir.setReturnValue(ActionResult.FAIL);
+                    cir.cancel();
+                }
+            }
+        }
+
         if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ITEM_USE, true)) {
             cir.setReturnValue(ActionResult.FAIL);
             cir.cancel();
-        }
-
-        if (!SpellEngineClient.config.useKeyHighPriority) {
-            if (player instanceof ClientPlayerEntity clientPlayer) {
-                SpellHotbar.INSTANCE.handle(clientPlayer, SpellHotbar.INSTANCE.structuredSlots.onUseKey(), client.options);
-            }
         }
     }
 }

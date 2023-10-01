@@ -40,10 +40,24 @@ public class SpellCast {
     }
 
     public record Duration(float speed, int length) { }
-    public record Process(Identifier id, Spell spell, ItemStack itemStack, float speed, int length) {
+    public record Process(Identifier id, Spell spell, ItemStack itemStack, float speed, int length, long startedAt) {
+        public int spellCastTicksSoFar(long worldTime) {
+            // At least zero
+            // The difference must fit into an integer
+            return (int)Math.max(worldTime - startedAt, 0);
+        }
+
         public Progress progress(int castTicks) {
+            if (length <= 0) {
+                return new Progress(1F, this);
+            }
             float ratio = Math.min(((float)castTicks) / length(), 1F);
             return new Progress(ratio, this);
+        }
+
+        public Progress progress(long worldTime) {
+            int castTicks = spellCastTicksSoFar(worldTime);
+            return progress(castTicks);
         }
     }
     public record Progress(float ratio, Process process) { }
@@ -59,7 +73,6 @@ public class SpellCast {
     }
 
     public enum Action {
-        START,
         CHANNEL,
         RELEASE
     }

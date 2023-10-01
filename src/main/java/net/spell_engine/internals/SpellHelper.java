@@ -167,7 +167,7 @@ public class SpellHelper {
         if (!attempt.isSuccess()) {
             return;
         }
-        var process = new SpellCast.Process(spellId, spell, itemStack, speed, length);
+        var process = new SpellCast.Process(spellId, spell, itemStack, speed, length, player.getWorld().getTime());
         SpellCastSyncHelper.setCasting(player, process);
         SoundHelper.playSound(player.getWorld(), player, spell.cast.start_sound);
     }
@@ -178,8 +178,8 @@ public class SpellHelper {
             return;
         }
         var spellInfo = new SpellInfo(spell, spellId);
-        var caster = (SpellCasterEntity)player;
-        if (caster.getCooldownManager().isCoolingDown(spellId)) {
+        var attempt = attemptCasting(player, itemStack, spellId);
+        if (!attempt.isSuccess()) {
             return;
         }
         // Normalized progress in 0 to 1
@@ -190,10 +190,6 @@ public class SpellHelper {
             return PlayerLookup.tracking(player);
         });
         switch (action) {
-            case START -> {
-                // TODO: Remove
-                return;
-            }
             case CHANNEL -> {
                 channelMultiplier = channelValueMultiplier(spell);
             }
@@ -272,10 +268,7 @@ public class SpellHelper {
                 AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation);
                 // Consume things
                 // Cooldown
-                var duration = cooldownToSet(player, spell, progress);
-                if (duration > 0) {
-                    ((SpellCasterEntity) player).getCooldownManager().set(spellId, Math.round(duration * 20F));
-                }
+                imposeCooldown(player, spellId, spell, progress);
                 // Exhaust
                 player.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
                 // Durability
@@ -304,6 +297,13 @@ public class SpellHelper {
                     player.removeStatusEffect(effect);
                 }
             }
+        }
+    }
+
+    public static void imposeCooldown(PlayerEntity player, Identifier spellId, Spell spell, float progress) {
+        var duration = cooldownToSet(player, spell, progress);
+        if (duration > 0) {
+            ((SpellCasterEntity) player).getCooldownManager().set(spellId, Math.round(duration * 20F));
         }
     }
 

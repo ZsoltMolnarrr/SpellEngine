@@ -21,13 +21,21 @@ public class Packets {
 
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();
-            buffer.writeString(spellId.toString());
+            if (spellId == null) {
+                buffer.writeString("");
+            } else {
+                buffer.writeString(spellId.toString());
+            }
             buffer.writeFloat(speed);
             buffer.writeInt(length);
             return buffer;
         }
         public static SpellCastSync read(PacketByteBuf buffer) {
-            var spellId = new Identifier(buffer.readString());
+            var string = buffer.readString();
+            Identifier spellId = null;
+            if (!string.isEmpty()) {
+                spellId = new Identifier(string);
+            }
             var speed = buffer.readFloat();
             var length = buffer.readInt();
             return new SpellCastSync(spellId, speed, length);
