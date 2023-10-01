@@ -350,6 +350,7 @@ public class HudRenderHelper {
                     context.drawCenteredTextWithShadow(textRenderer, spell.keybinding().label, x + (iconSize / 2), (int)origin.y - 8, 0xFFFFFF);
                 }
 
+                RenderSystem.enableBlend();
                 // Icon
                 context.drawTexture(spell.iconId, x, y, 0, 0, iconSize, iconSize, iconSize, iconSize);
                 if (spell.cooldown > 0) {
