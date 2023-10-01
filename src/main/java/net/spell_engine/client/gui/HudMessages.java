@@ -57,7 +57,6 @@ public class HudMessages {
     }
 
     public void error(Text text) {
-        System.out.println("Showing error message: " + text.getString());
         error(text, DEFAULT_ERROR_MESSAGE_DURATION, DEFAULT_ERROR_MESSAGE_FADEOUT);
     }
 

@@ -9,6 +9,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.client.input.WrappedKeybinding;
+import net.spell_engine.internals.casting.SpellCasterClient;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
@@ -38,7 +39,7 @@ public class SpellHotbarMinecraftClient {
         SpellHotbar.INSTANCE.update(player, options);
         SpellHotbar.INSTANCE.prepare();
 
-        if (SpellEngineClient.config.useKeyHighPriority) {
+        if (SpellEngineClient.config.useKeyHighPriority || ((SpellCasterClient)player).isCastingSpell()) {
             spellHotbarHandle = SpellHotbar.INSTANCE.handle(player, options);
         } else {
             spellHotbarHandle = SpellHotbar.INSTANCE.handle(player, SpellHotbar.INSTANCE.structuredSlots.other(), options);
