@@ -12,7 +12,6 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.SpellEngineClient;
-import net.spell_engine.client.gui.HudMessages;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.internals.casting.SpellCast;
@@ -104,13 +103,14 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         if (attempt.isSuccess()) {
             if (spellCastProcess != null) {
                 // Cancel previous spell
-                v2_cancelSpellCast(false);
+                cancelSpellCast(false);
             }
             var instant = spell.cast.duration <= 0;
             if (instant) {
                 // Release instant spell
-                this.v2_releaseSpellCast(new SpellCast.Process(spellId, spell, itemStack, 1, 0, caster.getWorld().getTime()),
-                        SpellCast.Action.RELEASE);
+                var process = new SpellCast.Process(spellId, spell, itemStack, 1, 0, caster.getWorld().getTime());
+                this.setSpellCastProcess(process, false);
+                this.updateSpellCast();
             } else {
                 // Start casting
                 var details = SpellHelper.getCastTimeDetails(caster, spell);
@@ -134,9 +134,9 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     public void cancelSpellCast() {
-        v2_cancelSpellCast(true);
+        cancelSpellCast(true);
     }
-    public void v2_cancelSpellCast(boolean syncProcess) {
+    public void cancelSpellCast(boolean syncProcess) {
         var process = spellCastProcess;
         if (process != null) {
             if (SpellHelper.isChanneled(process.spell())) {
@@ -153,7 +153,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         targets = List.of();
     }
 
-    private void v2_updateSpellCast() {
+    private void updateSpellCast() {
         var process = spellCastProcess;
         if (process != null) {
             var player = player();
@@ -177,13 +177,13 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                         && (currentTick % spell.cast.channel_ticks) == 0;
                 if (isDue) {
                     // Channel spell
-                    v2_releaseSpellCast(process, SpellCast.Action.CHANNEL);
+                    releaseSpellCast(process, SpellCast.Action.CHANNEL);
                 }
             } else {
                 var isFinished = spellCastTicks >= process.length();
                 if (isFinished) {
                     // Release spell
-                    v2_releaseSpellCast(process, SpellCast.Action.RELEASE);
+                    releaseSpellCast(process, SpellCast.Action.RELEASE);
                 }
             }
         } else {
@@ -191,7 +191,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
     }
 
-    private void v2_releaseSpellCast(SpellCast.Process process, SpellCast.Action action) {
+    private void releaseSpellCast(SpellCast.Process process, SpellCast.Action action) {
         var caster = player();
         var spellId = process.id();
         var spell = process.spell();
@@ -316,8 +316,8 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
-    public void tick_TAIL_SpellEngine(CallbackInfo ci) {
-        v2_updateSpellCast();
+    private void tick_TAIL_SpellEngine(CallbackInfo ci) {
+        updateSpellCast();
         var player = player();
         if (isBeaming()) {
             networkHandler.sendPacket(new PlayerMoveC2SPacket.Full(
