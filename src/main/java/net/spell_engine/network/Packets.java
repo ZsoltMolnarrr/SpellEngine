@@ -9,34 +9,56 @@ import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.ParticleBatch;
 import net.spell_engine.config.ServerConfig;
-import net.spell_engine.internals.SpellCast;
+import net.spell_engine.internals.casting.SpellCast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Packets {
 
-    public record SpellRequest(Hand hand, SpellCast.Action action, Identifier spellId, int slot, int remainingUseTicks, int[] targets) {
+    public record SpellCastSync(Identifier spellId, float speed, int length) {
+        public static Identifier ID = new Identifier(SpellEngineMod.ID, "cast_sync");
+
+        public PacketByteBuf write() {
+            PacketByteBuf buffer = PacketByteBufs.create();
+            if (spellId == null) {
+                buffer.writeString("");
+            } else {
+                buffer.writeString(spellId.toString());
+            }
+            buffer.writeFloat(speed);
+            buffer.writeInt(length);
+            return buffer;
+        }
+        public static SpellCastSync read(PacketByteBuf buffer) {
+            var string = buffer.readString();
+            Identifier spellId = null;
+            if (!string.isEmpty()) {
+                spellId = new Identifier(string);
+            }
+            var speed = buffer.readFloat();
+            var length = buffer.readInt();
+            return new SpellCastSync(spellId, speed, length);
+        }
+    }
+
+    public record SpellRequest(SpellCast.Action action, Identifier spellId, float progress, int[] targets) {
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "release_request");
 
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();
-            buffer.writeEnumConstant(hand);
             buffer.writeEnumConstant(action);
             buffer.writeString(spellId.toString());
-            buffer.writeInt(slot);
-            buffer.writeInt(remainingUseTicks);
+            buffer.writeFloat(progress);
             buffer.writeIntArray(targets);
             return buffer;
         }
         public static SpellRequest read(PacketByteBuf buffer) {
-            var hand = buffer.readEnumConstant(Hand.class);
             var action = buffer.readEnumConstant(SpellCast.Action.class);
             var spellId = new Identifier(buffer.readString());
-            var slot = buffer.readInt();
-            var remainingUseTicks = buffer.readInt();
+            var progress = buffer.readFloat();
             var targets = buffer.readIntArray();
-            return new SpellRequest(hand, action, spellId, slot, remainingUseTicks, targets);
+            return new SpellRequest(action, spellId, progress, targets);
         }
     }
 
@@ -56,13 +78,14 @@ public class Packets {
         }
     }
 
-    public record SpellAnimation(int playerId, SpellCast.Animation type, String name) {
+    public record SpellAnimation(int playerId, SpellCast.Animation type, String name, float speed) {
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "spell_animation");
         public PacketByteBuf write() {
             PacketByteBuf buffer = PacketByteBufs.create();
             buffer.writeInt(playerId);
             buffer.writeInt(type.ordinal());
             buffer.writeString(name);
+            buffer.writeFloat(speed);
             return buffer;
         }
 
@@ -70,7 +93,8 @@ public class Packets {
             int playerId = buffer.readInt();
             var type = SpellCast.Animation.values()[buffer.readInt()];
             var name = buffer.readString();
-            return new SpellAnimation(playerId, type, name);
+            var speed = buffer.readFloat();
+            return new SpellAnimation(playerId, type, name, speed);
         }
     }
 

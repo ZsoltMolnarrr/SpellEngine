@@ -8,8 +8,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.world.ServerWorld;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.internals.SpellCast.Action;
-import net.spell_engine.internals.SpellCasterEntity;
+import net.spell_engine.internals.SpellCastSyncHelper;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
 
@@ -26,6 +25,22 @@ public class ServerNetwork {
             sender.sendPacket(Packets.ConfigSync.ID, configSerialized);
         });
 
+        ServerPlayNetworking.registerGlobalReceiver(Packets.SpellCastSync.ID, (server, player, handler, buf, responseSender) -> {
+            ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
+                    .orNull();
+            if (world == null || world.isClient) {
+                return;
+            }
+            var packet = Packets.SpellCastSync.read(buf);
+            world.getServer().executeSync(() -> {
+                if (packet.spellId() == null) {
+                    SpellCastSyncHelper.clearCasting(player);
+                } else {
+                    SpellHelper.startCasting(player, packet.spellId(), packet.speed(), packet.length());
+                }
+            });
+        });
+
         ServerPlayNetworking.registerGlobalReceiver(Packets.SpellRequest.ID, (server, player, handler, buf, responseSender) -> {
             ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
                     .orNull();
@@ -34,7 +49,6 @@ public class ServerNetwork {
             }
             var packet = Packets.SpellRequest.read(buf);
             world.getServer().executeSync(() -> {
-                var stack = player.getInventory().getStack(packet.slot());
                 List<Entity> targets = new ArrayList<>();
                 for (var targetId: packet.targets()) {
                     var entity = world.getEntityById(targetId);
@@ -42,7 +56,7 @@ public class ServerNetwork {
                         targets.add(entity);
                     }
                 }
-                SpellHelper.performSpell(world, player, packet.spellId(), targets, stack, packet.action(), packet.hand(), packet.remainingUseTicks());
+                SpellHelper.performSpell(world, player, packet.spellId(), targets, packet.action(), packet.progress());
             });
         });
     }

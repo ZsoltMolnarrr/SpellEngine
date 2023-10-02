@@ -11,7 +11,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -24,6 +23,8 @@ import net.spell_engine.api.spell.SpellEvents;
 import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.SpellProjectile;
+import net.spell_engine.internals.casting.SpellCast;
+import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.AnimationHelper;
 import net.spell_engine.utils.SoundHelper;
@@ -37,8 +38,6 @@ import java.util.*;
 import java.util.function.Supplier;
 
 public class SpellHelper {
-    public static int maximumUseTicks = 72000; // 72000 ticks = 1 hour
-
     public static SpellCast.Attempt attemptCasting(PlayerEntity player, ItemStack itemStack, Identifier spellId) {
         return attemptCasting(player, itemStack, spellId, true);
     }
@@ -79,13 +78,17 @@ public class SpellHelper {
         return new AmmoResult(satisfied, ammo);
     }
 
+    public static float hasteAffectedValue(float value, float haste) {
+        return value / haste;
+    }
+
     public static float hasteAffectedValue(LivingEntity caster, float value) {
         return hasteAffectedValue(caster, value, null);
     }
 
     public static float hasteAffectedValue(LivingEntity caster, float value, ItemStack provisionedWeapon) {
         var haste = (float) SpellPower.getHaste(caster, provisionedWeapon);
-        return value / haste;
+        return hasteAffectedValue(value, haste);
     }
 
     public static float getCastDuration(LivingEntity caster, Spell spell) {
@@ -99,13 +102,12 @@ public class SpellHelper {
         return hasteAffectedValue(caster, spell.cast.duration, provisionedWeapon);
     }
 
-    public static float getCastProgress(LivingEntity caster, int remainingUseTicks, Spell spell) {
-        if (spell.cast == null || spell.cast.duration <= 0) {
-            return 1F;
-        }
-        var elapsedTicks = maximumUseTicks - remainingUseTicks;
-        var hasteAffectedDuration = getCastDuration(caster, spell);
-        return Math.min(((float)elapsedTicks) / (hasteAffectedDuration * 20F), 1F);
+    public static SpellCast.Duration getCastTimeDetails(LivingEntity caster, Spell spell) {
+        var haste = spell.cast.haste_affected
+                ? (float) SpellPower.getHaste(caster, null)
+                : 1F;
+        var duration =  hasteAffectedValue(spell.cast.duration, haste);
+        return new SpellCast.Duration(haste, Math.round(duration * 20F));
     }
 
     public static float getCooldownDuration(LivingEntity caster, Spell spell) {
@@ -115,18 +117,11 @@ public class SpellHelper {
     public static float getCooldownDuration(LivingEntity caster, Spell spell, ItemStack provisionedWeapon) {
         var duration = spell.cost.cooldown_duration;
         if (duration > 0) {
-            if (SpellEngineMod.config.haste_affects_cooldown) {
+            if (SpellEngineMod.config.haste_affects_cooldown && spell.cost.cooldown_haste_affected) {
                 duration = hasteAffectedValue(caster, spell.cost.cooldown_duration, provisionedWeapon);
             }
         }
         return duration;
-    }
-
-    public static boolean isChannelTickDue(Spell spell, int remainingUseTicks) {
-        var offset = Math.round(spell.cast.channel_ticks * 0.5F);
-        var currentTick = maximumUseTicks - remainingUseTicks + offset;
-        return currentTick >= spell.cast.channel_ticks
-                && (currentTick % spell.cast.channel_ticks) == 0;
     }
 
     public static boolean isChanneled(Spell spell) {
@@ -145,28 +140,43 @@ public class SpellHelper {
         return ((float)ticks) / 20F;
     }
 
-    public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, ItemStack itemStack, SpellCast.Action action, Hand hand, int remainingUseTicks) {
+    public static void startCasting(PlayerEntity player, Identifier spellId, float speed, int length) {
+        var spell = SpellRegistry.getSpell(spellId);
+        if (spell == null) {
+            return;
+        }
+        var itemStack = player.getMainHandStack();
+        var attempt = attemptCasting(player, itemStack, spellId);
+        if (!attempt.isSuccess()) {
+            return;
+        }
+        // Allow clients to specify their haste without validation
+        // var details = SpellHelper.getCastTimeDetails(player, spell);
+        var process = new SpellCast.Process(spellId, spell, itemStack, speed, length, player.getWorld().getTime());
+        SpellCastSyncHelper.setCasting(player, process);
+        SoundHelper.playSound(player.getWorld(), player, spell.cast.start_sound);
+    }
+
+    public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, SpellCast.Action action, float progress) {
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
             return;
         }
         var spellInfo = new SpellInfo(spell, spellId);
-        var caster = (SpellCasterEntity)player;
-        if (caster.getCooldownManager().isCoolingDown(spellId)) {
+        var itemStack = player.getMainHandStack();
+        var attempt = attemptCasting(player, itemStack, spellId);
+        if (!attempt.isSuccess()) {
             return;
         }
-        var progress = getCastProgress(player, remainingUseTicks, spell);
+        var castingSpeed = ((SpellCasterEntity)player).getCurrentCastingSpeed();
+        // Normalized progress in 0 to 1
+        progress = Math.max(Math.min(progress, 1F), 0F);
         var channelMultiplier = 1F;
         boolean shouldPerformImpact = true;
         Supplier<Collection<ServerPlayerEntity>> trackingPlayers = Suppliers.memoize(() -> { // Suppliers.memoize = Lazy
             return PlayerLookup.tracking(player);
         });
         switch (action) {
-            case START -> {
-                SoundHelper.playSound(player.getWorld(), player, spell.cast.start_sound);
-                SpellCastSyncHelper.setCasting(player, hand, spellId, trackingPlayers.get());
-                return;
-            }
             case CHANNEL -> {
                 channelMultiplier = channelValueMultiplier(spell);
             }
@@ -177,7 +187,7 @@ public class SpellHelper {
                 } else {
                     channelMultiplier = (progress >= 1) ? 1 : 0;
                 }
-                SpellCastSyncHelper.clearCasting(player, trackingPlayers.get());
+                SpellCastSyncHelper.clearCasting(player);
             }
         }
         var ammoResult = ammoForSpell(player, spell, itemStack);
@@ -196,7 +206,7 @@ public class SpellHelper {
                     released = false;
                     if (handler != null) {
                         released = handler.apply(new CustomSpellHandler.Data(
-                                player, targets, itemStack, action, hand, remainingUseTicks, context));
+                                player, targets, itemStack, action, progress, context));
                     }
                 } else {
                     switch (targeting.type) {
@@ -242,13 +252,10 @@ public class SpellHelper {
             if (released) {
                 ParticleHelper.sendBatches(player, spell.release.particles);
                 SoundHelper.playSound(world, player, spell.release.sound);
-                AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation);
+                AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation, castingSpeed);
                 // Consume things
                 // Cooldown
-                var duration = cooldownToSet(player, spell, progress);
-                if (duration > 0) {
-                    ((SpellCasterEntity) player).getCooldownManager().set(spellId, Math.round(duration * 20F));
-                }
+                imposeCooldown(player, spellId, spell, progress);
                 // Exhaust
                 player.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
                 // Durability
@@ -277,6 +284,13 @@ public class SpellHelper {
                     player.removeStatusEffect(effect);
                 }
             }
+        }
+    }
+
+    public static void imposeCooldown(PlayerEntity player, Identifier spellId, Spell spell, float progress) {
+        var duration = cooldownToSet(player, spell, progress);
+        if (duration > 0) {
+            ((SpellCasterEntity) player).getCooldownManager().set(spellId, Math.round(duration * 20F));
         }
     }
 

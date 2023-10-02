@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.animation.AnimatablePlayer;
-import net.spell_engine.internals.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.network.Packets;
 import net.spell_engine.particle.ParticleHelper;
@@ -35,7 +35,7 @@ public class ClientNetwork {
             client.execute(() -> {
                 var entity = client.world.getEntityById(packet.playerId());
                 if (entity instanceof PlayerEntity player) {
-                    ((AnimatablePlayer)player).playSpellAnimation(packet.type(), packet.name());
+                    ((AnimatablePlayer)player).playSpellAnimation(packet.type(), packet.name(), packet.speed());
                 }
             });
         });

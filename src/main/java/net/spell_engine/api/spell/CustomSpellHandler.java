@@ -6,7 +6,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.spell_engine.internals.SpellCast;
+import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.SpellHelper;
 
 import java.util.HashMap;
@@ -21,8 +21,7 @@ public class CustomSpellHandler {
             List<Entity> targets,
             ItemStack itemStack,
             SpellCast.Action action,
-            Hand hand,
-            int remainingUseTicks,
+            float progress,
             SpellHelper.ImpactContext impactContext) { }
 
     public static void register(Identifier spellId, Function<Data, Boolean> handler) {

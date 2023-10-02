@@ -62,7 +62,7 @@ public class SpellTooltip {
                                 .formatted(Formatting.GRAY));
                     }
                 }
-                var keybinding = Keybindings.hotbarModifier;
+                var keybinding = Keybindings.bypass_spell_hotbar;
                 var showDetails = config.alwaysShowFullTooltip
                         || (!keybinding.isUnbound() && InputUtil.isKeyPressed(
                                 MinecraftClient.getInstance().getWindow().getHandle(),

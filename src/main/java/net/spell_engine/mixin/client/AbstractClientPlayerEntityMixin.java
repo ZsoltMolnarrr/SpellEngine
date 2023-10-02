@@ -13,7 +13,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -22,8 +21,8 @@ import net.spell_engine.api.spell.Sound;
 import net.spell_engine.client.animation.*;
 import net.spell_engine.client.compatibility.FirstPersonModelCompatibility;
 import net.spell_engine.client.sound.SpellCastingSound;
-import net.spell_engine.internals.SpellCast;
-import net.spell_engine.internals.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCast;
+import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.mixin.LivingEntityAccessor;
 import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.StringUtil;
@@ -57,6 +56,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
 
         String castAnimationName = null;
         Sound castSound = null;
+        float speed = 1F;
         var spell = ((SpellCasterEntity)player).getCurrentSpell();
         if (spell != null) {
             castAnimationName = spell.cast.animation;
@@ -66,15 +66,16 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             for (var batch: spell.cast.particles) {
                 ParticleHelper.play(player.getWorld(), player, player.getYaw(), getPitch(), batch);
             }
+            speed = ((SpellCasterEntity)player).getCurrentCastingSpeed();
         }
-        updateCastingAnimation(castAnimationName);
+        updateCastingAnimation(castAnimationName, speed);
         updateCastingSound(castSound);
     }
 
     private String lastCastAnimationName;
-    private void updateCastingAnimation(String animationName) {
+    private void updateCastingAnimation(String animationName, float speed) {
         if (!StringUtil.matching(animationName, lastCastAnimationName)) {
-            playSpellAnimation(SpellCast.Animation.CASTING, animationName);
+            playSpellAnimation(SpellCast.Animation.CASTING, animationName, speed);
         }
         lastCastAnimationName = animationName;
     }
@@ -156,7 +157,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         }
     }
 
-    public void playSpellAnimation(SpellCast.Animation type, String name) {
+    public void playSpellAnimation(SpellCast.Animation type, String name, float speed) {
         try {
             var stack = spellAnimationStackFor(type);
             if (name != null && !name.isEmpty()) {
@@ -177,11 +178,13 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
                                         FirstPersonModelCompatibility.isActive() ?
                                         FirstPersonMode.NONE :
                                         FirstPersonMode.THIRD_PERSON_MODEL));
+                stack.speed.speed = speed;
             } else {
                 int fadeOutLength = 5;
                 stack.base.replaceAnimationWithFade(
                         AbstractFadeModifier.standardFadeIn(fadeOutLength, Ease.INOUTSINE), null);
                 stack.adjustment.fadeOut(fadeOutLength);
+                stack.speed.speed = 1F;
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -9,8 +9,8 @@ import java.util.Map;
 
 @Config(name = "server")
 public class ServerConfig implements ConfigData {
-    @Comment("Spell caster items in the offhand can be used")
-    public boolean offhand_casting_allowed = false;
+    @Comment("Default `0.2` matches the same as movement speed during vanilla item usage (such as bow)")
+    public float movement_speed_while_casting_spell = 0.2F;
     @Comment("Allow spells to bypass invulnerability frames. This is required in order for high attack frequency spells (such as beams) to work.")
     public boolean bypass_iframes = true;
     @Comment("Spell haste reduces the cooldown time of abilities")

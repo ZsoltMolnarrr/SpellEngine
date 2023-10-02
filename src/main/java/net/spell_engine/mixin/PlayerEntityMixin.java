@@ -8,6 +8,8 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.*;
+import net.spell_engine.internals.casting.SpellCast;
+import net.spell_engine.internals.casting.SpellCasterEntity;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,30 +26,51 @@ public class PlayerEntityMixin implements SpellCasterEntity {
 
     private final SpellCooldownManager spellCooldownManager = new SpellCooldownManager(player());
     private static final TrackedData<Integer> SPELL_ENGINE_SELECTED_SPELL = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<Float> SPELL_ENGINE_CASTING_SPEED = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.FLOAT);
 
     @Inject(method = "initDataTracker", at = @At("TAIL"))
     private void initDataTracker_TAIL_SpellEngine_SyncEffects(CallbackInfo ci) {
         player().getDataTracker().startTracking(SPELL_ENGINE_SELECTED_SPELL, 0);
+        player().getDataTracker().startTracking(SPELL_ENGINE_CASTING_SPEED, 1F);
     }
 
-    public void setCurrentSpellId(Identifier spellId) {
-        player().getDataTracker().set(SPELL_ENGINE_SELECTED_SPELL, spellId != null ? SpellRegistry.rawSpellId(spellId) : 0);
-    }
-
-    @Override
-    public Identifier getCurrentSpellId() {
-        var player = player();
-        if (player.isUsingItem()) {
-            var value = player.getDataTracker().get(SPELL_ENGINE_SELECTED_SPELL);
-            if (value != 0) {
-                return SpellRegistry.fromRawSpellId(value).orElse(null);
+    private SpellCast.Process serverSide_SpellCastProcess = null;
+    public void setSpellCastProcess(@Nullable SpellCast.Process process) {
+        serverSide_SpellCastProcess = process;
+        int rawSpellId = 0;
+        float speed = 1F;
+        if (process != null) {
+            if (process.id() != null) {
+                rawSpellId = SpellRegistry.rawSpellId(process.id());
             }
+            speed = process.speed();
+        }
+        player().getDataTracker().set(SPELL_ENGINE_SELECTED_SPELL, rawSpellId);
+        player().getDataTracker().set(SPELL_ENGINE_CASTING_SPEED, speed);
+    }
+
+    @Nullable public SpellCast.Process getSpellCastProcess() {
+        return serverSide_SpellCastProcess;
+    }
+
+    private Identifier getCurrentSpellId() {
+        var process = getSpellCastProcess();
+        if (process != null) {
+            return process.id();
+        }
+        var rawValue = player().getDataTracker().get(SPELL_ENGINE_SELECTED_SPELL);
+        if (rawValue != 0) {
+            return SpellRegistry.fromRawSpellId(rawValue).orElse(null);
         }
         return null;
     }
 
     @Override
     public Spell getCurrentSpell() {
+        var process = getSpellCastProcess();
+        if (process != null) {
+            return process.spell();
+        }
         var id = getCurrentSpellId();
         if (id != null) {
             return SpellRegistry.getSpell(id);
@@ -56,21 +79,12 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     }
 
     @Override
-    public float getCurrentCastProgress() {
-        var spell = getCurrentSpell();
-        if (spell != null) {
-            return SpellHelper.getCastProgress(player(), player().getItemUseTimeLeft(), spell);
+    public float getCurrentCastingSpeed() {
+        var process = getSpellCastProcess();
+        if (process != null) {
+            return process.speed();
         }
-        return 0;
-    }
-
-    @Override
-    public void clearCasting() {
-        var player = player();
-        if (!player.getWorld().isClient) {
-            // Server
-            SpellCastSyncHelper.clearCasting(player);
-        }
+        return player().getDataTracker().get(SPELL_ENGINE_CASTING_SPEED);
     }
 
     @Override
@@ -83,12 +97,13 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         var player = player();
         if (player.getWorld().isClient) {
             ((AnimatablePlayer)player()).updateSpellCastAnimationsOnTick();
-//            if (!player.isUsingItem() && currentSpell != null) {
-//            }
         } else {
             // Server side
-            if (!player.isUsingItem() || SpellContainerHelper.containerWithProxy(player.getActiveItem(), player) == null) {
-                SpellCastSyncHelper.clearCasting(player);
+            if (serverSide_SpellCastProcess != null) {
+                var castTicks = serverSide_SpellCastProcess.spellCastTicksSoFar(player.getWorld().getTime());
+                if (castTicks >= (serverSide_SpellCastProcess.length() * 1.5)) {
+                    SpellCastSyncHelper.clearCasting(player);
+                }
             }
         }
         spellCooldownManager.update();

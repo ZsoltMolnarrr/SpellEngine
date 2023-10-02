@@ -13,7 +13,6 @@ import net.spell_engine.client.render.SpellBindingBlockEntityRenderer;
 import net.spell_engine.config.ClientConfig;
 import net.spell_engine.config.ClientConfigWrapper;
 import net.spell_engine.config.HudConfig;
-import net.spell_engine.config.Tutorial;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 import net.spell_engine.spellbinding.SpellBindingScreen;
 import net.spell_engine.spellbinding.SpellBindingScreenHandler;
@@ -29,18 +28,11 @@ public class SpellEngineClient {
             .sanitize(true)
             .validate(HudConfig::isValid)
             .build();
-    public static ConfigManager<Tutorial> tutorial = new ConfigManager<Tutorial>
-            ("spell_engine_tutorial", new Tutorial())
-            .builder()
-            .setDirectory("..") // One directory above config, to avoid file redistribution
-            .sanitize(true)
-            .build();
 
     public static void initialize() {
         AutoConfig.register(ClientConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ClientConfigWrapper.class).getConfig().client;
         hudConfig.refresh();
-        tutorial.refresh();
 
         ClientNetwork.initializeHandlers();
 
