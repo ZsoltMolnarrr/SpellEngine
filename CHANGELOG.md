@@ -1,6 +1,6 @@
 # 0.10.0
 
-Spell Hotbar can be controller via Keybindings!
+Spell Hotbar can be controlled via Keybindings!
 - Multiple hotkey behaviors available (hold to cast, press to cast), configurable for different casting mechanics separately
 - Custom hotkeys can be assigned
 - Vanilla hotkeys (such as use key, item hotbar keys) can be used, when no custom hotkeys are assigned
