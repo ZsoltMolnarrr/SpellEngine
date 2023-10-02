@@ -1,3 +1,18 @@
+# 0.10.0
+
+Spell Hotbar can be controller via Keybindings!
+- Multiple hotkey behaviors available (hold to cast, press to cast), configurable for different casting mechanics separately
+- Custom hotkeys can be assigned
+- Vanilla hotkeys (such as use key, item hotbar keys) can be used, when no custom hotkeys are assigned
+- Switching between item and spell hotbar is no longer needed, nor possible
+- Spell Hotbar keybind is rendered on HUD
+
+Other changes:
+- Spell Haste effects spell casting animation playback speed
+- Spell data files can now specify if Spell Haste should affect cooldown and casting speed
+- Internal refactor for the entire spell casting mechanism
+- Spell casting no longer stutters when quick switching between spells
+
 # 0.9.32
 
 - Fix projectiles ricocheting to allies
