@@ -5,7 +5,7 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 import net.spell_engine.utils.TargetHelper;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 @Config(name = "server")
 public class ServerConfig implements ConfigData { public ServerConfig() {}
@@ -51,7 +51,7 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
             - `player_relation_to_other`
             (The first relation to be found for the target will be applied.)
             """)
-    public HashMap<String, TargetHelper.Relation> player_relations = new HashMap<>() {{
+    public LinkedHashMap<String, TargetHelper.Relation> player_relations = new LinkedHashMap<>() {{
         put("minecraft:player", TargetHelper.Relation.SEMI_FRIENDLY);
         put("minecraft:villager", TargetHelper.Relation.SEMI_FRIENDLY);
         put("minecraft:iron_golem", TargetHelper.Relation.NEUTRAL);

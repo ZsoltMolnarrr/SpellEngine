@@ -1,3 +1,7 @@
+# 0.11.0
+
+- Keep order of `player_relations` in server config
+
 # 0.10.0
 
 Spell Hotbar can be controlled via Keybindings!
