@@ -29,21 +29,26 @@ public class SpellHotbarMinecraftClient {
     @Shadow @Final public GameOptions options;
     @Shadow private int itemUseCooldown;
 
+    @Shadow public int attackCooldown;
     @Nullable private WrappedKeybinding.Category spellHotbarHandle = null;
     @Inject(method = "handleInputEvents", at = @At(value = "HEAD"))
     private void handleInputEvents_HEAD_SpellHotbar(CallbackInfo ci) {
         spellHotbarHandle = null;
-        if (player == null || options == null || itemUseCooldown > 0) { return; }
+        if (player == null || options == null) { return; }
 
         // Update the content of the Spell Hotbar
         // This needs to run every tick because the player's held caster item may change any time
         SpellHotbar.INSTANCE.update(player, options);
-        SpellHotbar.INSTANCE.prepare();
+        SpellHotbar.INSTANCE.prepare(itemUseCooldown);
 
         if (SpellEngineClient.config.useKeyHighPriority || ((SpellCasterClient)player).isCastingSpell()) {
             spellHotbarHandle = SpellHotbar.INSTANCE.handle(player, options);
         } else {
             spellHotbarHandle = SpellHotbar.INSTANCE.handle(player, SpellHotbar.INSTANCE.structuredSlots.other(), options);
+        }
+
+        if (((SpellCasterClient)player).isCastingSpell()) {
+            attackCooldown = 2;
         }
 
         pushConflictingPressState(spellHotbarHandle, false);

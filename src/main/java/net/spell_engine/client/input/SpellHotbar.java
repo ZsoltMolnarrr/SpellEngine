@@ -57,6 +57,7 @@ public class SpellHotbar {
             for (int i = 0; i < spellIds.size(); i++) {
                 var spellId = new Identifier(spellIds.get(i));
                 var spell = SpellRegistry.getSpell(spellId);
+                if (spell == null) { continue; }
                 WrappedKeybinding keyBinding = null;
                 if (i < allBindings.size()) {
                     keyBinding = allBindings.get(i);
@@ -90,10 +91,12 @@ public class SpellHotbar {
 
     private KeyBinding handledKeyThisTick = null;
     private KeyBinding handledKeyPreviousTick = null;
-    public void prepare() {
+    private boolean skipHandling = false;
+    public void prepare(int itemUseCooldown) {
         this.handledKeyPreviousTick = this.handledKeyThisTick;
         this.handledKeyThisTick = null;
         this.updateDebounced();
+        this.skipHandling = itemUseCooldown > 0;
     }
 
     @Nullable public WrappedKeybinding.Category handle(ClientPlayerEntity player, GameOptions options) {
@@ -106,7 +109,7 @@ public class SpellHotbar {
     }
 
     @Nullable public WrappedKeybinding.Category handle(ClientPlayerEntity player, List<Slot> slots, GameOptions options) {
-        if (handledKeyThisTick != null) { return null; }
+        if (handledKeyThisTick != null || skipHandling) { return null; }
         if (Keybindings.bypass_spell_hotbar.isPressed()) { return null; }
         var caster = ((SpellCasterClient) player);
         var casted = caster.getSpellCastProgress();
