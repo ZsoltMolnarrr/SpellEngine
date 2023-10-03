@@ -12,6 +12,8 @@ Other changes:
 - Spell data files can now specify if Spell Haste should affect cooldown and casting speed
 - Internal refactor for the entire spell casting mechanism
 - Spell casting no longer stutters when quick switching between spells
+- Optimise spell projectile sync payload
+- Fix server config `player_relations` being reset on every launch
 
 # 0.9.32
 

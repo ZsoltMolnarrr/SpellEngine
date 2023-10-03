@@ -5,10 +5,10 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 import net.spell_engine.utils.TargetHelper;
 
-import java.util.Map;
+import java.util.HashMap;
 
 @Config(name = "server")
-public class ServerConfig implements ConfigData {
+public class ServerConfig implements ConfigData { public ServerConfig() {}
     @Comment("Default `0.2` matches the same as movement speed during vanilla item usage (such as bow)")
     public float movement_speed_while_casting_spell = 0.2F;
     @Comment("Allow spells to bypass invulnerability frames. This is required in order for high attack frequency spells (such as beams) to work.")
@@ -51,12 +51,13 @@ public class ServerConfig implements ConfigData {
             - `player_relation_to_other`
             (The first relation to be found for the target will be applied.)
             """)
-    public Map<String, TargetHelper.Relation> player_relations = Map.of(
-            "minecraft:player", TargetHelper.Relation.SEMI_FRIENDLY,
-            "minecraft:villager", TargetHelper.Relation.SEMI_FRIENDLY,
-            "minecraft:iron_golem", TargetHelper.Relation.NEUTRAL,
-            "guardvillagers:guard", TargetHelper.Relation.SEMI_FRIENDLY
-    );
+    public HashMap<String, TargetHelper.Relation> player_relations = new HashMap<>() {{
+        put("minecraft:player", TargetHelper.Relation.SEMI_FRIENDLY);
+        put("minecraft:villager", TargetHelper.Relation.SEMI_FRIENDLY);
+        put("minecraft:iron_golem", TargetHelper.Relation.NEUTRAL);
+        put("guardvillagers:guard", TargetHelper.Relation.SEMI_FRIENDLY);
+    }};
+
     @Comment("Relation to unspecified entities those are instance of PassiveEntity(Yarn)")
     public TargetHelper.Relation player_relation_to_passives = TargetHelper.Relation.HOSTILE;
     @Comment("Relation to unspecified entities those are instance of HostileEntity(Yarn)")
