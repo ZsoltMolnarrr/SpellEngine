@@ -27,6 +27,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.render.FlyingSpellEntity;
 import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.RecordsWithGson;
 import net.spell_engine.utils.TargetHelper;
@@ -43,11 +44,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     private static Random random = new Random();
 
     public float range = 128;
-    private Spell spell;
     private Spell.ProjectileData.Perks perks;
     private SpellHelper.ImpactContext context;
     private Entity followedTarget;
-
+    private Identifier spellId;
     public Vec3d previousVelocity;
 
     public SpellProjectile(EntityType<? extends ProjectileEntity> entityType, World world) {
@@ -64,10 +64,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
 
     public SpellProjectile(World world, LivingEntity caster, double x, double y, double z,
-                           Behaviour behaviour, Spell spell, Entity target, SpellHelper.ImpactContext context, Spell.ProjectileData.Perks mutablePerks) {
+                           Behaviour behaviour, Identifier spellId, Entity target, SpellHelper.ImpactContext context, Spell.ProjectileData.Perks mutablePerks) {
         this(world, caster);
         this.setPosition(x, y, z);
-        this.spell = spell;
+        this.spellId = spellId;
         this.perks = mutablePerks;
         var projectileData = projectileData();
         var gson = new Gson();
@@ -88,7 +88,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         if (getWorld().isClient) {
             return clientSyncedData;
         } else {
-            return spell.release.target.projectile;
+            return getSpell().release.target.projectile;
         }
     }
     private Spell.ProjectileData clientSyncedData;
@@ -214,6 +214,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                             boolean shouldCollideWithEntity = true;
                             if (hitResult.getType() == HitResult.Type.ENTITY) {
                                 var target = ((EntityHitResult) hitResult).getEntity();
+                                var spell = getSpell();
                                 if (SpellEngineMod.config.projectiles_pass_thru_irrelevant_targets
                                         && spell != null
                                         && spell.impact.length > 0
@@ -281,7 +282,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             return;
         }
         if (owner instanceof LivingEntity livingEntity) {
-            SpellHelper.fallImpact(livingEntity, this, this.spell, context.position(this.getPos()));
+            SpellHelper.fallImpact(livingEntity, this, this.getSpell(), context.position(this.getPos()));
         }
     }
 
@@ -318,7 +319,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 if (context == null) {
                     context = new SpellHelper.ImpactContext();
                 }
-                var performed = SpellHelper.projectileImpact(caster, this, target, spell, context.position(entityHitResult.getPos()));
+                var performed = SpellHelper.projectileImpact(caster, this, target, this.getSpell(), context.position(entityHitResult.getPos()));
                 if (performed) {
                     chainReactionFrom(target);
                     if (ricochetFrom(target, caster)) {
@@ -351,7 +352,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 this.perks.ricochet_range,
                 this.perks.ricochet_range,
                 this.perks.ricochet_range);
-        var intents = SpellHelper.intents(spell);
+        var intents = SpellHelper.intents(this.getSpell());
         Predicate<Entity> intentMatches = (entity) -> {
             boolean intentAllows = false;
             for (var intent: intents) {
@@ -466,7 +467,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         if (getWorld().isClient) {
             return;
         }
-
+        var spell = getSpell();
         var position = this.getPos();
         var spawnCount = this.perks.chain_reaction_size;
         var launchVector = new Vec3d(1, 0, 0).multiply(this.getVelocity().length());
@@ -480,7 +481,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         for (int i = 0; i < spawnCount; i++) {
             var projectile = new SpellProjectile(getWorld(), (LivingEntity)this.getOwner(),
                     position.getX(), position.getY(), position.getZ(),
-                    this.behaviour(), spell, null, context, this.perks.copy());
+                    this.behaviour(), spellId, null, context, this.perks.copy());
 
             var angle = launchAngle * i + launchAngleOffset;
             projectile.setVelocity(launchVector.rotateY((float) Math.toRadians(angle)));
@@ -494,7 +495,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     // MARK: Helper
 
     public Spell getSpell() {
-        return spell;
+        return SpellRegistry.getSpell(spellId);
     }
 
     public SpellHelper.ImpactContext getImpactContext() {
@@ -521,7 +522,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     // MARK: NBT (Persistence)
 
-    private static String NBT_SPELL_DATA = "Spell.Data";
+    private static String NBT_SPELL_ID = "Spell.ID";
     private static String NBT_PERKS = "Perks";
     private static String NBT_IMPACT_CONTEXT = "Impact.Context";
 
@@ -537,17 +538,17 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
         var gson = new Gson();
-        nbt.putString(NBT_SPELL_DATA, gson.toJson(spell));
+        nbt.putString(NBT_SPELL_ID, gson.toJson(spellId));
         nbt.putString(NBT_IMPACT_CONTEXT, gson.toJson(context));
         nbt.putString(NBT_PERKS, gson.toJson(this.perks));
     }
 
     public void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
-        if (nbt.contains(NBT_SPELL_DATA, NbtElement.STRING_TYPE)) {
+        if (nbt.contains(NBT_SPELL_ID, NbtElement.STRING_TYPE)) {
             try {
                 var gson = new Gson();
-                this.spell = gson.fromJson(nbt.getString(NBT_SPELL_DATA), Spell.class);
+                this.spellId = new Identifier(nbt.getString(NBT_SPELL_ID));
                 var recordReader = new GsonBuilder()
                         .registerTypeAdapterFactory(new RecordsWithGson.RecordTypeAdapterFactory())
                         .create();

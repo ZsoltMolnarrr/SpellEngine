@@ -397,7 +397,7 @@ public class SpellHelper {
 
         var projectile = new SpellProjectile(world, caster,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
-                SpellProjectile.Behaviour.FLY, spell, target, context, mutablePerks);
+                SpellProjectile.Behaviour.FLY, spellInfo.id(), target, context, mutablePerks);
 
         var velocity = projectileData.velocity;
         var divergence = projectileData.divergence;
@@ -448,7 +448,7 @@ public class SpellHelper {
 
         var projectile = new SpellProjectile(world, caster,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
-                SpellProjectile.Behaviour.FALL, spell, target, context, mutablePerks);
+                SpellProjectile.Behaviour.FALL, spellInfo.id(), target, context, mutablePerks);
 
         projectile.setYaw(0);
         projectile.setPitch(90);
