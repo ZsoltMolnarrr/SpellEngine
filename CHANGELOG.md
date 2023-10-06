@@ -1,6 +1,7 @@
 # 0.11.0
 
 - Add mouse scrolling to spell binding table GUI
+- Fix item damage causing spell casting interrupt
 - Keep order of `player_relations` in server config
 
 # 0.10.0

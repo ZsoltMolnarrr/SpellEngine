@@ -156,7 +156,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         if (process != null) {
             var player = player();
             if (!player().isAlive()
-                    || player.getMainHandStack() != process.itemStack()
+                    || !ItemStack.areItemsEqual(player.getMainHandStack(), process.itemStack())
                     || getCooldownManager().isCoolingDown(process.id())
                     || EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.CAST_SPELL, true)
             ) {
