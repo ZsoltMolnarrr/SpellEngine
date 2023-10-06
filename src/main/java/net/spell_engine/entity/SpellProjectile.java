@@ -178,6 +178,12 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             updateClientSideData();
         }
         if (!this.getWorld().isClient) {
+            // Server side
+            if (getSpell() == null) {
+                System.err.println("Spell Projectile safeguard termination, failed to resolve spell: " + spellId);
+                this.kill();
+                return;
+            }
             switch (behaviour) {
                 case FLY -> {
                     if (distanceTraveled >= range || age > 1200) { // 1200 ticks = 1 minute
