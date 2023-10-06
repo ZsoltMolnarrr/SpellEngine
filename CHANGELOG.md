@@ -1,5 +1,6 @@
 # 0.11.0
 
+- Add mouse scrolling to spell binding table GUI
 - Keep order of `player_relations` in server config
 
 # 0.10.0

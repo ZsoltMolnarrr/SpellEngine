@@ -6,6 +6,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.DiffuseLighting;
@@ -87,6 +88,21 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
             e.printStackTrace();
         }
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+        if (!isPagingEnabled()) {
+           return false;
+        } else {
+            for (int i = 0; i < Math.abs(amount); i++) {
+                if (amount > 0) {
+                    pageUp();
+                } else {
+                    pageDown();
+                }
+            }
+            return true;
+        }
     }
 
     @Override
