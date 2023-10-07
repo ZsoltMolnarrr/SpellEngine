@@ -19,8 +19,6 @@ public class Spell {
     public enum Mode { CAST, BYPASS_TO_ITEM_USE }
     public Mode mode = Mode.CAST;
 
-
-
     public Cast cast = new Cast();
     public static class Cast { public Cast() { }
         public boolean haste_affected = true;
@@ -209,6 +207,14 @@ public class Spell {
                 this.travel_particles = travel_particles;
                 this.model_id = model_id;
             }
+        }
+    }
+
+    public ItemUse item_use = new ItemUse();
+    public static class ItemUse { public ItemUse() { }
+        @Nullable public Arrow arrow_perks;
+        public static class Arrow { public Arrow() { }
+            public float velocity_multiplier = 1F;
         }
     }
 }

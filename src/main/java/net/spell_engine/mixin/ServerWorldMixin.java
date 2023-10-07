@@ -34,4 +34,6 @@ public abstract class ServerWorldMixin implements WorldScheduler {
     private void tick_TAIL_SpellEngine(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
         updateScheduledTasks();
     }
+
+
 }
