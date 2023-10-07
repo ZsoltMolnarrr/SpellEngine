@@ -63,12 +63,20 @@ public class SpellCast {
     public record Progress(float ratio, Process process) { }
 
     public enum Mode {
-        INSTANT, CHARGE, CHANNEL;
+        INSTANT, CHARGE, CHANNEL, ITEM_USE;
         public static Mode from(Spell spell) {
-            if (spell.cast.duration <= 0) {
-                return INSTANT;
+            switch (spell.mode) {
+                case CAST -> {
+                    if (spell.cast.duration <= 0) {
+                        return INSTANT;
+                    }
+                    return SpellHelper.isChanneled(spell) ? CHANNEL : CHARGE;
+                }
+                case BYPASS_TO_ITEM_USE -> {
+                    return ITEM_USE;
+                }
             }
-            return SpellHelper.isChanneled(spell) ? CHANNEL : CHARGE;
+            return null; // Should never happen
         }
     }
 

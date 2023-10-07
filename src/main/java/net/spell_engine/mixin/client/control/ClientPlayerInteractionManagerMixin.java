@@ -7,6 +7,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.spell_engine.api.effect.EntityActionsAllowed;
+import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.internals.casting.SpellCasterClient;
@@ -26,7 +27,8 @@ public class ClientPlayerInteractionManagerMixin {
         if (player instanceof ClientPlayerEntity clientPlayer) {
             if (!SpellEngineClient.config.useKeyHighPriority) {
                 var handled = SpellHotbar.INSTANCE.handle(clientPlayer, SpellHotbar.INSTANCE.structuredSlots.onUseKey(), client.options);
-                if (handled != null) {
+                if (handled != null
+                        && handled.spell().spell().mode != Spell.Mode.BYPASS_TO_ITEM_USE) {
                     cir.setReturnValue(ActionResult.FAIL);
                     cir.cancel();
                 }

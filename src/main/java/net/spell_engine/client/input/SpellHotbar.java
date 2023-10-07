@@ -1,11 +1,14 @@
 package net.spell_engine.client.input;
 
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.UseAction;
+import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.client.SpellEngineClient;
@@ -16,6 +19,7 @@ import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.mixin.client.control.KeybindingAccessor;
+import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -89,27 +93,37 @@ public class SpellHotbar {
         this.slots = slots;
     }
 
-    private KeyBinding handledKeyThisTick = null;
-    private KeyBinding handledKeyPreviousTick = null;
+    private @Nullable Handle handledThisTick = null;
+    private @Nullable Handle handledPreviousTick = null;
     private boolean skipHandling = false;
     public void prepare(int itemUseCooldown) {
-        this.handledKeyPreviousTick = this.handledKeyThisTick;
-        this.handledKeyThisTick = null;
+        this.handledPreviousTick = this.handledThisTick;
+        this.handledThisTick = null;
         this.updateDebounced();
-        this.skipHandling = itemUseCooldown > 0;
+        this.skipHandling = !lastHandledWasItemBypass() && itemUseCooldown > 0;
     }
 
-    @Nullable public WrappedKeybinding.Category handle(ClientPlayerEntity player, GameOptions options) {
+    public boolean lastHandledWasItemBypass() {
+        return handledPreviousTick != null
+                && handledPreviousTick.spell().spell().mode == Spell.Mode.BYPASS_TO_ITEM_USE;
+    }
+
+    @Nullable public Handle handle(ClientPlayerEntity player, GameOptions options) {
         return handle(player, this.slots, options);
     }
 
-    @Nullable public WrappedKeybinding.Category handle(ClientPlayerEntity player, @Nullable Slot slot, GameOptions options) {
+    @Nullable public Handle handle(ClientPlayerEntity player, @Nullable Slot slot, GameOptions options) {
         if (slot == null) { return null; }
         return handle(player, List.of(slot), options);
     }
 
-    @Nullable public WrappedKeybinding.Category handle(ClientPlayerEntity player, List<Slot> slots, GameOptions options) {
-        if (handledKeyThisTick != null || skipHandling) { return null; }
+    public record Handle(SpellInfo spell, KeyBinding keyBinding, @Nullable WrappedKeybinding.Category category) {
+        public static Handle from(Slot slot, KeyBinding keyBinding, @Nullable WrappedKeybinding.Category category) {
+            return new Handle(slot.spell, keyBinding, category);
+        }
+    }
+    @Nullable public Handle handle(ClientPlayerEntity player, List<Slot> slots, GameOptions options) {
+        if (handledThisTick != null || skipHandling) { return null; }
         if (Keybindings.bypass_spell_hotbar.isPressed()) { return null; }
         var caster = ((SpellCasterClient) player);
         var casted = caster.getSpellCastProgress();
@@ -120,14 +134,14 @@ public class SpellHotbar {
                 if (unwrapped == null) { continue; }
                 var keyBinding = unwrapped.keyBinding();
                 var pressed = keyBinding.isPressed();
-                var handle = unwrapped.vanillaHandle();
+                var handle = Handle.from(slot, keyBinding, unwrapped.vanillaHandle());
 
                 switch (slot.castMode()) {
-                    case INSTANT -> {
+                    case INSTANT, ITEM_USE -> {
                         if (pressed) {
                             var attempt = caster.startSpellCast(casterStack, slot.spell.id());
                             displayAttempt(attempt, keyBinding);
-                            handledKeyThisTick = keyBinding;
+                            handledThisTick = handle;
                             return handle;
                         }
                     }
@@ -140,14 +154,14 @@ public class SpellHotbar {
                             if (needsToBeHeld) {
                                 if (!pressed) {
                                     caster.cancelSpellCast();
-                                    handledKeyThisTick = keyBinding;
+                                    handledThisTick = handle;
                                     return handle;
                                 }
                             } else {
                                 if (pressed && isReleased(keyBinding, UseCase.START)) {
                                     caster.cancelSpellCast();
                                     debounce(keyBinding, UseCase.STOP);
-                                    handledKeyThisTick = keyBinding;
+                                    handledThisTick = handle;
                                     return handle;
                                 }
                             }
@@ -157,14 +171,14 @@ public class SpellHotbar {
                                 var attempt = caster.startSpellCast(casterStack, slot.spell.id());
                                 displayAttempt(attempt, keyBinding);
                                 debounce(keyBinding, UseCase.START);
-                                handledKeyThisTick = keyBinding;
+                                handledThisTick = handle;
                                 return handle;
                             }
                         }
                     }
                 }
                 if (pressed) {
-                    handledKeyThisTick = keyBinding;
+                    handledThisTick = handle;
                     return handle;
                 }
             }
@@ -174,14 +188,34 @@ public class SpellHotbar {
     }
 
     private void displayAttempt(SpellCast.Attempt attempt, KeyBinding keyBinding) {
-        if (Objects.equals(keyBinding, handledKeyPreviousTick)) { return; }
+        if (handledThisTick != null) {
+            if (Objects.equals(keyBinding, handledThisTick.keyBinding())) { return; }
+        }
         if (attempt.isFail()) {
             HudMessages.INSTANCE.castAttemptError(attempt);
         }
     }
 
+    private Identifier lastSyncedSpellId = null;
+    public void syncItemUseSkill(ClientPlayerEntity player) {
+        Identifier idToSync = null;
+        if (player.isUsingItem()
+                && handledThisTick != null
+                && handledThisTick.spell().spell().mode == Spell.Mode.BYPASS_TO_ITEM_USE) {
+            idToSync = handledThisTick.spell().id();
+        }
+        if (!Objects.equals(idToSync, lastSyncedSpellId)) {
+            System.out.println("Syncing item use skill: " + idToSync);
+            ClientPlayNetworking.send(
+                    Packets.SpellCastSync.ID,
+                    new Packets.SpellCastSync(idToSync, 1, 1000).write()
+            );
+            lastSyncedSpellId = idToSync;
+        }
+    }
+
     private enum UseCase { START, STOP }
-    private HashMap<KeyBinding, UseCase> debounced = new HashMap<>();
+    private final HashMap<KeyBinding, UseCase> debounced = new HashMap<>();
 
     private boolean isReleased(KeyBinding keybinding, UseCase use) {
         return debounced.get(keybinding) != use;
@@ -197,5 +231,17 @@ public class SpellHotbar {
 
     private SpellContainer container(PlayerEntity player, ItemStack held) {
         return SpellContainerHelper.containerWithProxy(held, player);
+    }
+
+    public static ItemStack expectedUseStack(PlayerEntity player) {
+        var stack = player.getMainHandStack();
+        if (stack.getUseAction() != UseAction.NONE) {
+            return stack;
+        }
+        var offhand = player.getOffHandStack();
+        if (offhand.getUseAction() != UseAction.NONE) {
+            return offhand;
+        }
+        return ItemStack.EMPTY;
     }
 }

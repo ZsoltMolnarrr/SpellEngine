@@ -12,6 +12,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.client.util.Rect;
@@ -351,10 +352,21 @@ public class HudRenderHelper {
                 }
 
                 RenderSystem.enableBlend();
+
+                try {
+                    var slot = SpellHotbar.INSTANCE.slots.get(i);
+                    if (slot.spell().spell().mode == Spell.Mode.BYPASS_TO_ITEM_USE) {
+                        context.drawItem(SpellHotbar.expectedUseStack(client.player), x, y);
+                    } else {
+                        context.drawTexture(spell.iconId, x, y, 0, 0, iconSize, iconSize, iconSize, iconSize);
+                    }
+                } catch (Exception e) { }
+
                 // Icon
-                context.drawTexture(spell.iconId, x, y, 0, 0, iconSize, iconSize, iconSize, iconSize);
+                // context.drawTexture(spell.iconId, x, y, 0, 0, iconSize, iconSize, iconSize, iconSize);
+
+                // Cooldown
                 if (spell.cooldown > 0) {
-                    // Cooldown
                     renderCooldown(context, spell.cooldown, x, y);
                 }
             }

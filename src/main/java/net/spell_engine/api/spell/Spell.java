@@ -16,6 +16,11 @@ public class Spell {
         public int level_requirement_per_tier = 10;
     }
 
+    public enum Mode { CAST, BYPASS_TO_ITEM_USE }
+    public Mode mode = Mode.CAST;
+
+
+
     public Cast cast = new Cast();
     public static class Cast { public Cast() { }
         public boolean haste_affected = true;
