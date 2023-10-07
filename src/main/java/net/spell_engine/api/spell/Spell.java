@@ -212,6 +212,7 @@ public class Spell {
 
     public ItemUse item_use = new ItemUse();
     public static class ItemUse { public ItemUse() { }
+        public boolean shows_item_as_icon = false;
         @Nullable public Arrow arrow_perks;
         public static class Arrow { public Arrow() { }
             public float velocity_multiplier = 1F;

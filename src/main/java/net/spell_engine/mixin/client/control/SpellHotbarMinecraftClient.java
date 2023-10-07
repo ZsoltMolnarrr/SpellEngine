@@ -55,10 +55,19 @@ public abstract class SpellHotbarMinecraftClient {
         }
         if (handled != null) {
             spellHotbarHandle = handled.category();
-//            if (handled.spell().spell().mode == Spell.Mode.BYPASS_TO_ITEM_USE
-//                    && !handled.keyBinding().equals(options.useKey) ) {
-//                doItemUse();
-//            }
+            if (handled.spell().spell().mode == Spell.Mode.BYPASS_TO_ITEM_USE
+                    && !handled.keyBinding().equals(options.useKey) ) {
+                System.out.println("Bypassing to item use, itemUseCooldown: " + itemUseCooldown);
+//                if (!player.isUsingItem()) {
+//                    doItemUse();
+//                }
+                // else {
+//                    while(this.options.useKey.wasPressed()) {
+//                        this.doItemUse();
+//                    }
+//                }
+
+            }
 
 //            if (handled.spell().spell().mode != Spell.Mode.BYPASS_TO_ITEM_USE) {
 //                pushConflictingPressState(spellHotbarHandle, false);

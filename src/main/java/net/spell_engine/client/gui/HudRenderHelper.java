@@ -5,22 +5,22 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.render.*;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.client.util.Rect;
 import net.spell_engine.client.util.SpellRender;
 import net.spell_engine.client.util.TextureFile;
 import net.spell_engine.config.HudConfig;
-import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.casting.SpellCasterClient;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -64,8 +64,10 @@ public class HudRenderHelper {
                 var cooldownManager = caster.getCooldownManager();
                 var spells = SpellHotbar.INSTANCE.slots.stream().map(slot -> {
                     var info = slot.spell();
+                    var useItem = slot.spell().spell().item_use.shows_item_as_icon;
                     return new SpellHotBarWidget.SpellViewModel(
-                            SpellRender.iconTexture(info.id()),
+                            useItem ? null : SpellRender.iconTexture(info.id()),
+                            useItem ? SpellHotbar.expectedUseStack(player) : null,
                             cooldownManager.getCooldownProgress(new Identifier(info.id().toString()), tickDelta),
                             SpellHotBarWidget.KeyBindingViewModel.from(slot.getKeyBinding(client.options)));
                 }).collect(Collectors.toList());
@@ -287,15 +289,15 @@ public class HudRenderHelper {
             return result.toString();
         }
 
-        public record SpellViewModel(Identifier iconId, float cooldown, KeyBindingViewModel keybinding) { }
+        public record SpellViewModel(@Nullable Identifier iconId, @Nullable ItemStack itemStack, float cooldown, KeyBindingViewModel keybinding) { }
 
         public record ViewModel(List<SpellViewModel> spells) {
             public static ViewModel mock() {
                 return new ViewModel(
                         List.of(
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0, new KeyBindingViewModel("1")),
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0, new KeyBindingViewModel("2")),
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), 0, new KeyBindingViewModel("3"))
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("1")),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("2")),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("3"))
                         )
                 );
             }
@@ -353,32 +355,18 @@ public class HudRenderHelper {
 
                 RenderSystem.enableBlend();
 
-                try {
-                    var slot = SpellHotbar.INSTANCE.slots.get(i);
-                    if (slot.spell().spell().mode == Spell.Mode.BYPASS_TO_ITEM_USE) {
-                        context.drawItem(SpellHotbar.expectedUseStack(client.player), x, y);
-                    } else {
-                        context.drawTexture(spell.iconId, x, y, 0, 0, iconSize, iconSize, iconSize, iconSize);
-                    }
-                } catch (Exception e) { }
-
                 // Icon
-                // context.drawTexture(spell.iconId, x, y, 0, 0, iconSize, iconSize, iconSize, iconSize);
+                if (spell.iconId != null) {
+                    context.drawTexture(spell.iconId, x, y, 0, 0, iconSize, iconSize, iconSize, iconSize);
+                } else if (spell.itemStack != null) {
+                    context.drawItem(spell.itemStack, x, y);
+                }
 
                 // Cooldown
                 if (spell.cooldown > 0) {
                     renderCooldown(context, spell.cooldown, x, y);
                 }
             }
-
-//            // Selector
-//            if (viewModel.spells.size() > 1) {
-//                int selectorSize = 24;
-//                context.setShaderColor(1.0f, 1.0f, 1.0f, barOpacity);
-//                int x = ((int) origin.x) - 1 + (slotWidth * viewModel.selected);
-//                int y = ((int) origin.y) - 1;
-//                context.drawTexture(WIDGETS.id(), x, y, 0, 22, selectorSize, selectorSize, WIDGETS.width(), WIDGETS.height());
-//            }
 
             RenderSystem.disableBlend();
             context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

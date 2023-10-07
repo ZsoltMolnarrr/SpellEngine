@@ -20,7 +20,9 @@ public class ServerWorldArrows {
                     var perks = spell.item_use.arrow_perks;
                     if (perks != null) {
                         // Apply arrow perks
-                        arrow.setVelocity(arrow.getVelocity().multiply(perks.velocity_multiplier));
+                        if (perks.velocity_multiplier != 1.0F) {
+                            arrow.setVelocity(arrow.getVelocity().multiply(perks.velocity_multiplier));
+                        }
                     }
                 }
             }
