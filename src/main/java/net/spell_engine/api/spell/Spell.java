@@ -37,7 +37,7 @@ public class Spell {
         public static class Target { public Target() { }
             public Type type;
             public enum Type {
-                AREA, BEAM, CURSOR, PROJECTILE, METEOR, SELF
+                AREA, BEAM, CLOUD, CURSOR, PROJECTILE, METEOR, SELF
             }
 
             public Area area;
@@ -59,6 +59,20 @@ public class Spell {
                 public ParticleBatch[] block_hit_particles = new ParticleBatch[]{};
             }
 
+            public Cloud cloud;
+            public static class Cloud { public Cloud() { }
+                public Area area = new Area();
+                public float time_to_live_seconds = 0;
+                public int tick_interval = 5;
+                public enum Shape { CIRCLE, SQUARE }
+                public Shape shape = Shape.CIRCLE;
+
+                public ClientData client_data = new ClientData();
+                public static class ClientData {
+                    public ParticleBatch[] particles = new ParticleBatch[]{};
+                }
+            }
+
             public Cursor cursor;
             public static class Cursor { public Cursor() { }
                 public boolean use_caster_as_fallback = false;
@@ -76,10 +90,11 @@ public class Spell {
         public Sound sound;
     }
 
-    public boolean allow_mixed_intents = false;
     public Impact[] impact;
     public static class Impact { public Impact() { }
         public Action action;
+        /// Magic school of this specific impact, if null then spell school is used
+        @Nullable public MagicSchool school;
         public static class Action { public Action() { }
             public Type type;
             public boolean apply_to_caster = false;
@@ -213,8 +228,8 @@ public class Spell {
     public ItemUse item_use = new ItemUse();
     public static class ItemUse { public ItemUse() { }
         public boolean shows_item_as_icon = false;
-        @Nullable public Arrow arrow_perks;
-        public static class Arrow { public Arrow() { }
+        @Nullable public ArrowPerks arrow_perks = null;
+        public static class ArrowPerks { public ArrowPerks() { }
             public float velocity_multiplier = 1F;
         }
     }

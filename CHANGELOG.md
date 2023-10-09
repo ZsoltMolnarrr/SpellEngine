@@ -1,3 +1,7 @@
+# 0.12.0
+
+- Add spell impact specific schools definition
+
 # 0.11.0
 
 - Add mouse scrolling to spell binding table GUI

@@ -6,6 +6,7 @@ import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.UseAction;
 import net.spell_engine.api.spell.Spell;
@@ -234,13 +235,11 @@ public class SpellHotbar {
     }
 
     public static ItemStack expectedUseStack(PlayerEntity player) {
-        var stack = player.getMainHandStack();
-        if (stack.getUseAction() != UseAction.NONE) {
-            return stack;
-        }
-        var offhand = player.getOffHandStack();
-        if (offhand.getUseAction() != UseAction.NONE) {
-            return offhand;
+        for (Hand hand : Hand.values()) {
+            ItemStack itemStack = player.getStackInHand(hand);
+            if (itemStack.getUseAction() != UseAction.NONE) {
+                return itemStack;
+            }
         }
         return ItemStack.EMPTY;
     }

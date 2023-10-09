@@ -547,7 +547,7 @@ public class SpellHelper {
 
     private static final float knockbackDefaultStrength = 0.4F;
 
-    private static boolean performImpact(World world, LivingEntity caster, Entity target, MagicSchool school, Spell.Impact impact, ImpactContext context, Collection<ServerPlayerEntity> trackers) {
+    private static boolean performImpact(World world, LivingEntity caster, Entity target, MagicSchool spellSchool, Spell.Impact impact, ImpactContext context, Collection<ServerPlayerEntity> trackers) {
         if (!target.isAttackable()) {
             return false;
         }
@@ -555,6 +555,7 @@ public class SpellHelper {
         try {
             double particleMultiplier = 1 * context.total();
             var power = context.power();
+            var school = impact.school != null ? impact.school : spellSchool;
             if (power == null) {
                 power = SpellPower.getSpellPower(school, caster);
             }
@@ -743,7 +744,7 @@ public class SpellHelper {
     // DAMAGE/HEAL OUTPUT ESTIMATION
 
     public static EstimatedOutput estimate(Spell spell, PlayerEntity caster, ItemStack itemStack) {
-        var school = spell.school;
+        var spellSchool = spell.school;
         var damageEffects = new ArrayList<EstimatedValue>();
         var healEffects = new ArrayList<EstimatedValue>();
 
@@ -757,6 +758,7 @@ public class SpellHelper {
         }
 
         for (var impact: spell.impact) {
+            var school = impact.school != null ? impact.school : spellSchool;
             var power = SpellPower.getSpellPower(school, caster, forSpellBook ? null : itemStack);
             if (power.baseValue() < impact.action.min_power) {
                 power = new SpellPower.Result(power.school(), impact.action.min_power, power.criticalChance(), power.criticalDamage());
