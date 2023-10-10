@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.particle.ExplosionLargeParticle;
+import net.minecraft.client.render.entity.EmptyEntityRenderer;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.HudRenderHelper;
@@ -18,6 +19,8 @@ import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.client.particle.*;
 import net.spell_engine.client.render.CustomModelRegistry;
 import net.spell_engine.client.render.SpellProjectileRenderer;
+import net.spell_engine.entity.SpellAreaEffect;
+import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.particle.Particles;
 
 public class FabricClientMod implements ClientModInitializer {
@@ -32,8 +35,8 @@ public class FabricClientMod implements ClientModInitializer {
         ItemTooltipCallback.EVENT.register((itemStack, context, lines) -> {
             SpellTooltip.addSpellInfo(itemStack, lines);
         });
-        EntityRendererRegistry.register(SpellEngineMod.SPELL_PROJECTILE, (context) ->
-                new SpellProjectileRenderer(context));
+        EntityRendererRegistry.register(SpellProjectile.ENTITY_TYPE, SpellProjectileRenderer::new);
+        EntityRendererRegistry.register(SpellAreaEffect.ENTITY_TYPE, EmptyEntityRenderer::new);
 
         registerParticleAppearances();
     }

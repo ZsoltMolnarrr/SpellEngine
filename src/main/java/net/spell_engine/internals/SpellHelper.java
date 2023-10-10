@@ -22,6 +22,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellEvents;
 import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.entity.ConfigurableKnockback;
+import net.spell_engine.entity.SpellAreaEffect;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterEntity;
@@ -218,6 +219,10 @@ public class SpellHelper {
                         case BEAM -> {
                             beamImpact(world, player, targets, spell, context);
                         }
+                        case CLOUD -> {
+                            placeCloud(world, player, spellInfo, context);
+                            released = true;
+                        }
                         case CURSOR -> {
                             var target = targets.stream().findFirst();
                             if (target.isPresent()) {
@@ -352,16 +357,20 @@ public class SpellHelper {
         if (projectileData != null) {
             var area_impact = projectileData.area_impact;
             if (area_impact != null) {
-                var center = context.position();
-                var targets = TargetHelper.targetsFromArea(projectile, center, area_impact.radius, area_impact.area, null);
-                if (previouslyHit != null) {
-                    targets.remove(previouslyHit);
-                }
-                areaImpact(projectile.getWorld(), caster, targets, center, area_impact.radius, area_impact.area, true, spell, context.target(TargetHelper.TargetingMode.AREA));
-                ParticleHelper.sendBatches(projectile, area_impact.particles);
-                SoundHelper.playSound(projectile.getWorld(), projectile, area_impact.sound);
+                performAreaImpact(caster, previouslyHit, projectile, spell, area_impact, context);
             }
         }
+    }
+
+    public static void performAreaImpact(LivingEntity caster, @Nullable Entity exclude, Entity source, Spell spell, Spell.AreaImpact area_impact, ImpactContext context) {
+        var center = context.position();
+        var targets = TargetHelper.targetsFromArea(source, center, area_impact.radius, area_impact.area, null);
+        if (exclude != null) {
+            targets.remove(exclude);
+        }
+        areaImpact(source.getWorld(), caster, targets, center, area_impact.radius, area_impact.area, true, spell, context.target(TargetHelper.TargetingMode.AREA));
+        ParticleHelper.sendBatches(source, area_impact.particles);
+        SoundHelper.playSound(source.getWorld(), source, area_impact.sound);
     }
 
     public static float launchHeight(LivingEntity livingEntity) {
@@ -481,6 +490,15 @@ public class SpellHelper {
         }
     }
 
+    public static void placeCloud(World world, LivingEntity caster, SpellInfo spellInfo, ImpactContext context) {
+        var spell = spellInfo.spell();
+        var cloud = spell.release.target.cloud;
+        // var center = context.position();
+        var entity = new SpellAreaEffect(world, caster, context, spellInfo);
+        entity.setPosition(caster.getPos());
+        world.spawnEntity(entity);
+    }
+
     public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
         var performed = false;
         var trackers = PlayerLookup.tracking(target);
@@ -556,7 +574,7 @@ public class SpellHelper {
             double particleMultiplier = 1 * context.total();
             var power = context.power();
             var school = impact.school != null ? impact.school : spellSchool;
-            if (power == null) {
+            if (power == null || power.school() != school) {
                 power = SpellPower.getSpellPower(school, caster);
             }
             if (power.baseValue() < impact.action.min_power) {
@@ -682,7 +700,7 @@ public class SpellHelper {
             case AREA, BEAM -> {
                 return TargetHelper.TargetingMode.AREA;
             }
-            case CURSOR, PROJECTILE, METEOR, SELF -> {
+            case CURSOR, PROJECTILE, METEOR, SELF, CLOUD -> {
                 return TargetHelper.TargetingMode.DIRECT;
             }
         }
@@ -696,7 +714,7 @@ public class SpellHelper {
             case AREA, BEAM, METEOR -> {
                 return TargetHelper.TargetingMode.AREA;
             }
-            case CURSOR, PROJECTILE, SELF -> {
+            case CURSOR, PROJECTILE, SELF, CLOUD -> {
                 return TargetHelper.TargetingMode.DIRECT;
             }
         }

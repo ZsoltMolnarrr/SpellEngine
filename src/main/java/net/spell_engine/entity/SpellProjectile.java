@@ -41,6 +41,9 @@ import java.util.function.Predicate;
 
 
 public class SpellProjectile extends ProjectileEntity implements FlyingSpellEntity {
+    public static EntityType<SpellProjectile> ENTITY_TYPE;
+
+
     private static Random random = new Random();
 
     public float range = 128;
@@ -55,7 +58,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
 
     protected SpellProjectile(World world, LivingEntity owner) {
-        super(SpellEngineMod.SPELL_PROJECTILE, world);
+        super(ENTITY_TYPE, world);
         this.setOwner(owner);
     }
 

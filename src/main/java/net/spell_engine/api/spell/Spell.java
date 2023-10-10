@@ -61,11 +61,16 @@ public class Spell {
 
             public Cloud cloud;
             public static class Cloud { public Cloud() { }
-                public Area area = new Area();
-                public float time_to_live_seconds = 0;
-                public int tick_interval = 5;
                 public enum Shape { CIRCLE, SQUARE }
                 public Shape shape = Shape.CIRCLE;
+                public AreaImpact area_impact = new AreaImpact();
+                public float time_to_live_seconds = 0;
+
+                /// The number of ticks between looking for targets and trying to apply impact
+                public int impact_tick_interval = 5;
+                /// The number of ticks between each impact application for a single entity
+                public int impact_debounce = 20;
+
 
                 public ClientData client_data = new ClientData();
                 public static class ClientData {
@@ -152,6 +157,14 @@ public class Spell {
         public boolean cooldown_haste_affected = true;
     }
 
+    public static class AreaImpact { public AreaImpact() { }
+        public float radius = 1F;
+        public Release.Target.Area area = new Release.Target.Area();
+        public ParticleBatch[] particles = new ParticleBatch[]{};
+        @Nullable
+        public Sound sound;
+    }
+
     public static class ProjectileData { public ProjectileData() { }
         public float velocity = 1F;
         public float divergence = 0;
@@ -160,13 +173,6 @@ public class Spell {
 
         @Nullable
         public AreaImpact area_impact;
-        public static class AreaImpact { public AreaImpact() { }
-            public float radius = 1F;
-            public Release.Target.Area area = new Release.Target.Area();
-            public ParticleBatch[] particles = new ParticleBatch[]{};
-            @Nullable
-            public Sound sound;
-        }
 
         public Perks perks = new Perks();
         public static class Perks { Perks() { }

@@ -7,7 +7,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.Spell;
@@ -289,7 +288,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                     targets = List.of();
                 }
             }
-            case SELF -> {
+            case SELF, CLOUD -> {
                 // Nothing to do
             }
         }
