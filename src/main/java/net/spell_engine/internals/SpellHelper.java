@@ -214,7 +214,7 @@ public class SpellHelper {
                         case AREA -> {
                             var center = player.getPos().add(0, player.getHeight() / 2F, 0);
                             var area = spell.release.target.area;
-                            areaImpact(world, player, targets, center, spell.range, area, false, spell, context);
+                            areaImpact(world, player, targets, center, spell.range, area, false, spell, context, false);
                         }
                         case BEAM -> {
                             beamImpact(world, player, targets, spell, context);
@@ -308,18 +308,18 @@ public class SpellHelper {
     }
 
     private static void directImpact(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
-        performImpacts(world, caster, target, spell, context);
+        performImpacts(world, caster, target, target, spell, context);
     }
 
     private static void beamImpact(World world, LivingEntity caster, List<Entity> targets, Spell spell, ImpactContext context) {
         for(var target: targets) {
-            performImpacts(world, caster, target, spell, context);
+            performImpacts(world, caster, target, target, spell, context.position(target.getPos()));
         }
     }
 
     private static void areaImpact(World world, LivingEntity caster, List<Entity> targets,
                                    Vec3d center, float range, Spell.Release.Target.Area area, boolean offset,
-                                   Spell spell, ImpactContext context) {
+                                   Spell spell, ImpactContext context, boolean additionalTargetLookup) {
         double squaredRange = range * range;
         for(var target: targets) {
             float distanceBasedMultiplier = 1F;
@@ -330,48 +330,42 @@ public class SpellHelper {
                     distanceBasedMultiplier = Math.max(distanceBasedMultiplier, 0F);
                 }
             }
-            performImpacts(world, caster, target, spell, context
+            performImpacts(world, caster, target, target, spell, context
                     .distance(distanceBasedMultiplier)
-                    .position(offset ? center : null)
+                    .position(offset ? center : null),
+                    additionalTargetLookup
             );
         }
     }
 
     public static void fallImpact(LivingEntity caster, Entity projectile, Spell spell, ImpactContext context) {
         var adjustedCenter = context.position().add(0, 1, 0); // Adding a bit of height to avoid raycast hitting the ground
-        performProjectileAreaEffect(caster, null, projectile, spell, context.position(adjustedCenter));
+        performImpacts(projectile.getWorld(), caster, null, projectile, spell, context.position(adjustedCenter));
     }
 
     public static boolean projectileImpact(LivingEntity caster, Entity projectile, Entity target, Spell spell, ImpactContext context) {
-        var performed = performImpacts(projectile.getWorld(), caster, target, spell, context);
-
-        if (performed) {
-            performProjectileAreaEffect(caster, target, projectile, spell, context);
-        }
-
-        return performed;
+        return performImpacts(projectile.getWorld(), caster, target, projectile, spell, context);
     }
 
-    private static void performProjectileAreaEffect(LivingEntity caster, Entity previouslyHit, Entity projectile, Spell spell, ImpactContext context) {
-        var projectileData = spell.release.target.projectile;
-        if (projectileData != null) {
-            var area_impact = projectileData.area_impact;
-            if (area_impact != null) {
-                performAreaImpact(caster, previouslyHit, projectile, spell, area_impact, context);
-            }
-        }
-    }
-
-    public static void performAreaImpact(LivingEntity caster, @Nullable Entity exclude, Entity source, Spell spell, Spell.AreaImpact area_impact, ImpactContext context) {
-        var center = context.position();
-        var targets = TargetHelper.targetsFromArea(source, center, area_impact.radius, area_impact.area, null);
-        if (exclude != null) {
-            targets.remove(exclude);
-        }
-        areaImpact(source.getWorld(), caster, targets, center, area_impact.radius, area_impact.area, true, spell, context.target(TargetHelper.TargetingMode.AREA));
-        ParticleHelper.sendBatches(source, area_impact.particles);
-        SoundHelper.playSound(source.getWorld(), source, area_impact.sound);
-    }
+//    private static void performProjectileAreaEffect(LivingEntity caster, Entity previouslyHit, Entity projectile, Spell spell, ImpactContext context) {
+//        var projectileData = spell.release.target.projectile;
+//        if (projectileData != null) {
+//            var area_impact = projectileData.area_impact;
+//            if (area_impact != null) {
+//                performAreaImpact(caster, previouslyHit, projectile, spell, area_impact, context);
+//            }
+//        }
+//    }
+//    public static void performAreaImpact(LivingEntity caster, @Nullable Entity exclude, Entity source, Spell spell, Spell.AreaImpact area_impact, ImpactContext context) {
+//        var center = context.position();
+//        var targets = TargetHelper.targetsFromArea(source, center, area_impact.radius, area_impact.area, null);
+//        if (exclude != null) {
+//            targets.remove(exclude);
+//        }
+//        areaImpact(source.getWorld(), caster, targets, center, area_impact.radius, area_impact.area, true, spell, context.target(TargetHelper.TargetingMode.AREA));
+//        ParticleHelper.sendBatches(source, area_impact.particles);
+//        SoundHelper.playSound(source.getWorld(), source, area_impact.sound);
+//    }
 
     public static float launchHeight(LivingEntity livingEntity) {
         var eyeHeight = livingEntity.getStandingEyeHeight();
@@ -499,26 +493,8 @@ public class SpellHelper {
         world.spawnEntity(entity);
     }
 
-    public static boolean performImpacts(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
-        var performed = false;
-        var trackers = PlayerLookup.tracking(target);
-
-        TargetHelper.Intent selectedIntent = null;
-        for (var impact: spell.impact) {
-            var intent = intent(impact.action);
-            if (!impact.action.apply_to_caster // Only filtering for cases when another entity is actually targeted
-                    && (selectedIntent != null && selectedIntent != intent)) {
-                // Filter out mixed intents
-                // So dual intent spells either damage or heal, and not do both
-                continue;
-            }
-            var result = performImpact(world, caster, target, spell.school, impact, context, trackers);
-            performed = performed || result;
-            if (result) {
-                selectedIntent = intent;
-            }
-        }
-        return performed;
+    public static boolean performImpacts(World world, LivingEntity caster, @Nullable Entity target, Entity aoeSource, Spell spell, ImpactContext context) {
+        return performImpacts(world, caster, target, aoeSource, spell, context, true);
     }
 
     public record ImpactContext(float channel, float distance, @Nullable Vec3d position, SpellPower.Result power, TargetHelper.TargetingMode targetingMode) {
@@ -561,6 +537,46 @@ public class SpellHelper {
         public float total() {
             return channel * distance;
         }
+    }
+
+    public static boolean performImpacts(World world, LivingEntity caster, @Nullable Entity target, Entity aoeSource, Spell spell, ImpactContext context, boolean additionalTargetLookup) {
+        var trackers = target != null ? PlayerLookup.tracking(target) : null;
+
+        var performed = false;
+        TargetHelper.Intent selectedIntent = null;
+        for (var impact: spell.impact) {
+            var intent = intent(impact.action);
+            if (!impact.action.apply_to_caster // Only filtering for cases when another entity is actually targeted
+                    && (selectedIntent != null && selectedIntent != intent)) {
+                // Filter out mixed intents
+                // So dual intent spells either damage or heal, and not do both
+                continue;
+            }
+
+            if (target != null) {
+                var result = performImpact(world, caster, target, spell.school, impact, context, trackers);
+                performed = performed || result;
+                if (result) {
+                    selectedIntent = intent;
+                }
+            }
+
+            var area_impact = impact.area_impact;
+            if (area_impact != null
+                    && additionalTargetLookup
+                    && (performed || target == null) ) {
+                var center = context.position();
+                var additionalTargets = TargetHelper.targetsFromArea(aoeSource, center, area_impact.radius, area_impact.area, null);
+                var exclude = target;
+                if (exclude != null) {
+                    additionalTargets.remove(exclude);
+                }
+                areaImpact(aoeSource.getWorld(), caster, additionalTargets, center, area_impact.radius, area_impact.area, true, spell, context.target(TargetHelper.TargetingMode.AREA), false);
+                ParticleHelper.sendBatches(aoeSource, area_impact.particles);
+                SoundHelper.playSound(aoeSource.getWorld(), aoeSource, area_impact.sound);
+            }
+        }
+        return performed;
     }
 
     private static final float knockbackDefaultStrength = 0.4F;

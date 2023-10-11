@@ -16,7 +16,6 @@ import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.particle.ParticleHelper;
-import net.spell_power.api.SpellPower;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -147,9 +146,8 @@ public class SpellAreaEffect extends Entity implements Ownable {
                     var context = this.context;
                     if (context == null) {
                         context = new SpellHelper.ImpactContext();
-                        context.position(this.getPos());
                     }
-                    SpellHelper.performAreaImpact(owner,null, this, spell, area_impact, context.position(this.getPos()));
+                    // SpellHelper.performAreaImpact(owner,null, this, spell, area_impact, context.position(this.getPos()));
                 }
             }
         }

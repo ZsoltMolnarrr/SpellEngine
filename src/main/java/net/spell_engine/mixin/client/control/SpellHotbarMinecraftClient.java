@@ -56,8 +56,16 @@ public abstract class SpellHotbarMinecraftClient {
         if (handled != null) {
             spellHotbarHandle = handled.category();
             if (handled.spell().spell().mode == Spell.Mode.BYPASS_TO_ITEM_USE
-                    && !handled.keyBinding().equals(options.useKey) ) {
+                    && !handled.keyBinding().equals(options.useKey)  ) {
                 System.out.println("Bypassing to item use, itemUseCooldown: " + itemUseCooldown);
+//                if (player.isUsingItem()) {
+//                    while (handled.keyBinding().wasPressed()) {}
+//                } else {
+//                    doItemUse();
+//                }
+
+                doItemUse();
+
 //                if (!player.isUsingItem()) {
 //                    doItemUse();
 //                }

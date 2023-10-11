@@ -1,6 +1,7 @@
 # 0.12.0
 
 - Add spell impact specific schools definition
+- Add area effect capability to any spell impact (moved from SpellProjectile) 
 
 # 0.11.0
 

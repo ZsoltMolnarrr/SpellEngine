@@ -144,7 +144,20 @@ public class Spell {
 
         public ParticleBatch[] particles = new ParticleBatch[]{};
         public Sound sound;
+
+        /// Apply this impact to other entities nearby
+        @Nullable
+        public AreaImpact area_impact;
     }
+
+    public static class AreaImpact { public AreaImpact() { }
+        public float radius = 1F;
+        public Release.Target.Area area = new Release.Target.Area();
+        public ParticleBatch[] particles = new ParticleBatch[]{};
+        @Nullable
+        public Sound sound;
+    }
+
 
     public Cost cost = new Cost();
     public static class Cost { public Cost() { }
@@ -157,22 +170,11 @@ public class Spell {
         public boolean cooldown_haste_affected = true;
     }
 
-    public static class AreaImpact { public AreaImpact() { }
-        public float radius = 1F;
-        public Release.Target.Area area = new Release.Target.Area();
-        public ParticleBatch[] particles = new ParticleBatch[]{};
-        @Nullable
-        public Sound sound;
-    }
-
     public static class ProjectileData { public ProjectileData() { }
         public float velocity = 1F;
         public float divergence = 0;
         public boolean inherit_shooter_velocity = false;
         public float homing_angle = 1F;
-
-        @Nullable
-        public AreaImpact area_impact;
 
         public Perks perks = new Perks();
         public static class Perks { Perks() { }
