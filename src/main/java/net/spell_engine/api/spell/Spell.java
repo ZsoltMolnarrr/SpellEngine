@@ -71,7 +71,6 @@ public class Spell {
                 /// The number of ticks between each impact application for a single entity
                 public int impact_debounce = 20;
 
-
                 public ClientData client_data = new ClientData();
                 public static class ClientData {
                     public ParticleBatch[] particles = new ParticleBatch[]{};

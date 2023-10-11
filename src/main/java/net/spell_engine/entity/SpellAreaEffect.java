@@ -1,9 +1,6 @@
 package net.spell_engine.entity;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.Ownable;
+import net.minecraft.entity.*;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -37,6 +34,7 @@ public class SpellAreaEffect extends Entity implements Ownable {
     protected SpellAreaEffect(World world, LivingEntity owner) {
         super(ENTITY_TYPE, world);
         this.setOwner(owner);
+        this.noClip = true;
     }
 
     public SpellAreaEffect(World world, LivingEntity owner, SpellHelper.ImpactContext context, SpellInfo spellInfo) {
@@ -46,6 +44,18 @@ public class SpellAreaEffect extends Entity implements Ownable {
         this.getDataTracker().set(SPELL_ID_TRACKER, this.spellId.toString());
         var cloudData = spellInfo.spell().release.target.cloud;
         this.timeToLive = (int) (cloudData.time_to_live_seconds * 20);
+    }
+
+    public EntityDimensions getDimensions(EntityPose pose) {
+        var spell = getSpell();
+        if (spell != null) {
+            var cloudData = spell.release.target.cloud;
+            var radius = cloudData.area_impact.radius;
+            var heightMultiplier = cloudData.area_impact.area.vertical_range_multiplier;
+            return EntityDimensions.changing(radius * 2, radius * heightMultiplier);
+        } else {
+            return super.getDimensions(pose);
+        }
     }
 
     // MARK: Owner
@@ -82,6 +92,7 @@ public class SpellAreaEffect extends Entity implements Ownable {
         if (rawSpellId != null && !rawSpellId.isEmpty()) {
             this.spellId = new Identifier(rawSpellId);
         }
+        this.calculateDimensions();
 
 //        if (RADIUS.equals(data)) {
 //            this.calculateDimensions();
@@ -147,7 +158,8 @@ public class SpellAreaEffect extends Entity implements Ownable {
                     if (context == null) {
                         context = new SpellHelper.ImpactContext();
                     }
-                    // SpellHelper.performAreaImpact(owner,null, this, spell, area_impact, context.position(this.getPos()));
+                    SpellHelper.lookupAndPerformAreaImpact(area_impact, spell, owner,null,
+                            this, context.position(this.getPos()), true);
                 }
             }
         }
