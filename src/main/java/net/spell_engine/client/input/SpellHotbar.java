@@ -4,11 +4,13 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.UseAction;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.api.spell.SpellInfo;
@@ -30,6 +32,12 @@ import java.util.Objects;
 
 public class SpellHotbar {
     public static SpellHotbar INSTANCE = new SpellHotbar();
+
+    private static KeyBinding deadKey = new KeyBinding(
+            "keybindings." + SpellEngineMod.ID + ".dead",
+            InputUtil.Type.KEYSYM,
+            InputUtil.UNKNOWN_KEY.getCode(),
+            SpellEngineMod.modName());
 
     public record Slot(SpellInfo spell, SpellCast.Mode castMode, @Nullable WrappedKeybinding keybinding) {
         @Nullable public KeyBinding getKeyBinding(GameOptions options) {
@@ -64,8 +72,17 @@ public class SpellHotbar {
                 var spell = SpellRegistry.getSpell(spellId);
                 if (spell == null) { continue; }
                 WrappedKeybinding keyBinding = null;
-                if (i < allBindings.size()) {
-                    keyBinding = allBindings.get(i);
+                switch (spell.mode) {
+                    case CAST -> {
+                        if (i < allBindings.size()) {
+                            keyBinding = allBindings.get(i);
+                        }
+                    }
+                    case BYPASS_TO_ITEM_USE -> {
+                        // Dead (unbound, unregistered) keybinding is given,
+                        // so it is forced to fall back to vanilla keybinding
+                        keyBinding = new WrappedKeybinding(deadKey, WrappedKeybinding.VanillaAlternative.USE_KEY);
+                    }
                 }
 
                 // Create slot
@@ -206,7 +223,7 @@ public class SpellHotbar {
             idToSync = handledThisTick.spell().id();
         }
         if (!Objects.equals(idToSync, lastSyncedSpellId)) {
-            System.out.println("Syncing item use skill: " + idToSync);
+            // System.out.println("Syncing item use skill: " + idToSync);
             ClientPlayNetworking.send(
                     Packets.SpellCastSync.ID,
                     new Packets.SpellCastSync(idToSync, 1, 1000).write()

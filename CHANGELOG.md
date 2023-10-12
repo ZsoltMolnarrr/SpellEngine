@@ -1,13 +1,17 @@
 # 0.12.0
 
+Functional changes:
 - Fix dropping item not cancelling spell casting
 
 API Additions:
 - Add spell impact specific schools definition
 - Add new spell area effect cloud release action
+- Add `content` field to Spell Container to indicate the type of supported spells (Spell vs Archery skill)
+- Add `mode` field for spells, to allow using items instead of casting spells  
 
 API Breaking changes:
-- Add area effect capability to any spell impact (moved from SpellProjectile) 
+- Add area effect capability to any spell impact (moved from SpellProjectile)
+- Rework the data part of `PROJECTILE` and `METEOR` release types 
 
 # 0.11.0
 
