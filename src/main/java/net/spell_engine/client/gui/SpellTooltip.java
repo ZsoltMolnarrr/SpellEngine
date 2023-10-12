@@ -13,8 +13,10 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
+import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.SpellCasterItemStack;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
@@ -111,12 +113,15 @@ public class SpellTooltip {
         var description = I18n.translate(spellKeyPrefix(spellId) + ".description");
         var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);
 
-        var projectile = spell.release.target.projectile;
+        Spell.ProjectileData projectile = null;
+        if (spell.release.target.projectile != null) {
+            projectile = spell.release.target.projectile.projectile;
+        }
+        if (spell.release.target.meteor != null) {
+            projectile = spell.release.target.meteor.projectile;
+        }
+
         if (projectile != null) {
-            var extra_launch_count = projectile.perks.extra_launch_count;
-            if (extra_launch_count > 0) {
-                description = description.replace("{extra_launch}", formattedNumber(extra_launch_count));
-            }
             if (projectile.perks.ricochet > 0) {
                 description = description.replace("{ricochet}", formattedNumber(projectile.perks.ricochet));
             }
@@ -128,6 +133,20 @@ public class SpellTooltip {
             }
             if (projectile.perks.chain_reaction_size > 0) {
                 description = description.replace("{chain_reaction_size}", formattedNumber(projectile.perks.chain_reaction_size));
+            }
+        }
+
+        Spell.LaunchProperties launchProperties = null;
+        if (spell.release.target.projectile != null) {
+            launchProperties = spell.release.target.projectile.launch_properties;
+        }
+        if (spell.release.target.meteor != null) {
+            launchProperties = spell.release.target.meteor.launch_properties;
+        }
+        if (launchProperties != null) {
+            var extra_launch_count = launchProperties.extra_launch_count;
+            if (extra_launch_count > 0) {
+                description = description.replace("{extra_launch}", formattedNumber(extra_launch_count));
             }
         }
 
@@ -247,5 +266,10 @@ public class SpellTooltip {
     public static String spellKeyPrefix(Identifier spellId) {
         // For example: `spell.spell_engine.fireball`
         return "spell." + spellId.getNamespace() + "." + spellId.getPath();
+    }
+
+    private static <T> T coalesce(T ...items) {
+        for (T i : items) if (i != null) return i;
+        return null;
     }
 }

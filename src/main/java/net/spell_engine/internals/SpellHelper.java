@@ -251,6 +251,10 @@ public class SpellHelper {
                             directImpact(world, player, player, spell, context);
                             released = true;
                         }
+                        case SHOOT_ARROW -> {
+                            ArrowHelper.shootArrow(world, player, spell);
+                            released = true;
+                        }
                     }
                 }
             }
@@ -335,16 +339,22 @@ public class SpellHelper {
 
         var spell = spellInfo.spell();
         var launchPoint = launchPoint(caster);
-        var projectileData = spell.release.target.projectile;
+        var data = spell.release.target.projectile;
+        var projectileData = data.projectile;
         var mutablePerks = projectileData.perks.copy();
 
         var projectile = new SpellProjectile(world, caster,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
                 SpellProjectile.Behaviour.FLY, spellInfo.id(), target, context, mutablePerks);
 
-        var velocity = projectileData.velocity;
+        var mutableLaunchProperties = data.launch_properties.copy();
+        if (SpellEvents.PROJECTILE_SHOOT.isListened()) {
+            SpellEvents.PROJECTILE_SHOOT.invoke((listener) -> listener.onProjectileLaunch(
+                    new SpellEvents.ProjectileLaunchEvent(projectile, mutableLaunchProperties, caster, target, spellInfo, context, initial)));
+        }
+        var velocity = mutableLaunchProperties.velocity;
         var divergence = projectileData.divergence;
-        if (projectileData.inherit_shooter_velocity) {
+        if (data.inherit_shooter_velocity) {
             projectile.setVelocity(caster, caster.getPitch(), caster.getYaw(), caster.getRoll(), velocity, divergence);
         } else {
             var look = caster.getRotationVector().normalize();
@@ -354,15 +364,11 @@ public class SpellHelper {
         projectile.getPitch(caster.getPitch());
         projectile.setYaw(caster.getYaw());
 
-
-        if (SpellEvents.PROJECTILE_SHOOT.isListened()) {
-            SpellEvents.PROJECTILE_SHOOT.invoke((listener) -> listener.onProjectileLaunch(new SpellEvents.ProjectileLaunchEvent(projectile, caster, target, spellInfo, context, initial)));
-        }
         world.spawnEntity(projectile);
 
-        if (initial && projectile.mutablePerks().extra_launch_count > 0) {
-            for (int i = 0; i < projectile.mutablePerks().extra_launch_count; i++) {
-                var ticks = (i + 1) * projectile.mutablePerks().extra_launch_delay;
+        if (initial && mutableLaunchProperties.extra_launch_count > 0) {
+            for (int i = 0; i < mutableLaunchProperties.extra_launch_count; i++) {
+                var ticks = (i + 1) * mutableLaunchProperties.extra_launch_delay;
                 ((WorldScheduler)world).schedule(ticks, () -> {
                     if (caster == null || !caster.isAlive()) {
                         return;
@@ -386,34 +392,37 @@ public class SpellHelper {
         var meteor = spell.release.target.meteor;
         var height = meteor.launch_height;
         var launchPoint = target.getPos().add(0, height, 0);
-        var projectileData = spell.release.target.projectile;
+        var data = spell.release.target.meteor;
+        var projectileData = data.projectile;
+        var mutableLaunchProperties = data.launch_properties.copy();
         var mutablePerks = projectileData.perks.copy();
 
         var projectile = new SpellProjectile(world, caster,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
                 SpellProjectile.Behaviour.FALL, spellInfo.id(), target, context, mutablePerks);
 
+        if (SpellEvents.PROJECTILE_FALL.isListened()) {
+            SpellEvents.PROJECTILE_FALL.invoke((listener) -> listener.onProjectileLaunch(new SpellEvents.ProjectileLaunchEvent(projectile, mutableLaunchProperties, caster, target, spellInfo, context, initial)));
+        }
+
         projectile.setYaw(0);
         projectile.setPitch(90);
         if (!initial) {
-            projectile.setVelocity( 0, - 1, 0, projectileData.velocity, 0.5F, projectileData.divergence);
+            projectile.setVelocity( 0, - 1, 0, mutableLaunchProperties.velocity, 0.5F, projectileData.divergence);
             projectile.setFollowedTarget(null);
         } else {
-            projectile.setVelocity(new Vec3d(0, - projectileData.velocity, 0));
+            projectile.setVelocity(new Vec3d(0, - mutableLaunchProperties.velocity, 0));
         }
 
         projectile.prevYaw = projectile.getYaw();
         projectile.prevPitch = projectile.getPitch();
         projectile.range = height;
 
-        if (SpellEvents.PROJECTILE_FALL.isListened()) {
-            SpellEvents.PROJECTILE_FALL.invoke((listener) -> listener.onProjectileLaunch(new SpellEvents.ProjectileLaunchEvent(projectile, caster, target, spellInfo, context, initial)));
-        }
         world.spawnEntity(projectile);
 
-        if (initial && projectile.mutablePerks().extra_launch_count > 0) {
-            for (int i = 0; i < projectile.mutablePerks().extra_launch_count; i++) {
-                var ticks = (i + 1) * projectile.mutablePerks().extra_launch_delay;
+        if (initial && mutableLaunchProperties.extra_launch_count > 0) {
+            for (int i = 0; i < mutableLaunchProperties.extra_launch_count; i++) {
+                var ticks = (i + 1) * mutableLaunchProperties.extra_launch_delay;
                 ((WorldScheduler)world).schedule(ticks, () -> {
                     if (caster == null || !caster.isAlive()) {
                         return;
@@ -698,7 +707,7 @@ public class SpellHelper {
             case AREA, BEAM -> {
                 return TargetHelper.TargetingMode.AREA;
             }
-            case CURSOR, PROJECTILE, METEOR, SELF, CLOUD -> {
+            case CURSOR, PROJECTILE, METEOR, SELF, CLOUD, SHOOT_ARROW -> {
                 return TargetHelper.TargetingMode.DIRECT;
             }
         }
@@ -712,7 +721,7 @@ public class SpellHelper {
             case AREA, BEAM, METEOR -> {
                 return TargetHelper.TargetingMode.AREA;
             }
-            case CURSOR, PROJECTILE, SELF, CLOUD -> {
+            case CURSOR, PROJECTILE, SELF, CLOUD, SHOOT_ARROW -> {
                 return TargetHelper.TargetingMode.DIRECT;
             }
         }

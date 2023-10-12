@@ -91,7 +91,18 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         if (getWorld().isClient) {
             return clientSyncedData;
         } else {
-            return getSpell().release.target.projectile;
+            var spell = getSpell();
+            var release = spell.release.target;
+            switch (release.type) {
+                case PROJECTILE -> {
+                    return release.projectile.projectile;
+                }
+                case METEOR -> {
+                    return release.meteor.projectile;
+                }
+            }
+            assert true;
+            return null;
         }
     }
     private Spell.ProjectileData clientSyncedData;

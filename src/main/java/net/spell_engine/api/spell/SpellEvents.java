@@ -12,6 +12,7 @@ public class SpellEvents {
     public static final Event<ProjectileLaunch> PROJECTILE_SHOOT = new Event<ProjectileLaunch>();
     public static final Event<ProjectileLaunch> PROJECTILE_FALL = new Event<ProjectileLaunch>();
     public record ProjectileLaunchEvent(SpellProjectile projectile,
+                                        Spell.LaunchProperties mutableLaunchProperties,
                                         LivingEntity caster,
                                         @Nullable Entity target,
                                         SpellInfo spellInfo,

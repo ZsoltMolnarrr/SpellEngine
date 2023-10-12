@@ -30,6 +30,12 @@ public class Spell {
         public ParticleBatch[] particles = new ParticleBatch[]{};
     }
 
+    public ItemUse item_use = new ItemUse();
+    public static class ItemUse { public ItemUse() { }
+        public boolean shows_item_as_icon = false;
+        @Nullable public ArrowPerks arrow_perks = null;
+    }
+
     public Release release;
     public static class Release { public Release() { }
         public Target target;
@@ -37,7 +43,7 @@ public class Spell {
         public static class Target { public Target() { }
             public Type type;
             public enum Type {
-                AREA, BEAM, CLOUD, CURSOR, PROJECTILE, METEOR, SELF
+                AREA, BEAM, CLOUD, CURSOR, PROJECTILE, METEOR, SELF, SHOOT_ARROW
             }
 
             public Area area;
@@ -82,11 +88,31 @@ public class Spell {
                 public boolean use_caster_as_fallback = false;
             }
 
-            public ProjectileData projectile;
+            public ShootProjectile projectile;
+            public static class ShootProjectile {
+                public boolean inherit_shooter_velocity = false;
+                /// Launch properties of the spell projectile
+                public LaunchProperties launch_properties = new LaunchProperties();
+                /// The projectile to be launched
+                public ProjectileData projectile;
+            }
 
             public Meteor meteor;
-            public static class Meteor {
+            public static class Meteor { public Meteor() { }
+                /// How high the falling projectile is launched from compared to the position of the target
                 public float launch_height = 10;
+                /// Launch properties of the falling projectile
+                public LaunchProperties launch_properties = new LaunchProperties();
+                /// The projectile to be launched
+                public ProjectileData projectile;
+            }
+
+            public ShootArrow shoot_arrow;
+            public static class ShootArrow { public ShootArrow() { }
+                /// Launch properties of the arrow
+                /// (vanilla default velocity for crossbows is 3.15)
+                public LaunchProperties launch_properties = new LaunchProperties().velocity(3.15F);
+                @Nullable public ArrowPerks arrow_perks;
             }
         }
         public String animation;
@@ -169,10 +195,30 @@ public class Spell {
         public boolean cooldown_haste_affected = true;
     }
 
-    public static class ProjectileData { public ProjectileData() { }
+    // MARK: Shared structures (used from multiple places in the spell structure)
+
+    public static class LaunchProperties { public LaunchProperties() { }
+        /// Initial velocity of the projectile
         public float velocity = 1F;
+        /// How many additional projectiles are spawned after launch
+        public int extra_launch_count = 0;
+        /// How many ticks after launch additional projectiles are spawned
+        public int extra_launch_delay = 2;
+
+        public LaunchProperties velocity(float value) {
+            this.velocity = value;
+            return this;
+        }
+        public LaunchProperties copy() {
+            LaunchProperties copy = new LaunchProperties();
+            copy.extra_launch_count = this.extra_launch_count;
+            copy.extra_launch_delay = this.extra_launch_delay;
+            return copy;
+        }
+    }
+
+    public static class ProjectileData { public ProjectileData() { }
         public float divergence = 0;
-        public boolean inherit_shooter_velocity = false;
         public float homing_angle = 1F;
 
         public Perks perks = new Perks();
@@ -193,10 +239,6 @@ public class Spell {
             public int chain_reaction_triggers = 1;
             /// How many more projectiles are spawned from chain reaction of a spawned projectile
             public int chain_reaction_increment = -1;
-            /// How many additional projectiles are spawned after launch
-            public int extra_launch_count = 0;
-            /// How many ticks after launch additional projectiles are spawned
-            public int extra_launch_delay = 2;
 
             public Perks copy() {
                 Perks copy = new Perks();
@@ -208,8 +250,6 @@ public class Spell {
                 copy.chain_reaction_size = this.chain_reaction_size;
                 copy.chain_reaction_triggers = this.chain_reaction_triggers;
                 copy.chain_reaction_increment = this.chain_reaction_increment;
-                copy.extra_launch_count = this.extra_launch_count;
-                copy.extra_launch_delay = this.extra_launch_delay;
                 return copy;
             }
         }
@@ -232,12 +272,8 @@ public class Spell {
         }
     }
 
-    public ItemUse item_use = new ItemUse();
-    public static class ItemUse { public ItemUse() { }
-        public boolean shows_item_as_icon = false;
-        @Nullable public ArrowPerks arrow_perks = null;
-        public static class ArrowPerks { public ArrowPerks() { }
-            public float velocity_multiplier = 1F;
-        }
+    public static class ArrowPerks { public ArrowPerks() { }
+        public float velocity_multiplier = 1F;
+        public boolean bypass_iframes = false;
     }
 }
