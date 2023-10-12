@@ -175,15 +175,6 @@ public class Spell {
         public AreaImpact area_impact;
     }
 
-    public static class AreaImpact { public AreaImpact() { }
-        public float radius = 1F;
-        public Release.Target.Area area = new Release.Target.Area();
-        public ParticleBatch[] particles = new ParticleBatch[]{};
-        @Nullable
-        public Sound sound;
-    }
-
-
     public Cost cost = new Cost();
     public static class Cost { public Cost() { }
         public float exhaust = 0.1F;
@@ -196,6 +187,14 @@ public class Spell {
     }
 
     // MARK: Shared structures (used from multiple places in the spell structure)
+
+    public static class AreaImpact { public AreaImpact() { }
+        public float radius = 1F;
+        public Release.Target.Area area = new Release.Target.Area();
+        public ParticleBatch[] particles = new ParticleBatch[]{};
+        @Nullable
+        public Sound sound;
+    }
 
     public static class LaunchProperties { public LaunchProperties() { }
         /// Initial velocity of the projectile

@@ -24,6 +24,7 @@ import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.SpellAreaEffect;
 import net.spell_engine.entity.SpellProjectile;
+import net.spell_engine.internals.arrow.ArrowHelper;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.particle.ParticleHelper;

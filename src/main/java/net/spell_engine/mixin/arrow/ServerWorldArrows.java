@@ -3,6 +3,7 @@ package net.spell_engine.mixin.arrow;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.spell_engine.internals.arrow.ArrowPerkAdjustable;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,10 +20,7 @@ public class ServerWorldArrows {
                 if (spell != null) {
                     var perks = spell.item_use.arrow_perks;
                     if (perks != null) {
-                        // Apply arrow perks
-                        if (perks.velocity_multiplier != 1.0F) {
-                            arrow.setVelocity(arrow.getVelocity().multiply(perks.velocity_multiplier));
-                        }
+                        ((ArrowPerkAdjustable)arrow).applyArrowPerks(perks);
                     }
                 }
             }
