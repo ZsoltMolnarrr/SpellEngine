@@ -153,7 +153,7 @@ public class SpellHelper {
         }
         // Allow clients to specify their haste without validation
         // var details = SpellHelper.getCastTimeDetails(player, spell);
-        var process = new SpellCast.Process(spellId, spell, itemStack, speed, length, player.getWorld().getTime());
+        var process = new SpellCast.Process(spellId, spell, itemStack.getItem(), speed, length, player.getWorld().getTime());
         SpellCastSyncHelper.setCasting(player, process);
         SoundHelper.playSound(player.getWorld(), player, spell.cast.start_sound);
     }

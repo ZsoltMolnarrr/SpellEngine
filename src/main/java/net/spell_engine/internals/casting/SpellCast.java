@@ -40,7 +40,7 @@ public class SpellCast {
     }
 
     public record Duration(float speed, int length) { }
-    public record Process(Identifier id, Spell spell, ItemStack itemStack, float speed, int length, long startedAt) {
+    public record Process(Identifier id, Spell spell, Item item, float speed, int length, long startedAt) {
         public int spellCastTicksSoFar(long worldTime) {
             // At least zero
             // The difference must fit into an integer

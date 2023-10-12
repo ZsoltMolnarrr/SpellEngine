@@ -1,6 +1,12 @@
 # 0.12.0
 
+- Fix dropping item not cancelling spell casting
+
+API Additions:
 - Add spell impact specific schools definition
+- Add new spell area effect cloud release action
+
+API Breaking changes:
 - Add area effect capability to any spell impact (moved from SpellProjectile) 
 
 # 0.11.0

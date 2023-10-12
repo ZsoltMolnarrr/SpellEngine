@@ -112,13 +112,13 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             var instant = spell.cast.duration <= 0;
             if (instant) {
                 // Release instant spell
-                var process = new SpellCast.Process(spellId, spell, itemStack, 1, 0, caster.getWorld().getTime());
+                var process = new SpellCast.Process(spellId, spell, itemStack.getItem(), 1, 0, caster.getWorld().getTime());
                 this.setSpellCastProcess(process, false);
                 this.updateSpellCast();
             } else {
                 // Start casting
                 var details = SpellHelper.getCastTimeDetails(caster, spell);
-                setSpellCastProcess(new SpellCast.Process(spellId, spell, itemStack, details.speed(), details.length(), caster.getWorld().getTime()), true);
+                setSpellCastProcess(new SpellCast.Process(spellId, spell, itemStack.getItem(), details.speed(), details.length(), caster.getWorld().getTime()), true);
             }
         }
         return attempt;
@@ -156,7 +156,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         if (process != null) {
             var player = player();
             if (!player().isAlive()
-                    || !ItemStack.areItemsEqual(player.getMainHandStack(), process.itemStack())
+                    || player.getMainHandStack().getItem() != process.item()
                     || getCooldownManager().isCoolingDown(process.id())
                     || EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.CAST_SPELL, true)
             ) {
@@ -211,7 +211,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                     i += 1;
                 }
             }
-            case SELF -> {
+            case SELF, SHOOT_ARROW -> {
             }
         }
         ClientPlayNetworking.send(
@@ -254,7 +254,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         var caster = player();
         var previousTargets = this.targets;
         List<Entity> targets = List.of();
-        if (currentSpell == null) {
+        if (currentSpell == null || currentSpell.impact == null) {
             return targets;
         }
         boolean fallbackToPreviousTargets = false;
@@ -288,7 +288,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                     targets = List.of();
                 }
             }
-            case SELF, CLOUD -> {
+            case SELF, CLOUD, SHOOT_ARROW -> {
                 // Nothing to do
             }
         }
