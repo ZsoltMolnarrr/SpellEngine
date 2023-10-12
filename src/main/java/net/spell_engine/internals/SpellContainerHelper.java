@@ -48,13 +48,14 @@ public class SpellContainerHelper {
             var spellBookStack = ((Inventory)spellBookSlot).getStack(0);
             if (!spellBookStack.isEmpty()) {
                 var spellBookContainer = containerFromItemStack(spellBookStack);
-                if (spellBookContainer != null) {
+                if (spellBookContainer != null
+                        && spellBookContainer.content == proxyContainer.content) {
                     var mergedSpellIds = Stream.of(proxyContainer.spell_ids, spellBookContainer.spell_ids)
                             .flatMap(Collection::stream)
                             .distinct()
                             .toList();
 
-                    return new SpellContainer(false, null, 0, mergedSpellIds);
+                    return new SpellContainer(spellBookContainer.content, false, null, 0, mergedSpellIds);
                 }
             }
         }
@@ -153,8 +154,8 @@ public class SpellContainerHelper {
     }
 
     // MARK: NBT Codec
-
     public static final String NBT_KEY_CONTAINER = "spell_container";
+    public static final String NBT_KEY_CONTENT_TYPE = "spell_container";
     private static final String NBT_KEY_PROXY = "is_proxy";
     private static final String NBT_KEY_POOL = "pool";
     private static final String NBT_KEY_MAX_SPELL_COUNT = "max_spell_count";
@@ -177,6 +178,9 @@ public class SpellContainerHelper {
                 spellList.add(element);
             }
             object.put(NBT_KEY_SPELL_IDS, spellList);
+        }
+        if (container.content != SpellContainer.ContentType.SPELL) {
+            object.putString(NBT_KEY_CONTENT_TYPE, container.content.toString());
         }
         return object;
     }
@@ -206,8 +210,13 @@ public class SpellContainerHelper {
                     spellIds.add(spellList.getString(i));
                 }
             }
+            SpellContainer.ContentType contentType = null;
+            if (nbtContainer.contains(NBT_KEY_CONTENT_TYPE)) {
+                var contentTypeString = nbtContainer.getString(NBT_KEY_CONTENT_TYPE);
+                contentType = SpellContainer.ContentType.valueOf(contentTypeString);
+            }
             // System.out.println("Returning NBT parsed container" + new SpellContainer(is_proxy, pool, max_spell_count, spellIds));
-            return new SpellContainer(is_proxy, pool, max_spell_count, spellIds);
+            return new SpellContainer(contentType, is_proxy, pool, max_spell_count, spellIds);
         } catch (Exception e) {
             System.err.println("Failed to decode spell container from NBT: " + e.getMessage());
         }

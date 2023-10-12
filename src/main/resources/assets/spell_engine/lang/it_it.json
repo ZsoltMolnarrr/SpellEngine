@@ -7,10 +7,10 @@
   "tutorial.spell_hotbar.description": "Premere %1$s",
   "tutorial.spell_hotbar.unbound": "Associare una chiave!",
 
-  "spell.tooltip.host.proxy": "Lancia incantesimi dal libro degli incantesimi equipaggiato",
+  "spell.tooltip.host.proxy.spell": "Lancia incantesimi dal libro degli incantesimi equipaggiato",
   "spell.tooltip.host.additional": "Incantesimi aggiuntivi:",
   "spell.tooltip.host.pre_loaded": "Lancia l'incantesimo dopo l'uso",
-  "spell.tooltip.host.bindable": "Schiera di incantesimi",
+  "spell.tooltip.host.list.spell": "Schiera di incantesimi",
   "spell.tooltip.host.limit": "({corrente}/{max})",
   "spell.tooltip.cast_instant": "Lancio immediato",
   "spell.tooltip.cast_time": "Tempo di lancio: {durata} secondi",

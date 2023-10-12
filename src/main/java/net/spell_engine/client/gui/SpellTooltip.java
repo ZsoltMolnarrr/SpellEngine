@@ -44,8 +44,16 @@ public class SpellTooltip {
             var container = stack.getSpellContainer();
             if(container != null && container.isValid()) {
                 if (container.is_proxy) {
-                    lines.add(Text.translatable("spell.tooltip.host.proxy")
-                            .formatted(Formatting.GRAY));
+                    switch (container.content) {
+                        case SPELL -> {
+                            lines.add(Text.translatable("spell.tooltip.host.proxy.spell")
+                                    .formatted(Formatting.GRAY));
+                        }
+                        case ARROW -> {
+                            lines.add(Text.translatable("spell.tooltip.host.proxy.arrow")
+                                    .formatted(Formatting.GRAY));
+                        }
+                    }
                 }
 
                 if (container.spell_ids.size() > 0 || container.pool != null) {
@@ -59,7 +67,17 @@ public class SpellTooltip {
                                     .replace("{current}", "" + container.spell_ids.size())
                                     .replace("{max}", "" + container.max_spell_count);
                         }
-                        lines.add(Text.translatable("spell.tooltip.host.bindable")
+
+                        var key = "spell.tooltip.host.list.spell";
+                        switch (container.content) {
+                            case SPELL -> {
+                                key = "spell.tooltip.host.list.spell";
+                            }
+                            case ARROW -> {
+                                key = "spell.tooltip.host.list.arrow";
+                            }
+                        }
+                        lines.add(Text.translatable(key)
                                 .append(Text.literal(" " + limit))
                                 .formatted(Formatting.GRAY));
                     }
@@ -111,62 +129,65 @@ public class SpellTooltip {
         }
 
         var description = I18n.translate(spellKeyPrefix(spellId) + ".description");
-        var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);
 
-        Spell.ProjectileData projectile = null;
-        if (spell.release.target.projectile != null) {
-            projectile = spell.release.target.projectile.projectile;
-        }
-        if (spell.release.target.meteor != null) {
-            projectile = spell.release.target.meteor.projectile;
-        }
-
-        if (projectile != null) {
-            if (projectile.perks.ricochet > 0) {
-                description = description.replace("{ricochet}", formattedNumber(projectile.perks.ricochet));
+        if (spell.release != null) {
+            Spell.ProjectileData projectile = null;
+            if (spell.release.target.projectile != null) {
+                projectile = spell.release.target.projectile.projectile;
             }
-            if (projectile.perks.bounce > 0) {
-                description = description.replace("{bounce}", formattedNumber(projectile.perks.bounce));
+            if (spell.release.target.meteor != null) {
+                projectile = spell.release.target.meteor.projectile;
             }
-            if (projectile.perks.pierce > 0) {
-                description = description.replace("{pierce}", formattedNumber(projectile.perks.pierce));
-            }
-            if (projectile.perks.chain_reaction_size > 0) {
-                description = description.replace("{chain_reaction_size}", formattedNumber(projectile.perks.chain_reaction_size));
-            }
-        }
-
-        Spell.LaunchProperties launchProperties = null;
-        if (spell.release.target.projectile != null) {
-            launchProperties = spell.release.target.projectile.launch_properties;
-        }
-        if (spell.release.target.meteor != null) {
-            launchProperties = spell.release.target.meteor.launch_properties;
-        }
-        if (launchProperties != null) {
-            var extra_launch_count = launchProperties.extra_launch_count;
-            if (extra_launch_count > 0) {
-                description = description.replace("{extra_launch}", formattedNumber(extra_launch_count));
-            }
-        }
-
-        for (var impact: spell.impact) {
-            switch (impact.action.type) {
-                case DAMAGE -> {
-                    description = replaceTokens(description, damageToken, estimatedOutput.damage());
+            if (projectile != null) {
+                if (projectile.perks.ricochet > 0) {
+                    description = description.replace("{ricochet}", formattedNumber(projectile.perks.ricochet));
                 }
-                case HEAL -> {
-                    description = replaceTokens(description, healToken, estimatedOutput.heal());
+                if (projectile.perks.bounce > 0) {
+                    description = description.replace("{bounce}", formattedNumber(projectile.perks.bounce));
                 }
-                case STATUS_EFFECT -> {
-                    var statusEffect = impact.action.status_effect;
-                    description = description.replace(effectAmplifierToken, "" + (statusEffect.amplifier + 1));
-                    description = description.replace(effectDurationToken, formattedNumber(statusEffect.duration));
+                if (projectile.perks.pierce > 0) {
+                    description = description.replace("{pierce}", formattedNumber(projectile.perks.pierce));
+                }
+                if (projectile.perks.chain_reaction_size > 0) {
+                    description = description.replace("{chain_reaction_size}", formattedNumber(projectile.perks.chain_reaction_size));
                 }
             }
-            var area_impact = impact.area_impact;
-            if (area_impact != null) {
-                description = description.replace(impactRangeToken, formattedNumber(area_impact.radius));
+
+            Spell.LaunchProperties launchProperties = null;
+            if (spell.release.target.projectile != null) {
+                launchProperties = spell.release.target.projectile.launch_properties;
+            }
+            if (spell.release.target.meteor != null) {
+                launchProperties = spell.release.target.meteor.launch_properties;
+            }
+            if (launchProperties != null) {
+                var extra_launch_count = launchProperties.extra_launch_count;
+                if (extra_launch_count > 0) {
+                    description = description.replace("{extra_launch}", formattedNumber(extra_launch_count));
+                }
+            }
+        }
+
+        if (spell.impact != null) {
+            var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);
+            for (var impact : spell.impact) {
+                switch (impact.action.type) {
+                    case DAMAGE -> {
+                        description = replaceTokens(description, damageToken, estimatedOutput.damage());
+                    }
+                    case HEAL -> {
+                        description = replaceTokens(description, healToken, estimatedOutput.heal());
+                    }
+                    case STATUS_EFFECT -> {
+                        var statusEffect = impact.action.status_effect;
+                        description = description.replace(effectAmplifierToken, "" + (statusEffect.amplifier + 1));
+                        description = description.replace(effectDurationToken, formattedNumber(statusEffect.duration));
+                    }
+                }
+                var area_impact = impact.area_impact;
+                if (area_impact != null) {
+                    description = description.replace(impactRangeToken, formattedNumber(area_impact.radius));
+                }
             }
         }
         lines.add(Text.literal(" ")
