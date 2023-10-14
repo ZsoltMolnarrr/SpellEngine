@@ -7,8 +7,10 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
+import net.minecraft.item.Items;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.animation.AnimationRegistry;
+import net.spell_engine.client.render.ModelPredicateHelper;
 import net.spell_engine.client.render.SpellBindingBlockEntityRenderer;
 import net.spell_engine.config.ClientConfig;
 import net.spell_engine.config.ClientConfigWrapper;
@@ -43,5 +45,11 @@ public class SpellEngineClient {
 
         HandledScreens.register(SpellBindingScreenHandler.HANDLER_TYPE, SpellBindingScreen::new);
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
+    }
+
+    private static void injectVanillaModelPredicates() {
+        // Override vanilla model predicates to inject spell casting progress
+        ModelPredicateHelper.injectBowSkillUsePredicate(Items.BOW);
+        ModelPredicateHelper.injectCrossBowSkillUsePredicate(Items.CROSSBOW);
     }
 }

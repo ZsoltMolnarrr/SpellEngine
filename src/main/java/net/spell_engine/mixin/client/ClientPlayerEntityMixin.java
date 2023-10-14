@@ -97,7 +97,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         var spell = SpellRegistry.getSpell(spellId);
         if ((spellCastProcess != null && spellCastProcess.id().equals(spellId))
                 || spell == null
-                || spell.mode == Spell.Mode.BYPASS_TO_ITEM_USE) {
+                || spell.mode == Spell.Mode.ITEM_USE) {
             return SpellCast.Attempt.none();
         }
         if (EntityActionsAllowed.isImpaired(caster, EntityActionsAllowed.Player.CAST_SPELL, true)) {

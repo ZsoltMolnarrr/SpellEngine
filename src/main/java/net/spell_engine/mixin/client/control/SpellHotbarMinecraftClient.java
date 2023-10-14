@@ -55,7 +55,7 @@ public abstract class SpellHotbarMinecraftClient {
         }
         if (handled != null) {
             spellHotbarHandle = handled.category();
-//            if (handled.spell().spell().mode == Spell.Mode.BYPASS_TO_ITEM_USE
+//            if (handled.spell().spell().mode == Spell.Mode.ITEM_USE
 //                    && !handled.keyBinding().equals(options.useKey)  ) {
 //                doItemUse();
 //            }

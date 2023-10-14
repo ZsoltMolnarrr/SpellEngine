@@ -78,7 +78,7 @@ public class SpellHotbar {
                             keyBinding = allBindings.get(i);
                         }
                     }
-                    case BYPASS_TO_ITEM_USE -> {
+                    case ITEM_USE -> {
                         // Dead (unbound, unregistered) keybinding is given,
                         // so it is forced to fall back to vanilla keybinding
                         keyBinding = new WrappedKeybinding(deadKey, WrappedKeybinding.VanillaAlternative.USE_KEY);
@@ -123,7 +123,7 @@ public class SpellHotbar {
 
     public boolean lastHandledWasItemBypass() {
         return handledPreviousTick != null
-                && handledPreviousTick.spell().spell().mode == Spell.Mode.BYPASS_TO_ITEM_USE;
+                && handledPreviousTick.spell().spell().mode == Spell.Mode.ITEM_USE;
     }
 
     @Nullable public Handle handle(ClientPlayerEntity player, GameOptions options) {
@@ -219,7 +219,7 @@ public class SpellHotbar {
         Identifier idToSync = null;
         if (player.isUsingItem()
                 && handledThisTick != null
-                && handledThisTick.spell().spell().mode == Spell.Mode.BYPASS_TO_ITEM_USE) {
+                && handledThisTick.spell().spell().mode == Spell.Mode.ITEM_USE) {
             idToSync = handledThisTick.spell().id();
         }
         if (!Objects.equals(idToSync, lastSyncedSpellId)) {

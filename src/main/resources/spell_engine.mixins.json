@@ -37,6 +37,7 @@
     "client.render.ItemRendererAccessor",
     "client.render.LivingEntityRendererMixin",
     "client.render.MinecraftClientMixin",
+    "client.render.ModelPredicateProviderRegistryAccessor",
     "client.render.TexturedRenderLayersMixin"
   ],
   "plugin": "net.spell_engine.mixin.SpellEngineMixinPlugin",

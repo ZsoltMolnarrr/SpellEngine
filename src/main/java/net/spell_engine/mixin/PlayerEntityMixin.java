@@ -1,10 +1,10 @@
 package net.spell_engine.mixin;
 
+import com.google.gson.Gson;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.*;
@@ -20,49 +20,30 @@ import static net.spell_engine.api.spell.Spell.Release.Target.Type.BEAM;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin implements SpellCasterEntity {
+
     private PlayerEntity player() {
         return (PlayerEntity) ((Object) this);
     }
 
     private final SpellCooldownManager spellCooldownManager = new SpellCooldownManager(player());
-    private static final TrackedData<Integer> SPELL_ENGINE_SELECTED_SPELL = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Float> SPELL_ENGINE_CASTING_SPEED = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.FLOAT);
+
+    private static final TrackedData<String> SPELL_ENGINE_SPELL_PROGRESS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.STRING);
+    private static final Gson syncGson = new Gson();
 
     @Inject(method = "initDataTracker", at = @At("TAIL"))
     private void initDataTracker_TAIL_SpellEngine_SyncEffects(CallbackInfo ci) {
-        player().getDataTracker().startTracking(SPELL_ENGINE_SELECTED_SPELL, 0);
-        player().getDataTracker().startTracking(SPELL_ENGINE_CASTING_SPEED, 1F);
+        player().getDataTracker().startTracking(SPELL_ENGINE_SPELL_PROGRESS, "");
     }
 
-    private SpellCast.Process serverSide_SpellCastProcess = null;
+    private SpellCast.Process synchronizedSpellCastProcess = null;
     public void setSpellCastProcess(@Nullable SpellCast.Process process) {
-        serverSide_SpellCastProcess = process;
-        int rawSpellId = 0;
-        float speed = 1F;
-        if (process != null) {
-            if (process.id() != null) {
-                rawSpellId = SpellRegistry.rawSpellId(process.id());
-            }
-            speed = process.speed();
-        }
-        player().getDataTracker().set(SPELL_ENGINE_SELECTED_SPELL, rawSpellId);
-        player().getDataTracker().set(SPELL_ENGINE_CASTING_SPEED, speed);
+        synchronizedSpellCastProcess = process;
+        var json = process != null ? process.fastSyncJSON() : "";
+        player().getDataTracker().set(SPELL_ENGINE_SPELL_PROGRESS, json);
     }
 
     @Nullable public SpellCast.Process getSpellCastProcess() {
-        return serverSide_SpellCastProcess;
-    }
-
-    private Identifier getCurrentSpellId() {
-        var process = getSpellCastProcess();
-        if (process != null) {
-            return process.id();
-        }
-        var rawValue = player().getDataTracker().get(SPELL_ENGINE_SELECTED_SPELL);
-        if (rawValue != 0) {
-            return SpellRegistry.fromRawSpellId(rawValue).orElse(null);
-        }
-        return null;
+        return synchronizedSpellCastProcess;
     }
 
     @Override
@@ -70,10 +51,6 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         var process = getSpellCastProcess();
         if (process != null) {
             return process.spell();
-        }
-        var id = getCurrentSpellId();
-        if (id != null) {
-            return SpellRegistry.getSpell(id);
         }
         return null;
     }
@@ -84,7 +61,7 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         if (process != null) {
             return process.speed();
         }
-        return player().getDataTracker().get(SPELL_ENGINE_CASTING_SPEED);
+        return 1F; // Fallback value
     }
 
     @Override
@@ -92,16 +69,31 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         return spellCooldownManager;
     }
 
+    private String lastHandledSyncData = "";
+
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL_SpellEngine(CallbackInfo ci) {
         var player = player();
         if (player.getWorld().isClient) {
             ((AnimatablePlayer)player()).updateSpellCastAnimationsOnTick();
+
+            // Check changes in tracked data
+            var progressString = player.getDataTracker().get(SPELL_ENGINE_SPELL_PROGRESS);
+            if (!progressString.equals(lastHandledSyncData)) {
+                if (progressString.isEmpty()) {
+                    this.synchronizedSpellCastProcess = null;
+                } else {
+                    var syncFormat = syncGson.fromJson(progressString, SpellCast.Process.SyncFormat.class);
+                    this.synchronizedSpellCastProcess = SpellCast.Process.fromSync(syncFormat, player.getMainHandStack().getItem(), player.getWorld().getTime());
+                }
+                lastHandledSyncData = progressString;
+            }
+
         } else {
             // Server side
-            if (serverSide_SpellCastProcess != null) {
-                var castTicks = serverSide_SpellCastProcess.spellCastTicksSoFar(player.getWorld().getTime());
-                if (castTicks >= (serverSide_SpellCastProcess.length() * 1.5)) {
+            if (synchronizedSpellCastProcess != null) {
+                var castTicks = synchronizedSpellCastProcess.spellCastTicksSoFar(player.getWorld().getTime());
+                if (castTicks >= (synchronizedSpellCastProcess.length() * 1.5)) {
                     SpellCastSyncHelper.clearCasting(player);
                 }
             }
