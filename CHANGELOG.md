@@ -7,7 +7,8 @@ API Additions:
 - Add spell impact specific schools definition
 - Add new spell area effect cloud release action
 - Add `content` field to Spell Container to indicate the type of supported spells (Spell vs Archery skill)
-- Add `mode` field for spells, to allow using items instead of casting spells  
+- Add `mode` field for spells, to allow using items instead of casting spells
+- Add `casting_animates_ranged_weapon` for spells, to animate held bow pull state based on spell cast progress
 
 API Breaking changes:
 - Add area effect capability to any spell impact (moved from SpellProjectile)
