@@ -1,7 +1,6 @@
 package net.spell_engine.utils;
 
-import net.minecraft.item.BowItem;
-import net.minecraft.item.CrossbowItem;
+import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.item.SwordItem;
 import net.minecraft.registry.Registries;
 import net.spell_engine.SpellEngineMod;
@@ -27,7 +26,7 @@ public class WeaponCompatibility {
             var contentType = SpellContainer.ContentType.SPELL;
             if (config.add_spell_casting_to_swords && item instanceof SwordItem) {
                 addProxy = true;
-            } else if (item instanceof BowItem || item instanceof CrossbowItem) {
+            } else if (item instanceof RangedWeaponItem) {
                 contentType = SpellContainer.ContentType.ARROW;
                 addProxy = true;
             } else if (matches(itemIdString, config.add_spell_casting_regex)) {
