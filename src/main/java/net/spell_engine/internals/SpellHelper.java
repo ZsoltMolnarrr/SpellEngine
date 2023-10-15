@@ -253,7 +253,7 @@ public class SpellHelper {
                             released = true;
                         }
                         case SHOOT_ARROW -> {
-                            ArrowHelper.shootArrow(world, player, spell);
+                            ArrowHelper.shootArrow(world, player, spellInfo, context);
                             released = true;
                         }
                     }

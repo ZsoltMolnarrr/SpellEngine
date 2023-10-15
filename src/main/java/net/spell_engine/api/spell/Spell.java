@@ -16,7 +16,7 @@ public class Spell {
         public int level_requirement_per_tier = 10;
     }
 
-    public enum Mode { CAST, ITEM_USE}
+    public enum Mode { CAST, ITEM_USE }
     public Mode mode = Mode.CAST;
 
     public Cast cast = new Cast();
@@ -211,6 +211,7 @@ public class Spell {
         }
         public LaunchProperties copy() {
             LaunchProperties copy = new LaunchProperties();
+            copy.velocity = this.velocity;
             copy.extra_launch_count = this.extra_launch_count;
             copy.extra_launch_delay = this.extra_launch_delay;
             return copy;
