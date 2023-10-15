@@ -5,9 +5,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.fabricmc.fabric.api.util.TriState;
-import net.minecraft.entity.AreaEffectCloudEntity;
 import net.minecraft.entity.EntityDimensions;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -15,7 +13,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.RemoveOnHit;
 import net.spell_engine.api.item.trinket.SpellBookItem;
-import net.spell_engine.entity.SpellAreaEffect;
+import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.utils.SoundHelper;
 
@@ -31,10 +29,10 @@ public class FabricMod implements ModInitializer {
                         .trackedUpdateRate(2)
                         .build()
         );
-        SpellAreaEffect.ENTITY_TYPE = Registry.register(
+        SpellCloud.ENTITY_TYPE = Registry.register(
                 Registries.ENTITY_TYPE,
                 new Identifier(SpellEngineMod.ID, "spell_area_effect"),
-                FabricEntityTypeBuilder.<SpellAreaEffect>create(SpawnGroup.MISC, SpellAreaEffect::new)
+                FabricEntityTypeBuilder.<SpellCloud>create(SpawnGroup.MISC, SpellCloud::new)
                         .dimensions(EntityDimensions.changing(6F, 0.5F)) // dimensions in Minecraft units of the render
                         .fireImmune()
                         .trackRangeBlocks(128)

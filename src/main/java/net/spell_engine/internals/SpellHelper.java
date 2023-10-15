@@ -22,7 +22,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellEvents;
 import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.entity.ConfigurableKnockback;
-import net.spell_engine.entity.SpellAreaEffect;
+import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.arrow.ArrowHelper;
 import net.spell_engine.internals.casting.SpellCast;
@@ -438,7 +438,7 @@ public class SpellHelper {
         var spell = spellInfo.spell();
         var cloud = spell.release.target.cloud;
         // var center = context.position();
-        var entity = new SpellAreaEffect(world, caster, context, spellInfo);
+        var entity = new SpellCloud(world, caster, context, spellInfo);
         entity.setPosition(caster.getPos());
         world.spawnEntity(entity);
     }

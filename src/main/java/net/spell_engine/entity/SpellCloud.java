@@ -17,8 +17,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-public class SpellAreaEffect extends Entity implements Ownable {
-    public static EntityType<SpellAreaEffect> ENTITY_TYPE;
+public class SpellCloud extends Entity implements Ownable {
+    public static EntityType<SpellCloud> ENTITY_TYPE;
     @Nullable
     private LivingEntity owner;
     @Nullable
@@ -27,17 +27,17 @@ public class SpellAreaEffect extends Entity implements Ownable {
     private Identifier spellId;
     private SpellHelper.ImpactContext context;
 
-    public SpellAreaEffect(EntityType<? extends SpellAreaEffect> entityType, World world) {
+    public SpellCloud(EntityType<? extends SpellCloud> entityType, World world) {
         super(entityType, world);
     }
 
-    protected SpellAreaEffect(World world, LivingEntity owner) {
+    protected SpellCloud(World world, LivingEntity owner) {
         super(ENTITY_TYPE, world);
         this.setOwner(owner);
         this.noClip = true;
     }
 
-    public SpellAreaEffect(World world, LivingEntity owner, SpellHelper.ImpactContext context, SpellInfo spellInfo) {
+    public SpellCloud(World world, LivingEntity owner, SpellHelper.ImpactContext context, SpellInfo spellInfo) {
         this(world, owner);
         this.spellId = spellInfo.id();
         this.context = context;
@@ -50,8 +50,8 @@ public class SpellAreaEffect extends Entity implements Ownable {
         var spell = getSpell();
         if (spell != null) {
             var cloudData = spell.release.target.cloud;
-            var radius = cloudData.area_impact.radius;
-            var heightMultiplier = cloudData.area_impact.area.vertical_range_multiplier;
+            var radius = cloudData.volume.radius;
+            var heightMultiplier = cloudData.volume.area.vertical_range_multiplier;
             return EntityDimensions.changing(radius * 2, radius * heightMultiplier);
         } else {
             return super.getDimensions(pose);
@@ -79,7 +79,7 @@ public class SpellAreaEffect extends Entity implements Ownable {
 
     // MARK: Sync
 
-    private static final TrackedData<String> SPELL_ID_TRACKER  = DataTracker.registerData(SpellAreaEffect.class, TrackedDataHandlerRegistry.STRING);
+    private static final TrackedData<String> SPELL_ID_TRACKER  = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.STRING);
 
     @Override
     protected void initDataTracker() {
@@ -151,7 +151,7 @@ public class SpellAreaEffect extends Entity implements Ownable {
             }
             if ((this.age % cloudData.impact_tick_interval) == 0) {
                 // Impact tick due
-                var area_impact = cloudData.area_impact;
+                var area_impact = cloudData.volume;
                 var owner = (LivingEntity) this.getOwner();
                 if (area_impact != null && owner != null) {
                     var context = this.context;

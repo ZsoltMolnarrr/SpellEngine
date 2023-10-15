@@ -1,6 +1,7 @@
 # 0.12.0
 
 Functional changes:
+- Update Spell Book slot icon
 - Fix dropping item not cancelling spell casting
 
 API Additions:

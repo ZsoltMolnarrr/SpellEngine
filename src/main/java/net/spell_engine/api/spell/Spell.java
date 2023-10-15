@@ -70,13 +70,11 @@ public class Spell {
             public static class Cloud { public Cloud() { }
                 public enum Shape { CIRCLE, SQUARE }
                 public Shape shape = Shape.CIRCLE;
-                public AreaImpact area_impact = new AreaImpact();
+                public AreaImpact volume = new AreaImpact();
                 public float time_to_live_seconds = 0;
 
                 /// The number of ticks between looking for targets and trying to apply impact
                 public int impact_tick_interval = 5;
-                /// The number of ticks between each impact application for a single entity
-                public int impact_debounce = 20;
 
                 public ClientData client_data = new ClientData();
                 public static class ClientData {
