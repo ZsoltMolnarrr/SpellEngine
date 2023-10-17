@@ -16,6 +16,9 @@ API Breaking changes:
 - Add area effect capability to any spell impact (moved from SpellProjectile)
 - Rework the data part of `PROJECTILE` and `METEOR` release types 
 
+Other changes:
+- Update MixinExtras to 0.2.0
+
 # 0.11.0
 
 - Add mouse scrolling to spell binding table GUI
