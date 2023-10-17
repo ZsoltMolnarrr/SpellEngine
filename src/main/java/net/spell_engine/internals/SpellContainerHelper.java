@@ -179,7 +179,7 @@ public class SpellContainerHelper {
             }
             object.put(NBT_KEY_SPELL_IDS, spellList);
         }
-        if (container.content != SpellContainer.ContentType.SPELL) {
+        if (container.content != SpellContainer.ContentType.MAGIC) {
             object.putString(NBT_KEY_CONTENT_TYPE, container.content.toString());
         }
         return object;

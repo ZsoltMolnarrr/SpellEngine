@@ -16,7 +16,6 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
-import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.SpellCasterItemStack;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
@@ -45,11 +44,11 @@ public class SpellTooltip {
             if(container != null && container.isValid()) {
                 if (container.is_proxy) {
                     switch (container.content) {
-                        case SPELL -> {
+                        case MAGIC -> {
                             lines.add(Text.translatable("spell.tooltip.host.proxy.spell")
                                     .formatted(Formatting.GRAY));
                         }
-                        case ARROW -> {
+                        case ARCHERY -> {
                             lines.add(Text.translatable("spell.tooltip.host.proxy.arrow")
                                     .formatted(Formatting.GRAY));
                         }
@@ -70,10 +69,10 @@ public class SpellTooltip {
 
                         var key = "spell.tooltip.host.list.spell";
                         switch (container.content) {
-                            case SPELL -> {
+                            case MAGIC -> {
                                 key = "spell.tooltip.host.list.spell";
                             }
-                            case ARROW -> {
+                            case ARCHERY -> {
                                 key = "spell.tooltip.host.list.arrow";
                             }
                         }

@@ -61,7 +61,8 @@ dependencies {
 
     modImplementation("dev.emi:trinkets:${project.trinkets_version}")
     modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-fabric")
-//    modImplementation(files("../fabric/run/mods/dev/spell_power-fabric-${project.spell_power_version}.jar"))
+//    modImplementation(files("run/mods/dev/spell_power-fabric-${project.spell_power_version}.jar"))
+    modImplementation("maven.modrinth:projectile-damage-attribute:${project.projectile_version}-fabric")
 
     // Compatibility
     modImplementation("com.terraformersmc:modmenu:${project.mod_menu_version}")

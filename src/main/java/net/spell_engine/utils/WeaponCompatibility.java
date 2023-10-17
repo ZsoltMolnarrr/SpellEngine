@@ -14,8 +14,8 @@ import java.util.regex.Pattern;
 public class WeaponCompatibility {
     public static void initialize() {
         var config = SpellEngineMod.config;
-        var spellProxyContainer = new SpellContainer(SpellContainer.ContentType.SPELL, true, null, 0, List.of());
-        var arrowProxyContainer = new SpellContainer(SpellContainer.ContentType.ARROW, true, null, 0, List.of());
+        var spellProxyContainer = new SpellContainer(SpellContainer.ContentType.MAGIC, true, null, 0, List.of());
+        var arrowProxyContainer = new SpellContainer(SpellContainer.ContentType.ARCHERY, true, null, 0, List.of());
         for(var itemId: Registries.ITEM.getIds()) {
             var itemIdString = itemId.toString();
             if (matches(itemIdString, config.blacklist_spell_casting_regex)) {
@@ -23,21 +23,21 @@ public class WeaponCompatibility {
             }
             var item = Registries.ITEM.get(itemId);
             boolean addProxy = false;
-            var contentType = SpellContainer.ContentType.SPELL;
+            var contentType = SpellContainer.ContentType.MAGIC;
             if (config.add_spell_casting_to_swords && item instanceof SwordItem) {
                 addProxy = true;
             } else if (item instanceof RangedWeaponItem) {
-                contentType = SpellContainer.ContentType.ARROW;
+                contentType = SpellContainer.ContentType.ARCHERY;
                 addProxy = true;
             } else if (matches(itemIdString, config.add_spell_casting_regex)) {
                 addProxy = true;
             }
             if (addProxy) {
                 switch (contentType) {
-                    case SPELL -> {
+                    case MAGIC -> {
                         SpellRegistry.containers.putIfAbsent(itemId, spellProxyContainer);
                     }
-                    case ARROW -> {
+                    case ARCHERY -> {
                         SpellRegistry.containers.putIfAbsent(itemId, arrowProxyContainer);
                     }
                 }

@@ -7,19 +7,20 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.util.Identifier;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
+import net.spell_engine.api.item.trinket.SpellBooks;
 import net.spell_engine.api.item.weapon.StaffItem;
+import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.config.EnchantmentsConfig;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
-import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.SpellContainerHelper;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.internals.criteria.EnchantmentSpecificCriteria;
@@ -72,7 +73,10 @@ public class SpellEngineMod {
             return empty;
         });
 
-        SpellPowerEnchanting.allowForWeapon(SpellContainerHelper::hasValidContainer);
+        SpellPowerEnchanting.allowForWeapon(itemStack -> {
+            var container = SpellContainerHelper.containerFromItemStack(itemStack);
+            return container != null && container.isValid() && container.content != SpellContainer.ContentType.ARCHERY;
+        });
 
         // Sync attack power to client so physical attack damage spells can be estimated.
         // Probably several other mods perform this operation, but its no problem.

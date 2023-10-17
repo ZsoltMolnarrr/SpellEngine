@@ -29,7 +29,7 @@ public class SpellBooks {
     }
 
     public static SpellBookItem create(Identifier poolId) {
-        return create(poolId, SpellContainer.ContentType.SPELL);
+        return create(poolId, SpellContainer.ContentType.MAGIC);
     }
 
     public static SpellBookItem create(Identifier poolId, SpellContainer.ContentType contentType) {
@@ -49,7 +49,7 @@ public class SpellBooks {
     }
 
     public static void createAndRegister(Identifier poolId, RegistryKey<ItemGroup> itemGroupKey) {
-        createAndRegister(poolId, SpellContainer.ContentType.SPELL, itemGroupKey);
+        createAndRegister(poolId, SpellContainer.ContentType.MAGIC, itemGroupKey);
     }
 
     public static void createAndRegister(Identifier poolId, SpellContainer.ContentType contentType, RegistryKey<ItemGroup> itemGroupKey) {

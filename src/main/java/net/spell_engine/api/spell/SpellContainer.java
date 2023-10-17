@@ -7,9 +7,9 @@ import java.util.List;
 
 public class SpellContainer { public SpellContainer() { }
     public enum ContentType {
-        SPELL, ARROW
+        MAGIC, ARCHERY
     }
-    public ContentType content = ContentType.SPELL;
+    public ContentType content = ContentType.MAGIC;
     public boolean is_proxy = false;
     public int max_spell_count = 0;
     public String pool;
