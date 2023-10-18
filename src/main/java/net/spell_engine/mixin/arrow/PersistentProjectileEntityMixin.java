@@ -1,6 +1,11 @@
 package net.spell_engine.mixin.arrow;
 
+import com.llamalad7.mixinextras.injector.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -8,6 +13,7 @@ import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.math.Vec3d;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.internals.SpellHelper;
@@ -131,35 +137,61 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
 
     // MARK: Apply impact effects
 
-    @Inject(method = "onEntityHit", at = @At("HEAD"))
-    public void onEntityHit_HEAD_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
-        var entity = entityHitResult.getEntity();
-        if (entity != null) {
-            if (bypassIFrames) {
-                iframeCache = entity.timeUntilRegen;
-                entity.timeUntilRegen = 0;
+    @Inject(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"), cancellable = true)
+    private void asd(EntityHitResult entityHitResult, CallbackInfo ci) {
+        var spell = spell();
+        if (spell != null) {
+            var arrowPerks = spell.arrow_perks;
+            if (arrowPerks != null) {
+                if (arrowPerks.skip_arrow_damage) {
+                    ci.cancel();
+                    arrow().discard();
+                    var entity = entityHitResult.getEntity();
+                    if (entity != null) {
+                        performImpacts(entity, entityHitResult);
+                    }
+                }
             }
         }
     }
+
+    @Inject(method = "onEntityHit", at = @At("HEAD"))
+    public void onEntityHit_HEAD_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
+        var entity = entityHitResult.getEntity();
+        if (!entity.getWorld().isClient) {
+            if (entity != null) {
+                if (bypassIFrames) {
+                    iframeCache = entity.timeUntilRegen;
+                    entity.timeUntilRegen = 0;
+                }
+            }
+        }
+    }
+
     private int iframeCache = 0;
 
     @Inject(method = "onEntityHit", at = @At("TAIL"))
     public void onEntityHit_TAIL_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
         var entity = entityHitResult.getEntity();
-        if (entity != null) {
-            if (iframeCache != 0) {
-                entity.timeUntilRegen = iframeCache;
+        if (!entity.getWorld().isClient) {
+            if (entity != null) {
+                if (iframeCache != 0) {
+                    entity.timeUntilRegen = iframeCache;
+                }
+                performImpacts(entity, entityHitResult);
             }
+        }
+    }
 
-            var spell = spell();
-            var arrow = arrow();
-            var owner = arrow.getOwner();
-            if (spell != null
-                    && spell.impact != null
-                    && owner instanceof LivingEntity shooter) {
-                SpellHelper.projectileImpact(shooter, arrow, entity, spell,
-                        new SpellHelper.ImpactContext().position(entityHitResult.getPos()));
-            }
+    private void performImpacts(Entity target, EntityHitResult entityHitResult) {
+        var spell = spell();
+        var arrow = arrow();
+        var owner = arrow.getOwner();
+        if (spell != null
+                && spell.impact != null
+                && owner instanceof LivingEntity shooter) {
+            SpellHelper.projectileImpact(shooter, arrow, target, spell,
+                    new SpellHelper.ImpactContext().position(entityHitResult.getPos()));
         }
     }
 }

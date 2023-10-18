@@ -270,6 +270,7 @@ public class Spell {
     public static class ArrowPerks { public ArrowPerks() { }
         public float velocity_multiplier = 1F;
         public boolean bypass_iframes = false;
+        public boolean skip_arrow_damage = false;
         @Nullable public ParticleBatch[] travel_particles;
         @Nullable public ProjectileData.Client override_render;
     }
