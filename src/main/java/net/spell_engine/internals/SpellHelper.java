@@ -3,6 +3,7 @@ package net.spell_engine.internals;
 import com.google.common.base.Suppliers;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -67,10 +68,16 @@ public class SpellHelper {
         boolean satisfied = true;
         ItemStack ammo = null;
         boolean ignoreAmmo = player.getAbilities().creativeMode
-                || EnchantmentHelper.getLevel(Enchantments_SpellEngine.INFINITY, itemStack) > 0
                 || !SpellEngineMod.config.spell_cost_item_allowed;
         if (!ignoreAmmo && spell.cost.item_id != null && !spell.cost.item_id.isEmpty()) {
             var id = new Identifier(spell.cost.item_id);
+            var needsArrow = id.getPath().contains("arrow");
+            var hasInfinity = needsArrow
+                    ? EnchantmentHelper.getLevel(Enchantments.INFINITY, itemStack) > 0
+                    : EnchantmentHelper.getLevel(Enchantments_SpellEngine.INFINITY, itemStack) > 0;
+            if (hasInfinity) {
+                return new AmmoResult(satisfied, ammo);
+            }
             var ammoItem = Registries.ITEM.get(id);
             if(ammoItem != null) {
                 ammo = ammoItem.getDefaultStack();

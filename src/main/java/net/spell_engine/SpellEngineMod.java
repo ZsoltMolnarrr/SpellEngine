@@ -81,8 +81,6 @@ public class SpellEngineMod {
         // Sync attack power to client so physical attack damage spells can be estimated.
         // Probably several other mods perform this operation, but its no problem.
         EntityAttributes.GENERIC_ATTACK_DAMAGE.setTracked(true);
-
-        SpellBooks.createAndRegister(new Identifier("spell_engine:test_archer"), SpellContainer.ContentType.ARCHERY, ItemGroups.COMBAT);
     }
 
     public static void registerSpellBinding() {

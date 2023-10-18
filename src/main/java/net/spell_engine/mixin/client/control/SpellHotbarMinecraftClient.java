@@ -29,7 +29,6 @@ public abstract class SpellHotbarMinecraftClient {
     @Shadow @Nullable public ClientPlayerEntity player;
     @Shadow @Final public GameOptions options;
     @Shadow private int itemUseCooldown;
-
     @Shadow public int attackCooldown;
 
     @Nullable private WrappedKeybinding.Category spellHotbarHandle = null;

@@ -56,6 +56,7 @@ public class SpellHotbar {
 
     public boolean update(ClientPlayerEntity player, GameOptions options) {
         var changed = false;
+        var initialSlotCount = slots.size();
         var held = player.getMainHandStack();
         var container = container(player, held);
 
@@ -107,7 +108,7 @@ public class SpellHotbar {
                 slots.add(slot);
             }
         }
-
+        changed = initialSlotCount != slots.size();
         this.structuredSlots = new StructuredSlots(onUseKey, otherSlots);
         this.slots = slots;
         return changed;

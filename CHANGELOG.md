@@ -42,6 +42,7 @@ Other changes:
 - Spell casting no longer stutters when quick switching between spells
 - Optimise spell projectile sync payload
 - Fix server config `player_relations` being reset on every launch
+- Spells with `arrow` item cost, now rely on vanilla Infinity enchantment
 
 # 0.9.32
 
