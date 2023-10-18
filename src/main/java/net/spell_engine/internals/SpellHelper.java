@@ -605,7 +605,7 @@ public class SpellHelper {
                     var timeUntilRegen = target.timeUntilRegen;
                     if (target instanceof LivingEntity livingEntity) {
                         ((ConfigurableKnockback) livingEntity).setKnockbackMultiplier_SpellEngine(context.hasOffset() ? 0 : knockbackMultiplier);
-                        if (SpellEngineMod.config.bypass_iframes) {
+                        if (damageData.bypass_iframes && SpellEngineMod.config.bypass_iframes) {
                             target.timeUntilRegen = 0;
                         }
                         vulnerability = SpellPower.getVulnerability(livingEntity, school);

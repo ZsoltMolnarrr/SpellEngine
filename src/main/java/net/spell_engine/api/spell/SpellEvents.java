@@ -25,7 +25,6 @@ public class SpellEvents {
 
     public static final Event<ArrowLaunch> ARROW_FIRED = new Event<ArrowLaunch>();
     public record ArrowLaunchEvent(ProjectileEntity projectile,
-                                   Spell.LaunchProperties mutableLaunchProperties,
                                    LivingEntity shooter,
                                    SpellInfo spellInfo,
                                    SpellHelper.ImpactContext context,

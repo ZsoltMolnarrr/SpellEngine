@@ -17,7 +17,6 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellEvents;
 import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.internals.SpellHelper;
@@ -39,10 +38,10 @@ public class ArrowHelper {
             var launchProperties = shoot_arrow.launch_properties.copy();
             var projectile = shoot(world, shooter, Hand.MAIN_HAND, shooter.getMainHandStack(),
                     new ItemStack(Items.ARROW), 1.0F, isCreative,
-                    launchProperties.velocity, 1.0F, 0.0F, shoot_arrow.arrow_perks);
+                    launchProperties.velocity, 1.0F, 0.0F, spellInfo);
             if (SpellEvents.ARROW_FIRED.isListened()) {
                 SpellEvents.ARROW_FIRED.invoke((listener) -> listener.onArrowLaunch(
-                        new SpellEvents.ArrowLaunchEvent(projectile, launchProperties, shooter, spellInfo, context, initial)));
+                        new SpellEvents.ArrowLaunchEvent(projectile, shooter, spellInfo, context, initial)));
             }
             var extra_launch = launchProperties.extra_launch_count;
             if (initial && extra_launch > 0) {
@@ -61,13 +60,13 @@ public class ArrowHelper {
 
     // Copied from CrossbowItem
     private static ProjectileEntity shoot(World world, LivingEntity shooter, Hand hand, ItemStack crossbow, ItemStack projectile, float soundPitch, boolean creative, float speed, float divergence, float simulated,
-                              Spell.ArrowPerks arrowPerks) {
+                                          SpellInfo spellInfo) {
         boolean bl = projectile.isOf(Items.FIREWORK_ROCKET);
         ProjectileEntity projectileEntity;
         if (bl) {
             projectileEntity = new FireworkRocketEntity(world, projectile, shooter, shooter.getX(), shooter.getEyeY() - 0.15000000596046448, shooter.getZ(), true);
         } else {
-            projectileEntity = createArrow(world, shooter, crossbow, projectile, arrowPerks);
+            projectileEntity = createArrow(world, shooter, crossbow, projectile, spellInfo);
             if (creative || simulated != 0.0F) {
                 ((PersistentProjectileEntity)projectileEntity).pickupType = PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY;
             }
@@ -92,7 +91,7 @@ public class ArrowHelper {
         return projectileEntity;
     }
 
-    private static PersistentProjectileEntity createArrow(World world, LivingEntity entity, ItemStack crossbow, ItemStack arrow, Spell.ArrowPerks arrowPerks) {
+    private static PersistentProjectileEntity createArrow(World world, LivingEntity entity, ItemStack crossbow, ItemStack arrow, SpellInfo spellInfo) {
         ArrowItem arrowItem = (ArrowItem)(arrow.getItem() instanceof ArrowItem ? arrow.getItem() : Items.ARROW);
         PersistentProjectileEntity persistentProjectileEntity = arrowItem.createArrow(world, arrow, entity);
         if (entity instanceof PlayerEntity) {
@@ -106,7 +105,7 @@ public class ArrowHelper {
             persistentProjectileEntity.setPierceLevel((byte)i);
         }
 
-        ((ArrowPerkAdjustable)persistentProjectileEntity).applyArrowPerks(arrowPerks);
+        ((ArrowExtension)persistentProjectileEntity).applyArrowPerks(spellInfo);
 
         return persistentProjectileEntity;
     }

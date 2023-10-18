@@ -34,7 +34,6 @@ public class Spell {
     public ItemUse item_use = new ItemUse();
     public static class ItemUse { public ItemUse() { }
         public boolean shows_item_as_icon = false;
-        @Nullable public ArrowPerks arrow_perks = null;
     }
 
     public Release release;
@@ -111,7 +110,6 @@ public class Spell {
                 /// Launch properties of the arrow
                 /// (vanilla default velocity for crossbows is 3.15)
                 public LaunchProperties launch_properties = new LaunchProperties().velocity(3.15F);
-                @Nullable public ArrowPerks arrow_perks;
             }
         }
         public String animation;
@@ -133,6 +131,7 @@ public class Spell {
             }
             public Damage damage;
             public static class Damage { public Damage() { }
+                public boolean bypass_iframes = true;
                 public float spell_power_coefficient = 1;
                 public float knockback = 1;
             }
@@ -264,15 +263,14 @@ public class Spell {
             public enum RenderMode {
                 FLAT, DEEP
             }
-            public Client(ParticleBatch[] travel_particles, String model_id) {
-                this.travel_particles = travel_particles;
-                this.model_id = model_id;
-            }
         }
     }
 
+    @Nullable public ArrowPerks arrow_perks = null;
     public static class ArrowPerks { public ArrowPerks() { }
         public float velocity_multiplier = 1F;
         public boolean bypass_iframes = false;
+        @Nullable public ParticleBatch[] travel_particles;
+        @Nullable public ProjectileData.Client override_render;
     }
 }

@@ -33,7 +33,6 @@ public class ModelPredicateHelper {
             }
             return -1F; // Negative value to fall back to vanilla
         });
-
     }
 
     public static void injectCrossBowSkillUsePredicate(Item item) {

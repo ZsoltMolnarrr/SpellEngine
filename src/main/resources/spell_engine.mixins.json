@@ -38,6 +38,7 @@
     "client.render.LivingEntityRendererMixin",
     "client.render.MinecraftClientMixin",
     "client.render.ModelPredicateProviderRegistryAccessor",
+    "client.render.ProjectileEntityRendererMixin",
     "client.render.TexturedRenderLayersMixin"
   ],
   "plugin": "net.spell_engine.mixin.SpellEngineMixinPlugin",
