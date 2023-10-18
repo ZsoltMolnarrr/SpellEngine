@@ -3,6 +3,7 @@
 Functional changes:
 - Update Spell Book slot icon
 - Fix dropping item not cancelling spell casting
+- Fix swapping to caster item with number keys starting spell casting right away
 
 API Additions:
 - Add spell impact specific schools definition

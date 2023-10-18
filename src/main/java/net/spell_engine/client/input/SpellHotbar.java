@@ -54,7 +54,8 @@ public class SpellHotbar {
     public StructuredSlots structuredSlots = new StructuredSlots(null, List.of());
     public record StructuredSlots(@Nullable Slot onUseKey, List<Slot> other) { }
 
-    public void update(ClientPlayerEntity player, GameOptions options) {
+    public boolean update(ClientPlayerEntity player, GameOptions options) {
+        var changed = false;
         var held = player.getMainHandStack();
         var container = container(player, held);
 
@@ -109,6 +110,7 @@ public class SpellHotbar {
 
         this.structuredSlots = new StructuredSlots(onUseKey, otherSlots);
         this.slots = slots;
+        return changed;
     }
 
     private @Nullable Handle handledThisTick = null;

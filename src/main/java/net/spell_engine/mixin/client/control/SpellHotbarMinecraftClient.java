@@ -32,8 +32,6 @@ public abstract class SpellHotbarMinecraftClient {
 
     @Shadow public int attackCooldown;
 
-    @Shadow protected abstract void doItemUse();
-
     @Nullable private WrappedKeybinding.Category spellHotbarHandle = null;
     @Inject(method = "handleInputEvents", at = @At(value = "HEAD"))
     private void handleInputEvents_HEAD_SpellHotbar(CallbackInfo ci) {
@@ -42,7 +40,10 @@ public abstract class SpellHotbarMinecraftClient {
 
         // Update the content of the Spell Hotbar
         // This needs to run every tick because the player's held caster item may change any time
-        SpellHotbar.INSTANCE.update(player, options);
+        var hotbarUpdated = SpellHotbar.INSTANCE.update(player, options);
+        if (hotbarUpdated) {
+            itemUseCooldown = 5;
+        }
         SpellHotbar.INSTANCE.prepare(itemUseCooldown);
 
         SpellHotbar.Handle handled;
