@@ -17,6 +17,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
+import net.spell_engine.api.item.AttributeResolver;
 import net.spell_engine.api.item.ConfigurableAttributes;
 import net.spell_engine.api.item.ItemConfig;
 import net.spell_power.api.attributes.SpellAttributes;
@@ -236,7 +237,7 @@ public class Armor {
         }
         for (var attribute: piece.spell_attributes) {
             try {
-                var entityAttribute = SpellAttributes.all.get(attribute.name).attribute;
+                var entityAttribute = AttributeResolver.get(new Identifier(attribute.id));
                 builder.put(entityAttribute,
                         new EntityAttributeModifier(
                                 uuid,

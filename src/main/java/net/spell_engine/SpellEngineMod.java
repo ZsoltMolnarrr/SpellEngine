@@ -15,6 +15,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
+import net.spell_engine.api.item.AttributeResolver;
 import net.spell_engine.api.item.trinket.SpellBooks;
 import net.spell_engine.api.item.weapon.StaffItem;
 import net.spell_engine.api.spell.SpellContainer;
@@ -48,6 +49,7 @@ public class SpellEngineMod {
             .build();
 
     public static void init() {
+        AttributeResolver.setup();
         AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
         enchantmentConfig.refresh();
@@ -81,6 +83,8 @@ public class SpellEngineMod {
         // Sync attack power to client so physical attack damage spells can be estimated.
         // Probably several other mods perform this operation, but its no problem.
         EntityAttributes.GENERIC_ATTACK_DAMAGE.setTracked(true);
+
+        SpellBooks.createAndRegister(new Identifier("spell_engine:test_archer"), SpellContainer.ContentType.ARCHERY, ItemGroups.COMBAT);
     }
 
     public static void registerSpellBinding() {

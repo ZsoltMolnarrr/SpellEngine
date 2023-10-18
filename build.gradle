@@ -68,6 +68,7 @@ dependencies {
     modImplementation("com.terraformersmc:modmenu:${project.mod_menu_version}")
     modImplementation("curse.maven:shoulder-surfing-reloaded-243190:${shoulder_surfing_file_id}")
     modCompileOnly("maven.modrinth:first-person-model:${project.fpm_version}")
+    modImplementation "maven.modrinth:combat-roll:${project.combat_roll_version}-fabric"
 }
 
 processResources {

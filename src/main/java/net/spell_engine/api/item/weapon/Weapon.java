@@ -17,6 +17,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
+import net.spell_engine.api.item.AttributeResolver;
 import net.spell_engine.api.item.ConfigurableAttributes;
 import net.spell_engine.api.item.ItemConfig;
 import net.spell_power.api.attributes.SpellAttributes;
@@ -49,7 +50,7 @@ public class Weapon {
             return new Identifier(namespace, name);
         }
 
-        public Entry attribute(ItemConfig.SpellAttribute attribute) {
+        public Entry attribute(ItemConfig.Attribute attribute) {
             defaults.add(attribute);
             return this;
         }
@@ -177,10 +178,10 @@ public class Weapon {
                 continue;
             }
             try {
-                var entityAttribute = SpellAttributes.all.get(attribute.name).attribute;
+                var entityAttribute = AttributeResolver.get(new Identifier(attribute.id));
                 builder.put(entityAttribute,
                         new EntityAttributeModifier(
-                                entityAttribute.weaponUUID,
+                                ItemAccessor.ATTACK_DAMAGE_MODIFIER_ID(),
                                 "Weapon modifier",
                                 attribute.value,
                                 attribute.operation));

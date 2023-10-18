@@ -4,6 +4,7 @@ Functional changes:
 - Update Spell Book slot icon
 - Fix dropping item not cancelling spell casting
 - Fix swapping to caster item with number keys starting spell casting right away
+- Spells with `arrow` item cost, now rely on vanilla Infinity enchantment
 
 API Additions:
 - Add spell impact specific schools definition
@@ -12,10 +13,12 @@ API Additions:
 - Add `mode` field for spells, to allow using items instead of casting spells
 - Add `casting_animates_ranged_weapon` for spells, to animate held bow pull state based on spell cast progress
 - `PHYSICAL_RANGED` school can now be used for spells, given that Projectile Damage Attribute mod is installed
+- Arrows being shot while casting spell with `"mode": "ITEM_USE"`, or shot with `"type": "SHOOT_ARROW"` can perform impact actions of the spell, can have their custom projectile model 
 
 API Breaking changes:
 - Add area effect capability to any spell impact (moved from SpellProjectile)
-- Rework the data part of `PROJECTILE` and `METEOR` release types 
+- Rework the data part of `PROJECTILE` and `METEOR` release types
+- ItemConfig.Attribute `name` field retired, now full attribute id needs to be specified in `id` field
 
 Other changes:
 - Update MixinExtras to 0.2.0
@@ -42,7 +45,6 @@ Other changes:
 - Spell casting no longer stutters when quick switching between spells
 - Optimise spell projectile sync payload
 - Fix server config `player_relations` being reset on every launch
-- Spells with `arrow` item cost, now rely on vanilla Infinity enchantment
 
 # 0.9.32
 
