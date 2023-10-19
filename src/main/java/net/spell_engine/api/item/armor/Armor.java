@@ -20,7 +20,6 @@ import net.minecraft.util.Lazy;
 import net.spell_engine.api.item.AttributeResolver;
 import net.spell_engine.api.item.ConfigurableAttributes;
 import net.spell_engine.api.item.ItemConfig;
-import net.spell_power.api.attributes.SpellAttributes;
 import net.spell_power.api.enchantment.SpellPowerEnchanting;
 
 import java.util.*;
@@ -235,7 +234,7 @@ public class Armor {
                             piece.armor,
                             EntityAttributeModifier.Operation.ADDITION));
         }
-        for (var attribute: piece.spell_attributes) {
+        for (var attribute: piece.attributes) {
             try {
                 var entityAttribute = AttributeResolver.get(new Identifier(attribute.id));
                 builder.put(entityAttribute,

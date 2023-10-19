@@ -13,10 +13,13 @@ import java.util.HashMap;
 public class AttributeResolver {
     private static final HashMap<Identifier, EntityAttribute> attributes = new HashMap<>();
 
+    static {
+        setup();
+    }
     /**
      * Called upon initialization of this mod.
      */
-    public static void setup() {
+    private static void setup() {
         if (FabricLoader.getInstance().isModLoaded("spell_power")) {
             SpellAttributes.all.forEach((id, attribute) -> {
                 register(attribute.id, attribute.attribute);
@@ -33,9 +36,12 @@ public class AttributeResolver {
             register(EntityAttributes_CombatRoll.distanceId, EntityAttributes_CombatRoll.DISTANCE);
             register(EntityAttributes_CombatRoll.rechargeId, EntityAttributes_CombatRoll.RECHARGE);
         }
+
+        // Mixin here to add custom attributes, don't call `register` outside of this function
+        // @Inject(method = "setup", at = @At("TAIL"))
     }
 
-    public static void register(Identifier id, EntityAttribute attribute) {
+    private static void register(Identifier id, EntityAttribute attribute) {
         attributes.put(id, attribute);
     }
 

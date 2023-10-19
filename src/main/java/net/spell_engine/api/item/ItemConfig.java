@@ -38,6 +38,7 @@ public class ItemConfig { public ItemConfig() { }
             var list = schools.stream()
                     .map(school -> SpellAttributes.POWER.get(school))
                     .toList();
+
             return bonuses(list, value);
         }
 
@@ -45,7 +46,7 @@ public class ItemConfig { public ItemConfig() { }
             ArrayList<Attribute> spellAttributes = new ArrayList<>();
             for (var attribute: entries) {
                 spellAttributes.add(new Attribute(
-                        attribute.name,
+                        attribute.id.toString(),
                         value,
                         EntityAttributeModifier.Operation.ADDITION
                     )
@@ -59,7 +60,7 @@ public class ItemConfig { public ItemConfig() { }
     public static class Weapon {
         public float attack_damage = 0;
         public float attack_speed = 0;
-        public ArrayList<Attribute> spell_attributes = new ArrayList<>();
+        public ArrayList<Attribute> attributes = new ArrayList<>();
 
         public Weapon() { }
         public Weapon(float attack_damage, float attack_speed) {
@@ -67,7 +68,7 @@ public class ItemConfig { public ItemConfig() { }
             this.attack_speed = attack_speed;
         }
         public Weapon add(Attribute attribute) {
-            spell_attributes.add(attribute);
+            attributes.add(attribute);
             return this;
         }
     }
@@ -82,18 +83,18 @@ public class ItemConfig { public ItemConfig() { }
         public Piece feet = new Piece();
         public static class Piece { public Piece() { }
             public int armor = 0;
-            public ArrayList<Attribute> spell_attributes = new ArrayList<>();
+            public ArrayList<Attribute> attributes = new ArrayList<>();
 
             public Piece(int armor) {
                 this.armor = armor;
             }
 
             public Piece add(Attribute attribute) {
-                spell_attributes.add(attribute);
+                attributes.add(attribute);
                 return this;
             }
             public Piece addAll(List<Attribute> attributes) {
-                spell_attributes.addAll(attributes);
+                this.attributes.addAll(attributes);
                 return this;
             }
         }

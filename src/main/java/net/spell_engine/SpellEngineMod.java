@@ -49,7 +49,6 @@ public class SpellEngineMod {
             .build();
 
     public static void init() {
-        AttributeResolver.setup();
         AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
         enchantmentConfig.refresh();

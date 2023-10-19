@@ -6,6 +6,14 @@ Functional changes:
 - Fix swapping to caster item with number keys starting spell casting right away
 - Spells with `arrow` item cost, now rely on vanilla Infinity enchantment
 
+API Breaking changes:
+- Add area effect capability to any spell impact (moved from SpellProjectile)
+- Rework the data part of `PROJECTILE` and `METEOR` release types
+- ItemConfig.Attribute `name` field retired, now full attribute id needs to be specified in `id` field
+- In `ProjectileData.ClientData` projectile model related data has been moved into a subfield named `model`
+- ProjectileModel `RenderMode` new default is now `DEEP`
+
+
 API Additions:
 - Add spell impact specific schools definition
 - Add new spell area effect cloud release action
@@ -13,14 +21,8 @@ API Additions:
 - Add `mode` field for spells, to allow using items instead of casting spells
 - Add `casting_animates_ranged_weapon` for spells, to animate held bow pull state based on spell cast progress
 - `PHYSICAL_RANGED` school can now be used for spells, given that Projectile Damage Attribute mod is installed
-- Arrows being shot while casting spell with `"mode": "ITEM_USE"`, or shot with `"type": "SHOOT_ARROW"` can perform impact actions of the spell, can have their custom projectile model 
-
-API Breaking changes:
-- Add area effect capability to any spell impact (moved from SpellProjectile)
-- Rework the data part of `PROJECTILE` and `METEOR` release types
-- ItemConfig.Attribute `name` field retired, now full attribute id needs to be specified in `id` field
-- In `ProjectileData.ClientData` projectile model related data has been moved into a subfield named `model`
-- ProjectileModel `RenderMode` new default is now `DEEP`
+- Arrows being shot while casting spell with `"mode": "ITEM_USE"`, or shot with `"type": "SHOOT_ARROW"` can perform impact actions of the spell, can have their custom projectile model
+- ItemConfig `attributes[].id` field now accepts projectile damage and combat roll related attributes. Third party attributes can be support via Mixin into `AttributeResolver`
 
 Other changes:
 - Update MixinExtras to 0.2.0
