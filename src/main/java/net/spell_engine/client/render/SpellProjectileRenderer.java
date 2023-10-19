@@ -49,15 +49,16 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
         if (entity instanceof SpellProjectile projectile && projectile.renderData() != null) {
             var renderData = projectile.renderData();
             var rendered = render(this.scale, this.dispatcher, this.itemRenderer, renderData, projectile.previousVelocity,
-                    entity, yaw, tickDelta, matrices, vertexConsumers, light);
+                    entity, yaw, tickDelta, true, matrices, vertexConsumers, light);
             if (rendered) {
                 super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
             }
         }
     }
 
-    public static boolean render(float scale, EntityRenderDispatcher dispatcher, ItemRenderer itemRenderer, Spell.ProjectileModel renderData, @Nullable Vec3d previousVelocity,
-                              Entity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+    public static boolean render(float scale, EntityRenderDispatcher dispatcher, ItemRenderer itemRenderer, Spell.ProjectileModel renderData,
+                                 @Nullable Vec3d previousVelocity, Entity entity, float yaw, float tickDelta, boolean allowSpin,
+                                 MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         if (entity.age >= 2 || !(dispatcher.camera.getFocusedEntity().squaredDistanceTo(entity) < 12.25)) {
             matrices.push();
             matrices.scale(scale, scale, scale);
@@ -81,7 +82,9 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
 
             var time = entity.getWorld().getTime();
             var absoluteTime = (float)time + tickDelta;
-            matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(absoluteTime * renderData.rotate_degrees_per_tick));
+            if (allowSpin) {
+                matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(absoluteTime * renderData.rotate_degrees_per_tick));
+            }
             matrices.scale(renderData.scale, renderData.scale, renderData.scale);
             if (renderData.model_id != null && !renderData.model_id.isEmpty()) {
                 var modelId = new Identifier(renderData.model_id);

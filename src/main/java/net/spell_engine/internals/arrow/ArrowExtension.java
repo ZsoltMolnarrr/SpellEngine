@@ -9,4 +9,5 @@ public interface ArrowExtension {
     void applyArrowPerks(SpellInfo spellInfo);
     @Nullable Identifier getCarriedSpellId();
     @Nullable Spell getCarriedSpell();
+    boolean isInGround_SpellEngine();
 }

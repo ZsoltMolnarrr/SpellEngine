@@ -7,6 +7,7 @@ import net.minecraft.client.render.entity.ProjectileEntityRenderer;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.client.render.SpellProjectileRenderer;
 import net.spell_engine.internals.arrow.ArrowExtension;
@@ -41,8 +42,9 @@ public abstract class ProjectileEntityRendererMixin extends EntityRenderer {
                     var renderData = arrowPerks.override_render;
                     if (renderData != null) {
                         ci.cancel();
+                        var allowSpin = !arrowExtension.isInGround_SpellEngine();
                         var rendered = SpellProjectileRenderer.render(1F, this.dispatcher, this.itemRenderer, renderData, Vec3d.ZERO,
-                                entity, yaw, tickDelta, matrices, vertexConsumers, light);
+                                entity, yaw, tickDelta, allowSpin, matrices, vertexConsumers, light);
                         ci.cancel();
                         if (rendered) {
                             super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);

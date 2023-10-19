@@ -22,12 +22,14 @@ import net.spell_engine.internals.arrow.ArrowExtension;
 import net.spell_engine.particle.ParticleHelper;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PersistentProjectileEntity.class)
 public abstract class PersistentProjectileEntityMixin implements ArrowExtension {
+    @Shadow protected boolean inGround;
     private boolean arrowPerksAlreadyApplied = false;
     private boolean bypassIFrames = false;
     private Identifier spellId = null;
@@ -103,6 +105,12 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
     }
 
     // MARK: ArrowExtension
+
+
+    @Override
+    public boolean isInGround_SpellEngine() {
+        return inGround;
+    }
 
     @Override
     @Nullable public Identifier getCarriedSpellId() {
