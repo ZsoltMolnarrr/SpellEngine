@@ -9,10 +9,9 @@ Functional changes:
 API Breaking changes:
 - Add area effect capability to any spell impact (moved from SpellProjectile)
 - Rework the data part of `PROJECTILE` and `METEOR` release types
-- ItemConfig.Attribute `name` field retired, now full attribute id needs to be specified in `id` field
 - In `ProjectileData.ClientData` projectile model related data has been moved into a subfield named `model`
+- ItemConfig.Attribute `name` field retired, now full attribute id needs to be specified in `id` field
 - ProjectileModel `RenderMode` new default is now `DEEP`
-
 
 API Additions:
 - Add spell impact specific schools definition
@@ -23,6 +22,7 @@ API Additions:
 - `PHYSICAL_RANGED` school can now be used for spells, given that Projectile Damage Attribute mod is installed
 - Arrows being shot while casting spell with `"mode": "ITEM_USE"`, or shot with `"type": "SHOOT_ARROW"` can perform impact actions of the spell, can have their custom projectile model
 - ItemConfig `attributes[].id` field now accepts projectile damage and combat roll related attributes. Third party attributes can be support via Mixin into `AttributeResolver`
+- Add `HealingTakenModifier` for status effects
 
 Other changes:
 - Update MixinExtras to 0.2.0

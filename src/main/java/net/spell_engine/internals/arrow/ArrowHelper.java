@@ -94,9 +94,7 @@ public class ArrowHelper {
     private static PersistentProjectileEntity createArrow(World world, LivingEntity entity, ItemStack crossbow, ItemStack arrow, SpellInfo spellInfo) {
         ArrowItem arrowItem = (ArrowItem)(arrow.getItem() instanceof ArrowItem ? arrow.getItem() : Items.ARROW);
         PersistentProjectileEntity persistentProjectileEntity = arrowItem.createArrow(world, arrow, entity);
-        if (entity instanceof PlayerEntity) {
-            persistentProjectileEntity.setCritical(true);
-        }
+
 
         persistentProjectileEntity.setSound(SoundEvents.ITEM_CROSSBOW_HIT);
         persistentProjectileEntity.setShotFromCrossbow(true);
@@ -106,6 +104,13 @@ public class ArrowHelper {
         }
 
         ((ArrowExtension)persistentProjectileEntity).applyArrowPerks(spellInfo);
+        var release = spellInfo.spell().release;
+        if (release != null) {
+            var shoot_arrow = release.target.shoot_arrow;
+            if (shoot_arrow != null) {
+                persistentProjectileEntity.setCritical(shoot_arrow.arrow_critical_strike);
+            }
+        }
 
         return persistentProjectileEntity;
     }

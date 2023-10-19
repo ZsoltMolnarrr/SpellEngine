@@ -116,6 +116,7 @@ public class Spell {
 
             public ShootArrow shoot_arrow;
             public static class ShootArrow { public ShootArrow() { }
+                public boolean arrow_critical_strike = true;
                 /// Launch properties of the arrow
                 /// (vanilla default velocity for crossbows is 3.15)
                 public LaunchProperties launch_properties = new LaunchProperties().velocity(3.15F);
