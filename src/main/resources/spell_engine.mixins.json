@@ -17,10 +17,10 @@
     "arrow.PersistentProjectileEntityMixin",
     "arrow.ServerWorldArrows",
     "criteria.EnchantedItemCriterionMixin",
-    "effect.LivingEntityStatusEffectHealingTaken",
+    "effect.LivingEntityStatusHealthImpacting",
     "effect.LivingEntityStatusEffectSync",
     "effect.StatusEffectActionImpairing",
-    "effect.StatusEffectHealingTakenModifier",
+    "effect.StatusEffectHealthImpacting",
     "effect.StatusEffectRemoveOnHit",
     "effect.StatusEffectSynchronized"
   ],
