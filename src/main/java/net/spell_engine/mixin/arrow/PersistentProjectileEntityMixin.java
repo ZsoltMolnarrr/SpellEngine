@@ -138,7 +138,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
     // MARK: Apply impact effects
 
     @Inject(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"), cancellable = true)
-    private void asd(EntityHitResult entityHitResult, CallbackInfo ci) {
+    private void onEntityHit_BeforeDamage_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
         var spell = spell();
         if (spell != null) {
             var arrowPerks = spell.arrow_perks;
@@ -157,8 +157,8 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
 
     @Inject(method = "onEntityHit", at = @At("HEAD"))
     public void onEntityHit_HEAD_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
-        var entity = entityHitResult.getEntity();
-        if (!entity.getWorld().isClient) {
+        if (!arrow().getWorld().isClient) {
+            var entity = entityHitResult.getEntity();
             if (entity != null) {
                 if (bypassIFrames) {
                     iframeCache = entity.timeUntilRegen;
@@ -172,8 +172,8 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
 
     @Inject(method = "onEntityHit", at = @At("TAIL"))
     public void onEntityHit_TAIL_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
-        var entity = entityHitResult.getEntity();
-        if (!entity.getWorld().isClient) {
+        if (!arrow().getWorld().isClient) {
+            var entity = entityHitResult.getEntity();
             if (entity != null) {
                 if (iframeCache != 0) {
                     entity.timeUntilRegen = iframeCache;

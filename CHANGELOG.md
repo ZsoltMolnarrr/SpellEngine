@@ -19,6 +19,8 @@ API Breaking changes:
 - Add area effect capability to any spell impact (moved from SpellProjectile)
 - Rework the data part of `PROJECTILE` and `METEOR` release types
 - ItemConfig.Attribute `name` field retired, now full attribute id needs to be specified in `id` field
+- In `ProjectileData.ClientData` projectile model related data has been moved into a subfield named `model`
+- ProjectileModel `RenderMode` new default is now `DEEP`
 
 Other changes:
 - Update MixinExtras to 0.2.0

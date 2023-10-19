@@ -36,6 +36,15 @@ public class Spell {
         public boolean shows_item_as_icon = false;
     }
 
+    @Nullable public ArrowPerks arrow_perks = null;
+    public static class ArrowPerks { public ArrowPerks() { }
+        public float velocity_multiplier = 1F;
+        public boolean bypass_iframes = false;
+        public boolean skip_arrow_damage = false;
+        @Nullable public ParticleBatch[] travel_particles;
+        @Nullable public ProjectileModel override_render;
+    }
+
     public Release release;
     public static class Release { public Release() { }
         public Target target;
@@ -255,23 +264,18 @@ public class Spell {
         public Client client_data;
         public static class Client { public Client() { }
             public ParticleBatch[] travel_particles;
-            public String model_id;
-            public LightEmission light_emission = LightEmission.GLOW;
-            public float scale = 1F;
-            public float rotate_degrees_per_tick = 2F;
-            public RenderMode render = RenderMode.FLAT;
-            public enum RenderMode {
-                FLAT, DEEP
-            }
+            public ProjectileModel model;
         }
     }
 
-    @Nullable public ArrowPerks arrow_perks = null;
-    public static class ArrowPerks { public ArrowPerks() { }
-        public float velocity_multiplier = 1F;
-        public boolean bypass_iframes = false;
-        public boolean skip_arrow_damage = false;
-        @Nullable public ParticleBatch[] travel_particles;
-        @Nullable public ProjectileData.Client override_render;
+    public static class ProjectileModel {
+        public String model_id;
+        public LightEmission light_emission = LightEmission.GLOW;
+        public float scale = 1F;
+        public float rotate_degrees_per_tick = 2F;
+        public RenderMode render = RenderMode.DEEP;
+        public enum RenderMode {
+            FLAT, DEEP
+        }
     }
 }

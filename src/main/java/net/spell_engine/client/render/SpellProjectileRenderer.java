@@ -56,7 +56,7 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
         }
     }
 
-    public static boolean render(float scale, EntityRenderDispatcher dispatcher, ItemRenderer itemRenderer, Spell.ProjectileData.Client renderData, @Nullable Vec3d previousVelocity,
+    public static boolean render(float scale, EntityRenderDispatcher dispatcher, ItemRenderer itemRenderer, Spell.ProjectileModel renderData, @Nullable Vec3d previousVelocity,
                               Entity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         if (entity.age >= 2 || !(dispatcher.camera.getFocusedEntity().squaredDistanceTo(entity) < 12.25)) {
             matrices.push();

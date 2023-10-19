@@ -42,8 +42,6 @@ import java.util.function.Predicate;
 
 public class SpellProjectile extends ProjectileEntity implements FlyingSpellEntity {
     public static EntityType<SpellProjectile> ENTITY_TYPE;
-
-
     private static Random random = new Random();
 
     public float range = 128;
@@ -281,8 +279,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 }
 
                 if (getWorld().isClient) {
-                    if (projectileData() != null) {
-                        for (var travel_particles : projectileData().client_data.travel_particles) {
+                    var data = projectileData();
+                    if (data != null) {
+                        for (var travel_particles : data.client_data.travel_particles) {
                             ParticleHelper.play(getWorld(), this, getYaw(), getPitch(), travel_particles);
                         }
                     }
@@ -524,18 +523,19 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     // MARK: FlyingSpellEntity
 
-    public Spell.ProjectileData.Client renderData() {
+    public Spell.ProjectileModel renderData() {
         var data = projectileData();
-        if (data != null) {
-            return projectileData().client_data;
+        if (data != null && data.client_data != null) {
+            return data.client_data.model;
         }
         return null;
     }
 
     @Override
     public ItemStack getStack() {
-        if (projectileData() != null && projectileData().client_data != null) {
-            return Registries.ITEM.get(new Identifier(projectileData().client_data.model_id)).getDefaultStack();
+        var data = projectileData();
+        if (data != null && data.client_data != null && data.client_data.model != null) {
+            return Registries.ITEM.get(new Identifier(data.client_data.model.model_id)).getDefaultStack();
         }
         return ItemStack.EMPTY;
     }
@@ -584,7 +584,6 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     @Override
     protected void initDataTracker() {
-        var gson = new Gson();
         this.getDataTracker().startTracking(CLIENT_DATA, "");
         this.getDataTracker().startTracking(TARGET_ID, 0);
         this.getDataTracker().startTracking(BEHAVIOUR, Behaviour.FLY.toString());
