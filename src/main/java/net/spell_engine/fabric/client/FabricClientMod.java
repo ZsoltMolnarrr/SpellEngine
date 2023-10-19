@@ -8,7 +8,12 @@ import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.particle.*;
 import net.minecraft.client.render.entity.EmptyEntityRenderer;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.particle.DefaultParticleType;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleType;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.HudRenderHelper;
 import net.spell_engine.client.gui.SpellTooltip;
@@ -19,6 +24,7 @@ import net.spell_engine.client.render.SpellProjectileRenderer;
 import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.particle.Particles;
+import org.jetbrains.annotations.Nullable;
 
 public class FabricClientMod implements ClientModInitializer {
     @Override
@@ -68,6 +74,7 @@ public class FabricClientMod implements ClientModInitializer {
         ParticleFactoryRegistry.getInstance().register(Particles.snowflake.particleType, SpellSnowflakeParticle.FrostFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.frost_hit.particleType, SpellHitParticle.FrostFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.frost_shard.particleType, SpellFlameParticle.FrostShard::new);
+        ParticleFactoryRegistry.getInstance().register(Particles.dripping_blood.particleType, SpellSnowflakeParticle.DrippingBloodFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.roots.particleType, SpellSnowflakeParticle.RootsFactory::new);
 
         ModelLoadingPlugin.register(pluginCtx -> {

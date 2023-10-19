@@ -68,6 +68,27 @@ public class SpellSnowflakeParticle extends SnowflakeParticle {
         }
     }
 
+    @Environment(value=EnvType.CLIENT)
+    public static class DrippingBloodFactory implements ParticleFactory<DefaultParticleType> {
+        private final SpriteProvider spriteProvider;
+
+        public DrippingBloodFactory(SpriteProvider spriteProvider) {
+            this.spriteProvider = spriteProvider;
+        }
+        public static Color color = Color.from(0xb30000);
+
+        @Override
+        public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+            var particle = new SpellSnowflakeParticle(clientWorld, d, e, f, g, h, i, this.spriteProvider);
+            particle.setColor(0.35F, 0, 0);
+            particle.alpha = 1F;
+            particle.glow = false;
+            particle.velocityX *= 0.4;
+            particle.velocityZ *= 0.4;
+            particle.gravityStrength = 0.8F;
+            return particle;
+        }
+    }
 
     @Environment(value=EnvType.CLIENT)
     public static class RootsFactory implements ParticleFactory<DefaultParticleType> {
