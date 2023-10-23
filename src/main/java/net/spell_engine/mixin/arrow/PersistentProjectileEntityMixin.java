@@ -206,32 +206,6 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         }
     }
 
-//    @Inject(method = "onEntityHit", at = @At("HEAD"))
-//    private void onEntityHit_HEAD_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
-//        if (!arrow().getWorld().isClient) {
-//            var entity = entityHitResult.getEntity();
-//            if (entity != null) {
-//                if (bypassIFrames) {
-//                    iframeCache = entity.timeUntilRegen;
-//                    entity.timeUntilRegen = 0;
-//                }
-//            }
-//        }
-//    }
-
-//    @Inject(method = "onEntityHit", at = @At("TAIL"))
-//    private void onEntityHit_TAIL_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
-//        if (!arrow().getWorld().isClient) {
-//            var entity = entityHitResult.getEntity();
-//            if (entity != null) {
-//                if (iframeCache != 0) {
-//                    entity.timeUntilRegen = iframeCache;
-//                }
-//                performImpacts(entity, entityHitResult);
-//            }
-//        }
-//    }
-
     private void performImpacts(Entity target, EntityHitResult entityHitResult) {
         var spell = spell();
         var arrow = arrow();

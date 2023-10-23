@@ -82,6 +82,7 @@ public class SpellHotbar {
                         .toList();
             }
 
+            int keyBindingOffset = 0;
             for (int i = 0; i < spellIds.size(); i++) {
                 var spellId = new Identifier(spellIds.get(i));
                 var spell = SpellRegistry.getSpell(spellId);
@@ -90,13 +91,14 @@ public class SpellHotbar {
                 switch (spell.mode) {
                     case CAST -> {
                         if (i < allBindings.size()) {
-                            keyBinding = allBindings.get(i);
+                            keyBinding = allBindings.get(i + keyBindingOffset);
                         }
                     }
                     case ITEM_USE -> {
                         // Dead (unbound, unregistered) keybinding is given,
                         // so it is forced to fall back to vanilla keybinding
                         keyBinding = new WrappedKeybinding(deadKey, WrappedKeybinding.VanillaAlternative.USE_KEY);
+                        keyBindingOffset -= 1; // Keybindings are taken in order, do not consume in this case
                     }
                 }
 
