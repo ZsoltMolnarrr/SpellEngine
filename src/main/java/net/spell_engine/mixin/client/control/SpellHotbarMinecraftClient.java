@@ -2,6 +2,7 @@ package net.spell_engine.mixin.client.control;
 
 import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
@@ -31,6 +32,7 @@ public abstract class SpellHotbarMinecraftClient {
     @Shadow private int itemUseCooldown;
     @Shadow public int attackCooldown;
 
+    @Shadow @Nullable public Screen currentScreen;
     @Nullable private WrappedKeybinding.Category spellHotbarHandle = null;
     @Inject(method = "handleInputEvents", at = @At(value = "HEAD"))
     private void handleInputEvents_HEAD_SpellHotbar(CallbackInfo ci) {
@@ -64,8 +66,14 @@ public abstract class SpellHotbarMinecraftClient {
         if (((SpellCasterClient)player).isCastingSpell()) {
             attackCooldown = 2;
         }
+    }
 
-        // pushConflictingPressState(spellHotbarHandle, false);
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void tick_HEAD_SpellHotbar(CallbackInfo ci) {
+        if (player == null || options == null) { return; }
+        if (currentScreen != null) {
+            ((SpellCasterClient)player).cancelSpellCast();
+        }
     }
 
     @Inject(method = "handleInputEvents", at = @At(value = "TAIL"))

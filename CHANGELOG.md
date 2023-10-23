@@ -5,6 +5,7 @@ Functional changes:
 - Fix dropping item not cancelling spell casting
 - Fix swapping to caster item with number keys starting spell casting right away
 - Spells with `arrow` item cost, now rely on vanilla Infinity enchantment
+- Cancel spell casting upon opening GUI
 
 API Breaking changes:
 - Add area effect capability to any spell impact (moved from SpellProjectile)
@@ -22,7 +23,7 @@ API Additions:
 - `PHYSICAL_RANGED` school can now be used for spells, given that Projectile Damage Attribute mod is installed
 - Arrows being shot while casting spell with `"mode": "ITEM_USE"`, or shot with `"type": "SHOOT_ARROW"` can perform impact actions of the spell, can have their custom projectile model
 - ItemConfig `attributes[].id` field now accepts projectile damage and combat roll related attributes. Third party attributes can be support via Mixin into `AttributeResolver`
-- Add `HealingTakenModifier` for status effects
+- Add `HealthImpacting` interface for status effects, to modify damage and healing taken
 
 Other changes:
 - Update MixinExtras to 0.2.0

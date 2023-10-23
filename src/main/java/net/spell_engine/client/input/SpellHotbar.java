@@ -69,6 +69,19 @@ public class SpellHotbar {
 
         if (container != null) {
             var spellIds = container.spell_ids;
+
+            boolean allowUseKeyForCastable = container.content != SpellContainer.ContentType.ARCHERY;
+            if (!allowUseKeyForCastable) {
+                // Filtering out assignable keybindings for Archery content
+                // So item use can stay intact
+                allBindings = allBindings.stream()
+                        .filter(wrappedKeybinding -> {
+                            var vanillaKeybinding = wrappedKeybinding.alternative.keyBindingFrom(options);
+                            return vanillaKeybinding == null || !vanillaKeybinding.equals(options.useKey);
+                        })
+                        .toList();
+            }
+
             for (int i = 0; i < spellIds.size(); i++) {
                 var spellId = new Identifier(spellIds.get(i));
                 var spell = SpellRegistry.getSpell(spellId);
