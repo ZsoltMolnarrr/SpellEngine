@@ -22,7 +22,7 @@ public class LootHelper {
                 var chance = group.chance > 0 ? group.chance : 1F;
                 LootPool.Builder lootPoolBuilder = LootPool.builder();
                 lootPoolBuilder.rolls(BinomialLootNumberProvider.create(1, chance));
-                lootPoolBuilder.bonusRolls(ConstantLootNumberProvider.create(group.bonus_roll_chance));
+                lootPoolBuilder.bonusRolls(ConstantLootNumberProvider.create(group.bonus_roll));
                 for (var entryId: group.ids) {
                     var item = entries.get(entryId);
                     if (item == null) { continue; }

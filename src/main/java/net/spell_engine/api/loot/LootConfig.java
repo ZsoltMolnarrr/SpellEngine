@@ -8,7 +8,7 @@ public class LootConfig {
     public static class ItemGroup { public ItemGroup() { }
         public List<String> ids = List.of();
         public float chance = 1F;
-        public float bonus_roll_chance = 1.2F;
+        public float bonus_roll = 0.2F;
         public int weight = 1;
         public Enchant enchant = null;
         public static class Enchant { public Enchant() { }
@@ -31,15 +31,20 @@ public class LootConfig {
             this.weight = weight;
         }
 
-        public ItemGroup(List<String> ids, float chance, float bonus_roll_chance, int weight) {
+        public ItemGroup(List<String> ids, float chance, float bonus_roll, int weight) {
             this.ids = ids;
             this.chance = chance;
-            this.bonus_roll_chance = bonus_roll_chance;
+            this.bonus_roll = bonus_roll;
             this.weight = weight;
         }
 
         public ItemGroup chance(float chance_multiplier) {
             this.chance = chance_multiplier;
+            return this;
+        }
+
+        public ItemGroup bonus_roll(float bonus_roll) {
+            this.bonus_roll = bonus_roll;
             return this;
         }
 
