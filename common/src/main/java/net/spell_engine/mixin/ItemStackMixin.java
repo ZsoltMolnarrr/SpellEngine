@@ -66,7 +66,8 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
 
     @Inject(method = "isUsedOnRelease", at = @At("HEAD"), cancellable = true)
     private void isUsedOnRelease_HEAD_SpellEngine(CallbackInfoReturnable<Boolean> cir) {
-        if (spellContainer() == null) { return; }
+        var container = spellContainer();
+        if (container == null || !container.isValid()) { return; }
         // This would make the `useTick` function called upon release
         // The problem is, there is no way to distinguish inside `useTick` where it was called from
         // Hence this is not used.
@@ -76,14 +77,16 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
 
     @Inject(method = "getMaxUseTime", at = @At("HEAD"), cancellable = true)
     private void getMaxUseTime_HEAD_SpellEngine(CallbackInfoReturnable<Integer> cir) {
-        if (spellContainer() == null) { return; }
+        var container = spellContainer();
+        if (container == null || !container.isValid()) { return; }
         cir.setReturnValue(SpellHelper.maximumUseTicks);
         cir.cancel();
     }
 
     @Inject(method = "getUseAction", at = @At("HEAD"), cancellable = true)
     private void getUseAction_HEAD_SpellEngine(CallbackInfoReturnable<UseAction> cir) {
-        if (spellContainer() == null) { return; }
+        var container = spellContainer();
+        if (container == null || !container.isValid()) { return; }
         cir.setReturnValue(UseAction.NONE);
         cir.cancel();
     }
@@ -150,7 +153,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
     private void usageTick_HEAD_SpellEngine(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
         // System.out.println("ItemStack use tick " + (world.isClient ? "CLIENT" : "SERVER") + " | time: " + user.age);
         var container = spellContainer();
-        if (container == null) {
+        if (container == null || !container.isValid()) {
             return;
         }
 
@@ -179,7 +182,7 @@ public abstract class ItemStackMixin implements SpellCasterItemStack {
     private void onStoppedUsing_HEAD_SpellEngine(World world, LivingEntity user, int remainingUseTicks, CallbackInfo ci) {
         // System.out.println("ItemStack use stop "  + (world.isClient ? "CLIENT" : "SERVER") + " | time: " + user.age);
         var container = spellContainer();
-        if (container == null) { return; }
+        if (container == null || !container.isValid()) { return; }
 
         if (world.isClient) {
             if (user instanceof SpellCasterClient caster) {
