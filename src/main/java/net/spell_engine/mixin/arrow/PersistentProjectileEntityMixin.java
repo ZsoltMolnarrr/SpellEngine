@@ -1,6 +1,5 @@
 package net.spell_engine.mixin.arrow;
 
-import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.entity.Entity;
@@ -13,9 +12,9 @@ import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.math.Vec3d;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellInfo;
+import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.internals.arrow.ArrowExtension;
@@ -30,8 +29,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(PersistentProjectileEntity.class)
 public abstract class PersistentProjectileEntityMixin implements ArrowExtension {
     @Shadow protected boolean inGround;
+
+    @Shadow public abstract byte getPierceLevel();
+
+    @Shadow public abstract void setPierceLevel(byte level);
+
     private boolean arrowPerksAlreadyApplied = false;
-    private boolean bypassIFrames = false;
     private Identifier spellId = null;
 
     private PersistentProjectileEntity arrow() {
@@ -136,8 +139,11 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
             if (perks.velocity_multiplier != 1.0F) {
                 arrow.setVelocity(arrow.getVelocity().multiply(perks.velocity_multiplier));
             }
-            this.bypassIFrames = perks.bypass_iframes;
             arrowPerksAlreadyApplied = true;
+            if (perks.pierce > 0) {
+                var newPierce = (byte)(getPierceLevel() + perks.pierce);
+                setPierceLevel(newPierce);
+            }
         }
         this.spellId = spellInfo.id();
         arrow.getDataTracker().set(SPELL_ID_TRACKER, SpellRegistry.rawSpellId(spellInfo.id()));
@@ -163,33 +169,68 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         }
     }
 
-    @Inject(method = "onEntityHit", at = @At("HEAD"))
-    public void onEntityHit_HEAD_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
-        if (!arrow().getWorld().isClient) {
-            var entity = entityHitResult.getEntity();
-            if (entity != null) {
-                if (bypassIFrames) {
-                    iframeCache = entity.timeUntilRegen;
+    @WrapOperation(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"))
+    private boolean wrapDamageEntity(
+            // Mixin Parameters
+            Entity entity, DamageSource damageSource, float amount, Operation<Boolean> original,
+            // Context Parameters
+            EntityHitResult entityHitResult) {
+        var spell = spell();
+        if (entity.getWorld().isClient() || spell == null) {
+            return original.call(entity, damageSource, amount);
+        } else {
+            var arrowPerks = spell.arrow_perks;
+            var pushedKnockback = false;
+            int originalIFrame = 0;
+            if (entity instanceof LivingEntity livingEntity && arrowPerks != null) {
+                if (arrowPerks.knockback != 1.0F) {
+                    ((ConfigurableKnockback) livingEntity).pushKnockbackMultiplier_SpellEngine(arrowPerks.knockback);
+                    pushedKnockback = true;
+                }
+                if (arrowPerks.bypass_iframes) {
+                    originalIFrame = entity.timeUntilRegen;
                     entity.timeUntilRegen = 0;
                 }
             }
-        }
-    }
 
-    private int iframeCache = 0;
+            var result = original.call(entity, damageSource, amount);
+            performImpacts(entity, entityHitResult);
 
-    @Inject(method = "onEntityHit", at = @At("TAIL"))
-    public void onEntityHit_TAIL_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
-        if (!arrow().getWorld().isClient) {
-            var entity = entityHitResult.getEntity();
-            if (entity != null) {
-                if (iframeCache != 0) {
-                    entity.timeUntilRegen = iframeCache;
-                }
-                performImpacts(entity, entityHitResult);
+            if (pushedKnockback) {
+                ((ConfigurableKnockback) entity).popKnockbackMultiplier_SpellEngine();
             }
+            if (originalIFrame != 0) {
+                entity.timeUntilRegen = originalIFrame;
+            }
+            return result;
         }
     }
+
+//    @Inject(method = "onEntityHit", at = @At("HEAD"))
+//    private void onEntityHit_HEAD_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
+//        if (!arrow().getWorld().isClient) {
+//            var entity = entityHitResult.getEntity();
+//            if (entity != null) {
+//                if (bypassIFrames) {
+//                    iframeCache = entity.timeUntilRegen;
+//                    entity.timeUntilRegen = 0;
+//                }
+//            }
+//        }
+//    }
+
+//    @Inject(method = "onEntityHit", at = @At("TAIL"))
+//    private void onEntityHit_TAIL_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
+//        if (!arrow().getWorld().isClient) {
+//            var entity = entityHitResult.getEntity();
+//            if (entity != null) {
+//                if (iframeCache != 0) {
+//                    entity.timeUntilRegen = iframeCache;
+//                }
+//                performImpacts(entity, entityHitResult);
+//            }
+//        }
+//    }
 
     private void performImpacts(Entity target, EntityHitResult entityHitResult) {
         var spell = spell();

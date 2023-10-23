@@ -41,6 +41,8 @@ public class Spell {
         public float velocity_multiplier = 1F;
         public boolean bypass_iframes = false;
         public boolean skip_arrow_damage = false;
+        public int pierce = 0;
+        public float knockback = 1;
         @Nullable public ParticleBatch[] travel_particles;
         @Nullable public ProjectileModel override_render;
     }

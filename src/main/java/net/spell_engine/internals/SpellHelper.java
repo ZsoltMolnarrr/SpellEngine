@@ -585,6 +585,7 @@ public class SpellHelper {
             return false;
         }
         var success = false;
+        boolean isKnockbackPushed = false;
         try {
             double particleMultiplier = 1 * context.total();
             var power = context.power();
@@ -611,7 +612,8 @@ public class SpellHelper {
                     var vulnerability = SpellPower.Vulnerability.none;
                     var timeUntilRegen = target.timeUntilRegen;
                     if (target instanceof LivingEntity livingEntity) {
-                        ((ConfigurableKnockback) livingEntity).setKnockbackMultiplier_SpellEngine(context.hasOffset() ? 0 : knockbackMultiplier);
+                        ((ConfigurableKnockback) livingEntity).pushKnockbackMultiplier_SpellEngine(context.hasOffset() ? 0 : knockbackMultiplier);
+                        isKnockbackPushed = true;
                         if (damageData.bypass_iframes && SpellEngineMod.config.bypass_iframes) {
                             target.timeUntilRegen = 0;
                         }
@@ -629,7 +631,8 @@ public class SpellHelper {
                     target.damage(SpellDamageSource.create(school, caster), (float) amount);
 
                     if (target instanceof LivingEntity livingEntity) {
-                        ((ConfigurableKnockback)livingEntity).setKnockbackMultiplier_SpellEngine(1F);
+                        ((ConfigurableKnockback)livingEntity).popKnockbackMultiplier_SpellEngine();
+                        isKnockbackPushed = false;
                         target.timeUntilRegen = timeUntilRegen;
                         if (context.hasOffset()) {
                             var direction = context.knockbackDirection(livingEntity.getPos()).negate(); // Negate for smart Vanilla API :)
@@ -703,8 +706,8 @@ public class SpellHelper {
         } catch (Exception e) {
             System.err.println("Failed to perform impact effect");
             System.err.println(e.getMessage());
-            if (target instanceof LivingEntity livingEntity) {
-                ((ConfigurableKnockback)livingEntity).setKnockbackMultiplier_SpellEngine(1F);
+            if (isKnockbackPushed) {
+                ((ConfigurableKnockback)target).popKnockbackMultiplier_SpellEngine();
             }
         }
         return success;
