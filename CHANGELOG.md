@@ -1,3 +1,7 @@
+# 0.9.26
+
+-  Fix right click to use abilities for blacklisted items
+
 # 0.9.25
 
 - Add protection against random crashes caused by UI #19
