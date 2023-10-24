@@ -14,7 +14,7 @@ public interface HealthImpacting {
      *      -use -0.1F for -10% healing taken per stack
      */
     static void configureDamageTaken(StatusEffect effect, float modifierPerStack) {
-        ((HealthImpacting)effect).setHealingTakenModifierPerStack(modifierPerStack);
+        ((HealthImpacting)effect).setDamageTakenModifierPerStack(modifierPerStack);
     }
 
 
