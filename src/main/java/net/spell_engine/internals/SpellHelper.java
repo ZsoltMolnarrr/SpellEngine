@@ -567,14 +567,14 @@ public class SpellHelper {
                     selectedIntent = intent;
                 }
             }
-
-            var area_impact = impact.area_impact;
-            if (area_impact != null
-                    && additionalTargetLookup
-                    && (performed || target == null) ) {
-                lookupAndPerformAreaImpact(area_impact, spell, caster, target, aoeSource, context, false);
-            }
         }
+        var area_impact = spell.area_impact;
+        if (area_impact != null
+                && additionalTargetLookup
+                && (performed || target == null) ) {
+            lookupAndPerformAreaImpact(area_impact, spell, caster, target, aoeSource, context, false);
+        }
+
         return performed;
     }
 

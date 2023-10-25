@@ -183,12 +183,13 @@ public class SpellTooltip {
                         description = description.replace(effectDurationToken, formattedNumber(statusEffect.duration));
                     }
                 }
-                var area_impact = impact.area_impact;
-                if (area_impact != null) {
-                    description = description.replace(impactRangeToken, formattedNumber(area_impact.radius));
-                }
+            }
+            var area_impact = spell.area_impact;
+            if (area_impact != null) {
+                description = description.replace(impactRangeToken, formattedNumber(area_impact.radius));
             }
         }
+
         lines.add(Text.literal(" ")
                 .append(Text.translatable(description))
                 .formatted(Formatting.GRAY));

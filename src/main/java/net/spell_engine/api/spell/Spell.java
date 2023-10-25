@@ -179,11 +179,10 @@ public class Spell {
 
         public ParticleBatch[] particles = new ParticleBatch[]{};
         public Sound sound;
-
-        /// Apply this impact to other entities nearby
-        @Nullable
-        public AreaImpact area_impact;
     }
+    /// Apply this impact to other entities nearby
+    @Nullable
+    public AreaImpact area_impact;
 
     public Cost cost = new Cost();
     public static class Cost { public Cost() { }
