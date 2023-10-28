@@ -85,7 +85,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         return perks;
     }
 
-    private Spell.ProjectileData projectileData() {
+    public Spell.ProjectileData projectileData() {
         if (getWorld().isClient) {
             return clientSyncedData;
         } else {

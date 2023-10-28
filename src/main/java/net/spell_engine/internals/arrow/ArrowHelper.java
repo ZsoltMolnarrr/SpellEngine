@@ -1,5 +1,6 @@
 package net.spell_engine.internals.arrow;
 
+import dev.kosmx.playerAnim.core.data.quarktool.Playable;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.CrossbowUser;
@@ -10,6 +11,7 @@ import net.minecraft.entity.projectile.FireworkRocketEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.ArrowItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.sound.SoundCategory;
@@ -36,9 +38,25 @@ public class ArrowHelper {
         var shoot_arrow = spell.release.target.shoot_arrow;
         if (shoot_arrow != null) {
             var launchProperties = shoot_arrow.launch_properties.copy();
+
+            var player = (PlayerEntity)shooter;
+            var infinity = !shoot_arrow.consume_arrow || player.isCreative() || EnchantmentHelper.getLevel(Enchantments.INFINITY, player.getMainHandStack()) > 0;
+            var arrowPickUpType = PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY;
+            var ammo = new ItemStack(Items.ARROW);
+            if (!infinity) {
+                arrowPickUpType = PersistentProjectileEntity.PickupPermission.ALLOWED;
+                if (!tryConsumeItem(player, Items.ARROW)) {
+                    return;
+                }
+            }
+
             var projectile = shoot(world, shooter, Hand.MAIN_HAND, shooter.getMainHandStack(),
-                    new ItemStack(Items.ARROW), 1.0F, isCreative,
+                    ammo, 1.0F, isCreative,
                     launchProperties.velocity, 1.0F, 0.0F, spellInfo);
+            if (projectile instanceof PersistentProjectileEntity persistentProjectile) {
+                persistentProjectile.setDamage(persistentProjectile.getDamage() * shoot_arrow.damage_multiplier);
+                persistentProjectile.pickupType = arrowPickUpType;
+            }
             if (SpellEvents.ARROW_FIRED.isListened()) {
                 SpellEvents.ARROW_FIRED.invoke((listener) -> listener.onArrowLaunch(
                         new SpellEvents.ArrowLaunchEvent(projectile, shooter, spellInfo, context, initial)));
@@ -56,6 +74,20 @@ public class ArrowHelper {
                 }
             }
         }
+    }
+
+    public static boolean tryConsumeItem(PlayerEntity player, Item item) {
+        for(int i = 0; i < player.getInventory().size(); ++i) {
+            var stack = player.getInventory().getStack(i);
+            if (stack.isOf(item)) {
+                stack.decrement(1);
+                if (stack.isEmpty()) {
+                    player.getInventory().removeOne(stack);
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     // Copied from CrossbowItem

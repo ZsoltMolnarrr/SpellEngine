@@ -118,6 +118,8 @@ public class Spell {
 
             public ShootArrow shoot_arrow;
             public static class ShootArrow { public ShootArrow() { }
+                public boolean consume_arrow = true;
+                public float damage_multiplier = 1F;
                 public boolean arrow_critical_strike = true;
                 /// Launch properties of the arrow
                 /// (vanilla default velocity for crossbows is 3.15)
@@ -188,6 +190,7 @@ public class Spell {
     public static class Cost { public Cost() { }
         public float exhaust = 0.1F;
         public String item_id;
+        public boolean consume_item = true;
         public String effect_id;
         public int durability = 1;
         public float cooldown_duration = 0;
@@ -265,6 +268,9 @@ public class Spell {
 
         public Client client_data;
         public static class Client { public Client() { }
+            /// Ambient light level of the projectile, like players holding torches
+            /// Requires `LambDynamicLights` to be installed
+            public int light_level = 0;
             public ParticleBatch[] travel_particles;
             public ProjectileModel model;
         }

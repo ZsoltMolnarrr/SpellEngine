@@ -283,7 +283,7 @@ public class SpellHelper {
                     });
                 }
                 // Item
-                if (ammoResult.ammo != null) {
+                if (ammoResult.ammo != null && spell.cost.consume_item) {
                     for(int i = 0; i < player.getInventory().size(); ++i) {
                         var stack = player.getInventory().getStack(i);
                         if (stack.isOf(ammoResult.ammo.getItem())) {

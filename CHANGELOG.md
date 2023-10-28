@@ -20,6 +20,7 @@ API Additions:
 - Add `content` field to Spell Container to indicate the type of supported spells (Spell vs Archery skill)
 - Add `mode` field for spells, to allow using items instead of casting spells
 - Add `casting_animates_ranged_weapon` for spells, to animate held bow pull state based on spell cast progress
+- Add `light_level` field to Spell Projectile client data, to allow emitting ambient light (using LambDynamicLights)
 - `PHYSICAL_RANGED` school can now be used for spells, given that Projectile Damage Attribute mod is installed
 - Arrows being shot while casting spell with `"mode": "ITEM_USE"`, or shot with `"type": "SHOOT_ARROW"` can perform impact actions of the spell, can have their custom projectile model
 - ItemConfig `attributes[].id` field now accepts projectile damage and combat roll related attributes. Third party attributes can be support via Mixin into `AttributeResolver`
