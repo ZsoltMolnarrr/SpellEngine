@@ -21,6 +21,7 @@ import net.spell_engine.client.util.TextureFile;
 import net.spell_engine.config.HudConfig;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.casting.SpellCasterClient;
+import net.spell_engine.mixin.client.control.KeybindingAccessor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -263,16 +264,21 @@ public class HudRenderHelper {
         private static final int slotHeight = 22;
         private static final int slotWidth = 20;
 
-        public record KeyBindingViewModel(String label) {
+        public record KeyBindingViewModel(String label, @Nullable Drawable.Component drawable) {
             public static KeyBindingViewModel from(@Nullable KeyBinding keyBinding) {
                 if (keyBinding == null) {
-                    return new KeyBindingViewModel("");
+                    return new KeyBindingViewModel("", null);
+                }
+                var key = ((KeybindingAccessor)keyBinding).getBoundKey().toString();
+                var drawable = HudKeyVisuals.custom.get(key);
+                if (drawable != null) {
+                    return new KeyBindingViewModel("", drawable);
                 }
                 var label = keyBinding.getBoundKeyLocalizedText()
                         .getString()
                         .toUpperCase(Locale.US);
                 label = acronym(label, 3);
-                return new KeyBindingViewModel(label);
+                return new KeyBindingViewModel(label, null);
             }
         }
 
@@ -295,9 +301,9 @@ public class HudRenderHelper {
             public static ViewModel mock() {
                 return new ViewModel(
                         List.of(
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("1")),
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("2")),
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("3"))
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("1", null)),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("2", null)),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("3", null))
                         )
                 );
             }
@@ -348,10 +354,6 @@ public class HudRenderHelper {
                 int x = (int) (origin.x + iconsOffset.x) + ((slotWidth) * i);
                 int y = (int) (origin.y + iconsOffset.y);
 
-                // Keybinding
-                if (spell.keybinding() != null) {
-                    context.drawCenteredTextWithShadow(textRenderer, spell.keybinding().label, x + (iconSize / 2), (int)origin.y - 8, 0xFFFFFF);
-                }
 
                 RenderSystem.enableBlend();
 
@@ -365,6 +367,17 @@ public class HudRenderHelper {
                 // Cooldown
                 if (spell.cooldown > 0) {
                     renderCooldown(context, spell.cooldown, x, y);
+                }
+
+                // Keybinding
+                if (spell.keybinding() != null) {
+                    var keybindingX = x + (iconSize / 2);
+                    var keybindingY = (int)origin.y;
+                    if (spell.keybinding().drawable != null) {
+                        spell.keybinding().drawable.draw(context, keybindingX, keybindingY + 2, Drawable.Anchor.CENTER, Drawable.Anchor.TRAILING);
+                    } else {
+                        context.drawCenteredTextWithShadow(textRenderer, spell.keybinding().label, keybindingX, keybindingY - 8, 0xFFFFFF);
+                    }
                 }
             }
 

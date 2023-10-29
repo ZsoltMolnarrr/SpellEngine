@@ -1,0 +1,37 @@
+package net.spell_engine.client.gui;
+
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.util.Identifier;
+
+public class Drawable {
+    public enum Anchor { LEADING, TRAILING, CENTER }
+    public record Component(Draw draw, Texture texture) {
+        public void draw(DrawContext context, int x, int y, Anchor hAnchor, Anchor vAnchor) {
+            switch (hAnchor) {
+                case LEADING -> {
+                    x = x;
+                }
+                case CENTER -> {
+                    x -= draw().width / 2;
+                }
+                case TRAILING -> {
+                    x -= draw().width;
+                }
+            }
+            switch (vAnchor) {
+                case LEADING -> {
+                    y = y;
+                }
+                case CENTER -> {
+                    y -= draw().height / 2;
+                }
+                case TRAILING -> {
+                    y -= draw().height;
+                }
+            }
+            context.drawTexture(texture().id, x, y, draw().u, draw().v, draw().width, draw().height);
+        }
+    }
+    public record Draw(int u, int v, int width, int height) {}
+    public record Texture(Identifier id, int width, int height) {}
+}

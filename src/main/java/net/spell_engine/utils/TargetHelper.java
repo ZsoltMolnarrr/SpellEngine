@@ -291,8 +291,6 @@ public class TargetHelper {
         var position = entity.getPos();
         var hit = world.raycast(new RaycastContext(position, position.add(0, -20, 0),
                 RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
-//        var blockHit = (BlockHitResult)hit;
-//        return new Vec3d(position.getX(), blockHit.getBlockPos().getY(), position.getZ());
         if (hit.getType() == HitResult.Type.BLOCK) {
             var blockHit = (BlockHitResult)hit;
             return new Vec3d(position.getX(), blockHit.getBlockPos().getY() + 1F, position.getZ());
