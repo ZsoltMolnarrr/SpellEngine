@@ -29,7 +29,22 @@ public class Drawable {
                     y -= draw().height;
                 }
             }
-            context.drawTexture(texture().id, x, y, draw().u, draw().v, draw().width, draw().height);
+            context.drawTexture(texture().id, x, y, draw().u, draw().v, draw().width, draw().height, texture().width, texture().height);
+        }
+
+        public void drawFlexibleWidth(DrawContext context, int x, int y, int width, Anchor vAnchor) {
+            switch (vAnchor) {
+                case LEADING -> {
+                    y = y;
+                }
+                case CENTER -> {
+                    y -= draw().height / 2;
+                }
+                case TRAILING -> {
+                    y -= draw().height;
+                }
+            }
+            context.drawTexture(texture().id, x, y, draw().u, draw().v, width, draw().height, texture().width, texture().height);
         }
     }
     public record Draw(int u, int v, int width, int height) {}

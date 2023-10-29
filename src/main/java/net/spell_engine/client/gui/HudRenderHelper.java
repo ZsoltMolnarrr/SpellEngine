@@ -373,9 +373,14 @@ public class HudRenderHelper {
                 if (spell.keybinding() != null) {
                     var keybindingX = x + (iconSize / 2);
                     var keybindingY = (int)origin.y;
+                    var buttonY = keybindingY + 2;
                     if (spell.keybinding().drawable != null) {
-                        spell.keybinding().drawable.draw(context, keybindingX, keybindingY + 2, Drawable.Anchor.CENTER, Drawable.Anchor.TRAILING);
+                        spell.keybinding().drawable.draw(context, keybindingX, buttonY, Drawable.Anchor.CENTER, Drawable.Anchor.TRAILING);
                     } else {
+                        var textLength = textRenderer.getWidth(spell.keybinding().label);
+                        HudKeyVisuals.buttonLeading.draw(context, keybindingX - (textLength / 2), buttonY, Drawable.Anchor.TRAILING, Drawable.Anchor.TRAILING);
+                        HudKeyVisuals.buttonCenter.drawFlexibleWidth(context, keybindingX - (textLength / 2), buttonY, textLength, Drawable.Anchor.TRAILING);
+                        HudKeyVisuals.buttonTrailing.draw(context, keybindingX + (textLength / 2), buttonY, Drawable.Anchor.LEADING, Drawable.Anchor.TRAILING);
                         context.drawCenteredTextWithShadow(textRenderer, spell.keybinding().label, keybindingX, keybindingY - 8, 0xFFFFFF);
                     }
                 }

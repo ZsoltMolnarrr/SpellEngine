@@ -2,7 +2,7 @@
 
 Functional changes:
 - Update Spell Book slot icon
-- Spell hotbar now renders mouse icons as skill use hint
+- Spell hotbar now renders fancy mouse and keyboard icons
 - Fix dropping item not cancelling spell casting
 - Fix swapping to caster item with number keys starting spell casting right away
 - Spells with `arrow` item cost, now rely on vanilla Infinity enchantment
