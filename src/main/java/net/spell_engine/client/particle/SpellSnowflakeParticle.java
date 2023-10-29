@@ -107,6 +107,8 @@ public class SpellSnowflakeParticle extends SnowflakeParticle {
             particle.alpha = 1F;
             particle.glow = false;
             particle.setBoundingBoxSpacing(3f, 3f);
+            particle.velocityX = 0;
+            particle.velocityZ = 0;
             return particle;
         }
     }

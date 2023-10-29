@@ -202,7 +202,7 @@ public class ParticleHelper {
                 offset = new Vec3d(size,0,0).rotateY(angle);
             }
             case PILLAR -> {
-                var size = width + extent;
+                var size = width * 0.5F + extent;
                 var x = randomInRange(0, size);
                 var angle = (float) Math.toRadians(rng.nextFloat() * 360F);
                 offset = new Vec3d(x,0,0).rotateY(angle);

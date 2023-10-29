@@ -446,7 +446,13 @@ public class SpellHelper {
         var cloud = spell.release.target.cloud;
         // var center = context.position();
         var entity = new SpellCloud(world, caster, context, spellInfo);
-        entity.setPosition(caster.getPos());
+        if (cloud.spawn_on_ground && !caster.isOnGround()) {
+            var groundPosBelow = TargetHelper.findSolidBlockBelow(caster, caster.getWorld());
+            var position = groundPosBelow != null ? groundPosBelow : caster.getPos();
+            entity.setPosition(position);
+        } else {
+            entity.setPosition(caster.getPos());
+        }
         world.spawnEntity(entity);
     }
 

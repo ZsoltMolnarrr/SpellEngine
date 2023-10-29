@@ -78,8 +78,7 @@ public class Spell {
 
             public Cloud cloud;
             public static class Cloud { public Cloud() { }
-                public enum Shape { CIRCLE, SQUARE }
-                public Shape shape = Shape.CIRCLE;
+                public boolean spawn_on_ground = true;
                 public AreaImpact volume = new AreaImpact();
                 public float time_to_live_seconds = 0;
 

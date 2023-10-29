@@ -10,7 +10,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.registry.Registries;
 import net.minecraft.scoreboard.AbstractTeam;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
@@ -225,9 +227,11 @@ public class TargetHelper {
         var horizontal = range * area.horizontal_range_multiplier;
         var vertical = range * area.vertical_range_multiplier;
         var box = centerEntity.getBoundingBox().expand(
-                horizontal,
-                vertical,
-                horizontal);
+                // Extending bounding box to add some intersection tolerance
+                // Range check will filter out entities that are too far
+                horizontal + 0.5F,
+                vertical + 0.5F,
+                horizontal + 0.5F);
         var squaredDistance = range * range;
         var look = centerEntity.getRotationVector();
         var angle = area.angle_degrees / 2F;
@@ -281,5 +285,18 @@ public class TargetHelper {
             length = (float) start.distanceTo(hit.getPos());
         }
         return new Beam.Position(start, end, length, hitBlock);
+    }
+
+    @Nullable public static Vec3d findSolidBlockBelow(LivingEntity entity, World world) {
+        var position = entity.getPos();
+        var hit = world.raycast(new RaycastContext(position, position.add(0, -20, 0),
+                RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
+//        var blockHit = (BlockHitResult)hit;
+//        return new Vec3d(position.getX(), blockHit.getBlockPos().getY(), position.getZ());
+        if (hit.getType() == HitResult.Type.BLOCK) {
+            var blockHit = (BlockHitResult)hit;
+            return new Vec3d(position.getX(), blockHit.getBlockPos().getY() + 1F, position.getZ());
+        }
+        return null;
     }
 }
