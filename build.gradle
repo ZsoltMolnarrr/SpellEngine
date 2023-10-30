@@ -49,7 +49,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
     // Dependencies
-    include(implementation("com.github.LlamaLad7:MixinExtras:${project.mixin_extras_version}"))
+    include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:${project.mixin_extras_version}")))
     include(implementation("com.github.ZsoltMolnarrr:TinyConfig:${project.tiny_config_version}"))
 
     modImplementation("dev.kosmx.player-anim:player-animation-lib-fabric:${project.player_anim_version}")

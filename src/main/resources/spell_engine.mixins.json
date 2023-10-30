@@ -44,7 +44,6 @@
     "client.render.ProjectileEntityRendererMixin",
     "client.render.TexturedRenderLayersMixin"
   ],
-  "plugin": "net.spell_engine.mixin.SpellEngineMixinPlugin",
   "injectors": {
     "defaultRequire": 1
   }
