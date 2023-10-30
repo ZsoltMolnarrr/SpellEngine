@@ -166,7 +166,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
                 updateAnimationByCurrentActivity_SpellEngine(copy);
                 copy.torso.fullyEnablePart(true);
                 copy.head.pitch.setEnabled(false);
-                copy.head.yaw.setEnabled(false);
+                copy.head.yaw.setEnabled(true);
                 var mirror = isLeftHanded_SpellEngine();
 
                 var fadeIn = copy.beginTick;

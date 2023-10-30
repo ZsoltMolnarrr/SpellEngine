@@ -6,20 +6,40 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
+import java.util.ArrayList;
+import java.util.Stack;
+
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin implements ConfigurableKnockback {
 
-    // MARK: ConfigurableKnockback
+    /**
+     * ConfigurableKnockback
+     */
 
-    private float customKnockbackMultiplier_SpellEngine = 1;
+    private Stack<Float> customKnockbackMultipliers = new Stack<>();
 
-    @Override
-    public void setKnockbackMultiplier_SpellEngine(float value) {
-        customKnockbackMultiplier_SpellEngine = value;
+    private float getKnockbackMultiplier_SpellEngine() {
+        if (customKnockbackMultipliers.isEmpty()) {
+            return 1F;
+        } else {
+            var multiplier = 1F;
+            for (var m : customKnockbackMultipliers) {
+                multiplier *= m;
+            }
+            return multiplier;
+        }
+    }
+
+    public void pushKnockbackMultiplier_SpellEngine(float multiplier) {
+        customKnockbackMultipliers.push(multiplier);
+    }
+
+    public void popKnockbackMultiplier_SpellEngine() {
+        customKnockbackMultipliers.pop();
     }
 
     @ModifyVariable(method = "takeKnockback", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     public double takeKnockback_HEAD_changeStrength(double knockbackStrength) {
-        return knockbackStrength * customKnockbackMultiplier_SpellEngine;
+        return knockbackStrength * getKnockbackMultiplier_SpellEngine();
     }
 }

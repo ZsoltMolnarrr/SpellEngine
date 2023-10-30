@@ -24,6 +24,9 @@
     ],
     "modmenu": [
       "net.spell_engine.client.compatibility.ModMenuCompatibility"
+    ],
+    "dynamiclights": [
+      "net.spell_engine.client.compatibility.DynamicLightsCompatibility"
     ]
   },
   "mixins": [

@@ -3,14 +3,12 @@ package net.spell_engine.fabric.client;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.model.ModelLoadingRegistry;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.particle.ExplosionLargeParticle;
-import net.spell_engine.SpellEngineMod;
+import net.minecraft.client.render.entity.EmptyEntityRenderer;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.HudRenderHelper;
 import net.spell_engine.client.gui.SpellTooltip;
@@ -18,6 +16,8 @@ import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.client.particle.*;
 import net.spell_engine.client.render.CustomModelRegistry;
 import net.spell_engine.client.render.SpellProjectileRenderer;
+import net.spell_engine.entity.SpellCloud;
+import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.particle.Particles;
 
 public class FabricClientMod implements ClientModInitializer {
@@ -32,8 +32,8 @@ public class FabricClientMod implements ClientModInitializer {
         ItemTooltipCallback.EVENT.register((itemStack, context, lines) -> {
             SpellTooltip.addSpellInfo(itemStack, lines);
         });
-        EntityRendererRegistry.register(SpellEngineMod.SPELL_PROJECTILE, (context) ->
-                new SpellProjectileRenderer(context));
+        EntityRendererRegistry.register(SpellProjectile.ENTITY_TYPE, SpellProjectileRenderer::new);
+        EntityRendererRegistry.register(SpellCloud.ENTITY_TYPE, EmptyEntityRenderer::new);
 
         registerParticleAppearances();
     }
@@ -68,6 +68,8 @@ public class FabricClientMod implements ClientModInitializer {
         ParticleFactoryRegistry.getInstance().register(Particles.snowflake.particleType, SpellSnowflakeParticle.FrostFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.frost_hit.particleType, SpellHitParticle.FrostFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.frost_shard.particleType, SpellFlameParticle.FrostShard::new);
+        ParticleFactoryRegistry.getInstance().register(Particles.dripping_blood.particleType, SpellSnowflakeParticle.DrippingBloodFactory::new);
+        ParticleFactoryRegistry.getInstance().register(Particles.roots.particleType, ShiftedParticle.RootsFactory::new);
 
         ModelLoadingPlugin.register(pluginCtx -> {
             pluginCtx.addModels(CustomModelRegistry.modelIds);

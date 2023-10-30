@@ -40,6 +40,9 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
         dataTracker.startTracking(SPELL_ENGINE_SYNCED_EFFECTS, "");
     }
 
+    /**
+     * `updatePotionVisibility` is called upon effects of the entity are changed.
+     */
     @Inject(method = "updatePotionVisibility", at = @At("HEAD"))
     private void updatePotionVisibility_HEAD_SpellEngine_SyncEffects(CallbackInfo ci) {
         if (activeStatusEffects.isEmpty()) {

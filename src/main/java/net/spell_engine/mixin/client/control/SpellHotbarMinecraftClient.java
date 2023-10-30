@@ -2,6 +2,7 @@ package net.spell_engine.mixin.client.control;
 
 import com.llamalad7.mixinextras.injector.WrapWithCondition;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
@@ -29,11 +30,9 @@ public abstract class SpellHotbarMinecraftClient {
     @Shadow @Nullable public ClientPlayerEntity player;
     @Shadow @Final public GameOptions options;
     @Shadow private int itemUseCooldown;
-
     @Shadow public int attackCooldown;
 
-    @Shadow protected abstract void doItemUse();
-
+    @Shadow @Nullable public Screen currentScreen;
     @Nullable private WrappedKeybinding.Category spellHotbarHandle = null;
     @Inject(method = "handleInputEvents", at = @At(value = "HEAD"))
     private void handleInputEvents_HEAD_SpellHotbar(CallbackInfo ci) {
@@ -42,7 +41,10 @@ public abstract class SpellHotbarMinecraftClient {
 
         // Update the content of the Spell Hotbar
         // This needs to run every tick because the player's held caster item may change any time
-        SpellHotbar.INSTANCE.update(player, options);
+        var hotbarUpdated = SpellHotbar.INSTANCE.update(player, options);
+        if (hotbarUpdated) {
+            itemUseCooldown = 5;
+        }
         SpellHotbar.INSTANCE.prepare(itemUseCooldown);
 
         SpellHotbar.Handle handled;
@@ -55,30 +57,23 @@ public abstract class SpellHotbarMinecraftClient {
         }
         if (handled != null) {
             spellHotbarHandle = handled.category();
-            if (handled.spell().spell().mode == Spell.Mode.BYPASS_TO_ITEM_USE
-                    && !handled.keyBinding().equals(options.useKey) ) {
-                System.out.println("Bypassing to item use, itemUseCooldown: " + itemUseCooldown);
-//                if (!player.isUsingItem()) {
-//                    doItemUse();
-//                }
-                // else {
-//                    while(this.options.useKey.wasPressed()) {
-//                        this.doItemUse();
-//                    }
-//                }
-
-            }
-
-//            if (handled.spell().spell().mode != Spell.Mode.BYPASS_TO_ITEM_USE) {
-//                pushConflictingPressState(spellHotbarHandle, false);
+//            if (handled.spell().spell().mode == Spell.Mode.ITEM_USE
+//                    && !handled.keyBinding().equals(options.useKey)  ) {
+//                doItemUse();
 //            }
         }
 
         if (((SpellCasterClient)player).isCastingSpell()) {
             attackCooldown = 2;
         }
+    }
 
-        // pushConflictingPressState(spellHotbarHandle, false);
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void tick_HEAD_SpellHotbar(CallbackInfo ci) {
+        if (player == null || options == null) { return; }
+        if (currentScreen != null) {
+            ((SpellCasterClient)player).cancelSpellCast();
+        }
     }
 
     @Inject(method = "handleInputEvents", at = @At(value = "TAIL"))

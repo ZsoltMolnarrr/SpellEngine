@@ -29,7 +29,11 @@ public class SpellBooks {
     }
 
     public static SpellBookItem create(Identifier poolId) {
-        var container = new SpellContainer(false, poolId.toString(), 0, List.of());
+        return create(poolId, SpellContainer.ContentType.MAGIC);
+    }
+
+    public static SpellBookItem create(Identifier poolId, SpellContainer.ContentType contentType) {
+        var container = new SpellContainer(contentType, false, poolId.toString(), 0, List.of());
         SpellRegistry.book_containers.put(itemIdFor(poolId), container);
         var book = new SpellBookItem(poolId, new FabricItemSettings().maxCount(1));
         all.add(book);
@@ -45,7 +49,11 @@ public class SpellBooks {
     }
 
     public static void createAndRegister(Identifier poolId, RegistryKey<ItemGroup> itemGroupKey) {
-        var item = create(poolId);
+        createAndRegister(poolId, SpellContainer.ContentType.MAGIC, itemGroupKey);
+    }
+
+    public static void createAndRegister(Identifier poolId, SpellContainer.ContentType contentType, RegistryKey<ItemGroup> itemGroupKey) {
+        var item = create(poolId, contentType);
         ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register(content -> {
             content.add(item);
         });

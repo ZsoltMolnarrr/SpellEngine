@@ -58,6 +58,8 @@ public class Particles {
     public static final ParticleEntry frost_hit = particle("frost_hit").customTexture();
     public static final ParticleEntry frost_shard = particle("frost_shard").customTexture();
     public static final ParticleEntry snowflake = particle("snowflake");
+    public static final ParticleEntry dripping_blood = particle("dripping_blood");
+    public static final ParticleEntry roots = particle("roots").customTexture();
 
 
     public static void register() {

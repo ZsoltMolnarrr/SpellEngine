@@ -4,10 +4,13 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.UseAction;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.api.spell.SpellInfo;
@@ -30,6 +33,12 @@ import java.util.Objects;
 public class SpellHotbar {
     public static SpellHotbar INSTANCE = new SpellHotbar();
 
+    private static KeyBinding deadKey = new KeyBinding(
+            "keybindings." + SpellEngineMod.ID + ".dead",
+            InputUtil.Type.KEYSYM,
+            InputUtil.UNKNOWN_KEY.getCode(),
+            SpellEngineMod.modName());
+
     public record Slot(SpellInfo spell, SpellCast.Mode castMode, @Nullable WrappedKeybinding keybinding) {
         @Nullable public KeyBinding getKeyBinding(GameOptions options) {
             if (keybinding != null) {
@@ -45,7 +54,9 @@ public class SpellHotbar {
     public StructuredSlots structuredSlots = new StructuredSlots(null, List.of());
     public record StructuredSlots(@Nullable Slot onUseKey, List<Slot> other) { }
 
-    public void update(ClientPlayerEntity player, GameOptions options) {
+    public boolean update(ClientPlayerEntity player, GameOptions options) {
+        var changed = false;
+        var initialSlotCount = slots.size();
         var held = player.getMainHandStack();
         var container = container(player, held);
 
@@ -58,13 +69,37 @@ public class SpellHotbar {
 
         if (container != null) {
             var spellIds = container.spell_ids;
+
+            boolean allowUseKeyForCastable = container.content != SpellContainer.ContentType.ARCHERY;
+            if (!allowUseKeyForCastable) {
+                // Filtering out assignable keybindings for Archery content
+                // So item use can stay intact
+                allBindings = allBindings.stream()
+                        .filter(wrappedKeybinding -> {
+                            var vanillaKeybinding = wrappedKeybinding.alternative.keyBindingFrom(options);
+                            return vanillaKeybinding == null || !vanillaKeybinding.equals(options.useKey);
+                        })
+                        .toList();
+            }
+
+            int keyBindingOffset = 0;
             for (int i = 0; i < spellIds.size(); i++) {
                 var spellId = new Identifier(spellIds.get(i));
                 var spell = SpellRegistry.getSpell(spellId);
                 if (spell == null) { continue; }
                 WrappedKeybinding keyBinding = null;
-                if (i < allBindings.size()) {
-                    keyBinding = allBindings.get(i);
+                switch (spell.mode) {
+                    case CAST -> {
+                        if (i < allBindings.size()) {
+                            keyBinding = allBindings.get(i + keyBindingOffset);
+                        }
+                    }
+                    case ITEM_USE -> {
+                        // Dead (unbound, unregistered) keybinding is given,
+                        // so it is forced to fall back to vanilla keybinding
+                        keyBinding = new WrappedKeybinding(deadKey, WrappedKeybinding.VanillaAlternative.USE_KEY);
+                        keyBindingOffset -= 1; // Keybindings are taken in order, do not consume in this case
+                    }
                 }
 
                 // Create slot
@@ -88,9 +123,10 @@ public class SpellHotbar {
                 slots.add(slot);
             }
         }
-
+        changed = initialSlotCount != slots.size();
         this.structuredSlots = new StructuredSlots(onUseKey, otherSlots);
         this.slots = slots;
+        return changed;
     }
 
     private @Nullable Handle handledThisTick = null;
@@ -105,7 +141,7 @@ public class SpellHotbar {
 
     public boolean lastHandledWasItemBypass() {
         return handledPreviousTick != null
-                && handledPreviousTick.spell().spell().mode == Spell.Mode.BYPASS_TO_ITEM_USE;
+                && handledPreviousTick.spell().spell().mode == Spell.Mode.ITEM_USE;
     }
 
     @Nullable public Handle handle(ClientPlayerEntity player, GameOptions options) {
@@ -201,11 +237,11 @@ public class SpellHotbar {
         Identifier idToSync = null;
         if (player.isUsingItem()
                 && handledThisTick != null
-                && handledThisTick.spell().spell().mode == Spell.Mode.BYPASS_TO_ITEM_USE) {
+                && handledThisTick.spell().spell().mode == Spell.Mode.ITEM_USE) {
             idToSync = handledThisTick.spell().id();
         }
         if (!Objects.equals(idToSync, lastSyncedSpellId)) {
-            System.out.println("Syncing item use skill: " + idToSync);
+            // System.out.println("Syncing item use skill: " + idToSync);
             ClientPlayNetworking.send(
                     Packets.SpellCastSync.ID,
                     new Packets.SpellCastSync(idToSync, 1, 1000).write()
@@ -234,13 +270,11 @@ public class SpellHotbar {
     }
 
     public static ItemStack expectedUseStack(PlayerEntity player) {
-        var stack = player.getMainHandStack();
-        if (stack.getUseAction() != UseAction.NONE) {
-            return stack;
-        }
-        var offhand = player.getOffHandStack();
-        if (offhand.getUseAction() != UseAction.NONE) {
-            return offhand;
+        for (Hand hand : Hand.values()) {
+            ItemStack itemStack = player.getStackInHand(hand);
+            if (itemStack.getUseAction() != UseAction.NONE) {
+                return itemStack;
+            }
         }
         return ItemStack.EMPTY;
     }

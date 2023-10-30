@@ -6,6 +6,7 @@ import net.minecraft.enchantment.MendingEnchantment;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.spell.SpellContainer;
 import net.tinyconfig.models.EnchantmentConfig;
 
 public class SpellInfinityEnchantment extends Enchantment {
@@ -19,7 +20,8 @@ public class SpellInfinityEnchantment extends Enchantment {
     public static boolean itemStackHasSpell(ItemStack stack) {
         var object = (Object)stack;
         if (object instanceof SpellCasterItemStack casterItemStack) {
-            return casterItemStack.getSpellContainer() != null;
+            var container = casterItemStack.getSpellContainer();
+            return container != null && container.isValid() && container.content == SpellContainer.ContentType.MAGIC;
         }
         return false;
     }

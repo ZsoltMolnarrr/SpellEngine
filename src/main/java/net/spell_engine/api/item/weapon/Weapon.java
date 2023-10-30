@@ -17,8 +17,10 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
+import net.spell_engine.api.item.AttributeResolver;
 import net.spell_engine.api.item.ConfigurableAttributes;
 import net.spell_engine.api.item.ItemConfig;
+import net.spell_power.api.MagicSchool;
 import net.spell_power.api.attributes.SpellAttributes;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,7 +51,7 @@ public class Weapon {
             return new Identifier(namespace, name);
         }
 
-        public Entry attribute(ItemConfig.SpellAttribute attribute) {
+        public Entry attribute(ItemConfig.Attribute attribute) {
             defaults.add(attribute);
             return this;
         }
@@ -172,15 +174,19 @@ public class Weapon {
                         "Weapon modifier",
                         config.attack_speed,
                         EntityAttributeModifier.Operation.ADDITION));
-        for(var attribute: config.spell_attributes) {
+        for(var attribute: config.attributes) {
             if (attribute.value == 0) {
                 continue;
             }
             try {
-                var entityAttribute = SpellAttributes.all.get(attribute.name).attribute;
+                var attributeId = new Identifier(attribute.id);
+                var entityAttribute = AttributeResolver.get(attributeId);
+                var uuid = (attributeId.equals(attackDamageId) || attributeId.equals(projectileDamageId))
+                        ? ItemAccessor.ATTACK_DAMAGE_MODIFIER_ID()
+                        : miscWeaponAttributeUUID;
                 builder.put(entityAttribute,
                         new EntityAttributeModifier(
-                                entityAttribute.weaponUUID,
+                                uuid,
                                 "Weapon modifier",
                                 attribute.value,
                                 attribute.operation));
@@ -191,6 +197,9 @@ public class Weapon {
         return builder.build();
     }
 
+    private static final UUID miscWeaponAttributeUUID = SpellAttributes.POWER.get(MagicSchool.ARCANE).attribute.weaponUUID;
+    private static final Identifier attackDamageId = new Identifier("generic.attack_damage");
+    private static final Identifier projectileDamageId = new Identifier("projectile_damage", "generic");
     private static abstract class ItemAccessor extends Item {
         public ItemAccessor(Settings settings) { super(settings); }
         public static UUID ATTACK_DAMAGE_MODIFIER_ID() { return ATTACK_DAMAGE_MODIFIER_ID; }

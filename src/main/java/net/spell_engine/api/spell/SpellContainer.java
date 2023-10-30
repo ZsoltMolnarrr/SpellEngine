@@ -1,18 +1,29 @@
 package net.spell_engine.api.spell;
 
-import net.minecraft.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SpellContainer { public SpellContainer() { }
+    public enum ContentType {
+        MAGIC, ARCHERY
+    }
+    public ContentType content = ContentType.MAGIC;
     public boolean is_proxy = false;
     public int max_spell_count = 0;
     public String pool;
     public List<String> spell_ids = List.of();
 
     public SpellContainer(boolean is_proxy, String pool, int max_spell_count, List<String> spell_ids) {
+        this(null, is_proxy, pool, max_spell_count, spell_ids);
+    }
+
+    public SpellContainer(@Nullable ContentType content, boolean is_proxy, String pool, int max_spell_count, List<String> spell_ids) {
         this.is_proxy = is_proxy;
+        if (content != null) {
+            this.content = content;
+        }
         this.pool = pool;
         this.max_spell_count = max_spell_count;
         this.spell_ids = spell_ids;
@@ -49,8 +60,6 @@ public class SpellContainer { public SpellContainer() { }
     }
 
     public SpellContainer copy() {
-        return new SpellContainer(is_proxy, pool, max_spell_count, new ArrayList<>(spell_ids));
+        return new SpellContainer(content, is_proxy, pool, max_spell_count, new ArrayList<>(spell_ids));
     }
-
-    public record Hosted(ItemStack host, SpellContainer container) { }
 }
