@@ -27,6 +27,7 @@ API Additions:
 - ItemConfig `attributes[].id` field now accepts projectile damage and combat roll related attributes. Third party attributes can be support via Mixin into `AttributeResolver`
 - Add `HealthImpacting` interface for status effects, to modify damage and healing taken
 - Add some shared status effect renderers: `OrbitingEffectRenderer`, `StunParticleSpawner`
+- Fix spell tooltip indexed tokens
 
 Other changes:
 - Update MixinExtras to 0.2.0

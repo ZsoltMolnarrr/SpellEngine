@@ -251,11 +251,11 @@ public class SpellTooltip {
     }
 
     private static String replaceTokens(String text, String token, List<SpellHelper.EstimatedValue> values) {
+        boolean indexTokens = values.size() > 1;
         for (int i = 0; i < values.size(); ++i) {
             var range = values.get(i);
-            boolean indexedTokens = values.size() > 1;
-            token = indexedTokens ? (token + "_" + i) : token;
-            text = text.replace(token, formattedRange(range.min(), range.max()));
+            var actualToken = indexTokens ? (token + "_" + i) : token;
+            text = text.replace(actualToken, formattedRange(range.min(), range.max()));
         }
         return text;
     }
