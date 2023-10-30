@@ -165,6 +165,13 @@ public class SpellTooltip {
                     description = description.replace("{extra_launch}", formattedNumber(extra_launch_count));
                 }
             }
+            var cloud = spell.release.target.cloud;
+            if (cloud != null) {
+                var cloud_duration = cloud.time_to_live_seconds;
+                if (cloud_duration > 0) {
+                    description = description.replace("{cloud_duration}", formattedNumber(cloud_duration));
+                }
+            }
         }
 
         if (spell.impact != null) {
