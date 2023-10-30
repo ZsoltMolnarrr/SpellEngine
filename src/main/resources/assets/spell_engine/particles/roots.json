@@ -1,6 +1,5 @@
 {
   "textures": [
-    "spell_engine:roots_0",
     "spell_engine:roots_1",
     "spell_engine:roots_2",
     "spell_engine:roots_3",
@@ -8,6 +7,12 @@
     "spell_engine:roots_5",
     "spell_engine:roots_6",
     "spell_engine:roots_7",
-    "spell_engine:roots_8"
+    "spell_engine:roots_8",
+    "spell_engine:roots_9",
+    "spell_engine:roots_10",
+    "spell_engine:roots_11",
+    "spell_engine:roots_12",
+    "spell_engine:roots_13",
+    "spell_engine:roots_14"
   ]
 }
