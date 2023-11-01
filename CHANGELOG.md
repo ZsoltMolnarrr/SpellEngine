@@ -1,5 +1,9 @@
 # 0.12.0
 
+- Update Italian translation, thanks to Zano1999
+
+# 0.12.0
+
 Functional changes:
 - Update Spell Book slot icon
 - Spell hotbar now renders fancy mouse and keyboard icons
