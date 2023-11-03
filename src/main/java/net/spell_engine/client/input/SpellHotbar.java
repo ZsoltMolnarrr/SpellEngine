@@ -11,6 +11,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.UseAction;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.item.trinket.SpellBookItem;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.api.spell.SpellInfo;
@@ -58,7 +59,7 @@ public class SpellHotbar {
         var changed = false;
         var initialSlotCount = slots.size();
         var held = player.getMainHandStack();
-        var container = container(player, held);
+        var container = SpellContainerHelper.containerWithProxy(held, player);
 
         var slots = new ArrayList<Slot>();
         var useKey = ((KeybindingAccessor) options.useKey).getBoundKey();
@@ -67,7 +68,8 @@ public class SpellHotbar {
 
         var allBindings = Keybindings.Wrapped.all();
 
-        if (container != null) {
+        if (!(held.getItem() instanceof SpellBookItem) // Disable hotbar directly for spell books
+                && container != null) {
             var spellIds = container.spell_ids;
 
             boolean allowUseKeyForCastable = container.content != SpellContainer.ContentType.ARCHERY;
@@ -263,10 +265,6 @@ public class SpellHotbar {
 
     private void updateDebounced() {
          debounced.entrySet().removeIf(entry -> !entry.getKey().isPressed());
-    }
-
-    private SpellContainer container(PlayerEntity player, ItemStack held) {
-        return SpellContainerHelper.containerWithProxy(held, player);
     }
 
     public static ItemStack expectedUseStack(PlayerEntity player) {
