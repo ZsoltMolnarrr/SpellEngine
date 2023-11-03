@@ -10,4 +10,5 @@ public interface ArrowExtension {
     @Nullable Identifier getCarriedSpellId();
     @Nullable Spell getCarriedSpell();
     boolean isInGround_SpellEngine();
+    void allowByPassingIFrames_SpellEngine(boolean allow);
 }

@@ -109,6 +109,11 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
 
     // MARK: ArrowExtension
 
+    private boolean allowByPassingIFrames = true; // This doesn't mean it will bypass, arrowPerks also need to allow it
+    @Override
+    public void allowByPassingIFrames_SpellEngine(boolean allow) {
+        allowByPassingIFrames = allow;
+    }
 
     @Override
     public boolean isInGround_SpellEngine() {
@@ -181,15 +186,18 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         } else {
             var arrowPerks = spell.arrow_perks;
             var pushedKnockback = false;
-            int originalIFrame = 0;
+            int iFrameToRestore = 0;
             if (entity instanceof LivingEntity livingEntity && arrowPerks != null) {
                 if (arrowPerks.knockback != 1.0F) {
                     ((ConfigurableKnockback) livingEntity).pushKnockbackMultiplier_SpellEngine(arrowPerks.knockback);
                     pushedKnockback = true;
                 }
-                if (arrowPerks.bypass_iframes) {
-                    originalIFrame = entity.timeUntilRegen;
+                if (allowByPassingIFrames && arrowPerks.bypass_iframes) {
+                    iFrameToRestore = entity.timeUntilRegen;
                     entity.timeUntilRegen = 0;
+                }
+                if (arrowPerks.iframe_to_set > 0) {
+                    iFrameToRestore = arrowPerks.iframe_to_set;
                 }
             }
 
@@ -199,8 +207,8 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
             if (pushedKnockback) {
                 ((ConfigurableKnockback) entity).popKnockbackMultiplier_SpellEngine();
             }
-            if (originalIFrame != 0) {
-                entity.timeUntilRegen = originalIFrame;
+            if (iFrameToRestore != 0) {
+                entity.timeUntilRegen = iFrameToRestore;
             }
             return result;
         }

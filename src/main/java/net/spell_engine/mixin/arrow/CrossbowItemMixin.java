@@ -49,9 +49,13 @@ public class CrossbowItemMixin {
                 && crossbow.getNbt().contains(NBT_KEY_SPELL)
                 && projectileEntity instanceof ArrowExtension arrow) {
             var id = new Identifier(crossbow.getNbt().getString(NBT_KEY_SPELL));
+            var isMultiShot = simulated != 0F;
             var spell = SpellRegistry.getSpell(id);
             if (spell != null) {
                 arrow.applyArrowPerks(new SpellInfo(spell, id));
+                if (isMultiShot) {
+                    arrow.allowByPassingIFrames_SpellEngine(false);
+                }
             }
         }
         return original.call(worldParam, projectileEntity);
