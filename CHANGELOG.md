@@ -1,5 +1,6 @@
 # 0.12.1
 
+- Disable hotbar directly for spell books
 - Disable MultiShot arrows being able to bypass iframes
 - Update Italian translation, thanks to Zano1999
 
