@@ -1,11 +1,11 @@
 {
-  "spell_engine.mod_name" : "Motore magico",
+  "spell_engine.mod_name" : "Spell Engine",
   "enchantment.spell_engine.spell_infinity" : "Incantesimo Infinito",
   "enchantment.spell_engine.spell_infinity.desc" : "Gli incantesimi possono essere lanciati gratuitamente",
   "entity.spell_engine.spell_projectile": "Incantesimo",
   "tutorial.spell_hotbar.title": "Barra degli incantesimi focalizzati",
   "tutorial.spell_hotbar.description": "Premere %1$s",
-  "tutorial.spell_hotbar.unbound": "Associare una chiave!",
+  "tutorial.spell_hotbar.unbound": "Associare un tasto!",
 
   "spell.tooltip.host.proxy.spell": "Lancia incantesimi dall'attuale tomo magico",
   "spell.tooltip.host.proxy.arrow": "Usa abilità da acriere dall'attuale libro abilità",
@@ -28,7 +28,7 @@
   "spell.tooltip.spell_binding_tip": "(Usa la tabella degli incantesimi per aggiungere incantesimi)",
 
   "gui.spell_engine.config_menu" : "Configurazione motore incantesimi",
-  "gui.spell_engine.close" : "Vicino",
+  "gui.spell_engine.close" : "Chiudi",
   "gui.spell_engine.settings" : "Impostazioni",
   "gui.spell_engine.hud" : "HUD",
   "gui.spell_engine.parts" : "Parti",
@@ -102,13 +102,13 @@
   "text.autoconfig.spell_engine.option.client.shoulderSurfingAdaptiveWhileUse" : "Shoulder Surfing bow-like behaviour",
   "text.autoconfig.spell_engine.option.client.shoulderSurfingAdaptiveWhileUse.@Tooltip" : "Allow Shoulder Surfing Adaptive cursor for spell caster items, only while casting spells",
 
-  "gui.spell_engine.spell_binding" : "Incantesimo vincolante",
-  "gui.spell_engine.spell_binding.title" : "Vincola incantesimi",
-  "block.spell_engine.spell_binding": "Tabella del legame degli incantesimi",
-  "block.spell_engine.spell_binding.description": "Usalo per creare e riempire libri di incantesimi.",
-  "gui.spell_engine.spell_binding.already_bound" : "Incantesimo già legato",
+  "gui.spell_engine.spell_binding" : "Apprendimento incantesimi",
+  "gui.spell_engine.spell_binding.title" : "Apprendi incantesimi",
+  "block.spell_engine.spell_binding": "Tavolo da apprendimento",
+  "block.spell_engine.spell_binding.description": "Usalo per creare e riempire i tomi.",
+  "gui.spell_engine.spell_binding.already_bound" : "Incantesimo già appreso",
   "gui.spell_engine.spell_binding.no_more_slots" : "Niente più slot per incantesimi",
-  "gui.spell_engine.spell_binding.available" : "Vincola l'incantesimo",
+  "gui.spell_engine.spell_binding.available" : "Apprendi l'incantesimo",
   "gui.spell_engine.spell_binding.level_req_fail" : "Livello richiesto: %s",
 
   "advancements.rpg_classes.root.title": "Incantesimi",
