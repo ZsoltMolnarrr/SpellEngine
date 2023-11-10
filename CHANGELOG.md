@@ -1,6 +1,7 @@
 # 0.12.2
 
 - Fix on cooldown error messages when spell gets into cooldown
+- Update Spell Binding Table arrow button appearance
 
 # 0.12.1
 

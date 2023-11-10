@@ -21,6 +21,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.trinket.SpellBooks;
+import net.spell_engine.client.gui.CustomButton;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.util.SpellRender;
 import net.spell_engine.internals.SpellRegistry;
@@ -48,26 +49,18 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         super.init();
         int originX = (this.width - this.backgroundWidth) / 2;
         int originY = (this.height - this.backgroundHeight) / 2;
-        var x = originX + 152;
-        var y = originY + 3;
+        var x = originX + 156;
+        var y = originY + 5;
         var width = 16;
         var height = 10;
 
-        ButtonWidget.builder(Text.of("↑"), button -> { this.pageUp(); })
-                .position(x , y)
-                .size(width, height)
-                .build();
-
-
-        upButton = ButtonWidget.builder(Text.of("↑"), button -> { this.pageUp(); })
-                .position(x , y)
-                .size(width, height)
-                .build();
+        upButton = new CustomButton(x , y,
+                CustomButton.Type.SMALL_UP,
+                button -> { this.pageUp(); });
         upButton.visible = false;
-        downButton = ButtonWidget.builder(Text.of("↓"), button -> { this.pageDown(); })
-                .position(x , y + (PAGE_SIZE * BUTTON_HEIGHT) + height + 1)
-                .size(width, height)
-                .build();
+        downButton = new CustomButton(x , y + (PAGE_SIZE * BUTTON_HEIGHT) + height + 1,
+                CustomButton.Type.SMALL_DOWN,
+                button -> { this.pageDown(); });
         downButton.visible = false;
         this.addDrawableChild(upButton);
         this.addDrawableChild(downButton);
