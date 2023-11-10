@@ -1,3 +1,7 @@
+# 0.12.2
+
+- Fix on cooldown error messages when spell gets into cooldown
+
 # 0.12.1
 
 - Disable hotbar directly for spell books

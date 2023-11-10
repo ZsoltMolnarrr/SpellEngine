@@ -178,8 +178,8 @@ public class SpellHotbar {
                     case INSTANT, ITEM_USE -> {
                         if (pressed) {
                             var attempt = caster.startSpellCast(casterStack, slot.spell.id());
-                            displayAttempt(attempt, keyBinding);
                             handledThisTick = handle;
+                            displayAttempt(attempt);
                             return handle;
                         }
                     }
@@ -207,9 +207,9 @@ public class SpellHotbar {
                             // A different spell or no spell is being casted
                             if (pressed && isReleased(keyBinding, UseCase.STOP)) {
                                 var attempt = caster.startSpellCast(casterStack, slot.spell.id());
-                                displayAttempt(attempt, keyBinding);
                                 debounce(keyBinding, UseCase.START);
                                 handledThisTick = handle;
+                                displayAttempt(attempt);
                                 return handle;
                             }
                         }
@@ -222,16 +222,19 @@ public class SpellHotbar {
             }
         }
 
+        lastDisplayedAttempt = null; // Clearing last displayed attempt when no key is pressed
         return null;
     }
 
-    private void displayAttempt(SpellCast.Attempt attempt, KeyBinding keyBinding) {
-        if (handledThisTick != null) {
-            if (Objects.equals(keyBinding, handledThisTick.keyBinding())) { return; }
+    private SpellCast.Attempt lastDisplayedAttempt = null;
+    private void displayAttempt(SpellCast.Attempt attempt) {
+        if (lastDisplayedAttempt != null) { // Require releasing hotbar keys before displaying another attempt
+            return;
         }
         if (attempt.isFail()) {
             HudMessages.INSTANCE.castAttemptError(attempt);
         }
+        lastDisplayedAttempt = attempt;
     }
 
     private Identifier lastSyncedSpellId = null;
