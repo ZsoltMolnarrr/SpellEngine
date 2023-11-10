@@ -38,6 +38,7 @@ public class Spell {
 
     @Nullable public ArrowPerks arrow_perks = null;
     public static class ArrowPerks { public ArrowPerks() { }
+        public float damage_multiplier = 1F;
         public float velocity_multiplier = 1F;
         public boolean bypass_iframes = false;
         public int iframe_to_set = 0;

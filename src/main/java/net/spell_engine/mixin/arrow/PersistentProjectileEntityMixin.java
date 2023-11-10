@@ -34,6 +34,10 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
 
     @Shadow public abstract void setPierceLevel(byte level);
 
+    @Shadow public abstract void setDamage(double damage);
+
+    @Shadow public abstract double getDamage();
+
     private boolean arrowPerksAlreadyApplied = false;
     private Identifier spellId = null;
 
@@ -149,6 +153,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
                 var newPierce = (byte)(getPierceLevel() + perks.pierce);
                 setPierceLevel(newPierce);
             }
+            this.setDamage(this.getDamage() * perks.damage_multiplier);
         }
         this.spellId = spellInfo.id();
         arrow.getDataTracker().set(SPELL_ID_TRACKER, SpellRegistry.rawSpellId(spellInfo.id()));
