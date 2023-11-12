@@ -7,6 +7,11 @@
   "tutorial.spell_hotbar.description": "Press %1$s",
   "tutorial.spell_hotbar.unbound": "Bind a key!",
 
+  "spell.spell_engine.use_item.name": "Use Item",
+  "spell.spell_engine.use_item.description": "Use one of the held items.",
+  "spell.spell_engine.use_offhand_item.name": "Use Offhand Use",
+  "spell.spell_engine.use_offhand_item.description": "Use offhand item when present.",
+
   "spell.tooltip.host.proxy.spell": "Casts spells from equipped Spell Book",
   "spell.tooltip.host.proxy.arrow": "Uses archery skills from equipped Spell Book",
   "spell.tooltip.host.additional": "Additional spells:",

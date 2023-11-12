@@ -1,6 +1,7 @@
 # 0.12.3
 
 Functional changes:
+- Add generic item use skills (`spell_engine:use_item`, `spell_engine:use_offhand_item`)
 - Disable spell casting in Spectator mode
 - Fix random crashes on PersistentProjectileEntity
 - Fix Spell Binding Table arrow color states

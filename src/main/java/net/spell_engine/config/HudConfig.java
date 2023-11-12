@@ -53,7 +53,7 @@ public class HudConfig { public HudConfig() { }
     // MARK: Default and Presets
 
     public static HudElement defaultHotBar() {
-        return new HudElement(HudElement.Origin.BOTTOM, new Vec2f(-160, -11));
+        return new HudElement(HudElement.Origin.BOTTOM, new Vec2f(-170, -11));
     }
 
     public static HudElement defaultErrorMessage() {

@@ -1,0 +1,11 @@
+{
+  "school": "PHYSICAL_MELEE",
+  "learn": {
+    "tier": 0
+  },
+  "mode": "ITEM_USE",
+  "item_use": {
+    "shows_item_as_icon": true,
+    "requires_offhand_item": true
+  }
+}

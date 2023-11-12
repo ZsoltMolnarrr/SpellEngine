@@ -34,6 +34,7 @@ public class Spell {
     public ItemUse item_use = new ItemUse();
     public static class ItemUse { public ItemUse() { }
         public boolean shows_item_as_icon = false;
+        public boolean requires_offhand_item = false;
     }
 
     @Nullable public ArrowPerks arrow_perks = null;

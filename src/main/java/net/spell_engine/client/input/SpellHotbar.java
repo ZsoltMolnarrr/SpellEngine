@@ -71,9 +71,29 @@ public class SpellHotbar {
         if (!(held.getItem() instanceof SpellBookItem) // Disable hotbar directly for spell books
                 && container != null) {
             var spellIds = container.spell_ids;
+            var spellInfoList = spellIds.stream()
+                    .map(idString -> {
+                        var id = new Identifier(idString);
+                        var spell = SpellRegistry.getSpell(id);
+                        if (spell == null) {
+                            return null;
+                        }
+                        return new SpellInfo(spell, id);
+                    })
+                    .filter(Objects::nonNull)
+                    .toList();
 
-            boolean allowUseKeyForCastable = container.content != SpellContainer.ContentType.ARCHERY;
-            if (!allowUseKeyForCastable) {
+            // Try to find binding for UseKey first
+            SpellInfo skillForUseKey = null;
+            for (var info: spellInfoList) {
+                if (info.spell().mode == Spell.Mode.ITEM_USE) {
+                    if (info.spell().item_use.requires_offhand_item && player.getOffHandStack().isEmpty()) { continue; }
+                    skillForUseKey = info;
+                }
+            }
+
+            // boolean allowUseKeyForCastable = skillForUseKey == null || container.content == SpellContainer.ContentType.ARCHERY;
+            if (skillForUseKey != null || container.content == SpellContainer.ContentType.ARCHERY) { // Don't allow use key for castables
                 // Filtering out assignable keybindings for Archery content
                 // So item use can stay intact
                 allBindings = allBindings.stream()
@@ -84,23 +104,28 @@ public class SpellHotbar {
                         .toList();
             }
 
-            int keyBindingOffset = 0;
-            for (int i = 0; i < spellIds.size(); i++) {
-                var spellId = new Identifier(spellIds.get(i));
-                var spell = SpellRegistry.getSpell(spellId);
-                if (spell == null) { continue; }
+            // int keyBindingOffset = 0;
+            int keyBindingIndex = 0;
+            for (SpellInfo spellInfo : spellInfoList) {
+                var spellId = spellInfo.id();
+                var spell = spellInfo.spell();
+                if (spell == null) {
+                    continue;
+                }
                 WrappedKeybinding keyBinding = null;
                 switch (spell.mode) {
                     case CAST -> {
-                        if (i < allBindings.size()) {
-                            keyBinding = allBindings.get(i + keyBindingOffset);
+                        if (keyBindingIndex < allBindings.size()) {
+                            keyBinding = allBindings.get(keyBindingIndex);
+                            keyBindingIndex += 1;
                         }
                     }
                     case ITEM_USE -> {
+                        if (spell.item_use.requires_offhand_item && player.getOffHandStack().isEmpty()) { continue; }
                         // Dead (unbound, unregistered) keybinding is given,
                         // so it is forced to fall back to vanilla keybinding
                         keyBinding = new WrappedKeybinding(deadKey, WrappedKeybinding.VanillaAlternative.USE_KEY);
-                        keyBindingOffset -= 1; // Keybindings are taken in order, do not consume in this case
+                        // keyBindingOffset -= 1; // Keybindings are taken in order, do not consume in this case
                     }
                 }
 
