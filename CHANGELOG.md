@@ -1,3 +1,8 @@
+# 0.12.3
+
+API Changes:
+- Add armor set modifier to allow/disable spell power enchantments
+
 # 0.12.2
 
 Functional changes:

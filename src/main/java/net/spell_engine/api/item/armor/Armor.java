@@ -32,6 +32,7 @@ public class Armor {
     public static class Set<A extends ArmorItem> {
         public final String namespace;
         public final A head, chest, legs, feet;
+        public boolean allowSpellPowerEnchanting = true;
         public Set(String namespace, A head, A chest, A legs, A feet) {
             this.namespace = namespace;
             this.head = head;
@@ -52,10 +53,17 @@ public class Armor {
             return pieces().stream().map(piece -> idOf(piece).toString()).toList();
         }
 
+        public Set<A> allowSpellPowerEnchanting(boolean allow) {
+            this.allowSpellPowerEnchanting = allow;
+            return this;
+        }
+
         public void register(RegistryKey<ItemGroup> itemGroupKey) {
             for (var piece: pieces()) {
                 Registry.register(Registries.ITEM, idOf(piece), piece);
-                SpellPowerEnchanting.registerArmor(piece);
+                if (this.allowSpellPowerEnchanting) {
+                    SpellPowerEnchanting.registerArmor(piece);
+                }
             }
             ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register(content -> {
                 for(var piece: pieces()) {
