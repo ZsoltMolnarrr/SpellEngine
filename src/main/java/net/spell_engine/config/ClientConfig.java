@@ -32,7 +32,8 @@ public class ClientConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip
     public WrappedKeybinding.VanillaAlternative spellHotbar_9_defer = WrappedKeybinding.VanillaAlternative.HOTBAR_KEY_9;
 
-
+    @ConfigEntry.Gui.Tooltip
+    public boolean sneakingByPassSpellHotbar = false;
     @ConfigEntry.Gui.Tooltip
     public boolean useKeyHighPriority = false;
     @ConfigEntry.Gui.Tooltip

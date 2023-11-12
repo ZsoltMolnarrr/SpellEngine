@@ -185,9 +185,13 @@ public class SpellHotbar {
             return new Handle(slot.spell, keyBinding, category);
         }
     }
+
     @Nullable public Handle handle(ClientPlayerEntity player, List<Slot> slots, GameOptions options) {
         if (handledThisTick != null || skipHandling) { return null; }
-        if (Keybindings.bypass_spell_hotbar.isPressed()) { return null; }
+        if (Keybindings.bypass_spell_hotbar.isPressed()
+                || (SpellEngineClient.config.sneakingByPassSpellHotbar && options.sneakKey.isPressed())) {
+            return null;
+        }
         var caster = ((SpellCasterClient) player);
         var casted = caster.getSpellCastProgress();
         var casterStack = player.getMainHandStack();

@@ -2,6 +2,7 @@
 
 Functional changes:
 - Add generic item use skills (`spell_engine:use_item`, `spell_engine:use_offhand_item`)
+- Add sneak to bypass Spell Hotbar (disabled by default, client configurable)
 - Disable spell casting in Spectator mode
 - Fix random crashes on PersistentProjectileEntity
 - Fix Spell Binding Table arrow color states

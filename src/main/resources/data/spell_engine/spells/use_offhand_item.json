@@ -1,5 +1,6 @@
 {
   "school": "PHYSICAL_MELEE",
+  "range": 0,
   "learn": {
     "tier": 0
   },
