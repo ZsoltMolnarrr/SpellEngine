@@ -102,7 +102,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
     private void tick_TAIL_SpellEngine(CallbackInfo ci) {
         if (client_lastResolvedSpell != null) {
             var perks = client_lastResolvedSpell.arrow_perks;
-            if (perks.travel_particles != null) {
+            if (perks != null && perks.travel_particles != null) {
                 var arrow = arrow();
                 for (var travel_particles : perks.travel_particles) {
                     ParticleHelper.play(arrow.getWorld(), arrow, arrow.getYaw(), arrow.getPitch(), travel_particles);
