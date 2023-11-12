@@ -62,7 +62,7 @@ public class CustomButton extends ButtonWidget {
         int i = 0;
         if (!this.active) {
             i = 2;
-        } else if (this.isSelected()) {
+        } else if (this.isHovered()) {
             i = 1;
         }
         return v + i * stateOffsetY;

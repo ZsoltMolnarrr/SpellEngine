@@ -3,6 +3,7 @@
 Functional changes:
 - Disable spell casting in Spectator mode
 - Fix random crashes on PersistentProjectileEntity
+- Fix Spell Binding Table arrow color states
 
 API Changes:
 - Add armor set modifier to allow/disable spell power enchantments
