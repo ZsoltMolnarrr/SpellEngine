@@ -90,6 +90,9 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     public SpellCast.Attempt startSpellCast(ItemStack itemStack, Identifier spellId) {
         var caster = player();
+        if (caster.isSpectator()) {
+            return SpellCast.Attempt.none();
+        }
         if (spellId == null) {
             this.cancelSpellCast();
             return SpellCast.Attempt.none();

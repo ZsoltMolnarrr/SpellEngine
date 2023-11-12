@@ -1,5 +1,8 @@
 # 0.12.3
 
+Functional changes:
+- Disable spell casting in Spectator mode
+
 API Changes:
 - Add armor set modifier to allow/disable spell power enchantments
 

@@ -167,6 +167,7 @@ public class SpellHelper {
     }
 
     public static void performSpell(World world, PlayerEntity player, Identifier spellId, List<Entity> targets, SpellCast.Action action, float progress) {
+        if (player.isSpectator()) { return; }
         var spell = SpellRegistry.getSpell(spellId);
         if (spell == null) {
             return;
