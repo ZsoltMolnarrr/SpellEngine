@@ -1,3 +1,7 @@
+# 0.12.4
+
+- Add missing translation for Spell Area Effect entity
+
 # 0.12.3
 
 Functional changes:

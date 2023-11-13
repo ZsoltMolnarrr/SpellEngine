@@ -3,6 +3,7 @@
   "enchantment.spell_engine.spell_infinity" : "Spell Infinity",
   "enchantment.spell_engine.spell_infinity.desc" : "Spells are free to cast",
   "entity.spell_engine.spell_projectile": "Spell",
+  "entity.spell_engine.spell_area_effect": "Area Effect",
   "tutorial.spell_hotbar.title": "Focus Spell Hotbar",
   "tutorial.spell_hotbar.description": "Press %1$s",
   "tutorial.spell_hotbar.unbound": "Bind a key!",
