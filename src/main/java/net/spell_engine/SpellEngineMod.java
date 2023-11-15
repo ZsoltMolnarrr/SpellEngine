@@ -19,6 +19,7 @@ import net.spell_engine.api.item.AttributeResolver;
 import net.spell_engine.api.item.trinket.SpellBooks;
 import net.spell_engine.api.item.weapon.StaffItem;
 import net.spell_engine.api.spell.SpellContainer;
+import net.spell_engine.compat.QuiverCompat;
 import net.spell_engine.config.EnchantmentsConfig;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
@@ -82,6 +83,7 @@ public class SpellEngineMod {
         // Sync attack power to client so physical attack damage spells can be estimated.
         // Probably several other mods perform this operation, but its no problem.
         EntityAttributes.GENERIC_ATTACK_DAMAGE.setTracked(true);
+        QuiverCompat.init();
     }
 
     public static void registerSpellBinding() {

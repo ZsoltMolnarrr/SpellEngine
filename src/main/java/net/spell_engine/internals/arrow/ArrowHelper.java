@@ -21,6 +21,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.SpellEvents;
 import net.spell_engine.api.spell.SpellInfo;
+import net.spell_engine.compat.QuiverCompat;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.WorldScheduler;
 import org.joml.Quaternionf;
@@ -77,6 +78,9 @@ public class ArrowHelper {
     }
 
     public static boolean tryConsumeItem(PlayerEntity player, Item item) {
+        if (QuiverCompat.consumeArrow(item, player)) {
+            return true;
+        }
         for(int i = 0; i < player.getInventory().size(); ++i) {
             var stack = player.getInventory().getStack(i);
             if (stack.isOf(item)) {

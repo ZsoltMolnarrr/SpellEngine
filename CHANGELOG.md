@@ -1,6 +1,7 @@
 # 0.12.4
 
 - Add missing translation for Spell Area Effect entity
+- Add support for Supplementaries Quiver, for Archery skills
 
 # 0.12.3
 
