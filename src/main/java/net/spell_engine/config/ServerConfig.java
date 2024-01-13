@@ -23,7 +23,9 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     public boolean spell_cost_durability_allowed = true;
     @Comment("If set true, a Fireball doesn't collide with an ally, a healing projectile doesn't collide with an enemy")
     public boolean projectiles_pass_thru_irrelevant_targets = true;
+    @Comment("Spell book creation level requirement")
     public int spell_book_binding_level_requirement = 3;
+    @Comment("Spell book creation level cost")
     public int spell_book_binding_level_cost = 1;
 
     @Comment("Apply `Spell Casting from Spell Book` capability to anything that subclasses Sword")

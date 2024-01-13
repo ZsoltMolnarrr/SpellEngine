@@ -1,3 +1,7 @@
+# 0.12.5
+
+- Add some comments to config
+
 # 0.12.4
 
 - Add missing translation for Spell Area Effect entity
