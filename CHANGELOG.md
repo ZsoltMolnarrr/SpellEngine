@@ -1,5 +1,6 @@
 # 0.12.5
 
+- Fix channeled spell particles not being rendered, from player behind (for example: Fire Breath) 
 - Add some comments to config
 
 # 0.12.4
