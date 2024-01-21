@@ -36,15 +36,11 @@ public class ParticleBatch { public ParticleBatch() { }
     public float max_speed = 1;
     public float angle = 0;
     public float extent = 0;
-
-    public ParticleBatch(String particle_id, Shape shape, Origin origin, Rotation rotation,
-                         float count, float min_speed, float max_speed, float angle) {
-        this(particle_id, shape, origin, rotation, count, min_speed, max_speed, angle, 0);
-    }
+    public boolean invert = false;
 
     public ParticleBatch(
             String particle_id, Shape shape, Origin origin, Rotation rotation,
-            float count, float min_speed, float max_speed, float angle, float extent) {
+            float count, float min_speed, float max_speed, float angle, float extent, boolean invert) {
         this.particle_id = particle_id;
         this.shape = shape;
         this.origin = origin;
@@ -56,6 +52,21 @@ public class ParticleBatch { public ParticleBatch() { }
         this.extent = extent;
     }
 
+    // Compatibility constructors
+
+    public ParticleBatch(String particle_id, Shape shape, Origin origin, Rotation rotation,
+                         float count, float min_speed, float max_speed, float angle) {
+        this(particle_id, shape, origin, rotation, count, min_speed, max_speed, angle, 0);
+    }
+
+    public ParticleBatch(
+            String particle_id, Shape shape, Origin origin, Rotation rotation,
+            float count, float min_speed, float max_speed, float angle, float extent) {
+        this(particle_id, shape, origin, rotation, count, min_speed, max_speed, angle, extent, false);
+    }
+
+    // Copy
+
     public ParticleBatch(ParticleBatch other) {
         this(other.particle_id,
             other.shape,
@@ -65,6 +76,7 @@ public class ParticleBatch { public ParticleBatch() { }
             other.min_speed,
             other.max_speed,
             other.angle,
-            other.extent);
+            other.extent,
+            other.invert);
     }
 }

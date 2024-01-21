@@ -1,3 +1,7 @@
+# 0.13.0
+
+- Add particle batch `invert` field, to spawn particles moving in reverse direction
+
 # 0.12.5
 
 - Fix channeled spell particles not being rendered, from player behind (for example: Fire Breath) 

@@ -127,6 +127,7 @@ public class Packets {
             buffer.writeFloat(batch.max_speed);
             buffer.writeFloat(batch.angle);
             buffer.writeFloat(batch.extent);
+            buffer.writeBoolean(batch.invert);
         }
 
         private static ParticleBatch readBatch(PacketByteBuf buffer) {
@@ -139,7 +140,8 @@ public class Packets {
                     buffer.readFloat(),
                     buffer.readFloat(),
                     buffer.readFloat(),
-                    buffer.readFloat()
+                    buffer.readFloat(),
+                    buffer.readBoolean()
             );
         }
 

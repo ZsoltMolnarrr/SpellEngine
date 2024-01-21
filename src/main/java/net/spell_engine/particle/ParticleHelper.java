@@ -88,14 +88,15 @@ public class ParticleHelper {
             var id = new Identifier(batch.particle_id);
             var particle = (ParticleEffect) Registries.PARTICLE_TYPE.get(id);
             var count = batch.count;
-            var dynamicallyOffset = requiresDynamicOffset(batch);
-            var defaultOrigin = origin.add(offset(width, batch.extent, batch.shape, batch.rotation, yaw, pitch));
             if (batch.count < 1) {
                 count = rng.nextFloat() < batch.count ? 1 : 0;
             }
             for(int i = 0; i < count; ++i) {
                 var direction = direction(batch, yaw, pitch);
-                var particleSpecificOrigin = dynamicallyOffset ? origin.add(offset(width, batch.extent, batch.shape, batch.rotation, yaw, pitch)) : defaultOrigin;
+                var particleSpecificOrigin = origin.add(offset(width, batch.extent, batch.shape, direction.normalize(), batch.rotation, yaw, pitch));
+                if (batch.invert) {
+                    direction = direction.negate();
+                }
                 world.addParticle(particle, true,
                         particleSpecificOrigin.x, particleSpecificOrigin.y, particleSpecificOrigin.z,
                         direction.x, direction.y, direction.z);
@@ -126,14 +127,15 @@ public class ParticleHelper {
             var id = new Identifier(batch.particle_id);
             var particle = (ParticleEffect) Registries.PARTICLE_TYPE.get(id);
             var count = batch.count;
-            var dynamicallyOffset = requiresDynamicOffset(batch);
-            var defaultOrigin = origin.add(offset(width, batch.extent, batch.shape, batch.rotation, yaw, pitch));
             if (batch.count < 1) {
                 count = rng.nextFloat() < batch.count ? 1 : 0;
             }
             for(int i = 0; i < count; ++i) {
                 var direction = direction(batch, yaw, pitch);
-                var particleSpecificOrigin = dynamicallyOffset ? origin.add(offset(width, batch.extent, batch.shape, batch.rotation, yaw, pitch)) : defaultOrigin;
+                var particleSpecificOrigin = origin.add(offset(width, batch.extent, batch.shape, direction.normalize(), batch.rotation, yaw, pitch));
+                if (batch.invert) {
+                    direction = direction.negate();
+                }
                 instructions.add(new SpawnInstruction(particle,
                         particleSpecificOrigin.x, particleSpecificOrigin.y, particleSpecificOrigin.z,
                         direction.x, direction.y, direction.z));
@@ -176,24 +178,14 @@ public class ParticleHelper {
         return entity.getPos();
     }
 
-    private static boolean requiresDynamicOffset(ParticleBatch origin) {
-        switch (origin.shape) {
-            case CIRCLE, CONE, SPHERE -> {
-                return false;
-            }
-            case PILLAR, PIPE -> {
-                // Volumetric spawn points
-                return true;
-            }
-        }
-        assert true;
-        return false;
-    }
-
-    private static Vec3d offset(float width, float extent, ParticleBatch.Shape shape, ParticleBatch.Rotation rotation, float yaw, float pitch) {
+    private static Vec3d offset(float width, float extent, ParticleBatch.Shape shape, Vec3d direction,
+                                ParticleBatch.Rotation rotation, float yaw, float pitch) {
         var offset = Vec3d.ZERO;
         switch (shape) {
             case CIRCLE, CONE, SPHERE -> {
+                if (extent > 0) {
+                    offset = direction.multiply(extent);
+                }
                 return offset;
             }
             case PIPE -> {
