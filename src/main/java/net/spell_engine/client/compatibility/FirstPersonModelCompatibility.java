@@ -1,6 +1,7 @@
 package net.spell_engine.client.compatibility;
 
 import dev.tr7zw.firstperson.FirstPersonModelCore;
+import dev.tr7zw.firstperson.api.FirstPersonAPI;
 
 import java.util.function.Supplier;
 
@@ -26,7 +27,7 @@ public class FirstPersonModelCompatibility {
 
     private static Supplier<Boolean> isActive = () -> {
         if (loaded.get()) {
-            return FirstPersonModelCore.enabled;
+            return FirstPersonAPI.isEnabled();
         }
         return false;
     };

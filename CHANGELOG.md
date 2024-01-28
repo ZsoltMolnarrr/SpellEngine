@@ -1,6 +1,8 @@
 # 0.13.0
 
 - Add particle batch `invert` field, to spawn particles moving in reverse direction
+- Update Italian translation, thanks to Zano1999
+- Fix projectile pitch setting #40
 
 # 0.12.5
 

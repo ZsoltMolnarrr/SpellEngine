@@ -374,7 +374,7 @@ public class SpellHelper {
             projectile.setVelocity(look.x, look.y, look.z, velocity, divergence);
         }
         projectile.range = spell.range;
-        projectile.getPitch(caster.getPitch());
+        projectile.setPitch(caster.getPitch());
         projectile.setYaw(caster.getYaw());
 
         world.spawnEntity(projectile);
