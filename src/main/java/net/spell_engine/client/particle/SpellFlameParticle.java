@@ -7,6 +7,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.DefaultParticleType;
 import net.spell_engine.client.util.Color;
 import net.spell_power.api.MagicSchool;
+import org.jetbrains.annotations.Nullable;
 
 @Environment(value= EnvType.CLIENT)
 public class SpellFlameParticle extends AbstractSlowingParticle {
@@ -73,16 +74,17 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
         }
     }
 
-
-    @Environment(EnvType.CLIENT)
-    public static class HealingFactory implements ParticleFactory<DefaultParticleType> {
+    public static class ColorableFactory implements ParticleFactory<DefaultParticleType> {
         private final SpriteProvider spriteProvider;
-        public static Color color = Color.from(MagicSchool.HEALING.color());
+        public Color color = Color.from(0xffffcc);
 
-        public HealingFactory(SpriteProvider spriteProvider) {
+        public ColorableFactory(SpriteProvider spriteProvider, Color color) {
             this.spriteProvider = spriteProvider;
+            this.color = color;
         }
 
+        @Nullable
+        @Override
         public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
             var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
             particle.setSprite(this.spriteProvider);
@@ -92,21 +94,25 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
         }
     }
 
+
     @Environment(EnvType.CLIENT)
-    public static class HolyFactory implements ParticleFactory<DefaultParticleType> {
-        private final SpriteProvider spriteProvider;
-        public static Color color = Color.from(0xffffcc);
-
-        public HolyFactory(SpriteProvider spriteProvider) {
-            this.spriteProvider = spriteProvider;
+    public static class HealingFactory extends ColorableFactory {
+        public HealingFactory(SpriteProvider spriteProvider) {
+            super(spriteProvider, Color.from(MagicSchool.HEALING.color()));
         }
+    }
 
-        public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
-            particle.setSprite(this.spriteProvider);
-            float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
-            particle.setColor(color.red() * j, color.green() * j, color.blue() * j);
-            return particle;
+    @Environment(EnvType.CLIENT)
+    public static class HolyFactory extends ColorableFactory {
+        public HolyFactory(SpriteProvider spriteProvider) {
+            super(spriteProvider, Color.from(0xffffcc));
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static class NatureFactory extends ColorableFactory {
+        public NatureFactory(SpriteProvider spriteProvider) {
+            super(spriteProvider, Color.from(0x66ff66));
         }
     }
 }
