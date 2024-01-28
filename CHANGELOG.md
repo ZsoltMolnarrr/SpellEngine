@@ -1,6 +1,10 @@
 # 0.13.0
 
-- Add particle batch `invert` field, to spawn particles moving in reverse direction
+API changes:
+- Add particle batch `invert` field, to spawn particles with reverse motion
+- Add particle batch `pre_spawn_travel` field, to offset particle position relative to motion
+
+Functional changes:
 - Update Italian translation, thanks to Zano1999
 - Fix projectile pitch setting #40
 

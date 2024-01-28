@@ -94,6 +94,9 @@ public class ParticleHelper {
             for(int i = 0; i < count; ++i) {
                 var direction = direction(batch, yaw, pitch);
                 var particleSpecificOrigin = origin.add(offset(width, batch.extent, batch.shape, direction.normalize(), batch.rotation, yaw, pitch));
+                if (batch.pre_spawn_travel != 0) {
+                    particleSpecificOrigin = particleSpecificOrigin.add(direction.multiply(batch.pre_spawn_travel));
+                }
                 if (batch.invert) {
                     direction = direction.negate();
                 }
@@ -133,6 +136,9 @@ public class ParticleHelper {
             for(int i = 0; i < count; ++i) {
                 var direction = direction(batch, yaw, pitch);
                 var particleSpecificOrigin = origin.add(offset(width, batch.extent, batch.shape, direction.normalize(), batch.rotation, yaw, pitch));
+                if (batch.pre_spawn_travel != 0) {
+                    particleSpecificOrigin = particleSpecificOrigin.add(direction.multiply(batch.pre_spawn_travel));
+                }
                 if (batch.invert) {
                     direction = direction.negate();
                 }
