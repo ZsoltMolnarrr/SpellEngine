@@ -45,7 +45,11 @@ public class ParticleHelper {
                     sourceLocation = origin(trackedEntity, batch.origin);
                 }
             }
-            spawns.add(new Packets.ParticleBatches.Spawn(sourceEntityId, sourceLocation, batch));
+            spawns.add(new Packets.ParticleBatches.Spawn(
+                    sourceEntityId,
+                    trackedEntity.getYaw(),
+                    trackedEntity.getPitch(),
+                    sourceLocation, batch));
         }
         var packet = new Packets.ParticleBatches(sourceType, spawns).write(countMultiplier);
         if (trackedEntity instanceof ServerPlayerEntity serverPlayer) {
@@ -92,7 +96,7 @@ public class ParticleHelper {
                 count = rng.nextFloat() < batch.count ? 1 : 0;
             }
             for(int i = 0; i < count; ++i) {
-                var direction = direction(batch, yaw, pitch);
+                var direction = direction(batch, yaw, batch.yaw_offset, pitch);
                 var particleSpecificOrigin = origin.add(offset(width, batch.extent, batch.shape, direction.normalize(), batch.rotation, yaw, pitch));
                 if (batch.pre_spawn_travel != 0) {
                     particleSpecificOrigin = particleSpecificOrigin.add(direction.multiply(batch.pre_spawn_travel));
@@ -110,10 +114,12 @@ public class ParticleHelper {
         }
     }
 
-    public static List<SpawnInstruction> convertToInstructions(World world, float pitch, float yaw, Packets.ParticleBatches packet) {
+    public static List<SpawnInstruction> convertToInstructions(World world, Packets.ParticleBatches packet) {
         var instructions = new ArrayList<SpawnInstruction>();
         var sourceType = packet.sourceType();
         for(var spawn: packet.spawns()) {
+            float yaw = spawn.yaw();
+            float pitch = spawn.pitch();
             var batch = spawn.batch();
             var origin = Vec3d.ZERO;
             float width = 0.5F;
@@ -134,7 +140,7 @@ public class ParticleHelper {
                 count = rng.nextFloat() < batch.count ? 1 : 0;
             }
             for(int i = 0; i < count; ++i) {
-                var direction = direction(batch, yaw, pitch);
+                var direction = direction(batch, yaw, batch.yaw_offset, pitch);
                 var particleSpecificOrigin = origin.add(offset(width, batch.extent, batch.shape, direction.normalize(), batch.rotation, yaw, pitch));
                 if (batch.pre_spawn_travel != 0) {
                     particleSpecificOrigin = particleSpecificOrigin.add(direction.multiply(batch.pre_spawn_travel));
@@ -219,7 +225,7 @@ public class ParticleHelper {
         return offset;
     }
 
-    private static Vec3d direction(ParticleBatch batch, float yaw, float pitch) {
+    private static Vec3d direction(ParticleBatch batch, float yaw, float yaw_offset, float pitch) {
         var direction = Vec3d.ZERO;
         float normalizedYaw = yaw % 360;
         float normalizedPitch = pitch % 360;

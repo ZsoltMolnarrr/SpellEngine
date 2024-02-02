@@ -25,6 +25,7 @@ public class ParticleBatch { public ParticleBatch() { }
             }
         }
     }
+    public float yaw_offset = 0;
 
     public Shape shape;
     public enum Shape {
@@ -42,12 +43,14 @@ public class ParticleBatch { public ParticleBatch() { }
     public boolean invert = false;
 
     public ParticleBatch(
-            String particle_id, Shape shape, Origin origin, Rotation rotation,
+            String particle_id, Shape shape, Origin origin,
+            Rotation rotation, float yaw_offset,
             float count, float min_speed, float max_speed, float angle, float extent, float pre_spawn_travel, boolean invert) {
         this.particle_id = particle_id;
         this.shape = shape;
         this.origin = origin;
         this.rotation = rotation;
+        this.yaw_offset = yaw_offset;
         this.count = count;
         this.min_speed = min_speed;
         this.max_speed = max_speed;
@@ -69,7 +72,7 @@ public class ParticleBatch { public ParticleBatch() { }
     public ParticleBatch(
             String particle_id, Shape shape, Origin origin, Rotation rotation,
             float count, float min_speed, float max_speed, float angle, float extent) {
-        this(particle_id, shape, origin, rotation, count, min_speed, max_speed, angle, extent, 0, false);
+        this(particle_id, shape, origin, rotation, 0, count, min_speed, max_speed, angle, extent, 0, false);
     }
 
     // Copy
@@ -79,6 +82,7 @@ public class ParticleBatch { public ParticleBatch() { }
             other.shape,
             other.origin,
             other.rotation,
+            other.yaw_offset,
             other.count,
             other.min_speed,
             other.max_speed,

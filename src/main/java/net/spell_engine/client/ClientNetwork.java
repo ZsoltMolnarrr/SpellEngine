@@ -22,7 +22,7 @@ public class ClientNetwork {
 
         ClientPlayNetworking.registerGlobalReceiver(Packets.ParticleBatches.ID, (client, handler, buf, responseSender) -> {
             var packet = Packets.ParticleBatches.read(buf);
-            var instructions = ParticleHelper.convertToInstructions(client.world, 0, 0, packet);
+            var instructions = ParticleHelper.convertToInstructions(client.world, packet);
             client.execute(() -> {
                 for(var instruction: instructions) {
                     instruction.perform(client.world);

@@ -8,6 +8,7 @@ API changes:
 Functional changes:
 - Update Italian translation, thanks to Zano1999
 - Fix projectile pitch setting #40
+- Spell particle emitting entity yaw and pitch now being synchronized
 
 # 0.12.5
 

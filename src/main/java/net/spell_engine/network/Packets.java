@@ -3,7 +3,6 @@ package net.spell_engine.network;
 import com.google.gson.Gson;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
@@ -100,7 +99,7 @@ public class Packets {
 
     public record ParticleBatches(SourceType sourceType, List<Spawn> spawns) {
         public enum SourceType { ENTITY, COORDINATE }
-        public record Spawn(int sourceEntityId, Vec3d sourceLocation, ParticleBatch batch) { }
+        public record Spawn(int sourceEntityId, float yaw, float pitch, Vec3d sourceLocation, ParticleBatch batch) { }
 
         public static Identifier ID = new Identifier(SpellEngineMod.ID, "particle_effects");
         public PacketByteBuf write(float countMultiplier) {
@@ -109,6 +108,8 @@ public class Packets {
             buffer.writeInt(spawns.size());
             for (var spawn: spawns) {
                 buffer.writeInt(spawn.sourceEntityId);
+                buffer.writeFloat(spawn.yaw);
+                buffer.writeFloat(spawn.pitch);
                 buffer.writeDouble(spawn.sourceLocation.x);
                 buffer.writeDouble(spawn.sourceLocation.y);
                 buffer.writeDouble(spawn.sourceLocation.z);
@@ -122,6 +123,7 @@ public class Packets {
             buffer.writeInt(batch.shape.ordinal());
             buffer.writeInt(batch.origin.ordinal());
             buffer.writeInt(batch.rotation != null ? batch.rotation.ordinal() : -1);
+            buffer.writeFloat(batch.yaw_offset);
             buffer.writeFloat(batch.count * countMultiplier);
             buffer.writeFloat(batch.min_speed);
             buffer.writeFloat(batch.max_speed);
@@ -143,6 +145,7 @@ public class Packets {
                     buffer.readFloat(),
                     buffer.readFloat(),
                     buffer.readFloat(),
+                    buffer.readFloat(),
                     buffer.readBoolean()
             );
         }
@@ -154,6 +157,8 @@ public class Packets {
             for (int i = 0; i < spawnCount; ++i) {
                 spawns.add(new Spawn(
                         buffer.readInt(),
+                        buffer.readFloat(),
+                        buffer.readFloat(),
                         new Vec3d(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()),
                         readBatch(buffer)
                 ));
