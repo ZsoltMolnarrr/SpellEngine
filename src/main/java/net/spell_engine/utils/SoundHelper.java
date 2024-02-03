@@ -36,7 +36,8 @@ public class SoundHelper {
         "generic_lightning_release",
 
         "generic_soul_casting",
-        "generic_soul_release"
+        "generic_soul_release",
+        "generic_wind_charging"
     );
 
     public static Map<String, Float> soundDistances = Map.of(

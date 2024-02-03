@@ -26,10 +26,12 @@ public class ParticleBatch { public ParticleBatch() { }
         }
     }
     public float yaw_offset = 0;
+    public float roll = 0;
+    public float roll_offset = 0;
 
     public Shape shape;
     public enum Shape {
-        CIRCLE, PILLAR, PIPE, SPHERE, CONE
+        CIRCLE, PILLAR, PIPE, SPHERE, CONE, LINE
     }
 
     public float count = 1;

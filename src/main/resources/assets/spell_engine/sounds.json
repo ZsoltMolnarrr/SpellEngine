@@ -84,5 +84,11 @@
     "sounds": [
       "spell_engine:generic_soul_release"
     ]
+  },
+
+  "generic_wind_charging": {
+    "sounds": [
+      "spell_engine:generic_wind_charging"
+    ]
   }
 }

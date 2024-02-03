@@ -233,6 +233,9 @@ public class ParticleHelper {
         float rotateAroundX = 0;
         float rotateAroundY = 0;
         switch (batch.shape) {
+            case LINE -> {
+                direction = new Vec3d(0, 0, randomInRange(batch.min_speed, batch.max_speed));
+            }
             case CONE -> {
                 direction = new Vec3d(0, randomInRange(batch.min_speed, batch.max_speed), 0);
                 rotateAroundX += rng.nextFloat() * batch.angle - (batch.angle * 0.5F);
@@ -255,7 +258,7 @@ public class ParticleHelper {
             switch (batch.rotation) {
                 case LOOK -> {
                     rotateAroundX += normalizedPitch + 90;
-                    rotateAroundY += normalizedYaw;
+                    rotateAroundY += normalizedYaw + yaw_offset;
                 }
             }
             direction = direction
