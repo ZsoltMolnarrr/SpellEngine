@@ -115,4 +115,18 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
             super(spriteProvider, Color.from(0x66ff66));
         }
     }
+
+    @Environment(EnvType.CLIENT)
+    public static class NatureSlowingFactory extends NatureFactory {
+        public NatureSlowingFactory(SpriteProvider spriteProvider) {
+            super(spriteProvider);
+        }
+        @Override
+        public @Nullable Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+            var particle = (SpellFlameParticle)super.createParticle(defaultParticleType, clientWorld, d, e, f, g, h, i);
+            particle.velocityMultiplier = 0.8F;
+            return particle;
+        }
+    }
+
 }

@@ -2,6 +2,7 @@ package net.spell_engine.particle;
 
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.PacketByteBuf;
@@ -14,6 +15,7 @@ import net.minecraft.world.World;
 import net.spell_engine.api.spell.ParticleBatch;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.network.Packets;
+import net.spell_engine.utils.VectorHelper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -84,10 +86,10 @@ public class ParticleHelper {
     }
 
     public static void play(World world, Entity entity, float yaw, float pitch, ParticleBatch batch) {
-        play(world, origin(entity, batch.origin), entity.getWidth(), yaw, pitch, batch);
+        play(world, entity.age, origin(entity, batch.origin), entity.getWidth(), yaw, pitch, batch);
     }
 
-    public static void play(World world, Vec3d origin, float width, float yaw, float pitch, ParticleBatch batch) {
+    public static void play(World world, long time, Vec3d origin, float width, float yaw, float pitch, ParticleBatch batch) {
         try {
             var id = new Identifier(batch.particle_id);
             var particle = (ParticleEffect) Registries.PARTICLE_TYPE.get(id);
@@ -96,7 +98,7 @@ public class ParticleHelper {
                 count = rng.nextFloat() < batch.count ? 1 : 0;
             }
             for(int i = 0; i < count; ++i) {
-                var direction = direction(batch, yaw, batch.yaw_offset, pitch);
+                var direction = direction(batch, time, yaw, pitch);
                 var particleSpecificOrigin = origin.add(offset(width, batch.extent, batch.shape, direction.normalize(), batch.rotation, yaw, pitch));
                 if (batch.pre_spawn_travel != 0) {
                     particleSpecificOrigin = particleSpecificOrigin.add(direction.multiply(batch.pre_spawn_travel));
@@ -140,7 +142,7 @@ public class ParticleHelper {
                 count = rng.nextFloat() < batch.count ? 1 : 0;
             }
             for(int i = 0; i < count; ++i) {
-                var direction = direction(batch, yaw, batch.yaw_offset, pitch);
+                var direction = direction(batch, world.getTime(), yaw, pitch);
                 var particleSpecificOrigin = origin.add(offset(width, batch.extent, batch.shape, direction.normalize(), batch.rotation, yaw, pitch));
                 if (batch.pre_spawn_travel != 0) {
                     particleSpecificOrigin = particleSpecificOrigin.add(direction.multiply(batch.pre_spawn_travel));
@@ -225,7 +227,7 @@ public class ParticleHelper {
         return offset;
     }
 
-    private static Vec3d direction(ParticleBatch batch, float yaw, float yaw_offset, float pitch) {
+    private static Vec3d direction(ParticleBatch batch, long time, float yaw, float pitch) {
         var direction = Vec3d.ZERO;
         float normalizedYaw = yaw % 360;
         float normalizedPitch = pitch % 360;
@@ -257,14 +259,24 @@ public class ParticleHelper {
         if (batch.rotation != null) {
             switch (batch.rotation) {
                 case LOOK -> {
-                    rotateAroundX += normalizedPitch + 90;
-                    rotateAroundY += normalizedYaw + yaw_offset;
+                    // Find actual rotation
+                    float pRot = ((-pitch)) * (-1F);
+                    float yRot = yaw * (-1F);
+
+                    direction = direction
+                            .rotateX((float) Math.toRadians(pRot  - 90))
+                            .rotateY((float) Math.toRadians(yRot));
+
+                    var axis = VectorHelper.axisFromRotation(yRot, pRot);
+                    var diff = ((MinecraftClient.getInstance().world.getTime() * batch.roll) % 360) + batch.roll_offset;
+                    direction = VectorHelper.rotateAround(direction, axis, diff);
                 }
             }
-            direction = direction
-                    .rotateX((float) Math.toRadians(rotateAroundX) * (-1F))
-                    .rotateY((float) Math.toRadians(rotateAroundY) * (-1F));
+        } else {
+            var diff = ((MinecraftClient.getInstance().world.getTime() * batch.roll) % 360) + batch.roll_offset;
+            direction = direction.rotateY((float) Math.toRadians(diff));
         }
+
 
         return direction;
     }

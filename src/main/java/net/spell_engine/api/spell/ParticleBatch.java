@@ -13,6 +13,7 @@ public class ParticleBatch { public ParticleBatch() { }
 
     // null = no rotation
     public Rotation rotation = null;
+    // SHOULD BE CALLED `Orientation`
     public enum Rotation {
         LOOK;
 
@@ -25,8 +26,8 @@ public class ParticleBatch { public ParticleBatch() { }
             }
         }
     }
-    public float yaw_offset = 0;
-    public float roll = 0;
+    // Rotation offset (degrees)
+    public float roll = 0; // TODO: Remove
     public float roll_offset = 0;
 
     public Shape shape;
@@ -46,13 +47,14 @@ public class ParticleBatch { public ParticleBatch() { }
 
     public ParticleBatch(
             String particle_id, Shape shape, Origin origin,
-            Rotation rotation, float yaw_offset,
+            Rotation rotation, float roll, float roll_offset,
             float count, float min_speed, float max_speed, float angle, float extent, float pre_spawn_travel, boolean invert) {
         this.particle_id = particle_id;
         this.shape = shape;
         this.origin = origin;
         this.rotation = rotation;
-        this.yaw_offset = yaw_offset;
+        this.roll = roll;
+        this.roll_offset = roll_offset;
         this.count = count;
         this.min_speed = min_speed;
         this.max_speed = max_speed;
@@ -74,7 +76,7 @@ public class ParticleBatch { public ParticleBatch() { }
     public ParticleBatch(
             String particle_id, Shape shape, Origin origin, Rotation rotation,
             float count, float min_speed, float max_speed, float angle, float extent) {
-        this(particle_id, shape, origin, rotation, 0, count, min_speed, max_speed, angle, extent, 0, false);
+        this(particle_id, shape, origin, rotation, 0, 0, count, min_speed, max_speed, angle, extent, 0, false);
     }
 
     // Copy
@@ -84,7 +86,8 @@ public class ParticleBatch { public ParticleBatch() { }
             other.shape,
             other.origin,
             other.rotation,
-            other.yaw_offset,
+            other.roll,
+            other.roll_offset,
             other.count,
             other.min_speed,
             other.max_speed,
