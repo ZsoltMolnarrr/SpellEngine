@@ -128,5 +128,4 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
             return particle;
         }
     }
-
 }

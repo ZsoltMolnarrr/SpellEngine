@@ -2,7 +2,6 @@ package net.spell_engine.particle;
 
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.PacketByteBuf;
@@ -267,13 +266,13 @@ public class ParticleHelper {
                             .rotateX((float) Math.toRadians(pRot  - 90))
                             .rotateY((float) Math.toRadians(yRot));
 
-                    var axis = VectorHelper.axisFromRotation(yRot, pRot);
-                    var diff = ((MinecraftClient.getInstance().world.getTime() * batch.roll) % 360) + batch.roll_offset;
+                    var axis = VectorHelper.axisFromRotation(yRot, pRot).negate();
+                    var diff = ((time * batch.roll) % 360) + batch.roll_offset;
                     direction = VectorHelper.rotateAround(direction, axis, diff);
                 }
             }
         } else {
-            var diff = ((MinecraftClient.getInstance().world.getTime() * batch.roll) % 360) + batch.roll_offset;
+            var diff = ((time * batch.roll) % 360) + batch.roll_offset;
             direction = direction.rotateY((float) Math.toRadians(diff));
         }
 

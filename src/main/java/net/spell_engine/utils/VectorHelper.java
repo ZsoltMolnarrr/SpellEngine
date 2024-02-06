@@ -91,7 +91,7 @@ public class VectorHelper {
         double y = -Math.sin(pitchRadians);
         double z = Math.cos(yawRadians) * Math.cos(pitchRadians);
 
-        return new Vec3d(x, y, z).normalize().negate();
+        return new Vec3d(x, y, z).normalize();
     }
 
     public static Vec3d rotateAround(Vec3d vector, float angleDegrees, float yaw, float pitch) {
@@ -129,35 +129,4 @@ public class VectorHelper {
         double w = q1[3] * q2[3] - q1[0] * q2[0] - q1[1] * q2[1] - q1[2] * q2[2];
         return new double[]{x, y, z, w};
     }
-
-
-
-    public static Vec3d rotateVectorToSpace(Vec3d vector, Vec3d spaceAxis, Vec3d targetAxis) {
-        // Calculate rotation axis and angle
-        Vec3d rotationAxis = spaceAxis.crossProduct(targetAxis);
-        double angle = Math.acos(spaceAxis.dotProduct(targetAxis));
-
-        // Convert angle-axis to quaternion
-        Vec3d quaternion = angleAxisToQuaternion(rotationAxis, angle);
-
-        // Apply quaternion rotation to vector
-        return rotateVectorByQuaternion(vector, quaternion);
-    }
-
-    private static Vec3d angleAxisToQuaternion(Vec3d axis, double angle) {
-        double halfAngle = angle / 2.0;
-        double sinHalfAngle = Math.sin(halfAngle);
-        return new Vec3d(
-                axis.x * sinHalfAngle,
-                axis.y * sinHalfAngle,
-                axis.z * sinHalfAngle
-        ).normalize(); // The W component of the quaternion is cos(halfAngle), but it's not needed for this rotation formula
-    }
-
-    private static Vec3d rotateVectorByQuaternion(Vec3d vector, Vec3d quaternion) {
-        // Simplified rotation using quaternion (ignoring W component simplification)
-        Vec3d cross = quaternion.crossProduct(vector);
-        return vector.add(cross.multiply(2));
-    }
-
 }
