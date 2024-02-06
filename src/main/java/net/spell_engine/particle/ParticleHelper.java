@@ -228,14 +228,13 @@ public class ParticleHelper {
 
     private static Vec3d direction(ParticleBatch batch, long time, float yaw, float pitch) {
         var direction = Vec3d.ZERO;
-        float normalizedYaw = yaw % 360;
-        float normalizedPitch = pitch % 360;
 
         float rotateAroundX = 0;
         float rotateAroundY = 0;
         switch (batch.shape) {
             case LINE -> {
                 direction = new Vec3d(0, 0, randomInRange(batch.min_speed, batch.max_speed));
+                pitch = -pitch; // Inverting pitch, do not remove, it makes things work :D
             }
             case CONE -> {
                 direction = new Vec3d(0, randomInRange(batch.min_speed, batch.max_speed), 0);
@@ -259,23 +258,30 @@ public class ParticleHelper {
             switch (batch.rotation) {
                 case LOOK -> {
                     // Find actual rotation
-                    float pRot = ((-pitch)) * (-1F);
+                    float pRot = -pitch;
                     float yRot = yaw * (-1F);
 
                     direction = direction
-                            .rotateX((float) Math.toRadians(pRot  - 90))
-                            .rotateY((float) Math.toRadians(yRot));
+                            .rotateX((float) Math.toRadians(pRot - 90 + rotateAroundX))
+                            .rotateY((float) Math.toRadians(yRot + rotateAroundY));
 
-                    var axis = VectorHelper.axisFromRotation(yRot, pRot).negate();
-                    var diff = ((time * batch.roll) % 360) + batch.roll_offset;
-                    direction = VectorHelper.rotateAround(direction, axis, diff);
+                    if (batch.roll > 0) {
+                        var axis = VectorHelper.axisFromRotation(yRot, pRot).negate();
+                        var diff = ((time * batch.roll) % 360) + batch.roll_offset;
+                        direction = VectorHelper.rotateAround(direction, axis, diff);
+                    }
                 }
             }
         } else {
-            var diff = ((time * batch.roll) % 360) + batch.roll_offset;
-            direction = direction.rotateY((float) Math.toRadians(diff));
-        }
+            direction = direction
+                    .rotateX((float) Math.toRadians(rotateAroundX))
+                    .rotateY((float) Math.toRadians(rotateAroundY));
 
+            if (batch.roll > 0) {
+                var diff = ((time * batch.roll) % 360) + batch.roll_offset;
+                direction = direction.rotateY((float) Math.toRadians(diff));
+            }
+        }
 
         return direction;
     }
