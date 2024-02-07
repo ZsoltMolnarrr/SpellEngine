@@ -5,12 +5,13 @@ API changes:
 - Add particle batch `pre_spawn_travel` field, to offset particle position relative to motion
 - Add particle batch `roll` and `roll_offset` fields, to spawn particles with rotated motion vector
 - Add `nature_spark_mini` particle
-- Loot configuration now supports item tag id entries
 
 Functional changes:
+- Spell Containers are now resolved from all equipped trinket slots (prioritizing Spell Book slot first)
 - Update Italian translation, thanks to Zano1999
 - Fix projectile pitch setting #40
 - Spell particle emitting entity yaw and pitch now being synchronized
+- Loot configuration now supports item tag id entries
 
 # 0.12.5
 

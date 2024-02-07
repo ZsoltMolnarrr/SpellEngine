@@ -43,23 +43,33 @@ public class SpellContainerHelper {
         var component = TrinketsApi.getTrinketComponent(player);
         if (proxyContainer!= null && proxyContainer.is_proxy && component.isPresent()) {
             var trinketComponent = component.get();
+            var spellIds = new ArrayList<String>(proxyContainer.spell_ids);
+            var allowedContent = proxyContainer.content;
             var spellBookSlot = trinketComponent.getInventory().get("charm").get("spell_book");
-            // Up casting to `Inventory` so dependent mod workspace don't crash on mapping error (dev env only)
-            var spellBookStack = ((Inventory)spellBookSlot).getStack(0);
-            if (!spellBookStack.isEmpty()) {
-                var spellBookContainer = containerFromItemStack(spellBookStack);
-                if (spellBookContainer != null
-                        && spellBookContainer.content == proxyContainer.content) {
-                    var mergedSpellIds = Stream.of(proxyContainer.spell_ids, spellBookContainer.spell_ids)
-                            .flatMap(Collection::stream)
-                            .distinct()
-                            .toList();
+            collectContainers(spellIds, allowedContent, spellBookSlot.getStack(0));
 
-                    return new SpellContainer(spellBookContainer.content, false, null, 0, mergedSpellIds);
-                }
-            }
+            trinketComponent.getAllEquipped().forEach(pair -> {
+                var slot = pair.getLeft();
+                if (slot.inventory() == spellBookSlot) { return; }
+                var stack = pair.getRight();
+                collectContainers(spellIds, allowedContent, stack);
+            });
+
+            var mergedSpellIds = Stream.of(proxyContainer.spell_ids, spellIds)
+                    .flatMap(Collection::stream)
+                    .distinct()
+                    .toList();
+
+            return new SpellContainer(proxyContainer.content, false, null, 0, mergedSpellIds);
         }
         return proxyContainer;
+    }
+
+    private static void collectContainers(ArrayList<String> spellIds, SpellContainer.ContentType allowedContent, ItemStack itemStack) {
+        var container = containerFromItemStack(itemStack);
+        if (container != null && container.isValid() && container.content == allowedContent) {
+            spellIds.addAll(container.spell_ids);
+        }
     }
 
     public static SpellContainer containerFromItemStack(ItemStack itemStack) {
