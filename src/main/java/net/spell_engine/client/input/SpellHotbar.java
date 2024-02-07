@@ -59,7 +59,7 @@ public class SpellHotbar {
         var changed = false;
         var initialSlotCount = slots.size();
         var held = player.getMainHandStack();
-        var container = SpellContainerHelper.containerWithProxy(held, player);
+        var container = SpellContainerHelper.getEquipped(held, player);
 
         var slots = new ArrayList<Slot>();
         var useKey = ((KeybindingAccessor) options.useKey).getBoundKey();

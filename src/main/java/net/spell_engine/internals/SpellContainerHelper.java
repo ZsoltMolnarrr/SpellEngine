@@ -2,7 +2,6 @@ package net.spell_engine.internals;
 
 import dev.emi.trinkets.api.TrinketsApi;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -34,12 +33,12 @@ public class SpellContainerHelper {
         return SpellPool.empty;
     }
 
-    public static SpellContainer containerWithProxy(ItemStack itemStack, PlayerEntity player) {
-        var weaponContainer = containerFromItemStack(itemStack);
-        return containerWithProxy(weaponContainer, player);
+    public static SpellContainer getEquipped(ItemStack heldItemStack, PlayerEntity player) {
+        var weaponContainer = containerFromItemStack(heldItemStack);
+        return getEquipped(weaponContainer, player);
     }
 
-    public static SpellContainer containerWithProxy(SpellContainer proxyContainer, PlayerEntity player) {
+    public static SpellContainer getEquipped(SpellContainer proxyContainer, PlayerEntity player) {
         var component = TrinketsApi.getTrinketComponent(player);
         if (proxyContainer!= null && proxyContainer.is_proxy && component.isPresent()) {
             var trinketComponent = component.get();
