@@ -5,6 +5,7 @@ API changes:
 - Add particle batch `pre_spawn_travel` field, to offset particle position relative to motion
 - Add particle batch `roll` and `roll_offset` fields, to spawn particles with rotated motion vector
 - Add `nature_spark_mini` particle
+- Loot configuration now supports item tag id entries
 
 Functional changes:
 - Update Italian translation, thanks to Zano1999
