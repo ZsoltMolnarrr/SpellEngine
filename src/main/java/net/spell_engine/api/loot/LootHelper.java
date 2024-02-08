@@ -65,8 +65,4 @@ public class LootHelper {
             }
         }
     }
-
-//    private static TagKey<Item> itemTagKey(String id) {
-//        return TagKey.of(Registries.ITEM, new Identifier(id));
-//    }
 }

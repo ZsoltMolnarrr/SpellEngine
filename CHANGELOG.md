@@ -7,7 +7,7 @@ API changes:
 - Add `nature_spark_mini` particle
 
 Functional changes:
-- Spell Containers are now resolved from all equipped trinket slots (prioritizing Spell Book slot first)
+- Spell Containers are now resolved and combined from all equipped trinket slots (prioritizing Spell Book slot first)
 - Update Italian translation, thanks to Zano1999
 - Fix projectile pitch setting #40
 - Spell particle emitting entity yaw and pitch now being synchronized

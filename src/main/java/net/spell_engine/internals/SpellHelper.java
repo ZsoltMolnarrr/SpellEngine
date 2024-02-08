@@ -17,6 +17,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
+import net.spell_engine.api.entity.SpellSpawnedEntity;
 import net.spell_engine.api.item.trinket.SpellBookItem;
 import net.spell_engine.api.spell.CustomSpellHandler;
 import net.spell_engine.api.spell.Spell;
@@ -704,6 +705,18 @@ public class SpellHelper {
                     if (target.getFireTicks() > 0) {
                         target.setFireTicks(target.getFireTicks() + data.tick_offset);
                     }
+                }
+                case SPAWN -> {
+                    var data = impact.action.spawn;
+                    var id = new Identifier(data.entity_type_id);
+                    var type = Registries.ENTITY_TYPE.get(id);
+                    var entity = (Entity)type.create(world);
+                    entity.setPos(target.getX(), target.getY(), target.getZ());
+                    if (entity instanceof SpellSpawnedEntity spellSpawnedEntity) {
+                        // spellSpawnedEntity.onCreatedFromSpell(caster, spell);
+                    }
+                    world.spawnEntity(entity);
+                    success = true;
                 }
             }
             if (success) {

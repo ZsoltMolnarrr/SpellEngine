@@ -143,7 +143,7 @@ public class Spell {
             public boolean apply_to_caster = false;
             public float min_power = 1;
             public enum Type {
-                DAMAGE, HEAL, STATUS_EFFECT, FIRE
+                DAMAGE, HEAL, STATUS_EFFECT, FIRE, SPAWN
             }
             public Damage damage;
             public static class Damage { public Damage() { }
@@ -178,6 +178,10 @@ public class Spell {
                 // }
                 public int duration = 2;
                 public int tick_offset = 10;
+            }
+            public Spawn spawn;
+            public static class Spawn {
+                public String entity_type_id;
             }
         }
 
