@@ -20,7 +20,7 @@ public class SpellBinding {
     public static final Identifier ID = new Identifier(SpellEngineMod.ID, name);
     private static final float LIBRARY_POWER_BASE = 10;
     private static final float LIBRARY_POWER_MULTIPLIER = 1.5F;
-    private static final int LIBRARY_POWER_CAP = 22;
+    private static final int LIBRARY_POWER_CAP = 18;
     public static final int BOOK_OFFSET = 1;
     public enum Mode { SPELL, BOOK }
     public record Offer(int id, int cost, int levelRequirement) {  }

@@ -779,7 +779,7 @@ public class SpellHelper {
             case DAMAGE, FIRE -> {
                 return TargetHelper.Intent.HARMFUL;
             }
-            case HEAL -> {
+            case HEAL, SPAWN -> {
                 return TargetHelper.Intent.HELPFUL;
             }
             case STATUS_EFFECT -> {
@@ -837,7 +837,7 @@ public class SpellHelper {
                             .multiply(healData.spell_power_coefficient);
                     healEffects.add(healing);
                 }
-                case STATUS_EFFECT, FIRE -> {
+                case STATUS_EFFECT, FIRE, SPAWN -> {
                 }
             }
         }
