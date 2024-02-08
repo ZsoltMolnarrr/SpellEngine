@@ -158,7 +158,7 @@ public class SpellCloud extends Entity implements Ownable {
                     if (context == null) {
                         context = new SpellHelper.ImpactContext();
                     }
-                    SpellHelper.lookupAndPerformAreaImpact(area_impact, spell, owner,null,
+                    SpellHelper.lookupAndPerformAreaImpact(area_impact, new SpellInfo(spell, spellId), owner,null,
                             this, context.position(this.getPos()), true);
                 }
             }
@@ -166,6 +166,6 @@ public class SpellCloud extends Entity implements Ownable {
     }
 
     public Spell getSpell() {
-        return SpellRegistry.getSpell(this.spellId);
+        return SpellRegistry.getSpell(spellId);
     }
 }

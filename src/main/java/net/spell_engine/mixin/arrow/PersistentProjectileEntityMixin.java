@@ -226,7 +226,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         if (spell != null
                 && spell.impact != null
                 && owner instanceof LivingEntity shooter) {
-            SpellHelper.projectileImpact(shooter, arrow, target, spell,
+            SpellHelper.projectileImpact(shooter, arrow, target, new SpellInfo(spell, spellId),
                     new SpellHelper.ImpactContext().position(entityHitResult.getPos()));
         }
     }

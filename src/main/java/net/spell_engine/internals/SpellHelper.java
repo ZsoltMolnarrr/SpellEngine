@@ -228,10 +228,10 @@ public class SpellHelper {
                         case AREA -> {
                             var center = player.getPos().add(0, player.getHeight() / 2F, 0);
                             var area = spell.release.target.area;
-                            applyAreaImpact(world, player, targets, spell.range, area, spell, context.position(center), true);
+                            applyAreaImpact(world, player, targets, spell.range, area, spellInfo, context.position(center), true);
                         }
                         case BEAM -> {
-                            beamImpact(world, player, targets, spell, context);
+                            beamImpact(world, player, targets, spellInfo, context);
                         }
                         case CLOUD -> {
                             placeCloud(world, player, spellInfo, context);
@@ -240,7 +240,7 @@ public class SpellHelper {
                         case CURSOR -> {
                             var target = targets.stream().findFirst();
                             if (target.isPresent()) {
-                                directImpact(world, player, target.get(), spell, context);
+                                directImpact(world, player, target.get(), spellInfo, context);
                             } else {
                                 released = false;
                             }
@@ -262,7 +262,7 @@ public class SpellHelper {
                             }
                         }
                         case SELF -> {
-                            directImpact(world, player, player, spell, context);
+                            directImpact(world, player, player, spellInfo, context);
                             released = true;
                         }
                         case SHOOT_ARROW -> {
@@ -462,39 +462,39 @@ public class SpellHelper {
         world.spawnEntity(entity);
     }
 
-    private static void directImpact(World world, LivingEntity caster, Entity target, Spell spell, ImpactContext context) {
-        performImpacts(world, caster, target, target, spell, context);
+    private static void directImpact(World world, LivingEntity caster, Entity target, SpellInfo spellInfo, ImpactContext context) {
+        performImpacts(world, caster, target, target, spellInfo, context);
     }
 
-    private static void beamImpact(World world, LivingEntity caster, List<Entity> targets, Spell spell, ImpactContext context) {
+    private static void beamImpact(World world, LivingEntity caster, List<Entity> targets, SpellInfo spellInfo, ImpactContext context) {
         for(var target: targets) {
-            performImpacts(world, caster, target, target, spell, context.position(target.getPos()));
+            performImpacts(world, caster, target, target, spellInfo, context.position(target.getPos()));
         }
     }
 
-    public static void fallImpact(LivingEntity caster, Entity projectile, Spell spell, ImpactContext context) {
+    public static void fallImpact(LivingEntity caster, Entity projectile, SpellInfo spellInfo, ImpactContext context) {
         var adjustedCenter = context.position().add(0, 1, 0); // Adding a bit of height to avoid raycast hitting the ground
-        performImpacts(projectile.getWorld(), caster, null, projectile, spell, context.position(adjustedCenter));
+        performImpacts(projectile.getWorld(), caster, null, projectile, spellInfo, context.position(adjustedCenter));
     }
 
-    public static boolean projectileImpact(LivingEntity caster, Entity projectile, Entity target, Spell spell, ImpactContext context) {
-        return performImpacts(projectile.getWorld(), caster, target, projectile, spell, context);
+    public static boolean projectileImpact(LivingEntity caster, Entity projectile, Entity target, SpellInfo spellInfo, ImpactContext context) {
+        return performImpacts(projectile.getWorld(), caster, target, projectile, spellInfo, context);
     }
 
-    public static void lookupAndPerformAreaImpact(Spell.AreaImpact area_impact, Spell spell, LivingEntity caster, Entity exclude, Entity aoeSource, ImpactContext context, boolean additionalTargetLookup) {
+    public static void lookupAndPerformAreaImpact(Spell.AreaImpact area_impact, SpellInfo spellInfo, LivingEntity caster, Entity exclude, Entity aoeSource, ImpactContext context, boolean additionalTargetLookup) {
         var center = context.position();
         var targets = TargetHelper.targetsFromArea(aoeSource, center, area_impact.radius, area_impact.area, null);
         if (exclude != null) {
             targets.remove(exclude);
         }
-        applyAreaImpact(aoeSource.getWorld(), caster, targets, area_impact.radius, area_impact.area, spell, context.target(TargetHelper.TargetingMode.AREA), additionalTargetLookup);
+        applyAreaImpact(aoeSource.getWorld(), caster, targets, area_impact.radius, area_impact.area, spellInfo, context.target(TargetHelper.TargetingMode.AREA), additionalTargetLookup);
         ParticleHelper.sendBatches(aoeSource, area_impact.particles);
         SoundHelper.playSound(aoeSource.getWorld(), aoeSource, area_impact.sound);
     }
 
     private static void applyAreaImpact(World world, LivingEntity caster, List<Entity> targets,
                                         float range, Spell.Release.Target.Area area,
-                                        Spell spell, ImpactContext context, boolean additionalTargetLookup) {
+                                        SpellInfo spellInfo, ImpactContext context, boolean additionalTargetLookup) {
         double squaredRange = range * range;
         var center = context.position();
         for(var target: targets) {
@@ -506,7 +506,7 @@ public class SpellHelper {
                     distanceBasedMultiplier = Math.max(distanceBasedMultiplier, 0F);
                 }
             }
-            performImpacts(world, caster, target, target, spell, context
+            performImpacts(world, caster, target, target, spellInfo, context
                             .distance(distanceBasedMultiplier),
                     additionalTargetLookup
             );
@@ -555,12 +555,12 @@ public class SpellHelper {
         }
     }
 
-    public static boolean performImpacts(World world, LivingEntity caster, @Nullable Entity target, Entity aoeSource, Spell spell, ImpactContext context) {
-        return performImpacts(world, caster, target, aoeSource, spell, context, true);
+    public static boolean performImpacts(World world, LivingEntity caster, @Nullable Entity target, Entity aoeSource, SpellInfo spellInfo, ImpactContext context) {
+        return performImpacts(world, caster, target, aoeSource, spellInfo, context, true);
     }
-    public static boolean performImpacts(World world, LivingEntity caster, @Nullable Entity target, Entity aoeSource, Spell spell, ImpactContext context, boolean additionalTargetLookup) {
+    public static boolean performImpacts(World world, LivingEntity caster, @Nullable Entity target, Entity aoeSource, SpellInfo spellInfo, ImpactContext context, boolean additionalTargetLookup) {
         var trackers = target != null ? PlayerLookup.tracking(target) : null;
-
+        var spell = spellInfo.spell();
         var performed = false;
         TargetHelper.Intent selectedIntent = null;
         for (var impact: spell.impact) {
@@ -573,7 +573,7 @@ public class SpellHelper {
             }
 
             if (target != null) {
-                var result = performImpact(world, caster, target, spell.school, impact, context, trackers);
+                var result = performImpact(world, caster, target, spellInfo, impact, context, trackers);
                 performed = performed || result;
                 if (result) {
                     selectedIntent = intent;
@@ -584,7 +584,7 @@ public class SpellHelper {
         if (area_impact != null
                 && additionalTargetLookup
                 && (performed || target == null) ) {
-            lookupAndPerformAreaImpact(area_impact, spell, caster, target, aoeSource, context, false);
+            lookupAndPerformAreaImpact(area_impact, spellInfo, caster, target, aoeSource, context, false);
         }
 
         return performed;
@@ -592,16 +592,17 @@ public class SpellHelper {
 
     private static final float knockbackDefaultStrength = 0.4F;
 
-    private static boolean performImpact(World world, LivingEntity caster, Entity target, MagicSchool spellSchool, Spell.Impact impact, ImpactContext context, Collection<ServerPlayerEntity> trackers) {
+    private static boolean performImpact(World world, LivingEntity caster, Entity target, SpellInfo spellInfo, Spell.Impact impact, ImpactContext context, Collection<ServerPlayerEntity> trackers) {
         if (!target.isAttackable()) {
             return false;
         }
         var success = false;
         boolean isKnockbackPushed = false;
+        var spell = spellInfo.spell();
         try {
             double particleMultiplier = 1 * context.total();
             var power = context.power();
-            var school = impact.school != null ? impact.school : spellSchool;
+            var school = impact.school != null ? impact.school : spell.school;
             if (power == null || power.school() != school) {
                 power = SpellPower.getSpellPower(school, caster);
             }
@@ -713,7 +714,7 @@ public class SpellHelper {
                     var entity = (Entity)type.create(world);
                     entity.setPos(target.getX(), target.getY(), target.getZ());
                     if (entity instanceof SpellSpawnedEntity spellSpawnedEntity) {
-                        // spellSpawnedEntity.onCreatedFromSpell(caster, spell);
+                        spellSpawnedEntity.onCreatedFromSpell(caster, spellInfo.id());
                     }
                     world.spawnEntity(entity);
                     success = true;

@@ -25,6 +25,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.client.render.FlyingSpellEntity;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellRegistry;
@@ -301,7 +302,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             return;
         }
         if (owner instanceof LivingEntity livingEntity) {
-            SpellHelper.fallImpact(livingEntity, this, this.getSpell(), context.position(this.getPos()));
+            SpellHelper.fallImpact(livingEntity, this, this.getSpellInfo(), context.position(this.getPos()));
         }
     }
 
@@ -338,7 +339,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 if (context == null) {
                     context = new SpellHelper.ImpactContext();
                 }
-                var performed = SpellHelper.projectileImpact(caster, this, target, this.getSpell(), context.position(entityHitResult.getPos()));
+                var performed = SpellHelper.projectileImpact(caster, this, target, this.getSpellInfo(), context.position(entityHitResult.getPos()));
                 if (performed) {
                     chainReactionFrom(target);
                     if (ricochetFrom(target, caster)) {
@@ -515,6 +516,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     public Spell getSpell() {
         return SpellRegistry.getSpell(spellId);
+    }
+
+    public SpellInfo getSpellInfo() {
+        return new SpellInfo(getSpell(), spellId);
     }
 
     public SpellHelper.ImpactContext getImpactContext() {

@@ -5,6 +5,7 @@ API changes:
 - Add particle batch `pre_spawn_travel` field, to offset particle position relative to motion
 - Add particle batch `roll` and `roll_offset` fields, to spawn particles with rotated motion vector
 - Add `nature_spark_mini` particle
+- Add new impact action type: `SPAWN`, for spawning entities
 
 Functional changes:
 - Spell Containers are now resolved and combined from all equipped trinket slots (prioritizing Spell Book slot first)
