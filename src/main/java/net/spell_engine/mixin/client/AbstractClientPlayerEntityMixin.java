@@ -23,7 +23,7 @@ import net.spell_engine.client.compatibility.FirstPersonModelCompatibility;
 import net.spell_engine.client.sound.SpellCastingSound;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterEntity;
-import net.spell_engine.mixin.LivingEntityAccessor;
+import net.spell_engine.mixin.entity.LivingEntityAccessor;
 import net.spell_engine.particle.ParticleHelper;
 import net.spell_engine.utils.StringUtil;
 import org.spongepowered.asm.mixin.Mixin;

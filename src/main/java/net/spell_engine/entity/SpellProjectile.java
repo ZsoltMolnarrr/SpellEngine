@@ -24,6 +24,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.entity.TwoWayCollisionChecker;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.client.render.FlyingSpellEntity;
@@ -254,6 +255,16 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                             }
                         }
                         case FALL -> {
+                            if (hitResult.getType() == HitResult.Type.ENTITY) {
+                                var target = ((EntityHitResult) hitResult).getEntity();
+                                var reverse = ((TwoWayCollisionChecker) target).getReverseCollisionChecker();
+                                if (reverse != null) {
+                                    var result = reverse.apply(this);
+                                    if (result == TwoWayCollisionChecker.CollisionResult.COLLIDE) {
+                                        this.finishFalling();
+                                    }
+                                }
+                            }
                         }
                     }
                 }

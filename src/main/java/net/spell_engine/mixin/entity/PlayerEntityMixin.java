@@ -1,4 +1,4 @@
-package net.spell_engine.mixin;
+package net.spell_engine.mixin.entity;
 
 import com.google.gson.Gson;
 import net.minecraft.entity.data.DataTracker;

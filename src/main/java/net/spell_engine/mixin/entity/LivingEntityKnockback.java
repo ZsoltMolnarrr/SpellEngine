@@ -1,4 +1,4 @@
-package net.spell_engine.mixin;
+package net.spell_engine.mixin.entity;
 
 import net.minecraft.entity.LivingEntity;
 import net.spell_engine.entity.ConfigurableKnockback;
@@ -6,11 +6,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-import java.util.ArrayList;
 import java.util.Stack;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityMixin implements ConfigurableKnockback {
+public abstract class LivingEntityKnockback implements ConfigurableKnockback {
 
     /**
      * ConfigurableKnockback

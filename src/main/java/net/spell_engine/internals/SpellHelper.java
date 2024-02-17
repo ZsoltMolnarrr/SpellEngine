@@ -615,10 +615,13 @@ public class SpellHelper {
                 target = caster;
             }
 
-            if (!TargetHelper.actionAllowed(context.targetingMode(), intent(impact.action), caster, target)) {
+            var intent = intent(impact.action);
+            if (!TargetHelper.actionAllowed(context.targetingMode(), intent, caster, target)) {
                 return false;
             }
-            if (context.targetingMode == TargetHelper.TargetingMode.AREA && ((EntityImmunity)target).isImmuneTo(EntityImmunity.Type.AREA_EFFECT)) {
+            if (intent == TargetHelper.Intent.HARMFUL
+                    && context.targetingMode() == TargetHelper.TargetingMode.AREA
+                    && ((EntityImmunity)target).isImmuneTo(EntityImmunity.Type.AREA_EFFECT)) {
                 return false;
             }
 

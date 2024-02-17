@@ -1,4 +1,4 @@
-package net.spell_engine.mixin;
+package net.spell_engine.mixin.entity;
 
 import net.minecraft.entity.LivingEntity;
 import org.spongepowered.asm.mixin.Mixin;
