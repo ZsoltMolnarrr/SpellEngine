@@ -64,6 +64,21 @@ public class CustomLayers extends RenderLayer {
         return spellObject(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, lightEmission, false);
     }
 
+    public static RenderLayer create(Identifier texture, RenderPhase.ShaderProgram shaderProgram, RenderPhase.Transparency transparency,
+                                     RenderPhase.Cull culling, RenderPhase.WriteMaskState writeMask, RenderPhase.Overlay overlay,
+                                     Target target, boolean affectsOutline) {
+        MultiPhaseParameters multiPhaseParameters = MultiPhaseParameters.builder()
+                .program(shaderProgram)
+                .texture(new RenderPhase.Texture(texture, false, false))
+                .transparency(transparency)
+                .cull(culling)
+                .writeMaskState(writeMask)
+                .overlay(overlay)
+                .target(target)
+                .build(affectsOutline);
+        return RenderLayer.of("entity_translucent_emissive", VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, true, true, multiPhaseParameters);
+    }
+
     public static RenderLayer spellObject(Identifier texture, LightEmission lightEmission, boolean translucent) {
         RenderPhase.ShaderProgram shaderProgram = switch (lightEmission) {
             case RADIATE -> ENTITY_TRANSLUCENT_EMISSIVE_PROGRAM;

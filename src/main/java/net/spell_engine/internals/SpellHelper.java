@@ -714,7 +714,7 @@ public class SpellHelper {
                     var entity = (Entity)type.create(world);
                     entity.setPos(target.getX(), target.getY(), target.getZ());
                     if (entity instanceof SpellSpawnedEntity spellSpawnedEntity) {
-                        spellSpawnedEntity.onCreatedFromSpell(caster, spellInfo.id());
+                        spellSpawnedEntity.onCreatedFromSpell(caster, spellInfo.id(), data);
                     }
                     world.spawnEntity(entity);
                     success = true;

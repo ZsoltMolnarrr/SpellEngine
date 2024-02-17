@@ -183,7 +183,7 @@ public class Spell {
             public static class Spawn {
                 public String entity_type_id;
                 public int time_to_live_seconds = 0;
-                public float location_offset_by_look = 0;
+                public float location_offset_by_look = 0; // TODO: Handle this
                 public float location_offset_x = 0;
                 public float location_offset_y = 0;
                 public float location_offset_z = 0;
