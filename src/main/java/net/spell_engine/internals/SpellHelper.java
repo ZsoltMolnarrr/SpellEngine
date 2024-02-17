@@ -16,6 +16,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.effect.EntityImmunity;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
 import net.spell_engine.api.entity.SpellSpawnedEntity;
 import net.spell_engine.api.item.trinket.SpellBookItem;
@@ -615,6 +616,9 @@ public class SpellHelper {
             }
 
             if (!TargetHelper.actionAllowed(context.targetingMode(), intent(impact.action), caster, target)) {
+                return false;
+            }
+            if (context.targetingMode == TargetHelper.TargetingMode.AREA && ((EntityImmunity)target).isImmuneTo(EntityImmunity.Type.AREA_EFFECT)) {
                 return false;
             }
 

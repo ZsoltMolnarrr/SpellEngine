@@ -18,6 +18,7 @@
     "arrow.PersistentProjectileEntityMixin",
     "arrow.ServerWorldArrows",
     "criteria.EnchantedItemCriterionMixin",
+    "effect.EntityImmunityMixin",
     "effect.LivingEntityStatusEffectSync",
     "effect.LivingEntityStatusHealthImpacting",
     "effect.StatusEffectActionImpairing",
