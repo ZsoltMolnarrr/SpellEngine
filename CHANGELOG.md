@@ -6,6 +6,10 @@ API changes:
 - Add particle batch `roll` and `roll_offset` fields, to spawn particles with rotated motion vector
 - Add `nature_spark_mini` particle
 - Add new impact action type: `SPAWN`, for spawning entities
+- Add barebone immunity API
+- Add ShaderCompat helper to determine active shader
+- Add CustomLayers raw constructor
+- Add two-way entity collision API 
 
 Functional changes:
 - Spell Containers are now resolved and combined from all equipped trinket slots (prioritizing Spell Book slot first)
