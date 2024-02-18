@@ -4,11 +4,7 @@
   "package": "net.spell_engine.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "entity.EntityCollision",
     "ItemStackMixin",
-    "entity.LivingEntityAccessor",
-    "entity.LivingEntityKnockback",
-    "entity.PlayerEntityMixin",
     "ServerWorldMixin",
     "action_impair.AbstractHorseEntityMixin",
     "action_impair.LivingEntityActionImpairing",
@@ -25,7 +21,11 @@
     "effect.StatusEffectActionImpairing",
     "effect.StatusEffectHealthImpacting",
     "effect.StatusEffectRemoveOnHit",
-    "effect.StatusEffectSynchronized"
+    "effect.StatusEffectSynchronized",
+    "entity.EntityCollision",
+    "entity.LivingEntityAccessor",
+    "entity.LivingEntityKnockback",
+    "entity.PlayerEntityMixin"
   ],
   "client": [
     "client.AbstractClientPlayerEntityMixin",
@@ -39,6 +39,7 @@
     "client.control.SpellCastingMovement",
     "client.control.SpellHotbarMinecraftClient",
     "client.render.EntityMixin",
+    "client.render.InGameHudMixin",
     "client.render.ItemRendererAccessor",
     "client.render.LivingEntityRendererMixin",
     "client.render.MinecraftClientMixin",

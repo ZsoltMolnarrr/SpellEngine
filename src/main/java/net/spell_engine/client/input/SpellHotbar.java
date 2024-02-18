@@ -33,6 +33,7 @@ import java.util.Objects;
 
 public class SpellHotbar {
     public static SpellHotbar INSTANCE = new SpellHotbar();
+    private static final Identifier offhandUseSpellId = new Identifier(SpellEngineMod.ID, "use_offhand_item");
 
     private static KeyBinding deadKey = new KeyBinding(
             "keybindings." + SpellEngineMod.ID + ".dead",
@@ -40,7 +41,7 @@ public class SpellHotbar {
             InputUtil.UNKNOWN_KEY.getCode(),
             SpellEngineMod.modName());
 
-    public record Slot(SpellInfo spell, SpellCast.Mode castMode, @Nullable WrappedKeybinding keybinding) {
+    public record Slot(SpellInfo spell, SpellCast.Mode castMode, @Nullable WrappedKeybinding keybinding, @Nullable KeyBinding modifier) {
         @Nullable public KeyBinding getKeyBinding(GameOptions options) {
             if (keybinding != null) {
                 var unwrapped = keybinding.get(options);
@@ -53,9 +54,11 @@ public class SpellHotbar {
     }
     public List<Slot> slots = List.of();
     public StructuredSlots structuredSlots = new StructuredSlots(null, List.of());
+    public boolean showsOffHandUse = false;
     public record StructuredSlots(@Nullable Slot onUseKey, List<Slot> other) { }
 
     public boolean update(ClientPlayerEntity player, GameOptions options) {
+        this.showsOffHandUse = false;
         var changed = false;
         var initialSlotCount = slots.size();
         var held = player.getMainHandStack();
@@ -130,7 +133,7 @@ public class SpellHotbar {
                 }
 
                 // Create slot
-                var slot = new Slot(new SpellInfo(spell, spellId), SpellCast.Mode.from(spell), keyBinding);
+                var slot = new Slot(new SpellInfo(spell, spellId), SpellCast.Mode.from(spell), keyBinding, null);
 
                 // Try to categorize slot based on keybinding
                 if (keyBinding != null) {
@@ -150,6 +153,22 @@ public class SpellHotbar {
                 slots.add(slot);
             }
         }
+
+        // Adding to the end of the list, so spell with UseKey get handled first
+        if (SpellEngineClient.config.spellHotbarShowsOffhand) {
+            var offHandStack = player.getOffHandStack();
+            if (!slots.isEmpty() && !offHandStack.isEmpty() && offHandStack.getUseAction() != UseAction.NONE) {
+                var keyBinding = new WrappedKeybinding(options.useKey, WrappedKeybinding.VanillaAlternative.USE_KEY);
+                var spellId = offhandUseSpellId;
+                var spell = SpellRegistry.getSpell(spellId);
+                if (spell != null) {
+                    var slot = new Slot(new SpellInfo(spell, spellId), SpellCast.Mode.from(spell), keyBinding, Keybindings.bypass_spell_hotbar);
+                    slots.add(slot);
+                    showsOffHandUse = true;
+                }
+            }
+        }
+
         changed = initialSlotCount != slots.size();
         this.structuredSlots = new StructuredSlots(onUseKey, otherSlots);
         this.slots = slots;

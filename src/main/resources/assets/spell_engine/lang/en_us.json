@@ -71,6 +71,8 @@
   "text.autoconfig.spell_engine.option.client.holdToCastChannelled.@Tooltip" : "This applies for channeled spells only! If enabled, the spell casting stops when releasing the key, otherwise when the key is pressed again",
   "text.autoconfig.spell_engine.option.client.holdToCastCharged" : "Hold to cast CHARGED spells",
   "text.autoconfig.spell_engine.option.client.holdToCastCharged.@Tooltip" : "This applies for charged spells only! If enabled, the spell casting stops when releasing the key, otherwise when the key is pressed again",
+  "text.autoconfig.spell_engine.option.client.spellHotbarShowsOffhand" : "Show offhand item on Spell Hotbar",
+  "text.autoconfig.spell_engine.option.client.spellHotbarShowsOffhand.@Tooltip" : "Show usable offhand item on Spell Hotbar, if present",
   "text.autoconfig.spell_engine.option.client.spellHotbar_1_defer" : "Spell Hotbar Slot 1 fallback",
   "text.autoconfig.spell_engine.option.client.spellHotbar_1_defer.@Tooltip" : "Spell Hotbar Slot 1 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
   "text.autoconfig.spell_engine.option.client.spellHotbar_2_defer" : "Spell Hotbar Slot 2 fallback",

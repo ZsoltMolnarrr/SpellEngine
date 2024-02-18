@@ -13,6 +13,8 @@ public class ClientConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip
     public boolean holdToCastCharged = true;
     @ConfigEntry.Gui.Tooltip
+    public boolean spellHotbarShowsOffhand = true;
+    @ConfigEntry.Gui.Tooltip
     @Nullable
     public WrappedKeybinding.VanillaAlternative spellHotbar_1_defer = WrappedKeybinding.VanillaAlternative.USE_KEY;
     @ConfigEntry.Gui.Tooltip

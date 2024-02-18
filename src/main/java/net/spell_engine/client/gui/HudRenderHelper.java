@@ -2,10 +2,12 @@ package net.spell_engine.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -26,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class HudRenderHelper {
@@ -70,7 +73,8 @@ public class HudRenderHelper {
                             useItem ? null : SpellRender.iconTexture(info.id()),
                             useItem ? SpellHotbar.expectedUseStack(player) : null,
                             cooldownManager.getCooldownProgress(new Identifier(info.id().toString()), tickDelta),
-                            SpellHotBarWidget.KeyBindingViewModel.from(slot.getKeyBinding(client.options)));
+                            SpellHotBarWidget.KeyBindingViewModel.from(slot.getKeyBinding(client.options)),
+                            slot.modifier() != null ? SpellHotBarWidget.KeyBindingViewModel.from(slot.modifier()) : null);
                 }).collect(Collectors.toList());
                 hotbarViewModel = new SpellHotBarWidget.ViewModel(spells);
             }
@@ -264,21 +268,41 @@ public class HudRenderHelper {
         private static final int slotHeight = 22;
         private static final int slotWidth = 20;
 
+        private static final Map<Integer, String> customHudKeyLabels = Map.of(
+                InputUtil.GLFW_KEY_LEFT_ALT, "Al",
+                InputUtil.GLFW_KEY_RIGHT_ALT, "Al",
+                InputUtil.GLFW_KEY_LEFT_SHIFT, "↑",
+                InputUtil.GLFW_KEY_RIGHT_SHIFT, "↑"
+        );
+
         public record KeyBindingViewModel(String label, @Nullable Drawable.Component drawable) {
             public static KeyBindingViewModel from(@Nullable KeyBinding keyBinding) {
                 if (keyBinding == null) {
                     return new KeyBindingViewModel("", null);
                 }
-                var key = ((KeybindingAccessor)keyBinding).getBoundKey().toString();
+                var boundKey = ((KeybindingAccessor)keyBinding).getBoundKey();
+                var key = boundKey.toString();
                 var drawable = HudKeyVisuals.custom.get(key);
                 if (drawable != null) {
                     return new KeyBindingViewModel("", drawable);
+                }
+                var customLabel = customHudKeyLabels.get(boundKey.getCode());
+                if (customLabel != null) {
+                    return new KeyBindingViewModel(customLabel, null);
                 }
                 var label = keyBinding.getBoundKeyLocalizedText()
                         .getString()
                         .toUpperCase(Locale.US);
                 label = acronym(label, 3);
                 return new KeyBindingViewModel(label, null);
+            }
+
+            public int width(TextRenderer textRenderer) {
+                if (drawable != null) {
+                    return drawable.draw().width();
+                } else {
+                    return textRenderer.getWidth(label);
+                }
             }
         }
 
@@ -295,15 +319,15 @@ public class HudRenderHelper {
             return result.toString();
         }
 
-        public record SpellViewModel(@Nullable Identifier iconId, @Nullable ItemStack itemStack, float cooldown, KeyBindingViewModel keybinding) { }
+        public record SpellViewModel(@Nullable Identifier iconId, @Nullable ItemStack itemStack, float cooldown, KeyBindingViewModel keybinding, @Nullable KeyBindingViewModel modifier) { }
 
         public record ViewModel(List<SpellViewModel> spells) {
             public static ViewModel mock() {
                 return new ViewModel(
                         List.of(
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("1", null)),
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("2", null)),
-                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("3", null))
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("1", null), null),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("2", null), null),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("3", null), null)
                         )
                 );
             }
@@ -372,22 +396,46 @@ public class HudRenderHelper {
                 // Keybinding
                 if (spell.keybinding() != null) {
                     var keybindingX = x + (iconSize / 2);
-                    var keybindingY = (int)origin.y;
-                    var buttonY = keybindingY + 2;
-                    if (spell.keybinding().drawable != null) {
-                        spell.keybinding().drawable.draw(context, keybindingX, buttonY, Drawable.Anchor.CENTER, Drawable.Anchor.TRAILING);
+                    var keybindingY = (int)origin.y + 2;
+                    if (spell.modifier != null) {
+                        keybindingX += 2; // Shifting to the right, because this will likely be the last
+                        var spacing = 1;
+                        var modifierWidth = spell.modifier().width(textRenderer);
+                        var keybindingWidth = spell.keybinding().width(textRenderer);
+                        var totalWidth = modifierWidth + keybindingWidth;
+
+                        keybindingX -= (totalWidth / 2);
+                        drawKeybinding(context, textRenderer, spell.modifier, keybindingX, keybindingY, Drawable.Anchor.LEADING, Drawable.Anchor.TRAILING);
+                        keybindingX += modifierWidth + spacing;
+                        drawKeybinding(context, textRenderer, spell.keybinding(), keybindingX, keybindingY, Drawable.Anchor.LEADING, Drawable.Anchor.TRAILING);
                     } else {
-                        var textLength = textRenderer.getWidth(spell.keybinding().label);
-                        HudKeyVisuals.buttonLeading.draw(context, keybindingX - (textLength / 2), buttonY, Drawable.Anchor.TRAILING, Drawable.Anchor.TRAILING);
-                        HudKeyVisuals.buttonCenter.drawFlexibleWidth(context, keybindingX - (textLength / 2), buttonY, textLength, Drawable.Anchor.TRAILING);
-                        HudKeyVisuals.buttonTrailing.draw(context, keybindingX + (textLength / 2), buttonY, Drawable.Anchor.LEADING, Drawable.Anchor.TRAILING);
-                        context.drawCenteredTextWithShadow(textRenderer, spell.keybinding().label, keybindingX, keybindingY - 8, 0xFFFFFF);
+                        drawKeybinding(context, textRenderer, spell.keybinding(), keybindingX, keybindingY, Drawable.Anchor.CENTER, Drawable.Anchor.TRAILING);
                     }
                 }
             }
 
             RenderSystem.disableBlend();
             context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        }
+
+        private static void drawKeybinding(DrawContext context, TextRenderer textRenderer, KeyBindingViewModel keybinding, int x, int y,
+                                           Drawable.Anchor horizontalAnchor, Drawable.Anchor verticalAnchor) {
+            if (keybinding.drawable != null) {
+                keybinding.drawable.draw(context, x, y, horizontalAnchor, verticalAnchor);
+            } else {
+                var textLength = textRenderer.getWidth(keybinding.label);
+                var xOffset = 0;
+                switch (horizontalAnchor) {
+                    case TRAILING -> xOffset = -textLength / 2;
+                    case CENTER -> xOffset = 0;
+                    case LEADING -> xOffset = textLength / 2;
+                }
+                x += xOffset;
+                HudKeyVisuals.buttonLeading.draw(context, x - (textLength / 2), y, Drawable.Anchor.TRAILING, verticalAnchor);
+                HudKeyVisuals.buttonCenter.drawFlexibleWidth(context, x - (textLength / 2), y, textLength, verticalAnchor);
+                HudKeyVisuals.buttonTrailing.draw(context, x + (textLength / 2), y, Drawable.Anchor.LEADING, verticalAnchor);
+                context.drawCenteredTextWithShadow(textRenderer, keybinding.label, x, y - 10, 0xFFFFFF);
+            }
         }
 
         private static void renderCooldown(DrawContext context, float progress, int x, int y) {
