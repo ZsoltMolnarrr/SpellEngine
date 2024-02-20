@@ -719,7 +719,7 @@ public class SpellHelper {
                     var id = new Identifier(data.entity_type_id);
                     var type = Registries.ENTITY_TYPE.get(id);
                     var entity = (Entity)type.create(world);
-                    entity.setPos(target.getX(), target.getY(), target.getZ());
+                    applyEntityPlacement(entity, caster, new Vec3d(target.getX(), target.getY(), target.getZ()), data.placement);
                     if (entity instanceof SpellSpawnedEntity spellSpawnedEntity) {
                         spellSpawnedEntity.onCreatedFromSpell(caster, spellInfo.id(), data);
                     }
@@ -743,6 +743,23 @@ public class SpellHelper {
             }
         }
         return success;
+    }
+
+    public static void applyEntityPlacement(Entity entity, LivingEntity caster, Vec3d position, Spell.EntityPlacement placement) {
+        if (placement != null) {
+            if (placement.location_offset_by_look > 0) {
+                float yaw = caster.getYaw() + placement.location_yaw_offset;
+                position = position.add(Vec3d.fromPolar(0, yaw).multiply(placement.location_offset_by_look));
+            }
+            if (placement.apply_caster_yaw) {
+                entity.setYaw(caster.getYaw());
+            }
+            if (placement.apply_caster_pitch) {
+                entity.setPitch(caster.getPitch());
+            }
+            position = position.add(new Vec3d(placement.location_offset_x, placement.location_offset_y, placement.location_offset_z));
+        }
+        entity.setPosition(position.getX(), position.getY(), position.getZ());
     }
 
     public static TargetHelper.TargetingMode selectionTargetingMode(Spell spell) {

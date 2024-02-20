@@ -183,10 +183,7 @@ public class Spell {
             public static class Spawn {
                 public String entity_type_id;
                 public int time_to_live_seconds = 0;
-                public float location_offset_by_look = 0; // TODO: Handle this
-                public float location_offset_x = 0;
-                public float location_offset_y = 0;
-                public float location_offset_z = 0;
+                @Nullable public EntityPlacement placement;
             }
         }
 
@@ -287,7 +284,7 @@ public class Spell {
         }
     }
 
-    public static class ProjectileModel {
+    public static class ProjectileModel { public ProjectileModel() { }
         public String model_id;
         public LightEmission light_emission = LightEmission.GLOW;
         public float scale = 1F;
@@ -296,5 +293,16 @@ public class Spell {
         public enum RenderMode {
             FLAT, DEEP
         }
+    }
+
+    public static class EntityPlacement { public EntityPlacement() { }
+        // If greater than 0, the entity will be placed at the caster's look direction, by this many blocks
+        public float location_offset_by_look = 0;
+        public float location_yaw_offset = 0;
+        public boolean apply_caster_yaw = false;
+        public boolean apply_caster_pitch = false;
+        public float location_offset_x = 0;
+        public float location_offset_y = 0;
+        public float location_offset_z = 0;
     }
 }
