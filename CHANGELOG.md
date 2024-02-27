@@ -1,3 +1,10 @@
+# 0.14.0
+
+- Trinkets is now an optional dependency
+
+Functional changes:
+- You can now cast spells from the Spell Book in your offhand (server configurable)
+
 # 0.13.0
 
 API changes:
