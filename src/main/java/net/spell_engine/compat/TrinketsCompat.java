@@ -11,7 +11,9 @@ import net.spell_engine.api.item.trinket.SpellBookTrinketItem;
 import net.spell_engine.api.spell.SpellContainer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 
 import static net.spell_engine.internals.SpellContainerHelper.containerFromItemStack;
 
@@ -35,13 +37,13 @@ public class TrinketsCompat {
         return enabled;
     }
 
-    public static SpellContainer getEquipped(SpellContainer proxyContainer, PlayerEntity player) {
-        if (!enabled) return proxyContainer;
+    public static List<String> getEquippedSpells(SpellContainer proxyContainer, PlayerEntity player) {
+        if (!enabled) return Collections.emptyList();
 
         var component = TrinketsApi.getTrinketComponent(player);
 
         if (component.isEmpty() || proxyContainer == null || !proxyContainer.is_proxy) {
-            return proxyContainer;
+            return Collections.emptyList();
         }
 
         var trinketComponent = component.get();
@@ -56,7 +58,7 @@ public class TrinketsCompat {
         trinketComponent.getAllEquipped().forEach(pair -> items.add(pair.getRight()));
 
         // Extract spell IDs from the containers
-        var collectedSpellIds = new LinkedHashSet<String>(proxyContainer.spell_ids);
+        var collectedSpellIds = new LinkedHashSet<>(proxyContainer.spell_ids);
         for (ItemStack stack : items) {
             if (stack.isEmpty()) continue;
 
@@ -66,7 +68,7 @@ public class TrinketsCompat {
             }
         }
 
-        return new SpellContainer(allowedContent, false, null, 0, new ArrayList<>(collectedSpellIds));
+        return new ArrayList<>(collectedSpellIds);
     }
 
 

@@ -16,7 +16,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SpellContainerHelper {
     public static Identifier getPoolId(SpellContainer container) {
@@ -40,31 +39,31 @@ public class SpellContainerHelper {
     }
 
     public static SpellContainer getEquipped(SpellContainer proxyContainer, PlayerEntity player) {
-        if (proxyContainer != null && proxyContainer.is_proxy) {
-            var trinketsSpells = TrinketsCompat.getEquipped(proxyContainer, player);
-            var allowedContent = proxyContainer.content;
+        if (proxyContainer == null || !proxyContainer.is_proxy) return proxyContainer;
 
-            var offhandSpellIds = new ArrayList<String>();
-            if (SpellEngineMod.config.spell_book_offhand) {
-                collectContainers(offhandSpellIds, allowedContent, player.getOffHandStack());
-            }
+        Set<String> spellIds = new LinkedHashSet<>(proxyContainer.spell_ids);
+        boolean offhandHasSpellBook = isOffhandContainerValid(player, proxyContainer.content);
+        boolean useOffhandSpellBook = SpellEngineMod.config.spell_book_offhand;
 
-            var mergedSpellIds = Stream.of(proxyContainer.spell_ids, trinketsSpells.spell_ids, offhandSpellIds)
-                    .flatMap(Collection::stream)
-                    .distinct()
-                    .toList();
-
-            return new SpellContainer(proxyContainer.content, false, null, 0, mergedSpellIds);
+        if (useOffhandSpellBook && offhandHasSpellBook) {
+            spellIds.addAll(getOffhandSpellIds(player));
+        } else if (TrinketsCompat.isEnabled()) {
+            spellIds.addAll(TrinketsCompat.getEquippedSpells(proxyContainer, player));
         }
-        return proxyContainer;
+
+        return new SpellContainer(proxyContainer.content, false, null, 0, new ArrayList<>(spellIds));
     }
 
+    private static boolean isOffhandContainerValid(PlayerEntity player, SpellContainer.ContentType allowedContent) {
+        SpellContainer container = containerFromItemStack(player.getOffHandStack());
+        return container != null && container.isValid() && container.content == allowedContent;
+    }
 
-    private static void collectContainers(ArrayList<String> spellIds, SpellContainer.ContentType allowedContent, ItemStack itemStack) {
-        var container = containerFromItemStack(itemStack);
-        if (container != null && container.isValid() && container.content == allowedContent) {
-            spellIds.addAll(container.spell_ids);
-        }
+    private static List<String> getOffhandSpellIds(PlayerEntity player) {
+        SpellContainer container = containerFromItemStack(player.getOffHandStack());
+        if (container == null) return Collections.emptyList();
+
+        return container.spell_ids;
     }
 
     public static SpellContainer containerFromItemStack(ItemStack itemStack) {
