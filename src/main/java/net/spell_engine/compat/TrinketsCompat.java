@@ -9,13 +9,12 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.trinket.SpellBookTrinketItem;
 import net.spell_engine.api.spell.SpellContainer;
+import net.spell_engine.internals.SpellContainerHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
-
-import static net.spell_engine.internals.SpellContainerHelper.containerFromItemStack;
 
 public class TrinketsCompat {
     private static boolean enabled = false;
@@ -38,7 +37,9 @@ public class TrinketsCompat {
     }
 
     public static List<String> getEquippedSpells(SpellContainer proxyContainer, PlayerEntity player) {
-        if (!enabled) return Collections.emptyList();
+        if (!enabled) {
+            return Collections.emptyList();
+        }
 
         var component = TrinketsApi.getTrinketComponent(player);
 
@@ -58,11 +59,12 @@ public class TrinketsCompat {
         trinketComponent.getAllEquipped().forEach(pair -> items.add(pair.getRight()));
 
         // Extract spell IDs from the containers
+        // Using LinkedHashSet to preserve order and remove duplicates
         var collectedSpellIds = new LinkedHashSet<>(proxyContainer.spell_ids);
         for (ItemStack stack : items) {
             if (stack.isEmpty()) continue;
 
-            var container = containerFromItemStack(stack);
+            var container = SpellContainerHelper.containerFromItemStack(stack);
             if (container != null && container.isValid() && container.content == allowedContent) {
                 collectedSpellIds.addAll(container.spell_ids);
             }

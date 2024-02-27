@@ -39,16 +39,20 @@ public class SpellContainerHelper {
     }
 
     public static SpellContainer getEquipped(SpellContainer proxyContainer, PlayerEntity player) {
-        if (proxyContainer == null || !proxyContainer.is_proxy) return proxyContainer;
+        if (proxyContainer == null || !proxyContainer.is_proxy) {
+            return proxyContainer;
+        }
 
+        // Using LinkedHashSet to preserve order and remove duplicates
         Set<String> spellIds = new LinkedHashSet<>(proxyContainer.spell_ids);
-        boolean offhandHasSpellBook = isOffhandContainerValid(player, proxyContainer.content);
-        boolean useOffhandSpellBook = SpellEngineMod.config.spell_book_offhand;
 
-        if (useOffhandSpellBook && offhandHasSpellBook) {
-            spellIds.addAll(getOffhandSpellIds(player));
-        } else if (TrinketsCompat.isEnabled()) {
+        if (TrinketsCompat.isEnabled()) {
             spellIds.addAll(TrinketsCompat.getEquippedSpells(proxyContainer, player));
+        }
+        if (SpellEngineMod.config.spell_book_offhand) {
+            if (isOffhandContainerValid(player, proxyContainer.content)) {
+                spellIds.addAll(getOffhandSpellIds(player));
+            }
         }
 
         return new SpellContainer(proxyContainer.content, false, null, 0, new ArrayList<>(spellIds));
