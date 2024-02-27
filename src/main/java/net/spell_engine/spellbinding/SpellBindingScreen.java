@@ -267,7 +267,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                         var button = new ButtonViewModel(shown,
                                 originX + BUTTONS_ORIGIN_X, originY + BUTTONS_ORIGIN_Y + ((buttons.size() - pageOffset) * BUTTON_HEIGHT),
                                 BUTTON_WIDTH, BUTTON_HEIGHT,
-                                isEnabled, null, item, bindingState);
+                                isEnabled, null, (Item) item, bindingState);
                         buttons.add(button);
                     }
                 }

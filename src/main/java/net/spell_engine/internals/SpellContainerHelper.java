@@ -1,6 +1,5 @@
 package net.spell_engine.internals;
 
-import dev.emi.trinkets.api.TrinketsApi;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -8,14 +7,15 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtString;
 import net.minecraft.util.Identifier;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
 import net.spell_engine.api.spell.SpellPool;
+import net.spell_engine.compat.TrinketsCompat;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SpellContainerHelper {
     public static Identifier getPoolId(SpellContainer container) {
@@ -39,43 +39,49 @@ public class SpellContainerHelper {
     }
 
     public static SpellContainer getEquipped(SpellContainer proxyContainer, PlayerEntity player) {
-        var component = TrinketsApi.getTrinketComponent(player);
-        if (proxyContainer!= null && proxyContainer.is_proxy && component.isPresent()) {
-            var trinketComponent = component.get();
-            var spellIds = new ArrayList<String>(proxyContainer.spell_ids);
-            var allowedContent = proxyContainer.content;
-            var spellBookSlot = trinketComponent.getInventory().get("charm").get("spell_book");
-            collectContainers(spellIds, allowedContent, spellBookSlot.getStack(0));
+        if (proxyContainer == null || !proxyContainer.is_proxy) return proxyContainer;
 
-            trinketComponent.getAllEquipped().forEach(pair -> {
-                var slot = pair.getLeft();
-                if (slot.inventory() == spellBookSlot) { return; }
-                var stack = pair.getRight();
-                collectContainers(spellIds, allowedContent, stack);
-            });
+        Set<String> spellIds = new LinkedHashSet<>(proxyContainer.spell_ids);
+        boolean offhandHasSpellBook = isOffhandContainerValid(player, proxyContainer.content);
+        boolean useOffhandSpellBook = SpellEngineMod.config.spell_book_offhand;
 
-            var mergedSpellIds = Stream.of(proxyContainer.spell_ids, spellIds)
-                    .flatMap(Collection::stream)
-                    .distinct()
-                    .toList();
-
-            return new SpellContainer(proxyContainer.content, false, null, 0, mergedSpellIds);
+        if (useOffhandSpellBook && offhandHasSpellBook) {
+            spellIds.addAll(getOffhandSpellIds(player));
+        } else if (TrinketsCompat.isEnabled()) {
+            spellIds.addAll(TrinketsCompat.getEquippedSpells(proxyContainer, player));
         }
-        return proxyContainer;
+
+        return new SpellContainer(proxyContainer.content, false, null, 0, new ArrayList<>(spellIds));
     }
 
-    private static void collectContainers(ArrayList<String> spellIds, SpellContainer.ContentType allowedContent, ItemStack itemStack) {
-        var container = containerFromItemStack(itemStack);
-        if (container != null && container.isValid() && container.content == allowedContent) {
-            spellIds.addAll(container.spell_ids);
-        }
+    private static boolean isOffhandContainerValid(PlayerEntity player, SpellContainer.ContentType allowedContent) {
+        ItemStack offhandItemStack = getOffhandItemStack(player);
+        SpellContainer container = containerFromItemStack(offhandItemStack);
+        return container != null && container.isValid() && container.content == allowedContent;
+    }
+
+    private static List<String> getOffhandSpellIds(PlayerEntity player) {
+        ItemStack offhandItemStack = getOffhandItemStack(player);
+        SpellContainer container = containerFromItemStack(offhandItemStack);
+        if (container == null) return Collections.emptyList();
+
+        return container.spell_ids;
+    }
+
+    /**
+     * Get the item stack in the offhand slot of the player's inventory
+     * This method is used for BetterCombat mod compatibility.
+     * BetterCombat overrides player.getOffHandStack() to return empty stack when player is dual wielding.
+     */
+    private static ItemStack getOffhandItemStack(PlayerEntity player) {
+        return player.getInventory().offHand.get(0);
     }
 
     public static SpellContainer containerFromItemStack(ItemStack itemStack) {
         if (itemStack.isEmpty()) {
             return null;
         }
-        var object = (Object)itemStack;
+        var object = (Object) itemStack;
         if (object instanceof SpellCasterItemStack stack) {
             var container = stack.getSpellContainer();
             if (container != null && container.isValid()) {
@@ -108,7 +114,7 @@ public class SpellContainerHelper {
 
         // Creating a map just for the sake of sorting
         HashMap<Identifier, Spell> spells = new HashMap<>();
-        for(var idString: spellIds) {
+        for (var idString : spellIds) {
             var id = new Identifier(idString);
             var spell = SpellRegistry.getSpell(id);
             if (spell != null) {
@@ -129,7 +135,7 @@ public class SpellContainerHelper {
     public static void addSpell(Identifier spellId, ItemStack itemStack) {
         var container = containerFromItemStack(itemStack);
         if (container == null || !container.isValid()) {
-            System.err.println("Trying to add spell: " + spellId  + " to an ItemStack without valid spell container");
+            System.err.println("Trying to add spell: " + spellId + " to an ItemStack without valid spell container");
             return;
         }
         var modifiedContainer = addSpell(spellId, container);
@@ -141,7 +147,7 @@ public class SpellContainerHelper {
     public static final Comparator<Map.Entry<Identifier, Spell>> spellSorter = (spell1, spell2) -> {
         if (spell1.getValue().learn.tier > spell2.getValue().learn.tier) {
             return 1;
-        }  else if (spell1.getValue().learn.tier < spell2.getValue().learn.tier) {
+        } else if (spell1.getValue().learn.tier < spell2.getValue().learn.tier) {
             return -1;
         } else {
             return spell1.getKey().toString().compareTo(spell2.getKey().toString());
@@ -169,6 +175,7 @@ public class SpellContainerHelper {
     private static final String NBT_KEY_POOL = "pool";
     private static final String NBT_KEY_MAX_SPELL_COUNT = "max_spell_count";
     private static final String NBT_KEY_SPELL_IDS = "spell_ids";
+
     public static NbtCompound toNBT(SpellContainer container) {
         var object = new NbtCompound();
         if (container.is_proxy) {
@@ -182,7 +189,7 @@ public class SpellContainerHelper {
         }
         if (container.spell_ids.size() > 0) {
             var spellList = new NbtList();
-            for (var spellId: container.spell_ids) {
+            for (var spellId : container.spell_ids) {
                 var element = NbtString.of(spellId);
                 spellList.add(element);
             }
