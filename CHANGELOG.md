@@ -1,10 +1,3 @@
-# 0.14.0
-
-- Trinkets is now an optional dependency
-
-Functional changes:
-- You can now cast spells from the Spell Book in your offhand (server configurable)
-
 # 0.13.0
 
 API changes:
@@ -19,7 +12,10 @@ API changes:
 - Add two-way entity collision API 
 
 Functional changes:
-- Spell Containers are now resolved and combined from all equipped trinket slots (prioritizing Spell Book slot first)
+- Spell Container resolution
+  - Trinkets mod is now technically optional, to enable better interoperability for Forge players
+  - When Trinkets mod is missing, spell books can be put into the offhand slot (needs to be enabled in `config/server.json5 spell_book_offhand`)
+  - Spell Containers are now resolved and combined from all equipped trinket slots (prioritizing Spell Book slot first)
 - Usable offhand items (such as Shields) are now visible on the Spell Hotbar
 - Loot configuration now supports item tag id entries
 - Spell particle emitting entity yaw and pitch now being synchronized

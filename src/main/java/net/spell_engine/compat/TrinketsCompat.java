@@ -70,6 +70,4 @@ public class TrinketsCompat {
 
         return new ArrayList<>(collectedSpellIds);
     }
-
-
 }

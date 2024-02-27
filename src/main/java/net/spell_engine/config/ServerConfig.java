@@ -28,7 +28,7 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     @Comment("Spell book creation level cost")
     public int spell_book_binding_level_cost = 1;
     @Comment("Should the player be able to cast spells from the offhand spell book?")
-    public boolean spell_book_offhand = true;
+    public boolean spell_book_offhand = false;
 
     @Comment("Apply `Spell Casting from Spell Book` capability to anything that subclasses Sword")
     public boolean add_spell_casting_to_swords = true;
