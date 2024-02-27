@@ -10,6 +10,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellContainer;
+import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.api.spell.SpellPool;
 import net.spell_engine.compat.TrinketsCompat;
 import org.jetbrains.annotations.Nullable;
@@ -44,7 +45,7 @@ public class SpellContainerHelper {
         }
 
         // Using LinkedHashSet to preserve order and remove duplicates
-        Set<String> spellIds = new LinkedHashSet<>(proxyContainer.spell_ids);
+        var spellIds = new LinkedHashSet<>(proxyContainer.spell_ids);
 
         if (TrinketsCompat.isEnabled()) {
             spellIds.addAll(TrinketsCompat.getEquippedSpells(proxyContainer, player));
@@ -54,6 +55,32 @@ public class SpellContainerHelper {
                 spellIds.addAll(getOffhandSpellIds(player));
             }
         }
+
+        var spells = new ArrayList<SpellInfo>();
+        for (var idString : spellIds) {
+            var id = new Identifier(idString);
+            var spell = SpellRegistry.getSpell(id);
+            if (spell != null) {
+                spells.add(new SpellInfo(spell, id));
+            }
+        }
+
+        // Remove spells with the same group, and lower tier
+        var toRemove = new HashSet<String>();
+        for (var spell : spells) {
+            var tag = spell.spell().group;
+            if (tag != null) {
+                for (var other : spells) {
+                    if (spell.id().equals(other.id())) continue;
+                    if (tag.equals(other.spell().group)) {
+                        if (spell.spell().learn.tier > other.spell().learn.tier) {
+                            toRemove.add(other.id().toString());
+                        }
+                    }
+                }
+            }
+        }
+        spellIds.removeAll(toRemove);
 
         return new SpellContainer(proxyContainer.content, false, null, 0, new ArrayList<>(spellIds));
     }

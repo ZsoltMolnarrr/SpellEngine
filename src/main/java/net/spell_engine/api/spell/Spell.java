@@ -9,6 +9,10 @@ public class Spell {
     public MagicSchool school;
     public float range = 50;
 
+    // An arbitrary group to group spells by
+    // Spells with the same group override each other, prioritized by tier
+    @Nullable public String group;
+
     public Learn learn = new Learn();
     public static class Learn { public Learn() {}
         public int tier = 1;

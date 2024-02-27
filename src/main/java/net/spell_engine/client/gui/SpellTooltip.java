@@ -119,9 +119,17 @@ public class SpellTooltip {
             return lines;
         }
 
-        lines.add(Text.translatable(spellTranslationKey(spellId))
+        var name = Text.translatable(spellTranslationKey(spellId))
                 .formatted(Formatting.BOLD)
-                .formatted(Formatting.GRAY));
+                .formatted(Formatting.GRAY);
+        if (spell.group != null) {
+            var group = spellGroup(spell.group);
+            if (!group.isEmpty()) {
+                name.append(Text.literal(" " + group))
+                        .formatted(Formatting.GRAY);
+            }
+        }
+        lines.add(name);
 
         if(!details) {
             return lines;
@@ -294,6 +302,15 @@ public class SpellTooltip {
     public static String spellKeyPrefix(Identifier spellId) {
         // For example: `spell.spell_engine.fireball`
         return "spell." + spellId.getNamespace() + "." + spellId.getPath();
+    }
+
+    public static String spellGroup(String group) {
+        var key = "spell.group." + group;
+        if (I18n.hasTranslation(key)) {
+            return I18n.translate(key);
+        } else {
+            return "";
+        }
     }
 
     private static <T> T coalesce(T ...items) {

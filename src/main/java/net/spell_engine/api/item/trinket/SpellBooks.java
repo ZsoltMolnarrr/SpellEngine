@@ -40,6 +40,7 @@ public class SpellBooks {
         var container = new SpellContainer(contentType, false, poolId.toString(), 0, List.of());
         SpellRegistry.book_containers.put(itemIdFor(poolId), container);
         SpellBookItem book = null;
+        TrinketsCompat.init();
         if (TrinketsCompat.isEnabled()) {
             book = new SpellBookTrinketItem(poolId, new FabricItemSettings().maxCount(1));
         }

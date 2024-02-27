@@ -17,9 +17,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 public class TrinketsCompat {
+    private static boolean intialized = false;
     private static boolean enabled = false;
 
     public static void init() {
+        if (intialized) {
+            return;
+        }
         enabled = FabricLoader.getInstance().isModLoaded("trinkets");
 
         if (enabled) {
@@ -30,6 +34,7 @@ public class TrinketsCompat {
                 return TriState.DEFAULT;
             });
         }
+        intialized = true;
     }
 
     public static boolean isEnabled() {

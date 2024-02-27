@@ -1,6 +1,7 @@
 # 0.13.0
 
 API changes:
+- Add `group` field to spell data, to group spells together (Spells with the same group override each other, prioritized by tier)
 - Add particle batch `invert` field, to spawn particles with reverse motion
 - Add particle batch `pre_spawn_travel` field, to offset particle position relative to motion
 - Add particle batch `roll` and `roll_offset` fields, to spawn particles with rotated motion vector
