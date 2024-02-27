@@ -278,6 +278,10 @@ public class Spell {
         public static class Client { public Client() { }
             /// Ambient light level of the projectile, like players holding torches
             /// Requires `LambDynamicLights` to be installed
+            /// Example values:
+            /// 14 - torch
+            /// 10 - soul torch
+
             public int light_level = 0;
             public ParticleBatch[] travel_particles;
             public ProjectileModel model;
