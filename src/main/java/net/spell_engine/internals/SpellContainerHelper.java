@@ -55,15 +55,26 @@ public class SpellContainerHelper {
     }
 
     private static boolean isOffhandContainerValid(PlayerEntity player, SpellContainer.ContentType allowedContent) {
-        SpellContainer container = containerFromItemStack(player.getOffHandStack());
+        ItemStack offhandItemStack = getOffhandItemStack(player);
+        SpellContainer container = containerFromItemStack(offhandItemStack);
         return container != null && container.isValid() && container.content == allowedContent;
     }
 
     private static List<String> getOffhandSpellIds(PlayerEntity player) {
-        SpellContainer container = containerFromItemStack(player.getOffHandStack());
+        ItemStack offhandItemStack = getOffhandItemStack(player);
+        SpellContainer container = containerFromItemStack(offhandItemStack);
         if (container == null) return Collections.emptyList();
 
         return container.spell_ids;
+    }
+
+    /**
+     * Get the item stack in the offhand slot of the player's inventory
+     * This method is used for BetterCombat mod compatibility.
+     * BetterCombat overrides player.getOffHandStack() to return empty stack when player is dual wielding.
+     */
+    private static ItemStack getOffhandItemStack(PlayerEntity player) {
+        return player.getInventory().offHand.get(0);
     }
 
     public static SpellContainer containerFromItemStack(ItemStack itemStack) {
