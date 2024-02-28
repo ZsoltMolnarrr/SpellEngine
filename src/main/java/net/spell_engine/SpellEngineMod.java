@@ -14,6 +14,7 @@ import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
+import net.projectile_damage.api.EntityAttributes_ProjectileDamage;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
 import net.spell_engine.api.item.AttributeResolver;
 import net.spell_engine.api.item.trinket.SpellBooks;
@@ -83,6 +84,7 @@ public class SpellEngineMod {
         // Sync attack power to client so physical attack damage spells can be estimated.
         // Probably several other mods perform this operation, but its no problem.
         EntityAttributes.GENERIC_ATTACK_DAMAGE.setTracked(true);
+        EntityAttributes_ProjectileDamage.GENERIC_PROJECTILE_DAMAGE.setTracked(true);
         QuiverCompat.init();
     }
 
