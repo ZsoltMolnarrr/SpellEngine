@@ -11,6 +11,7 @@ public class Spell {
 
     // An arbitrary group to group spells by
     // Spells with the same group override each other, prioritized by tier
+    // For primary spells (such as hard bound spells of weapons, and first spells of spell books) the recommended group is "primary"
     @Nullable public String group;
 
     public Learn learn = new Learn();
@@ -85,12 +86,14 @@ public class Spell {
 
             public Cloud cloud;
             public static class Cloud { public Cloud() { }
-                public boolean spawn_on_ground = true;
+                // Custom entity type id to spawn, must be a subclass of `SpellCloud`
+                @Nullable public String entity_type_id;
                 public AreaImpact volume = new AreaImpact();
                 public float time_to_live_seconds = 0;
 
                 /// The number of ticks between looking for targets and trying to apply impact
                 public int impact_tick_interval = 5;
+                public EntityPlacement placement = new EntityPlacement();
 
                 public ClientData client_data = new ClientData();
                 public static class ClientData {
@@ -187,7 +190,7 @@ public class Spell {
             public static class Spawn {
                 public String entity_type_id;
                 public int time_to_live_seconds = 0;
-                @Nullable public EntityPlacement placement;
+                public EntityPlacement placement = new EntityPlacement();
             }
         }
 
@@ -305,10 +308,11 @@ public class Spell {
 
     public static class EntityPlacement { public EntityPlacement() { }
         // If greater than 0, the entity will be placed at the caster's look direction, by this many blocks
+        public boolean force_onto_ground = true;
         public float location_offset_by_look = 0;
         public float location_yaw_offset = 0;
-        public boolean apply_caster_yaw = false;
-        public boolean apply_caster_pitch = false;
+        public boolean apply_yaw = false;
+        public boolean apply_pitch = false;
         public float location_offset_x = 0;
         public float location_offset_y = 0;
         public float location_offset_z = 0;

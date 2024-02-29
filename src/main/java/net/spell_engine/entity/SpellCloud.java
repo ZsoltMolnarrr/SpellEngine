@@ -31,18 +31,16 @@ public class SpellCloud extends Entity implements Ownable {
         super(entityType, world);
     }
 
-    protected SpellCloud(World world, LivingEntity owner) {
+    public SpellCloud(World world, LivingEntity owner) {
         super(ENTITY_TYPE, world);
         this.setOwner(owner);
         this.noClip = true;
     }
 
-    public SpellCloud(World world, LivingEntity owner, SpellHelper.ImpactContext context, SpellInfo spellInfo) {
-        this(world, owner);
-        this.spellId = spellInfo.id();
-        this.context = context;
+    public void onCreatedFromSpell(Identifier spellId, Spell.Release.Target.Cloud cloudData, SpellHelper.ImpactContext context) {
+        this.spellId = spellId;
         this.getDataTracker().set(SPELL_ID_TRACKER, this.spellId.toString());
-        var cloudData = spellInfo.spell().release.target.cloud;
+        this.context = context;
         this.timeToLive = (int) (cloudData.time_to_live_seconds * 20);
     }
 
@@ -93,10 +91,6 @@ public class SpellCloud extends Entity implements Ownable {
             this.spellId = new Identifier(rawSpellId);
         }
         this.calculateDimensions();
-
-//        if (RADIUS.equals(data)) {
-//            this.calculateDimensions();
-//        }
     }
 
     // MARK: Persistence

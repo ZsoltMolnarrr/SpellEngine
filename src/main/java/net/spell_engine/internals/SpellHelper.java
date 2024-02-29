@@ -448,21 +448,6 @@ public class SpellHelper {
         }
     }
 
-    public static void placeCloud(World world, LivingEntity caster, SpellInfo spellInfo, ImpactContext context) {
-        var spell = spellInfo.spell();
-        var cloud = spell.release.target.cloud;
-        // var center = context.position();
-        var entity = new SpellCloud(world, caster, context, spellInfo);
-        if (cloud.spawn_on_ground && !caster.isOnGround()) {
-            var groundPosBelow = TargetHelper.findSolidBlockBelow(caster, caster.getWorld());
-            var position = groundPosBelow != null ? groundPosBelow : caster.getPos();
-            entity.setPosition(position);
-        } else {
-            entity.setPosition(caster.getPos());
-        }
-        world.spawnEntity(entity);
-    }
-
     private static void directImpact(World world, LivingEntity caster, Entity target, SpellInfo spellInfo, ImpactContext context) {
         performImpacts(world, caster, target, target, spellInfo, context);
     }
@@ -719,7 +704,7 @@ public class SpellHelper {
                     var id = new Identifier(data.entity_type_id);
                     var type = Registries.ENTITY_TYPE.get(id);
                     var entity = (Entity)type.create(world);
-                    applyEntityPlacement(entity, caster, new Vec3d(target.getX(), target.getY(), target.getZ()), data.placement);
+                    applyEntityPlacement(entity, caster, target.getPos(), data.placement);
                     if (entity instanceof SpellSpawnedEntity spellSpawnedEntity) {
                         spellSpawnedEntity.onCreatedFromSpell(caster, spellInfo.id(), data);
                     }
@@ -745,17 +730,41 @@ public class SpellHelper {
         return success;
     }
 
-    public static void applyEntityPlacement(Entity entity, LivingEntity caster, Vec3d position, Spell.EntityPlacement placement) {
+    public static void placeCloud(World world, LivingEntity caster, SpellInfo spellInfo, ImpactContext context) {
+        var spell = spellInfo.spell();
+        var cloud = spell.release.target.cloud;
+        // var center = context.position();
+
+        SpellCloud entity;
+        if (cloud.entity_type_id != null) {
+            var id = new Identifier(cloud.entity_type_id);
+            var type = Registries.ENTITY_TYPE.get(id);
+            entity = (SpellCloud) type.create(world);
+        } else {
+            entity = new SpellCloud(world, caster);
+        }
+
+        entity.onCreatedFromSpell(spellInfo.id(), cloud, context);
+        applyEntityPlacement(entity, caster, caster.getPos(), cloud.placement);
+        world.spawnEntity(entity);
+    }
+
+
+    public static void applyEntityPlacement(Entity entity, LivingEntity target, Vec3d position, Spell.EntityPlacement placement) {
         if (placement != null) {
+            if (placement.force_onto_ground) {
+                var groundPosBelow = TargetHelper.findSolidBlockBelow(target, target.getWorld());
+                position = groundPosBelow != null ? groundPosBelow : position;
+            }
             if (placement.location_offset_by_look > 0) {
-                float yaw = caster.getYaw() + placement.location_yaw_offset;
+                float yaw = target.getYaw() + placement.location_yaw_offset;
                 position = position.add(Vec3d.fromPolar(0, yaw).multiply(placement.location_offset_by_look));
             }
-            if (placement.apply_caster_yaw) {
-                entity.setYaw(caster.getYaw());
+            if (placement.apply_yaw) {
+                entity.setYaw(target.getYaw());
             }
-            if (placement.apply_caster_pitch) {
-                entity.setPitch(caster.getPitch());
+            if (placement.apply_pitch) {
+                entity.setPitch(target.getPitch());
             }
             position = position.add(new Vec3d(placement.location_offset_x, placement.location_offset_y, placement.location_offset_z));
         }
