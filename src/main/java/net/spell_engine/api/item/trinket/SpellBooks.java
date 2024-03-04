@@ -37,8 +37,6 @@ public class SpellBooks {
     }
 
     public static SpellBookItem create(Identifier poolId, SpellContainer.ContentType contentType) {
-        var container = new SpellContainer(contentType, false, poolId.toString(), 0, List.of());
-        SpellRegistry.book_containers.put(itemIdFor(poolId), container);
         SpellBookItem book = null;
         TrinketsCompat.init();
         if (TrinketsCompat.isEnabled()) {
@@ -48,6 +46,12 @@ public class SpellBooks {
         else {
             book = new SpellBookVanillaItem(poolId, new FabricItemSettings().maxCount(1));
         }
+        return create(poolId, contentType, book);
+    }
+
+    public static SpellBookItem create(Identifier poolId, SpellContainer.ContentType contentType, SpellBookItem book) {
+        var container = new SpellContainer(contentType, false, poolId.toString(), 0, List.of());
+        SpellRegistry.book_containers.put(itemIdFor(poolId), container);
         all.add(book);
         return book;
     }

@@ -727,6 +727,11 @@ public class SpellHelper {
                 ((ConfigurableKnockback)target).popKnockbackMultiplier_SpellEngine();
             }
         }
+        if (SpellEvents.SPELL_IMPACT.isListened())
+        {
+            SpellEvents.SpellImpactEvent event = new SpellEvents.SpellImpactEvent(world, caster, target, spellInfo, impact, context, trackers);
+            SpellEvents.SPELL_IMPACT.invoke(listener -> listener.onSpellImpact(event));
+        }
         return success;
     }
 
