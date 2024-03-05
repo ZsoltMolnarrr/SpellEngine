@@ -4,6 +4,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.world.World;
 import net.spell_engine.api.event.Event;
 import net.spell_engine.entity.SpellProjectile;
@@ -57,7 +58,8 @@ public class SpellEvents {
     public static final Event<ProjectileCollision> PROJECTILE_COLLISION = new Event<>();
 
     public record ProjectileCollisionEvent(
-            SpellProjectile projectile
+            SpellProjectile projectile,
+            HitResult hitResult
     ){}
 
     public interface ProjectileCollision

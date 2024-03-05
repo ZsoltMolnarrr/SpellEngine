@@ -369,7 +369,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     protected void onCollision(HitResult hitResult) {
         if (SpellEvents.PROJECTILE_COLLISION.isListened())
         {
-            SpellEvents.PROJECTILE_COLLISION.invoke(listener -> listener.onProjectileCollision(new SpellEvents.ProjectileCollisionEvent(this)));
+            SpellEvents.PROJECTILE_COLLISION.invoke(listener -> listener.onProjectileCollision(new SpellEvents.ProjectileCollisionEvent(this, hitResult)));
         }
         super.onCollision(hitResult);
     }
