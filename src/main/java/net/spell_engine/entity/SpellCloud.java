@@ -31,9 +31,8 @@ public class SpellCloud extends Entity implements Ownable {
         super(entityType, world);
     }
 
-    public SpellCloud(World world, LivingEntity owner) {
+    public SpellCloud(World world) {
         super(ENTITY_TYPE, world);
-        this.setOwner(owner);
         this.noClip = true;
     }
 

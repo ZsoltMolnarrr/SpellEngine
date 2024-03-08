@@ -741,8 +741,9 @@ public class SpellHelper {
             var type = Registries.ENTITY_TYPE.get(id);
             entity = (SpellCloud) type.create(world);
         } else {
-            entity = new SpellCloud(world, caster);
+            entity = new SpellCloud(world);
         }
+        entity.setOwner(caster);
 
         entity.onCreatedFromSpell(spellInfo.id(), cloud, context);
         applyEntityPlacement(entity, caster, caster.getPos(), cloud.placement);
