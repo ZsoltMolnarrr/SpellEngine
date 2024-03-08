@@ -4,6 +4,7 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.enchantment.Enchantments;
@@ -84,7 +85,9 @@ public class SpellEngineMod {
         // Sync attack power to client so physical attack damage spells can be estimated.
         // Probably several other mods perform this operation, but its no problem.
         EntityAttributes.GENERIC_ATTACK_DAMAGE.setTracked(true);
-        EntityAttributes_ProjectileDamage.GENERIC_PROJECTILE_DAMAGE.setTracked(true);
+        if (FabricLoader.getInstance().isModLoaded("projectile_damage")) {
+            EntityAttributes_ProjectileDamage.GENERIC_PROJECTILE_DAMAGE.setTracked(true);
+        }
         QuiverCompat.init();
     }
 

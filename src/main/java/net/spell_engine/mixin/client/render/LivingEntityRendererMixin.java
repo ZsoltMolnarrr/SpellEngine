@@ -102,7 +102,7 @@ public class LivingEntityRendererMixin {
         var alpha = color & 255;
         // System.out.println("Beam color " + " red:" + red + " green:" + green + " blue:" + blue + " alpha:" + alpha);
         BeamRenderer.renderBeam(matrixStack, vertexConsumerProvider,
-                texture, time, tickDelta, beam.flow,
+                texture, time, tickDelta, beam.flow, true,
                 (int)red, (int)green, (int)blue, (int)alpha,
                 0, length, beam.width);
 

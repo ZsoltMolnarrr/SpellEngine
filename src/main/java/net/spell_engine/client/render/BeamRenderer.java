@@ -15,7 +15,7 @@ public class BeamRenderer extends RenderLayer {
     }
 
     public static void renderBeam(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
-                                  Identifier texture, long time, float tickDelta, float direction,
+                                  Identifier texture, long time, float tickDelta, float direction, boolean center,
                                   int red, int green, int blue, int alpha,
                                   float yOffset, float height, float width) {
         matrices.push();
@@ -29,11 +29,13 @@ public class BeamRenderer extends RenderLayer {
 //        var outerRenderLayer = CustomLayers.spellObject(texture, LightEmission.GLOW, true); //alpha < 250);
 
         var originalWidth = width;
-        renderBeamLayer(matrices, vertexConsumers.getBuffer(innerRenderLayer),
-                red, green, blue, alpha,
-                yOffset, height,
-                0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
-                0.0f, 1f, height, offset);
+        if (center) {
+            renderBeamLayer(matrices, vertexConsumers.getBuffer(innerRenderLayer),
+                    red, green, blue, alpha,
+                    yOffset, height,
+                    0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
+                    0.0f, 1f, height, offset);
+        }
 
         width = originalWidth * 1.5F;
         renderBeamLayer(matrices, vertexConsumers.getBuffer(outerRenderLayer),
