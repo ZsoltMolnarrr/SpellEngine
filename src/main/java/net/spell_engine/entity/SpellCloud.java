@@ -1,11 +1,15 @@
 package net.spell_engine.entity;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.*;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.Spell;
@@ -122,6 +126,12 @@ public class SpellCloud extends Entity implements Ownable {
 
     // MARK: Behavior
 
+    @Override
+    public boolean isSilent() {
+        return false;
+    }
+    private boolean presenceSoundFired = false;
+
     public void tick() {
         super.tick();
         var spell = this.getSpell();
@@ -136,6 +146,17 @@ public class SpellCloud extends Entity implements Ownable {
             for (var particleBatch : clientData.particles) {
                 ParticleHelper.play(this.getWorld(), this, particleBatch);
             }
+            var presence_sound = cloudData.presence_sound;
+            if (!presenceSoundFired && presence_sound != null) {
+                var clientWorld = (ClientWorld) this.getWorld();
+                var player = MinecraftClient.getInstance().player;
+                var soundEvent = SoundEvent.of(new Identifier(presence_sound.id()));
+                clientWorld.playSoundFromEntity(player, this, soundEvent, SoundCategory.PLAYERS,
+                        presence_sound.volume(),
+                        presence_sound.randomizedPitch());
+                presenceSoundFired = true;
+            }
+
         } else {
             // Server side tick
             if (this.age >= this.timeToLive) {

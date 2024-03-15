@@ -11,6 +11,7 @@ API changes:
 - Add ShaderCompat helper to determine active shader
 - Add CustomLayers raw constructor
 - Add two-way entity collision API 
+- Add SpellCloud `presence_sound` data field
 
 Functional changes:
 - Spell Container resolution

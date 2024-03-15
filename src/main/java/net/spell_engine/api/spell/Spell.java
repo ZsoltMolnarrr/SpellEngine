@@ -94,7 +94,7 @@ public class Spell {
                 /// The number of ticks between looking for targets and trying to apply impact
                 public int impact_tick_interval = 5;
                 public EntityPlacement placement = new EntityPlacement();
-
+                @Nullable public Sound presence_sound;
                 public ClientData client_data = new ClientData();
                 public static class ClientData {
                     public ParticleBatch[] particles = new ParticleBatch[]{};
