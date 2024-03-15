@@ -30,6 +30,7 @@ import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.internals.criteria.EnchantmentSpecificCriteria;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.particle.Particles;
+import net.spell_engine.rpg_series.RPGSeriesCore;
 import net.spell_engine.spellbinding.*;
 import net.spell_power.api.enchantment.EnchantmentRestriction;
 import net.spell_power.api.enchantment.Enchantments_SpellPower;
@@ -89,6 +90,8 @@ public class SpellEngineMod {
             EntityAttributes_ProjectileDamage.GENERIC_PROJECTILE_DAMAGE.setTracked(true);
         }
         QuiverCompat.init();
+
+        RPGSeriesCore.initialize();
     }
 
     public static void registerSpellBinding() {

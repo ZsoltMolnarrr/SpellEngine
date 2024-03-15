@@ -19,6 +19,7 @@ Functional changes:
   - When Trinkets mod is missing, spell books can be put into the offhand slot (needs to be enabled in `config/server.json5 spell_book_offhand`)
   - Spell Containers are now resolved and combined from all equipped trinket slots (prioritizing Spell Book slot first)
 - Usable offhand items (such as Shields) are now visible on the Spell Hotbar
+- Add new loot config using rpg series item tags, into `config/rpg_series/loot.json`
 - Loot configuration now supports item tag id entries
 - Spell particle emitting entity yaw and pitch now being synchronized
 - Fix projectile pitch setting #40
