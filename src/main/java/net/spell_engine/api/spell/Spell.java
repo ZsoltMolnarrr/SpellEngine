@@ -138,7 +138,6 @@ public class Spell {
         }
         public String animation;
         public ParticleBatch[] particles;
-        publ
         public Sound sound;
     }
 
@@ -206,6 +205,7 @@ public class Spell {
                     public float distance = 10;
                     public float arrival_offset_y = -1;
                 }
+                @Nullable public ParticleBatch[] depart_particles;
             }
         }
 

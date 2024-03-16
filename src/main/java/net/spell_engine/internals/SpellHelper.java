@@ -722,6 +722,7 @@ public class SpellHelper {
                                 var startingPosition = target.getPos();
                                 var destination = TargetHelper.findTeleportDestination(livingTarget, look, forward.distance, data.required_clearance_block_y);
                                 if (destination != null) {
+                                    ParticleHelper.sendBatches(livingTarget, data.depart_particles, false);
                                     world.emitGameEvent(GameEvent.TELEPORT, startingPosition, GameEvent.Emitter.of(target));
                                     livingTarget.teleport(destination.x, destination.y, destination.z);
                                     success = true;
