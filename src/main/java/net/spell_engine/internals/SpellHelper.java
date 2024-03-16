@@ -15,6 +15,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.world.event.GameEvent;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityImmunity;
 import net.spell_engine.api.enchantment.Enchantments_SpellEngine;
@@ -711,6 +712,24 @@ public class SpellHelper {
                     world.spawnEntity(entity);
                     success = true;
                 }
+                case TELEPORT -> {
+                    var data = impact.action.teleport;
+                    if (target instanceof LivingEntity livingTarget) {
+                        switch (data.mode) {
+                            case FORWARD -> {
+                                var forward = data.forward;
+                                var look = target.getRotationVector();
+                                var startingPosition = target.getPos();
+                                var destination = TargetHelper.findTeleportDestination(livingTarget, look, forward.distance, data.required_clearance_block_y);
+                                if (destination != null) {
+                                    world.emitGameEvent(GameEvent.TELEPORT, startingPosition, GameEvent.Emitter.of(target));
+                                    livingTarget.teleport(destination.x, destination.y, destination.z);
+                                    success = true;
+                                }
+                            }
+                        }
+                    }
+                }
             }
             if (success) {
                 if (impact.particles != null) {
@@ -821,6 +840,9 @@ public class SpellHelper {
                 var id = new Identifier(data.effect_id);
                 var effect = Registries.STATUS_EFFECT.get(id);
                 return effect.isBeneficial() ? TargetHelper.Intent.HELPFUL : TargetHelper.Intent.HARMFUL;
+            }
+            case TELEPORT -> {
+                return action.teleport.intent;
             }
         }
         assert true;

@@ -297,4 +297,57 @@ public class TargetHelper {
         }
         return null;
     }
+
+    @Nullable public static Vec3d findTeleportDestination(LivingEntity entity, Vec3d look, float distance, int clearanceY) {
+        var world = entity.getWorld();
+        var start = entity.getEyePos();
+        var end = start.add(look.multiply(distance));
+        var hit = world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
+
+        Vec3d hitPosition = null;
+        if (hit.getType() == HitResult.Type.MISS) {
+            hitPosition = end;
+        }
+        if (hit.getType() == HitResult.Type.BLOCK && hit.getBlockPos() != null) {
+            hitPosition= hit.getPos();
+        }
+
+        if (hitPosition != null) {
+            var inverseLook = look.multiply(-1);
+            var paddedHitPosition = hitPosition.add(inverseLook.multiply(0.5F));
+            var hitDistance = start.distanceTo(paddedHitPosition);
+
+            float reverted = 0;
+            while (reverted < hitDistance) {
+                var blockPos = new BlockPos((int)paddedHitPosition.getX(), (int)paddedHitPosition.getY(), (int)paddedHitPosition.getZ());
+                if (isSafeWithClearance(world, blockPos, clearanceY)) {
+                    return paddedHitPosition;
+                }
+
+                reverted += 1;
+                paddedHitPosition = paddedHitPosition.add(inverseLook);
+            }
+        }
+        return null;
+    }
+
+    private static boolean isSafeWithClearance(World world, BlockPos blockPos, int clearanceY) {
+        if (isSafeTeleportDestination(world, blockPos)) {
+            var clearanceSafe = true;
+            for (int i = 0; i < clearanceY; i++) {
+                var clearancePos = blockPos.up(i);
+                if (!isSafeTeleportDestination(world, clearancePos)) {
+                    clearanceSafe = false;
+                    break;
+                }
+            }
+            return clearanceSafe;
+        }
+        return false;
+    }
+
+    private static boolean isSafeTeleportDestination(World world, BlockPos pos) {
+        var state = world.getBlockState(pos);
+        return !(state.isSolid() || state.shouldSuffocate(world, pos));
+    }
 }

@@ -7,6 +7,7 @@ API changes:
 - Add particle batch `roll` and `roll_offset` fields, to spawn particles with rotated motion vector
 - Add `nature_spark_mini` particle
 - Add new impact action type: `SPAWN`, for spawning entities
+- Add new impact action type: `TELEPORT`, to move the caster around
 - Add barebone immunity API
 - Add ShaderCompat helper to determine active shader
 - Add CustomLayers raw constructor

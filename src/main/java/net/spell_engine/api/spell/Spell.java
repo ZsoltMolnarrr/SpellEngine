@@ -1,6 +1,7 @@
 package net.spell_engine.api.spell;
 
 import net.spell_engine.api.render.LightEmission;
+import net.spell_engine.utils.TargetHelper;
 import net.spell_power.api.MagicSchool;
 import org.jetbrains.annotations.Nullable;
 
@@ -137,6 +138,7 @@ public class Spell {
         }
         public String animation;
         public ParticleBatch[] particles;
+        publ
         public Sound sound;
     }
 
@@ -150,7 +152,7 @@ public class Spell {
             public boolean apply_to_caster = false;
             public float min_power = 1;
             public enum Type {
-                DAMAGE, HEAL, STATUS_EFFECT, FIRE, SPAWN
+                DAMAGE, HEAL, STATUS_EFFECT, FIRE, SPAWN, TELEPORT
             }
             public Damage damage;
             public static class Damage { public Damage() { }
@@ -191,6 +193,19 @@ public class Spell {
                 public String entity_type_id;
                 public int time_to_live_seconds = 0;
                 public EntityPlacement placement = new EntityPlacement();
+            }
+
+            public Teleport teleport;
+            public static class Teleport { public Teleport() { }
+                public enum Mode { FORWARD }
+                public Mode mode;
+                public int required_clearance_block_y = 1;
+                public TargetHelper.Intent intent = TargetHelper.Intent.HELPFUL;
+                public Forward forward;
+                public static class Forward { public Forward() { }
+                    public float distance = 10;
+                    public float arrival_offset_y = -1;
+                }
             }
         }
 
