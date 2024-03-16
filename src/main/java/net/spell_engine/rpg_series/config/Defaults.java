@@ -44,13 +44,13 @@ public class Defaults {
                 1
         ).chance(0.3F));
         lootConfig.item_groups.put("weapons_tier_3", new LootConfig.ItemGroup(
-                List.of(weapons(2)),
+                List.of(weapons(3)),
                 1
         ).chance(0.3F));
         lootConfig.item_groups.put("weapons_tier_4", new LootConfig.ItemGroup(
-                List.of(weapons(2)),
+                List.of(weapons(4)),
                 1
-        ).chance(0.3F));
+        ).chance(0.5F));
         lootConfig.item_groups.put("weapons_tier_1_enchanted", new LootConfig.ItemGroup(
                 List.of(weapons(1)),
                 1
@@ -104,8 +104,7 @@ public class Defaults {
                         "minecraft:chests/woodland_mansion")
                 .forEach(id -> lootConfig.loot_tables.put(id, List.of("weapons_tier_1_enchanted", "armors_tier_1_enchanted")));
 
-        List.of("minecraft:chests/bastion_other",
-                        "minecraft:chests/nether_bridge",
+        List.of("minecraft:chests/nether_bridge",
                         "minecraft:chests/underwater_ruin_big")
                 .forEach(id -> lootConfig.loot_tables.put(id, List.of("weapons_tier_2")));
 
@@ -114,9 +113,12 @@ public class Defaults {
                         "minecraft:chests/stronghold_library")
                 .forEach(id -> lootConfig.loot_tables.put(id, List.of("armors_tier_2")));
 
+        List.of("minecraft:chests/bastion_treasure")
+                .forEach(id -> lootConfig.loot_tables.put(id, List.of("weapons_tier_3")));
+
         List.of("minecraft:chests/end_city_treasure"
                         )
-                .forEach(id -> lootConfig.loot_tables.put(id, List.of("weapons_tier_3", "armors_tier_2")));
+                .forEach(id -> lootConfig.loot_tables.put(id, List.of("weapons_tier_4", "armors_tier_2")));
 
     }
 
