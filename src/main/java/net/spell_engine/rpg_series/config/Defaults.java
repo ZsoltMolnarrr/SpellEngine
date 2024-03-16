@@ -31,13 +31,20 @@ public class Defaults {
                 0F,
                 1
         ).chance(0.3F));
-        var weapons_tier_1 = "weapons_tier_1";
-        lootConfig.item_groups.put(weapons_tier_1, new LootConfig.ItemGroup(
+
+        lootConfig.item_groups.put("weapons_tier_1", new LootConfig.ItemGroup(
                 List.of(weapons(1)),
                 1
         ).chance(0.3F));
-        var weapons_tier_2 = "weapons_tier_2";
-        lootConfig.item_groups.put(weapons_tier_2, new LootConfig.ItemGroup(
+        lootConfig.item_groups.put("weapons_tier_2", new LootConfig.ItemGroup(
+                List.of(weapons(2)),
+                1
+        ).chance(0.3F));
+        lootConfig.item_groups.put("weapons_tier_3", new LootConfig.ItemGroup(
+                List.of(weapons(2)),
+                1
+        ).chance(0.3F));
+        lootConfig.item_groups.put("weapons_tier_4", new LootConfig.ItemGroup(
                 List.of(weapons(2)),
                 1
         ).chance(0.3F));
@@ -50,8 +57,7 @@ public class Defaults {
                 1
         ).chance(0.3F).enchant());
 
-        var armors_tier_1 = "armors_tier_1";
-        lootConfig.item_groups.put(armors_tier_1, new LootConfig.ItemGroup(
+        lootConfig.item_groups.put("armors_tier_1", new LootConfig.ItemGroup(
                 List.of(armors(1)),
                 1
         ).chance(0.25F));
@@ -60,8 +66,7 @@ public class Defaults {
                 1
         ).chance(0.25F).enchant());
 
-        var armors_tier_2 = "armors_tier_2";
-        lootConfig.item_groups.put(armors_tier_2, new LootConfig.ItemGroup(
+        lootConfig.item_groups.put("armors_tier_2", new LootConfig.ItemGroup(
                 List.of(armors(2)),
                 1
         ).chance(0.5F));
@@ -82,7 +87,7 @@ public class Defaults {
                         "minecraft:chests/pillager_outpost",
                         "minecraft:chests/simple_dungeon",
                         "minecraft:chests/stronghold_crossing")
-                .forEach(id -> lootConfig.loot_tables.put(id, List.of("weapons_tier_1", "weapons_tier_1")));
+                .forEach(id -> lootConfig.loot_tables.put(id, List.of("weapons_tier_1")));
 
         List.of("minecraft:chests/shipwreck_treasure")
                 .forEach(id -> lootConfig.loot_tables.put(id, List.of("armors_tier_1")));
@@ -97,11 +102,15 @@ public class Defaults {
                         "minecraft:chests/underwater_ruin_small")
                 .forEach(id -> lootConfig.loot_tables.put(id, List.of("weapons_tier_2")));
 
-        List.of("minecraft:chests/end_city_treasure",
-                        "minecraft:chests/bastion_treasure",
+        List.of("minecraft:chests/bastion_treasure",
                         "minecraft:chests/ancient_city",
                         "minecraft:chests/stronghold_library")
-                .forEach(id -> lootConfig.loot_tables.put(id, List.of("weapons_tier_2_enchanted", "armors_tier_2")));
+                .forEach(id -> lootConfig.loot_tables.put(id, List.of("armors_tier_2_enchanted")));
+
+        List.of("minecraft:chests/end_city_treasure"
+                        )
+                .forEach(id -> lootConfig.loot_tables.put(id, List.of("weapons_tier_3", "armors_tier_2")));
+
     }
 
     @SafeVarargs
