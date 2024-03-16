@@ -30,11 +30,11 @@ public class Spell {
         public float duration = 0;
         public int channel_ticks = 0;
         public String animation;
+        public boolean animates_ranged_weapon = false;
         public Sound start_sound;
         public Sound sound;
         public ParticleBatch[] particles = new ParticleBatch[]{};
     }
-    public boolean casting_animates_ranged_weapon = false;
 
     public ItemUse item_use = new ItemUse();
     public static class ItemUse { public ItemUse() { }
