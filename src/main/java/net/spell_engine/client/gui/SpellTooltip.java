@@ -32,6 +32,7 @@ public class SpellTooltip {
     private static final String effectDurationToken = "{effect_duration}";
     private static final String effectAmplifierToken = "{effect_amplifier}";
     private static final String impactRangeToken = "{impact_range}";
+    private static final String teleportDistanceToken = "{teleport_distance}";
 
     public static void addSpellInfo(ItemStack itemStack, List<Text> lines) {
         var player = MinecraftClient.getInstance().player;
@@ -196,6 +197,15 @@ public class SpellTooltip {
                         var statusEffect = impact.action.status_effect;
                         description = description.replace(effectAmplifierToken, "" + (statusEffect.amplifier + 1));
                         description = description.replace(effectDurationToken, formattedNumber(statusEffect.duration));
+                    }
+                    case TELEPORT -> {
+                        var teleport = impact.action.teleport;
+                        switch (teleport.mode) {
+                            case FORWARD -> {
+                                var forward = teleport.forward;
+                                description = description.replace(teleportDistanceToken, formattedNumber(forward.distance));
+                            }
+                        }
                     }
                 }
             }

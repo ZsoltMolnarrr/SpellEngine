@@ -203,7 +203,6 @@ public class Spell {
                 public Forward forward;
                 public static class Forward { public Forward() { }
                     public float distance = 10;
-                    public float arrival_offset_y = -1;
                 }
                 @Nullable public ParticleBatch[] depart_particles;
             }
