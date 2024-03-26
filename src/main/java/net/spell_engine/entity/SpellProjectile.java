@@ -26,6 +26,7 @@ import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.entity.TwoWayCollisionChecker;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.SpellEvents;
 import net.spell_engine.api.spell.SpellInfo;
 import net.spell_engine.client.render.FlyingSpellEntity;
 import net.spell_engine.internals.SpellHelper;
@@ -363,6 +364,14 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 }
             }
         }
+    }
+
+    protected void onCollision(HitResult hitResult) {
+        if (SpellEvents.PROJECTILE_COLLISION.isListened())
+        {
+            SpellEvents.PROJECTILE_COLLISION.invoke(listener -> listener.onProjectileCollision(new SpellEvents.ProjectileCollisionEvent(this, hitResult)));
+        }
+        super.onCollision(hitResult);
     }
 
     // MARK: Perks
