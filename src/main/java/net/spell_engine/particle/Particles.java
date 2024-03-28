@@ -57,6 +57,9 @@ public class Particles {
     public static final ParticleEntry holy_spell = particle("holy_spell");
     public static final ParticleEntry fire_explosion = particle("fire_explosion").customTexture();
     public static final ParticleEntry flame = particle("flame");
+    public static final ParticleEntry flame_ground = particle("flame_ground").customTexture();;
+    public static final ParticleEntry flame_medium_a = particle("flame_medium_a").customTexture();;
+    public static final ParticleEntry flame_medium_b = particle("flame_medium_b").customTexture();;
     public static final ParticleEntry frost_hit = particle("frost_hit").customTexture();
     public static final ParticleEntry frost_shard = particle("frost_shard").customTexture();
     public static final ParticleEntry snowflake = particle("snowflake");

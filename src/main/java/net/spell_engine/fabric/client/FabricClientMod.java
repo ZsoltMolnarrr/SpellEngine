@@ -67,6 +67,9 @@ public class FabricClientMod implements ClientModInitializer {
         ParticleFactoryRegistry.getInstance().register(Particles.nature_spark_mini_slowing.particleType, SpellFlameParticle.NatureSlowingFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.fire_explosion.particleType, SpellExplosionParticle.Factory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.flame.particleType, SpellFlameParticle.FlameFactory::new);
+        ParticleFactoryRegistry.getInstance().register(Particles.flame_ground.particleType, SpellFlameParticle.AnimatedFlameFactory::new);
+        ParticleFactoryRegistry.getInstance().register(Particles.flame_medium_a.particleType, SpellFlameParticle.MediumFlameFactory::new);
+        ParticleFactoryRegistry.getInstance().register(Particles.flame_medium_b.particleType, SpellFlameParticle.MediumFlameFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.snowflake.particleType, SpellSnowflakeParticle.FrostFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.frost_hit.particleType, SpellHitParticle.FrostFactory::new);
         ParticleFactoryRegistry.getInstance().register(Particles.frost_shard.particleType, SpellFlameParticle.FrostShard::new);

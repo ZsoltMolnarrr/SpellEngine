@@ -790,6 +790,14 @@ public class SpellHelper {
             applyEntityPlacement(entity, caster, caster.getPos(), cloud.placement);
             ((WorldScheduler)world).schedule(cloud.delay_ticks, () -> {
                 world.spawnEntity(entity);
+                var sound = cloud.spawn.sound;
+                if (sound != null) {
+                    SoundHelper.playSound(world, entity, sound);
+                }
+                var particles = cloud.spawn.particles;
+                if (particles != null) {
+                    ParticleHelper.sendBatches(entity, particles);
+                }
             });
         }
     }

@@ -11,6 +11,8 @@ import org.jetbrains.annotations.Nullable;
 
 @Environment(value= EnvType.CLIENT)
 public class SpellFlameParticle extends AbstractSlowingParticle {
+    private SpriteProvider spriteProviderForAnimation = null;
+
     public SpellFlameParticle(ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
         super(clientWorld, d, e, f, g, h, i);
     }
@@ -37,6 +39,15 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
         return 255;
     }
 
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.spriteProviderForAnimation != null) {
+            this.setSpriteForAge(this.spriteProviderForAnimation);
+        }
+    }
+
+
 
     @Environment(EnvType.CLIENT)
     public static class FlameFactory implements ParticleFactory<DefaultParticleType> {
@@ -49,6 +60,40 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
         public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
             var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
             particle.setSprite(this.spriteProvider);
+            return particle;
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static class AnimatedFlameFactory implements ParticleFactory<DefaultParticleType> {
+        private final SpriteProvider spriteProvider;
+
+        public AnimatedFlameFactory(SpriteProvider spriteProvider) {
+            this.spriteProvider = spriteProvider;
+        }
+
+        public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
+            particle.setSprite(this.spriteProvider);
+            particle.spriteProviderForAnimation = this.spriteProvider;
+            return particle;
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static class MediumFlameFactory implements ParticleFactory<DefaultParticleType> {
+        private final SpriteProvider spriteProvider;
+
+        public MediumFlameFactory(SpriteProvider spriteProvider) {
+            this.spriteProvider = spriteProvider;
+        }
+
+        public Particle createParticle(DefaultParticleType defaultParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
+            particle.setSprite(this.spriteProvider);
+            particle.spriteProviderForAnimation = this.spriteProvider;
+            particle.scale = 0.5F;
+            particle.maxAge *= 0.5;
             return particle;
         }
     }

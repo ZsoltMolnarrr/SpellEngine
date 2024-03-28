@@ -106,6 +106,11 @@ public class Spell {
                 public static class ClientData {
                     public ParticleBatch[] particles = new ParticleBatch[]{};
                 }
+                public Spawn spawn = new Spawn();
+                public static class Spawn {
+                    public Sound sound;
+                    public ParticleBatch[] particles = new ParticleBatch[]{};
+                }
             }
 
             public Cursor cursor;
