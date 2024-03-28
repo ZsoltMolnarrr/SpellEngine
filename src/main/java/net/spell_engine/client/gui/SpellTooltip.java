@@ -175,6 +175,9 @@ public class SpellTooltip {
                 }
             }
             var cloud = spell.release.target.cloud;
+            if (spell.release.target.clouds.length > 0) {
+                cloud = spell.release.target.clouds[0];
+            }
             if (cloud != null) {
                 var cloud_duration = cloud.time_to_live_seconds;
                 if (cloud_duration > 0) {

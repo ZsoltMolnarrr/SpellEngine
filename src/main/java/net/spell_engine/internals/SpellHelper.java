@@ -732,6 +732,10 @@ public class SpellHelper {
                                 var look = target.getRotationVector();
                                 var startingPosition = target.getPos();
                                 var destination = TargetHelper.findTeleportDestination(livingTarget, look, forward.distance, data.required_clearance_block_y);
+                                var groundJustBelow = TargetHelper.findSolidBlockBelow(livingTarget, destination, target.getWorld(), -1);
+                                if (groundJustBelow != null) {
+                                    destination = groundJustBelow;
+                                }
                                 if (destination != null) {
                                     ParticleHelper.sendBatches(livingTarget, data.depart_particles, false);
                                     world.emitGameEvent(GameEvent.TELEPORT, startingPosition, GameEvent.Emitter.of(target));
@@ -794,7 +798,7 @@ public class SpellHelper {
     public static void applyEntityPlacement(Entity entity, LivingEntity target, Vec3d position, Spell.EntityPlacement placement) {
         if (placement != null) {
             if (placement.force_onto_ground) {
-                var groundPosBelow = TargetHelper.findSolidBlockBelow(target, target.getWorld());
+                var groundPosBelow = TargetHelper.findSolidBlockBelow(target, target.getPos(), target.getWorld(), -20);
                 position = groundPosBelow != null ? groundPosBelow : position;
             }
             if (placement.location_offset_by_look > 0) {

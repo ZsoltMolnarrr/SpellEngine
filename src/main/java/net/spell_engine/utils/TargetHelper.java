@@ -287,9 +287,8 @@ public class TargetHelper {
         return new Beam.Position(start, end, length, hitBlock);
     }
 
-    @Nullable public static Vec3d findSolidBlockBelow(LivingEntity entity, World world) {
-        var position = entity.getPos();
-        var hit = world.raycast(new RaycastContext(position, position.add(0, -20, 0),
+    @Nullable public static Vec3d findSolidBlockBelow(LivingEntity entity, Vec3d position, World world, float height) {
+        var hit = world.raycast(new RaycastContext(position, position.add(0, height, 0),
                 RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
         if (hit.getType() == HitResult.Type.BLOCK) {
             var blockHit = (BlockHitResult)hit;
