@@ -104,6 +104,7 @@ public class Spell {
                 @Nullable public Sound presence_sound;
                 public ClientData client_data = new ClientData();
                 public static class ClientData {
+                    public int light_level = 0;
                     public ParticleBatch[] particles = new ParticleBatch[]{};
                 }
                 public Spawn spawn = new Spawn();

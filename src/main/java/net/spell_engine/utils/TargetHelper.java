@@ -240,13 +240,21 @@ public class TargetHelper {
             var distanceVector = VectorHelper.distanceVector(origin, target.getBoundingBox());
             return !target.isSpectator()
                     && target.canHit()
-                    && (predicate == null || predicate.test(target))
-                    && targetCenter.squaredDistanceTo(origin) <= squaredDistance
+                    // Predicate check
+                    && (predicate == null
+                        || predicate.test(target))
+                    // Distance check
+                    && ((range > 1)
+                        ? targetCenter.squaredDistanceTo(origin) <= squaredDistance
+                        : distanceVector.length() <= range)
+                    // Angle check
                     && ((angle <= 0)
                         || (VectorHelper.angleBetween(look, targetCenter.subtract(origin)) <= angle)
                         || (VectorHelper.angleBetween(look, distanceVector) <= angle)
                         )
-                    && (raycastObstacleFree(centerEntity, origin, targetCenter)
+                    // Obstacle check
+                    && (range < 1
+                        || raycastObstacleFree(centerEntity, origin, targetCenter)
                         || raycastObstacleFree(centerEntity, origin, origin.add(distanceVector))
                         )
                     ;

@@ -13,6 +13,8 @@ API changes:
 - Add CustomLayers raw constructor
 - Add two-way entity collision API 
 - Add SpellCloud `presence_sound` data field, batch spawning, custom positioning and timing
+- Add SpellCloud `spawn` structure for particles and sounds for spawning
+- Add SpellCloud LambDynamicLights support
 
 Functional changes:
 - Spell Container resolution
