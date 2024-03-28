@@ -19,6 +19,7 @@ import net.spell_engine.internals.SpellRegistry;
 import net.spell_engine.particle.ParticleHelper;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.UUID;
 
 public class SpellCloud extends Entity implements Ownable {
@@ -29,6 +30,7 @@ public class SpellCloud extends Entity implements Ownable {
     private UUID ownerUuid;
     private int timeToLive;
     private Identifier spellId;
+    private int dataIndex = 0;
     private SpellHelper.ImpactContext context;
 
     public SpellCloud(EntityType<? extends SpellCloud> entityType, World world) {
@@ -43,14 +45,25 @@ public class SpellCloud extends Entity implements Ownable {
     public void onCreatedFromSpell(Identifier spellId, Spell.Release.Target.Cloud cloudData, SpellHelper.ImpactContext context) {
         this.spellId = spellId;
         this.getDataTracker().set(SPELL_ID_TRACKER, this.spellId.toString());
+
+        var spell = getSpell();
+        if (spell != null) {
+            var index = -1;
+            var dataList = List.of(spell.release.target.clouds);
+            if (!dataList.isEmpty()) {
+                index = dataList.indexOf(cloudData);
+            }
+            this.dataIndex = index;
+        }
+        this.getDataTracker().set(DATA_INDEX_TRACKER, this.dataIndex);
+
         this.context = context;
         this.timeToLive = (int) (cloudData.time_to_live_seconds * 20);
     }
 
     public EntityDimensions getDimensions(EntityPose pose) {
-        var spell = getSpell();
-        if (spell != null) {
-            var cloudData = spell.release.target.cloud;
+        var cloudData = getCloudData();
+        if (cloudData != null) {
             var radius = cloudData.volume.radius;
             var heightMultiplier = cloudData.volume.area.vertical_range_multiplier;
             return EntityDimensions.changing(radius * 2, radius * heightMultiplier);
@@ -81,10 +94,12 @@ public class SpellCloud extends Entity implements Ownable {
     // MARK: Sync
 
     private static final TrackedData<String> SPELL_ID_TRACKER  = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.STRING);
+    private static final TrackedData<Integer> DATA_INDEX_TRACKER = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.INTEGER);
 
     @Override
     protected void initDataTracker() {
         this.getDataTracker().startTracking(SPELL_ID_TRACKER, "");
+        this.getDataTracker().startTracking(DATA_INDEX_TRACKER, this.dataIndex);
     }
 
     public void onTrackedDataSet(TrackedData<?> data) {
@@ -93,6 +108,7 @@ public class SpellCloud extends Entity implements Ownable {
         if (rawSpellId != null && !rawSpellId.isEmpty()) {
             this.spellId = new Identifier(rawSpellId);
         }
+        this.dataIndex = this.getDataTracker().get(DATA_INDEX_TRACKER);
         this.calculateDimensions();
     }
 
@@ -101,7 +117,8 @@ public class SpellCloud extends Entity implements Ownable {
     private enum NBTKey {
         AGE("Age"),
         TIME_TO_LIVE("TTL"),
-        SPELL_ID("SpellId")
+        SPELL_ID("SpellId"),
+        DATA_INDEX("DataIndex")
         ;
 
         public final String key;
@@ -115,6 +132,7 @@ public class SpellCloud extends Entity implements Ownable {
         this.age = nbt.getInt(NBTKey.AGE.key);
         this.timeToLive = nbt.getInt(NBTKey.TIME_TO_LIVE.key);
         this.spellId = new Identifier(nbt.getString(NBTKey.SPELL_ID.key));
+        this.dataIndex = nbt.getInt(NBTKey.DATA_INDEX.key);
     }
 
     @Override
@@ -122,6 +140,7 @@ public class SpellCloud extends Entity implements Ownable {
         nbt.putInt(NBTKey.AGE.key, this.age);
         nbt.putInt(NBTKey.TIME_TO_LIVE.key, this.timeToLive);
         nbt.putString(NBTKey.SPELL_ID.key, this.spellId.toString());
+        nbt.putInt(NBTKey.DATA_INDEX.key, this.dataIndex);
     }
 
     // MARK: Behavior
@@ -134,12 +153,11 @@ public class SpellCloud extends Entity implements Ownable {
 
     public void tick() {
         super.tick();
-        var spell = this.getSpell();
-        if (spell == null) {
+        var cloudData = this.getCloudData();
+        if (cloudData == null) {
             // this.discard();
             return;
         }
-        var cloudData = this.getSpell().release.target.cloud;
         if (this.getWorld().isClient) {
             // Client side tick
             var clientData = cloudData.client_data;
@@ -167,7 +185,8 @@ public class SpellCloud extends Entity implements Ownable {
                 // Impact tick due
                 var area_impact = cloudData.volume;
                 var owner = (LivingEntity) this.getOwner();
-                if (area_impact != null && owner != null) {
+                var spell = getSpell();
+                if (area_impact != null && owner != null && spell != null) {
                     var context = this.context;
                     if (context == null) {
                         context = new SpellHelper.ImpactContext();
@@ -177,6 +196,18 @@ public class SpellCloud extends Entity implements Ownable {
                 }
             }
         }
+    }
+
+    @Nullable public Spell.Release.Target.Cloud getCloudData() {
+        var spell = this.getSpell();
+        if (spell != null) {
+            if (spell.release.target.clouds.length > 0) {
+                return spell.release.target.clouds[dataIndex];
+            } else {
+                return spell.release.target.cloud;
+            }
+        }
+        return null;
     }
 
     public Spell getSpell() {

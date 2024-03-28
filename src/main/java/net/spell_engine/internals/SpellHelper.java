@@ -701,16 +701,27 @@ public class SpellHelper {
                     }
                 }
                 case SPAWN -> {
-                    var data = impact.action.spawn;
-                    var id = new Identifier(data.entity_type_id);
-                    var type = Registries.ENTITY_TYPE.get(id);
-                    var entity = (Entity)type.create(world);
-                    applyEntityPlacement(entity, caster, target.getPos(), data.placement);
-                    if (entity instanceof SpellSpawnedEntity spellSpawnedEntity) {
-                        spellSpawnedEntity.onCreatedFromSpell(caster, spellInfo.id(), data);
+                    List<Spell.Impact.Action.Spawn> spawns;
+                    if (impact.action.spawns.length > 0) {
+                        spawns = List.of(impact.action.spawns);
+                    } else {
+                        spawns = List.of(impact.action.spawn);
                     }
-                    world.spawnEntity(entity);
-                    success = true;
+
+                    for(var data: spawns) {
+                        var id = new Identifier(data.entity_type_id);
+                        var type = Registries.ENTITY_TYPE.get(id);
+
+                        var entity = (Entity)type.create(world);
+                        applyEntityPlacement(entity, caster, target.getPos(), data.placement);
+                        if (entity instanceof SpellSpawnedEntity spellSpawnedEntity) {
+                            spellSpawnedEntity.onCreatedFromSpell(caster, spellInfo.id(), data);
+                        }
+                        ((WorldScheduler)world).schedule(data.delay_ticks, () -> {
+                            world.spawnEntity(entity);
+                        });
+                        success = true;
+                    }
                 }
                 case TELEPORT -> {
                     var data = impact.action.teleport;
@@ -752,22 +763,31 @@ public class SpellHelper {
 
     public static void placeCloud(World world, LivingEntity caster, SpellInfo spellInfo, ImpactContext context) {
         var spell = spellInfo.spell();
-        var cloud = spell.release.target.cloud;
-        // var center = context.position();
 
-        SpellCloud entity;
-        if (cloud.entity_type_id != null) {
-            var id = new Identifier(cloud.entity_type_id);
-            var type = Registries.ENTITY_TYPE.get(id);
-            entity = (SpellCloud) type.create(world);
+        List<Spell.Release.Target.Cloud> clouds;
+        if (spell.release.target.clouds.length > 0) {
+            clouds = List.of(spell.release.target.clouds);
         } else {
-            entity = new SpellCloud(world);
+            clouds = List.of(spell.release.target.cloud);
         }
-        entity.setOwner(caster);
 
-        entity.onCreatedFromSpell(spellInfo.id(), cloud, context);
-        applyEntityPlacement(entity, caster, caster.getPos(), cloud.placement);
-        world.spawnEntity(entity);
+        for (var cloud: clouds) {
+            SpellCloud entity;
+            if (cloud.entity_type_id != null) {
+                var id = new Identifier(cloud.entity_type_id);
+                var type = Registries.ENTITY_TYPE.get(id);
+                entity = (SpellCloud) type.create(world);
+            } else {
+                entity = new SpellCloud(world);
+            }
+            entity.setOwner(caster);
+
+            entity.onCreatedFromSpell(spellInfo.id(), cloud, context);
+            applyEntityPlacement(entity, caster, caster.getPos(), cloud.placement);
+            ((WorldScheduler)world).schedule(cloud.delay_ticks, () -> {
+                world.spawnEntity(entity);
+            });
+        }
     }
 
 

@@ -12,7 +12,8 @@ public interface WorldScheduler {
 
     default void schedule(int ticks, Runnable task) {
         if (ticks <= 0) {
-            throw new IllegalArgumentException("Cannot schedule a task for 0 or less ticks");
+            task.run();
+            return;
         }
         long executionTime = getSchedulerTime() + ticks;
         var list = getScheduledTasks().getOrDefault(executionTime, new ArrayList<>());

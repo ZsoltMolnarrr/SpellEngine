@@ -63,7 +63,10 @@ public class Spell {
         public static class Target { public Target() { }
             public Type type;
             public enum Type {
-                AREA, BEAM, CLOUD, CURSOR, PROJECTILE, METEOR, SELF, SHOOT_ARROW
+                AREA, BEAM, CURSOR, SELF,
+
+                // To be refactored into `Action` in the future
+                PROJECTILE, METEOR, CLOUD, SHOOT_ARROW
             }
 
             public Area area;
@@ -85,7 +88,9 @@ public class Spell {
                 public ParticleBatch[] block_hit_particles = new ParticleBatch[]{};
             }
 
+            // Populate either `cloud` or `clouds` but not both
             public Cloud cloud;
+            public Cloud[] clouds = new Cloud[]{};
             public static class Cloud { public Cloud() { }
                 // Custom entity type id to spawn, must be a subclass of `SpellCloud`
                 @Nullable public String entity_type_id;
@@ -94,6 +99,7 @@ public class Spell {
 
                 /// The number of ticks between looking for targets and trying to apply impact
                 public int impact_tick_interval = 5;
+                public int delay_ticks = 0;
                 public EntityPlacement placement = new EntityPlacement();
                 @Nullable public Sound presence_sound;
                 public ClientData client_data = new ClientData();
@@ -187,10 +193,14 @@ public class Spell {
                 public int duration = 2;
                 public int tick_offset = 10;
             }
+
+            // Populate either `spawn` or `spawns` but not both
             public Spawn spawn;
+            public Spawn[] spawns = new Spawn[]{};
             public static class Spawn {
                 public String entity_type_id;
                 public int time_to_live_seconds = 0;
+                public int delay_ticks = 0;
                 public EntityPlacement placement = new EntityPlacement();
             }
 
