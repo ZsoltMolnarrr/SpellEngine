@@ -7,6 +7,7 @@ import net.minecraft.registry.RegistryWrapper;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.datagen.SimpleParticleGenerator;
 import net.spell_engine.api.datagen.SimpleSoundGenerator;
+import net.spell_engine.api.datagen.SimpleSoundGeneratorV2;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.fx.SpellEngineSounds;
 
@@ -77,7 +78,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         }
     }
 
-    public static class SoundGen extends SimpleSoundGenerator {
+    public static class SoundGen extends SimpleSoundGeneratorV2 {
         public SoundGen(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
             super(dataOutput, registryLookup);
         }
@@ -85,8 +86,11 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         @Override
         public void generateSounds(Builder builder) {
             builder.entries.add(new Entry(SpellEngineMod.ID,
-                    SpellEngineSounds.entries.stream().map(entry -> entry.id().getPath()).toList()));
+                    SpellEngineSounds.entries.stream()
+                                    .map(entry -> SoundEntry.withVariants(entry.id().getPath(), entry.variants()))
+                                    .toList()
+                    )
+            );
         }
     }
-
 }
