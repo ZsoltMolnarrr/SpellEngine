@@ -1,3 +1,11 @@
+# 1.5.2
+
+Functional changes:
+- Slightly reduce relic drop changes
+
+API Changes:
+- Add improved sound generator utility
+
 # 1.5.1
 
 Functional changes:

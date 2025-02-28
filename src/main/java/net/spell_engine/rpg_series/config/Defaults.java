@@ -105,9 +105,9 @@ public class Defaults {
                 .forEach(id -> {
                     items.put(id, new LootConfig.Pool()
                             .rolls(1)
-                            .add(W1, true)
-                            .add(A1, true)
-                            .add(X1, true)
+                            .add(W1, true).weight(2)
+                            .add(A1, true).weight(2)
+                            .add(X1, true).weight(2)
                             .add(R1)
                     );
                     scrolls.put(id, new LootConfig.Pool()
@@ -189,8 +189,8 @@ public class Defaults {
                 .forEach(id -> {
                     items.put(id, new LootConfig.Pool()
                         .rolls(0.5)
-                        .add(W1)
-                        .add(A1)
+                        .add(W1).weight(2)
+                        .add(A1).weight(2)
                         .add(R1)
                     );
                     scrolls.put(id, new LootConfig.Pool()
@@ -231,12 +231,12 @@ public class Defaults {
         // Vanilla demi bosses
 
         items.put("minecraft:entities/evoker", new LootConfig.Pool()
-                .rolls(0.5F)
+                .rolls(0.25F)
                 .add(R1)
         );
 
         items.put("minecraft:entities/illusioner", new LootConfig.Pool()
-                .rolls(0.5F)
+                .rolls(0.25F)
                 .add(R1)
         );
 
@@ -425,8 +425,8 @@ public class Defaults {
         );
         items.put("nova_structures:chests/nether_keep/vault_keep", new LootConfig.Pool()
                 .rolls(0.5)
-                .add(W3, true)
-                .add(A2)
+                .add(W3, true).weight(2)
+                .add(A2).weight(2)
                 .add(R2)
         );
         scrolls.put("nova_structures:chests/nether_keep/vault_keep", new LootConfig.Pool()
@@ -438,8 +438,8 @@ public class Defaults {
 
         items.put("nova_structures:chests/trident_trial_monument/ttm_common_vault", new LootConfig.Pool()
                 .rolls(0.5)
-                .add(W2, true)
-                .add(X2, true)
+                .add(W2, true).weight(2)
+                .add(X2, true).weight(2)
                 .add(R1)
         );
         scrolls.put("nova_structures:chests/trident_trial_monument/ttm_common_vault", new LootConfig.Pool()
