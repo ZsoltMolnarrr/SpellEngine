@@ -54,6 +54,12 @@ public class SpellEngineSounds {
         public int variants() {
             return variants;
         }
+
+        public void register() {
+            if (entry == null) {
+                entry = Registry.registerReference(Registries.SOUND_EVENT, id(), soundEvent());
+            }
+        }
     }
     public static final List<Entry> entries = new ArrayList<>();
     public static Entry add(Entry entry) {

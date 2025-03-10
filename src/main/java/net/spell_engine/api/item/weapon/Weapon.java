@@ -19,9 +19,13 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
+import net.minecraft.util.Rarity;
 import net.spell_engine.api.config.AttributeModifier;
 import net.spell_engine.api.config.WeaponConfig;
 import net.spell_engine.api.item.Tiers;
+import net.spell_engine.api.spell.SpellDataComponents;
+import net.spell_engine.api.spell.container.SpellContainer;
+import net.spell_engine.api.spell.container.SpellContainerHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -43,6 +47,10 @@ public class Weapon {
         private final WeaponConfig defaults;
         private @Nullable String requiredMod;
         private int tier = 0;
+        public Rarity rarity = Rarity.COMMON;
+        private String translatedName = ""; // Used for data gen
+        public String weaponAttributesPreset = ""; // Used for data gen
+        public List<Identifier> spells = List.of();
 
         public Entry(String namespace, String name, CustomMaterial material, Factory factory, WeaponConfig defaults, @Nullable String requiredMod) {
             this.namespace = namespace;
@@ -99,6 +107,24 @@ public class Weapon {
         public Entry tier(int tier) {
             this.tier = tier;
             return this;
+        }
+
+        public int tier() {
+            return tier;
+        }
+
+        public Entry spell(Identifier spellId) {
+            spells = List.of(spellId);
+            return this;
+        }
+
+        public Entry translatedName(String name) {
+            this.translatedName = name;
+            return this;
+        }
+
+        public String translatedName() {
+            return translatedName;
         }
     }
 
@@ -170,6 +196,15 @@ public class Weapon {
 
             var settings = new Item.Settings()
                     .attributeModifiers(attributesFrom(config));
+            if (entry.rarity != Rarity.COMMON) {
+                settings = settings.rarity(entry.rarity);
+            }
+            if (entry.spells.isEmpty()) {
+                settings.component(SpellDataComponents.SPELL_CONTAINER, SpellContainerHelper.createForMagicWeapon());
+            } else {
+                settings.component(SpellDataComponents.SPELL_CONTAINER, SpellContainerHelper.createForWeapon(SpellContainer.ContentType.MAGIC, entry.spells));
+            }
+
             var tier = Tiers.unsafe(entry.id());
             if (tier >= 3) {
                 settings.fireproof();
