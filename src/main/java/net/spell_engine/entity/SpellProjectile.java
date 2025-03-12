@@ -93,6 +93,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
 
     public Spell.ProjectileData projectileData() {
+        var spellEntry = getSpellEntry();
+        if (spellEntry == null) {
+            return null;
+        }
         var spell = getSpellEntry().value();
         var release = spell.deliver;
         switch (release.type) {

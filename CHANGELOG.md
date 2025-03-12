@@ -1,3 +1,12 @@
+# 1.5.3
+
+Functional changes:
+- Improve spell projectile satibility
+- Fix block tags
+
+API Changes:
+- Improve weapon entry creation and parameters
+
 # 1.5.2
 
 Functional changes:
