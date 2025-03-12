@@ -1,11 +1,12 @@
 # 1.5.3
 
 Functional changes:
-- Improve spell projectile satibility
+- Improve spell projectile stability
 - Fix block tags
 
 API Changes:
 - Improve weapon entry creation and parameters
+- Fix SpellTriggers.onSpellImpactAny missing type cast
 
 # 1.5.2
 

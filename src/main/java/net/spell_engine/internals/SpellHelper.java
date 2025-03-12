@@ -731,8 +731,8 @@ public class SpellHelper {
             lookupAndPerformAreaImpact(area_impact, spellEntry, caster, target, aoeSource, impacts, context, false);
         }
 
-        if (anyPerformed) {
-            SpellTriggers.onSpellImpactAny((PlayerEntity) caster, target, aoeSource, spellEntry);
+        if (anyPerformed && caster instanceof PlayerEntity player) {
+            SpellTriggers.onSpellImpactAny(player, target, aoeSource, spellEntry);
         }
 
         return anyPerformed;
