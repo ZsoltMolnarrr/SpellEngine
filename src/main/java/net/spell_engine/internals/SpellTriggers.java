@@ -5,11 +5,13 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.util.Identifier;
 import net.spell_engine.api.event.CombatEvents;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.arrow.ArrowExtension;
+import net.spell_engine.internals.casting.SpellBatcher;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -179,7 +181,7 @@ public class SpellTriggers {
             var spellId = spellEntry.getKey().get().getValue();
             if (spell.passive != null && !caster.getCooldownManager().isCoolingDown(spellId)) {
                 for (var trigger : spell.passive.triggers) {
-                    if (evaluateTrigger(trigger, event)) {
+                    if (evaluateTrigger(spellEntry, trigger, event)) {
                         SpellTarget.SearchResult targetResult;
                         if (spell.target.type == Spell.Target.Type.FROM_TRIGGER) {
                             List<Entity> targets = List.of(event.target(trigger));
@@ -196,12 +198,28 @@ public class SpellTriggers {
     }
 
     private static final Random random = new Random();
-    public static boolean evaluateTrigger(Spell.Trigger trigger, Event event) {
+    public static boolean evaluateTrigger(RegistryEntry<Spell> spellEntry, Spell.Trigger trigger, Event event) {
         if (trigger.type != event.type) {
             return false;
         }
-        if (trigger.chance < 1 && random.nextFloat() > trigger.chance) {
-            return false;
+        if (trigger.chance < 1) {
+            float randomValue;
+            if (trigger.chance_batching) {
+                var spellId = spellEntry.getKey().get().getValue();
+                var batchedChances = ((SpellBatcher)event.player).getBatchTriggerChance(spellId);
+                if (batchedChances == null) {
+                    randomValue = random.nextFloat();
+                    ((SpellBatcher)event.player).batchTriggerChance(spellId, randomValue);
+                } else {
+                    randomValue = batchedChances;
+                }
+            } else {
+                randomValue = random.nextFloat();
+            }
+
+            if (randomValue > trigger.chance) {
+                return false;
+            }
         }
         if (trigger.caster_conditions != null) {
             for (var condition : trigger.caster_conditions) {

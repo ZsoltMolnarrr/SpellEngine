@@ -65,7 +65,7 @@ public class SpellStashHelper {
                 var spellEntry = stash.spell();
                 for (var trigger: stash.triggers()) {
                     if (spellEntry == null || trigger == null) { continue; }
-                    if (!SpellTriggers.evaluateTrigger(trigger, event)) { continue; }
+                    if (!SpellTriggers.evaluateTrigger(spellEntry, trigger, event)) { continue; }
 
                     var consume = stash.consume();
                     var stacksAvailable = updateEffectStacks.getOrDefault(stack, stack.getAmplifier());

@@ -33,6 +33,7 @@ import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.arrow.ArrowHelper;
+import net.spell_engine.internals.casting.SpellBatcher;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCastSyncHelper;
 import net.spell_engine.internals.casting.SpellCasterEntity;
@@ -289,28 +290,43 @@ public class SpellHelper {
                 ParticleHelper.sendBatches(player, spell.release.particles);
                 SoundHelper.playSound(world, player, spell.release.sound);
                 AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation, castingSpeed);
-                // Consume things
-                // Cooldown
-                imposeCooldown(player, spellSource, spellId, spell, progress);
-                // Exhaust
-                player.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
-                // Durability
-                if (SpellEngineMod.config.spell_cost_durability_allowed && spell.cost.durability > 0) {
-                    var stackToDamage = spellSource.itemStack().isDamageable() ? spellSource.itemStack() : heldItemStack;
-                    stackToDamage.damage(spell.cost.durability, player, EquipmentSlot.MAINHAND);
-                }
-                // Item
-                Ammo.consume(ammoResult, player);
-                // Status effect
-                if (spell.cost.effect_id != null) {
-                    var effect = Registries.STATUS_EFFECT.getEntry(Identifier.of(spell.cost.effect_id));
-                    if (effect.isPresent()) {
-                        player.removeStatusEffect(effect.get());
-                    }
-                }
+
+                consumeSpellCost(player, progress, spellSource, spellId, spell, heldItemStack, ammoResult, false);
 
                 var args = new SpellEvents.SpellCastEvent.Args(player, spellEntry, targets, action, progress);
                 SpellEvents.SPELL_CAST.invoke((listener) -> listener.onSpellCast(args));
+            }
+        }
+    }
+
+    private static void consumeSpellCost(PlayerEntity player, float progress, SpellContainerSource.SourcedContainer spellSource, Identifier spellId, Spell spell, ItemStack heldItemStack, Ammo.Result ammoResult, boolean scheduled) {
+        var batching = spell.cost.batching;
+        if (batching && !scheduled) {
+            if (((SpellBatcher)player).hasBatchedCost(spellId)) {
+                return;
+            }
+            ((WorldScheduler)player.getWorld()).schedule(0, () -> consumeSpellCost(player, progress, spellSource, spellId, spell, heldItemStack, ammoResult, true));
+            ((SpellBatcher)player).batchCost(spellId, true);
+            return;
+        }
+
+        // Consume things
+        // Cooldown
+        imposeCooldown(player, spellSource, spellId, spell, progress);
+        // Exhaust
+        player.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
+        // Durability
+        if (SpellEngineMod.config.spell_cost_durability_allowed && spell.cost.durability > 0) {
+            var stackToDamage = spellSource.itemStack().isDamageable() ? spellSource.itemStack() : heldItemStack;
+            stackToDamage.damage(spell.cost.durability, player, EquipmentSlot.MAINHAND);
+        }
+        // Item
+        Ammo.consume(ammoResult, player);
+        // Status effect
+        if (spell.cost.effect_id != null) {
+            var effect = Registries.STATUS_EFFECT.getEntry(Identifier.of(spell.cost.effect_id));
+            if (effect.isPresent()) {
+                player.removeStatusEffect(effect.get());
             }
         }
     }

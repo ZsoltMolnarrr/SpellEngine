@@ -381,6 +381,8 @@ public class Spell {
     /// Applied to the caster, once the spell casting process finishes
     public Cost cost = new Cost();
     public static class Cost { public Cost() { }
+        /// Whether the cost should be executed maximum once per tick
+        public boolean batching = false;
         /// Exhaust to add
         public float exhaust = 0.1F;
         /// Durability of the spell host item to consume
@@ -432,6 +434,9 @@ public class Spell {
         public Type type;
         /// Chance to trigger. 0 = 0%, 1 = 100%
         public float chance = 1;
+        /// Calculates and stores the chance, for the duration of a single game tick
+        /// So multiple targets can be affected by the same chance
+        public boolean chance_batching = false;
 
         @Nullable public List<TargetCondition> caster_conditions;
         @Nullable public List<TargetCondition> target_conditions;
