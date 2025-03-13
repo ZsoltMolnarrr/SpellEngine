@@ -28,6 +28,10 @@ public class SpellContainerHelper {
         return createForWeapon(SpellContainer.ContentType.ARCHERY, List.of(spellId));
     }
 
+    public static SpellContainer createForRangedWeapon(List<Identifier> spellIds) {
+        return createForWeapon(SpellContainer.ContentType.ARCHERY, spellIds);
+    }
+
     public static SpellContainer createForMagicWeapon() {
         return createForWeapon(SpellContainer.ContentType.MAGIC, List.of());
     }
