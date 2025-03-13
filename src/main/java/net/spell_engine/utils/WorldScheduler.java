@@ -11,7 +11,7 @@ public interface WorldScheduler {
     Map<Long, List<Runnable>> getScheduledTasks();
 
     default void schedule(int ticks, Runnable task) {
-        if (ticks < 0) {
+        if (ticks <= 0) {
             task.run();
             return;
         }
