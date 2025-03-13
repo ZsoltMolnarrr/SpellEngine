@@ -1,5 +1,8 @@
 # 1.5.5
 
+Functional changes:
+- Spell batching and world scheduler related bug fixes
+
 API Changes:
 - Add field to hide tooltip header
 - Add `equipment_condition` field to spell triggers
