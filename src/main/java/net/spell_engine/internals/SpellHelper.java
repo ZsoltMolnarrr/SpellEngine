@@ -305,7 +305,7 @@ public class SpellHelper {
             if (((SpellBatcher)player).hasBatchedCost(spellId)) {
                 return;
             }
-            ((WorldScheduler)player.getWorld()).schedule(0, () -> consumeSpellCost(player, progress, spellSource, spellId, spell, heldItemStack, ammoResult, true));
+            ((WorldScheduler)player.getWorld()).schedule(1, () -> consumeSpellCost(player, progress, spellSource, spellId, spell, heldItemStack, ammoResult, true));
             ((SpellBatcher)player).batchCost(spellId, true);
             return;
         }

@@ -30,6 +30,6 @@ public interface SpellBatcher {
 
     default boolean hasBatchedCost(Identifier id) {
         var batch = getSpellBatches().get(id);
-        return batch != null && batch.cost == true;
+        return batch != null && batch.cost != null && batch.cost == true;
     }
 }
