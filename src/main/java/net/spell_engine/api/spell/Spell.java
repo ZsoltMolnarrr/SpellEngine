@@ -39,6 +39,7 @@ public class Spell {
 
     @Nullable public Tooltip tooltip;
     public static class Tooltip { public Tooltip() { }; public static final Tooltip DEFAULT = new Tooltip();
+        public boolean show_header = true;
         public LineOptions name = new LineOptions(true, true);
         public LineOptions description = new LineOptions(false, true);
         public static class LineOptions { public LineOptions() { }

@@ -1,3 +1,10 @@
+# 1.5.5
+
+API Changes:
+- Add field to hide tooltip header
+- Add `equipment_condition` field to spell triggers
+- Add more spell container constructors
+
 # 1.5.4
 
 Functional changes:

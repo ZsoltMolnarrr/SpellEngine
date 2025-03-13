@@ -65,13 +65,35 @@ public class SpellTooltip {
                 addSectionDivider += 1;
             }
 
-            boolean showListHeader = !container.pool().isEmpty()
-                    || container.spell_ids().size() > 1
-                    || container.is_proxy();
+            List<RegistryEntry<Spell>> spells = List.of();
+            final var world = MinecraftClient.getInstance().world;
+            if (world != null) {
+                spells = container.spell_ids().stream().map(idString -> {
+                    var spellId = Identifier.of(idString);
+                    var optionalSpellEntry = SpellRegistry.from(world).getEntry(spellId);
+                    if (optionalSpellEntry.isPresent()) {
+                        return (RegistryEntry<Spell>) optionalSpellEntry.get();
+                    } else {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .toList();
+            }
+
+//            boolean showListHeader = !container.pool().isEmpty()
+//                    || container.spell_ids().size() > 1
+//                    || container.is_proxy();
             // !itemStack.isIn(SpellEngineItemTags.SPELL_BOOK_MERGEABLE);
+            boolean showListHeader = false;
+            for (var spellEntry : spells) {
+                var spell = spellEntry.value();
+                var tooltip = spell.tooltip != null ? spell.tooltip : Spell.Tooltip.DEFAULT;
+                showListHeader = showListHeader || tooltip.show_header;
+            }
             int indentLevel = showListHeader ? 1 : 0;
 
-            if (!container.spell_ids().isEmpty() && showListHeader) {
+            if (!spells.isEmpty() && showListHeader) {
                 String limit = "";
                 if (container.max_spell_count() > 0) {
                     limit = I18n.translate("spell.tooltip.host.limit")
@@ -99,15 +121,16 @@ public class SpellTooltip {
                     MinecraftClient.getInstance().getWindow().getHandle(),
                     ((KeyBindingAccessor) keybinding).fabric_getBoundKey().getCode())
             );
-            for (int i = 0; i < container.spell_ids().size(); i++) {
-                var spellId = Identifier.of(container.spell_ids().get(i));
-                var info = spellEntry(spellId, player, itemStack, showDetails, indentLevel);
+            for (int i = 0; i < spells.size(); i++) {
+                var spellEntry = spells.get(i);
+                var info = spellEntry(spellEntry, player, itemStack, showDetails, indentLevel);
                 if (!info.isEmpty()) {
                     if (i > 0 && showDetails) {
                         spellTextLines.add(Text.literal(" ")); // Separator: empty line
                     }
                     spellTextLines.addAll(info);
                 }
+
             }
             if (!showDetails) {
                 if (!keybinding.isUnbound() && container.spell_ids().size() > 0) {
@@ -167,17 +190,21 @@ public class SpellTooltip {
     }
 
     public static List<Text> spellEntry(Identifier spellId, PlayerEntity player, ItemStack itemStack, boolean details, int indentLevel) {
-        var lines = new ArrayList<Text>();
-        var world = MinecraftClient.getInstance().world;
+        var world = player.getWorld();
         if (world == null) {
-            return lines;
+            return List.of();
         }
         var optionalSpellEntry = SpellRegistry.from(world).getEntry(spellId);
         if (optionalSpellEntry.isEmpty()) {
-            return lines;
+            return List.of();
         }
-        var spellEntry = optionalSpellEntry.get();
+        return spellEntry(optionalSpellEntry.get(), player, itemStack, details, indentLevel);
+    }
+
+    public static List<Text> spellEntry(RegistryEntry<Spell> spellEntry, PlayerEntity player, ItemStack itemStack, boolean details, int indentLevel) {
+        var lines = new ArrayList<Text>();
         var spell = spellEntry.value();
+        var spellId = spellEntry.getKey().get().getValue();
         var primaryPower = SpellPower.getSpellPower(spell.school, player);
         var tooltipData = spell.tooltip != null ? spell.tooltip : Spell.Tooltip.DEFAULT;
 
