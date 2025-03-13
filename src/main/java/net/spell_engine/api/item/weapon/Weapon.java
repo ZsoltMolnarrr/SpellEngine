@@ -50,7 +50,7 @@ public class Weapon {
         public Rarity rarity = Rarity.COMMON;
         private String translatedName = ""; // Used for data gen
         public String weaponAttributesPreset = ""; // Used for data gen
-        public List<Identifier> spells = List.of();
+        public List<Identifier> spells = null;
 
         public Entry(String namespace, String name, CustomMaterial material, Factory factory, WeaponConfig defaults, @Nullable String requiredMod) {
             this.namespace = namespace;
@@ -111,6 +111,11 @@ public class Weapon {
 
         public int tier() {
             return tier;
+        }
+
+        public Entry castSpell() {
+            spells = List.of();
+            return this;
         }
 
         public Entry spell(Identifier spellId) {
@@ -199,10 +204,12 @@ public class Weapon {
             if (entry.rarity != Rarity.COMMON) {
                 settings = settings.rarity(entry.rarity);
             }
-            if (entry.spells.isEmpty()) {
-                settings.component(SpellDataComponents.SPELL_CONTAINER, SpellContainerHelper.createForMagicWeapon());
-            } else {
-                settings.component(SpellDataComponents.SPELL_CONTAINER, SpellContainerHelper.createForWeapon(SpellContainer.ContentType.MAGIC, entry.spells));
+            if (entry.spells != null) {
+                if (entry.spells.isEmpty()) {
+                    settings.component(SpellDataComponents.SPELL_CONTAINER, SpellContainerHelper.createForMagicWeapon());
+                } else {
+                    settings.component(SpellDataComponents.SPELL_CONTAINER, SpellContainerHelper.createForWeapon(SpellContainer.ContentType.MAGIC, entry.spells));
+                }
             }
 
             var tier = Tiers.unsafe(entry.id());

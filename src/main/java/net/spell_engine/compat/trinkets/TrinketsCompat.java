@@ -34,10 +34,10 @@ public class TrinketsCompat {
             });
             ContainerCompat.addProvider(TrinketsCompat::getAll);
 
-            final var sourceName = "trinkets";
+            final var spellSourceName = "trinkets";
             SpellContainerSource.addSource(
                     new SpellContainerSource.Entry(
-                            sourceName,
+                            spellSourceName,
                             TrinketsCompat::getSpellContainers,
                             TrinketsCompat::getAll // DirtyChecker is necessary because TrinketUnequipCallback.EVENT doesn't work at all
                     ),
@@ -69,7 +69,7 @@ public class TrinketsCompat {
         return enabled;
     }
 
-    public static List<SpellContainerSource.SourcedContainer> getSpellContainers(PlayerEntity player) {
+    public static List<SpellContainerSource.SourcedContainer> getSpellContainers(PlayerEntity player, String sourceName) {
         var component = TrinketsApi.getTrinketComponent(player);
         if (component.isEmpty()) {
             return List.of();
@@ -85,9 +85,9 @@ public class TrinketsCompat {
             var container = SpellContainerHelper.containerFromItemStack(stack);
             if (container != null && container.isValid()) {
                 if (pair.getLeft().getId().contains("spell/book")) {
-                    spellBooks.add(new SpellContainerSource.SourcedContainer(stack, container));
+                    spellBooks.add(new SpellContainerSource.SourcedContainer(sourceName, stack, container));
                 } else {
-                    others.add(new SpellContainerSource.SourcedContainer(stack, container));
+                    others.add(new SpellContainerSource.SourcedContainer(sourceName, stack, container));
                 }
             }
         });

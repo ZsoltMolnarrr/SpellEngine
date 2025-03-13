@@ -1,3 +1,12 @@
+# 1.5.4
+
+Functional changes:
+- Restore data driven spell assignments
+- Allow passive spells to work from off hand
+
+API Changes:
+- Add spell batching (trigger, cooldown)
+
 # 1.5.3
 
 Functional changes:

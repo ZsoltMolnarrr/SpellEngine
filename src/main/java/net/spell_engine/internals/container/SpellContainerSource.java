@@ -40,9 +40,9 @@ public class SpellContainerSource {
         ((Owner)player).spellContainerCache().remove(source);
     }
 
-    public record SourcedContainer(ItemStack itemStack, SpellContainer container) { }
+    public record SourcedContainer(String name, ItemStack itemStack, SpellContainer container) { }
     public interface Source {
-        List<SourcedContainer> getSpellContainers(PlayerEntity player);
+        List<SourcedContainer> getSpellContainers(PlayerEntity player, String name);
     }
     public interface DirtyChecker {
         Object current(PlayerEntity player);
@@ -57,41 +57,33 @@ public class SpellContainerSource {
         sources.add(newEntry);
         return newEntry;
     }
-    public static final Entry MAIN_HAND = entry("main_hand", player -> {
+    public static final Entry MAIN_HAND = entry("main_hand", (player, sourceName) -> {
         var heldItemStack = player.getMainHandStack();
         var sources = new ArrayList<SourcedContainer>();
-        addSourceIfValid(heldItemStack, sources);
+        addSourceIfValid(heldItemStack, sources, sourceName);
         return sources;
     });
-    public static final Entry OFF_HAND = new Entry("off_hand", player -> {
+    public static final Entry OFF_HAND = new Entry("off_hand", (player, sourceName) -> {
         var offhandStack = player.getInventory().offHand.get(0);
         var sources = new ArrayList<SourcedContainer>();
-        if (SpellEngineMod.config.spell_container_from_offhand_any) {
-            addSourceIfValid(offhandStack, sources);
-        } else {
-            addSourceIfValid(offhandStack, sources, EquipmentSlot.OFFHAND.asString());
-        }
+        addSourceIfValid(offhandStack, sources, sourceName);
         return sources;
     }, player -> player.getInventory().offHand.get(0));
-    public static final Entry EQUIPMENT = new Entry("equipment", player -> {
+    public static final Entry EQUIPMENT = new Entry("equipment", (player, sourceName) -> {
         var sources = new ArrayList<SourcedContainer>();
         if (SpellEngineMod.config.spell_container_from_equipment) {
             for (var slot : player.getInventory().armor) {
-                addSourceIfValid(slot, sources);
+                addSourceIfValid(slot, sources, sourceName);
             }
         }
         return sources;
     }, player -> List.of(player.getInventory().armor.get(0), player.getInventory().armor.get(1),
             player.getInventory().armor.get(2), player.getInventory().armor.get(3))
     );
-    private static void addSourceIfValid(ItemStack fromItemStack, List<SourcedContainer> sources) {
-        addSourceIfValid(fromItemStack, sources, null);
-    }
-    private static void addSourceIfValid(ItemStack fromItemStack, List<SourcedContainer> sources, @Nullable String requiredSlot) {
+    private static void addSourceIfValid(ItemStack fromItemStack, List<SourcedContainer> sources, String name) {
         SpellContainer container = SpellContainerHelper.containerFromItemStack(fromItemStack);
-        if (container != null && container.isValid()
-                && (requiredSlot == null || container.slot().contains(requiredSlot)) ) {
-            sources.add(new SpellContainerSource.SourcedContainer(fromItemStack, container));
+        if (container != null && container.isValid()) {
+            sources.add(new SpellContainerSource.SourcedContainer(name, fromItemStack, container));
         }
     }
 
@@ -138,7 +130,7 @@ public class SpellContainerSource {
                     allContainers.addAll(owner.spellContainerCache().get(entry.name()));
                 } else {
                     // System.out.println("Container source dirty: " + entry.name() + " for " + player.getName());
-                    var freshContainers = entry.source().getSpellContainers(player);
+                    var freshContainers = entry.source().getSpellContainers(player, entry.name());
                     allContainers.addAll(freshContainers);
                     owner.spellContainerCache().put(entry.name(), freshContainers);
                     updated = true;
@@ -146,7 +138,7 @@ public class SpellContainerSource {
             }
         } else {
             for (var entry : sources) {
-                var freshContainers = entry.source().getSpellContainers(player);
+                var freshContainers = entry.source().getSpellContainers(player, entry.name());
                 allContainers.addAll(freshContainers);
             }
             updated = true;
@@ -178,7 +170,14 @@ public class SpellContainerSource {
         var registry = SpellRegistry.from(world);
         for (var source : sources) {
             var container = source.container();
-            if (contentType == null || container.content() == SpellContainer.ContentType.ANY || container.content() == contentType) {
+            if (type == Spell.Type.ACTIVE && source.name.equals("off_hand")) {
+                if (!SpellEngineMod.config.spell_container_from_offhand_any) {
+                    if (!container.slotMatches(EquipmentSlot.OFFHAND.asString())) {
+                        continue;
+                    }
+                }
+            }
+            if (container.contentMatches(contentType)) {
                 for (var idString : container.spell_ids()) {
                     var id = Identifier.of(idString);
                     var spell = registry.getEntry(id).orElse(null);

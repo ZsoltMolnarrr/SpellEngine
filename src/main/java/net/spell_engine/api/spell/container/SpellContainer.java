@@ -3,6 +3,7 @@ package net.spell_engine.api.spell.container;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +53,14 @@ public record SpellContainer(ContentType content, boolean is_proxy, String pool,
 
     public boolean contains(Identifier spellId) {
         return spell_ids.contains(spellId.toString());
+    }
+
+    public boolean contentMatches(@Nullable SpellContainer.ContentType other) {
+        return other == null || this.content() == SpellContainer.ContentType.ANY || this.content() == other;
+    }
+
+    public boolean slotMatches(@Nullable String other) {
+        return other == null || this.slot().contains(other);
     }
 
     public boolean isUsable() {
