@@ -8,6 +8,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.event.CombatEvents;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.arrow.ArrowExtension;
@@ -202,10 +203,10 @@ public class SpellTriggers {
         if (trigger.type != event.type) {
             return false;
         }
+        var spellId = spellEntry.getKey().get().getValue();
         if (trigger.chance < 1) {
             float randomValue;
             if (trigger.chance_batching) {
-                var spellId = spellEntry.getKey().get().getValue();
                 var batchedChances = ((SpellBatcher)event.player).getBatchTriggerChance(spellId);
                 if (batchedChances == null) {
                     randomValue = random.nextFloat();
@@ -241,6 +242,14 @@ public class SpellTriggers {
             }
             case SPELL_IMPACT_SPECIFIC -> {
                 return evaluate(event.spell, trigger.spell) && evaluate(event.impact, event.criticalImpact, trigger.impact);
+            }
+            case MELEE_IMPACT -> {
+                /**
+                 * Avoid triggering main-hand spells from off-hand strikes (and vice versa)
+                 */
+                var container = SpellContainerHelper.containerFromItemStack(event.player.getMainHandStack());
+                return container.contains(spellId);
+                // return true;
             }
             default -> {
                 return true;
