@@ -236,20 +236,23 @@ public class SpellTriggers {
                 }
             }
         }
+        if (trigger.equipment_condition != null) {
+            /**
+             * The primary use case of this:
+             * Avoid triggering main-hand spells from off-hand strikes (and vice versa)
+             * Needs `equipment_condition` to be set to `MAINHAND`
+             */
+            var container = SpellContainerHelper.containerFromItemStack(event.player.getEquippedStack(trigger.equipment_condition));
+            if (container == null || !container.contains(spellId)) {
+                return false;
+            }
+        }
         switch (trigger.type) {
             case SPELL_CAST, SPELL_IMPACT_ANY -> {
                 return evaluate(event.spell, trigger.spell);
             }
             case SPELL_IMPACT_SPECIFIC -> {
                 return evaluate(event.spell, trigger.spell) && evaluate(event.impact, event.criticalImpact, trigger.impact);
-            }
-            case MELEE_IMPACT -> {
-                /**
-                 * Avoid triggering main-hand spells from off-hand strikes (and vice versa)
-                 */
-                var container = SpellContainerHelper.containerFromItemStack(event.player.getMainHandStack());
-                return container.contains(spellId);
-                // return true;
             }
             default -> {
                 return true;
