@@ -74,6 +74,7 @@ public class SpellEngineSounds {
 
     public static final Entry GENERIC_FIRE_CASTING = add(new Entry("generic_fire_casting"));
     public static final Entry GENERIC_FIRE_RELEASE = add(new Entry("generic_fire_release"));
+    public static final Entry GENERIC_FIRE_IMPACT_1 = add(new Entry("generic_fire_impact_1"));
 
     public static final Entry GENERIC_FROST_CASTING = add(new Entry("generic_frost_casting"));
     public static final Entry GENERIC_FROST_RELEASE = add(new Entry("generic_frost_release"));

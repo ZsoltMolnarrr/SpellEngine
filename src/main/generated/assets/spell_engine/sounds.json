@@ -19,6 +19,11 @@
       "spell_engine:generic_fire_casting"
     ]
   },
+  "generic_fire_impact_1": {
+    "sounds": [
+      "spell_engine:generic_fire_impact_1"
+    ]
+  },
   "generic_fire_release": {
     "sounds": [
       "spell_engine:generic_fire_release"
