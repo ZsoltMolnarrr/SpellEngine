@@ -93,5 +93,10 @@
     "sounds": [
       "spell_engine:spellbook_equip"
     ]
+  },
+  "stun_generic": {
+    "sounds": [
+      "spell_engine:stun_generic"
+    ]
   }
 }

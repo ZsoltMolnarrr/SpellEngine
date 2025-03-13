@@ -92,6 +92,8 @@ public class SpellEngineSounds {
     public static final Entry GENERIC_SOUL_RELEASE = add(new Entry("generic_soul_release"));
     public static final Entry GENERIC_WIND_CHARGING = add(new Entry("generic_wind_charging"));
 
+    public static final Entry STUN_GENERIC = add(new Entry("stun_generic"));
+
     // MARK: Spell binding sounds
 
     public static final Entry BIND_SPELL = add(new Entry("bind_spell"));
