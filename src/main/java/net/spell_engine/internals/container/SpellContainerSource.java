@@ -64,11 +64,11 @@ public class SpellContainerSource {
         return sources;
     });
     public static final Entry OFF_HAND = new Entry("off_hand", (player, sourceName) -> {
-        var offhandStack = player.getInventory().offHand.get(0);
+        var offhandStack = player.getOffHandStack();
         var sources = new ArrayList<SourcedContainer>();
         addSourceIfValid(offhandStack, sources, sourceName);
         return sources;
-    }, player -> player.getInventory().offHand.get(0));
+    }, player -> player.getOffHandStack());
     public static final Entry EQUIPMENT = new Entry("equipment", (player, sourceName) -> {
         var sources = new ArrayList<SourcedContainer>();
         if (SpellEngineMod.config.spell_container_from_equipment) {
@@ -217,6 +217,8 @@ public class SpellContainerSource {
             }
         }
         spellIds.removeAll(toRemove);
+
+        // System.out.println("Updated for " + type + ", Spell IDs: " + spellIds);
 
         var finalContentType = contentType != null ? contentType : SpellContainer.ContentType.MAGIC;
         return new SpellContainer(finalContentType, proxy, null, 0, new ArrayList<>(spellIds));
