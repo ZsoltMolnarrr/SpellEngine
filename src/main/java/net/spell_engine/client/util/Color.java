@@ -4,12 +4,23 @@ public record Color(float red, float green, float blue, float alpha) {
     public Color(float red, float green, float blue) {
         this(red, green, blue, 1);
     }
+    public Color alpha(float alpha) {
+        return new Color(red, green, blue, alpha);
+    }
 
     public static Color from(int rgb) {
         float red = ((float) ((rgb >> 16) & 0xFF)) / 255F;
         float green = ((float) ((rgb >> 8) & 0xFF)) / 255F;
         float blue = ((float) (rgb & 0xFF)) / 255F;
         return new Color(red, green, blue);
+    }
+
+    public static Color fromRGBA(long rgba) {
+        float red = ((float) ((rgba >> 24) & 0xFF)) / 255F;
+        float green = ((float) ((rgba >> 16) & 0xFF)) / 255F;
+        float blue = ((float) ((rgba >> 8) & 0xFF)) / 255F;
+        float alpha = ((float) (rgba & 0xFF)) / 255F;
+        return new Color(red, green, blue, alpha);
     }
 
     public record IntFormat(int red, int green, int blue, int alpha) {
@@ -30,8 +41,8 @@ public record Color(float red, float green, float blue, float alpha) {
     }
 
     public static final Color RED = new Color(1, 0, 0);
-    public static final Color GREEN = new Color(1, 0, 0);
-    public static final Color BLUE = new Color(1, 0, 0);
+    public static final Color GREEN = new Color(0, 1, 0);
+    public static final Color BLUE = new Color(0, 0, 1);
     public static final Color WHITE = new Color(1, 1, 1);
 
     public static final Color HOLY = Color.from(0xffffcc);

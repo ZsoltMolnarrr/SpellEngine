@@ -439,6 +439,7 @@ public class Spell {
         /// Calculates and stores the chance, for the duration of a single game tick
         /// So multiple targets can be affected by the same chance
         public boolean chance_batching = false;
+        /// todo
         @Nullable public EquipmentSlot equipment_condition;
 
         @Nullable public List<TargetCondition> caster_conditions;

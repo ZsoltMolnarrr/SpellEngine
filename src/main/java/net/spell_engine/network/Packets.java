@@ -215,6 +215,7 @@ public class Packets {
             buffer.writeFloat(batch.extent);
             buffer.writeFloat(batch.pre_spawn_travel);
             buffer.writeBoolean(batch.invert);
+            buffer.writeLong(batch.color_rgba);
         }
 
         private static ParticleBatch readBatch(RegistryByteBuf buffer) {
@@ -231,7 +232,8 @@ public class Packets {
                     buffer.readFloat(),
                     buffer.readFloat(),
                     buffer.readFloat(),
-                    buffer.readBoolean()
+                    buffer.readBoolean(),
+                    buffer.readLong()
             );
         }
 

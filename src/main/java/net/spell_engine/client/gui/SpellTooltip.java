@@ -17,6 +17,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.Ammo;
@@ -85,11 +86,14 @@ public class SpellTooltip {
 //                    || container.spell_ids().size() > 1
 //                    || container.is_proxy();
             // !itemStack.isIn(SpellEngineItemTags.SPELL_BOOK_MERGEABLE);
+            boolean forceHideHeader = itemStack.isIn(SpellEngineItemTags.SPELL_BOOK_MERGEABLE);
             boolean showListHeader = false;
-            for (var spellEntry : spells) {
-                var spell = spellEntry.value();
-                var tooltip = spell.tooltip != null ? spell.tooltip : Spell.Tooltip.DEFAULT;
-                showListHeader = showListHeader || tooltip.show_header;
+            if (!forceHideHeader) {
+                for (var spellEntry : spells) {
+                    var spell = spellEntry.value();
+                    var tooltip = spell.tooltip != null ? spell.tooltip : Spell.Tooltip.DEFAULT;
+                    showListHeader = showListHeader || tooltip.show_header;
+                }
             }
             int indentLevel = showListHeader ? 1 : 0;
 

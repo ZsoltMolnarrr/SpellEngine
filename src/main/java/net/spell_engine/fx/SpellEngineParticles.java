@@ -7,9 +7,9 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.client.particle.CustomParticleEffect;
 import net.spell_engine.client.util.Color;
 import net.spell_power.api.SpellSchools;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +59,22 @@ public class SpellEngineParticles {
         public Entry(Identifier id, Texture texture) {
             this(id, texture, createSimple());
         }
+    }
+    public record ProxyEntry(Identifier id, Texture texture, CustomParticleEffect particleType) {
+        public ProxyEntry(String name, Texture texture) {
+            this(Identifier.of(SpellEngineMod.ID, name), texture);
+        }
+        public ProxyEntry(Identifier id, Texture texture) {
+            this(id, texture, new CustomParticleEffect());
+        }
+    }
+    private static final ArrayList<ProxyEntry> proxies = new ArrayList<>();
+    public static List<ProxyEntry> proxies() {
+        return proxies;
+    }
+    private static ProxyEntry addProxy(ProxyEntry entry) {
+        proxies.add(entry);
+        return entry;
     }
 
     private static final ArrayList<Entry> all = new ArrayList<>();
@@ -152,6 +168,7 @@ public class SpellEngineParticles {
     public static final Entry weakness_smoke = add(new Entry("weakness_smoke", Texture.of("smoke_medium", 9)));
     public static final Entry sign_charge = add(new Entry("sign_charge", Texture.of("sign_speed")));
 
+    public static final ProxyEntry spell_smoke = addProxy(new ProxyEntry("spell_smoke", Texture.vanilla("big_smoke", 12)));
 
     public static void register() {
         for(var entry: all) {
@@ -159,6 +176,9 @@ public class SpellEngineParticles {
         }
         for (var variant: MAGIC_FAMILY_VARIANTS.get()) {
             Registry.register(Registries.PARTICLE_TYPE, variant.id(), variant.particleType());
+        }
+        for (var entry: proxies) {
+            Registry.register(Registries.PARTICLE_TYPE, entry.id, entry.particleType);
         }
     }
 }

@@ -1,3 +1,12 @@
+# 1.5.6
+
+Functional changes:
+- Fix spell scroll tooltips
+
+API Changes:
+- Add particle batch color field (works only for specific particles)
+- Add some more generic sounds
+
 # 1.5.5
 
 Functional changes:

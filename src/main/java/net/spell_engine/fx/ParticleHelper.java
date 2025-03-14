@@ -11,6 +11,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.client.particle.CustomizableParticleEffect;
+import net.spell_engine.client.util.Color;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.network.Packets;
 import net.spell_engine.utils.VectorHelper;
@@ -89,10 +91,25 @@ public class ParticleHelper {
         play(world, entity.age, origin(entity, batch.origin), entity.getWidth(), yaw, pitch, batch);
     }
 
+    private static ParticleEffect resolveParticleType(ParticleBatch batch) {
+        var id = Identifier.of(batch.particle_id);
+        var particle = (ParticleEffect) Registries.PARTICLE_TYPE.get(id);
+
+        if (particle instanceof CustomizableParticleEffect customizableParticleEffect) {
+            var copy = customizableParticleEffect.copy();
+            var appearance = copy.createOrDefaultAppearance();
+            if (batch.color_rgba >= 0) {
+                appearance.color = Color.fromRGBA(batch.color_rgba);
+            }
+            particle = copy;
+        }
+        return particle;
+    }
+
     public static void play(World world, long time, Vec3d origin, float width, float yaw, float pitch, ParticleBatch batch) {
         try {
-            var id = Identifier.of(batch.particle_id);
-            var particle = (ParticleEffect) Registries.PARTICLE_TYPE.get(id);
+            var particle = resolveParticleType(batch);
+
             var count = batch.count;
             if (batch.count < 1) {
                 count = rng.nextFloat() < batch.count ? 1 : 0;
@@ -135,8 +152,8 @@ public class ParticleHelper {
                 }
             }
 
-            var id = Identifier.of(batch.particle_id);
-            var particle = (ParticleEffect) Registries.PARTICLE_TYPE.get(id);
+            var particle = resolveParticleType(batch);
+
             var count = batch.count;
             if (batch.count < 1) {
                 count = rng.nextFloat() < batch.count ? 1 : 0;
