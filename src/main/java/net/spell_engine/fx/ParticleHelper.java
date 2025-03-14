@@ -11,7 +11,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.fx.ParticleBatch;
-import net.spell_engine.client.particle.CustomizableParticleEffect;
+import net.spell_engine.client.particle.TemplateParticleEffect;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.network.Packets;
@@ -95,8 +95,8 @@ public class ParticleHelper {
         var id = Identifier.of(batch.particle_id);
         var particle = (ParticleEffect) Registries.PARTICLE_TYPE.get(id);
 
-        if (particle instanceof CustomizableParticleEffect customizableParticleEffect) {
-            var copy = customizableParticleEffect.copy();
+        if (particle instanceof TemplateParticleEffect templateParticleEffect) {
+            var copy = templateParticleEffect.copy();
             var appearance = copy.createOrDefaultAppearance();
             if (batch.color_rgba >= 0) {
                 appearance.color = Color.fromRGBA(batch.color_rgba);

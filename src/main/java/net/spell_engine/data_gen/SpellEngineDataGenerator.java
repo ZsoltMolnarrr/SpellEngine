@@ -6,7 +6,6 @@ import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.minecraft.registry.RegistryWrapper;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.datagen.SimpleParticleGenerator;
-import net.spell_engine.api.datagen.SimpleSoundGenerator;
 import net.spell_engine.api.datagen.SimpleSoundGeneratorV2;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.fx.SpellEngineSounds;
@@ -62,7 +61,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
                 }
                 builder.add(variant.id(), new SimpleParticleGenerator.ParticleData(textures));
             }
-            for (var entry: SpellEngineParticles.all()) {
+            for (var entry: SpellEngineParticles.simpleEntries()) {
                 ArrayList<String> textures = new ArrayList<>();
                 var frameCount = entry.texture().frames();
                 if (frameCount > 1) {
@@ -75,7 +74,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
                 }
                 builder.add(entry.id(), new SimpleParticleGenerator.ParticleData(textures));
             }
-            for (var entry: SpellEngineParticles.proxies()) {
+            for (var entry: SpellEngineParticles.templateEntries()) {
                 ArrayList<String> textures = new ArrayList<>();
                 var frameCount = entry.texture().frames();
                 if (frameCount > 1) {

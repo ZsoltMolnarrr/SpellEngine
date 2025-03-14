@@ -130,20 +130,25 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
     }
 
     @Environment(EnvType.CLIENT)
-    public static class SmokeFactory implements ParticleFactory<SimpleParticleType> {
+    public static class SmokeFactory implements ParticleFactory<TemplateParticleType> {
         private final SpriteProvider spriteProvider;
 
         public SmokeFactory(SpriteProvider spriteProvider) {
             this.spriteProvider = spriteProvider;
         }
 
-        public Particle createParticle(SimpleParticleType SimpleParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+        public Particle createParticle(TemplateParticleType templateParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
             var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
             particle.setSprite(this.spriteProvider);
+
             particle.setColor(1F, 1F, 1F);
+            TemplateParticleType.apply(templateParticleType, particle);
+            float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
+            particle.setColor(particle.red * j, particle.green * j, particle.blue * j);
+
             particle.spriteProviderForAnimation = this.spriteProvider;
             particle.velocityMultiplier = 0.8F;
-            particle.setAlpha(0.8F);
+            particle.alpha *= 0.8F;
             particle.glow = false;
             particle.gravityStrength = -0.01F;
             return particle;

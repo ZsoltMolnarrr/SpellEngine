@@ -47,27 +47,23 @@ public class SpellSmokeParticle extends SpriteBillboardParticle {
 	}
 
 	@Environment(EnvType.CLIENT)
-	public static class CosySmokeFactory implements ParticleFactory<CustomParticleEffect> {
+	public static class CosySmokeFactory implements ParticleFactory<TemplateParticleType> {
 		private final SpriteProvider spriteProvider;
 
 		public CosySmokeFactory(SpriteProvider spriteProvider) {
 			this.spriteProvider = spriteProvider;
 		}
 
-		public Particle createParticle(CustomParticleEffect customParticleEffect, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+		public Particle createParticle(TemplateParticleType templateParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
 			SpellSmokeParticle particle = new SpellSmokeParticle(clientWorld, d, e, f, g, h, i, false);
 
-			var appearance = customParticleEffect.getAppearance();
-			if (appearance != null) {
-				var color = appearance.color;
-				if (color != null) {
-					particle.setColor(color.red(), color.green(), color.blue());
-				}
-			}
+			TemplateParticleType.apply(templateParticleType, particle);
 
 			particle.alpha *= 0.9F;
 			particle.setSprite(this.spriteProvider);
 			return particle;
 		}
 	}
+
+
 }

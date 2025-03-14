@@ -383,7 +383,8 @@ public class Spell {
     /// Applied to the caster, once the spell casting process finishes
     public Cost cost = new Cost();
     public static class Cost { public Cost() { }
-        /// Whether the cost should be executed maximum once per tick
+        /// Whether the cost should be executed at the end of the game tick
+        /// So multiple targets can be affected by a triggered execution
         public boolean batching = false;
         /// Exhaust to add
         public float exhaust = 0.1F;
@@ -439,7 +440,8 @@ public class Spell {
         /// Calculates and stores the chance, for the duration of a single game tick
         /// So multiple targets can be affected by the same chance
         public boolean chance_batching = false;
-        /// todo
+        /// When a value is given, this spell need to be present on the equipped item of the given slot
+        /// Recommended use: EquipmentSlot.MAINHAND for weapon passives, so attacks with inactive hand don't trigger
         @Nullable public EquipmentSlot equipment_condition;
 
         @Nullable public List<TargetCondition> caster_conditions;

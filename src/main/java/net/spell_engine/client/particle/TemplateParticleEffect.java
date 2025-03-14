@@ -4,7 +4,7 @@ import net.minecraft.particle.ParticleEffect;
 import net.spell_engine.client.util.Color;
 import org.jetbrains.annotations.Nullable;
 
-public interface CustomizableParticleEffect extends ParticleEffect {
+public interface TemplateParticleEffect extends ParticleEffect {
     class Appearance {
         public @Nullable Color color;
     }
@@ -18,5 +18,5 @@ public interface CustomizableParticleEffect extends ParticleEffect {
         return appearance;
     }
 
-    CustomizableParticleEffect copy();
+    TemplateParticleEffect copy();
 }

@@ -7,7 +7,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.client.particle.CustomParticleEffect;
+import net.spell_engine.client.particle.TemplateParticleType;
 import net.spell_engine.client.util.Color;
 import net.spell_power.api.SpellSchools;
 
@@ -52,39 +52,40 @@ public class SpellEngineParticles {
             return new Texture(Identifier.of(SpellEngineMod.ID, name), frames, reverseOrder);
         }
     }
-    public record Entry(Identifier id, Texture texture, SimpleParticleType particleType) {
-        public Entry(String name, Texture texture) {
+    public record SimpleEntry(Identifier id, Texture texture, SimpleParticleType particleType) {
+        public SimpleEntry(String name, Texture texture) {
             this(Identifier.of(SpellEngineMod.ID, name), texture);
         }
-        public Entry(Identifier id, Texture texture) {
+        public SimpleEntry(Identifier id, Texture texture) {
             this(id, texture, createSimple());
         }
     }
-    public record ProxyEntry(Identifier id, Texture texture, CustomParticleEffect particleType) {
-        public ProxyEntry(String name, Texture texture) {
+    private static final ArrayList<SimpleEntry> simples = new ArrayList<>();
+    public static List<SimpleEntry> simpleEntries() {
+        return simples;
+    }
+    private static SimpleEntry add(SimpleEntry simpleEntry) {
+        simples.add(simpleEntry);
+        return simpleEntry;
+    }
+
+    public record TemplateEntry(Identifier id, Texture texture, TemplateParticleType particleType) {
+        public TemplateEntry(String name, Texture texture) {
             this(Identifier.of(SpellEngineMod.ID, name), texture);
         }
-        public ProxyEntry(Identifier id, Texture texture) {
-            this(id, texture, new CustomParticleEffect());
+        public TemplateEntry(Identifier id, Texture texture) {
+            this(id, texture, new TemplateParticleType());
         }
     }
-    private static final ArrayList<ProxyEntry> proxies = new ArrayList<>();
-    public static List<ProxyEntry> proxies() {
-        return proxies;
+    private static final ArrayList<TemplateEntry> templateEntries = new ArrayList<>();
+    public static List<TemplateEntry> templateEntries() {
+        return templateEntries;
     }
-    private static ProxyEntry addProxy(ProxyEntry entry) {
-        proxies.add(entry);
+    private static TemplateEntry addTemplate(TemplateEntry entry) {
+        templateEntries.add(entry);
         return entry;
     }
 
-    private static final ArrayList<Entry> all = new ArrayList<>();
-    public static List<Entry> all() {
-        return all;
-    }
-    private static Entry add(Entry entry) {
-        all.add(entry);
-        return entry;
-    }
 
     public static final List<MagicParticleFamily> MAGIC_FAMILIES = new ArrayList<>();
     public static MagicParticleFamily addMagicFamily(MagicParticleFamily family) {
@@ -151,33 +152,36 @@ public class SpellEngineParticles {
                 .findFirst().orElse(null);
     }
 
-    public static final Entry fire_explosion = add(new Entry("fire_explosion", Texture.of("fire_explosion", 10)));
-    public static final Entry flame = add(new Entry("flame", Texture.vanilla("flame")));
-    public static final Entry flame_spark = add(new Entry("flame_spark", Texture.of("flame_spark", 8) ));
-    public static final Entry flame_ground = add(new Entry("flame_ground", Texture.of("flame_ground", 8)));
-    public static final Entry flame_medium_a = add(new Entry("flame_medium_a", Texture.of("flame_medium_a", 8)));
-    public static final Entry flame_medium_b = add(new Entry("flame_medium_b", Texture.of("flame_medium_b", 8)));
-    public static final Entry frost_shard = add(new Entry("frost_shard", Texture.of("frost_shard")));
-    public static final Entry snowflake = add(new Entry("snowflake", Texture.vanilla("generic", 8, true)));
-    public static final Entry dripping_blood = add(new Entry("dripping_blood", Texture.vanilla("drip_hang")));
-    public static final Entry roots = add(new Entry("roots", Texture.of("roots", 14)));
-    public static final Entry electric_arc_A = add(new Entry("electric_arc_a", Texture.of("electric_arc_a", 8)));
-    public static final Entry electric_arc_B = add(new Entry("electric_arc_b", Texture.of("electric_arc_b", 8)));
-    public static final Entry smoke_medium = add(new Entry("smoke_medium", Texture.of("smoke_medium", 9)));
-    public static final Entry shield_small = add(new Entry("shield_small", Texture.of("shield_small")));
-    public static final Entry weakness_smoke = add(new Entry("weakness_smoke", Texture.of("smoke_medium", 9)));
-    public static final Entry sign_charge = add(new Entry("sign_charge", Texture.of("sign_speed")));
+    public static final SimpleEntry fire_explosion = add(new SimpleEntry("fire_explosion", Texture.of("fire_explosion", 10)));
+    public static final SimpleEntry flame = add(new SimpleEntry("flame", Texture.vanilla("flame")));
+    public static final SimpleEntry flame_spark = add(new SimpleEntry("flame_spark", Texture.of("flame_spark", 8) ));
+    public static final SimpleEntry flame_ground = add(new SimpleEntry("flame_ground", Texture.of("flame_ground", 8)));
+    public static final SimpleEntry flame_medium_a = add(new SimpleEntry("flame_medium_a", Texture.of("flame_medium_a", 8)));
+    public static final SimpleEntry flame_medium_b = add(new SimpleEntry("flame_medium_b", Texture.of("flame_medium_b", 8)));
+    public static final SimpleEntry frost_shard = add(new SimpleEntry("frost_shard", Texture.of("frost_shard")));
+    public static final SimpleEntry snowflake = add(new SimpleEntry("snowflake", Texture.vanilla("generic", 8, true)));
+    public static final SimpleEntry dripping_blood = add(new SimpleEntry("dripping_blood", Texture.vanilla("drip_hang")));
+    public static final SimpleEntry roots = add(new SimpleEntry("roots", Texture.of("roots", 14)));
+    public static final SimpleEntry electric_arc_A = add(new SimpleEntry("electric_arc_a", Texture.of("electric_arc_a", 8)));
+    public static final SimpleEntry electric_arc_B = add(new SimpleEntry("electric_arc_b", Texture.of("electric_arc_b", 8)));
 
-    public static final ProxyEntry spell_smoke = addProxy(new ProxyEntry("spell_smoke", Texture.vanilla("big_smoke", 12)));
+    public static final SimpleEntry shield_small = add(new SimpleEntry("shield_small", Texture.of("shield_small")));
+    public static final SimpleEntry sign_charge = add(new SimpleEntry("sign_charge", Texture.of("sign_speed")));
+
+    public static final TemplateEntry smoke_medium = addTemplate(new TemplateEntry("smoke_medium", Texture.of("smoke_medium", 9)));
+    public static final TemplateEntry smoke_large = addTemplate(new TemplateEntry("smoke_large", Texture.vanilla("big_smoke", 12)));
+
+    @Deprecated
+    public static final SimpleEntry weakness_smoke = add(new SimpleEntry("weakness_smoke", Texture.of("smoke_medium", 9)));
 
     public static void register() {
-        for(var entry: all) {
+        for(var entry: simples) {
             Registry.register(Registries.PARTICLE_TYPE, entry.id, entry.particleType);
         }
         for (var variant: MAGIC_FAMILY_VARIANTS.get()) {
             Registry.register(Registries.PARTICLE_TYPE, variant.id(), variant.particleType());
         }
-        for (var entry: proxies) {
+        for (var entry: templateEntries) {
             Registry.register(Registries.PARTICLE_TYPE, entry.id, entry.particleType);
         }
     }
