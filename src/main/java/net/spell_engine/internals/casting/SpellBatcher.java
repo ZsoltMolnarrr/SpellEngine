@@ -6,10 +6,22 @@ import java.util.Map;
 
 public interface SpellBatcher {
     public class Batch {
+        public int trigger_count = 0;
         public Float trigger_chance = null;
         public Boolean cost = null;
     }
     public Map<Identifier, Batch> getSpellBatches();
+
+    default int getBatchTriggerCount(Identifier id) {
+        var batch = getSpellBatches().get(id);
+        return batch != null ? batch.trigger_count : 0;
+    }
+
+    default void batchTriggerCount(Identifier id, int count) {
+        var batch = getSpellBatches().getOrDefault(id, new Batch());
+        batch.trigger_count = count;
+        getSpellBatches().put(id, batch);
+    }
 
     default void batchTriggerChance(Identifier id, float chance) {
         var batch = getSpellBatches().getOrDefault(id, new Batch());

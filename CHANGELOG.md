@@ -7,6 +7,7 @@ API Changes:
 - Add particle batch color field (works only for specific particles)
 - Add some more generic sounds
 - Add delivery delay
+- Add spell trigger cap per tick
 
 # 1.5.5
 

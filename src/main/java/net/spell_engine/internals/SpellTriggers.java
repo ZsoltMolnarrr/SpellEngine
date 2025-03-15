@@ -204,6 +204,14 @@ public class SpellTriggers {
             return false;
         }
         var spellId = spellEntry.getKey().get().getValue();
+        int triggerCount = 0;
+        if (trigger.cap_per_tick > 0) {
+            triggerCount = ((SpellBatcher)event.player).getBatchTriggerCount(spellId);
+            if (triggerCount >= trigger.cap_per_tick) {
+                return false;
+            }
+            triggerCount += 1;
+        }
         if (trigger.chance < 1) {
             float randomValue;
             if (trigger.chance_batching) {
@@ -247,17 +255,25 @@ public class SpellTriggers {
                 return false;
             }
         }
+
+        boolean result;
         switch (trigger.type) {
             case SPELL_CAST, SPELL_IMPACT_ANY -> {
-                return evaluate(event.spell, trigger.spell);
+                result = evaluate(event.spell, trigger.spell);
             }
             case SPELL_IMPACT_SPECIFIC -> {
-                return evaluate(event.spell, trigger.spell) && evaluate(event.impact, event.criticalImpact, trigger.impact);
+                result = evaluate(event.spell, trigger.spell) && evaluate(event.impact, event.criticalImpact, trigger.impact);
             }
             default -> {
-                return true;
+                result = true;
             }
         }
+        if (result) {
+            if (triggerCount > 0) {
+                ((SpellBatcher)event.player).batchTriggerCount(spellId, triggerCount);
+            }
+        }
+        return result;
     }
 
     private static boolean evaluate(@Nullable RegistryEntry<Spell> spellEntry, @Nullable Spell.Trigger.SpellCondition condition) {

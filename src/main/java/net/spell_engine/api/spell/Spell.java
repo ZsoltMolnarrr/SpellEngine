@@ -436,6 +436,9 @@ public class Spell {
             ROLL  /// Only works when Combat Roll mod is installed
         }
         public Type type;
+        /// Limits the number of times this trigger can be executed per game tick
+        /// (0 = unlimited)
+        public int cap_per_tick = 0;
         /// Chance to trigger. 0 = 0%, 1 = 100%
         public float chance = 1;
         /// Calculates and stores the chance, for the duration of a single game tick
