@@ -144,6 +144,7 @@ public class Spell {
         public enum Type {
             DIRECT, PROJECTILE, METEOR, CLOUD, SHOOT_ARROW, STASH_EFFECT, CUSTOM
         }
+        public int delay = 0;
 
         public ShootProjectile projectile;
         public static class ShootProjectile {

@@ -48,6 +48,8 @@ import net.spell_power.api.SpellPower;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class SpellHelper {
@@ -220,9 +222,35 @@ public class SpellHelper {
 
         if (channelMultiplier > 0 && ammoResult.satisfied()) {
             var targeting = spell.target;
-            boolean released = action == SpellCast.Action.RELEASE
+            boolean finished = action == SpellCast.Action.RELEASE
                     || (action == SpellCast.Action.TRIGGER && spell.type == Spell.Type.PASSIVE); // For stashed spells release has been done already
             boolean success = true;
+            if (targeting.cap > 0) {
+                targets = targets.stream()
+                        .sorted(Comparator.comparingDouble(target -> target.squaredDistanceTo(player.getPos())))
+                        .limit(targeting.cap)
+                        .toList();
+            }
+
+            Consumer<DeliveryCompletion> completion = null;
+            if (finished) {
+                float finalProgress = progress;
+                List<Entity> finalTargets = targets;
+                completion = (completionArgs) -> {
+                    var deliverySuccess = completionArgs.success();
+                    if (deliverySuccess) {
+                        ParticleHelper.sendBatches(player, spell.release.particles);
+                        SoundHelper.playSound(world, player, spell.release.sound);
+                        AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation, castingSpeed);
+
+                        consumeSpellCost(player, finalProgress, spellSource, spellId, spell, heldItemStack, ammoResult, false);
+
+                        var args = new SpellEvents.SpellCastEvent.Args(player, spellEntry, finalTargets, action, finalProgress);
+                        SpellEvents.SPELL_CAST.invoke((listener) -> listener.onSpellCast(args));
+                    }
+                };
+            }
+
             if (shouldPerformImpact) {
                 success = false;
                 var context = new ImpactContext(channelMultiplier,
@@ -231,31 +259,25 @@ public class SpellHelper {
                         SpellPower.getSpellPower(spell.school, player),
                         focusMode(spell),
                         channelTickIndex);
-                if (targeting.cap > 0) {
-                    targets = targets.stream()
-                            .sorted(Comparator.comparingDouble(target -> target.squaredDistanceTo(player.getPos())))
-                            .limit(targeting.cap)
-                            .toList();
-                }
                 switch (targeting.type) {
                     case NONE -> {
-                        success = deliver(world, spellEntry, player, List.of(), context, null);
+                        success = deliver(world, spellEntry, player, List.of(), context, null, completion);
                     }
                     case CASTER -> {
-                        var targetsWithContext = List.of(new TargetWithContext(player, context));
-                        success = deliver(world, spellEntry, player, targetsWithContext, context, null);
+                        var targetsWithContext = List.of(new DeliveryTarget(player, context));
+                        success = deliver(world, spellEntry, player, targetsWithContext, context, null, completion);
                     }
                     case AIM -> {
                         var aim = targeting.aim;
                         var firstTarget = targets.stream().findFirst();
-                        List<TargetWithContext> targetsWithContext = List.of();
+                        List<DeliveryTarget> targetsWithContext = List.of();
                         if (firstTarget.isPresent()) {
                             var target = firstTarget.get();
                             var targetSpecificContext = context;
-                            targetsWithContext = List.of(new TargetWithContext(target, targetSpecificContext));
+                            targetsWithContext = List.of(new DeliveryTarget(target, targetSpecificContext));
                         }
                         if (!aim.required || firstTarget.isPresent()) {
-                            success = deliver(world, spellEntry, player, targetsWithContext, context, targetResult.location());
+                            success = deliver(world, spellEntry, player, targetsWithContext, context, targetResult.location(), completion);
                         }
                     }
                     case AREA -> {
@@ -273,29 +295,29 @@ public class SpellHelper {
                                     distanceBasedMultiplier = Math.max(distanceBasedMultiplier, 0F);
                                 }
                             }
-                            return new TargetWithContext(target, centeredContext.distance(distanceBasedMultiplier));
+                            return new DeliveryTarget(target, centeredContext.distance(distanceBasedMultiplier));
                         }).toList();
-                        deliver(world, spellEntry, player, targetsWithContext, context, null);
+                        deliver(world, spellEntry, player, targetsWithContext, context, null, completion);
                         success = true; // Always true, otherwise area spells don't go to CD without targets
                     }
                     case BEAM, FROM_TRIGGER -> {
-                        var targetsWithContext = targets.stream().map(target -> new TargetWithContext(target, context)).toList();
-                        success = deliver(world, spellEntry, player, targetsWithContext, context, null);
+                        var targetsWithContext = targets.stream().map(target -> new DeliveryTarget(target, context)).toList();
+                        success = deliver(world, spellEntry, player, targetsWithContext, context, null, completion);
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + targeting.type);
                 }
                 caster.setChannelTickIndex(channelTickIndex + incrementChannelTicks);
             }
-            if (released && success) {
-                ParticleHelper.sendBatches(player, spell.release.particles);
-                SoundHelper.playSound(world, player, spell.release.sound);
-                AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation, castingSpeed);
-
-                consumeSpellCost(player, progress, spellSource, spellId, spell, heldItemStack, ammoResult, false);
-
-                var args = new SpellEvents.SpellCastEvent.Args(player, spellEntry, targets, action, progress);
-                SpellEvents.SPELL_CAST.invoke((listener) -> listener.onSpellCast(args));
-            }
+//            if (finished && success) {
+//                ParticleHelper.sendBatches(player, spell.release.particles);
+//                SoundHelper.playSound(world, player, spell.release.sound);
+//                AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation, castingSpeed);
+//
+//                consumeSpellCost(player, progress, spellSource, spellId, spell, heldItemStack, ammoResult, false);
+//
+//                var args = new SpellEvents.SpellCastEvent.Args(player, spellEntry, targets, action, progress);
+//                SpellEvents.SPELL_CAST.invoke((listener) -> listener.onSpellCast(args));
+//            }
         }
     }
 
@@ -331,9 +353,29 @@ public class SpellHelper {
         }
     }
 
-    public record TargetWithContext(Entity entity, ImpactContext context) {}
-    public static boolean deliver(World world, RegistryEntry<Spell> spellEntry, PlayerEntity caster, List<TargetWithContext> targets, ImpactContext context, @Nullable Vec3d targetLocation) {
+    public record DeliveryTarget(Entity entity, ImpactContext context) {}
+    public record DeliveryCompletion(boolean success) {}
+    public static boolean deliver(World world, RegistryEntry<Spell> spellEntry, PlayerEntity caster, List<DeliveryTarget> targets, ImpactContext context, @Nullable Vec3d targetLocation, Consumer<DeliveryCompletion> completion) {
+        return deliver(world, spellEntry, caster, targets, context, targetLocation, completion, false);
+    }
+    public static boolean deliver(World world, RegistryEntry<Spell> spellEntry, PlayerEntity caster, List<DeliveryTarget> targets, ImpactContext context,
+                                  @Nullable Vec3d targetLocation, @Nullable Consumer<DeliveryCompletion> completion, boolean scheduled) {
         var spell = spellEntry.value();
+
+        if (spell.deliver.delay > 0) {
+            if (scheduled) {
+                Predicate<Entity> validator = (entity) -> !(entity == null || entity.isRemoved());
+                if (!validator.test(caster)) {
+                    return false;
+                }
+                targets = targets.stream().filter(target -> validator.test(target.entity)).toList();
+            } else {
+                List<DeliveryTarget> finalTargets = targets;
+                ((WorldScheduler) world).schedule(spell.deliver.delay, () -> deliver(world, spellEntry, caster, finalTargets, context, targetLocation, completion, true));
+                return true;
+            }
+        }
+
         var delivered = false;
         switch (spell.deliver.type) {
             case DIRECT -> {
@@ -411,6 +453,11 @@ public class SpellHelper {
                 }
             }
         }
+
+        if (completion != null) {
+            completion.accept(new DeliveryCompletion(delivered));
+        }
+
         return delivered;
     }
 

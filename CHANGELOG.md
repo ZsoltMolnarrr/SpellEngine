@@ -6,6 +6,7 @@ Functional changes:
 API Changes:
 - Add particle batch color field (works only for specific particles)
 - Add some more generic sounds
+- Add delivery delay
 
 # 1.5.5
 

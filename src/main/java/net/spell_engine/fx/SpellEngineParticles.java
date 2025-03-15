@@ -52,19 +52,19 @@ public class SpellEngineParticles {
             return new Texture(Identifier.of(SpellEngineMod.ID, name), frames, reverseOrder);
         }
     }
-    public record SimpleEntry(Identifier id, Texture texture, SimpleParticleType particleType) {
-        public SimpleEntry(String name, Texture texture) {
+    public record Entry(Identifier id, Texture texture, SimpleParticleType particleType) {
+        public Entry(String name, Texture texture) {
             this(Identifier.of(SpellEngineMod.ID, name), texture);
         }
-        public SimpleEntry(Identifier id, Texture texture) {
+        public Entry(Identifier id, Texture texture) {
             this(id, texture, createSimple());
         }
     }
-    private static final ArrayList<SimpleEntry> simples = new ArrayList<>();
-    public static List<SimpleEntry> simpleEntries() {
+    private static final ArrayList<Entry> simples = new ArrayList<>();
+    public static List<Entry> simpleEntries() {
         return simples;
     }
-    private static SimpleEntry add(SimpleEntry simpleEntry) {
+    private static Entry add(Entry simpleEntry) {
         simples.add(simpleEntry);
         return simpleEntry;
     }
@@ -152,29 +152,29 @@ public class SpellEngineParticles {
                 .findFirst().orElse(null);
     }
 
-    public static final SimpleEntry fire_explosion = add(new SimpleEntry("fire_explosion", Texture.of("fire_explosion", 10)));
-    public static final SimpleEntry flame = add(new SimpleEntry("flame", Texture.vanilla("flame")));
-    public static final SimpleEntry flame_spark = add(new SimpleEntry("flame_spark", Texture.of("flame_spark", 8) ));
-    public static final SimpleEntry flame_ground = add(new SimpleEntry("flame_ground", Texture.of("flame_ground", 8)));
-    public static final SimpleEntry flame_medium_a = add(new SimpleEntry("flame_medium_a", Texture.of("flame_medium_a", 8)));
-    public static final SimpleEntry flame_medium_b = add(new SimpleEntry("flame_medium_b", Texture.of("flame_medium_b", 8)));
-    public static final SimpleEntry frost_shard = add(new SimpleEntry("frost_shard", Texture.of("frost_shard")));
-    public static final SimpleEntry snowflake = add(new SimpleEntry("snowflake", Texture.vanilla("generic", 8, true)));
-    public static final SimpleEntry roots = add(new SimpleEntry("roots", Texture.of("roots", 14)));
-    public static final SimpleEntry electric_arc_A = add(new SimpleEntry("electric_arc_a", Texture.of("electric_arc_a", 8)));
-    public static final SimpleEntry electric_arc_B = add(new SimpleEntry("electric_arc_b", Texture.of("electric_arc_b", 8)));
-    public static final SimpleEntry shield_small = add(new SimpleEntry("shield_small", Texture.of("shield_small")));
+    public static final Entry fire_explosion = add(new Entry("fire_explosion", Texture.of("fire_explosion", 10)));
+    public static final Entry flame = add(new Entry("flame", Texture.vanilla("flame")));
+    public static final Entry flame_spark = add(new Entry("flame_spark", Texture.of("flame_spark", 8) ));
+    public static final Entry flame_ground = add(new Entry("flame_ground", Texture.of("flame_ground", 8)));
+    public static final Entry flame_medium_a = add(new Entry("flame_medium_a", Texture.of("flame_medium_a", 8)));
+    public static final Entry flame_medium_b = add(new Entry("flame_medium_b", Texture.of("flame_medium_b", 8)));
+    public static final Entry frost_shard = add(new Entry("frost_shard", Texture.of("frost_shard")));
+    public static final Entry snowflake = add(new Entry("snowflake", Texture.vanilla("generic", 8, true)));
+    public static final Entry roots = add(new Entry("roots", Texture.of("roots", 14)));
+    public static final Entry electric_arc_A = add(new Entry("electric_arc_a", Texture.of("electric_arc_a", 8)));
+    public static final Entry electric_arc_B = add(new Entry("electric_arc_b", Texture.of("electric_arc_b", 8)));
+    public static final Entry shield_small = add(new Entry("shield_small", Texture.of("shield_small")));
 
     // TODO: Template
-    public static final SimpleEntry dripping_blood = add(new SimpleEntry("dripping_blood", Texture.vanilla("drip_hang")));
+    public static final Entry dripping_blood = add(new Entry("dripping_blood", Texture.vanilla("drip_hang")));
     // TODO: Template
-    public static final SimpleEntry sign_charge = add(new SimpleEntry("sign_charge", Texture.of("sign_speed")));
+    public static final Entry sign_charge = add(new Entry("sign_charge", Texture.of("sign_speed")));
 
     public static final TemplateEntry smoke_medium = addTemplate(new TemplateEntry("smoke_medium", Texture.of("smoke_medium", 9)));
     public static final TemplateEntry smoke_large = addTemplate(new TemplateEntry("smoke_large", Texture.vanilla("big_smoke", 12)));
 
     @Deprecated
-    public static final SimpleEntry weakness_smoke = add(new SimpleEntry("weakness_smoke", Texture.of("smoke_medium", 9)));
+    public static final Entry weakness_smoke = add(new Entry("weakness_smoke", Texture.of("smoke_medium", 9)));
 
     public static void register() {
         for(var entry: simples) {
