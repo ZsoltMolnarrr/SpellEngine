@@ -8,6 +8,7 @@ API Changes:
 - Add some more generic sounds
 - Add delivery delay
 - Add spell trigger cap per tick
+- Add impact `attribute_from_target` field
 
 # 1.5.5
 

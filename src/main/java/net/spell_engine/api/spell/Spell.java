@@ -247,6 +247,7 @@ public class Spell {
     public static class Impact { public Impact() { }
         /// Magic school of this specific impact, if null then spell school is used
         @Nullable public SpellSchool school;
+        public boolean attribute_from_target = false;
         /// Attribute the value of which to override the power
         @Nullable public String attribute;
         public List<TargetModifier> target_modifiers = List.of();

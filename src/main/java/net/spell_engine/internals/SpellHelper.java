@@ -814,6 +814,8 @@ public class SpellHelper {
         try {
             // Guards
 
+            var originalTarget = target;
+
             if (impact.action.apply_to_caster) {
                 target = caster;
             } else {
@@ -842,7 +844,15 @@ public class SpellHelper {
             }
             if (impact.attribute != null) {
                 var attributeOverride = Registries.ATTRIBUTE.getEntry(Identifier.of(impact.attribute)).get();
-                var value = caster.getAttributeValue(attributeOverride);
+                double value;
+                if (impact.attribute_from_target
+                        && originalTarget instanceof LivingEntity livingEntity) {
+                    value = livingEntity.getAttributes().hasAttribute(attributeOverride)
+                            ? livingEntity.getAttributeValue(attributeOverride)
+                            : 0;
+                } else {
+                    value = caster.getAttributeValue(attributeOverride);
+                }
                 power = new SpellPower.Result(power.school(), value, power.criticalChance(), power.criticalDamage());
             }
 
