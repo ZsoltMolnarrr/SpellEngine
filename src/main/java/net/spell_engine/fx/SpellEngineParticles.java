@@ -160,12 +160,14 @@ public class SpellEngineParticles {
     public static final SimpleEntry flame_medium_b = add(new SimpleEntry("flame_medium_b", Texture.of("flame_medium_b", 8)));
     public static final SimpleEntry frost_shard = add(new SimpleEntry("frost_shard", Texture.of("frost_shard")));
     public static final SimpleEntry snowflake = add(new SimpleEntry("snowflake", Texture.vanilla("generic", 8, true)));
-    public static final SimpleEntry dripping_blood = add(new SimpleEntry("dripping_blood", Texture.vanilla("drip_hang")));
     public static final SimpleEntry roots = add(new SimpleEntry("roots", Texture.of("roots", 14)));
     public static final SimpleEntry electric_arc_A = add(new SimpleEntry("electric_arc_a", Texture.of("electric_arc_a", 8)));
     public static final SimpleEntry electric_arc_B = add(new SimpleEntry("electric_arc_b", Texture.of("electric_arc_b", 8)));
-
     public static final SimpleEntry shield_small = add(new SimpleEntry("shield_small", Texture.of("shield_small")));
+
+    // TODO: Template
+    public static final SimpleEntry dripping_blood = add(new SimpleEntry("dripping_blood", Texture.vanilla("drip_hang")));
+    // TODO: Template
     public static final SimpleEntry sign_charge = add(new SimpleEntry("sign_charge", Texture.of("sign_speed")));
 
     public static final TemplateEntry smoke_medium = addTemplate(new TemplateEntry("smoke_medium", Texture.of("smoke_medium", 9)));

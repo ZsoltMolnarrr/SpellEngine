@@ -1059,7 +1059,9 @@ public class SpellHelper {
                 if (impact.sound != null) {
                     SoundHelper.playSound(world, target, impact.sound);
                 }
-                SpellTriggers.onSpellImpactSpecific((PlayerEntity) caster, target, spellEntry, impact, critical);
+                if (caster instanceof PlayerEntity player) {
+                    SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical);
+                }
             }
         } catch (Exception e) {
             System.err.println("Failed to perform impact effect");

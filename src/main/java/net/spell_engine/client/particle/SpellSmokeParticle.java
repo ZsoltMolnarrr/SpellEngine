@@ -64,6 +64,4 @@ public class SpellSmokeParticle extends SpriteBillboardParticle {
 			return particle;
 		}
 	}
-
-
 }
