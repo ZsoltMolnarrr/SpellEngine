@@ -6,17 +6,29 @@ import net.minecraft.client.particle.*;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class SpellAreaParticle extends SpriteBillboardParticle {
+    @Nullable Entity followEntity;
+
     private final SpriteProvider spriteProvider;
     protected SpellAreaParticle(ClientWorld world, double x, double y, double z, SpriteProvider spriteProvider) {
         super(world, x, y, z);
         this.spriteProvider = spriteProvider;
         this.setSpriteForAge(spriteProvider);
+    }
+
+    private void moveWithFollowed() {
+        if (followEntity != null && !followEntity.isRemoved()) {
+            this.x += followEntity.getX() - followEntity.prevX;
+            this.y += followEntity.getY() - followEntity.prevY;
+            this.z += followEntity.getZ() - followEntity.prevZ;
+        }
     }
 
     @Override
@@ -29,6 +41,9 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
         this.prevPosX = this.x;
         this.prevPosY = this.y;
         this.prevPosZ = this.z;
+
+        moveWithFollowed();
+
         if (this.age++ >= this.maxAge) {
             this.markDead();
         } else {
@@ -104,7 +119,12 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
             particle.maxAge = 16;
             particle.scale = 1F;
 
-            particle.scale *= 3F;
+            TemplateParticleType.apply(particleType, particle);
+            var appearance = particleType.getAppearance();
+            if (appearance != null) {
+                particle.scale *= appearance.scale;
+                particle.followEntity = appearance.entityFollowed;
+            }
 
             return particle;
         }

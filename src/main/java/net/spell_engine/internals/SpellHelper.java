@@ -23,6 +23,7 @@ import net.minecraft.world.event.GameEvent;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityImmunity;
 import net.spell_engine.api.effect.StatusEffectClassification;
+import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.tags.SpellEngineEntityTags;
 import net.spell_engine.api.entity.SpellEntity;
 import net.spell_engine.api.spell.Spell;
@@ -240,6 +241,16 @@ public class SpellHelper {
                     var deliverySuccess = completionArgs.success();
                     if (deliverySuccess) {
                         ParticleHelper.sendBatches(player, spell.release.particles);
+                        // particles_scaled_with_ranged
+                        if (spell.release.particles_scaled_with_ranged != null) {
+                            ParticleBatch[] scaledParticles = new ParticleBatch[spell.release.particles_scaled_with_ranged.length];
+                            for (int i = 0; i < spell.release.particles_scaled_with_ranged.length; i++) {
+                                var particles = spell.release.particles_scaled_with_ranged[i];
+                                var range = getRange(player, spell);
+                                scaledParticles[i] = particles.copy().scale(range);
+                            }
+                            ParticleHelper.sendBatches(player, scaledParticles);
+                        }
                         SoundHelper.playSound(world, player, spell.release.sound);
                         AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation, castingSpeed);
 

@@ -45,7 +45,7 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
             if (position.hitBlock()) {
                 for (var batch : appearance.block_hit_particles) {
                     ParticleHelper.play(livingEntity.getWorld(), livingEntity.age, position.end(),
-                            appearance.width * 2, yaw, livingEntity.getPitch(), batch);
+                            appearance.width * 2, yaw, livingEntity.getPitch(), batch, livingEntity);
                 }
             }
         }

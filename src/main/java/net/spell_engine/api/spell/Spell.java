@@ -93,6 +93,7 @@ public class Spell {
     public static class Release { public Release() { }
         public String animation;
         public ParticleBatch[] particles;
+        public ParticleBatch[] particles_scaled_with_ranged;
         public Sound sound;
     }
 

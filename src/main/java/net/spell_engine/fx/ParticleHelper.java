@@ -16,6 +16,7 @@ import net.spell_engine.client.util.Color;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.network.Packets;
 import net.spell_engine.utils.VectorHelper;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -88,10 +89,10 @@ public class ParticleHelper {
     }
 
     public static void play(World world, Entity entity, float yaw, float pitch, ParticleBatch batch) {
-        play(world, entity.age, origin(entity, batch.origin), entity.getWidth(), yaw, pitch, batch);
+        play(world, entity.age, origin(entity, batch.origin), entity.getWidth(), yaw, pitch, batch, entity);
     }
 
-    private static ParticleEffect resolveParticleType(ParticleBatch batch) {
+    private static ParticleEffect resolveParticleType(ParticleBatch batch, @Nullable Entity sourceEntity) {
         var id = Identifier.of(batch.particle_id);
         var particle = (ParticleEffect) Registries.PARTICLE_TYPE.get(id);
 
@@ -101,14 +102,20 @@ public class ParticleHelper {
             if (batch.color_rgba >= 0) {
                 appearance.color = Color.fromRGBA(batch.color_rgba);
             }
+            if (batch.follow_entity) {
+                appearance.entityFollowed = sourceEntity;
+            }
+            if (batch.scale != 1) {
+                appearance.scale = batch.scale;
+            }
             particle = copy;
         }
         return particle;
     }
 
-    public static void play(World world, long time, Vec3d origin, float width, float yaw, float pitch, ParticleBatch batch) {
+    public static void play(World world, long time, Vec3d origin, float width, float yaw, float pitch, ParticleBatch batch, @Nullable Entity sourceEntity) {
         try {
-            var particle = resolveParticleType(batch);
+            var particle = resolveParticleType(batch, sourceEntity);
 
             var count = batch.count;
             if (batch.count < 1) {
@@ -142,17 +149,17 @@ public class ParticleHelper {
             var batch = spawn.batch();
             var origin = Vec3d.ZERO;
             float width = 0.5F;
+            Entity sourceEntity = world.getEntityById(spawn.sourceEntityId());
             switch (sourceType) {
                 case ENTITY -> {
-                    var entity = world.getEntityById(spawn.sourceEntityId());
-                    origin = origin(entity, batch.origin);
+                    origin = origin(sourceEntity, batch.origin);
                 }
                 case COORDINATE -> {
                     origin = spawn.sourceLocation();
                 }
             }
 
-            var particle = resolveParticleType(batch);
+            var particle = resolveParticleType(batch, sourceEntity);
 
             var count = batch.count;
             if (batch.count < 1) {
@@ -167,7 +174,7 @@ public class ParticleHelper {
                 if (batch.invert) {
                     direction = direction.negate();
                 }
-                instructions.add(new SpawnInstruction(particle,
+                instructions.add(new SpawnInstruction(particle, sourceEntity,
                         particleSpecificOrigin.x, particleSpecificOrigin.y, particleSpecificOrigin.z,
                         direction.x, direction.y, direction.z));
             }
@@ -175,7 +182,7 @@ public class ParticleHelper {
         return instructions;
     }
 
-    public record SpawnInstruction(ParticleEffect particle,
+    public record SpawnInstruction(ParticleEffect particle, @Nullable Entity sourceEntity,
                                    double positionX, double positionY, double positionZ,
                                    double velocityX, double velocityY, double velocityZ) {
         public void perform(World world) {

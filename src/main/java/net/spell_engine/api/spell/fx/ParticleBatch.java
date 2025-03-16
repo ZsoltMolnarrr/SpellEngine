@@ -59,13 +59,14 @@ public class ParticleBatch { public ParticleBatch() { }
     public long color_rgba = -1;
     // Available for template particles
     public float scale = 1F;
-
+    // Available for template particles
     public boolean follow_entity = false;
 
     public ParticleBatch(
             String particle_id, Shape shape, Origin origin,
             Rotation rotation, float roll, float roll_offset,
-            float count, float min_speed, float max_speed, float angle, float extent, float pre_spawn_travel, boolean invert, long color_rgba) {
+            float count, float min_speed, float max_speed, float angle, float extent, float pre_spawn_travel, boolean invert,
+            long color_rgba, float scale, boolean follow_entity) {
         this.particle_id = particle_id;
         this.shape = shape;
         this.origin = origin;
@@ -79,13 +80,16 @@ public class ParticleBatch { public ParticleBatch() { }
         this.extent = extent;
         this.pre_spawn_travel = pre_spawn_travel;
         this.invert = invert;
+
         this.color_rgba = color_rgba;
+        this.scale = scale;
+        this.follow_entity = follow_entity;
     }
 
     // Compatibility constructors
 
     public ParticleBatch(String particle_id, Shape shape, Origin origin, float count, float min_speed, float max_speed) {
-        this(particle_id, shape, origin, null, 0, 0, count, min_speed, max_speed, 0, 0, 0, false, -1);
+        this(particle_id, shape, origin, null, count, min_speed, max_speed, 0);
     }
 
     public ParticleBatch(String particle_id, Shape shape, Origin origin, Rotation rotation,
@@ -96,7 +100,9 @@ public class ParticleBatch { public ParticleBatch() { }
     public ParticleBatch(
             String particle_id, Shape shape, Origin origin, Rotation rotation,
             float count, float min_speed, float max_speed, float angle, float extent) {
-        this(particle_id, shape, origin, rotation, 0, 0, count, min_speed, max_speed, angle, extent, 0, false, -1);
+        this(particle_id, shape, origin, rotation, 0, 0, count,
+                min_speed, max_speed, angle, extent, 0, false,
+                -1, 1, false);
     }
 
     // Copy
@@ -115,7 +121,14 @@ public class ParticleBatch { public ParticleBatch() { }
             other.extent,
             other.pre_spawn_travel,
             other.invert,
-            other.color_rgba);
+            other.color_rgba,
+            other.scale,
+            other.follow_entity
+        );
+    }
+
+    public ParticleBatch copy() {
+        return new ParticleBatch(this);
     }
 
     public ParticleBatch invert() {
@@ -145,6 +158,16 @@ public class ParticleBatch { public ParticleBatch() { }
 
     public ParticleBatch color(long color) {
         this.color_rgba = color;
+        return this;
+    }
+
+    public ParticleBatch scale(float scale) {
+        this.scale = scale;
+        return this;
+    }
+
+    public ParticleBatch followEntity(boolean follow_entity) {
+        this.follow_entity = follow_entity;
         return this;
     }
 }

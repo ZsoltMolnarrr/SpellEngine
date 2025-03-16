@@ -1,5 +1,6 @@
 package net.spell_engine.client.particle;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.particle.ParticleEffect;
 import net.spell_engine.client.util.Color;
 import org.jetbrains.annotations.Nullable;
@@ -7,6 +8,8 @@ import org.jetbrains.annotations.Nullable;
 public interface TemplateParticleEffect extends ParticleEffect {
     class Appearance {
         public @Nullable Color color;
+        public float scale = 1;
+        public Entity entityFollowed;
     }
 
     void setAppearance(Appearance appearance);
