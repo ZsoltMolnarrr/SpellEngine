@@ -38,4 +38,24 @@ public class SpellExplosionParticle extends ExplosionLargeParticle {
             return particle;
         }
     }
+
+    @Environment(EnvType.CLIENT)
+    public static class TemplateFactory implements ParticleFactory<TemplateParticleType> {
+
+        private final SpriteProvider spriteProvider;
+
+        public TemplateFactory(SpriteProvider spriteProvider) {
+            this.spriteProvider = spriteProvider;
+        }
+
+        public Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+            var particle = new SpellExplosionParticle(clientWorld, d, e, f, g, this.spriteProvider);
+            particle.scale = 1.2F;
+            particle.red = 1F;
+            particle.green = 1F;
+            particle.blue = 1F;
+            particle.maxAge = 10;
+            return particle;
+        }
+    }
 }

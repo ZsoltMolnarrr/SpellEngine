@@ -173,6 +173,8 @@ public class SpellEngineParticles {
     public static final TemplateEntry smoke_medium = addTemplate(new TemplateEntry("smoke_medium", Texture.of("smoke_medium", 9)));
     public static final TemplateEntry smoke_large = addTemplate(new TemplateEntry("smoke_large", Texture.vanilla("big_smoke", 12)));
 
+    public static final TemplateEntry swirl = addTemplate(new TemplateEntry("swirl", Texture.of("swirl", 16)));
+
     @Deprecated
     public static final Entry weakness_smoke = add(new Entry("weakness_smoke", Texture.of("smoke_medium", 9)));
 

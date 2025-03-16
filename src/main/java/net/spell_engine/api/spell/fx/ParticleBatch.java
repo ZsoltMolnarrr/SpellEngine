@@ -54,7 +54,13 @@ public class ParticleBatch { public ParticleBatch() { }
     // Motion based position offset
     public float pre_spawn_travel = 0;
     public boolean invert = false;
+
+    // Available for template particles
     public long color_rgba = -1;
+    // Available for template particles
+    public float scale = 1F;
+
+    public boolean follow_entity = false;
 
     public ParticleBatch(
             String particle_id, Shape shape, Origin origin,

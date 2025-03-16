@@ -98,6 +98,9 @@ public class FabricClientMod implements ClientModInitializer {
 
         ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.smoke_large.particleType(), SpellSmokeParticle.CosySmokeFactory::new);
 
+        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.swirl.particleType(), SpellAreaParticle.Factory::new);
+//        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.swirl.particleType(), SpellExplosionParticle.TemplateFactory::new);
+
         ModelLoadingPlugin.register(pluginCtx -> {
             pluginCtx.addModels(CustomModelRegistry.modelIds);
         });
