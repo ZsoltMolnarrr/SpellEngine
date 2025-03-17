@@ -194,6 +194,7 @@ public class SpellEngineParticles {
     public static final TemplateEntry sign_speed = addSignEffect(new TemplateEntry("sign_speed", Texture.of("sign_speed")));
     public static final TemplateEntry sign_shield = addSignEffect(new TemplateEntry("sign_shield", Texture.of("sign_shield")));
 
+    public static final TemplateEntry area_circle_1 = addAreaEffect(new TemplateEntry("area_circle_1", Texture.of("area_circle_1")));
     public static final TemplateEntry area_swirl = addAreaEffect(new TemplateEntry("area_swirl", Texture.of("area_swirl", 16)));
 
 

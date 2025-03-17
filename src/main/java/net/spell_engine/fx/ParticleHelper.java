@@ -233,7 +233,7 @@ public class ParticleHelper {
             extent -= ParticleBatch.EXTENT_TRESHOLD;
         }
         switch (shape) {
-            case CIRCLE, CONE, SPHERE -> {
+            case LINE_VERTICAL, CIRCLE, CONE, SPHERE -> {
                 if (extent > 0) {
                     offset = direction.multiply(extent);
                 }
@@ -278,9 +278,6 @@ public class ParticleHelper {
                 direction = new Vec3d(0, 0, randomInRange(batch.min_speed, batch.max_speed));
                 pitch = -pitch; // Inverting pitch, do not remove, it makes things work :D
             }
-            case LINE_VERTICAL -> {
-                direction = new Vec3d(0, randomInRange(batch.min_speed, batch.max_speed), 0);
-            }
             case CONE -> {
                 direction = new Vec3d(0, randomInRange(batch.min_speed, batch.max_speed), 0);
                 rotateAroundX += rng.nextFloat() * batch.angle - (batch.angle * 0.5F);
@@ -290,7 +287,7 @@ public class ParticleHelper {
                 direction = new Vec3d(0, 0, randomInRange(batch.min_speed, batch.max_speed))
                         .rotateY((float) Math.toRadians(rng.nextFloat() * 360F));
             }
-            case PILLAR, PIPE, WIDE_PIPE -> {
+            case LINE_VERTICAL, PILLAR, PIPE, WIDE_PIPE -> {
                 direction = new Vec3d(0, randomInRange(batch.min_speed, batch.max_speed), 0);
             }
             case SPHERE -> {

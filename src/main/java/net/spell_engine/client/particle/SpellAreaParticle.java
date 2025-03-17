@@ -16,10 +16,11 @@ import org.joml.Vector3f;
 
 public class SpellAreaParticle extends SpriteBillboardParticle {
     @Nullable Entity followEntity;
-
+    public int fadeOut = 0;
     private final SpriteProvider spriteProvider;
-    protected SpellAreaParticle(ClientWorld world, double x, double y, double z, SpriteProvider spriteProvider) {
-        super(world, x, y, z);
+
+    protected SpellAreaParticle(ClientWorld world, double d, double e, double f, double g, double h, double i, SpriteProvider spriteProvider) {
+        super(world, d, e, f, g, h, i);
         this.spriteProvider = spriteProvider;
         this.setSpriteForAge(spriteProvider);
     }
@@ -38,17 +39,35 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
     }
 
     @Override
-    public void tick() {
-        this.prevPosX = this.x;
-        this.prevPosY = this.y;
-        this.prevPosZ = this.z;
+    public void move(double dx, double dy, double dz) {
+        if (followEntity != null && !followEntity.isRemoved()) {
+            dx += followEntity.getX() - followEntity.prevX;
+            dy += followEntity.getY() - followEntity.prevY;
+            dz += followEntity.getZ() - followEntity.prevZ;
+        }
+        this.setBoundingBox(this.getBoundingBox().offset(dx, dy, dz));
+        this.repositionFromBoundingBox();
+    }
 
-        moveWithFollowed();
+
+    @Override
+    public void tick() {
+        super.tick();
+//        this.prevPosX = this.x;
+//        this.prevPosY = this.y;
+//        this.prevPosZ = this.z;
+//
+//        moveWithFollowed();
 
         if (this.age++ >= this.maxAge) {
             this.markDead();
         } else {
             this.setSpriteForAge(this.spriteProvider);
+            if (fadeOut > 0) {
+                var duration = this.maxAge - this.fadeOut;
+                var progress = (this.maxAge - this.age) / (float) duration;
+                this.alpha = Math.min(1, progress);
+            }
         }
     }
 
@@ -113,13 +132,23 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
         }
 
         public Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var particle = new SpellAreaParticle(clientWorld, d, e, f, this.spriteProvider);
+            var particle = new SpellAreaParticle(clientWorld, d, e, f, g, h, i, this.spriteProvider);
+            particle.velocityX = g;
+            particle.velocityY = h;
+            particle.velocityZ = i;
+
+            particle.ascending = false;
 
             particle.red = 1F;
             particle.green = 1F;
             particle.blue = 1F;
 
-            particle.maxAge = texture.frames();
+            if (texture.frames() > 1) {
+                particle.maxAge = texture.frames();
+            } else {
+                particle.maxAge = 16;
+                particle.fadeOut = (int) (particle.maxAge * 0.25F);
+            }
             particle.scale = 1F;
 
             TemplateParticleType.apply(particleType, particle);
