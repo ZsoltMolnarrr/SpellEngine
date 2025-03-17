@@ -143,6 +143,63 @@ public class SpellEngineParticles {
         return variants;
     });
 
+
+    public record MagicParticles(String name, Color color) {
+        public enum Shape {
+            SPELL(8), SPARK, STRIPE,
+            ARCANE, FROST, HOLY, HEAL;
+
+            int frameCount = 1;
+            Shape(int frameCount) { this.frameCount = frameCount; }
+            Shape() { }
+        }
+        public enum Motion { FLOAT, ASCEND, DECELERATE, BURST }
+
+        public static final String prefix = "magic";
+        public record Variant(Shape shape, Motion motion, TemplateEntry entry) {
+            public static Variant of(Shape shape, Motion motion) {
+                var id = id(name(shape, motion));
+                var texture = texture(shape);
+                return new Variant(shape, motion, new TemplateEntry(id, texture));
+            }
+            public static Identifier id(String name) {
+                return Identifier.of(SpellEngineMod.ID, name);
+            }
+            public static String name(Shape shape, Motion motion) {
+                return String.format("%s_%s_%s", prefix,
+                        shape.toString().toLowerCase(Locale.ENGLISH),
+                        motion.toString().toLowerCase(Locale.ENGLISH));
+            }
+            public static Texture texture(Shape shape) {
+                var folder = "magic/";
+                switch (shape) {
+                    case SPELL -> { return Texture.vanilla("spell", shape.frameCount); }
+                    case SPARK -> { return Texture.vanilla("generic_0", shape.frameCount); }
+                    case STRIPE -> { return Texture.of(folder + "vertical_stripe", shape.frameCount); }
+                }
+                var name = folder + shape.toString().toLowerCase(Locale.ENGLISH);
+                return Texture.of(name, shape.frameCount);
+            }
+        }
+
+        public static final List<Variant> all = variants();
+        public static List<Variant> variants() {
+            var variants = new ArrayList<Variant>();
+            for(var motion: Motion.values()) {
+                for(var shape: Shape.values()) {
+                    variants.add(Variant.of(shape, motion));
+                }
+            }
+            return variants;
+        }
+        public static TemplateEntry get(Shape shape, Motion motion) {
+            return all.stream()
+                    .filter(variant -> variant.shape == shape && variant.motion == motion)
+                    .map(variant -> variant.entry)
+                    .findFirst().orElse(null);
+        }
+    }
+
     private static final ArrayList<TemplateEntry> area_effects = new ArrayList<>();
     public static List<TemplateEntry> areaEffects() {
         return area_effects;
@@ -202,6 +259,12 @@ public class SpellEngineParticles {
     public static final TemplateEntry area_effect_714 = addAreaEffect(new TemplateEntry("area_effect_714", Texture.of("area/effect_714", 22)));
     // area effect #658
     public static final TemplateEntry area_effect_658 = addAreaEffect(new TemplateEntry("area_effect_658", Texture.of("area/effect_658", 16)));
+
+    static {
+        for (var variant: MagicParticles.all) {
+            addTemplate(variant.entry());
+        }
+    }
 
     @Deprecated
     public static final Entry weakness_smoke = add(new Entry("weakness_smoke", Texture.of("smoke_medium", 9)));
