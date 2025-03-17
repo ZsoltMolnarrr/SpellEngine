@@ -308,8 +308,9 @@ public class SpellHelper {
                             }
                             return new DeliveryTarget(target, centeredContext.distance(distanceBasedMultiplier));
                         }).toList();
-                        deliver(world, spellEntry, player, targetsWithContext, context, null, completion);
-                        success = true; // Always true, otherwise area spells don't go to CD without targets
+                        // `forceSuccess` is true because area spells should always go to cooldown
+                        deliver(world, spellEntry, player, targetsWithContext, context, null, completion, true, false);
+                        // success = true; // Always true, otherwise area spells don't go to CD without targets
                     }
                     case BEAM, FROM_TRIGGER -> {
                         var targetsWithContext = targets.stream().map(target -> new DeliveryTarget(target, context)).toList();
@@ -367,10 +368,10 @@ public class SpellHelper {
     public record DeliveryTarget(Entity entity, ImpactContext context) {}
     public record DeliveryCompletion(boolean success) {}
     public static boolean deliver(World world, RegistryEntry<Spell> spellEntry, PlayerEntity caster, List<DeliveryTarget> targets, ImpactContext context, @Nullable Vec3d targetLocation, Consumer<DeliveryCompletion> completion) {
-        return deliver(world, spellEntry, caster, targets, context, targetLocation, completion, false);
+        return deliver(world, spellEntry, caster, targets, context, targetLocation, completion, false, false);
     }
     public static boolean deliver(World world, RegistryEntry<Spell> spellEntry, PlayerEntity caster, List<DeliveryTarget> targets, ImpactContext context,
-                                  @Nullable Vec3d targetLocation, @Nullable Consumer<DeliveryCompletion> completion, boolean scheduled) {
+                                  @Nullable Vec3d targetLocation, @Nullable Consumer<DeliveryCompletion> completion, boolean forceSuccess, boolean scheduled) {
         var spell = spellEntry.value();
 
         if (spell.deliver.delay > 0) {
@@ -382,7 +383,7 @@ public class SpellHelper {
                 targets = targets.stream().filter(target -> validator.test(target.entity)).toList();
             } else {
                 List<DeliveryTarget> finalTargets = targets;
-                ((WorldScheduler) world).schedule(spell.deliver.delay, () -> deliver(world, spellEntry, caster, finalTargets, context, targetLocation, completion, true));
+                ((WorldScheduler) world).schedule(spell.deliver.delay, () -> deliver(world, spellEntry, caster, finalTargets, context, targetLocation, completion, forceSuccess, true));
                 return true;
             }
         }
@@ -466,7 +467,7 @@ public class SpellHelper {
         }
 
         if (completion != null) {
-            completion.accept(new DeliveryCompletion(delivered));
+            completion.accept(new DeliveryCompletion(delivered || forceSuccess));
         }
 
         return delivered;

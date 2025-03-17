@@ -57,7 +57,7 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
         // return ParticleTextureSheet.PARTICLE_SHEET_LIT;
     }
 
-
+    // Credit: Fichte (CircleGroundParticle)
 
     @Override
     public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
