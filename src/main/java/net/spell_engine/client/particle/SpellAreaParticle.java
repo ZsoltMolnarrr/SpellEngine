@@ -136,7 +136,6 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
             particle.velocityX = g;
             particle.velocityY = h;
             particle.velocityZ = i;
-
             particle.ascending = false;
 
             particle.red = 1F;
