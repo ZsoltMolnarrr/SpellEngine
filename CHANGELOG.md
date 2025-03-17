@@ -1,4 +1,4 @@
-# 1.5.6
+# 1.6.0
 
 Functional changes:
 - Fix spell scroll tooltips
@@ -9,6 +9,8 @@ API Changes:
 - Add delivery delay
 - Add spell trigger cap per tick
 - Add impact `attribute_from_target` field
+- Add spell area effect particle system
+- Add particle batch color, scale, and follow_entity fields (only supported by certain particles)
 
 # 1.5.5
 

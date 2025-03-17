@@ -9,6 +9,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.spell_engine.fx.SpellEngineParticles;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -104,9 +105,11 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
     public static class Factory implements ParticleFactory<TemplateParticleType> {
 
         private final SpriteProvider spriteProvider;
+        private final SpellEngineParticles.Texture texture;
 
-        public Factory(SpriteProvider spriteProvider) {
+        public Factory(SpriteProvider spriteProvider, SpellEngineParticles.Texture texture) {
             this.spriteProvider = spriteProvider;
+            this.texture = texture;
         }
 
         public Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
@@ -116,7 +119,7 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
             particle.green = 1F;
             particle.blue = 1F;
 
-            particle.maxAge = 16;
+            particle.maxAge = texture.frames();
             particle.scale = 1F;
 
             TemplateParticleType.apply(particleType, particle);
