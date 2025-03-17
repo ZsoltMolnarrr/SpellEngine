@@ -9,7 +9,7 @@ public class ParticleBatch { public ParticleBatch() { }
     @AlwaysGenerate
     public Origin origin = Origin.CENTER;
     public enum Origin {
-        FEET, CENTER, LAUNCH_POINT
+        FEET, CENTER, LAUNCH_POINT, GROUND
     }
     @AlwaysGenerate
     public Shape shape;
@@ -20,7 +20,8 @@ public class ParticleBatch { public ParticleBatch() { }
         WIDE_PIPE, /// Same as PIPE but with double the radius
         SPHERE,
         CONE,
-        LINE
+        LINE,
+        LINE_VERTICAL,
     }
 
     // null = no rotation

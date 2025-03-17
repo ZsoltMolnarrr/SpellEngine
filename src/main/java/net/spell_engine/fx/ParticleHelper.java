@@ -15,6 +15,7 @@ import net.spell_engine.client.particle.TemplateParticleEffect;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.network.Packets;
+import net.spell_engine.utils.TargetHelper;
 import net.spell_engine.utils.VectorHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -211,6 +212,14 @@ public class ParticleHelper {
                     return entity.getPos().add(0, entity.getHeight() * 0.5F, 0);
                 }
             }
+            case GROUND -> {
+                var position = TargetHelper.findSolidBelow(entity, entity.getPos(), entity.getWorld(), -2);
+                if (position != null) {
+                    return new Vec3d(entity.getX(), position.getY() + 0.1F, entity.getZ());
+                } else {
+                    return entity.getPos().add(0, 0.1F, 0);
+                }
+            }
         }
         assert true;
         return entity.getPos();
@@ -268,6 +277,9 @@ public class ParticleHelper {
             case LINE -> {
                 direction = new Vec3d(0, 0, randomInRange(batch.min_speed, batch.max_speed));
                 pitch = -pitch; // Inverting pitch, do not remove, it makes things work :D
+            }
+            case LINE_VERTICAL -> {
+                direction = new Vec3d(0, randomInRange(batch.min_speed, batch.max_speed), 0);
             }
             case CONE -> {
                 direction = new Vec3d(0, randomInRange(batch.min_speed, batch.max_speed), 0);

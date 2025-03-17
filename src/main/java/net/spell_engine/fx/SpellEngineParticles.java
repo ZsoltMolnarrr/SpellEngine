@@ -153,6 +153,16 @@ public class SpellEngineParticles {
         return entry;
     }
 
+    private static final ArrayList<TemplateEntry> sign_effects = new ArrayList<>();
+    public static List<TemplateEntry> signEffects() {
+        return sign_effects;
+    }
+    public static TemplateEntry addSignEffect(TemplateEntry entry) {
+        addTemplate(entry);
+        sign_effects.add(entry);
+        return entry;
+    }
+
     /**
      * WARNING! This method is very slow, only to be used for data file generation!
      */
@@ -177,16 +187,20 @@ public class SpellEngineParticles {
 
     // TODO: Template
     public static final Entry dripping_blood = add(new Entry("dripping_blood", Texture.vanilla("drip_hang")));
-    // TODO: Template
-    public static final Entry sign_charge = add(new Entry("sign_charge", Texture.of("sign_speed")));
 
     public static final TemplateEntry smoke_medium = addTemplate(new TemplateEntry("smoke_medium", Texture.of("smoke_medium", 9)));
     public static final TemplateEntry smoke_large = addTemplate(new TemplateEntry("smoke_large", Texture.vanilla("big_smoke", 12)));
 
-    public static final TemplateEntry swirl = addAreaEffect(new TemplateEntry("swirl", Texture.of("swirl", 16)));
+    public static final TemplateEntry sign_speed = addSignEffect(new TemplateEntry("sign_speed", Texture.of("sign_speed")));
+    public static final TemplateEntry sign_shield = addSignEffect(new TemplateEntry("sign_shield", Texture.of("sign_shield")));
+
+    public static final TemplateEntry area_swirl = addAreaEffect(new TemplateEntry("area_swirl", Texture.of("area_swirl", 16)));
+
 
     @Deprecated
     public static final Entry weakness_smoke = add(new Entry("weakness_smoke", Texture.of("smoke_medium", 9)));
+    @Deprecated
+    public static final Entry sign_charge = add(new Entry("sign_charge", Texture.of("sign_speed")));
 
     public static void register() {
         for(var entry: simples) {

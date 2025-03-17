@@ -103,6 +103,11 @@ public class FabricClientMod implements ClientModInitializer {
                     entry.particleType(), (provider) -> new SpellAreaParticle.Factory(provider, entry.texture())
             );
         }
+        for (var entry: SpellEngineParticles.signEffects()) {
+            ParticleFactoryRegistry.getInstance().register(
+                    entry.particleType(), (provider) -> new SpellFlameParticle.SignFactory(provider, entry.texture())
+            );
+        }
 
         ModelLoadingPlugin.register(pluginCtx -> {
             pluginCtx.addModels(CustomModelRegistry.modelIds);

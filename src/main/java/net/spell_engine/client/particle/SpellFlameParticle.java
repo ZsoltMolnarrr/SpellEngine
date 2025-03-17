@@ -4,8 +4,10 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.Entity;
 import net.minecraft.particle.SimpleParticleType;
 import net.spell_engine.client.util.Color;
+import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_power.api.SpellSchools;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,6 +16,7 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
     boolean glow = true;
     boolean translucent = false;
     private SpriteProvider spriteProviderForAnimation = null;
+    @Nullable Entity followEntity;
 
     public SpellFlameParticle(ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
         super(clientWorld, d, e, f, g, h, i);
@@ -28,6 +31,11 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
 
     @Override
     public void move(double dx, double dy, double dz) {
+        if (followEntity != null && !followEntity.isRemoved()) {
+            dx += followEntity.getX() - followEntity.prevX;
+            dy += followEntity.getY() - followEntity.prevY;
+            dz += followEntity.getZ() - followEntity.prevZ;
+        }
         this.setBoundingBox(this.getBoundingBox().offset(dx, dy, dz));
         this.repositionFromBoundingBox();
     }
@@ -52,6 +60,15 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
         super.tick();
         if (this.spriteProviderForAnimation != null) {
             this.setSpriteForAge(this.spriteProviderForAnimation);
+        }
+//        moveWithFollowed();
+    }
+
+    private void moveWithFollowed() {
+        if (followEntity != null && !followEntity.isRemoved()) {
+            this.x += followEntity.getX() - followEntity.prevX;
+            this.y += followEntity.getY() - followEntity.prevY;
+            this.z += followEntity.getZ() - followEntity.prevZ;
         }
     }
 
@@ -337,4 +354,45 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
             super(spriteProvider, Color.RAGE);
         }
     }
+
+    @Environment(EnvType.CLIENT)
+    public static class SignFactory implements ParticleFactory<TemplateParticleType> {
+        private final SpriteProvider spriteProvider;
+        private final SpellEngineParticles.Texture texture;
+
+        public SignFactory(SpriteProvider spriteProvider, SpellEngineParticles.Texture texture) {
+            this.spriteProvider = spriteProvider;
+            this.texture = texture;
+        }
+
+        @Override
+        public @Nullable Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
+            particle.setSprite(this.spriteProvider);
+            particle.velocityMultiplier = 0.6F;
+            particle.scale = 0.4F;
+            particle.alpha = 0.9F;
+            particle.translucent = true;
+
+            particle.red = 1F;
+            particle.green = 1F;
+            particle.blue = 1F;
+
+            particle.maxAge = texture.frames() > 1 ? texture.frames() : 40;
+
+            TemplateParticleType.apply(particleType, particle);
+            var appearance = particleType.getAppearance();
+            if (appearance != null) {
+                var color = appearance.color;
+                if (color != null) {
+                    particle.alpha *= appearance.color.alpha();
+                }
+                particle.scale *= appearance.scale;
+                particle.followEntity = appearance.entityFollowed;
+            }
+
+            return particle;
+        }
+    }
+
 }

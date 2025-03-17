@@ -39,6 +39,9 @@ public record Color(float red, float green, float blue, float alpha) {
     public ByteFormat toByteFormat() {
         return new ByteFormat((byte) (red * 255), (byte) (green * 255), (byte) (blue * 255), (byte) (alpha * 255));
     }
+    public long toRGBA() {
+        return ((long) (red * 255) << 24) | ((long) (green * 255) << 16) | ((long) (blue * 255) << 8) | ((long) (alpha * 255));
+    }
 
     public static final Color RED = new Color(1, 0, 0);
     public static final Color GREEN = new Color(0, 1, 0);

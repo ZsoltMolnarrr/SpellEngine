@@ -125,6 +125,10 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
             TemplateParticleType.apply(particleType, particle);
             var appearance = particleType.getAppearance();
             if (appearance != null) {
+                var color = appearance.color;
+                if (color != null) {
+                    particle.alpha *= appearance.color.alpha();
+                }
                 particle.scale *= appearance.scale;
                 particle.followEntity = appearance.entityFollowed;
             }
