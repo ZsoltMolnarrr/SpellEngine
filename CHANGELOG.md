@@ -11,6 +11,7 @@ API Changes:
 - Add impact `attribute_from_target` field
 - Add spell area effect particle system
 - Add particle batch color, scale, and follow_entity fields (only supported by certain particles)
+- Add spell trigger condition `melee.is_combo`, `melee.is_offhand` (based on Better Combat combo)
 
 # 1.5.5
 

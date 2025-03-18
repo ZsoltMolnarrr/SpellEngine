@@ -5,12 +5,12 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
 import net.spell_engine.api.event.CombatEvents;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.compat.MeleeCompat;
 import net.spell_engine.internals.arrow.ArrowExtension;
 import net.spell_engine.internals.casting.SpellBatcher;
 import net.spell_engine.internals.casting.SpellCast;
@@ -45,6 +45,8 @@ public class SpellTriggers {
 
         @Nullable public DamageSource damageSource;
         public float damageAmount = 0;
+
+        @Nullable public MeleeCompat.Attack melee;
 
         public Event(Spell.Trigger.Type type, PlayerEntity player, @Nullable Entity aoeSource, @Nullable Entity target) {
             this.type = type;
@@ -117,6 +119,7 @@ public class SpellTriggers {
             event.damageSource = ((LivingEntityAccessor)livingTarget).getLastDamageSource();
             event.damageAmount = ((LivingEntityAccessor)livingTarget).getLastDamageTaken();
         }
+        event.melee = MeleeCompat.attackProperties.apply(player);
         fireTriggers(event);
     }
 
@@ -135,7 +138,7 @@ public class SpellTriggers {
     }
 
     public static void onSpellCast(PlayerEntity player, RegistryEntry<Spell> spell, List<Entity> targets) {
-        var firstTarget = targets.isEmpty() ? null : targets.get(0);
+        var firstTarget = targets.isEmpty() ? null : targets.getFirst();
         var target = ObjectHelper.coalesce(firstTarget, player);
         var event = new Event(Spell.Trigger.Type.SPELL_CAST, player, player, target);
         event.spell = spell;
@@ -264,6 +267,9 @@ public class SpellTriggers {
             case SPELL_IMPACT_SPECIFIC -> {
                 result = evaluate(event.spell, trigger.spell) && evaluate(event.impact, event.criticalImpact, trigger.impact);
             }
+            case MELEE_IMPACT -> {
+                result = evaluate(event.melee, trigger.melee);
+            }
             default -> {
                 result = true;
             }
@@ -312,6 +318,22 @@ public class SpellTriggers {
         }
         if (condition.critical != null
                 && condition.critical != eventImpactIsCritical) {
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean evaluate(@Nullable MeleeCompat.Attack melee, @Nullable Spell.Trigger.MeleeCondition condition) {
+        if (condition == null) {
+            return true;
+        }
+        if (melee == null) {
+            return false;
+        }
+        if (condition.is_combo != null && melee.isCombo() != condition.is_combo) {
+            return false;
+        }
+        if (condition.is_offhand != null && melee.isOffhand() != condition.is_offhand) {
             return false;
         }
         return true;

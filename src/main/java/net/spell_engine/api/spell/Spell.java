@@ -474,6 +474,12 @@ public class Spell {
             @Nullable public String impact_type;
             @Nullable public Boolean critical;
         }
+        /// Evaluated for: MELEE_IMPACT
+        public MeleeCondition melee;
+        public static class MeleeCondition { public MeleeCondition() { }
+            @Nullable public Boolean is_combo;
+            @Nullable public Boolean is_offhand;
+        }
     }
 
     public static class AreaImpact { public AreaImpact() { }

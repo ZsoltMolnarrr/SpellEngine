@@ -8,5 +8,6 @@ public class CompatFeatures {
         ContainerCompat.init();
         TrinketsCompat.init();
         CombatRollCompat.init();
+        MeleeCompat.init();
     }
 }

@@ -72,6 +72,7 @@ dependencies {
     modCompileOnly("maven.modrinth:shoulder-surfing-reloaded:${project.shoulder_surfing_version}")
     modCompileOnly("maven.modrinth:iris:${project.iris_version}")
     modCompileOnly("maven.modrinth:lambdynamiclights:${project.lamb_dynamic_lights_version}")
+    modCompileOnly("maven.modrinth:better-combat:${project.better_combat_version}")
     modImplementation("maven.modrinth:combat-roll:${project.combat_roll_version}")
     modImplementation("maven.modrinth:bundle-api:${project.bundle_api_version}")
 }
