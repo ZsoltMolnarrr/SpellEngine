@@ -10,6 +10,7 @@ public interface TemplateParticleEffect extends ParticleEffect {
         public @Nullable Color color;
         public float scale = 1;
         public Entity entityFollowed;
+        public boolean grounded = false;
     }
 
     void setAppearance(Appearance appearance);

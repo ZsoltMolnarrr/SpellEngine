@@ -3,12 +3,16 @@ package net.spell_engine.api.render;
 import net.minecraft.entity.LivingEntity;
 import net.spell_engine.api.effect.CustomParticleStatusEffect;
 import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.client.util.Color;
 import net.spell_engine.fx.ParticleHelper;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
     private final ParticleBatch[] particles;
+    @Nullable private ParticleBatch groundEffect;
+    private int groundFrequency = 0;
 
     private static ParticleBatch defaultBatch(String particleId, float particleCount, float min_speed, float max_speed) {
         return new ParticleBatch(
@@ -42,6 +46,16 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
         this.particles = particles;
     }
 
+    public BuffParticleSpawner withGroundEffect(String particleId, Color color, int frequency) {
+        this.groundFrequency = frequency;
+        this.groundEffect = new ParticleBatch(particleId.toString(),
+                ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.GROUND,
+                1, 0.0F, 0.F)
+                .color(color.toRGBA())
+                .followEntity(true);
+        return this;
+    }
+
     @Override
     public void spawnParticles(LivingEntity livingEntity, int amplifier) {
         var scaledParticles = new ParticleBatch[particles.length];
@@ -51,5 +65,10 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
             scaledParticles[i] = copiedBatch;
         }
         ParticleHelper.play(livingEntity.getWorld(), livingEntity, scaledParticles);
+        if (groundEffect != null && groundFrequency > 0) {
+            if (livingEntity.age % groundFrequency == 0) {
+                ParticleHelper.play(livingEntity.getWorld(), livingEntity, groundEffect);
+            }
+        }
     }
 }

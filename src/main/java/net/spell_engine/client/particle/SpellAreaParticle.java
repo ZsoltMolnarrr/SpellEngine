@@ -19,20 +19,12 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
     public SpellEngineParticles.Fading fading = SpellEngineParticles.Fading.NONE;
     private final SpriteProvider spriteProvider;
     private float initialAlpha = 1F;
-
+    public boolean grounded = false;
 
     protected SpellAreaParticle(ClientWorld world, double d, double e, double f, double g, double h, double i, SpriteProvider spriteProvider) {
         super(world, d, e, f, g, h, i);
         this.spriteProvider = spriteProvider;
         this.setSpriteForAge(spriteProvider);
-    }
-
-    private void moveWithFollowed() {
-        if (followEntity != null && !followEntity.isRemoved()) {
-            this.x += followEntity.getX() - followEntity.prevX;
-            this.y += followEntity.getY() - followEntity.prevY;
-            this.z += followEntity.getZ() - followEntity.prevZ;
-        }
     }
 
     @Override
@@ -42,13 +34,21 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
 
     @Override
     public void move(double dx, double dy, double dz) {
-        if (followEntity != null && !followEntity.isRemoved()) {
-            dx += followEntity.getX() - followEntity.prevX;
-            dy += followEntity.getY() - followEntity.prevY;
-            dz += followEntity.getZ() - followEntity.prevZ;
+        if (this.grounded && followEntity != null && !followEntity.isRemoved()) {
+            this.setPos(followEntity.getX(), followEntity.getY() + 0.05F, followEntity.getZ());
+            var velocity = followEntity.getVelocity();
+            this.velocityX = velocity.x;
+            this.velocityY = velocity.y;
+            this.velocityZ = velocity.z;
+        } else {
+            if (followEntity != null && !followEntity.isRemoved()) {
+                dx += followEntity.getX() - followEntity.prevX;
+                dy += followEntity.getY() - followEntity.prevY;
+                dz += followEntity.getZ() - followEntity.prevZ;
+            }
+            this.setBoundingBox(this.getBoundingBox().offset(dx, dy, dz));
+            this.repositionFromBoundingBox();
         }
-        this.setBoundingBox(this.getBoundingBox().offset(dx, dy, dz));
-        this.repositionFromBoundingBox();
     }
 
 
@@ -172,6 +172,7 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
                 }
                 particle.scale *= appearance.scale;
                 particle.followEntity = appearance.entityFollowed;
+                particle.grounded = appearance.grounded;
             }
 
             particle.fading = fading;

@@ -245,8 +245,6 @@ public class SpellEngineParticles {
     public static final Entry electric_arc_A = add(new Entry("electric_arc_a", Texture.of("electric_arc_a", 8)));
     public static final Entry electric_arc_B = add(new Entry("electric_arc_b", Texture.of("electric_arc_b", 8)));
     public static final Entry shield_small = add(new Entry("shield_small", Texture.of("shield_small")));
-
-    // TODO: Template
     public static final Entry dripping_blood = add(new Entry("dripping_blood", Texture.vanilla("drip_hang")));
 
     public static final TemplateEntry smoke_medium = addTemplate(new TemplateEntry("smoke_medium", Texture.of("smoke_medium", 9)));
@@ -261,10 +259,12 @@ public class SpellEngineParticles {
 
     // area effect #48 (for swirling)
     public static final TemplateEntry area_swirl = addAreaEffect(new TemplateEntry("area_swirl", Texture.of("area/swirl", 16)));
-    // area effect #714
-    public static final TemplateEntry area_effect_714 = addAreaEffect(new TemplateEntry("area_effect_714", Texture.of("area/effect_714", 22)));
     // area effect #658
     public static final TemplateEntry area_effect_658 = addAreaEffect(new TemplateEntry("area_effect_658", Texture.of("area/effect_658", 16)));
+    // area effect #714
+    public static final TemplateEntry area_effect_714 = addAreaEffect(new TemplateEntry("area_effect_714", Texture.of("area/effect_714", 22)));
+    // area effect #741
+    public static final TemplateEntry area_effect_741 = addAreaEffect(new TemplateEntry("area_effect_741", Texture.of("area/effect_741", 23)));
 
     static {
         for (var variant: MagicParticles.all) {

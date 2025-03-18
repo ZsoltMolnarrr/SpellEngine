@@ -109,6 +109,9 @@ public class ParticleHelper {
             if (batch.scale != 1) {
                 appearance.scale = batch.scale;
             }
+            if (batch.origin == ParticleBatch.Origin.GROUND) {
+                appearance.grounded = true;
+            }
             particle = copy;
         }
         return particle;
