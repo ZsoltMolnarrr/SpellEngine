@@ -81,8 +81,6 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
 
     @Override
     public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
-        this.setSpriteForAge(spriteProvider);
-
         Vec3d vec3d = camera.getPos();
         float f = (float) (MathHelper.lerp(tickDelta, this.prevPosX, this.x) - vec3d.getX());
         float g = (float) (MathHelper.lerp(tickDelta, this.prevPosY, this.y) - vec3d.getY());
@@ -143,7 +141,7 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
             particle.blue = 1F;
 
             if (texture.frames() > 1) {
-                particle.maxAge = texture.frames();
+                particle.maxAge = (int) (texture.frames()* 1.5F);
             } else {
                 particle.maxAge = 16;
                 particle.fadeOut = (int) (particle.maxAge * 0.25F);
