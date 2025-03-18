@@ -11,7 +11,6 @@ public class TemplateParticleType extends ParticleType<TemplateParticleType> imp
     private final MapCodec<TemplateParticleType> codec = MapCodec.unit(this::getType);
     private final PacketCodec<RegistryByteBuf, TemplateParticleType> packetCodec = PacketCodec.unit(this);
 
-
     private TemplateParticleType type;
     public TemplateParticleType() {
         this(true);

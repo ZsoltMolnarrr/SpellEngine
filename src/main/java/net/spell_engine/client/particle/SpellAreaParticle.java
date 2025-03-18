@@ -16,8 +16,10 @@ import org.joml.Vector3f;
 
 public class SpellAreaParticle extends SpriteBillboardParticle {
     @Nullable Entity followEntity;
-    public int fadeOut = 0;
+    public SpellEngineParticles.Fading fading = SpellEngineParticles.Fading.NONE;
     private final SpriteProvider spriteProvider;
+    private float initialAlpha = 1F;
+
 
     protected SpellAreaParticle(ClientWorld world, double d, double e, double f, double g, double h, double i, SpriteProvider spriteProvider) {
         super(world, d, e, f, g, h, i);
@@ -53,20 +55,32 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
     @Override
     public void tick() {
         super.tick();
-//        this.prevPosX = this.x;
-//        this.prevPosY = this.y;
-//        this.prevPosZ = this.z;
-//
-//        moveWithFollowed();
-
-        if (this.age++ >= this.maxAge) {
-            this.markDead();
+        if (this.age >= this.maxAge) {
+            // this.markDead();
         } else {
             this.setSpriteForAge(this.spriteProvider);
-            if (fadeOut > 0) {
-                var duration = this.maxAge - this.fadeOut;
-                var progress = (this.maxAge - this.age) / (float) duration;
-                this.alpha = Math.min(1, progress);
+            this.updateAlpha(fading, initialAlpha);
+        }
+    }
+
+    private static final float EASE_DURATION = 0.3F;
+    private static final float EASE_DURATION_INVERSE = 1 / EASE_DURATION;
+    private void updateAlpha(SpellEngineParticles.Fading fading, float initialAlpha) {
+        switch (fading) {
+            case NONE -> {
+                return;
+            }
+            case IN -> {
+                var progress = this.age / ((float)this.maxAge);
+                this.alpha = initialAlpha * Math.min(1, progress * EASE_DURATION_INVERSE);
+            }
+            case OUT -> {
+                var progress = this.age / ((float)this.maxAge);
+                this.alpha = initialAlpha * Math.min(1, (1 - progress) * EASE_DURATION_INVERSE);
+            }
+            case IN_OUT -> {
+                var progress = this.age / ((float)this.maxAge);
+                this.alpha = initialAlpha * Math.min(1, Math.min(progress, 1 - progress) * EASE_DURATION_INVERSE);
             }
         }
     }
@@ -123,10 +137,12 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
 
         private final SpriteProvider spriteProvider;
         private final SpellEngineParticles.Texture texture;
+        private final SpellEngineParticles.Fading fading;
 
-        public Factory(SpriteProvider spriteProvider, SpellEngineParticles.Texture texture) {
+        public Factory(SpriteProvider spriteProvider, SpellEngineParticles.Texture texture, SpellEngineParticles.Fading fading) {
             this.spriteProvider = spriteProvider;
             this.texture = texture;
+            this.fading = fading;
         }
 
         public Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
@@ -141,10 +157,9 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
             particle.blue = 1F;
 
             if (texture.frames() > 1) {
-                particle.maxAge = (int) (texture.frames()* 1.5F);
+                particle.maxAge = texture.frames();
             } else {
                 particle.maxAge = 16;
-                particle.fadeOut = (int) (particle.maxAge * 0.25F);
             }
             particle.scale = 1F;
 
@@ -159,6 +174,8 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
                 particle.followEntity = appearance.entityFollowed;
             }
 
+            particle.fading = fading;
+            particle.initialAlpha = particle.alpha;
             return particle;
         }
     }

@@ -4,8 +4,10 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.random.Random;
 import net.spell_engine.fx.SpellEngineParticles;
+import org.jetbrains.annotations.Nullable;
 
 public class SpellUniversalParticle extends SpriteBillboardParticle  {
     private static final Random RANDOM = Random.create();
@@ -13,6 +15,7 @@ public class SpellUniversalParticle extends SpriteBillboardParticle  {
     private final SpellEngineParticles.MagicParticles.Motion motion;
     public boolean glows = true;
     public boolean translucent = true;
+    @Nullable Entity followEntity;
 
     SpellUniversalParticle(ClientWorld world, SpriteProvider spriteProvider, SpellEngineParticles.MagicParticles.Motion motion, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
         super(world, x, y, z, 0.5 - RANDOM.nextDouble(), velocityY, 0.5 - RANDOM.nextDouble());
@@ -87,6 +90,15 @@ public class SpellUniversalParticle extends SpriteBillboardParticle  {
         }
     }
 
+    public void move(double dx, double dy, double dz) {
+        if (followEntity != null && !followEntity.isRemoved()) {
+            dx += followEntity.getX() - followEntity.prevX;
+            dy += followEntity.getY() - followEntity.prevY;
+            dz += followEntity.getZ() - followEntity.prevZ;
+        }
+        super.move(dx, dy, dz);
+    }
+
     // MARK: Factories
 
     @Environment(EnvType.CLIENT)
@@ -115,7 +127,7 @@ public class SpellUniversalParticle extends SpriteBillboardParticle  {
                     particle.alpha *= appearance.color.alpha();
                 }
                 particle.scale *= appearance.scale;
-                // particle.followEntity = appearance.entityFollowed;
+                particle.followEntity = appearance.entityFollowed;
             }
 
             float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;

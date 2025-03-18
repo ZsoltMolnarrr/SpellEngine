@@ -89,6 +89,7 @@ public class FabricClientMod implements ClientModInitializer {
         ParticleFactoryRegistry.getInstance().register(
                 SpellEngineParticles.shield_small.particleType(), (provider) -> new UniversalSpellParticle.Opaque(provider, SpellEngineParticles.MagicParticleFamily.Motion.DECELERATE)
         );
+
         ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.dripping_blood.particleType(), SpellSnowflakeParticle.DrippingBloodFactory::new);
         ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.roots.particleType(), ShiftedParticle.RootsFactory::new);
 
@@ -100,7 +101,7 @@ public class FabricClientMod implements ClientModInitializer {
 
         for (var entry: SpellEngineParticles.areaEffects()) {
             ParticleFactoryRegistry.getInstance().register(
-                    entry.particleType(), (provider) -> new SpellAreaParticle.Factory(provider, entry.texture())
+                    entry.particleType(), (provider) -> new SpellAreaParticle.Factory(provider, entry.texture(), entry.fading())
             );
         }
         for (var entry: SpellEngineParticles.signEffects()) {

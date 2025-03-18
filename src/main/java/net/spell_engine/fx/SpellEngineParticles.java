@@ -69,12 +69,16 @@ public class SpellEngineParticles {
         return simpleEntry;
     }
 
-    public record TemplateEntry(Identifier id, Texture texture, TemplateParticleType particleType) {
+    public enum Fading { NONE, IN, OUT, IN_OUT }
+    public record TemplateEntry(Identifier id, Texture texture, TemplateParticleType particleType, Fading fading) {
         public TemplateEntry(String name, Texture texture) {
             this(Identifier.of(SpellEngineMod.ID, name), texture);
         }
         public TemplateEntry(Identifier id, Texture texture) {
-            this(id, texture, new TemplateParticleType());
+            this(id, texture, new TemplateParticleType(), Fading.NONE);
+        }
+        public TemplateEntry fading(Fading fading) {
+            return new TemplateEntry(id, texture, particleType, fading);
         }
     }
     private static final ArrayList<TemplateEntry> templateEntries = new ArrayList<>();
@@ -252,7 +256,9 @@ public class SpellEngineParticles {
     public static final TemplateEntry sign_shield = addSignEffect(new TemplateEntry("sign_shield", Texture.of("sign_shield")));
 
     // Hand made
-    public static final TemplateEntry area_circle_1 = addAreaEffect(new TemplateEntry("area_circle_1", Texture.of("area/circle_1")));
+    public static final TemplateEntry ground_glow = addAreaEffect(new TemplateEntry("ground_glow", Texture.of("area/ground_glow")).fading(Fading.IN_OUT));
+    public static final TemplateEntry area_circle_1 = addAreaEffect(new TemplateEntry("area_circle_1", Texture.of("area/circle_1")).fading(Fading.OUT));
+
     // area effect #48 (for swirling)
     public static final TemplateEntry area_swirl = addAreaEffect(new TemplateEntry("area_swirl", Texture.of("area/swirl", 16)));
     // area effect #714
