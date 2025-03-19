@@ -10,6 +10,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.spell_engine.api.spell.*;
+import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import org.jetbrains.annotations.Nullable;
@@ -29,29 +30,20 @@ public class ScrollItem extends Item {
     }
 
     @Nullable public static boolean applySpell(ItemStack itemStack, RegistryEntry<Spell> spellEntry, boolean requirePool) {
-        var spell = spellEntry.value();
-        if (spell.active == null) { return false; }
-        var scroll = spell.active.scroll;
-        if (scroll != null) {
-//            if (poolId != null) {
-//                var translationKey = "item." + poolId.getNamespace() + "." + poolId.getPath() + ".spell_scroll";
-//                if (I18n.hasTranslation(translationKey)) {
-//                    itemStack.set(DataComponentTypes.CUSTOM_NAME, Text.translatable(translationKey));
-//                }
-//            }
+        if (spellEntry.isIn(SpellTags.TREASURE)) {
             itemStack.set(SpellDataComponents.SPELL_CONTAINER, SpellContainerHelper.create(spellEntry, itemStack.getItem()));
-
-            var rarity = scroll.custom_rarity;
-            if (rarity == null) {
-                var ordinal = Math.max(spell.tier - 1, 0); // minimum 0
-                rarity = Rarity.values().length > ordinal ? Rarity.values()[ordinal] : Rarity.EPIC;
-            }
-            itemStack.set(DataComponentTypes.RARITY, rarity);
-
+            setRarity(itemStack, spellEntry);
             return true;
         } else {
             return false;
         }
+    }
+
+    public static void setRarity(ItemStack itemStack, RegistryEntry<Spell> spellEntry) {
+        var spell = spellEntry.value();
+        var ordinal = Math.max(spell.tier - 1, 0); // minimum 0
+        var rarity = Rarity.values().length > ordinal ? Rarity.values()[ordinal] : Rarity.EPIC;
+        itemStack.set(DataComponentTypes.RARITY, rarity);
     }
 
     public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType type) {

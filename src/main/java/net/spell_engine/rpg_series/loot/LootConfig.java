@@ -1,5 +1,6 @@
 package net.spell_engine.rpg_series.loot;
 
+import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.item.ScrollItem;
 
 import java.util.ArrayList;
@@ -48,8 +49,11 @@ public class LootConfig {
 
             public SpellBind spell_bind = null;
             public static class SpellBind { public SpellBind() { }
-                public int min = 1;
-                public int max = 9;
+                public String pool;
+                public int tier_min = -1;
+                public int tier_max = -1;
+                public int count_min = 1;
+                public int count_max = 1;
 
                 public boolean isValid() {
                     return true;
@@ -90,16 +94,37 @@ public class LootConfig {
             return this;
         }
 
+        public Pool enchant() {
+            var entry = this.entries.getLast();
+            if (entry != null) {
+                entry.enchant();
+            }
+            return this;
+        }
+
         public Pool scroll(int tier) {
             return scroll(tier, tier);
         }
         public Pool scroll(int min, int max) {
             Entry entry = new Entry(ScrollItem.ID.toString());
             var spell_bind = new Entry.SpellBind();
-            spell_bind.min = min;
-            spell_bind.max = max;
+            spell_bind.pool = SpellTags.TREASURE.id().toString();
+            spell_bind.tier_min = min;
+            spell_bind.tier_max = max;
             entry.spell_bind = spell_bind;
             this.entries.add(entry);
+            return this;
+        }
+
+        public Pool bind(String pool, int count_min, int count_max) {
+            var entry = this.entries.getLast();
+            if (entry != null) {
+                var spell_bind = new Entry.SpellBind();
+                spell_bind.pool = pool;
+                spell_bind.count_min = count_min;
+                spell_bind.count_max = count_max;
+                entry.spell_bind = spell_bind;
+            }
             return this;
         }
 

@@ -74,4 +74,14 @@ public record SpellContainer(ContentType content, boolean is_proxy, String pool,
     public SpellContainer copyWith(List<String> spell_ids) {
         return new SpellContainer(content, is_proxy, pool, max_spell_count, spell_ids);
     }
+
+    public SpellContainer withContentType(ContentType content) {
+        return new SpellContainer(content, is_proxy, pool, max_spell_count, spell_ids);
+    }
+
+    public SpellContainer withAdditionalSpell(List<String> spellIds) {
+        var newSpellIds = new ArrayList<>(spell_ids);
+        newSpellIds.addAll(spellIds);
+        return new SpellContainer(content, is_proxy, pool, max_spell_count, newSpellIds);
+    }
 }

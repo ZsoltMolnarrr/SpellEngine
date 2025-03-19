@@ -156,7 +156,16 @@ public class SpellContainerHelper {
         return spellType == expectedContentType;
     }
 
-    public static SpellContainer.ContentType contentTypeForItem(Spell spell) {
+    public static SpellContainer.ContentType contentTypeForItem(ItemStack itemStack) {
+        var container = containerFromItemStack(itemStack);
+        if (container != null) {
+            return container.content();
+        }
+        var item = itemStack.getItem();
+        return (item instanceof RangedWeaponItem) ? SpellContainer.ContentType.ARCHERY : SpellContainer.ContentType.MAGIC;
+    }
+
+    public static SpellContainer.ContentType contentTypeForSpell(Spell spell) {
         return spell.school.archetype == SpellSchool.Archetype.ARCHERY
                 ? SpellContainer.ContentType.ARCHERY : SpellContainer.ContentType.MAGIC;
     }
@@ -166,10 +175,10 @@ public class SpellContainerHelper {
     }
 
     public static SpellContainer create(List<RegistryEntry<Spell>> spells, Item item) {
-        final var contentType = contentTypeForItem(spells.get(0).value());
+        final var contentType = contentTypeForSpell(spells.get(0).value());
         var isProxy = !(ISpellBookItem.isSpellBook(item) || item.getRegistryEntry().isIn(SpellEngineItemTags.SPELL_BOOK_MERGEABLE));
         var spellIds = spells.stream()
-                .filter(entry -> contentTypeForItem(entry.value()) == contentType)
+                .filter(entry -> contentTypeForSpell(entry.value()) == contentType)
                 .map(entry -> entry.getKey().get().getValue().toString())
                 .toList();
         return new SpellContainer(contentType, isProxy, "", spellIds.size(), spellIds);

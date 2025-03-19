@@ -114,7 +114,11 @@ public class LootHelper {
                             entry.apply(enchantFunction);
                         }
                         if (spellBind != null && spellBind.isValid()) {
-                            var function = SpellBindRandomlyLootFunction.builder(numberProvider(spellBind.min, spellBind.max));
+                            // var function = SpellBindRandomlyLootFunction.builder(numberProvider(spellBind.tier_min, spellBind.tier_max));
+                            var function = SpellBindRandomlyLootFunction.builder(
+                                    spellBind.pool,
+                                    numberProvider(spellBind.tier_min, spellBind.tier_max),
+                                    numberProvider(spellBind.count_min, spellBind.count_max));
                             entry.apply(function);
                         }
                         lootPoolBuilder.with(entry);
@@ -137,7 +141,11 @@ public class LootHelper {
                         entry.apply(enchantFunction);
                     }
                     if (spellBind != null && spellBind.isValid()) {
-                        var function = SpellBindRandomlyLootFunction.builder(numberProvider(spellBind.min, spellBind.max));
+                        // var function = SpellBindRandomlyLootFunction.builder(numberProvider(spellBind.tier_min, spellBind.tier_max));
+                        var function = SpellBindRandomlyLootFunction.builder(
+                                spellBind.pool,
+                                numberProvider(spellBind.tier_min, spellBind.tier_max),
+                                numberProvider(spellBind.count_min, spellBind.count_max));
                         entry.apply(function);
                     }
                     lootPoolBuilder.with(entry);
@@ -156,7 +164,11 @@ public class LootHelper {
                     entry.apply(enchantFunction);
                 }
                 if (spellBind != null && spellBind.isValid()) {
-                    var function = SpellBindRandomlyLootFunction.builder(numberProvider(spellBind.min, spellBind.max));
+                    // var function = SpellBindRandomlyLootFunction.builder(numberProvider(spellBind.tier_min, spellBind.tier_max));
+                    var function = SpellBindRandomlyLootFunction.builder(
+                            spellBind.pool,
+                            numberProvider(spellBind.tier_min, spellBind.tier_max),
+                            numberProvider(spellBind.count_min, spellBind.count_max));
                     entry.apply(function);
                 }
                 lootPoolBuilder.with(entry);

@@ -11,16 +11,22 @@ import net.minecraft.loot.function.ConditionalLootFunction;
 import net.minecraft.loot.function.LootFunctionType;
 import net.minecraft.loot.provider.number.LootNumberProvider;
 import net.minecraft.loot.provider.number.LootNumberProviderTypes;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellDataComponents;
+import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.registry.SpellRegistry;
-import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.item.ScrollItem;
 import net.spell_engine.item.SpellEngineItems;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
@@ -29,10 +35,11 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
 
     public static final MapCodec<SpellBindRandomlyLootFunction> CODEC = RecordCodecBuilder.mapCodec(
             instance -> addConditionsField(instance)
-                    .<LootNumberProvider, Boolean>and(
+                    .<String, LootNumberProvider, LootNumberProvider>and(
                             instance.group(
+                                    Codec.STRING.fieldOf("pool").orElse(null).forGetter(function -> function.pool),
                                     LootNumberProviderTypes.CODEC.fieldOf("tier").forGetter(function -> function.tier),
-                                    Codec.BOOL.fieldOf("add").orElse(false).forGetter(function -> function.add)
+                                    LootNumberProviderTypes.CODEC.fieldOf("count").forGetter(function -> function.count)
                             )
                     )
                     .apply(instance, SpellBindRandomlyLootFunction::new)
@@ -40,12 +47,14 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
     public static final LootFunctionType<SpellBindRandomlyLootFunction> TYPE = new LootFunctionType<SpellBindRandomlyLootFunction>(CODEC);
 
     private final LootNumberProvider tier;
-    private final boolean add;
+    @Nullable private final String pool;
+    @Nullable private final LootNumberProvider count;
 
-    private SpellBindRandomlyLootFunction(List<LootCondition> conditions, LootNumberProvider tier, boolean add) {
+    private SpellBindRandomlyLootFunction(List<LootCondition> conditions, String pool, LootNumberProvider tier, LootNumberProvider count) {
         super(conditions);
+        this.pool = pool;
         this.tier = tier;
-        this.add = add;
+        this.count = count;
     }
 
     @Override
@@ -55,40 +64,69 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
 
     @Override
     public Set<LootContextParameter<?>> getRequiredParameters() {
-        return this.tier.getRequiredParameters();
+        // return this.tier.getRequiredParameters();
+        return Set.of();
+    }
+
+    @Nullable TagKey<Spell> getSpellTag() {
+        var poolId = this.pool != null ? Identifier.of(this.pool) : null;
+        return poolId != null ? TagKey.of(SpellRegistry.KEY, poolId) : null;
     }
 
     @Override
     public ItemStack process(ItemStack stack, LootContext context) {
-        final var selectedTier = this.tier.nextInt(context);
+        @Nullable final var spellTag = getSpellTag();
+        final var selectedTier = this.tier != null ? this.tier.nextInt(context) : -1;
+        @Nullable var existingContainer = SpellContainerHelper.containerFromItemStack(stack);
+        final List<Identifier> alreadyPresentSpells = existingContainer != null
+                ? existingContainer.spell_ids().stream().map(Identifier::of).toList()
+                : List.of();
         var spells = SpellRegistry.stream(context.getWorld())
-                .filter(entry -> entry.value().tier == selectedTier
-                        && (entry.value().active != null && entry.value().active.scroll != null)
-                        && entry.isIn(SpellTags.TREASURE)
-                )
+                .filter(entry -> {
+                    var id = entry.getKey().get().getValue();
+                    return (selectedTier < 0 || entry.value().tier == selectedTier)
+                            // && (entry.value().active != null && entry.value().active.scroll != null)
+                            && (spellTag == null || entry.isIn(spellTag))
+                            && !alreadyPresentSpells.contains(id);
+                })
                 .toList();
-        if (spells.size() > 0) {
-            var spell = spells.get(context.getRandom().nextInt(spells.size()));
+
+        ArrayList<RegistryEntry<Spell>> selectedSpells = new ArrayList<>();
+        @Nullable var selectedContentType = existingContainer != null ? existingContainer.content() : null;
+        if (!spells.isEmpty()) {
+            var selectedCount = this.count != null ? this.count.nextInt(context) : 1;
             var retryAttempts = 3;
+            for (int i = 0; i < selectedCount; i++) {
+                var entry = spells.get(context.getRandom().nextInt(spells.size()));
+                while (
+                        (retryAttempts > 0) &&
+                                // Reroll if
+                                // already selected
+                                (
+                                        selectedSpells.contains(entry)
+                                                // content type mismatch
+                                                || (selectedContentType != null && Objects.equals(SpellContainerHelper.contentTypeForSpell(entry.value()), selectedContentType))
+                                )
+                ) {
+                    entry = spells.get(context.getRandom().nextInt(spells.size()));
+                    retryAttempts -= 1;
+                }
+
+                selectedSpells.add(entry);
+                selectedContentType = SpellContainerHelper.contentTypeForSpell(entry.value());
+            }
+        }
+
+        if (!selectedSpells.isEmpty()) {
+            var newContainer = existingContainer != null ? existingContainer : SpellContainer.EMPTY
+                    .withContentType(selectedContentType != null ? selectedContentType : SpellContainer.ContentType.MAGIC);
+            var newSpellIds = selectedSpells.stream().map(entry -> entry.getKey().get().getValue().toString()).toList();
+            newContainer = newContainer.withAdditionalSpell(newSpellIds);
+
+            stack.set(SpellDataComponents.SPELL_CONTAINER, newContainer);
+
             if (stack.getItem() == SpellEngineItems.SCROLL.get()) {
-                var success = ScrollItem.applySpell(stack, spell, true);
-                while (retryAttempts-- > 0 && !success) {
-                    spell = spells.get(context.getRandom().nextInt(spells.size()));
-                    success = ScrollItem.applySpell(stack, spell, true);
-                }
-                if (!success) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-                var isValid = SpellContainerHelper.isSpellValidForItem(stack.getItem(), spell);
-                while (retryAttempts-- > 0 && !isValid) {
-                    spell = spells.get(context.getRandom().nextInt(spells.size()));
-                    isValid = SpellContainerHelper.isSpellValidForItem(stack.getItem(), spell);
-                }
-                if (isValid) {
-                    var container = SpellContainerHelper.create(spell, stack.getItem());
-                    stack.set(SpellDataComponents.SPELL_CONTAINER, container);
-                }
+                ScrollItem.setRarity(stack, selectedSpells.getFirst());
             }
         } else {
             if (stack.getItem() == SpellEngineItems.SCROLL.get()) {
@@ -99,12 +137,12 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
         return stack;
     }
 
-    public static ConditionalLootFunction.Builder<?> builder(LootNumberProvider tier) {
-        return builder(conditions -> new SpellBindRandomlyLootFunction(conditions, tier, false));
-    }
+//    public static ConditionalLootFunction.Builder<?> builder(String pool, LootNumberProvider tier) {
+//        return builder(conditions -> new SpellBindRandomlyLootFunction(conditions, tier, null));
+//    }
 
-    public static ConditionalLootFunction.Builder<?> builder(LootNumberProvider tier, boolean add) {
-        return builder(conditions -> new SpellBindRandomlyLootFunction(conditions, tier, add));
+    public static ConditionalLootFunction.Builder<?> builder(String pool, LootNumberProvider tier, LootNumberProvider count) {
+        return builder(conditions -> new SpellBindRandomlyLootFunction(conditions, pool, tier, count));
     }
 }
 

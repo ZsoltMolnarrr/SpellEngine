@@ -21,13 +21,12 @@ public class RPGSeriesCore {
             .build();
 
     public static ConfigManager<LootConfig> lootScrollsConfig = new ConfigManager<>
-            ("loot_scrolls", Defaults.scrollLootConfig)
+            ("loot_scrolls_v1", Defaults.scrollLootConfig)
             .builder()
             .setDirectory(NAMESPACE)
             .sanitize(true)
             .constrain(LootConfig::constrainValues)
             .build();
-
 
     public static void init() {
         lootEquipmentConfig.refresh();
