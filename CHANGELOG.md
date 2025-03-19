@@ -2,6 +2,11 @@
 
 Functional changes:
 - Fix spell scroll tooltips
+- Reworked spell binding loot function (`spell_engine:spell_bind_randomly`), now supports multiple parameters
+  - (new) spell pool
+  - spell tier
+  - (new) spell count
+- Loot injection now supports item tag filters
 
 API Changes:
 - Add particle batch color field (works only for specific particles)

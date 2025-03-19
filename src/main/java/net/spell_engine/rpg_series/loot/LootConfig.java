@@ -2,6 +2,7 @@ package net.spell_engine.rpg_series.loot;
 
 import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.item.ScrollItem;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -26,6 +27,9 @@ public class LootConfig {
         public List<Entry> entries = new ArrayList<>();
         public static class Entry {
             public String id;
+            /// If true, filters combined with OR, else AND
+            public boolean filters_lenient = true;
+            @Nullable public List<String> filters;
             public Entry(String id) {
                 this.id = id;
             }
@@ -125,6 +129,18 @@ public class LootConfig {
                 spell_bind.count_max = count_max;
                 entry.spell_bind = spell_bind;
             }
+            return this;
+        }
+
+        public Pool filter(String... filters) {
+            var entry = this.entries.getLast();
+            entry.filters = List.of(filters);
+            return this;
+        }
+
+        public Pool filtersAND() {
+            var entry = this.entries.getLast();
+            entry.filters_lenient = false;
             return this;
         }
 

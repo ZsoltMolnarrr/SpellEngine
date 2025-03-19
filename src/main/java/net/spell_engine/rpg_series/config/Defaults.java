@@ -137,8 +137,8 @@ public class Defaults {
 
         items.put("minecraft:chests/bastion_treasure", new LootConfig.Pool()
                 .rolls(2)
-                .add(A2, true)
-                .add(W3).enchant().bind("arsenal:melee", 1, 3)
+                .add(A2).enchant()
+                .add(W3).enchant()
                 .add(X3)
                 .add(R2)
         );

@@ -86,92 +86,45 @@ public class LootHelper {
         var chance = pool.rolls / attempts;
         lootPoolBuilder.rolls(BinomialLootNumberProvider.create((int) attempts, (float) chance));
         lootPoolBuilder.bonusRolls(ConstantLootNumberProvider.create(pool.bonus_rolls));
-        for (var injectEntry: pool.entries) {
-            var entryId = injectEntry.id;
-            var weight = injectEntry.weight;
-            var enchant = injectEntry.enchant;
-            var spellBind = injectEntry.spell_bind;
+        for (var entry: pool.entries) {
+            var entryId = entry.id;
+            var weight = entry.weight;
+            var enchant = entry.enchant;
+            var spellBind = entry.spell_bind;
             if (entryId == null || entryId.isEmpty()) { continue; }
 
-            if (entryId.startsWith("#")) {
+            var itemList = entryId.startsWith("#")
+                            ? TAG_CACHE.value.cache.get(entryId.substring(1))
+                            : List.of(entryId);
+            List<TagKey<Item>> filters = entry.filters != null ? tagKeys(entry.filters) : List.of();
 
-                var tagString = entryId.substring(1);
-
-                var itemList = TAG_CACHE.value.cache.get(tagString);
-//                    System.out.println("XXX Checking tag: " + entryId + " itemList: " + itemList);
-                if (itemList != null && !itemList.isEmpty()) {
-//                        System.out.println("XXX Resolving from tag cache: " + tagString);
-                    for (var itemId: itemList) {
-                        var item = Registries.ITEM.get(Identifier.of(itemId));
-                        if (item == null) { continue; }
-                        var entry = ItemEntry.builder(item)
-                                .weight(weight);
-                        if (enchant != null && enchant.isValid()) {
-                            var enchantFunction = EnchantWithLevelsLootFunction.builder(registries, numberProvider(enchant.min_power, enchant.max_power));
-//                            if (enchant.allow_treasure) {
-//                                enchantFunction.allowTreasureEnchantments();
-//                            }
-                            entry.apply(enchantFunction);
-                        }
-                        if (spellBind != null && spellBind.isValid()) {
-                            // var function = SpellBindRandomlyLootFunction.builder(numberProvider(spellBind.tier_min, spellBind.tier_max));
-                            var function = SpellBindRandomlyLootFunction.builder(
-                                    spellBind.pool,
-                                    numberProvider(spellBind.tier_min, spellBind.tier_max),
-                                    numberProvider(spellBind.count_min, spellBind.count_max));
-                            entry.apply(function);
-                        }
-                        lootPoolBuilder.with(entry);
-                    }
-                } else {
-                    var tagId = Identifier.of(tagString);
-                    TagKey<Item> tag = TagKey.of(RegistryKeys.ITEM, tagId);
-
-                    if (tag == null) {
-                        continue;
-                    }
-                    var entry = TagEntry.expandBuilder(tag)
-                            .weight(weight);
-
-                    if (enchant != null && enchant.isValid()) {
-                        var enchantFunction = EnchantWithLevelsLootFunction.builder(registries, numberProvider(enchant.min_power, enchant.max_power));
-//                        if (enchant.allow_treasure) {
-//                            enchantFunction.allowTreasureEnchantments();
-//                        }
-                        entry.apply(enchantFunction);
-                    }
-                    if (spellBind != null && spellBind.isValid()) {
-                        // var function = SpellBindRandomlyLootFunction.builder(numberProvider(spellBind.tier_min, spellBind.tier_max));
-                        var function = SpellBindRandomlyLootFunction.builder(
-                                spellBind.pool,
-                                numberProvider(spellBind.tier_min, spellBind.tier_max),
-                                numberProvider(spellBind.count_min, spellBind.count_max));
-                        entry.apply(function);
-                    }
-                    lootPoolBuilder.with(entry);
-                }
-            } else {
-                var item = Registries.ITEM.get(Identifier.of(entryId));
+            for (var itemId: itemList) {
+                var item = Registries.ITEM.get(Identifier.of(itemId));
                 if (item == null) { continue; }
-                var entry = ItemEntry.builder(item)
+                var lootEntry = ItemEntry.builder(item)
                         .weight(weight);
+                var filtersMatch = entry.filters_lenient ? filters.isEmpty() : true;
+                for (var filter: filters) {
+                    if (entry.filters_lenient) {
+                        filtersMatch = filtersMatch || item.getRegistryEntry().isIn(filter);
+                    } else {
+                        filtersMatch = filtersMatch && item.getRegistryEntry().isIn(filter);
+                    }
+                }
+                if (!filtersMatch) { continue; }
 
                 if (enchant != null && enchant.isValid()) {
                     var enchantFunction = EnchantWithLevelsLootFunction.builder(registries, numberProvider(enchant.min_power, enchant.max_power));
-//                    if (enchant.allow_treasure) {
-//                        enchantFunction.allowTreasureEnchantments();
-//                    }
-                    entry.apply(enchantFunction);
+                    lootEntry.apply(enchantFunction);
                 }
                 if (spellBind != null && spellBind.isValid()) {
-                    // var function = SpellBindRandomlyLootFunction.builder(numberProvider(spellBind.tier_min, spellBind.tier_max));
                     var function = SpellBindRandomlyLootFunction.builder(
                             spellBind.pool,
                             numberProvider(spellBind.tier_min, spellBind.tier_max),
                             numberProvider(spellBind.count_min, spellBind.count_max));
-                    entry.apply(function);
+                    lootEntry.apply(function);
                 }
-                lootPoolBuilder.with(entry);
+                lootPoolBuilder.with(lootEntry);
             }
         }
         tableBuilder.pool(lootPoolBuilder.build());
@@ -183,5 +136,13 @@ public class LootHelper {
         } else {
             return UniformLootNumberProvider.create(min, max);
         }
+    }
+
+    private static List<TagKey<Item>> tagKeys(List<String> tags) {
+        return tags.stream().map(LootHelper::tagKey).toList();
+    }
+
+    private static TagKey<Item> tagKey(String tag) {
+        return TagKey.of(RegistryKeys.ITEM, Identifier.of(tag));
     }
 }
