@@ -1,11 +1,20 @@
 package net.spell_engine.utils;
 
+import com.github.exopandora.shouldersurfing.api.client.ShoulderSurfing;
+import com.github.exopandora.shouldersurfing.api.model.PickContext;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.loader.api.Version;
+import net.fabricmc.loader.api.VersionParsingException;
+import net.fabricmc.loader.api.metadata.version.VersionPredicate;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -13,9 +22,9 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.Spell;
-import net.spell_engine.internals.delivery.Beam;
-import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.casting.SpellCasterClient;
+import net.spell_engine.internals.delivery.Beam;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -25,8 +34,41 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class TargetHelper {
+    private static final boolean IS_SHOULDER_SURFING_INSTALLED;
+
+    static {
+        IS_SHOULDER_SURFING_INSTALLED = FabricLoader.getInstance().getModContainer("shouldersurfing")
+                .filter(__ -> FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT)
+                .map(modContainer -> {
+                    try {
+                        var installedVersion = Version.parse(modContainer.getMetadata().getVersion().getFriendlyString());
+                        var versionPredicate = VersionPredicate.parse(">=4.10.2");
+                        return versionPredicate.test(installedVersion);
+                    } catch (VersionParsingException e) {
+                        return false;
+                    }
+                })
+                .orElse(false);
+    }
 
     public static Vec3d locationFromRayCast(Entity caster, float range) {
+        if (IS_SHOULDER_SURFING_INSTALLED) {
+            var instance = ShoulderSurfing.getInstance();
+            if (instance.isShoulderSurfing()) {
+                var minecraft = MinecraftClient.getInstance();
+                var camera = minecraft.gameRenderer.getCamera();
+                var pickContext = new PickContext.Builder(camera)
+                        .withEntity(caster)
+                        .withFluidContext(RaycastContext.FluidHandling.NONE)
+                        .build();
+                var partialTick = minecraft.getRenderTickCounter().getTickDelta(true);
+                var hit = instance.getObjectPicker().pickBlocks(pickContext, range, partialTick);
+                if (hit.getType() == HitResult.Type.BLOCK) {
+                    return hit.getPos();
+                }
+                return pickContext.toClipContext(range, partialTick).getEnd();
+            }
+        }
         Vec3d start = caster.getEyePos();
         Vec3d look = caster.getRotationVec(1.0F)
                 .normalize()
@@ -40,15 +82,33 @@ public class TargetHelper {
     }
 
     public static Entity targetFromRaycast(Entity caster, float range, Predicate<Entity> predicate) {
+        Predicate<Entity> entityFilter = (target) -> !target.isSpectator() && target.canHit() && predicate.test(target);
+        if (IS_SHOULDER_SURFING_INSTALLED) {
+            var instance = ShoulderSurfing.getInstance();
+            if (instance.isShoulderSurfing()) {
+                var minecraft = MinecraftClient.getInstance();
+                var camera = minecraft.gameRenderer.getCamera();
+                var pickContext = new PickContext.Builder(camera)
+                        .withEntity(caster)
+                        .withEntityFilter(entityFilter)
+                        .withFluidContext(RaycastContext.FluidHandling.NONE)
+                        .build();
+                var partialTick = minecraft.getRenderTickCounter().getTickDelta(true);
+                var hit = instance.getObjectPicker().pick(pickContext, range, partialTick, minecraft.player);
+                if (hit.getType() == HitResult.Type.ENTITY) {
+                    return ((EntityHitResult) hit).getEntity();
+                }
+                return null;
+            }
+        }
         Vec3d start = caster.getEyePos();
         Vec3d look = caster.getRotationVec(1.0F)
                 .normalize()
                 .multiply(range);
         Vec3d end = start.add(look);
         Box searchAABB = caster.getBoundingBox().expand(range, range, range);
-        var hitResult = ProjectileUtil.raycast(caster, start, end, searchAABB, (target) -> {
-            return !target.isSpectator() && target.canHit() && predicate.test(target);
-        }, range*range); // `range*range` is provided for squared distance comparison
+        // `range*range` is provided for squared distance comparison
+        var hitResult = ProjectileUtil.raycast(caster, start, end, searchAABB, entityFilter, range*range);
         if (hitResult != null) {
             if (hitResult.getPos() == null || raycastObstacleFree(caster, start, hitResult.getPos())) {
                 return hitResult.getEntity();
@@ -58,15 +118,33 @@ public class TargetHelper {
     }
 
     public static List<Entity> targetsFromRaycast(Entity caster, float range, Predicate<Entity> predicate) {
-        Vec3d start = caster.getEyePos();
-        Vec3d look = caster.getRotationVec(1.0F)
-                .normalize()
-                .multiply(range);
-        Vec3d end = start.add(look);
-        Box searchAABB = caster.getBoundingBox().expand(range, range, range);
-        var entitiesHit = TargetHelper.raycastMultiple(caster, start, end, searchAABB, (target) -> {
-            return !target.isSpectator() && target.canHit() && predicate.test(target);
-        }, range*range); // `range*range` is provided for squared distance comparison
+        Predicate<Entity> entityFilter = (target) -> !target.isSpectator() && target.canHit() && predicate.test(target);
+        List<EntityHit> entitiesHit;
+        Vec3d start;
+        if (IS_SHOULDER_SURFING_INSTALLED && ShoulderSurfing.getInstance().isShoulderSurfing()) {
+            var minecraft = MinecraftClient.getInstance();
+            var camera = minecraft.gameRenderer.getCamera();
+            var pickContext = new PickContext.Builder(camera)
+                    .withEntity(caster)
+                    .withEntityFilter(entityFilter)
+                    .build();
+            var partialTick = minecraft.getRenderTickCounter().getTickDelta(true);
+            var entityTrace = pickContext.entityTrace(range, partialTick);
+            start = entityTrace.left();
+            var end = entityTrace.right();
+            var searchAABB = caster.getBoundingBox().expand(range, range, range);
+            // `range*range` is provided for squared distance comparison
+            entitiesHit = TargetHelper.raycastMultiple(caster, start, end, searchAABB, entityFilter, range*range);
+        } else {
+            start = caster.getEyePos();
+            Vec3d look = caster.getRotationVec(1.0F)
+                    .normalize()
+                    .multiply(range);
+            Vec3d end = start.add(look);
+            Box searchAABB = caster.getBoundingBox().expand(range, range, range);
+            // `range*range` is provided for squared distance comparison
+            entitiesHit = TargetHelper.raycastMultiple(caster, start, end, searchAABB, entityFilter, range*range);
+        }
         return entitiesHit.stream()
                 .filter((hit) -> hit.position() == null || raycastObstacleFree(caster, start, hit.position()))
                 .sorted(new Comparator<EntityHit>() {
@@ -84,7 +162,6 @@ public class TargetHelper {
 
     private record EntityHit(Entity entity, Vec3d position, double squaredDistanceToSource) { }
 
-    @Nullable
     private static List<EntityHit> raycastMultiple(Entity sourceEntity, Vec3d min, Vec3d max, Box searchBox, Predicate<Entity> predicate, double squaredDistance) {
         World world = sourceEntity.getWorld();
         double e = squaredDistance;
@@ -138,7 +215,12 @@ public class TargetHelper {
                 vertical + 0.5F,
                 horizontal + 0.5F);
         var squaredDistance = range * range;
-        var look = centerEntity.getRotationVector();
+        Vec3d look;
+        if (IS_SHOULDER_SURFING_INSTALLED && ShoulderSurfing.getInstance().isShoulderSurfing()) {
+            look = new Vec3d(MinecraftClient.getInstance().gameRenderer.getCamera().getHorizontalPlane());
+        } else {
+            look = centerEntity.getRotationVector();
+        }
         var angle = area.angle_degrees / 2F;
         return centerEntity.getWorld().getOtherEntities(centerEntity, box, (target) -> {
             var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
