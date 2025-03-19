@@ -11,6 +11,7 @@ import net.minecraft.world.World;
 import net.spell_engine.internals.SpellTriggers;
 import net.spell_engine.internals.arrow.ArrowExtension;
 import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.utils.WorldScheduler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -31,7 +32,10 @@ public class RangedWeaponItemMixin {
                     arrow.applyArrowPerks(activeSpellEntry);
                 }
             }
-            SpellTriggers.onArrowShot(arrow, player);
+            ((WorldScheduler)world).schedule(1, () -> {
+                SpellTriggers.onArrowShot(arrow, player);
+            });
+            // SpellTriggers.onArrowShot(arrow, player);
         }
         return projectile;
     }
