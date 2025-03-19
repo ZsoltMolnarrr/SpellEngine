@@ -9,14 +9,19 @@ Functional changes:
 - Loot injection now supports item tag filters
 
 API Changes:
-- Add particle batch color field (works only for specific particles)
 - Add some more generic sounds
-- Add delivery delay
+- Add spell delivery delay
 - Add spell trigger cap per tick
 - Add impact `attribute_from_target` field
-- Add spell area effect particle system
-- Add particle batch color, scale, and follow_entity fields (only supported by certain particles)
-- Add spell trigger condition `melee.is_combo`, `melee.is_offhand` (based on Better Combat combo)
+- - Add spell trigger condition `melee.is_combo`, `melee.is_offhand` (based on Better Combat combo)
+- Add some new template particles, supporting parameter fields from ParticleBatches
+  - color
+  - scale
+  - follow_entity
+  - max_age
+- Add template particles: spell sparkle variants
+- Add template particles: spell area effect variants
+- Add template particles: sign variants
 
 # 1.5.5
 
