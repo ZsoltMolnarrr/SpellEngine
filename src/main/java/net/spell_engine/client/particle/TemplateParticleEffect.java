@@ -11,6 +11,7 @@ public interface TemplateParticleEffect extends ParticleEffect {
         public float scale = 1;
         public Entity entityFollowed;
         public boolean grounded = false;
+        public float max_age = 1;
     }
 
     void setAppearance(Appearance appearance);

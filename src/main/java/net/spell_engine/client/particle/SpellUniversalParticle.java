@@ -118,20 +118,6 @@ public class SpellUniversalParticle extends SpriteBillboardParticle  {
             particle.red = 1F;
             particle.green = 1F;
             particle.blue = 1F;
-
-            TemplateParticleType.apply(particleType, particle);
-            var appearance = particleType.getAppearance();
-            if (appearance != null) {
-                var color = appearance.color;
-                if (color != null) {
-                    particle.alpha *= appearance.color.alpha();
-                }
-                particle.scale *= appearance.scale;
-                particle.followEntity = appearance.entityFollowed;
-            }
-
-            float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
-            particle.setColor(particle.red * j, particle.green * j, particle.blue * j);
             particle.scale *= 0.75f;
 
             switch (particleVariant.shape()) {
@@ -142,6 +128,21 @@ public class SpellUniversalParticle extends SpriteBillboardParticle  {
                     particle.alpha = 0.75F;
                 }
             }
+
+            TemplateParticleType.apply(particleType, particle);
+            var appearance = particleType.getAppearance();
+            if (appearance != null) {
+                var color = appearance.color;
+                if (color != null) {
+                    particle.alpha *= appearance.color.alpha();
+                }
+                particle.scale *= appearance.scale;
+                particle.maxAge = (int) (particle.maxAge * appearance.max_age);
+                particle.followEntity = appearance.entityFollowed;
+            }
+
+            float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
+            particle.setColor(particle.red * j, particle.green * j, particle.blue * j);
 
             return particle;
         }

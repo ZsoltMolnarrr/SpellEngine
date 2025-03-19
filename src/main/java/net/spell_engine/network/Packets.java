@@ -219,6 +219,7 @@ public class Packets {
             buffer.writeLong(batch.color_rgba);
             buffer.writeFloat(batch.scale);
             buffer.writeBoolean(batch.follow_entity);
+            buffer.writeFloat(batch.max_age);
         }
 
         private static ParticleBatch readBatch(RegistryByteBuf buffer) {
@@ -239,7 +240,8 @@ public class Packets {
 
                     buffer.readLong(),
                     buffer.readFloat(),
-                    buffer.readBoolean()
+                    buffer.readBoolean(),
+                    buffer.readFloat()
             );
         }
 

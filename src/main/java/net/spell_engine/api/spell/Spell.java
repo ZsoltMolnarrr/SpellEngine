@@ -201,6 +201,7 @@ public class Spell {
             public Cloud.ClientData client_data = new Cloud.ClientData();
             public static class ClientData {
                 public int light_level = 0;
+                public int particle_spawn_interval = 1;
                 public ParticleBatch[] particles = new ParticleBatch[]{};
                 public ProjectileModel model;
             }

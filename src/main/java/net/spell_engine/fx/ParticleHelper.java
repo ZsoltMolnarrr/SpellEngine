@@ -112,6 +112,7 @@ public class ParticleHelper {
             if (batch.origin == ParticleBatch.Origin.GROUND) {
                 appearance.grounded = true;
             }
+            appearance.max_age = batch.max_age;
             particle = copy;
         }
         return particle;

@@ -62,12 +62,14 @@ public class ParticleBatch { public ParticleBatch() { }
     public float scale = 1F;
     // Available for template particles
     public boolean follow_entity = false;
+    // Available for template particles
+    public float max_age = 1F;
 
     public ParticleBatch(
             String particle_id, Shape shape, Origin origin,
             Rotation rotation, float roll, float roll_offset,
             float count, float min_speed, float max_speed, float angle, float extent, float pre_spawn_travel, boolean invert,
-            long color_rgba, float scale, boolean follow_entity) {
+            long color_rgba, float scale, boolean follow_entity, float max_age) {
         this.particle_id = particle_id;
         this.shape = shape;
         this.origin = origin;
@@ -85,6 +87,7 @@ public class ParticleBatch { public ParticleBatch() { }
         this.color_rgba = color_rgba;
         this.scale = scale;
         this.follow_entity = follow_entity;
+        this.max_age = max_age;
     }
 
     // Compatibility constructors
@@ -103,7 +106,7 @@ public class ParticleBatch { public ParticleBatch() { }
             float count, float min_speed, float max_speed, float angle, float extent) {
         this(particle_id, shape, origin, rotation, 0, 0, count,
                 min_speed, max_speed, angle, extent, 0, false,
-                -1, 1, false);
+                -1, 1, false, 1F);
     }
 
     // Copy
@@ -124,7 +127,8 @@ public class ParticleBatch { public ParticleBatch() { }
             other.invert,
             other.color_rgba,
             other.scale,
-            other.follow_entity
+            other.follow_entity,
+            other.max_age
         );
     }
 
@@ -169,6 +173,11 @@ public class ParticleBatch { public ParticleBatch() { }
 
     public ParticleBatch followEntity(boolean follow_entity) {
         this.follow_entity = follow_entity;
+        return this;
+    }
+
+    public ParticleBatch maxAge(float max_age) {
+        this.max_age = max_age;
         return this;
     }
 }

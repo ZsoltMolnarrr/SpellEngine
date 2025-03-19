@@ -171,6 +171,7 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
                     particle.alpha *= appearance.color.alpha();
                 }
                 particle.scale *= appearance.scale;
+                particle.maxAge = (int) (particle.maxAge * appearance.max_age);
                 particle.followEntity = appearance.entityFollowed;
                 particle.grounded = appearance.grounded;
             }

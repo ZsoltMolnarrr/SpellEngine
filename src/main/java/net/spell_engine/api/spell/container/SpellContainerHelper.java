@@ -54,7 +54,11 @@ public class SpellContainerHelper {
     }
 
     public static SpellContainer createForShield(Identifier spellId) {
-        return new SpellContainer(SpellContainer.ContentType.MAGIC, false, "", "offhand", 0, List.of(spellId.toString()));
+        return createForShield(List.of(spellId));
+    }
+
+    public static SpellContainer createForShield(List<Identifier> spellIds) {
+        return new SpellContainer(SpellContainer.ContentType.MAGIC, false, "", "offhand", 0, spellIds.stream().map(Identifier::toString).toList());
     }
 
     public static SpellContainer createForRelic(Identifier spellId) {
