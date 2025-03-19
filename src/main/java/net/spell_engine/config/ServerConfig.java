@@ -35,6 +35,10 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     public int spell_binding_level_cost_multiplier = 1;
     @Comment("Spell binding lapis lazuli levelCost multiplier")
     public int spell_binding_lapis_cost_multiplier = 1;
+
+    public int spell_scroll_level_cost_per_tier = 0;
+    public int spell_scroll_apply_cost_base = 1;
+
     @Comment("Allow spell containers be cached for faster improved server performance. Might be buggy.")
     public boolean spell_container_caching = true;
     @Comment("Allow spells on the offhand item be collected and used.")

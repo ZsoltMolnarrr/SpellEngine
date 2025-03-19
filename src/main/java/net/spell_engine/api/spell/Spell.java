@@ -59,7 +59,9 @@ public class Spell {
 
     public Active active;
     public static class Active {
+        @Deprecated
         @Nullable public Scroll scroll;
+        @Deprecated
         public static class Scroll { public Scroll() {}
             /// Cost of experience levels to apply the scroll
             public int apply_cost_base = 0;

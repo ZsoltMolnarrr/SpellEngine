@@ -106,16 +106,15 @@ public class SpellBinding {
                 .map(entry -> {
                     var spell = entry.getValue();
                     if (finalScrollMode) {
-                        if (spell.active != null && spell.active.scroll != null) {
-                            var cost = spell.tier * spell.active.scroll.level_cost_per_tier + spell.active.scroll.apply_cost_base;
-                            var levelRequirement = spell.tier * spell.active.scroll.level_requirement_per_tier;
-                            return new Offer(
-                                    rawSpellId(world, entry.getKey()),
-                                    cost,
-                                    levelRequirement,
-                                    0,
-                                    true);
-                        }
+                        var cost = spell.tier * SpellEngineMod.config.spell_scroll_level_cost_per_tier
+                                + SpellEngineMod.config.spell_scroll_apply_cost_base;
+                        var levelRequirement = 1;
+                        return new Offer(
+                                rawSpellId(world, entry.getKey()),
+                                cost,
+                                levelRequirement,
+                                0,
+                                true);
                     } else {
                         if (spell.learn != null && spell.tier > 0) {
                             var cost = spell.tier * spell.learn.level_cost_per_tier;
