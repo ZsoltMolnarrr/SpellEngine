@@ -121,7 +121,10 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
             var newContainer = existingContainer != null ? existingContainer : SpellContainer.EMPTY
                     .withContentType(selectedContentType != null ? selectedContentType : SpellContainer.ContentType.MAGIC);
             var newSpellIds = selectedSpells.stream().map(entry -> entry.getKey().get().getValue().toString()).toList();
-            newContainer = newContainer.withAdditionalSpell(newSpellIds);
+            newContainer = newContainer
+                    .withAdditionalSpell(newSpellIds);
+            var sortedSpellIds = SpellContainerHelper.sortedSpells(context.getWorld(), newContainer.spell_ids());
+            newContainer = newContainer.copyWith(sortedSpellIds);
 
             stack.set(SpellDataComponents.SPELL_CONTAINER, newContainer);
 

@@ -56,6 +56,19 @@ Check out the various tags (for items, entities, spells) [here](src/main/java/ne
 
 - `/spell_cooldowns` command (added in Spell Engine 1.5.1). Use to reset specific or all spell cooldowns of given players.
 
+### Loot functions
+
+- `spell_engine:spell_bind_randomly` use to bind a random spell to an item.
+  - Parameters
+    - `pool` Spell tag (optional): tag of spells to choose from
+    - `tier` NumberProvider (optional): tier of spells to select from
+    - `count` NumberProvider (optional): number of spells to bind
+  - Examples use cases:
+    - Spell scrolls with a random spells
+    - Partially filled spell books
+    - Vanilla (or third party weapons) with spell assignments
+    - Equipment with additional spells
+
 ## 📦️ Game Content
 
 This mod is primarily a batch of tools (APIs) for developers, but it comes with few generic content, primarily to allow spell book creation and spell binding.

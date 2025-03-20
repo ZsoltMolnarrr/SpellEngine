@@ -92,11 +92,7 @@ public class SpellContainerHelper {
 
     // Misc helpers (Spell Binding)
 
-    public static SpellContainer addSpell(World world, Identifier spellId, SpellContainer container) {
-        var spellIds = new ArrayList<String>(container.spell_ids());
-        spellIds.add(spellId.toString());
-
-        // Creating a map just for the sake of sorting
+    public static List<String> sortedSpells(World world, List<String> spellIds) {
         HashMap<Identifier, Spell> spells = new HashMap<>();
         for (var idString : spellIds) {
             var id = Identifier.of(idString);
@@ -105,12 +101,16 @@ public class SpellContainerHelper {
                 spells.put(id, spellEntry.value());
             }
         }
-        var sortedSpellIds = spells.entrySet().stream()
+        return spells.entrySet().stream()
                 .sorted(SpellContainerHelper.spellSorter)
                 .map(entry -> entry.getKey().toString())
                 .collect(Collectors.toList());
+    }
 
-        return container.copyWith(sortedSpellIds);
+    public static SpellContainer addSpell(World world, Identifier spellId, SpellContainer container) {
+        var spellIds = new ArrayList<String>(container.spell_ids());
+        spellIds.add(spellId.toString());
+        return container.copyWith(sortedSpells(world, spellIds));
     }
 
     public static void addSpell(World world, Identifier spellId, ItemStack itemStack) {

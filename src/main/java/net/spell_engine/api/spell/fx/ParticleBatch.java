@@ -136,6 +136,11 @@ public class ParticleBatch { public ParticleBatch() { }
         return new ParticleBatch(this);
     }
 
+    public ParticleBatch rotate(Rotation rotation) {
+        this.rotation = rotation;
+        return this;
+    }
+
     public ParticleBatch invert() {
         this.invert = !this.invert;
         return this;
