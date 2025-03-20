@@ -13,7 +13,7 @@ API Changes:
 - Add spell delivery delay
 - Add spell trigger cap per tick
 - Add impact `attribute_from_target` field
-- - Add spell trigger condition `melee.is_combo`, `melee.is_offhand` (based on Better Combat combo)
+- Add spell trigger condition `melee.is_combo`, `melee.is_offhand` (based on Better Combat combo)
 - Add some new template particles, supporting parameter fields from ParticleBatches
   - color
   - scale
@@ -22,6 +22,7 @@ API Changes:
 - Add template particles: spell sparkle variants
 - Add template particles: spell area effect variants
 - Add template particles: sign variants
+- `spell.active.scroll` is now deprecated, marked for removal
 
 # 1.5.5
 

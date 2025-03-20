@@ -58,7 +58,8 @@ Check out the various tags (for items, entities, spells) [here](src/main/java/ne
 
 ### Loot functions
 
-- `spell_engine:spell_bind_randomly` use to bind a random spell to an item.
+- `spell_engine:spell_bind_randomly` (added in Spell Engine 1.6.0)
+  - Binds one or more random spells to an item.
   - Parameters
     - `pool` Spell tag (optional): tag of spells to choose from
     - `tier` NumberProvider (optional): tier of spells to select from
