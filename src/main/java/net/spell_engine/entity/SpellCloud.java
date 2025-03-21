@@ -181,10 +181,14 @@ public class SpellCloud extends Entity implements Ownable {
             var clientData = cloudData.client_data;
             var spawnParticles = clientData.particle_spawn_interval <= 1 || (this.age % clientData.particle_spawn_interval) == 0;
             if (spawnParticles) {
-                for (var particleBatch : clientData.particles) {
+                for (var particleBatch : clientData.interval_particles) {
                     ParticleHelper.play(world, this, particleBatch);
                 }
             }
+            for (var particleBatch : clientData.particles) {
+                ParticleHelper.play(world, this, particleBatch);
+            }
+
             var presence_sound = cloudData.presence_sound;
             if (!presenceSoundFired && presence_sound != null) {
                 var soundEvent = SoundEvent.of(Identifier.of(presence_sound.id()));

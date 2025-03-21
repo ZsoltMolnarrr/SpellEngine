@@ -259,6 +259,8 @@ public class SpellEngineParticles {
 
     // area effect #48 (for swirling)
     public static final TemplateEntry area_swirl = addAreaEffect(new TemplateEntry("area_swirl", Texture.of("area/swirl", 16)));
+    // area effect #480
+    public static final TemplateEntry area_effect_480 = addAreaEffect(new TemplateEntry("area_effect_480", Texture.of("area/effect_480", 12)));
     // area effect #658
     public static final TemplateEntry area_effect_658 = addAreaEffect(new TemplateEntry("area_effect_658", Texture.of("area/effect_658", 16)));
     // area effect #714
