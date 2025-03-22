@@ -262,6 +262,8 @@ public class SpellHelper {
             }
 
             if (shouldPerformImpact) {
+                // Channel tick or charge release
+
                 success = false;
                 var context = new ImpactContext(channelMultiplier,
                         1F,
@@ -318,6 +320,11 @@ public class SpellHelper {
                     default -> throw new IllegalStateException("Unexpected value: " + targeting.type);
                 }
                 caster.setChannelTickIndex(channelTickIndex + incrementChannelTicks);
+            } else {
+                if (finished && completion != null) {
+                    // Channel release
+                    completion.accept(new DeliveryCompletion(true));
+                }
             }
 //            if (finished && success) {
 //                ParticleHelper.sendBatches(player, spell.release.particles);

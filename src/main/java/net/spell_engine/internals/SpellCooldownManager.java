@@ -53,8 +53,7 @@ public class SpellCooldownManager {
     public void setDurationLeft(Identifier spell, int duration) {
         var existingEntry = this.entries.get(spell);
         if (existingEntry != null) {
-            var updatedEntry = new Entry(existingEntry.endTick - duration, existingEntry.endTick);
-            this.entries.put(spell, updatedEntry);
+            this.entries.put(spell, new Entry(this.tick, this.tick + duration));
         } else if (duration > 0) {
             this.entries.put(spell, new Entry(this.tick, this.tick + duration));
         }
