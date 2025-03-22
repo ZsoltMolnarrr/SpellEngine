@@ -122,7 +122,7 @@ public class PlayerEntityMixin implements SpellCasterEntity {
                 }
             }
         }
-        spellCooldownManager.update();
+        spellCooldownManager.tickUpdate();
     }
 
     public boolean isBeaming() {

@@ -42,15 +42,39 @@ public class SpellCooldownManager {
         return 0.0f;
     }
 
-    public void update() {
+    public int getCooldownDuration(Identifier spell) {
+        SpellCooldownManager.Entry entry = this.entries.get(spell);
+        if (entry != null) {
+            return entry.timeLeft(this.tick);
+        }
+        return 0;
+    }
+
+    public void setDurationLeft(Identifier spell, int duration) {
+        var existingEntry = this.entries.get(spell);
+        if (existingEntry != null) {
+            var updatedEntry = new Entry(existingEntry.endTick - duration, existingEntry.endTick);
+            this.entries.put(spell, updatedEntry);
+        } else if (duration > 0) {
+            this.entries.put(spell, new Entry(this.tick, this.tick + duration));
+        }
+    }
+
+    public void tickUpdate() {
         ++this.tick;
+        this.update(true);
+    }
+
+    public void update(boolean sync) {
         if (!this.entries.isEmpty()) {
             Iterator<Map.Entry<Identifier, Entry>> iterator = this.entries.entrySet().iterator();
             while (iterator.hasNext()) {
-                Map.Entry<Identifier, SpellCooldownManager.Entry> entry = iterator.next();
+                Map.Entry<Identifier, Entry> entry = iterator.next();
                 if (entry.getValue().endTick > this.tick) continue;
                 iterator.remove();
-                this.cooldownCleared(entry.getKey());
+                if (sync) {
+                    this.cooldownCleared(entry.getKey());
+                }
             }
         }
     }
@@ -60,7 +84,7 @@ public class SpellCooldownManager {
                 || !this.entries.containsKey(spell)
                 || (this.entries.get(spell).timeLeft(tick) < duration)
         ) {
-            this.entries.put(spell, new SpellCooldownManager.Entry(this.tick, this.tick + duration));
+            this.entries.put(spell, new Entry(this.tick, this.tick + duration));
             this.cooldownSet(spell, duration);
         }
     }

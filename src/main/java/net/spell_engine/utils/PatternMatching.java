@@ -5,6 +5,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -13,7 +14,10 @@ public class PatternMatching {
     public static final String TAG_PREFIX = "#";
     public static final String REGEX_PREFIX = "~";
 
-    public static <T> boolean matches(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, String pattern) {
+    public static <T> boolean matches(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
+        if (pattern == null) {
+            return true;
+        }
         if (pattern.startsWith(TAG_PREFIX)) {
             var tag = TagKey.of(registryKey, Identifier.of(pattern.substring(1)));
             return entry.isIn(tag);

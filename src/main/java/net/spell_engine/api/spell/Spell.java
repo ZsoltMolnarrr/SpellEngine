@@ -370,6 +370,7 @@ public class Spell {
                     /// ID of the spell
                     /// (Universal pattern matcher: `#` prefix checks tag, `~` prefix checks regex, no prefix checks exact match)
                     @Nullable public String id;
+                    public float duration_add = 0;
                     public float duration_multiplier = 1;
                 }
             }

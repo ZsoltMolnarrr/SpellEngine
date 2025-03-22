@@ -1109,13 +1109,23 @@ public class SpellHelper {
                 }
                 case COOLDOWN -> {
                     var cooldown = impact.action.cooldown;
+                    var modified = false;
                     if (cooldown != null && target instanceof PlayerEntity playerTarget) {
+                        var cooldownManager = ((SpellCasterEntity)playerTarget).getCooldownManager();
                         if (cooldown.actives != null) {
-                            var activeSpells = SpellContainerSource.activeContainerOf(playerTarget);
-
+                            var spells = SpellContainerSource.activeSpellsOf(playerTarget);
+                            modified = modified || modifyCooldowns(spells, cooldown.actives, cooldownManager);
+                        }
+                        if (cooldown.passives != null) {
+                            var spells = SpellContainerSource.passiveSpellsOf(playerTarget);
+                            modified = modified || modifyCooldowns(spells, cooldown.passives, cooldownManager);
+                        }
+                        if (modified) {
+                            cooldownManager.update(false);
+                            cooldownManager.pushSync();
                         }
                     }
-                    var modifcations = impact.action.cooldown;
+                    success = modified;
                 }
                 case CUSTOM -> {
                     if (impact.action.custom != null) {
@@ -1149,6 +1159,22 @@ public class SpellHelper {
             }
         }
         return success;
+    }
+
+    private static boolean modifyCooldowns(List<RegistryEntry<Spell>> spells, Spell.Impact.Action.Cooldown.Modify modifier, SpellCooldownManager cooldownManager) {
+        var modifiedAny = false;
+        for (var spell: spells) {
+            var id = spell.getKey().get().getValue();
+            if (PatternMatching.matches(spell, SpellRegistry.KEY, modifier.id)) {
+                var duration = cooldownManager.getCooldownDuration(id);
+                int updatedDuration = (int) ((duration + modifier.duration_add) * modifier.duration_multiplier);
+                if (updatedDuration != duration) {
+                    cooldownManager.setDurationLeft(id, updatedDuration);
+                    modifiedAny = true;
+                }
+            }
+        }
+        return modifiedAny;
     }
 
     public record TargetConditionResult(boolean allowed, List<Spell.Impact.Modifier> modifiers) {
@@ -1194,8 +1220,6 @@ public class SpellHelper {
         }
         return new TargetConditionResult(true, modifiers);
     }
-
-    // private static boolean modifyCooldowns(LivingEntity target, )
 
     public static void placeCloud(World world, LivingEntity caster, Entity target, RegistryEntry<Spell> spellEntry, ImpactContext context) {
         var spell = spellEntry.value();
@@ -1315,14 +1339,19 @@ public class SpellHelper {
             case COOLDOWN -> {
                 var cooldown = action.cooldown;
                 if (cooldown != null) {
+                    var duration_add = 0F;
                     var duration_multiplier = 1F;
                     if (cooldown.actives != null) {
+                        duration_add += cooldown.actives.duration_add;
                         duration_multiplier += cooldown.actives.duration_multiplier - 1;
                     }
                     if (cooldown.passives != null) {
+                        duration_add += cooldown.passives.duration_add;
                         duration_multiplier += cooldown.passives.duration_multiplier - 1;
                     }
-                    return duration_multiplier <= 1 ? SpellTarget.Intent.HELPFUL : SpellTarget.Intent.HARMFUL;
+                    var addHelpful = duration_add <= 0;
+                    var multiplierHelpful = duration_multiplier <= 1;
+                    return addHelpful && multiplierHelpful ? SpellTarget.Intent.HELPFUL : SpellTarget.Intent.HARMFUL;
                 }
                 return SpellTarget.Intent.HELPFUL;
             }

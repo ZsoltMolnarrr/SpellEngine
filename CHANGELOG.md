@@ -14,6 +14,7 @@ API Changes:
 - Add spell trigger cap per tick
 - Add impact `attribute_from_target` field
 - Add spell trigger condition `melee.is_combo`, `melee.is_offhand` (based on Better Combat combo)
+- Add spell cooldown impact
 - Add some new template particles, supporting parameter fields from ParticleBatches
   - color
   - scale
