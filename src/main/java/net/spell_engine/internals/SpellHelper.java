@@ -11,7 +11,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -1108,6 +1107,16 @@ public class SpellHelper {
                         }
                     }
                 }
+                case COOLDOWN -> {
+                    var cooldown = impact.action.cooldown;
+                    if (cooldown != null && target instanceof PlayerEntity playerTarget) {
+                        if (cooldown.actives != null) {
+                            var activeSpells = SpellContainerSource.activeContainerOf(playerTarget);
+
+                        }
+                    }
+                    var modifcations = impact.action.cooldown;
+                }
                 case CUSTOM -> {
                     if (impact.action.custom != null) {
                         var handler = SpellHandlers.customImpact.get(impact.action.custom.handler);
@@ -1186,22 +1195,7 @@ public class SpellHelper {
         return new TargetConditionResult(true, modifiers);
     }
 
-    public static boolean entityTypeMatches(String typeString, Entity target) {
-        if (typeString.startsWith("#")) {
-            var id = Identifier.of(typeString.substring(1));
-            var tag = TagKey.of(Registries.ENTITY_TYPE.getKey(), id);
-            if (tag != null) {
-                return target.getType().isIn(tag);
-            }
-        } else {
-            var id = Identifier.of(typeString);
-            var type = Registries.ENTITY_TYPE.getEntry(id);
-            if (type.isPresent()) {
-                return type.get().value().equals(target.getType());
-            }
-        }
-        return false;
-    }
+    // private static boolean modifyCooldowns(LivingEntity target, )
 
     public static void placeCloud(World world, LivingEntity caster, Entity target, RegistryEntry<Spell> spellEntry, ImpactContext context) {
         var spell = spellEntry.value();
@@ -1317,6 +1311,20 @@ public class SpellHelper {
             }
             case TELEPORT -> {
                 return action.teleport.intent;
+            }
+            case COOLDOWN -> {
+                var cooldown = action.cooldown;
+                if (cooldown != null) {
+                    var duration_multiplier = 1F;
+                    if (cooldown.actives != null) {
+                        duration_multiplier += cooldown.actives.duration_multiplier - 1;
+                    }
+                    if (cooldown.passives != null) {
+                        duration_multiplier += cooldown.passives.duration_multiplier - 1;
+                    }
+                    return duration_multiplier <= 1 ? SpellTarget.Intent.HELPFUL : SpellTarget.Intent.HARMFUL;
+                }
+                return SpellTarget.Intent.HELPFUL;
             }
             case CUSTOM -> {
                 return action.custom.intent;

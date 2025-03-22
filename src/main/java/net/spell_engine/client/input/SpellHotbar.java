@@ -48,7 +48,7 @@ public class SpellHotbar {
     public boolean update(ClientPlayerEntity player, GameOptions options) {
         var changed = false;
         var initialSlotCount = slots.size();
-        var mergedContainer = SpellContainerSource.activeSpellsOf(player);
+        var mergedContainer = SpellContainerSource.activeContainerOf(player);
                 //SpellContainerHelper.getAvailable(player);
 
         var slots = new ArrayList<Slot>();

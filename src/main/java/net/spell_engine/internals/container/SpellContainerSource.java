@@ -16,15 +16,18 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class SpellContainerSource {
-    public record Result(SpellContainer actives, List<RegistryEntry<Spell>> passives, List<SpellContainerSource.SourcedContainer> sources) {
-        public static final Result EMPTY = new Result(SpellContainer.EMPTY, List.of(), List.of());
+    public record Result(SpellContainer activeContainer, List<RegistryEntry<Spell>> actives, List<RegistryEntry<Spell>> passives, List<SpellContainerSource.SourcedContainer> sources) {
+        public static final Result EMPTY = new Result(SpellContainer.EMPTY, List.of(), List.of(), List.of());
     }
     public interface Owner {
         Map<String, List<SourcedContainer>> spellContainerCache();
         void setSpellContainers(Result result);
         Result getSpellContainers();
     }
-    public static SpellContainer activeSpellsOf(PlayerEntity player) {
+    public static SpellContainer activeContainerOf(PlayerEntity player) {
+        return ((Owner)player).getSpellContainers().activeContainer;
+    }
+    public static List<RegistryEntry<Spell>> activeSpellsOf(PlayerEntity player) {
         return ((Owner)player).getSpellContainers().actives;
     }
     public static List<RegistryEntry<Spell>> passiveSpellsOf(PlayerEntity player) {
@@ -148,23 +151,28 @@ public class SpellContainerSource {
             // System.out.println("Updating spell containers for " + player.getName());
             var heldItemStack = player.getMainHandStack();
             var heldContainer = SpellContainerHelper.containerFromItemStack(heldItemStack);
-            var actives = SpellContainer.EMPTY;
-            var passives = SpellContainer.EMPTY;
+            var activeContainer = SpellContainer.EMPTY;
+            List<RegistryEntry<Spell>> activeSpells = List.of();
+            List<RegistryEntry<Spell>> passiveSpells = List.of();
             if (heldContainer != null && heldContainer.is_proxy()) {
-                actives = mergedContainerSources(allContainers, heldContainer.is_proxy(), heldContainer.content(), Spell.Type.ACTIVE, player.getWorld());
+                var merged = mergedContainerSources(allContainers, heldContainer.is_proxy(), heldContainer.content(), Spell.Type.ACTIVE, player.getWorld());
+                activeContainer = merged.container();
+                activeSpells = merged.spells();
             }
-            passives = mergedContainerSources(allContainers, false, null, Spell.Type.PASSIVE, player.getWorld());
-            var passiveList = passives.spell_ids()
-                    .stream().map(id -> (RegistryEntry<Spell>) SpellRegistry.from(player.getWorld()).getEntry(Identifier.of(id)).orElse(null))
-                    .toList();
+            var merged = mergedContainerSources(allContainers, false, null, Spell.Type.PASSIVE, player.getWorld());
+            passiveSpells = merged.spells();
 
-            ((Owner) player).setSpellContainers(new Result(actives, passiveList, allContainers));
+            ((Owner) player).setSpellContainers(new Result(activeContainer, activeSpells, passiveSpells, allContainers));
         }
     }
 
-    public static SpellContainer mergedContainerSources(List<SourcedContainer> sources, boolean proxy, @Nullable SpellContainer.ContentType contentType, Spell.Type type, World world) {
+    public record MergeResult(SpellContainer container, List<RegistryEntry<Spell>> spells) {
+        public static final MergeResult EMPTY = new MergeResult(SpellContainer.EMPTY, List.of());
+    }
+
+    public static List<RegistryEntry<Spell>> mergedContainerSources(List<SourcedContainer> sources, @Nullable SpellContainer.ContentType contentType, Spell.Type type, World world) {
         if (sources.isEmpty()) {
-            return SpellContainer.EMPTY;
+            return List.of();
         }
         var spells = new ArrayList<RegistryEntry<Spell>>();
         var registry = SpellRegistry.from(world);
@@ -188,13 +196,8 @@ public class SpellContainerSource {
             }
         }
 
-        var spellIds = new LinkedHashSet<String>(); // We need the IDs only, but remove duplicates
-        for (var spell : spells) {
-            spellIds.add(spell.getKey().get().getValue().toString());
-        }
-
         // Remove spells with the same group, and lower tier
-        var toRemove = new HashSet<String>();
+        var toRemove = new HashSet<RegistryEntry<Spell>>();
         for (var spellEntry : spells) {
             var spell = spellEntry.value();
             var tag = spell.group;
@@ -206,22 +209,93 @@ public class SpellContainerSource {
                     if (tag.equals(other.value().group)) {
                         if (spellEntry.value().tier == other.value().tier) {
                             if (spellEntry.value().sub_tier > other.value().sub_tier) {
-                                toRemove.add(otherId.toString());
+                                toRemove.add(other);
                             }
                         }
                         if (spellEntry.value().tier > other.value().tier) {
-                            toRemove.add(otherId.toString());
+                            toRemove.add(other);
                         }
                     }
                 }
             }
         }
-        spellIds.removeAll(toRemove);
+        spells.removeAll(toRemove);
+
+        return spells;
+//
+//        var spellIds = new LinkedHashSet<String>(); // We need the IDs only, but remove duplicates
+//        for (var spell : spells) {
+//            spellIds.add(spell.getKey().get().getValue().toString());
+//        }
+//
+//        // System.out.println("Updated for " + type + ", Spell IDs: " + spellIds);
+//
+//        var finalContentType = contentType != null ? contentType : SpellContainer.ContentType.MAGIC;
+//        var container = new SpellContainer(finalContentType, proxy, null, 0, new ArrayList<>(spellIds));
+//        return new MergeResult(container, spells);
+    }
+
+    public static MergeResult mergedContainerSources(List<SourcedContainer> sources, boolean proxy, @Nullable SpellContainer.ContentType contentType, Spell.Type type, World world) {
+        if (sources.isEmpty()) {
+            return MergeResult.EMPTY;
+        }
+        var spells = new ArrayList<RegistryEntry<Spell>>();
+        var registry = SpellRegistry.from(world);
+        for (var source : sources) {
+            var container = source.container();
+            if (type == Spell.Type.ACTIVE && source.name.equals("off_hand")) {
+                if (!SpellEngineMod.config.spell_container_from_offhand_any) {
+                    if (!container.slotMatches(EquipmentSlot.OFFHAND.asString())) {
+                        continue;
+                    }
+                }
+            }
+            if (container.contentMatches(contentType)) {
+                for (var idString : container.spell_ids()) {
+                    var id = Identifier.of(idString);
+                    var spell = registry.getEntry(id).orElse(null);
+                    if (spell != null && spell.value().type == type) {
+                        spells.add(spell);
+                    }
+                }
+            }
+        }
+
+        // Remove spells with the same group, and lower tier
+        var toRemove = new HashSet<RegistryEntry<Spell>>();
+        for (var spellEntry : spells) {
+            var spell = spellEntry.value();
+            var tag = spell.group;
+            if (tag != null) {
+                for (var other : spells) {
+                    var spellId = spellEntry.getKey().get().getValue();
+                    var otherId = other.getKey().get().getValue();
+                    if (spellId.equals(otherId)) continue;
+                    if (tag.equals(other.value().group)) {
+                        if (spellEntry.value().tier == other.value().tier) {
+                            if (spellEntry.value().sub_tier > other.value().sub_tier) {
+                                toRemove.add(other);
+                            }
+                        }
+                        if (spellEntry.value().tier > other.value().tier) {
+                            toRemove.add(other);
+                        }
+                    }
+                }
+            }
+        }
+        spells.removeAll(toRemove);
+
+        var spellIds = new LinkedHashSet<String>(); // We need the IDs only, but remove duplicates
+        for (var spell : spells) {
+            spellIds.add(spell.getKey().get().getValue().toString());
+        }
 
         // System.out.println("Updated for " + type + ", Spell IDs: " + spellIds);
 
         var finalContentType = contentType != null ? contentType : SpellContainer.ContentType.MAGIC;
-        return new SpellContainer(finalContentType, proxy, null, 0, new ArrayList<>(spellIds));
+        var container = new SpellContainer(finalContentType, proxy, null, 0, new ArrayList<>(spellIds));
+        return new MergeResult(container, spells);
     }
 
     @Nullable public static SourcedContainer getFirstSourceOfSpell(Identifier spellId, PlayerEntity player) {

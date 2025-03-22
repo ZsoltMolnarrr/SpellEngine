@@ -285,7 +285,7 @@ public class Spell {
             public float min_power = 1;
             public float max_power = 999999;
             public enum Type {
-                DAMAGE, HEAL, STATUS_EFFECT, FIRE, SPAWN, TELEPORT, CUSTOM
+                DAMAGE, HEAL, STATUS_EFFECT, FIRE, SPAWN, TELEPORT, COOLDOWN, CUSTOM
             }
             public Damage damage;
             public static class Damage { public Damage() { }
@@ -358,6 +358,20 @@ public class Spell {
                 }
                 @Nullable public ParticleBatch[] depart_particles;
                 @Nullable public ParticleBatch[] arrive_particles;
+            }
+
+            public Cooldown cooldown;
+            public static class Cooldown { public Cooldown() { }
+                @Nullable public Modify actives;
+                @Nullable public Modify passives;
+                public static class Modify { public Modify() { }
+                    /// Spell school regex
+                    @Nullable public String school;
+                    /// ID of the spell
+                    /// (Universal pattern matcher: `#` prefix checks tag, `~` prefix checks regex, no prefix checks exact match)
+                    @Nullable public String id;
+                    public float duration_multiplier = 1;
+                }
             }
 
             public Custom custom;
