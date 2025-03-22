@@ -250,8 +250,9 @@ public class SpellEngineParticles {
     public static final TemplateEntry smoke_medium = addTemplate(new TemplateEntry("smoke_medium", Texture.of("smoke_medium", 9)));
     public static final TemplateEntry smoke_large = addTemplate(new TemplateEntry("smoke_large", Texture.vanilla("big_smoke", 12)));
 
-    public static final TemplateEntry sign_speed = addSignEffect(new TemplateEntry("sign_speed", Texture.of("sign_speed")));
-    public static final TemplateEntry sign_shield = addSignEffect(new TemplateEntry("sign_shield", Texture.of("sign_shield")));
+    public static final TemplateEntry sign_speed = addSignEffect(new TemplateEntry("sign_speed", Texture.of("sign/speed")));
+    public static final TemplateEntry sign_shield = addSignEffect(new TemplateEntry("sign_shield", Texture.of("sign/shield")));
+    public static final TemplateEntry sign_hourglass = addSignEffect(new TemplateEntry("sign_hourglass", Texture.of("sign/hourglass")));
 
     // Hand made
     public static final TemplateEntry ground_glow = addAreaEffect(new TemplateEntry("ground_glow", Texture.of("area/ground_glow")).fading(Fading.IN_OUT));
@@ -277,7 +278,7 @@ public class SpellEngineParticles {
     @Deprecated
     public static final Entry weakness_smoke = add(new Entry("weakness_smoke", Texture.of("smoke_medium", 9)));
     @Deprecated
-    public static final Entry sign_charge = add(new Entry("sign_charge", Texture.of("sign_speed")));
+    public static final Entry sign_charge = add(new Entry("sign_charge", Texture.of("sign/speed")));
 
     public static void register() {
         for(var entry: simples) {
