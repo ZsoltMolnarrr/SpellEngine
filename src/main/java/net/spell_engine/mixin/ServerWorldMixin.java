@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,10 +25,13 @@ public abstract class ServerWorldMixin implements WorldScheduler {
     }
 
     private Map<Long, List<Runnable>> scheduledTasks = new HashMap<>();
-
-    @Override
-    public Map<Long, List<Runnable>> getScheduledTasks() {
+    @Override public Map<Long, List<Runnable>> getScheduledTasks() {
         return scheduledTasks;
+    }
+
+    private ArrayList<Runnable> immediateTasks = new ArrayList<>();
+    @Override public ArrayList<Runnable> getImmediateTasks() {
+        return immediateTasks;
     }
 
     @Inject(method = "tick", at = @At("TAIL"))

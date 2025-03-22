@@ -152,7 +152,10 @@ public class Spell {
         public ShootProjectile projectile;
         public static class ShootProjectile {
             public boolean inherit_shooter_velocity = false;
-            public static class DirectionOffset { public float yaw = 0; public float pitch = 0; }
+            public static class DirectionOffset { public DirectionOffset() { }
+                public float yaw = 0; public float pitch = 0;
+                public DirectionOffset(float yaw, float pitch) { this.yaw = yaw; this.pitch = pitch; }
+            }
             public ShootProjectile.DirectionOffset[] direction_offsets;
             public boolean direction_offsets_require_target = false;
             /// Turns the projectile immediately towards the target

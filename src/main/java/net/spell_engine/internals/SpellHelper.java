@@ -345,7 +345,7 @@ public class SpellHelper {
             if (((SpellBatcher)player).hasBatchedCost(spellId)) {
                 return;
             }
-            ((WorldScheduler)player.getWorld()).schedule(1, () -> consumeSpellCost(player, progress, spellSource, spellId, spell, heldItemStack, ammoResult, true));
+            ((WorldScheduler)player.getWorld()).schedule(0, () -> consumeSpellCost(player, progress, spellSource, spellId, spell, heldItemStack, ammoResult, true));
             ((SpellBatcher)player).batchCost(spellId, true);
             return;
         }
@@ -813,7 +813,9 @@ public class SpellHelper {
         }
 
         if (anyPerformed && caster instanceof PlayerEntity player) {
-            SpellTriggers.onSpellImpactAny(player, target, aoeSource, spellEntry);
+            ((WorldScheduler)world).schedule(0, () -> {
+                SpellTriggers.onSpellImpactAny(player, target, aoeSource, spellEntry);
+            });
         }
 
         return anyPerformed;
@@ -1155,7 +1157,11 @@ public class SpellHelper {
                     SoundHelper.playSound(world, target, impact.sound);
                 }
                 if (caster instanceof PlayerEntity player) {
-                    SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical);
+                    var finalTarget = target;
+                    var finalCritical = critical;
+                    ((WorldScheduler)world).schedule(0, () -> {
+                        SpellTriggers.onSpellImpactSpecific(player, finalTarget, spellEntry, impact, finalCritical);
+                    });
                 }
             }
         } catch (Exception e) {

@@ -34,7 +34,7 @@ public class RangedWeaponItemMixin {
             }
 
             // Avoid arrow shot event listeners self triggering
-            ((WorldScheduler)world).schedule(1, () -> {
+            ((WorldScheduler)world).schedule(0, () -> {
                 SpellTriggers.onArrowShot(arrow, player);
             });
             // SpellTriggers.onArrowShot(arrow, player);

@@ -9,10 +9,15 @@ public interface WorldScheduler {
     long getSchedulerTime();
     // Additions
     Map<Long, List<Runnable>> getScheduledTasks();
+    ArrayList<Runnable> getImmediateTasks();
 
     default void schedule(int ticks, Runnable task) {
-        if (ticks <= 0) {
+        if (ticks < 0) {
             task.run();
+            return;
+        }
+        if (ticks == 0) {
+            getImmediateTasks().add(task);
             return;
         }
         long executionTime = getSchedulerTime() + ticks;
@@ -22,6 +27,14 @@ public interface WorldScheduler {
     }
 
     default void updateScheduledTasks() {
+        if (!getImmediateTasks().isEmpty()) {
+            var copyTasks = new ArrayList<>(getImmediateTasks());
+            getImmediateTasks().clear();
+            for (Runnable task : copyTasks) {
+                task.run();
+            }
+        }
+
         var taskQueue = getScheduledTasks();
         if (taskQueue.isEmpty()) {
             return;
