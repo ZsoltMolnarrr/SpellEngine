@@ -93,10 +93,16 @@ public class LootHelper {
             var spellBind = entry.spell_bind;
             if (entryId == null || entryId.isEmpty()) { continue; }
 
+            // Tag cache is used, because this event handler is called before the game loads the item tags
             var itemList = entryId.startsWith("#")
                             ? TAG_CACHE.value.cache.get(entryId.substring(1))
                             : List.of(entryId);
             List<TagKey<Item>> filters = entry.filters != null ? tagKeys(entry.filters) : List.of();
+
+            if (itemList == null) {
+                System.err.println("RPG Series loot config: failed to resolve itemList for: " + entryId);
+                continue;
+            }
 
             for (var itemId: itemList) {
                 var item = Registries.ITEM.get(Identifier.of(itemId));
