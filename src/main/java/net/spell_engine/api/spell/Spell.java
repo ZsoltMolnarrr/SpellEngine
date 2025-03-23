@@ -152,6 +152,8 @@ public class Spell {
         public ShootProjectile projectile;
         public static class ShootProjectile {
             public boolean inherit_shooter_velocity = false;
+            public boolean inherit_shooter_yaw = true;
+            public boolean inherit_shooter_pitch = true;
             public static class DirectionOffset { public DirectionOffset() { }
                 public float yaw = 0; public float pitch = 0;
                 public DirectionOffset(float yaw, float pitch) { this.yaw = yaw; this.pitch = pitch; }
@@ -586,6 +588,14 @@ public class Spell {
                 copy.chain_reaction_increment = this.chain_reaction_increment;
                 return copy;
             }
+        }
+
+        /// Custom bounding box of the projectile (applied when not null)
+        @Nullable public HitBox hitbox;
+        public static class HitBox { public HitBox() { }
+            public HitBox(float width, float height) { this.width = width; this.height = height; }
+            public float width = 0.5F;
+            public float height = 0.5F;
         }
 
         public Client client_data;

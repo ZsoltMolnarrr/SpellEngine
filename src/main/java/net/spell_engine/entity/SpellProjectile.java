@@ -1,9 +1,7 @@
 package net.spell_engine.entity;
 
 import com.google.gson.Gson;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.*;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -126,6 +124,19 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         this.prevPitch = this.getPitch();
     }
 
+    private boolean hasCustomDimensions = false;
+    public EntityDimensions getDimensions(EntityPose pose) {
+        var data = projectileData();
+        if (data != null && data.hitbox != null) {
+            this.hasCustomDimensions = true;
+            var width = data.hitbox.width;
+            var height = data.hitbox.height;
+            return EntityDimensions.changing(width, height);
+        } else {
+            return super.getDimensions(pose);
+        }
+    }
+
     public Entity getFollowedTarget() {
         Entity entityReference = null;
         if (getWorld().isClient) {
@@ -202,44 +213,13 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
             if (!getWorld().isClient) {
                 HitResult hitResult = ProjectileUtil.getCollision(this, this::canHit);
-                if (hitResult.getType() != HitResult.Type.MISS) {
-                    switch (behaviour) {
-                        case FLY -> {
-                            boolean shouldCollideWithEntity = true;
-                            if (hitResult.getType() == HitResult.Type.ENTITY) {
-                                var target = ((EntityHitResult) hitResult).getEntity();
-                                var spell = spellEntry.value();
-                                if (SpellEngineMod.config.projectiles_pass_thru_irrelevant_targets
-                                        && spell != null
-                                        && !spell.impacts.isEmpty()
-                                        && getOwner() instanceof LivingEntity owner) {
-                                    var intents = SpellHelper.impactIntents(spell);
-
-                                    boolean intentAllows = false;
-                                    for (var intent: intents) {
-                                        intentAllows = intentAllows || EntityRelations.actionAllowed(SpellTarget.FocusMode.DIRECT, intent, owner, target);
-                                    }
-                                    shouldCollideWithEntity = intentAllows;
-                                }
-                            }
-                            if (shouldCollideWithEntity) {
-                                this.onCollision(hitResult);
-                            } else {
-                                this.setFollowedTarget(null);
-                            }
-                        }
-                        case FALL -> {
-                            if (hitResult.getType() == HitResult.Type.ENTITY) {
-                                var target = ((EntityHitResult) hitResult).getEntity();
-                                var reverse = ((TwoWayCollisionChecker) target).getReverseCollisionChecker();
-                                if (reverse != null) {
-                                    var result = reverse.apply(this);
-                                    if (result == TwoWayCollisionChecker.CollisionResult.COLLIDE) {
-                                        this.finishFalling();
-                                    }
-                                }
-                            }
-                        }
+                handleHitResult(hitResult, behaviour, spellEntry);
+                if (hitResult.getType() == HitResult.Type.MISS && hasCustomDimensions) {
+                    var boundingBox = this.getBoundingBox();
+                    for (Entity areaTarget : this.getWorld().getOtherEntities(entity, this.getBoundingBox().expand(1), this::canHit)) {
+                        areaTarget.getBoundingBox().intersects(boundingBox);
+                        var areaHitResult = new EntityHitResult(areaTarget);
+                        handleHitResult(areaHitResult, behaviour, spellEntry);
                     }
                 }
             }
@@ -282,6 +262,50 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             }
         } else {
             this.discard();
+        }
+    }
+
+    private void handleHitResult(HitResult hitResult, Behaviour behaviour, RegistryEntry<Spell> spellEntry) {
+        if (hitResult.getType() != HitResult.Type.MISS) {
+            switch (behaviour) {
+                case FLY -> {
+                    boolean shouldCollideWithEntity = true;
+                    if (hitResult.getType() == HitResult.Type.ENTITY) {
+                        var target = ((EntityHitResult) hitResult).getEntity();
+                        var spell = spellEntry.value();
+                        if (SpellEngineMod.config.projectiles_pass_thru_irrelevant_targets
+                                && spell != null
+                                && !spell.impacts.isEmpty()
+                                && !impactHistory.contains(target.getId())
+                                && getOwner() instanceof LivingEntity owner) {
+                            var intents = SpellHelper.impactIntents(spell);
+
+                            boolean intentAllows = false;
+                            for (var intent: intents) {
+                                intentAllows = intentAllows || EntityRelations.actionAllowed(SpellTarget.FocusMode.DIRECT, intent, owner, target);
+                            }
+                            shouldCollideWithEntity = intentAllows;
+                        }
+                    }
+                    if (shouldCollideWithEntity) {
+                        this.onCollision(hitResult);
+                    } else {
+                        this.setFollowedTarget(null);
+                    }
+                }
+                case FALL -> {
+                    if (hitResult.getType() == HitResult.Type.ENTITY) {
+                        var target = ((EntityHitResult) hitResult).getEntity();
+                        var reverse = ((TwoWayCollisionChecker) target).getReverseCollisionChecker();
+                        if (reverse != null) {
+                            var result = reverse.apply(this);
+                            if (result == TwoWayCollisionChecker.CollisionResult.COLLIDE) {
+                                this.finishFalling();
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -611,6 +635,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         if (!getWorld().isClient) {
             this.getDataTracker().set(TRACKER_SPELL_ID, spellId().toString());
         }
+        this.calculateDimensions();
     }
     @Nullable public RegistryEntry<Spell> getSpellEntry() {
         return spellEntry;

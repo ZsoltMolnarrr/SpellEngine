@@ -547,8 +547,8 @@ public class SpellHelper {
         }
         var velocity = mutableLaunchProperties.velocity;
         var divergence = projectileData.divergence;
-        var directionPitch = caster.getPitch();
-        var directionYaw = caster.getYaw();
+        var directionPitch = data.inherit_shooter_pitch ? caster.getPitch() : 0;
+        var directionYaw = data.inherit_shooter_yaw ? caster.getYaw() : 0;
         if (data.direct_towards_target && target != null) {
             var directionVector = target.getPos().subtract(caster.getPos()).normalize();
             // Yaw and pitch from distance vector
