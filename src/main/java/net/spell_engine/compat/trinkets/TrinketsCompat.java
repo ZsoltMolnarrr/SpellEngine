@@ -1,6 +1,7 @@
 package net.spell_engine.compat.trinkets;
 
 import dev.emi.trinkets.api.TrinketsApi;
+import dev.emi.trinkets.api.event.TrinketEquipCallback;
 import net.fabricmc.fabric.api.util.TriState;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
@@ -42,11 +43,11 @@ public class TrinketsCompat {
                             TrinketsCompat::getAll // DirtyChecker is necessary because TrinketUnequipCallback.EVENT doesn't work at all
                     ),
                     SpellContainerSource.MAIN_HAND.name());
-//            TrinketEquipCallback.EVENT.register((stack, slot, entity) -> {
-//                if (entity instanceof PlayerEntity player) {
-//                    SpellContainerSource.setDirty(player, sourceName);
-//                }
-//            });
+            TrinketEquipCallback.EVENT.register((stack, slot, entity) -> {
+                if (entity instanceof PlayerEntity player) {
+                    SpellContainerSource.setDirty(player, spellSourceName);
+                }
+            });
 //            TrinketUnequipCallback.EVENT.register((stack, slot, entity) -> {
 //                if (entity instanceof PlayerEntity player) {
 //                    SpellContainerSource.setDirty(player, sourceName);
