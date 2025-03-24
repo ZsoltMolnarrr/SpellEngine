@@ -487,7 +487,8 @@ public class Spell {
             /// ID of the spell
             /// (Universal pattern matcher: `#` prefix checks tag, `~` prefix checks regex, no prefix checks exact match)
             @Nullable public String id;
-
+            /// The spell needs to have at least his long of a cooldown
+            public float cooldown_min = 0;
             // Maybe add predicate, that can be registered in java, and resolved by this id
             // public String spell_predicate
         }

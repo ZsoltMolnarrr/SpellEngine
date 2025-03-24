@@ -302,6 +302,11 @@ public class SpellTriggers {
                 && condition.archetype != spell.school.archetype) {
             return false;
         }
+        if (condition.cooldown_min > 0) {
+            if (spell.cost.cooldown == null || spell.cost.cooldown.duration < condition.cooldown_min) {
+                return false;
+            }
+        }
         return true;
     }
 
