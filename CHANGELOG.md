@@ -13,7 +13,8 @@ API Changes:
 - Add spell delivery delay
 - Add spell trigger cap per tick
 - Add impact `attribute_from_target` field
-- Add spell trigger condition `melee.is_combo`, `melee.is_offhand` (based on Better Combat combo)
+- Add spell trigger melee condition fields (`melee.is_combo`, `melee.is_offhand`) (based on Better Combat combo)
+- Add spell trigger spell condition fields
 - Add spell cooldown impact
 - Add SpellProjectile custom bounding box with volumetric collision detection
 - Add some new template particles, supporting parameter fields from ParticleBatches

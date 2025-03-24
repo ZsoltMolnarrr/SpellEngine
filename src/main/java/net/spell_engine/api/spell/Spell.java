@@ -484,6 +484,8 @@ public class Spell {
             @Nullable public String school;
             /// Exact archetype of the spell school
             @Nullable public SpellSchool.Archetype archetype;
+            /// Exact type of the spell
+            @Nullable public Spell.Type type;
             /// ID of the spell
             /// (Universal pattern matcher: `#` prefix checks tag, `~` prefix checks regex, no prefix checks exact match)
             @Nullable public String id;
