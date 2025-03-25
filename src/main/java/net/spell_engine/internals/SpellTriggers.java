@@ -30,6 +30,7 @@ public class SpellTriggers {
     public static class Event {
         /// Type of the trigger
         public final Spell.Trigger.Type type;
+        public Spell.Trigger.Stage stage = Spell.Trigger.Stage.POST;
         /// Player that triggers the event
         public final PlayerEntity player;
         /// Entity to be used as the source of the area of effect
@@ -129,11 +130,12 @@ public class SpellTriggers {
         fireTriggers(event);
     }
 
-    public static void onSpellImpactSpecific(PlayerEntity player, Entity target, RegistryEntry<Spell> spell, Spell.Impact impact, boolean critical) {
+    public static void onSpellImpactSpecific(PlayerEntity player, Entity target, RegistryEntry<Spell> spell, Spell.Impact impact, boolean critical, Spell.Trigger.Stage stage) {
         var event = new Event(Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC, player, target, target);
         event.spell = spell;
         event.impact = impact;
         event.criticalImpact = critical;
+        event.stage = stage;
         fireTriggers(event);
     }
 
@@ -204,6 +206,9 @@ public class SpellTriggers {
     private static final Random random = new Random();
     public static boolean evaluateTrigger(RegistryEntry<Spell> spellEntry, Spell.Trigger trigger, Event event) {
         if (trigger.type != event.type) {
+            return false;
+        }
+        if (trigger.stage != event.stage) {
             return false;
         }
         var spellId = spellEntry.getKey().get().getValue();

@@ -915,6 +915,12 @@ public class SpellHelper {
                     }
                     particleMultiplier = power.criticalDamage() + vulnerability.criticalDamageBonus();
 
+                    ///
+                    if (caster instanceof PlayerEntity player) {
+                        SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
+                    }
+                    ///
+
                     caster.onAttacking(target);
                     target.damage(SpellDamageSource.create(school, caster), (float) amount);
 
@@ -941,7 +947,11 @@ public class SpellHelper {
                         if (context.isChanneled()) {
                             amount *= SpellPower.getHaste(caster, school);
                         }
-
+                        ///
+                        if (caster instanceof PlayerEntity player) {
+                            SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
+                        }
+                        ///
                         livingTarget.heal((float) amount);
                         success = true;
                     }
@@ -1001,13 +1011,22 @@ public class SpellHelper {
                                     }
                                     amplifier = newAmplifier;
                                 }
-
+                                ///
+                                if (caster instanceof PlayerEntity player) {
+                                    SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
+                                }
+                                ///
                                 var instance = new StatusEffectInstance(effect, duration, amplifier, false, showParticles, true);
                                 livingTarget.addStatusEffect(instance, caster);
                                 success = true;
                             }
                             case REMOVE -> {
                                 if (livingTarget.hasStatusEffect(effect)) {
+                                    ///
+                                    if (caster instanceof PlayerEntity player) {
+                                        SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
+                                    }
+                                    ///
                                     var currentEffect = livingTarget.getStatusEffect(effect);
                                     var newAmplifier = (amplifier > 0) ? (currentEffect.getAmplifier() - amplifier) : -1;
                                     if (newAmplifier < 0) {
@@ -1025,6 +1044,11 @@ public class SpellHelper {
                     }
                 }
                 case FIRE -> {
+                    ///
+                    if (caster instanceof PlayerEntity player) {
+                        SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
+                    }
+                    ///
                     var data = impact.action.fire;
                     target.setOnFireFor(data.duration);
                     if (target.getFireTicks() > 0) {
@@ -1047,6 +1071,11 @@ public class SpellHelper {
                             var args = new SpellEntity.Spawned.Args(caster, spellEntry, data, context);
                             spellSpawnedEntity.onSpawnedBySpell(args);
                         }
+                        ///
+                        if (caster instanceof PlayerEntity player) {
+                            SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
+                        }
+                        ///
                         ((WorldScheduler)world).schedule(data.delay_ticks, () -> {
                             world.spawnEntity(entity);
                         });
@@ -1105,6 +1134,11 @@ public class SpellHelper {
                             if (applyRotation != null
                                     && teleportedEntity instanceof ServerPlayerEntity serverPlayer
                                     && world instanceof ServerWorld serverWorld) {
+                                ///
+                                if (caster instanceof PlayerEntity player) {
+                                    SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
+                                }
+                                ///
                                 serverPlayer.teleport(serverWorld, destination.x, destination.y, destination.z, applyRotation, serverPlayer.getPitch());
                                 // teleportedEntity.teleport(destination.x, destination.y, destination.z, new HashSet<>(), applyRotation, 0);
                             } else {
@@ -1120,6 +1154,11 @@ public class SpellHelper {
                     var cooldown = impact.action.cooldown;
                     var modified = false;
                     if (cooldown != null && target instanceof PlayerEntity playerTarget) {
+                        ///
+                        if (caster instanceof PlayerEntity player) {
+                            SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
+                        }
+                        ///
                         var cooldownManager = ((SpellCasterEntity)playerTarget).getCooldownManager();
                         if (cooldown.actives != null) {
                             var spells = SpellContainerSource.activeSpellsOf(playerTarget);
@@ -1140,6 +1179,11 @@ public class SpellHelper {
                     if (impact.action.custom != null) {
                         var handler = SpellHandlers.customImpact.get(impact.action.custom.handler);
                         if (handler != null) {
+                            ///
+                            if (caster instanceof PlayerEntity player) {
+                                SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
+                            }
+                            ///
                             var result = handler.onSpellImpact(spellEntry, power, caster, target, context);
                             particleMultiplier = power.criticalDamage();
                             success = result.success();
@@ -1160,7 +1204,7 @@ public class SpellHelper {
                     var finalTarget = target;
                     var finalCritical = critical;
                     ((WorldScheduler)world).schedule(0, () -> {
-                        SpellTriggers.onSpellImpactSpecific(player, finalTarget, spellEntry, impact, finalCritical);
+                        SpellTriggers.onSpellImpactSpecific(player, finalTarget, spellEntry, impact, finalCritical, Spell.Trigger.Stage.POST);
                     });
                 }
             }

@@ -462,6 +462,13 @@ public class Spell {
             ROLL  /// Only works when Combat Roll mod is installed
         }
         public Type type;
+        public enum Stage { PRE, POST }
+        /// Represents when the trigger happens
+        /// - PRE: Before the actual event
+        /// - POST: After the actual event
+        /// Only works for some trigger types
+        public Stage stage = Stage.POST;
+
         /// Limits the number of times this trigger can be executed per game tick
         /// (0 = unlimited)
         public int cap_per_tick = 0;

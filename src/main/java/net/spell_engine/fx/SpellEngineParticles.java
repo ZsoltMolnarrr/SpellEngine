@@ -151,7 +151,7 @@ public class SpellEngineParticles {
     public record MagicParticles(String name, Color color) {
         public enum Shape {
             SPELL(8), SPARK, STRIPE,
-            ARCANE, FROST, HOLY, HEAL;
+            ARCANE, FROST, HOLY, HEAL, SKULL;
 
             int frameCount = 1;
             Shape(int frameCount) { this.frameCount = frameCount; }
@@ -177,7 +177,7 @@ public class SpellEngineParticles {
             public static Texture texture(Shape shape) {
                 var folder = "magic/";
                 switch (shape) {
-                    case SPELL -> { return Texture.vanilla("spell", shape.frameCount); }
+                    case SPELL -> { return Texture.vanilla("spell", shape.frameCount, true); }
                     case SPARK -> { return Texture.vanilla("generic_0", shape.frameCount); }
                     case STRIPE -> { return Texture.of(folder + "vertical_stripe", shape.frameCount); }
                 }
