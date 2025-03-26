@@ -22,6 +22,7 @@ import net.minecraft.util.Lazy;
 import net.minecraft.util.Rarity;
 import net.spell_engine.api.config.AttributeModifier;
 import net.spell_engine.api.config.WeaponConfig;
+import net.spell_engine.api.item.Equipment;
 import net.spell_engine.api.item.Tiers;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellContainer;
@@ -46,12 +47,26 @@ public class Weapon {
         @Nullable private Item registeredItem;
         private final WeaponConfig defaults;
         private @Nullable String requiredMod;
-        private int tier = 0;
         public Rarity rarity = Rarity.COMMON;
         private String translatedName = ""; // Used for data gen
+
         public String weaponAttributesPreset = ""; // Used for data gen
         public List<Identifier> spells = null;
 
+        // Loot related classification
+        public Equipment.WeaponType category = Equipment.WeaponType.SWORD;
+        public Equipment.LootProperties lootProperties = Equipment.LootProperties.EMPTY;
+
+        public Entry(String namespace, String name, CustomMaterial material, Factory factory, WeaponConfig defaults, Equipment.WeaponType category) {
+            this.namespace = namespace;
+            this.name = name;
+            this.material = material;
+            this.factory = factory;
+            this.defaults = defaults;
+            this.category = category;
+        }
+
+        @Deprecated
         public Entry(String namespace, String name, CustomMaterial material, Factory factory, WeaponConfig defaults, @Nullable String requiredMod) {
             this.namespace = namespace;
             this.name = name;
@@ -104,13 +119,13 @@ public class Weapon {
             return defaults;
         }
 
+        @Deprecated
         public Entry tier(int tier) {
-            this.tier = tier;
             return this;
         }
-
+        @Deprecated
         public int tier() {
-            return tier;
+            return 0;
         }
 
         public Entry castSpell() {
@@ -130,6 +145,19 @@ public class Weapon {
 
         public String translatedName() {
             return translatedName;
+        }
+
+        public Equipment.WeaponType category() {
+            return category;
+        }
+
+        public Entry loot(Equipment.LootProperties properties) {
+            lootProperties = properties;
+            return this;
+        }
+
+        public Equipment.LootProperties lootProperties() {
+            return lootProperties;
         }
     }
 

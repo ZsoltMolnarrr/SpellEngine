@@ -9,6 +9,7 @@ Functional changes:
 - Loot injection now supports item tag filters
 
 API Changes:
+- BREAKING! Changed path for loot tier tags
 - Add some more generic sounds
 - Add spell delivery delay
 - Add spell trigger cap per tick

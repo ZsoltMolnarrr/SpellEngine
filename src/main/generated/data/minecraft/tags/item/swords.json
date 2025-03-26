@@ -1,0 +1,13 @@
+{
+  "values": [
+    "#rpg_series:weapon_type/sword",
+    "#rpg_series:weapon_type/claymore",
+    "#rpg_series:weapon_type/mace",
+    "#rpg_series:weapon_type/hammer",
+    "#rpg_series:weapon_type/spear",
+    "#rpg_series:weapon_type/dagger",
+    "#rpg_series:weapon_type/sickle",
+    "#rpg_series:weapon_type/double_axe",
+    "#rpg_series:weapon_type/glaive"
+  ]
+}

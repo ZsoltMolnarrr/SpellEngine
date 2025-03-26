@@ -1,6 +1,7 @@
 package net.spell_engine.rpg_series.config;
 
 import net.spell_engine.rpg_series.loot.LootConfig;
+import net.spell_engine.rpg_series.tags.RPGSeriesItemTags;
 
 import java.util.*;
 
@@ -10,44 +11,47 @@ public class Defaults {
     public final static LootConfig scrollLootConfig;
 
     private static String armors(int tier) {
-        return "#rpg_series:tier_" + tier + "_armors";
+        return "#" + RPGSeriesItemTags.LootTiers.id(tier, RPGSeriesItemTags.LootCategory.ARMORS).toString();
     }
     
     private static String weapons(int tier) {
-        return "#rpg_series:tier_" + tier + "_weapons";
-    }
-
-    private static String equipment(int tier) {
-        return "#rpg_series:tier_" + tier + "_equipment";
+        return "#" + RPGSeriesItemTags.LootTiers.id(tier, RPGSeriesItemTags.LootCategory.WEAPONS).toString();
     }
 
     private static String relics(int tier) {
-        return "#rpg_series:tier_" + tier + "_relics";
+        return "#" + RPGSeriesItemTags.LootTiers.id(tier, RPGSeriesItemTags.LootCategory.RELICS).toString();
+    }
+
+    private static String accessories(int tier) {
+        return "#" + RPGSeriesItemTags.LootTiers.id(tier, RPGSeriesItemTags.LootCategory.ACCESSORIES).toString();
     }
 
     static {
-        var WG = "#rpg_series:golden_weapons";
-        var W0 = "#rpg_series:tier_0_weapons";
-        var W1 = "#rpg_series:tier_1_weapons";
-        var W2 = "#rpg_series:tier_2_weapons";
-        var W3 = "#rpg_series:tier_3_weapons";
-        var W4 = "#rpg_series:tier_4_weapons";
-        var W4_AE = "#rpg_series:tier_4_aether_weapons";
-        var W5 = "#rpg_series:tier_5_weapons";
-        var A1 = "#rpg_series:tier_1_armors";
-        var A2 = "#rpg_series:tier_2_armors";
-        var A3 = "#rpg_series:tier_3_armors";
-        var X0 = "#rpg_series:tier_0_accessories";
-        var X1 = "#rpg_series:tier_1_accessories";
-        var X2 = "#rpg_series:tier_2_accessories";
-        var X3 = "#rpg_series:tier_3_accessories";
-        var X4 = "#rpg_series:tier_4_accessories";
+        var GOLDEN = RPGSeriesItemTags.LootThemes.id(RPGSeriesItemTags.LootTheme.GOLDEN_WEAPON).toString();
+        var AETHER = RPGSeriesItemTags.LootThemes.id(RPGSeriesItemTags.LootTheme.AETHER).toString();
+        var DRAGON = RPGSeriesItemTags.LootThemes.id(RPGSeriesItemTags.LootTheme.DRAGON).toString();
+
+        var W0 = weapons(0);
+        var W1 = weapons(1);
+        var W2 = weapons(2);
+        var W3 = weapons(3);
+        var W4 = weapons(4);
+        var W5 = weapons(5);
+
+        var A1 = armors(1);
+        var A2 = armors(2);
+        var A3 = armors(3);
+
+        var X0 = accessories(0);
+        var X1 = accessories(1);
+        var X2 = accessories(2);
+        var X3 = accessories(3);
+        var X4 = accessories(4);
+
         var R1 = relics(1);
         var R2 = relics(2);
         var R3 = relics(3);
         var R4 = relics(4);
-
-        var DRAGON = "#rpg_series:theme_loot_dragon";
 
         itemLootConfig = new LootConfig();
         var items = itemLootConfig.injectors;
@@ -61,8 +65,8 @@ public class Defaults {
 
         items.put("minecraft:chests/ruined_portal", new LootConfig.Pool()
                 .rolls(2)
-                .add(WG)
-                .add(WG, true)
+                .add(GOLDEN)
+                .add(GOLDEN).enchant()
         );
 
         List.of("minecraft:chests/abandoned_mineshaft",
@@ -175,6 +179,7 @@ public class Defaults {
                         .add(A3, true)
                         .add(X4)
                         .add(R4)
+                        .add(W5)
                 ));
 
         List.of("minecraft:chests/trial_chambers/corridor",
@@ -244,10 +249,10 @@ public class Defaults {
 
         items.put("minecraft:entities/ender_dragon", new LootConfig.Pool()
                 .rolls(3)
-                .add(W3, true)
-                .add(A3, true)
+                .add(W5)
+                .add(W3).enchant()
                 .add(X4)
-                .add(DRAGON)
+                .add(R3).filter(DRAGON)
         );
 
         items.put("minecraft:entities/wither", new LootConfig.Pool()
@@ -256,6 +261,7 @@ public class Defaults {
                 .add(A3, true)
                 .add(X3)
                 .add(R2)
+                .add(W5)
         );
 
         items.put("minecraft:entities/warden", new LootConfig.Pool()
@@ -264,6 +270,7 @@ public class Defaults {
                 .add(A2, true)
                 .add(X2)
                 .add(R2)
+                .add(W5)
         );
 
         // MineCells bosses
@@ -308,6 +315,7 @@ public class Defaults {
                 .add(A2, true)
                 .add(W3, true)
                 .add(A3, true)
+                .add(W5)
                 .add(X3)
                 .add(R3)
         );
@@ -316,6 +324,7 @@ public class Defaults {
                 .rolls(2)
                 .add(W4, true)
                 .add(A3, true)
+                .add(W5)
                 .add(X4)
                 .add(R4)
         );
@@ -324,18 +333,18 @@ public class Defaults {
 
 //        items.put("aether:chests/dungeon/bronze/bronze_dungeon_reward", new LootConfig.Pool()
 //                .rolls(0.1)
-//                .add(W4_AE)
+//                .add(AETHER)
 //        );
 
         items.put("aether:chests/dungeon/silver/silver_dungeon_reward", new LootConfig.Pool()
                 .rolls(0.5)
-                .add(W4_AE).weight(2)
+                .add(AETHER).weight(2)
                 .add(R2)
         );
 
         items.put("aether:chests/dungeon/gold/gold_dungeon_reward", new LootConfig.Pool()
                 .rolls(1)
-                .add(W4_AE, true).weight(2)
+                .add(AETHER, true).weight(2)
                 .add(R3)
         );
 
@@ -343,7 +352,7 @@ public class Defaults {
 
         items.put("aether_villages:chests/olympic_citadel/olympic_citadel_treasure", new LootConfig.Pool()
                 .rolls(0.5)
-                .add(W4_AE)
+                .add(AETHER)
         );
 
         // Dungeons and Taverns
@@ -696,7 +705,7 @@ public class Defaults {
 
         items.put("betterdungeons:small_nether_dungeon/chests/common", new LootConfig.Pool()
                 .rolls(0.5)
-                .add(WG)
+                .add(GOLDEN)
                 .add(W1, true)
                 .add(A1, true)
                 .add(X1)
@@ -713,11 +722,11 @@ public class Defaults {
                 .scroll(1, 2)
         );
         items.put("betterdeserttemples:chests/pharaoh_hidden", new LootConfig.Pool()
-                .add(WG, true).weight(2)
+                .add(GOLDEN, true).weight(2)
                 .add(X2)
         );
         items.put("betterdeserttemples:chests/tomb_pharaoh", new LootConfig.Pool()
-                .add(WG, false)
+                .add(GOLDEN, false)
                 .add(W1, true).weight(2)
                 .add(X2)
         );
@@ -731,7 +740,7 @@ public class Defaults {
         items.put("betterfortresses:chests/keep", new LootConfig.Pool()
                 .rolls(0.25)
                 .add(W0)
-                .add(WG)
+                .add(GOLDEN)
                 .add(X1)
         );
 
@@ -927,7 +936,7 @@ public class Defaults {
 
         items.put("kaisyn:village/exclusives/village_piglin_house", new LootConfig.Pool()
                 .rolls(0.5)
-                .add(WG)
+                .add(GOLDEN)
                 .add(W1, true)
                 .add(X1)
         );
@@ -944,7 +953,7 @@ public class Defaults {
 
         items.put("kaisyn:village/exclusives/village_piglin_barrel", new LootConfig.Pool()
                 .rolls(0.2)
-                .add(WG)
+                .add(GOLDEN)
         );
 
         // Terralith mod
@@ -965,13 +974,13 @@ public class Defaults {
         );
 
         items.put("terralith:spire/common", new LootConfig.Pool()
-                .add(WG)
+                .add(GOLDEN)
                 .add(W1, true)
                 .add(X1)
         );
 
         items.put("terralith:underground/chest", new LootConfig.Pool()
-                .add(WG)
+                .add(GOLDEN)
         );
 
         items.put("terralith:spire/junk", new LootConfig.Pool()
@@ -1190,7 +1199,7 @@ public class Defaults {
                 .add(X1)
         );
         items.put("dungeons_arise:chests/heavenly_challenger/heavenly_challenger_treasure", new LootConfig.Pool()
-                .add(WG)
+                .add(GOLDEN)
                 .add(W2, true)
                 .add(W3)
                 .add(A2, true)
@@ -1199,7 +1208,7 @@ public class Defaults {
                 .add(X3)
         );
         items.put("dungeons_arise:chests/heavenly_rider/heavenly_rider_treasure", new LootConfig.Pool()
-                .add(WG)
+                .add(GOLDEN)
                 .add(A2, true)
                 .add(X2)
         );

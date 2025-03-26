@@ -8,6 +8,10 @@ import net.spell_engine.SpellEngineMod;
 
 public class SpellEngineItemTags {
     /**
+     * Items eligible for Spell Infinity enchantment.
+     */
+    public static final TagKey<Item> ENCHANTABLE_SPELL_INFINITY = TagKey.of(Registries.ITEM.getKey(), Identifier.of(SpellEngineMod.ID, "enchantable/spell_infinity"));
+    /**
      * Items those are considered spell books.
      * Allows equipping in the spell book slot.
      */

@@ -15,6 +15,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.config.ArmorSetConfig;
+import net.spell_engine.api.item.Equipment;
 import net.spell_engine.api.item.Tiers;
 import net.spell_engine.mixin.item.ArmorMaterialLayerAccessor;
 
@@ -74,6 +75,9 @@ public class Armor {
         public List<String> idStrings() {
             return pieces().stream().map(piece -> idOf(piece).toString()).toList();
         }
+        public List<Identifier> pieceIds() {
+            return pieces().stream().map(this::idOf).toList();
+        }
 
         public void register(RegistryKey<ItemGroup> itemGroupKey) {
             for (var piece: pieces()) {
@@ -91,8 +95,11 @@ public class Armor {
         }
     }
 
-    public record Entry(RegistryEntry<ArmorMaterial> material, Armor.Set armorSet, ArmorSetConfig defaults) {
+    public record Entry(RegistryEntry<ArmorMaterial> material, Armor.Set armorSet, ArmorSetConfig defaults, Equipment.LootProperties lootProperties) {
         public static Entry create(RegistryEntry<ArmorMaterial> material, Identifier id, int durability, Set.ItemFactory factory, ArmorSetConfig defaults) {
+            return create(material, id, durability, factory, defaults, Equipment.LootProperties.EMPTY);
+        }
+        public static Entry create(RegistryEntry<ArmorMaterial> material, Identifier id, int durability, Set.ItemFactory factory, ArmorSetConfig defaults, Equipment.LootProperties lootProperties) {
 
             var helmetSettings = new Item.Settings()
                     .maxDamage(ArmorItem.Type.HELMET.getMaxDamage(durability));
@@ -103,7 +110,7 @@ public class Armor {
             var bootsSettings = new Item.Settings()
                     .maxDamage(ArmorItem.Type.BOOTS.getMaxDamage(durability));
 
-            var tier = Tiers.unsafe(id);
+            var tier = lootProperties.tier();
             if (tier >= 3) {
                 helmetSettings.fireproof();
                 chestplateSettings.fireproof();
@@ -117,7 +124,7 @@ public class Armor {
                     factory.create(material, ArmorItem.Type.LEGGINGS, leggingsSettings),
                     factory.create(material, ArmorItem.Type.BOOTS, bootsSettings)
             );
-            return new Entry(material, set, defaults);
+            return new Entry(material, set, defaults, lootProperties);
         }
 
         public String name() {
@@ -126,7 +133,7 @@ public class Armor {
 
         public <T extends ArmorItem> Entry bundle(Function<RegistryEntry<ArmorMaterial>, Armor.Set<T>> factory) {
             var armorSet = factory.apply(material);
-            return new Entry(material, armorSet, defaults);
+            return new Entry(material, armorSet, defaults, lootProperties);
         }
 
         public <T extends ArmorItem> Entry put(ArrayList<Entry> list) {

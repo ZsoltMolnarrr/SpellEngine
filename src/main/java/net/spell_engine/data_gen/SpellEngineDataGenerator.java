@@ -9,6 +9,7 @@ import net.spell_engine.api.datagen.SimpleParticleGenerator;
 import net.spell_engine.api.datagen.SimpleSoundGeneratorV2;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.fx.SpellEngineSounds;
+import net.spell_engine.rpg_series.datagen.RPGSeriesDataGen;
 
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
@@ -19,6 +20,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
         pack.addProvider(ParticlesGen::new);
         pack.addProvider(SoundGen::new);
+        pack.addProvider(RPGSeriesDataGen.BaselineTagGenerator::new);
     }
 
     public static class ParticlesGen extends SimpleParticleGenerator {
