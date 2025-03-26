@@ -2,6 +2,7 @@ package net.spell_engine.rpg_series.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
@@ -149,6 +150,17 @@ public class RPGSeriesDataGen {
 
         public void generateArmorTags(List<Armor.Entry> armors) {
             for (var armor: armors) {
+
+                var set = armor.armorSet();
+                var headTag = getOrCreateTagBuilder(ItemTags.HEAD_ARMOR);
+                headTag.add(set.head);
+                var chestTag = getOrCreateTagBuilder(ItemTags.CHEST_ARMOR);
+                chestTag.add(set.chest);
+                var legsTag = getOrCreateTagBuilder(ItemTags.LEG_ARMOR);
+                legsTag.add(set.legs);
+                var feetTag = getOrCreateTagBuilder(ItemTags.FOOT_ARMOR);
+                feetTag.add(set.feet);
+
                 var tier = armor.lootProperties().tier();
                 if (tier >= 0) {
                     var tierTag = getOrCreateTagBuilder(RPGSeriesItemTags.LootTiers.get(tier, RPGSeriesItemTags.LootCategory.ARMORS));
