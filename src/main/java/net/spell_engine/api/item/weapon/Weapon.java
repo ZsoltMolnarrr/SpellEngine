@@ -66,16 +66,6 @@ public class Weapon {
             this.category = category;
         }
 
-        @Deprecated
-        public Entry(String namespace, String name, CustomMaterial material, Factory factory, WeaponConfig defaults, @Nullable String requiredMod) {
-            this.namespace = namespace;
-            this.name = name;
-            this.material = material;
-            this.factory = factory;
-            this.defaults = defaults;
-            this.requiredMod = requiredMod;
-        }
-
         public Identifier id() {
             return Identifier.of(namespace, name);
         }
