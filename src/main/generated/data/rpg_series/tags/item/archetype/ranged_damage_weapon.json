@@ -1,3 +1,8 @@
 {
-  "values": []
+  "values": [
+    "#rpg_series:weapon_type/short_bow",
+    "#rpg_series:weapon_type/long_bow",
+    "#rpg_series:weapon_type/rapid_crossbow",
+    "#rpg_series:weapon_type/heavy_crossbow"
+  ]
 }

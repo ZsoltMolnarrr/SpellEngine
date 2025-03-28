@@ -33,8 +33,13 @@ public class RPGSeriesDataGen {
             for (var entry: RPGSeriesItemTags.WeaponType.ALL.entrySet()) {
                 var tag = getOrCreateTagBuilder(entry.getValue());
             }
-            for (var entry: RPGSeriesItemTags.Archetype.WEAPONS.entrySet()) {
-                var tag = getOrCreateTagBuilder(entry.getValue());
+            for (var archetype: RPGSeriesItemTags.RoleArchetype.values()) {
+                var tag = getOrCreateTagBuilder(RPGSeriesItemTags.Archetype.tag(archetype));
+                for (var entry: RPGSeriesItemTags.WeaponType.ALL.entrySet()) {
+                    if (RPGSeriesItemTags.Archetype.classify(entry.getKey()) == archetype) {
+                        tag.addTag(entry.getValue());
+                    }
+                }
             }
             for (var entry: RPGSeriesItemTags.LootThemes.ALL.entrySet()) {
                 var tag = getOrCreateTagBuilder(entry.getValue());
