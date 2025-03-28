@@ -1344,14 +1344,14 @@ public class Defaults {
         var arsenal_spell_spells = "#arsenal:spell";
 
         return pool.add(lootTag).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.MELEE_DAMAGE))
-                .bind(arsenal_melee_spells, 0 ,max)
+                .bind(arsenal_melee_spells, 0, max)
                 .add(lootTag).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.RANGED_DAMAGE))
-                .bind(arsenal_ranged_spells, 0 ,max)
+                .bind(arsenal_ranged_spells, 0, max)
                 .add(lootTag).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.MAGIC_DAMAGE))
-                .bind(arsenal_spell_spells, 0 ,max)
+                .bind(arsenal_spell_spells, 0, max)
                 .add(lootTag).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.DEFENSE))
-                .bind(arsenal_shield_spells, 0 ,max)
+                .bind(arsenal_shield_spells, 0, max)
                 .add(lootTag).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.HEALING))
-                .bind(arsenal_heal_spells, 0 ,max);
+                .bind(arsenal_heal_spells, 0, max);
     }
 }
