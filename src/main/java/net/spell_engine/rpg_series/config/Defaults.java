@@ -347,6 +347,45 @@ public class Defaults {
                 .add(W5)
         );
 
+        // RPG Mini bosses
+
+        items.put("rpg-minibosses:entities/archmage_fire",
+                new LootConfig.Pool().rolls(1)
+                        .add(W2).enchant()
+                        .add(A2).enchant()
+                        .add(X2)
+                        .add(R2));
+        items.put("rpg-minibosses:entities/juggernaut",
+                new LootConfig.Pool().rolls(1)
+                        .add(W2).enchant()
+                        .add(A2).enchant()
+                        .add(X2)
+                        .add(R2));
+        items.put("rpg-minibosses:entities/magus",
+                new LootConfig.Pool().rolls(3)
+                        .add(W2).enchant()
+                        .add(A2).enchant()
+                        .add(X2)
+                        .add(R2));
+        items.put("rpg-minibosses:entities/mercenary",
+                new LootConfig.Pool().rolls(1)
+                        .add(W2).enchant()
+                        .add(A2).enchant()
+                        .add(X2)
+                        .add(R2));
+        items.put("rpg-minibosses:entities/templar",
+                new LootConfig.Pool().rolls(1)
+                        .add(W2).enchant()
+                        .add(A2).enchant()
+                        .add(X2)
+                        .add(R2));
+        items.put("rpg-minibosses:entities/trickster",
+                new LootConfig.Pool().rolls(1)
+                        .add(W2).enchant()
+                        .add(A2).enchant()
+                        .add(X2)
+                        .add(R2));
+
         // Aehter mod
 
 //        items.put("aether:chests/dungeon/bronze/bronze_dungeon_reward", new LootConfig.Pool()
