@@ -1,3 +1,8 @@
+# 1.6.1
+
+Functional changes:
+- Fix some translations typos
+
 # 1.6.0
 
 Functional changes:

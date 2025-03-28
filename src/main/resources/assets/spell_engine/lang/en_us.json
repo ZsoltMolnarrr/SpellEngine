@@ -35,7 +35,7 @@
   "spell.tooltip.trigger.spell_impact_any": "hitting with spell",
   "spell.tooltip.trigger.spell_impact_specific": "hitting with spell",
   "spell.tooltip.trigger.damage_taken": "taking damage",
-  "spell.tooltip.trigger.shield_block": "blowing with shield",
+  "spell.tooltip.trigger.shield_block": "blocking with shield",
   "spell.tooltip.trigger.roll": "rolling",
   "spell.tooltip.range": "Range: {range} block",
   "spell.tooltip.range.plural": "Range: {range} blocks",
