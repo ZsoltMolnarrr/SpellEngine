@@ -2,6 +2,8 @@
 
 Functional changes:
 - Fix some translations typos
+- Fix various loot injection problems
+- Improve default loot injection
 
 # 1.6.0
 

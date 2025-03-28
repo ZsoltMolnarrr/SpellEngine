@@ -69,8 +69,16 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
     }
 
     @Nullable TagKey<Spell> getSpellTag() {
-        var poolId = this.pool != null ? Identifier.of(this.pool) : null;
-        return poolId != null ? TagKey.of(SpellRegistry.KEY, poolId) : null;
+        if (this.pool == null || this.pool.isEmpty()) {
+            return null;
+        }
+        Identifier id;
+        if (this.pool.startsWith("#")) {
+            id = Identifier.of(this.pool.substring(1));
+        } else {
+            id = Identifier.of(this.pool);
+        }
+        return TagKey.of(SpellRegistry.KEY, id);
     }
 
     @Override

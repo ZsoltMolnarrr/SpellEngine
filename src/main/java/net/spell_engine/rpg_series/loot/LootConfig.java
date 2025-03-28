@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.function.Function;
 
 public class LootConfig {
     public LinkedHashMap<String, Pool> injectors = new LinkedHashMap<>();
@@ -149,6 +150,10 @@ public class LootConfig {
             var entry = this.entries.getLast();
             entry.weight = weight;
             return this;
+        }
+
+        public Pool modify(Function<Pool, Pool> modifier) {
+            return modifier.apply(this);
         }
     }
 

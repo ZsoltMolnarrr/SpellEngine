@@ -184,17 +184,7 @@ public class Defaults {
                         .add(A3, true)
                         .add(X4)
                         .add(R4)
-
-                        .add(W5).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.MELEE_DAMAGE))
-                        .bind(arsenal_melee_spells, 0 ,1)
-                        .add(W5).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.RANGED_DAMAGE))
-                        .bind(arsenal_ranged_spells, 0 ,1)
-                        .add(W5).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.MAGIC_DAMAGE))
-                        .bind(arsenal_spell_spells, 0 ,1)
-                        .add(W5).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.DEFENSE))
-                        .bind(arsenal_shield_spells, 0 ,1)
-                        .add(W5).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.HEALING))
-                        .bind(arsenal_heal_spells, 0 ,1)
+                        .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
                 ));
 
         List.of("minecraft:chests/trial_chambers/corridor",
@@ -296,6 +286,7 @@ public class Defaults {
                 .add(A2, true)
                 .add(X4)
                 .add(R2)
+                .add(W5)
         );
 
         items.put("minecells:entities/concierge", new LootConfig.Pool()
@@ -304,6 +295,7 @@ public class Defaults {
                 .add(A2, true)
                 .add(X4)
                 .add(R3)
+                .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
         );
 
         // Bosses of Mass Destruction mod
@@ -339,9 +331,20 @@ public class Defaults {
                 .rolls(2)
                 .add(W4, true)
                 .add(A3, true)
-                .add(W5)
                 .add(X4)
                 .add(R4)
+                .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
+        );
+
+        // Formidulus mod
+
+        items.put("formidulus:entities/deer_god", new LootConfig.Pool()
+                .rolls(2)
+                .add(W2, true)
+                .add(A2, true)
+                .add(X2)
+                .add(R2)
+                .add(W5)
         );
 
         // Aehter mod
@@ -1330,5 +1333,25 @@ public class Defaults {
                 .add(X3)
                 .add(R3)
         );
+    }
+
+
+    private static LootConfig.Pool addWithArsenalSpellBinding(LootConfig.Pool pool, String lootTag, int max) {
+        var arsenal_heal_spells = "#arsenal:heal";
+        var arsenal_melee_spells = "#arsenal:melee";
+        var arsenal_ranged_spells = "#arsenal:ranged";
+        var arsenal_shield_spells = "#arsenal:shield";
+        var arsenal_spell_spells = "#arsenal:spell";
+
+        return pool.add(lootTag).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.MELEE_DAMAGE))
+                .bind(arsenal_melee_spells, 0 ,max)
+                .add(lootTag).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.RANGED_DAMAGE))
+                .bind(arsenal_ranged_spells, 0 ,max)
+                .add(lootTag).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.MAGIC_DAMAGE))
+                .bind(arsenal_spell_spells, 0 ,max)
+                .add(lootTag).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.DEFENSE))
+                .bind(arsenal_shield_spells, 0 ,max)
+                .add(lootTag).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.HEALING))
+                .bind(arsenal_heal_spells, 0 ,max);
     }
 }
