@@ -33,12 +33,18 @@ public class RPGSeriesItemTags {
     public static class Archetype {
         public static final String FOLDER = "archetype";
         public static final LinkedHashMap<RoleArchetype, TagKey<Item>> WEAPONS = new LinkedHashMap<>();
+        public static Identifier id(RoleArchetype archetype) {
+            return Identifier.of(RPGSeriesCore.NAMESPACE, FOLDER + "/" + archetype.toString().toLowerCase(Locale.ROOT) + "_weapon");
+        }
         static {
             for(var archetype: RoleArchetype.values()) {
-                var id = Identifier.of(RPGSeriesCore.NAMESPACE, FOLDER + "/" + archetype.toString().toLowerCase(Locale.ROOT) + "_weapon");
-                var tag = TagKey.of(RegistryKeys.ITEM, id);
+                var tag = TagKey.of(RegistryKeys.ITEM, id(archetype));
                 WEAPONS.put(archetype, tag);
             }
+        }
+
+        public static String tagString(RoleArchetype archetype) {
+            return "#" + id(archetype);
         }
 
         public static TagKey<Item> weapon(RoleArchetype archetype) {

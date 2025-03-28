@@ -43,22 +43,29 @@ public class LootHelper {
             var tableId = entry.getKey();
             var pool = entry.getValue();
             for (var itemInjectorEntry: pool.entries) {
-                var id = itemInjectorEntry.id;
-                if (id != null && id.startsWith("#")) {
-                    // System.out.println("XXX Updating tag: " + id);
-                    var tagString = id.substring(1);
-                    if (updatedTags.contains(tagString)) {
-                        continue;
+                var tagsToCache = new ArrayList<String>();
+                if (itemInjectorEntry.id != null) {
+                    tagsToCache.add(itemInjectorEntry.id);
+                }
+                if (itemInjectorEntry.filters != null) {
+                    tagsToCache.addAll(itemInjectorEntry.filters);
+                }
+                for (var id: tagsToCache) {
+                    if (id.startsWith("#")) {
+                        var tagString = id.substring(1);
+                        if (updatedTags.contains(tagString)) {
+                            continue;
+                        }
+                        var tagId = Identifier.of(tagString);
+                        TagKey<Item> tag = TagKey.of(RegistryKeys.ITEM, tagId);
+                        var itemList = new ArrayList<String>();
+                        Registries.ITEM.iterateEntries(tag).forEach((itemEntry) -> {
+                            var itemId = itemEntry.getKey().get().getValue();
+                            itemList.add(itemId.toString());
+                        });
+                        LootHelper.TAG_CACHE.value.cache.put(tagString, itemList);
+                        updatedTags.add(tagString);
                     }
-                    var tagId = Identifier.of(tagString);
-                    TagKey<Item> tag = TagKey.of(RegistryKeys.ITEM, tagId);
-                    var itemList = new ArrayList<String>();
-                    Registries.ITEM.iterateEntries(tag).forEach((itemEntry) -> {
-                        var itemId = itemEntry.getKey().get().getValue();
-                        itemList.add(itemId.toString());
-                    });
-                    LootHelper.TAG_CACHE.value.cache.put(tagString, itemList);
-                    updatedTags.add(tagString);
                 }
             }
         }
@@ -94,10 +101,10 @@ public class LootHelper {
             if (entryId == null || entryId.isEmpty()) { continue; }
 
             // Tag cache is used, because this event handler is called before the game loads the item tags
-            var itemList = entryId.startsWith("#")
+            List<String> itemList = entryId.startsWith("#")
                             ? TAG_CACHE.value.cache.get(entryId.substring(1))
                             : List.of(entryId);
-            List<TagKey<Item>> filters = entry.filters != null ? tagKeys(entry.filters) : List.of();
+            List<String> filters = entry.filters != null ? entry.filters : List.of();
 
             if (itemList == null) {
                 System.err.println("RPG Series loot config: failed to resolve itemList for: " + entryId);
@@ -111,10 +118,12 @@ public class LootHelper {
                         .weight(weight);
                 var filtersMatch = entry.filters_lenient ? filters.isEmpty() : true;
                 for (var filter: filters) {
+                    if (!filter.startsWith("#")) { continue; }
+                    var contains = TAG_CACHE.value.cache.get(filter.substring(1)).contains(itemId);
                     if (entry.filters_lenient) {
-                        filtersMatch = filtersMatch || item.getRegistryEntry().isIn(filter);
+                        filtersMatch = filtersMatch || contains;
                     } else {
-                        filtersMatch = filtersMatch && item.getRegistryEntry().isIn(filter);
+                        filtersMatch = filtersMatch && contains;
                     }
                 }
                 if (!filtersMatch) { continue; }

@@ -27,9 +27,9 @@ public class Defaults {
     }
 
     static {
-        var GOLDEN = RPGSeriesItemTags.LootThemes.id(RPGSeriesItemTags.LootTheme.GOLDEN_WEAPON).toString();
-        var AETHER = RPGSeriesItemTags.LootThemes.id(RPGSeriesItemTags.LootTheme.AETHER).toString();
-        var DRAGON = RPGSeriesItemTags.LootThemes.id(RPGSeriesItemTags.LootTheme.DRAGON).toString();
+        var GOLDEN = "#" + RPGSeriesItemTags.LootThemes.id(RPGSeriesItemTags.LootTheme.GOLDEN_WEAPON).toString();
+        var AETHER = "#" + RPGSeriesItemTags.LootThemes.id(RPGSeriesItemTags.LootTheme.AETHER).toString();
+        var DRAGON = "#" + RPGSeriesItemTags.LootThemes.id(RPGSeriesItemTags.LootTheme.DRAGON).toString();
 
         var W0 = weapons(0);
         var W1 = weapons(1);
@@ -60,6 +60,12 @@ public class Defaults {
         scrollLootConfig = new LootConfig();
         var scrolls = scrollLootConfig.injectors;
         var scrolls_regex = scrollLootConfig.regex_injectors;
+
+        var arsenal_heal_spells = "#arsenal:heal";
+        var arsenal_melee_spells = "#arsenal:melee";
+        var arsenal_ranged_spells = "#arsenal:ranged";
+        var arsenal_shield_spells = "#arsenal:shield";
+        var arsenal_spell_spells = "#arsenal:spell";
 
         // Vanilla loot table items
 
@@ -175,11 +181,20 @@ public class Defaults {
                         .rolls(1)
                         .bonus_rolls(0)
                         .add(W4, true)
-                        .add(A2, true)
                         .add(A3, true)
                         .add(X4)
                         .add(R4)
-                        .add(W5)
+
+                        .add(W5).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.MELEE_DAMAGE))
+                        .bind(arsenal_melee_spells, 0 ,1)
+                        .add(W5).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.RANGED_DAMAGE))
+                        .bind(arsenal_ranged_spells, 0 ,1)
+                        .add(W5).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.MAGIC_DAMAGE))
+                        .bind(arsenal_spell_spells, 0 ,1)
+                        .add(W5).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.DEFENSE))
+                        .bind(arsenal_shield_spells, 0 ,1)
+                        .add(W5).filter(RPGSeriesItemTags.Archetype.tagString(RPGSeriesItemTags.RoleArchetype.HEALING))
+                        .bind(arsenal_heal_spells, 0 ,1)
                 ));
 
         List.of("minecraft:chests/trial_chambers/corridor",
