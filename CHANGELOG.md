@@ -1,3 +1,8 @@
+# 1.6.2
+
+Functional changes:
+- Fix loot injection crash, for incomplete tag caches
+
 # 1.6.1
 
 Functional changes:

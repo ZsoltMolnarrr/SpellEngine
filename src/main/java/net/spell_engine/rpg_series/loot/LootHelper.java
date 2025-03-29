@@ -119,7 +119,9 @@ public class LootHelper {
                 var filtersMatch = entry.filters_lenient ? filters.isEmpty() : true;
                 for (var filter: filters) {
                     if (!filter.startsWith("#")) { continue; }
-                    var contains = TAG_CACHE.value.cache.get(filter.substring(1)).contains(itemId);
+                    var tag = TAG_CACHE.value.cache.get(filter.substring(1));
+                    if (tag == null) { continue; }
+                    var contains = tag.contains(itemId);
                     if (entry.filters_lenient) {
                         filtersMatch = filtersMatch || contains;
                     } else {
