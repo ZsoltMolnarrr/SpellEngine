@@ -115,9 +115,9 @@ public class Defaults {
                 .forEach(id -> {
                     items.put(id, new LootConfig.Pool()
                             .rolls(1)
-                            .add(W1, true).weight(2)
-                            .add(A1, true).weight(2)
-                            .add(X1, true).weight(2)
+                            .add(W1, true).weight(4)
+                            .add(A1, true).weight(4)
+                            .add(X1, true).weight(4)
                             .add(R1)
                     );
                     scrolls.put(id, new LootConfig.Pool()
@@ -140,7 +140,7 @@ public class Defaults {
 
         List.of("minecraft:chests/bastion_other")
                 .forEach(id -> items.put(id, new LootConfig.Pool()
-                        .rolls(0.5)
+                        .rolls(0.4)
                         .add(W1, true)
                         .add(X3)
                 ));
@@ -214,9 +214,9 @@ public class Defaults {
                 .forEach(id -> {
                     items.put(id, new LootConfig.Pool()
                         .rolls(1)
-                        .add(W2, true)
-                        .add(A2, true)
-                        .add(X2)
+                        .add(W2, true).weight(2)
+                        .add(A2, true).weight(2)
+                        .add(X2).weight(2)
                         .add(R2)
                     );
                     scrolls.put(id, new LootConfig.Pool()
@@ -230,8 +230,8 @@ public class Defaults {
                 .forEach(id -> {
                     items.put(id, new LootConfig.Pool()
                         .rolls(1)
-                        .add(W3, true)
-                        .add(X4)
+                        .add(W3, true).weight(2)
+                        .add(X4).weight(2)
                         .add(R3)
                     );
                 });
@@ -395,13 +395,13 @@ public class Defaults {
 
         items.put("aether:chests/dungeon/silver/silver_dungeon_reward", new LootConfig.Pool()
                 .rolls(0.5)
-                .add(AETHER).weight(2)
+                .add(AETHER).weight(4)
                 .add(R2)
         );
 
         items.put("aether:chests/dungeon/gold/gold_dungeon_reward", new LootConfig.Pool()
                 .rolls(1)
-                .add(AETHER, true).weight(2)
+                .add(AETHER, true).weight(4)
                 .add(R3)
         );
 
@@ -410,6 +410,15 @@ public class Defaults {
         items.put("aether_villages:chests/olympic_citadel/olympic_citadel_treasure", new LootConfig.Pool()
                 .rolls(0.5)
                 .add(AETHER)
+        );
+
+        // Eternal Starlight
+
+        items.put("eternal_starlight:bosses/boss_common", new LootConfig.Pool()
+                .rolls(2)
+                .add(X4)
+                .add(R4)
+                .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
         );
 
         // Dungeons and Taverns
@@ -491,8 +500,8 @@ public class Defaults {
         );
         items.put("nova_structures:chests/nether_keep/vault_keep", new LootConfig.Pool()
                 .rolls(0.5)
-                .add(W3, true).weight(2)
-                .add(A2).weight(2)
+                .add(W3, true).weight(4)
+                .add(A2).weight(4)
                 .add(R2)
         );
         scrolls.put("nova_structures:chests/nether_keep/vault_keep", new LootConfig.Pool()
@@ -504,8 +513,8 @@ public class Defaults {
 
         items.put("nova_structures:chests/trident_trial_monument/ttm_common_vault", new LootConfig.Pool()
                 .rolls(0.5)
-                .add(W2, true).weight(2)
-                .add(X2, true).weight(2)
+                .add(W2, true).weight(4)
+                .add(X2, true).weight(4)
                 .add(R1)
         );
         scrolls.put("nova_structures:chests/trident_trial_monument/ttm_common_vault", new LootConfig.Pool()
@@ -1367,9 +1376,9 @@ public class Defaults {
         );
         items.put("dungeons_arise:chests/shiraz_palace/shiraz_palace_treasure", new LootConfig.Pool()
                 .rolls(2)
-                .add(W3, true)
-                .add(A3, true)
-                .add(X3)
+                .add(W3, true).weight(4)
+                .add(A3, true).weight(4)
+                .add(X3).weight(4)
                 .add(R3)
         );
     }
