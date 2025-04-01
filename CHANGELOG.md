@@ -1,3 +1,8 @@
+# 1.6.3
+
+Functional changes:
+- Update loot defaults
+
 # 1.6.2
 
 Functional changes:
