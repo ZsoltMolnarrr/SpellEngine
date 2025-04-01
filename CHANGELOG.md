@@ -3,6 +3,9 @@
 Functional changes:
 - Update loot defaults
 
+API Changes:
+- Add new player animations, thanks to Forg
+
 # 1.6.2
 
 Functional changes:
