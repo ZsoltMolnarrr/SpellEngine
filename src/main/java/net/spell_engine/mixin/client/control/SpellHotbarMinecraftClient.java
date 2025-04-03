@@ -14,6 +14,7 @@ import net.spell_engine.client.input.AutoSwapHelper;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.client.input.WrappedKeybinding;
+import net.spell_engine.compat.CombatRollCompat;
 import net.spell_engine.internals.casting.SpellCasterClient;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
@@ -75,7 +76,7 @@ public abstract class SpellHotbarMinecraftClient {
     @Inject(method = "tick", at = @At("HEAD"))
     private void tick_HEAD_SpellHotbar(CallbackInfo ci) {
         if (player == null || options == null) { return; }
-        if (currentScreen != null) {
+        if (currentScreen != null || CombatRollCompat.isRolling.apply(player)) {
             ((SpellCasterClient)player).cancelSpellCast();
         }
     }

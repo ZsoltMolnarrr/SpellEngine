@@ -2,6 +2,7 @@
 
 Functional changes:
 - Update loot injection defaults
+- Disable spell casting while doing combat roll  
 
 API Changes:
 - Add new player animations, thanks to Forg
