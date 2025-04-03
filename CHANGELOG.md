@@ -1,10 +1,11 @@
 # 1.6.3
 
 Functional changes:
-- Update loot defaults
+- Update loot injection defaults
 
 API Changes:
 - Add new player animations, thanks to Forg
+- Add wand weapon type (split from staves) 
 
 # 1.6.2
 
