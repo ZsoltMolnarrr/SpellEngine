@@ -491,7 +491,7 @@ public class Defaults {
                 .add(X4)
         );
 
-        // DnT - nether keep
+        // DnT (Nether)
 
         items.put("nova_structures:chests/nether_keep/skeleton_tower_chest", new LootConfig.Pool()
                 .rolls(0.5)
@@ -507,6 +507,15 @@ public class Defaults {
         scrolls.put("nova_structures:chests/nether_keep/vault_keep", new LootConfig.Pool()
                 .rolls(0.5)
                 .scroll(3, 4)
+        );
+
+        items.put("nova_structures:chests/nether_port/nether_port_chest", new LootConfig.Pool()
+                .rolls(1)
+                .add(W2).enchant()
+                .add(A2)
+                .add(W3)
+                .add(A3)
+                .add(X2)
         );
 
         // DnT - trident_trial_monument
@@ -549,6 +558,35 @@ public class Defaults {
                 .add(A1)
                 .add(W1)
                 .add(X1)
+        );
+
+        // DnT - Stronghold (uses vanilla scoped loot tables)
+
+        items.put("minecraft:chests/stronghold/library", new LootConfig.Pool()
+                .rolls(1)
+                .add(A2, true)
+                .add(X2, false)
+        );
+        scrolls.put("minecraft:chests/stronghold/library", new LootConfig.Pool()
+                .rolls(0.5)
+                .scroll(3, 4)
+        );
+        scrolls.put("minecraft:chests/stronghold/library_bookshelf", new LootConfig.Pool()
+                .rolls(0.2)
+                .scroll(3, 4)
+        );
+        items.put("minecraft:chests/stronghold/generic", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(W1).enchant()
+                .add(W2)
+                .add(A2)
+                .add(X1)
+        );
+        items.put("minecraft:chests/stronghold/sewer", new LootConfig.Pool()
+                .rolls(1)
+                .add(W2).enchant()
+                .add(X2)
+                .add(R2)
         );
 
         // DnT
@@ -648,6 +686,60 @@ public class Defaults {
                 .add(W2, true)
         );
 
+
+        // Adventure Dungeons
+
+
+        items.put("adventuredungeons:chests/coldlair/coldlair_chest_default1", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(A1).enchant()
+                .add(W1).enchant()
+        );
+        scrolls.put("adventuredungeons:chests/coldlair/coldlair_chest_library_default1", new LootConfig.Pool()
+                .rolls(0.5)
+                .scroll(2, 3)
+        );
+        items.put("adventuredungeons:chests/coldlair/coldlair_chest_rare1", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(A2).enchant().weight(3)
+                .add(W2).enchant().weight(3)
+                .add(X2).weight(2)
+                .add(R2)
+        );
+
+        items.put("adventuredungeons:chests/murkydungeon/murky_gravel_rare", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(A2).weight(4)
+                .add(W2).weight(4)
+                .add(X2)
+        );
+        scrolls.put("adventuredungeons:chests/murkydungeon/murky_chest_loot", new LootConfig.Pool()
+                .rolls(0.3)
+                .scroll(2, 3)
+        );
+        items.put("adventuredungeons:chests/murkydungeon/murky_chest_tomb", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(A1).enchant().weight(2)
+                .add(W1).enchant().weight(2)
+                .add(X2)
+        );
+        items.put("adventuredungeons:chests/murkydungeon/murky_chest_reward", new LootConfig.Pool()
+                .rolls(1)
+                .add(A2).enchant().weight(2)
+                .add(W2).enchant().weight(2)
+                .add(R2)
+        );
+
+        items.put("adventuredungeons:chests/bygone_chest_default1", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(A1).enchant()
+                .add(W1).enchant()
+        );
+        items.put("adventuredungeons:chests/bygone_chest_default2", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(A1).enchant()
+                .add(W1).enchant()
+        );
 
         // MOD CHESTS
 
