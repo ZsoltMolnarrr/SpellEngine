@@ -53,10 +53,10 @@ public class RPGSeriesItemTags {
 
         public static RoleArchetype classify(Equipment.WeaponType category) {
             switch (category) {
-                case DAMAGE_STAFF, SPELL_SCYTHE, SPELL_BLADE -> {
+                case DAMAGE_STAFF, DAMAGE_WAND, SPELL_SCYTHE, SPELL_BLADE -> {
                     return RoleArchetype.MAGIC_DAMAGE;
                 }
-                case HEALING_STAFF -> {
+                case HEALING_STAFF, HEALING_WAND -> {
                     return RoleArchetype.HEALING;
                 }
                 case SHORT_BOW, LONG_BOW, RAPID_CROSSBOW, HEAVY_CROSSBOW -> {

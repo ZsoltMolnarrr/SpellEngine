@@ -2,7 +2,6 @@ package net.spell_engine.rpg_series.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
@@ -51,11 +50,14 @@ public class RPGSeriesDataGen {
             }
 
             var fullSpellWeaponTypes = List.of(
-                    Equipment.WeaponType.DAMAGE_STAFF, Equipment.WeaponType.HEALING_STAFF,
-                    Equipment.WeaponType.GLAIVE, Equipment.WeaponType.SPELL_BLADE, Equipment.WeaponType.SPELL_SCYTHE
+                    Equipment.WeaponType.DAMAGE_STAFF, Equipment.WeaponType.DAMAGE_WAND,
+                    Equipment.WeaponType.HEALING_STAFF, Equipment.WeaponType.HEALING_WAND,
+                    Equipment.WeaponType.SPELL_BLADE, Equipment.WeaponType.SPELL_SCYTHE
             );
             var meleeSpellWeaponTypes = List.of(
-                    Equipment.WeaponType.SWORD, Equipment.WeaponType.CLAYMORE, Equipment.WeaponType.MACE, Equipment.WeaponType.HAMMER
+                    Equipment.WeaponType.SWORD,
+                    Equipment.WeaponType.CLAYMORE, Equipment.WeaponType.MACE, Equipment.WeaponType.HAMMER,
+                    Equipment.WeaponType.GLAIVE
             );
 
             /// Spell Infinity enchantables

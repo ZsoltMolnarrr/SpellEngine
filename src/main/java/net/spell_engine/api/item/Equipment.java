@@ -5,7 +5,9 @@ import org.jetbrains.annotations.Nullable;
 public class Equipment {
     public enum WeaponType {
         DAMAGE_STAFF,
+        DAMAGE_WAND,
         HEALING_STAFF,
+        HEALING_WAND,
         SHORT_BOW,
         LONG_BOW,
         RAPID_CROSSBOW,

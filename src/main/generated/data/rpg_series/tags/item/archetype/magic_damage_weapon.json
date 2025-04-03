@@ -1,6 +1,7 @@
 {
   "values": [
     "#rpg_series:weapon_type/damage_staff",
+    "#rpg_series:weapon_type/damage_wand",
     "#rpg_series:weapon_type/spell_blade",
     "#rpg_series:weapon_type/spell_scythe"
   ]

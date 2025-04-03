@@ -1,7 +1,9 @@
 {
   "values": [
     "#rpg_series:weapon_type/damage_staff",
+    "#rpg_series:weapon_type/damage_wand",
     "#rpg_series:weapon_type/healing_staff",
+    "#rpg_series:weapon_type/healing_wand",
     "#rpg_series:weapon_type/short_bow",
     "#rpg_series:weapon_type/long_bow",
     "#rpg_series:weapon_type/rapid_crossbow",
