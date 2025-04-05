@@ -1,3 +1,8 @@
+# 1.6.4
+
+Functional changes:
+- Update loot injection defaults (Friends or Foes)
+
 # 1.6.3
 
 Functional changes:

@@ -336,6 +336,16 @@ public class Defaults {
                 .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
         );
 
+        // Friends or Foes
+
+        items.put("friendsandfoes:entities/wildfire", new LootConfig.Pool()
+                .rolls(2)
+                .add(A3, true)
+                .add(X3)
+                .add(R2)
+                .add(W5)
+        );
+
         // Formidulus mod
 
         items.put("formidulus:entities/deer_god", new LootConfig.Pool()
