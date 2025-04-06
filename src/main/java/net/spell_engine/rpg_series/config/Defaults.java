@@ -433,6 +433,12 @@ public class Defaults {
 
         // Dungeons and Taverns
 
+        items.put("nova_structures:chests/undead_crypts_grave", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(W1)
+                .add(X2)
+        );
+
         // DnT - ancient city
 
         items.put("nova_structures:chests/ancient_city", new LootConfig.Pool()
@@ -454,22 +460,21 @@ public class Defaults {
                 .rolls(0.5)
                 .scroll(1, 2)
         );
-        items.put("nova_structures:chests/undead_crypts_grave", new LootConfig.Pool()
-                .rolls(0.5)
-                .add(W1)
-                .add(X2)
-        );
         items.put("nova_structures:chests/desert_ruins/desert_ruin_main_temple", new LootConfig.Pool()
                 .rolls(1)
                 .add(A1)
                 .add(W1)
         );
 
+        // DnT - jungle temple
+        // Has loot_table entry of minecraft:chests/jungle_temple
+
         // DnT - end castle
 
         items.put("nova_structures:chests/end_castle/greater_loot", new LootConfig.Pool()
                 .rolls(1)
                 .add(W4, true)
+                .add(X3, true)
         );
         items.put("nova_structures:chests/end_castle/lesser_loot", new LootConfig.Pool()
                 .rolls(0.5)
@@ -485,6 +490,7 @@ public class Defaults {
                 .rolls(0.5)
                 .add(W4, true)
                 .add(A3, true)
+                .add(R3)
                 .add(X4)
         );
         items.put("nova_structures:chests/end_castle/vault_galleon", new LootConfig.Pool()
@@ -530,29 +536,53 @@ public class Defaults {
 
         // DnT - trident_trial_monument
 
-        items.put("nova_structures:chests/trident_trial_monument/ttm_common_vault", new LootConfig.Pool()
+        items.put("nova_structures:chests/trident_trial_monument/ttm_boss_vault_trident", new LootConfig.Pool()
                 .rolls(0.5)
-                .add(W2, true).weight(4)
-                .add(X2, true).weight(4)
-                .add(R1)
+                .add(A2).enchant().weight(4)
+                .add(W2).enchant().weight(4)
+                .add(X2).enchant().weight(2)
+                .add(R2)
         );
         scrolls.put("nova_structures:chests/trident_trial_monument/ttm_common_vault", new LootConfig.Pool()
                 .rolls(0.5)
                 .scroll(2, 3)
         );
 
-        // DnT - illager_hideout
+        // DnT - Pillager outpost overhaul
+
+        items.put("nova_structures:chests/badland_miner_outpost_towers", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(A1).enchant()
+                .add(W1).enchant()
+                .add(X1)
+        );
+        scrolls.put("nova_structures:chests/badland_miner_outpost_towers", new LootConfig.Pool()
+                .rolls(0.5)
+                .scroll(1, 2)
+        );
+        items.put("nova_structures:chests/badland_miner_outpost", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(A1).enchant()
+                .add(W1).enchant()
+                .add(X1)
+        );
 
         items.put("nova_structures:chests/illager_hideout_lesser_tresure", new LootConfig.Pool()
                 .rolls(0.5)
                 .add(A1)
+                .add(W1)
                 .add(X1)
+        );
+        scrolls.put("nova_structures:chests/illager_hideout_library", new LootConfig.Pool()
+                .rolls(0.5)
+                .scroll(1, 3)
         );
         items.put("nova_structures:chests/illager_hideout_tresure", new LootConfig.Pool()
                 .rolls(1)
-                .add(A1)
-                .add(W1)
-                .add(X1)
+                .add(A2).weight(2)
+                .add(W2)
+                .add(X2)
+                .add(R1)
         );
         scrolls.put("nova_structures:chests/illager_hideout_tresure", new LootConfig.Pool()
                 .rolls(1)
@@ -560,7 +590,7 @@ public class Defaults {
         );
         items.put("nova_structures:chests/illager_outpost_weaponry", new LootConfig.Pool()
                 .rolls(1)
-                .add(W1)
+                .add(W1).weight(2)
                 .add(X1)
         );
         items.put("nova_structures:chests/pillager_outpost_treasure", new LootConfig.Pool()
@@ -601,16 +631,17 @@ public class Defaults {
 
         // DnT
 
-        // lone castle
+        // DnT - Lone citadel
 
         items.put("nova_structures:chests/lone_citadel/c_vault_boss", new LootConfig.Pool()
                 .rolls(1)
-                .add(W2, true)
-                .add(X2)
+                .add(W2).weight(2)
+                .add(X2).weight(2)
+                .add(R2)
         );
         items.put("nova_structures:chests/lone_citadel/c_vault", new LootConfig.Pool()
                 .rolls(1)
-                .add(A2, true)
+                .add(A2).weight(2)
                 .add(X2)
         );
         scrolls.put("nova_structures:chests/lone_citadel/c_vault", new LootConfig.Pool()
@@ -631,7 +662,7 @@ public class Defaults {
                 .add(A1)
         );
 
-        // bunker_altar
+        // DnT - Bunker
 
         items.put("nova_structures:chests/bunker_altar", new LootConfig.Pool()
                 .rolls(1)
@@ -643,7 +674,7 @@ public class Defaults {
                 .scroll(1)
         );
 
-        // conduit_ruin
+        // DnT - Conduit Ruin
 
         items.put("nova_structures:chests/conduit_ruin/conduit_ruin_big", new LootConfig.Pool()
                 .rolls(0.5)
@@ -651,7 +682,7 @@ public class Defaults {
                 .add(A2)
         );
 
-        // creeping_crypt
+        // DnT - Creeping Crypt
 
         items.put("nova_structures:chests/creeping_crypt/crypt_grave", new LootConfig.Pool()
                 .rolls(0.5)
@@ -663,28 +694,30 @@ public class Defaults {
         );
         items.put("nova_structures:chests/creeping_crypt/vault_creeping", new LootConfig.Pool()
                 .rolls(1)
-                .add(A1)
-                .add(W1)
+                .add(A1).weight(2)
+                .add(W1).enchant().weight(2)
                 .add(X1)
+                .add(R1)
         );
         scrolls.put("nova_structures:chests/creeping_crypt/vault_creeping", new LootConfig.Pool()
                 .rolls(0.5)
-                .scroll(1, 2)
+                .scroll(1, 3)
         );
 
-        // toxic_lair
+        // DnT - Toxic Lair
 
         items.put("nova_structures:chests/toxic_lair/toxic_vault", new LootConfig.Pool()
                 .rolls(0.5)
-                .add(A1)
-                .add(W1)
-                .add(X1)
+                .add(A2).enchant()
+                .add(W2).enchant()
+                .add(X2)
         );
         items.put("nova_structures:chests/toxic_lair/toxic_ominous_vault", new LootConfig.Pool()
-                .rolls(0.5)
-                .add(A2)
-                .add(W2, true)
+                .rolls(1)
+                .add(A2).enchant()
+                .add(W2).enchant()
                 .add(X2)
+                .add(R2)
         );
         scrolls.put("nova_structures:chests/toxic_lair/toxic_ominous_vault", new LootConfig.Pool()
                 .rolls(0.5)
@@ -692,10 +725,27 @@ public class Defaults {
         );
         items.put("nova_structures:chests/toxic_lair/toxic_boss_vault", new LootConfig.Pool()
                 .rolls(1)
-                .add(A2, true)
-                .add(W2, true)
+                .add(A2, true).weight(3)
+                .add(W2, true).weight(3)
+                .add(R2)
         );
 
+        // DnT - Piglin donjon
+
+        items.put("nova_structures:chests/piglin_donjon/vault_piglin_donjon", new LootConfig.Pool()
+                .rolls(1)
+                .add(A3).enchant().weight(3)
+                .add(W3).enchant().weight(3)
+                .add(X3)
+                .add(R3)
+        );
+
+        // DnT - Witch villa
+
+        scrolls.put("nova_structures:chests/witch_villa/library", new LootConfig.Pool()
+                .rolls(0.5)
+                .scroll(2, 3)
+        );
 
         // Adventure Dungeons
 
