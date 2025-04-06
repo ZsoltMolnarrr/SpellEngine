@@ -1,7 +1,7 @@
 # 1.6.4
 
 Functional changes:
-- Update loot injection defaults (Friends or Foes)
+- Update loot injection defaults (Friends or Foes, Dungeons and Taverns tweaks)
 
 # 1.6.3
 
