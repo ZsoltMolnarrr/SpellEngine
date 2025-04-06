@@ -1275,6 +1275,13 @@ public class Defaults {
                 .add(W3)
         );
 
+        // Medieval Structures (End Edition)
+        items.put("medievalend:end_castle", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(W4).enchant()
+                .add(A3).enchant()
+                .add(X4)
+        );
 
         // Dungeons Arise mod
 
