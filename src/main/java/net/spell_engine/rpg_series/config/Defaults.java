@@ -262,10 +262,10 @@ public class Defaults {
 
         items.put("minecraft:entities/wither", new LootConfig.Pool()
                 .rolls(2)
-                .add(W3, true)
-                .add(A3, true)
+                .add(W3).enchant()
+                .add(A3).enchant()
                 .add(X3)
-                .add(R2)
+                .add(R3)
                 .add(W5)
         );
 
