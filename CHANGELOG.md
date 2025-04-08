@@ -1,5 +1,7 @@
 # 1.6.5
 
+Functional changes:
+- Spell scrolls can now be disassembled for XP, using vanilla Grindstone
 - Update advancements
 
 # 1.6.4

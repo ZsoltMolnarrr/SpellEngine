@@ -28,4 +28,10 @@ public class SpellEngineItemTags {
      * (Example: Spell Scroll)
      */
     public static final TagKey<Item> SPELL_BOOK_MERGEABLE = TagKey.of(Registries.ITEM.getKey(), Identifier.of(SpellEngineMod.ID, "spell_book_mergeable"));
+
+    /**
+     * Items from which spells can be removed, using vanilla Grinding Stone
+     * (Example: Spell Scroll)
+     */
+    public static final TagKey<Item> GRINDABLE = TagKey.of(Registries.ITEM.getKey(), Identifier.of(SpellEngineMod.ID, "grindable"));
 }
