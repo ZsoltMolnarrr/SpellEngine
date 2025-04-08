@@ -162,5 +162,7 @@
   "advancements.rpg_series.spellbinder.title": "Spellbinder",
   "advancements.rpg_series.spellbinder.description": "Bind a spell to an eligible magical weapon",
   "advancements.rpg_series.classes.title": "Choose your path",
-  "advancements.rpg_series.classes.description": "Visit a Spell Binding Table to create your first Spell Book!"
+  "advancements.rpg_series.classes.description": "Visit a Spell Binding Table to create your first Spell Book!",
+  "advancements.rpg_series.misc_items.title": "Magical Items",
+  "advancements.rpg_series.misc_items.description": "Discover various items essential for spell casting!"
 }

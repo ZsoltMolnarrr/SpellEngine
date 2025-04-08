@@ -685,16 +685,17 @@ public class Defaults {
         // DnT - Creeping Crypt
 
         items.put("nova_structures:chests/creeping_crypt/crypt_grave", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25) // There is a lot of these chests
                 .add(A1)
+                .add(W1)
         );
         items.put("nova_structures:chests/creeping_crypt/crypt_hallway", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .add(W1)
         );
         items.put("nova_structures:chests/creeping_crypt/vault_creeping", new LootConfig.Pool()
                 .rolls(1)
-                .add(A1).weight(2)
+                .add(A1).enchant().weight(2)
                 .add(W1).enchant().weight(2)
                 .add(X1)
                 .add(R1)

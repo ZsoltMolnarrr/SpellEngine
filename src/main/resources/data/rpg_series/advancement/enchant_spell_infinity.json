@@ -14,7 +14,7 @@
     "announce_to_chat": true,
     "hidden": false
   },
-  "parent": "rpg_series:root",
+  "parent": "rpg_series:misc_items",
   "criteria": {
     "enchant": {
       "trigger": "spell_engine:enchant_specific",
