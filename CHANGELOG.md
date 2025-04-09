@@ -1,7 +1,7 @@
 # 1.6.6
 
 Functional changes:
-- Add Spell Cast criteria
+- Add Spell Cast criteria (`spell_engine:spell_cast`)
 
 # 1.6.5
 
