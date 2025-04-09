@@ -14,7 +14,6 @@ import java.util.Optional;
 public class EnchantmentSpecificCriteria extends AbstractCriterion<EnchantmentSpecificCriteria.Condition> {
     public static final Identifier ID = Identifier.of(SpellEngineMod.ID, "enchant_specific");
     public static final EnchantmentSpecificCriteria INSTANCE = new EnchantmentSpecificCriteria();
-    private static final String enchant_id_key = "enchant_id";
 
     @Override
     public Codec<EnchantmentSpecificCriteria.Condition> getConditionsCodec() {
@@ -50,4 +49,5 @@ public class EnchantmentSpecificCriteria extends AbstractCriterion<EnchantmentSp
         public  Optional<String> enchant_id() {
             return this.enchant_id;
         }
-    }}
+    }
+}

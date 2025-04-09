@@ -1,3 +1,8 @@
+# 1.6.6
+
+Functional changes:
+- Add Spell Cast criteria
+
 # 1.6.5
 
 Functional changes:
