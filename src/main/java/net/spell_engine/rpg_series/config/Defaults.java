@@ -404,14 +404,14 @@ public class Defaults {
 //        );
 
         items.put("aether:chests/dungeon/silver/silver_dungeon_reward", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(1)
                 .add(AETHER).weight(4)
                 .add(R2)
         );
 
         items.put("aether:chests/dungeon/gold/gold_dungeon_reward", new LootConfig.Pool()
-                .rolls(1)
-                .add(AETHER, true).weight(4)
+                .rolls(2)
+                .add(AETHER, true).weight(5)
                 .add(R3)
         );
 
@@ -731,15 +731,18 @@ public class Defaults {
                 .add(R2)
         );
 
-        // DnT - Piglin donjon
-
-        items.put("nova_structures:chests/piglin_donjon/vault_piglin_donjon", new LootConfig.Pool()
-                .rolls(1)
-                .add(A3).enchant().weight(3)
-                .add(W3).enchant().weight(3)
-                .add(X3)
-                .add(R3)
-        );
+        // DnT - Nether structures
+        List.of("nova_structures:chests/piglin_donjon/vault_piglin_donjon",         // Super large and rare
+                "nova_structures:chests/hamlet/hamlet_tresure",                     // Medium sized rare
+                "nova_structures:chests/piglin_outstation/outstation_treasure",     // Medium sized rare
+                "nova_structures:chests/piglin_outstation/vault_piglin_outstation"
+                ).forEach(id -> items.put(id, new LootConfig.Pool()
+                        .rolls(1)
+                        .add(A3).enchant().weight(3)
+                        .add(W3).enchant().weight(3)
+                        .add(X3)
+                        .add(R3)
+                ));
 
         // DnT - Witch villa
 

@@ -1,3 +1,7 @@
+# 1.6.7
+
+- Improve loot injection defaults
+
 # 1.6.6
 
 Functional changes:
