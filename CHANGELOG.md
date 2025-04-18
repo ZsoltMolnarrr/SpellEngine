@@ -1,6 +1,11 @@
 # 1.6.7
 
 - Improve loot injection defaults
+- Spell scrolls now generate with custom names based on spell 
+
+API Changes:
+- Add `SpellTagsNumbered` api to assign numbers to spell tags
+- Spell scrolls can now have custom texture based on tag membership of the first contained spell
 
 # 1.6.6
 

@@ -11,8 +11,6 @@ import net.minecraft.item.CrossbowItem;
 import net.minecraft.registry.Registries;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.compatibility.CompatFeatures;
-import net.spell_engine.client.compatibility.FirstPersonAnimationCompatibility;
-import net.spell_engine.client.compatibility.ShaderCompatibility;
 import net.spell_engine.client.render.BeamRenderer;
 import net.spell_engine.client.render.ModelPredicateHelper;
 import net.spell_engine.client.render.SpellBindingBlockEntityRenderer;

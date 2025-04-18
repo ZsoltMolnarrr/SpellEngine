@@ -2,5 +2,55 @@
   "parent": "minecraft:item/generated",
   "textures": {
     "layer0": "spell_engine:item/scroll"
-  }
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "wizards:item/arcane_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "wizards:item/fire_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "wizards:item/frost_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 4
+      },
+      "model": "paladins:item/paladin_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 5
+      },
+      "model": "paladins:item/priest_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 6
+      },
+      "model": "archers:item/archer_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 7
+      },
+      "model": "rogues:item/rogue_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 8
+      },
+      "model": "rogues:item/warrior_scroll"
+    }
+  ]
 }
