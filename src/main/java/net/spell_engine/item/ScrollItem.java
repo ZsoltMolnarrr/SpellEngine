@@ -5,6 +5,7 @@ import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
@@ -12,8 +13,10 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Language;
 import net.minecraft.util.Rarity;
+import net.minecraft.world.World;
 import net.spell_engine.api.spell.SpellTagsNumbered;
 import net.spell_engine.api.spell.*;
+import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
@@ -60,9 +63,30 @@ public class ScrollItem extends Item {
             // Set custom name
             // - Example: "item.paladins.paladin.spell_scroll"
             var key = "item." + pool.id().getNamespace() + "." + pool.id().getPath() + ".spell_scroll";
-            Language.getInstance().hasTranslation(key);
-            var name = Text.translatable(key);
-            itemStack.set(DataComponentTypes.ITEM_NAME, name);
+            if (Language.getInstance().hasTranslation(key)) {
+                itemStack.set(DataComponentTypes.ITEM_NAME, Text.translatable(key));
+            }
+        }
+    }
+
+    @Nullable public static TagKey<Spell> resolveSpellPool(World world, RegistryEntry<Spell> spellEntry) {
+        var wrapper = world.getRegistryManager().getOptionalWrapper(SpellRegistry.KEY);
+        if (wrapper.isPresent()) {
+            return resolveSpellPool(wrapper.get(), spellEntry);
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable public static TagKey<Spell> resolveSpellPool(RegistryWrapper<Spell> wrapper, RegistryEntry<Spell> spellEntry) {
+        // Find the first tag in which spellEntry is contained
+        var tag = wrapper.streamTags()
+                .filter(t -> SpellTagsNumbered.isRegistered(t.getTagKey().get().id()) && t.contains(spellEntry))
+                .findFirst();
+        if (tag.isPresent()) {
+            return tag.get().getTagKey().get();
+        } else {
+            return null;
         }
     }
 

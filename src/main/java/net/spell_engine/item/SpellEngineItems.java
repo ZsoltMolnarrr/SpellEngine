@@ -57,22 +57,10 @@ public class SpellEngineItems {
                     .sorted(Comparator.comparing(a -> a.getKey().get().getValue().getNamespace() + "_" + a.value().tier + "_" + a.getKey().get().getValue().getPath()))
                     .forEach((entry) -> {
                         var scroll = new ItemStack(SCROLL.get());
-                        if (ScrollItem.applySpell(scroll, entry, resolveSpellPool(registryWrapper, entry))) {
+                        if (ScrollItem.applySpell(scroll, entry, ScrollItem.resolveSpellPool(registryWrapper, entry))) {
                             content.add(scroll);
                         }
                     });
         });
-    }
-
-    @Nullable private static TagKey<Spell> resolveSpellPool(RegistryWrapper<Spell> wrapper, RegistryEntry<Spell> spellEntry) {
-        // Find the first tag in which spellEntry is contained
-        var tag = wrapper.streamTags()
-                .filter(t -> SpellTagsNumbered.isRegistered(t.getTagKey().get().id()) && t.contains(spellEntry))
-                .findFirst();
-        if (tag.isPresent()) {
-            return tag.get().getTagKey().get();
-        } else {
-            return null;
-        }
     }
 }

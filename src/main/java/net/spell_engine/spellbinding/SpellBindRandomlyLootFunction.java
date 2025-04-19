@@ -137,7 +137,7 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
             stack.set(SpellDataComponents.SPELL_CONTAINER, newContainer);
 
             if (stack.getItem() == SpellEngineItems.SCROLL.get()) {
-                ScrollItem.onSpellAdded(stack, selectedSpells.getFirst(), spellTag);
+                ScrollItem.onSpellAdded(stack, selectedSpells.getFirst(), ScrollItem.resolveSpellPool(context.getWorld(), selectedSpells.getFirst()));
             }
         } else {
             if (stack.getItem() == SpellEngineItems.SCROLL.get()) {
