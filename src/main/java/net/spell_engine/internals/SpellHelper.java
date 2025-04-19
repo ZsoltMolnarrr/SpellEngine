@@ -953,6 +953,10 @@ public class SpellHelper {
                         }
                         ///
                         livingTarget.heal((float) amount);
+                        if (SpellEvents.HEAL.isListened()) {
+                            float finalAmount = (float) amount;
+                            SpellEvents.HEAL.invoke((listener) -> listener.onHeal(new SpellEvents.HealEvent.Args(caster, spellEntry, livingTarget, finalAmount)));
+                        }
                         success = true;
                     }
                 }

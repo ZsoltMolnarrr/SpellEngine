@@ -20,6 +20,12 @@ public class SpellEvents {
         void onSpellCast(Args args);
     }
 
+    public static final Event<HealEvent> HEAL = new Event<HealEvent>();
+    public interface HealEvent {
+        record Args(LivingEntity caster, RegistryEntry<Spell> spell, LivingEntity target, float amount) {}
+        void onHeal(Args args);
+    }
+
     // Projectile Launch event
     public static final Event<ProjectileLaunch> PROJECTILE_SHOOT = new Event<ProjectileLaunch>();
     public static final Event<ProjectileLaunch> PROJECTILE_FALL = new Event<ProjectileLaunch>();
