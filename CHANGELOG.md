@@ -1,3 +1,7 @@
+# 1.6.8
+
+- Improve loot injection defaults (DnT combat shrines)
+
 # 1.6.7
 
 - Improve loot injection defaults

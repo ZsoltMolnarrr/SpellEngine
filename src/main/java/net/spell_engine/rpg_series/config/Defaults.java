@@ -434,8 +434,9 @@ public class Defaults {
         // Dungeons and Taverns
 
         items.put("nova_structures:chests/undead_crypts_grave", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.2) // There are lots of these chests
                 .add(W1)
+                .add(A1)
                 .add(X2)
         );
 
@@ -743,6 +744,62 @@ public class Defaults {
                         .add(X3)
                         .add(R3)
                 ));
+
+        List.of("nova_structures:combat_treasure_1",
+                "nova_structures:combat_treasure_2"
+        ).forEach(id -> items.put(id, new LootConfig.Pool()
+                .rolls(1)
+                .add(A1).weight(3)
+                .add(W1).weight(3)
+        ));
+
+        List.of("nova_structures:combat_treasure_3"
+        ).forEach(id -> items.put(id, new LootConfig.Pool()
+                .rolls(1)
+                .add(A1).enchant().weight(3)
+                .add(W1).enchant().weight(3)
+                .add(R1)
+        ));
+
+        List.of("nova_structures:combat_treasure_4"
+        ).forEach(id -> items.put(id, new LootConfig.Pool()
+                .rolls(1)
+                .add(A2).weight(3)
+                .add(W2).weight(3)
+        ));
+        List.of("nova_structures:combat_treasure_5"
+        ).forEach(id -> items.put(id, new LootConfig.Pool()
+                .rolls(1)
+                .add(A2).enchant().weight(3)
+                .add(W2).enchant().weight(3)
+                .add(X2)
+                .add(R2)
+        ));
+
+        List.of("nova_structures:shrine_lesser_treasure"
+        ).forEach(id -> items.put(id, new LootConfig.Pool()
+                .rolls(1)
+                .add(A1).enchant().weight(3)
+                .add(W1).enchant().weight(3)
+                .add(R1)
+                .add(X2)
+        ));
+        List.of("nova_structures:shrine_lesser_ominous"
+        ).forEach(id -> items.put(id, new LootConfig.Pool()
+                .rolls(1)
+                .add(A2).enchant().weight(3)
+                .add(W2).enchant().weight(3)
+                .add(X2)
+                .add(R2)
+        ));
+        List.of("nova_structures:vault_shrine_ominous"
+        ).forEach(id -> items.put(id, new LootConfig.Pool()
+                .rolls(1)
+                .add(A3).enchant().weight(3)
+                .add(W3).enchant().weight(3)
+                .add(W5)
+                .add(X4)
+        ));
 
         // DnT - Witch villa
 
