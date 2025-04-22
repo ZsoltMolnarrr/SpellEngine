@@ -1,9 +1,12 @@
 # 1.6.8
 
+Functional changes:
 - Improve loot injection defaults (DnT combat shrines)
+- Add safeguard against collision detection infinite loop
 
 # 1.6.7
 
+Functional changes:
 - Improve loot injection defaults
 - Spell scrolls now generate with custom names based on spell 
 

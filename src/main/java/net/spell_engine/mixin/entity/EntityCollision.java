@@ -27,7 +27,8 @@ public class EntityCollision implements TwoWayCollisionChecker {
     @Inject(method = "collidesWith", at = @At("HEAD"), cancellable = true)
     private void onCollidesWith(Entity other, CallbackInfoReturnable<Boolean> cir) {
         var reverse = ((TwoWayCollisionChecker) other).getReverseCollisionChecker();
-        if (reverse != null) {
+        if (reverse != null
+                && reverseCollisionChecker == null) { // Avoid recursion
             var result = reverse.apply((Entity) (Object) this);
             switch (result) {
                 case COLLIDE -> {
