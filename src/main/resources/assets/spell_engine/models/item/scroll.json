@@ -104,19 +104,25 @@
       "predicate": {
         "custom_model_data": 17
       },
-      "model": "witcher_rpg:item/fencing_scroll"
+      "model": "witcher_rpg:item/base_signs_scroll"
     },
     {
       "predicate": {
         "custom_model_data": 18
       },
-      "model": "witcher_rpg:item/master_scroll"
+      "model": "witcher_rpg:item/enhanced_signs_scroll"
     },
     {
       "predicate": {
         "custom_model_data": 19
       },
-      "model": "witcher_rpg:item/signs_scroll"
+      "model": "witcher_rpg:item/fencing_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 20
+      },
+      "model": "witcher_rpg:item/enhanced_fencing_scroll"
     }
   ]
 }

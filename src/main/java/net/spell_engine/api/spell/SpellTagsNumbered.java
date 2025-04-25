@@ -47,8 +47,9 @@ public class SpellTagsNumbered {
         register(Identifier.of("elemental_wizards_rpg:terra"), number++);
         register(Identifier.of("elemental_wizards_rpg:wind"), number++);
         register(Identifier.of("forcemaster_rpg:forcemaster"), number++);
+        register(Identifier.of("witcher_rpg:base_signs"), number++);
+        register(Identifier.of("witcher_rpg:enhanced_signs"), number++);
         register(Identifier.of("witcher_rpg:fencing"), number++);
-        register(Identifier.of("witcher_rpg:master"), number++);
-        register(Identifier.of("witcher_rpg:signs"), number++);
+        register(Identifier.of("witcher_rpg:enhanced_fencing"), number++);
     }
 }
