@@ -54,73 +54,73 @@
     },
     {
       "predicate": {
-        "custom_model_data": 9
+        "custom_model_data": 100
       },
       "model": "archers_expansion:item/deadeye_scroll"
     },
     {
       "predicate": {
-        "custom_model_data": 10
+        "custom_model_data": 101
       },
       "model": "archers_expansion:item/tundra_hunter_scroll"
     },
     {
       "predicate": {
-        "custom_model_data": 11
+        "custom_model_data": 102
       },
       "model": "archers_expansion:item/war_archer_scroll"
     },
     {
       "predicate": {
-        "custom_model_data": 12
+        "custom_model_data": 103
       },
       "model": "berserker_rpg:item/berserker_scroll"
     },
     {
       "predicate": {
-        "custom_model_data": 13
+        "custom_model_data": 104
       },
       "model": "elemental_wizards_rpg:item/aqua_scroll"
     },
     {
       "predicate": {
-        "custom_model_data": 14
+        "custom_model_data": 105
       },
       "model": "elemental_wizards_rpg:item/terra_scroll"
     },
     {
       "predicate": {
-        "custom_model_data": 15
+        "custom_model_data": 106
       },
       "model": "elemental_wizards_rpg:item/wind_scroll"
     },
     {
       "predicate": {
-        "custom_model_data": 16
+        "custom_model_data": 107
       },
       "model": "forcemaster_rpg:item/forcemaster_scroll"
     },
     {
       "predicate": {
-        "custom_model_data": 17
+        "custom_model_data": 108
       },
       "model": "witcher_rpg:item/base_signs_scroll"
     },
     {
       "predicate": {
-        "custom_model_data": 18
+        "custom_model_data": 109
       },
       "model": "witcher_rpg:item/enhanced_signs_scroll"
     },
     {
       "predicate": {
-        "custom_model_data": 19
+        "custom_model_data": 110
       },
       "model": "witcher_rpg:item/fencing_scroll"
     },
     {
       "predicate": {
-        "custom_model_data": 20
+        "custom_model_data": 111
       },
       "model": "witcher_rpg:item/enhanced_fencing_scroll"
     }
