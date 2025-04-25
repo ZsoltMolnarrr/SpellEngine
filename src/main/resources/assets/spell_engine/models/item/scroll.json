@@ -51,6 +51,72 @@
         "custom_model_data": 8
       },
       "model": "rogues:item/warrior_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 9
+      },
+      "model": "archers_expansion:item/deadeye_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 10
+      },
+      "model": "archers_expansion:item/tundra_hunter_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 11
+      },
+      "model": "archers_expansion:item/war_archer_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 12
+      },
+      "model": "berserker_rpg:item/berserker_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 13
+      },
+      "model": "elemental_wizards_rpg:item/aqua_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 14
+      },
+      "model": "elemental_wizards_rpg:item/terra_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 15
+      },
+      "model": "elemental_wizards_rpg:item/wind_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 16
+      },
+      "model": "forcemaster_rpg:item/forcemaster_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 17
+      },
+      "model": "witcher_rpg:item/fencing_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 18
+      },
+      "model": "witcher_rpg:item/master_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 19
+      },
+      "model": "witcher_rpg:item/signs_scroll"
     }
   ]
 }

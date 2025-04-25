@@ -39,5 +39,16 @@ public class SpellTagsNumbered {
         register(Identifier.of("archers:archer"), number++);
         register(Identifier.of("rogues:rogue"), number++);
         register(Identifier.of("rogues:warrior"), number++);
+        register(Identifier.of("archers_expansion:deadeye"), number++);
+        register(Identifier.of("archers_expansion:tundra_hunter"), number++);
+        register(Identifier.of("archers_expansion:war_archer"), number++);
+        register(Identifier.of("berserker_rpg:berserker"), number++);
+        register(Identifier.of("elemental_wizards_rpg:aqua"), number++);
+        register(Identifier.of("elemental_wizards_rpg:terra"), number++);
+        register(Identifier.of("elemental_wizards_rpg:wind"), number++);
+        register(Identifier.of("forcemaster_rpg:forcemaster"), number++);
+        register(Identifier.of("witcher_rpg:fencing"), number++);
+        register(Identifier.of("witcher_rpg:master"), number++);
+        register(Identifier.of("witcher_rpg:signs"), number++);
     }
 }
