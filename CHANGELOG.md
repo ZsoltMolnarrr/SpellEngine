@@ -1,3 +1,8 @@
+# 1.6.9
+
+Functional changes:
+- Attempt to fix stuck spell casting sounds
+
 # 1.6.8
 
 Functional changes:

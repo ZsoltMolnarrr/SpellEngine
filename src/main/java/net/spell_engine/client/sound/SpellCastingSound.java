@@ -37,6 +37,7 @@ public class SpellCastingSound extends PositionedSoundInstance implements SoundI
     protected final void setDone() {
         this.done = true;
         this.repeat = false;
+        this.volume = 0;
         if (listener != null) {
             listener.onSpellCastingSoundDone();
         }
