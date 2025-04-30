@@ -2,6 +2,7 @@
 
 Functional changes:
 - Attempt to fix stuck spell casting sounds
+- Data tags, for compatibility with the reworked Amplify Spell enchantment
 
 # 1.6.8
 

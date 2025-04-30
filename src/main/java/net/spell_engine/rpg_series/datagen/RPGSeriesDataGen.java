@@ -14,6 +14,7 @@ import net.spell_engine.api.item.weapon.Weapon;
 import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.rpg_series.tags.RPGSeriesItemTags;
 import net.spell_power.SpellPowerMod;
+import net.spell_power.api.SpellPowerTags;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,17 +69,20 @@ public class RPGSeriesDataGen {
             }
 
             /// Spell Haste enchantables
-            var spellHasteTypes = fullSpellWeaponTypes;
-            var spellHasteId = Identifier.of(SpellPowerMod.ID, "enchantable/" + "haste");
-            var spellHasteTag = getOrCreateTagBuilder(TagKey.of(RegistryKeys.ITEM, spellHasteId));
-            for (var type: spellHasteTypes) {
+            var spellHasteTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.HASTE);
+            for (var type: fullSpellWeaponTypes) {
                 spellHasteTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
+            }
+
+            /// Amplify Spell enchantables
+            var criticalDamageTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.CRITICAL_DAMAGE);
+            for (var type: fullSpellWeaponTypes) {
+                criticalDamageTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
 
             /// Spell Power enchantables
             var spellPowerTypes = combine(fullSpellWeaponTypes, meleeSpellWeaponTypes);
-            var spellPowerId = Identifier.of(SpellPowerMod.ID, "enchantable/" + "spell_power_generic");
-            var spellPowerTag = getOrCreateTagBuilder(TagKey.of(RegistryKeys.ITEM, spellPowerId));
+            var spellPowerTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.SPELL_POWER_GENERIC);
             for (var type: spellPowerTypes) {
                 spellPowerTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
