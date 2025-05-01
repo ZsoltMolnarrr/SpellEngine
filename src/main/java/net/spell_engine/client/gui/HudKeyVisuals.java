@@ -27,6 +27,14 @@ public class HudKeyVisuals {
             Map.entry("key.mouse.5", new Drawable.Component(
                     new Drawable.DrawRect(16, 16, 10, 12),
                     mouseTexture
+            )),
+            Map.entry("key.mouse.6", new Drawable.Component(
+                    new Drawable.DrawRect(32, 16, 10, 12),
+                    mouseTexture
+            )),
+            Map.entry("key.mouse.7", new Drawable.Component(
+                    new Drawable.DrawRect(48, 16, 10, 12),
+                    mouseTexture
             ))
     );
 
