@@ -29,6 +29,26 @@ public class RPGSeriesItemTags {
         }
     }
 
+    public enum ArmorMetaType {
+        MELEE, MAGICAL, ARCHERY
+    }
+    public static class ArmorType {
+        public static final String FOLDER = "armor_type";
+        public static final LinkedHashMap<ArmorMetaType, TagKey<Item>> ALL = new LinkedHashMap<>();
+        public static Identifier id(ArmorMetaType category) {
+            return Identifier.of(NAMESPACE, FOLDER + "/" + category.toString().toLowerCase(Locale.ROOT));
+        }
+        static {
+            for(var category: ArmorMetaType.values()) {
+                var tag = TagKey.of(RegistryKeys.ITEM, id(category));
+                ALL.put(category, tag);
+            }
+        }
+        public static TagKey<Item> get(ArmorMetaType category) {
+            return ALL.get(category);
+        }
+    }
+
     public enum RoleArchetype {
         MELEE_DAMAGE, RANGED_DAMAGE, MAGIC_DAMAGE, DEFENSE, HEALING
     }
@@ -118,19 +138,5 @@ public class RPGSeriesItemTags {
             var name = category.toString().toLowerCase(Locale.ROOT);
             return Identifier.of(NAMESPACE, FOLDER + "/" + "tier_" + tier + "_" + name);
         }
-    }
-
-    public static class Enchantable {
-        public static final String FOLDER = "enchantable";
-        public static Identifier id(String name) {
-            return Identifier.of(NAMESPACE, FOLDER + "/" + name);
-        }
-        public static final LinkedHashMap<String, TagKey<Item>> ALL = new LinkedHashMap<>();
-        private static TagKey<Item> add(String name) {
-            var tag = TagKey.of(RegistryKeys.ITEM, id(name));
-            ALL.put(name, tag);
-            return tag;
-        }
-        public static final TagKey<Item> MAGIC_ARMOR = add("magic_armor");
     }
 }

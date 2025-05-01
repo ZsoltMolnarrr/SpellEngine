@@ -6,17 +6,16 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.item.Equipment;
 import net.spell_engine.api.item.armor.Armor;
 import net.spell_engine.api.item.weapon.Weapon;
 import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.rpg_series.tags.RPGSeriesItemTags;
-import net.spell_power.SpellPowerMod;
 import net.spell_power.api.SpellPowerTags;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -49,7 +48,7 @@ public class RPGSeriesDataGen {
                     var tag = getOrCreateTagBuilder(RPGSeriesItemTags.LootTiers.get(i, category));
                 }
             }
-            for (var entry: RPGSeriesItemTags.Enchantable.ALL.entrySet()) {
+            for (var entry: RPGSeriesItemTags.ArmorType.ALL.entrySet()) {
                 var tag = getOrCreateTagBuilder(entry.getValue());
             }
 
@@ -92,7 +91,7 @@ public class RPGSeriesDataGen {
 
             /// Spell Volatility enchantables
             var spellVolatilityTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.CRITICAL_CHANCE);
-            spellVolatilityTag.addTag(RPGSeriesItemTags.Enchantable.MAGIC_ARMOR);
+            spellVolatilityTag.addTag(RPGSeriesItemTags.ArmorType.get(RPGSeriesItemTags.ArmorMetaType.MAGICAL));
 
             /// Unbreaking enchantables
             var unbreakingTypes = Equipment.WeaponType.values();
@@ -167,10 +166,14 @@ public class RPGSeriesDataGen {
         }
 
         public void generateArmorTags(List<Armor.Entry> armors) {
-            generateArmorTags(armors, false);
+            generateArmorTags(armors, EnumSet.noneOf(RPGSeriesItemTags.ArmorMetaType.class));
         }
 
-        public void generateArmorTags(List<Armor.Entry> armors, boolean magical) {
+        public void generateArmorTags(List<Armor.Entry> armors, RPGSeriesItemTags.ArmorMetaType metaType) {
+            generateArmorTags(armors, EnumSet.of(metaType));
+        }
+
+        public void generateArmorTags(List<Armor.Entry> armors, EnumSet<RPGSeriesItemTags.ArmorMetaType> metaTypes) {
             for (var armor: armors) {
 
                 var set = armor.armorSet();
@@ -199,10 +202,10 @@ public class RPGSeriesDataGen {
                     }
                 }
 
-                if (magical) {
-                    var magicTag = getOrCreateTagBuilder(RPGSeriesItemTags.Enchantable.MAGIC_ARMOR);
+                for (var metaType: metaTypes) {
+                    var metaTag = getOrCreateTagBuilder(RPGSeriesItemTags.ArmorType.get(metaType));
                     for (var id: armor.armorSet().pieceIds()) {
-                        magicTag.addOptional((Identifier) id);
+                        metaTag.addOptional((Identifier) id);
                     }
                 }
             }
