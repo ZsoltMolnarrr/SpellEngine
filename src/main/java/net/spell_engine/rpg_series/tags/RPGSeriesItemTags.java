@@ -30,7 +30,7 @@ public class RPGSeriesItemTags {
     }
 
     public enum ArmorMetaType {
-        MELEE, MAGICAL, ARCHERY
+        MELEE, MAGIC, ARCHERY
     }
     public static class ArmorType {
         public static final String FOLDER = "armor_type";
