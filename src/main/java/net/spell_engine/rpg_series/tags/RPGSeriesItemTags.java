@@ -11,12 +11,14 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 
 public class RPGSeriesItemTags {
+    public static final String NAMESPACE = RPGSeriesCore.NAMESPACE;
+
     public static class WeaponType {
         public static final String FOLDER = "weapon_type";
         public static final LinkedHashMap<Equipment.WeaponType, TagKey<Item>> ALL = new LinkedHashMap<>();
         static {
             for(var category: Equipment.WeaponType.values()) {
-                var id = Identifier.of(RPGSeriesCore.NAMESPACE, FOLDER + "/" + category.toString().toLowerCase(Locale.ROOT));
+                var id = Identifier.of(NAMESPACE, FOLDER + "/" + category.toString().toLowerCase(Locale.ROOT));
                 var tag = TagKey.of(RegistryKeys.ITEM, id);
                 ALL.put(category, tag);
             }
@@ -34,7 +36,7 @@ public class RPGSeriesItemTags {
         public static final String FOLDER = "archetype";
         public static final LinkedHashMap<RoleArchetype, TagKey<Item>> TAGS = new LinkedHashMap<>();
         public static Identifier id(RoleArchetype archetype) {
-            return Identifier.of(RPGSeriesCore.NAMESPACE, FOLDER + "/" + archetype.toString().toLowerCase(Locale.ROOT) + "_weapon");
+            return Identifier.of(NAMESPACE, FOLDER + "/" + archetype.toString().toLowerCase(Locale.ROOT) + "_weapon");
         }
         static {
             for(var archetype: RoleArchetype.values()) {
@@ -91,7 +93,7 @@ public class RPGSeriesItemTags {
         }
 
         public static Identifier id(String theme) {
-            return Identifier.of(RPGSeriesCore.NAMESPACE, FOLDER + "/" + theme);
+            return Identifier.of(NAMESPACE, FOLDER + "/" + theme);
         }
 
         static {
@@ -114,7 +116,21 @@ public class RPGSeriesItemTags {
         }
         public static Identifier id(int tier, LootCategory category) {
             var name = category.toString().toLowerCase(Locale.ROOT);
-            return Identifier.of(RPGSeriesCore.NAMESPACE, FOLDER + "/" + "tier_" + tier + "_" + name);
+            return Identifier.of(NAMESPACE, FOLDER + "/" + "tier_" + tier + "_" + name);
         }
+    }
+
+    public static class Enchantable {
+        public static final String FOLDER = "enchantable";
+        public static Identifier id(String name) {
+            return Identifier.of(NAMESPACE, FOLDER + "/" + name);
+        }
+        public static final LinkedHashMap<String, TagKey<Item>> ALL = new LinkedHashMap<>();
+        private static TagKey<Item> add(String name) {
+            var tag = TagKey.of(RegistryKeys.ITEM, id(name));
+            ALL.put(name, tag);
+            return tag;
+        }
+        public static final TagKey<Item> MAGIC_ARMOR = add("magic_armor");
     }
 }

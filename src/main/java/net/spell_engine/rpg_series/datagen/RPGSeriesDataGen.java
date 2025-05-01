@@ -49,6 +49,9 @@ public class RPGSeriesDataGen {
                     var tag = getOrCreateTagBuilder(RPGSeriesItemTags.LootTiers.get(i, category));
                 }
             }
+            for (var entry: RPGSeriesItemTags.Enchantable.ALL.entrySet()) {
+                var tag = getOrCreateTagBuilder(entry.getValue());
+            }
 
             var fullSpellWeaponTypes = List.of(
                     Equipment.WeaponType.DAMAGE_STAFF, Equipment.WeaponType.DAMAGE_WAND,
@@ -86,6 +89,10 @@ public class RPGSeriesDataGen {
             for (var type: spellPowerTypes) {
                 spellPowerTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
+
+            /// Spell Volatility enchantables
+            var spellVolatilityTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.CRITICAL_CHANCE);
+            spellVolatilityTag.addTag(RPGSeriesItemTags.Enchantable.MAGIC_ARMOR);
 
             /// Unbreaking enchantables
             var unbreakingTypes = Equipment.WeaponType.values();
@@ -160,6 +167,10 @@ public class RPGSeriesDataGen {
         }
 
         public void generateArmorTags(List<Armor.Entry> armors) {
+            generateArmorTags(armors, false);
+        }
+
+        public void generateArmorTags(List<Armor.Entry> armors, boolean magical) {
             for (var armor: armors) {
 
                 var set = armor.armorSet();
@@ -185,6 +196,13 @@ public class RPGSeriesDataGen {
                     var themeTag = getOrCreateTagBuilder(RPGSeriesItemTags.LootThemes.get(lootTheme));
                     for (var id: armor.armorSet().pieceIds()) {
                         themeTag.addOptional((Identifier) id);
+                    }
+                }
+
+                if (magical) {
+                    var magicTag = getOrCreateTagBuilder(RPGSeriesItemTags.Enchantable.MAGIC_ARMOR);
+                    for (var id: armor.armorSet().pieceIds()) {
+                        magicTag.addOptional((Identifier) id);
                     }
                 }
             }
