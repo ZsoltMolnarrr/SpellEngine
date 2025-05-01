@@ -2,7 +2,13 @@
 
 Functional changes:
 - Attempt to fix stuck spell casting sounds
+- Update spell hotbar Mouse keybind visualisation
+- Update translations
 - Data tags, for compatibility with the reworked Amplify Spell enchantment
+- Data tags, for implicit compatibility with Spell Volatility enchantment
+
+API changes:
+- Data gen API, now accepts `magical` parameter for armor tag generation (Spell Volatility)
 
 # 1.6.8
 
