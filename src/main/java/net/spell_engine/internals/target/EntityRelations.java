@@ -1,11 +1,15 @@
 package net.spell_engine.internals.target;
 
+import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
+import dev.ftb.mods.ftbteams.api.TeamManager;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.spell_engine.SpellEngineMod;
@@ -31,6 +35,20 @@ public class EntityRelations {
         }
         var config = SpellEngineMod.config;
         if (casterTeam == null || targetTeam == null) {
+            // --- FTB TEAMS ---
+            if (FabricLoader.getInstance().isModLoaded("ftbteams") && attacker instanceof PlayerEntity attackerPlayer && target instanceof PlayerEntity targetPlayer) {
+                boolean managerAvailable = attacker.getWorld().isClient ?
+                        FTBTeamsAPI.api().isClientManagerLoaded() :
+                        FTBTeamsAPI.api().isManagerLoaded();
+                if (managerAvailable) {
+                    TeamManager manager = FTBTeamsAPI.api().getManager();
+                    if (manager.arePlayersInSameTeam(attackerPlayer.getUuid(), targetPlayer.getUuid())) {
+                        return EntityRelation.ALLY;
+                    }
+                }
+            }
+            // --- END FTB TEAMS ---
+
             var id = Registries.ENTITY_TYPE.getId(target.getType());
             var mappedRelation = config.player_relations.get(id.toString());
             if (mappedRelation != null) {
