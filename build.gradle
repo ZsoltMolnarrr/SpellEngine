@@ -40,6 +40,25 @@ repositories {
         name = "Ladysnake Libs"
         url = 'https://maven.ladysnake.org/releases'
     }
+    exclusiveContent {
+        forRepository {
+            maven {
+                url = "https://maven.ftb.dev/releases"
+            }
+        }
+        filter {
+            includeGroup"dev.latvian.mods"
+            includeGroup"dev.ftb.mods"
+        }
+    }
+    // JEI Maven currently required by FTB
+    maven {
+        name "ModMaven (JEI)"
+        url "https://modmaven.dev/"
+        content {
+            includeGroup "mezz.jei"
+        }
+    }
 }
 
 loom {
@@ -75,6 +94,8 @@ dependencies {
     modCompileOnly("maven.modrinth:better-combat:${project.better_combat_version}")
     modImplementation("maven.modrinth:combat-roll:${project.combat_roll_version}")
     modImplementation("maven.modrinth:bundle-api:${project.bundle_api_version}")
+    modCompileOnly("dev.ftb.mods:ftb-teams-fabric:${project.ftb_teams_version}")
+    modCompileOnly("dev.ftb.mods:ftb-library-fabric:${project.ftb_library_version}")
 }
 
 processResources {
