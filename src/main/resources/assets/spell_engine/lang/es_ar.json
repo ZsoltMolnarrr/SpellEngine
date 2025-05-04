@@ -2,7 +2,7 @@
   "spell_engine.mod_name" : "Spell Engine",
   "enchantment.spell_engine.spell_infinity" : "Infinito de Hechizos",
   "enchantment.spell_engine.spell_infinity.desc" : "Los hechizos son gratuitos para lanzar",
-  "itemGroup.spell_engine.general" : "Hechizos",
+  "itemGroup.spell_engine.general" : "Spells",
   "item.spell_engine.scroll" : "Pergamino de Hechizo",
   "item.spell_engine.scroll.table_hint" : "Se puede adjuntar al Libro de Hechizos usando la Mesa de Vínculo de Hechizos",
   "entity.spell_engine.spell_projectile": "Hechizo",
@@ -97,7 +97,7 @@
   "text.autoconfig.spell_engine.option.client.holdToCastCharged" : "Mantener para lanzar hechizos CARGADOS",
   "text.autoconfig.spell_engine.option.client.holdToCastCharged.@Tooltip" : "¡Esto aplica solo para hechizos cargados! Si se habilita, el lanzamiento del hechizo se detendrá al soltar la tecla, de lo contrario, se detendrá cuando se presione la tecla nuevamente",
   "text.autoconfig.spell_engine.option.client.autoSwapHands" : "Intercambiar manos automáticamente con lanza y arco",
-  "text.autoconfig.spell_engine.option.client.autoSwapHands.@Tooltip" : "Tener una lanza y un arco en las manos principal y secundaria, la tecla de ataque cambiará a la lanza, la tecla de uso cambiará al arco."
+  "text.autoconfig.spell_engine.option.client.autoSwapHands.@Tooltip" : "Tener una lanza y un arco en las manos principal y secundaria, la tecla de ataque cambiará a la lanza, la tecla de uso cambiará al arco.",
   "text.autoconfig.spell_engine.option.client.spellHotbarHidesOffhand" : "Ocultar objeto de la mano secundaria en la barra de hechizos",
   "text.autoconfig.spell_engine.option.client.spellHotbarHidesOffhand.@Tooltip" : "Cuando se muestra el objeto utilizable en la barra de hechizos",
   "text.autoconfig.spell_engine.option.client.spellHotbarUseKey" : "Tecla para usar en la barra de hechizos",
