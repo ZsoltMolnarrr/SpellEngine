@@ -302,18 +302,20 @@ public class Defaults {
 
         items.put("bosses_of_mass_destruction:entities/lich", new LootConfig.Pool()
                 .rolls(2)
-                .add(W2, true)
-                .add(A2, true)
-                .add(X2)
+                .add(W2, true).weight(4)
+                .add(A2, true).weight(6)
+                .add(X2).weight(2)
                 .add(R2)
+                .add(W5)
         );
 
         items.put("bosses_of_mass_destruction:entities/void_blossom", new LootConfig.Pool()
                 .rolls(2)
-                .add(W2, true)
-                .add(A2, true)
-                .add(X2)
+                .add(W2, true).weight(6)
+                .add(A2, true).weight(3)
+                .add(X2).weight(2)
                 .add(R2)
+                .add(W5)
         );
 
         items.put("bosses_of_mass_destruction:chests/gauntlet", new LootConfig.Pool()
