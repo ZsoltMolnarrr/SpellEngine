@@ -1,3 +1,10 @@
+# 1.6.10
+
+Functional changes:
+- Friend or Foe logic now supports FTB Teams membership
+- Friend or Foe logic extended with additional configuration options
+- Update loot injection defaults
+
 # 1.6.9
 
 Functional changes:

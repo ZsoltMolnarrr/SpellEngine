@@ -1,24 +1,30 @@
 package net.spell_engine.internals.target;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.scoreboard.AbstractTeam;
+import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.compat.MultipartEntityCompat;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class EntityRelations {
     public static EntityRelation getRelation(LivingEntity attacker, Entity target) {
+        var config = SpellEngineMod.config;
         if (attacker == target) {
-            return EntityRelation.ALLY;
+            return config.player_relation_to_self_and_pets;
         }
         target = MultipartEntityCompat.coalesce(target);
 
@@ -31,21 +37,26 @@ public class EntityRelations {
         if (target instanceof AbstractDecorationEntity) {
             return EntityRelation.NEUTRAL;
         }
-        var config = SpellEngineMod.config;
 
         for (var matcher: TEAM_MATCHERS.values()) {
             var relation = matcher.getRelation(attacker, target);
             if (relation != null) {
                 return relation.areTeammates()
-                        ? (relation.friendlyFireAllowed() ? EntityRelation.FRIENDLY : EntityRelation.ALLY)
+                        ? (relation.friendlyFireAllowed() ? config.player_relation_to_teammates : EntityRelation.ALLY)
                         : EntityRelation.HOSTILE;
             }
         }
 
-        var id = Registries.ENTITY_TYPE.getId(target.getType());
+        var targetTypeEntry = Registries.ENTITY_TYPE.getEntry(target.getType());
+        var id = targetTypeEntry.getKey().get().getValue();
         var mappedRelation = config.player_relations.get(id.toString());
         if (mappedRelation != null) {
             return mappedRelation;
+        }
+        for (var entry: getRelationTagsCache().entrySet()) {
+            if (targetTypeEntry.isIn(entry.getKey())) {
+                return entry.getValue();
+            }
         }
         if (target instanceof PassiveEntity) {
             return EntityRelation.coalesce(config.player_relation_to_passives, EntityRelation.HOSTILE);
@@ -54,6 +65,20 @@ public class EntityRelations {
             return EntityRelation.coalesce(config.player_relation_to_hostiles, EntityRelation.HOSTILE);
         }
         return EntityRelation.coalesce(config.player_relation_to_other, EntityRelation.HOSTILE);
+    }
+
+    private static Map<TagKey<EntityType<?>>, EntityRelation> RELATION_TAG_CACHE = null;
+    private static Map<TagKey<EntityType<?>>, EntityRelation> getRelationTagsCache() {
+        if (RELATION_TAG_CACHE == null) {
+            RELATION_TAG_CACHE = new HashMap<>();
+            for (var entrySet: SpellEngineMod.config.player_relation_tags.entrySet()) {
+                var tagString = entrySet.getKey();
+                var relation = entrySet.getValue();
+                var tag = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(tagString));
+                RELATION_TAG_CACHE.put(tag, relation);
+            }
+        }
+        return RELATION_TAG_CACHE;
     }
 
     public record TeamRelation(boolean areTeammates, boolean friendlyFireAllowed) { }
