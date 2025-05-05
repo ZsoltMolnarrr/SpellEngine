@@ -180,8 +180,8 @@ public class Defaults {
                 .forEach(id -> items.put(id, new LootConfig.Pool()
                         .rolls(1)
                         .bonus_rolls(0)
-                        .add(W4, true)
-                        .add(A3, true)
+                        .add(W4, true).weight(4)
+                        .add(A3, true).weight(4)
                         .add(X4)
                         .add(R4)
                         .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
@@ -255,15 +255,15 @@ public class Defaults {
         items.put("minecraft:entities/ender_dragon", new LootConfig.Pool()
                 .rolls(3)
                 .add(W5)
-                .add(W3).enchant()
-                .add(X4)
+                .add(W3).enchant().weight(4)
+                .add(X4).weight(2)
                 .add(R3).filter(DRAGON)
         );
 
         items.put("minecraft:entities/wither", new LootConfig.Pool()
                 .rolls(2)
-                .add(W3).enchant()
-                .add(A3).enchant()
+                .add(W3).enchant().weight(4)
+                .add(A3).enchant().weight(4)
                 .add(X3)
                 .add(R3)
                 .add(W5)
@@ -271,10 +271,10 @@ public class Defaults {
 
         items.put("minecraft:entities/warden", new LootConfig.Pool()
                 .rolls(2)
-                .add(W2, true)
-                .add(A2, true)
-                .add(X2)
-                .add(R2)
+                .add(W2, true).weight(4)
+                .add(A2, true).weight(4)
+                .add(X2).weight(2)
+                .add(R2).weight(2)
                 .add(W5)
         );
 
@@ -282,18 +282,18 @@ public class Defaults {
 
         items.put("minecells:entities/conjunctivius", new LootConfig.Pool()
                 .rolls(2)
-                .add(W2, true)
-                .add(A2, true)
-                .add(X4)
-                .add(R2)
+                .add(W2, true).weight(4)
+                .add(A2, true).weight(4)
+                .add(X4).weight(2)
+                .add(R2).weight(2)
                 .add(W5)
         );
 
         items.put("minecells:entities/concierge", new LootConfig.Pool()
                 .rolls(2)
-                .add(W2, true)
-                .add(A2, true)
-                .add(X4)
+                .add(W2, true).weight(4)
+                .add(A2, true).weight(4)
+                .add(X4).weight(2)
                 .add(R3)
                 .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
         );
@@ -318,20 +318,18 @@ public class Defaults {
 
         items.put("bosses_of_mass_destruction:chests/gauntlet", new LootConfig.Pool()
                 .rolls(2)
-                .add(W2, true)
-                .add(A2, true)
-                .add(W3, true)
-                .add(A3, true)
+                .add(W3, true).weight(5)
+                .add(A3, true).weight(5)
                 .add(W5)
-                .add(X3)
+                .add(X3).weight(2)
                 .add(R3)
         );
 
         items.put("bosses_of_mass_destruction:chests/obsidilith", new LootConfig.Pool()
                 .rolls(2)
-                .add(W4, true)
-                .add(A3, true)
-                .add(X4)
+                .add(W4, true).weight(4)
+                .add(A3, true).weight(4)
+                .add(X4).weight(2)
                 .add(R4)
                 .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
         );
@@ -340,8 +338,8 @@ public class Defaults {
 
         items.put("friendsandfoes:entities/wildfire", new LootConfig.Pool()
                 .rolls(2)
-                .add(A3, true)
-                .add(X3)
+                .add(A3, true).weight(6)
+                .add(X3).weight(2)
                 .add(R2)
                 .add(W5)
         );
@@ -350,9 +348,9 @@ public class Defaults {
 
         items.put("formidulus:entities/deer_god", new LootConfig.Pool()
                 .rolls(2)
-                .add(W2, true)
-                .add(A2, true)
-                .add(X2)
+                .add(W2, true).weight(4)
+                .add(A2, true).weight(4)
+                .add(X2).weight(2)
                 .add(R2)
                 .add(W5)
         );
@@ -426,7 +424,7 @@ public class Defaults {
 
         items.put("eternal_starlight:bosses/boss_common", new LootConfig.Pool()
                 .rolls(2)
-                .add(X4)
+                .add(X4).weight(2)
                 .add(R4)
                 .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
         );
@@ -795,8 +793,8 @@ public class Defaults {
         List.of("nova_structures:vault_shrine_ominous"
         ).forEach(id -> items.put(id, new LootConfig.Pool()
                 .rolls(1)
-                .add(A3).enchant().weight(3)
-                .add(W3).enchant().weight(3)
+                .add(A3).enchant().weight(4)
+                .add(W3).enchant().weight(4)
                 .add(W5)
                 .add(X4)
         ));
