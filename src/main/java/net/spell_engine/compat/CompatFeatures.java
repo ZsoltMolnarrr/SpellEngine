@@ -9,5 +9,6 @@ public class CompatFeatures {
         TrinketsCompat.init();
         CombatRollCompat.init();
         MeleeCompat.init();
+        FTBTeamsCompat.init();
     }
 }

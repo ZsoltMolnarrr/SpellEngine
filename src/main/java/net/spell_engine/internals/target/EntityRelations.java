@@ -1,19 +1,19 @@
 package net.spell_engine.internals.target;
 
-import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
-import dev.ftb.mods.ftbteams.api.TeamManager;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.decoration.AbstractDecorationEntity;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.compat.MultipartEntityCompat;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class EntityRelations {
     public static EntityRelation getRelation(LivingEntity attacker, Entity target) {
@@ -22,8 +22,6 @@ public class EntityRelations {
         }
         target = MultipartEntityCompat.coalesce(target);
 
-        var casterTeam = attacker.getScoreboardTeam();
-        var targetTeam = target.getScoreboardTeam();
         if (target instanceof Tameable tameable) {
             var owner = tameable.getOwner();
             if (owner != null) {
@@ -34,38 +32,46 @@ public class EntityRelations {
             return EntityRelation.NEUTRAL;
         }
         var config = SpellEngineMod.config;
-        if (casterTeam == null || targetTeam == null) {
-            // --- FTB TEAMS ---
-            if (FabricLoader.getInstance().isModLoaded("ftbteams") && attacker instanceof PlayerEntity attackerPlayer && target instanceof PlayerEntity targetPlayer) {
-                boolean managerAvailable = attacker.getWorld().isClient ?
-                        FTBTeamsAPI.api().isClientManagerLoaded() :
-                        FTBTeamsAPI.api().isManagerLoaded();
-                if (managerAvailable) {
-                    TeamManager manager = FTBTeamsAPI.api().getManager();
-                    if (manager.arePlayersInSameTeam(attackerPlayer.getUuid(), targetPlayer.getUuid())) {
-                        return EntityRelation.ALLY;
-                    }
-                }
-            }
-            // --- END FTB TEAMS ---
 
-            var id = Registries.ENTITY_TYPE.getId(target.getType());
-            var mappedRelation = config.player_relations.get(id.toString());
-            if (mappedRelation != null) {
-                return mappedRelation;
+        for (var matcher: TEAM_MATCHERS.values()) {
+            var relation = matcher.getRelation(attacker, target);
+            if (relation != null) {
+                return relation.areTeammates()
+                        ? (relation.friendlyFireAllowed() ? EntityRelation.FRIENDLY : EntityRelation.ALLY)
+                        : EntityRelation.HOSTILE;
             }
-            if (target instanceof PassiveEntity) {
-                return EntityRelation.coalesce(config.player_relation_to_passives, EntityRelation.HOSTILE);
-            }
-            if (target instanceof HostileEntity) {
-                return EntityRelation.coalesce(config.player_relation_to_hostiles, EntityRelation.HOSTILE);
-            }
-            return EntityRelation.coalesce(config.player_relation_to_other, EntityRelation.HOSTILE);
-        } else {
-            return attacker.isTeammate(target)
-                    ? (casterTeam.isFriendlyFireAllowed() ? EntityRelation.FRIENDLY : EntityRelation.ALLY)
-                    : EntityRelation.HOSTILE;
         }
+
+        var id = Registries.ENTITY_TYPE.getId(target.getType());
+        var mappedRelation = config.player_relations.get(id.toString());
+        if (mappedRelation != null) {
+            return mappedRelation;
+        }
+        if (target instanceof PassiveEntity) {
+            return EntityRelation.coalesce(config.player_relation_to_passives, EntityRelation.HOSTILE);
+        }
+        if (target instanceof HostileEntity) {
+            return EntityRelation.coalesce(config.player_relation_to_hostiles, EntityRelation.HOSTILE);
+        }
+        return EntityRelation.coalesce(config.player_relation_to_other, EntityRelation.HOSTILE);
+    }
+
+    public record TeamRelation(boolean areTeammates, boolean friendlyFireAllowed) { }
+    public interface TeamMatcher { @Nullable TeamRelation getRelation(Entity attacker, Entity target); }
+    private static final Map<String, TeamMatcher> TEAM_MATCHERS = new LinkedHashMap<>();
+    public static void registerTeamMatcher(String name, TeamMatcher matcher) {
+        TEAM_MATCHERS.put(name, matcher);
+    }
+    static {
+        registerTeamMatcher("vanilla", (entity1, entity2) -> {
+            var team1 = entity1.getScoreboardTeam();
+            var team2 = entity2.getScoreboardTeam();
+            if (team1 == null || team2 == null) {
+                return null;
+            }
+            var friendlyFire = team1.isFriendlyFireAllowed();
+            return new TeamRelation(entity1.isTeammate(entity2), friendlyFire);
+        });
     }
 
     // Make sure this complies with comment in `ServerConfig`
