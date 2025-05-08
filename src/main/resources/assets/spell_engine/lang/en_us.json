@@ -49,7 +49,7 @@
   "spell.tooltip.cooldown.proportional": "Cooldown proportional to usage",
   "spell.tooltip.ammo": "Requires: {item}",
   "spell.tooltip.ammo.plural": "Requires: {item} ({count}x)",
-  "spell.tooltip.hold_for_details": "(Hold %1$s for details)",
+  "spell.tooltip.hold_for_details": "[%1$s] to show details",
   "spell.tooltip.spell_binding_tip": "(Use Spell Binding Table to add spells)",
 
   "gui.spell_engine.config_menu" : "Spell Engine Config",

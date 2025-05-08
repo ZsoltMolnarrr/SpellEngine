@@ -140,7 +140,7 @@ public class SpellTooltip {
                 if (!keybinding.isUnbound() && container.spell_ids().size() > 0) {
                     spellTextLines.add(Text.translatable("spell.tooltip.hold_for_details",
                                     keybinding.getBoundKeyLocalizedText())
-                            .formatted(Formatting.GRAY));
+                            .formatted(Formatting.DARK_GRAY));
                 }
                 if (config.showSpellBindingTooltip
                         && container.pool() != null && !container.pool().isEmpty()
