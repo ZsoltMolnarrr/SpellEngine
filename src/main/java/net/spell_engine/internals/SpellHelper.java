@@ -10,6 +10,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -966,7 +967,10 @@ public class SpellHelper {
                         Optional<RegistryEntry<StatusEffect>> optionalEffect = Optional.empty();
                         if (data.remove != null) {
                             var effects = livingTarget.getStatusEffects()
-                                    .stream().filter(instance -> instance.getEffectType().value().isBeneficial() == data.remove.select_beneficial)
+                                    .stream().filter(instance ->
+                                            instance.getEffectType().value().isBeneficial() == data.remove.select_beneficial
+                                            && PatternMatching.matches(instance.getEffectType(), RegistryKeys.STATUS_EFFECT, data.remove.id)
+                                    )
                                     .toList();
                             switch (data.remove.selector) {
                                 case RANDOM -> {

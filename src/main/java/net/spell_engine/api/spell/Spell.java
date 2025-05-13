@@ -321,7 +321,10 @@ public class Spell {
                 public Remove remove;
                 public static class Remove { public Remove() { }
                     public enum Selector { RANDOM, FIRST }
-                    @Nullable public Selector selector = Selector.RANDOM;
+                    /// Status effect id pattern
+                    /// (Universal pattern matcher)
+                    @Nullable public String id;
+                    public Selector selector = Selector.RANDOM;
                     public boolean select_beneficial = false;
                 }
             }

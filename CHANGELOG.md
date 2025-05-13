@@ -5,6 +5,10 @@ Functional changes:
 - Friend or Foe logic extended with additional configuration options
 - Update loot injection defaults
 
+API changes:
+- Status effect impact type, remove mode, now supports id pattern
+- Universal pattern matcher now supports negated explicit match (prefix: `!`)
+
 # 1.6.9
 
 Functional changes:
