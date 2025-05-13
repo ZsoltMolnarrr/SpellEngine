@@ -1,3 +1,8 @@
+# 1.6.11
+
+Functional changes:
+- Fix effect removal out of bounds warning
+
 # 1.6.10
 
 Functional changes:
