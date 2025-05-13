@@ -972,6 +972,9 @@ public class SpellHelper {
                                             && PatternMatching.matches(instance.getEffectType(), RegistryKeys.STATUS_EFFECT, data.remove.id)
                                     )
                                     .toList();
+                            if (effects.isEmpty()) {
+                                return false;
+                            }
                             switch (data.remove.selector) {
                                 case RANDOM -> {
                                     optionalEffect = Optional.of(effects.get(world.random.nextInt(effects.size()))).map(StatusEffectInstance::getEffectType);
