@@ -38,6 +38,39 @@ In game features
 
 ## ⌨️ Game technical features
 
+### Spells
+
+Fully data driven, stored in dynamic registry.
+
+### Spell assignments
+
+Spells can be assigned to items, by pairing a `SpellContainer` to the item.
+
+This can be done in multiple ways:
+- Item Component
+- Data file
+
+(Priority of these methods follows the order of the list above.) 
+
+#### Assignment with Item Component
+
+Assigning a spell container to an item, using a game command:
+```
+/give @p wizards:staff_wizard[spell_engine:spell_container={is_proxy:true, spell_ids: ["wizards:fireball"] }]
+```
+
+#### Assignment with Data File
+
+Assigning a spell container to an item, using a data file.
+
+Located at `data/MOD_ID/spell_assignments/ITEM_NAME.json`.
+```json
+{
+  "is_proxy": true,
+  "spell_ids": [ "wizards:fireball" ]
+}
+```
+
 ### Extra inventory slots
 
 #### Trinkets integration
@@ -300,7 +333,9 @@ public class FrostShieldRenderer implements CustomModelStatusEffect.Renderer {
 
 ### Create a pool of spells
 
-Create your pool, by creating a JSON file at: `resources/data/MOD_ID/spell_pools/POOL_ID.json`.
+Spell pools are simply a collection of spells, defined using tags.
+
+Create your pool (spell tag), by creating a JSON file at: `resources/data/MOD_ID/tags/spell/MY_SPELL_TAG.json`.
 
 Example, an arbitrary set spells:
 ```json
