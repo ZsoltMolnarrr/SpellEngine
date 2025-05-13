@@ -2,6 +2,7 @@
 
 Functional changes:
 - Fix effect removal out of bounds warning
+- Bundles no longer have support for the Quiver slot 
 
 # 1.6.10
 
