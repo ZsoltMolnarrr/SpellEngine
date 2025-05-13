@@ -172,6 +172,7 @@ public class Defaults {
                         .add(X2, false)
                     );
                     scrolls.put(id, new LootConfig.Pool()
+                        .rolls(0.5)
                         .scroll(3, 4)
                     );
                 });
@@ -204,8 +205,8 @@ public class Defaults {
                         .add(R1)
                     );
                     scrolls.put(id, new LootConfig.Pool()
-                        .rolls(0.5)
-                        .scroll(1, 2)
+                        .rolls(0.25)
+                        .scroll(2, 3)
                     );
                 });
 
@@ -220,8 +221,8 @@ public class Defaults {
                         .add(R2)
                     );
                     scrolls.put(id, new LootConfig.Pool()
-                        .rolls(0.5)
-                        .scroll(2, 3)
+                        .rolls(0.25)
+                        .scroll(3, 4)
                     );
                 });
 
@@ -458,7 +459,7 @@ public class Defaults {
                 .add(X2)
         );
         scrolls.put("nova_structures:chests/desert_ruins/desert_ruin_lesser_treasure", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .scroll(1, 2)
         );
         items.put("nova_structures:chests/desert_ruins/desert_ruin_main_temple", new LootConfig.Pool()
@@ -522,7 +523,7 @@ public class Defaults {
                 .add(R2)
         );
         scrolls.put("nova_structures:chests/nether_keep/vault_keep", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .scroll(3, 4)
         );
 
@@ -545,7 +546,7 @@ public class Defaults {
                 .add(R2)
         );
         scrolls.put("nova_structures:chests/trident_trial_monument/ttm_common_vault", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .scroll(2, 3)
         );
 
@@ -558,7 +559,7 @@ public class Defaults {
                 .add(X1)
         );
         scrolls.put("nova_structures:chests/badland_miner_outpost_towers", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .scroll(1, 2)
         );
         items.put("nova_structures:chests/badland_miner_outpost", new LootConfig.Pool()
@@ -575,7 +576,7 @@ public class Defaults {
                 .add(X1)
         );
         scrolls.put("nova_structures:chests/illager_hideout_library", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .scroll(1, 3)
         );
         items.put("nova_structures:chests/illager_hideout_tresure", new LootConfig.Pool()
@@ -586,7 +587,7 @@ public class Defaults {
                 .add(R1)
         );
         scrolls.put("nova_structures:chests/illager_hideout_tresure", new LootConfig.Pool()
-                .rolls(1)
+                .rolls(0.5)
                 .scroll(1, 2)
         );
         items.put("nova_structures:chests/illager_outpost_weaponry", new LootConfig.Pool()
@@ -609,7 +610,7 @@ public class Defaults {
                 .add(X2, false)
         );
         scrolls.put("minecraft:chests/stronghold/library", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .scroll(3, 4)
         );
         scrolls.put("minecraft:chests/stronghold/library_bookshelf", new LootConfig.Pool()
@@ -646,15 +647,15 @@ public class Defaults {
                 .add(X2)
         );
         scrolls.put("nova_structures:chests/lone_citadel/c_vault", new LootConfig.Pool()
-                .rolls(0.5)
-                .scroll(2, 3)
+                .rolls(0.25)
+                .scroll(2, 4)
         );
         items.put("nova_structures:chests/lone_citadel/c_library", new LootConfig.Pool()
                 .rolls(1)
                 .add(A2)
         );
         scrolls.put("nova_structures:chests/lone_citadel/c_library", new LootConfig.Pool()
-                .rolls(1)
+                .rolls(0.25)
                 .scroll(3, 4)
         );
         items.put("nova_structures:chests/lone_citadel/c_forge_chest", new LootConfig.Pool()
@@ -671,7 +672,7 @@ public class Defaults {
                 .add(A1)
         );
         scrolls.put("nova_structures:chests/bunker_altar", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .scroll(1)
         );
 
@@ -702,7 +703,7 @@ public class Defaults {
                 .add(R1)
         );
         scrolls.put("nova_structures:chests/creeping_crypt/vault_creeping", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .scroll(1, 3)
         );
 
@@ -723,7 +724,7 @@ public class Defaults {
         );
         scrolls.put("nova_structures:chests/toxic_lair/toxic_ominous_vault", new LootConfig.Pool()
                 .rolls(0.5)
-                .scroll(2, 3)
+                .scroll(2, 4)
         );
         items.put("nova_structures:chests/toxic_lair/toxic_boss_vault", new LootConfig.Pool()
                 .rolls(1)
@@ -817,7 +818,7 @@ public class Defaults {
                 .add(W1).enchant()
         );
         scrolls.put("adventuredungeons:chests/coldlair/coldlair_chest_library_default1", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .scroll(2, 3)
         );
         items.put("adventuredungeons:chests/coldlair/coldlair_chest_rare1", new LootConfig.Pool()
@@ -887,8 +888,8 @@ public class Defaults {
                 .add(A1, true)
         );
         scrolls.put("graveyard:chests/medium_loot", new LootConfig.Pool()
-                .rolls(0.5)
-                .scroll(2, 2)
+                .rolls(0.25)
+                .scroll(2, 3)
         );
         items.put("graveyard:chests/large_loot", new LootConfig.Pool()
                 .rolls(1)
@@ -941,7 +942,8 @@ public class Defaults {
                 .add(X1)
         );
         scrolls.put("takesapillage:chests/bastille/church", new LootConfig.Pool()
-                .scroll(1, 2)
+                .rolls(0.5)
+                .scroll(2, 3)
         );
 
         // YUNG Better Dungeons mod
@@ -972,7 +974,7 @@ public class Defaults {
                 .add(X1)
         );
         scrolls.put("betterdungeons:zombie_dungeon/chests/special", new LootConfig.Pool()
-                .rolls(1)
+                .rolls(0.1)
                 .scroll(1, 2)
         );
 
@@ -997,7 +999,7 @@ public class Defaults {
         // YUNG Better Desert Temples mod
 
         scrolls.put("betterdeserttemples:chests/library", new LootConfig.Pool()
-                .rolls(1)
+                .rolls(0.6)
                 .scroll(1, 2)
         );
         items.put("betterdeserttemples:chests/pharaoh_hidden", new LootConfig.Pool()
@@ -1046,9 +1048,10 @@ public class Defaults {
         );
         scrolls.put("betterstrongholds:chests/grand_library", new LootConfig.Pool()
                 .rolls(1)
-                .scroll(2, 4)
+                .scroll(3, 4)
         );
         scrolls.put("betterstrongholds:chests/library_md", new LootConfig.Pool()
+                .rolls(0.5)
                 .scroll(2, 3)
         );
         items.put("betterstrongholds:chests/crypt", new LootConfig.Pool()
@@ -1225,10 +1228,6 @@ public class Defaults {
                 .add(W1)
                 .add(A1)
         );
-        scrolls.put("kaisyn:outpost/common/armory", new LootConfig.Pool()
-                .rolls(0.5)
-                .scroll(1, 2)
-        );
 
         items.put("kaisyn:village/exclusives/village_piglin_barrel", new LootConfig.Pool()
                 .rolls(0.2)
@@ -1281,7 +1280,7 @@ public class Defaults {
                 .add(X2)
         );
         scrolls.put("terralith:spire/treasure", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .scroll(2, 3)
         );
 
@@ -1384,7 +1383,7 @@ public class Defaults {
                 .add(X2)
         );
         scrolls.put("dungeons_arise:chests/infested_temple/infested_temple_top_treasure", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .scroll(2, 3)
         );
         items.put("dungeons_arise:chests/illager_windmill/illager_windmill_treasure", new LootConfig.Pool()
@@ -1399,7 +1398,7 @@ public class Defaults {
                 .add(X2)
         );
         scrolls.put("dungeons_arise:chests/bandit_towers/bandit_towers_treasure", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .scroll(1, 3)
         );
         items.put("dungeons_arise:chests/ceryneian_hind/ceryneian_hind_treasure", new LootConfig.Pool()
@@ -1418,7 +1417,7 @@ public class Defaults {
                 .add(X2)
         );
         scrolls.put("dungeons_arise:chests/heavenly_conqueror/heavenly_conqueror_treasure", new LootConfig.Pool()
-                .rolls(0.5)
+                .rolls(0.25)
                 .scroll(2, 3)
         );
         items.put("dungeons_arise:chests/aviary/aviary_treasure", new LootConfig.Pool()
@@ -1446,8 +1445,8 @@ public class Defaults {
                 .add(X1)
         );
         scrolls.put("dungeons_arise_seven_seas:chests/corsair_corvette/corsair_corvette_treasure", new LootConfig.Pool()
-                .rolls(0.5)
-                .scroll(1, 2)
+                .rolls(0.25)
+                .scroll(2, 3)
         );
         items.put("dungeons_arise_seven_seas:chests/small_yacht/small_yacht_treasure", new LootConfig.Pool()
                 .add(W1, true)
@@ -1505,7 +1504,7 @@ public class Defaults {
         );
         scrolls.put("dungeons_arise:chests/illager_fort/illager_fort_treasure", new LootConfig.Pool()
                 .rolls(0.5)
-                .scroll(1, 3)
+                .scroll(2, 3)
         );
         items.put("dungeons_arise:chests/keep_kayra/keep_kayra_treasure", new LootConfig.Pool()
                 .add(W2)
@@ -1517,7 +1516,7 @@ public class Defaults {
         );
         scrolls.put("dungeons_arise:chests/keep_kayra/keep_kayra_treasure", new LootConfig.Pool()
                 .rolls(0.3)
-                .scroll(1, 3)
+                .scroll(3, 4)
         );
         items.put("dungeons_arise_seven_seas:chests/pirate_junk/pirate_junk_treasure", new LootConfig.Pool()
                 .rolls(0.5)
@@ -1544,7 +1543,7 @@ public class Defaults {
                 .add(X3)
         );
         scrolls.put("dungeons_arise:chests/keep_kayra/keep_kayra_library_treasure", new LootConfig.Pool()
-                .rolls(2)
+                .rolls(1)
                 .scroll(1, 4)
         );
         items.put("dungeons_arise:chests/mining_system/mining_system_treasure", new LootConfig.Pool()
@@ -1569,7 +1568,7 @@ public class Defaults {
                 .add(X2)
         );
         scrolls.put("dungeons_arise:chests/plague_asylum/plague_asylum_treasure", new LootConfig.Pool()
-                .rolls(0.3)
+                .rolls(0.2)
                 .scroll(1, 3)
         );
         items.put("dungeons_arise_seven_seas:chests/unicorn_galleon/unicorn_galleon_treasure", new LootConfig.Pool()
@@ -1584,6 +1583,7 @@ public class Defaults {
                 .add(X2)
         );
         scrolls.put("dungeons_arise:chests/shiraz_palace/shiraz_palace_library", new LootConfig.Pool()
+                .rolls(0.5)
                 .scroll(1, 4)
         );
         items.put("dungeons_arise:chests/shiraz_palace/shiraz_palace_elite", new LootConfig.Pool()
