@@ -2,7 +2,10 @@
 
 Functional changes:
 - Fix effect removal out of bounds warning
-- Bundles no longer have support for the Quiver slot 
+- Bundles no longer have support for the Quiver slot
+
+API changes:
+- Add Status Effect impact, `amplifier_cap` field
 
 # 1.6.10
 

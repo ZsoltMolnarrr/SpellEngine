@@ -304,13 +304,22 @@ public class Spell {
             }
             public StatusEffect status_effect;
             public static class StatusEffect { public StatusEffect() { }
+                /// ID of the status effect to apply
                 public String effect_id;
+                /// Duration of the status effect in seconds
                 public float duration = 10;
+                /// How many stacks to apply (0 = 1, 1 = 2, 2 = 3, etc...)
                 public int amplifier = 0;
+                /// Maximum stacks to apply (ignored by mode `ADD`, where this is achieved by `amplifier`)
+                public int amplifier_cap = 0;
+                /// How many additional stacks to apply based on power
                 public float amplifier_power_multiplier = 0;
+                /// Whether already applied stacks should be refreshed
                 public boolean refresh_duration = true;
-                public ApplyMode apply_mode = ApplyMode.SET;
+
                 public enum ApplyMode { SET, ADD, REMOVE }
+                public ApplyMode apply_mode = ApplyMode.SET;
+
                 @Nullable public ApplyLimit apply_limit;
                 public static class ApplyLimit { public ApplyLimit() { }
                     public float health_base = 0;

@@ -1008,11 +1008,16 @@ public class SpellHelper {
 
                                 if (data.apply_mode == Spell.Impact.Action.StatusEffect.ApplyMode.ADD) {
                                     var currentEffect = livingTarget.getStatusEffect(effect);
+
+                                    var legacyMode = data.amplifier_cap == 0;
+                                    var cap = !legacyMode ? data.amplifier_cap : data.amplifier;
+                                    var increment = !legacyMode ? data.amplifier : 1;
+
                                     int newAmplifier = 0;
                                     if (currentEffect != null) {
                                         var currentAmplifier = currentEffect.getAmplifier();
-                                        var incrementedAmplifier = currentAmplifier + 1;
-                                        newAmplifier = Math.min(incrementedAmplifier, amplifier);
+                                        var incrementedAmplifier = currentAmplifier + increment;
+                                        newAmplifier = Math.min(incrementedAmplifier, cap);
                                         if (!data.refresh_duration) {
                                             if (currentAmplifier == newAmplifier) {
                                                 return false;
@@ -1021,6 +1026,10 @@ public class SpellHelper {
                                         }
                                     }
                                     amplifier = newAmplifier;
+                                } else {
+                                    if (data.amplifier_cap > 0) {
+                                        amplifier = Math.min(amplifier, data.amplifier_cap);
+                                    }
                                 }
                                 ///
                                 if (caster instanceof PlayerEntity player) {
@@ -1032,6 +1041,9 @@ public class SpellHelper {
                                 success = true;
                             }
                             case REMOVE -> {
+                                if (data.amplifier_cap > 0) {
+                                    amplifier = Math.min(amplifier, data.amplifier_cap);
+                                }
                                 if (livingTarget.hasStatusEffect(effect)) {
                                     ///
                                     if (caster instanceof PlayerEntity player) {
