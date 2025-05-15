@@ -2,6 +2,7 @@
 
 Functional changes:
 - Fix effect removal out of bounds warning
+- Fix passive spells triggering on already dead targets
 - Bundles no longer have support for the Quiver slot
 
 API changes:

@@ -854,6 +854,10 @@ public class SpellHelper {
             if (!conditionResult.allowed) {
                 return false;
             }
+            var targetWasAlive = true;
+            if (target instanceof LivingEntity livingEntity) {
+                targetWasAlive = livingEntity.isAlive();
+            }
 
             // Power calculation
 
@@ -1009,7 +1013,7 @@ public class SpellHelper {
                                 if (data.apply_mode == Spell.Impact.Action.StatusEffect.ApplyMode.ADD) {
                                     var currentEffect = livingTarget.getStatusEffect(effect);
 
-                                    var legacyMode = data.amplifier_cap == 0;
+                                    var legacyMode = data.amplifier_cap == 0 && data.amplifier > 0;
                                     var cap = !legacyMode ? data.amplifier_cap : data.amplifier;
                                     var increment = !legacyMode ? data.amplifier : 1;
 
@@ -1223,7 +1227,7 @@ public class SpellHelper {
                 if (impact.sound != null) {
                     SoundHelper.playSound(world, target, impact.sound);
                 }
-                if (caster instanceof PlayerEntity player) {
+                if (targetWasAlive && caster instanceof PlayerEntity player) {
                     var finalTarget = target;
                     var finalCritical = critical;
                     ((WorldScheduler)world).schedule(0, () -> {
