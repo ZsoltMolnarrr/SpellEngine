@@ -1,3 +1,8 @@
+# 1.6.12
+
+Functional changes:
+- Fix orbiting effect renderer stutter (for example: Divine Protection)
+
 # 1.6.11
 
 Functional changes:

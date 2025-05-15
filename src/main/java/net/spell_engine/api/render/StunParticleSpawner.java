@@ -29,7 +29,7 @@ public class StunParticleSpawner implements CustomParticleStatusEffect.Spawner {
     public void spawnParticles(LivingEntity livingEntity, int amplifier) {
         var world = livingEntity.getWorld();
         if (world.isClient && world instanceof ClientWorld clientWorld) {
-            var time = livingEntity.age + livingEntity.getWorld().getTime(); // Offset by age so mobs don't look exactly same next to each other
+            var time = livingEntity.age; // Offset by age so mobs don't look exactly same next to each other
             var angle = Math.toRadians((time % 360) * 18F); // 18 degree per tick = 360 per sec
             var rotated = new Vec3d(0, 0, livingEntity.getWidth() * 0.5F).rotateY((float) angle);
             var spawnPosition = livingEntity

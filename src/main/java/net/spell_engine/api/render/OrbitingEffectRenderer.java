@@ -27,7 +27,7 @@ public class OrbitingEffectRenderer implements CustomModelStatusEffect.Renderer 
     @Override
     public void renderEffect(int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumers, int light) {
         matrixStack.push();
-        var time = livingEntity.getWorld().getTime() + delta;
+        var time = livingEntity.age + delta;
 
         var initialAngle = time * 2.25F - 45.0F;
         var horizontalOffset = this.horizontalOffset * livingEntity.getScaleFactor();
