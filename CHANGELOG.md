@@ -4,6 +4,7 @@ Functional changes:
 - Fix effect removal out of bounds warning
 - Fix passive spells triggering on already dead targets
 - Bundles no longer have support for the Quiver slot
+- Improve FTB Teams support, thanks to Muon #115
 
 API changes:
 - Add Status Effect impact, `amplifier_cap` field
