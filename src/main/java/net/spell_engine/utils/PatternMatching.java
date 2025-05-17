@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 public class PatternMatching {
     public static final String TAG_PREFIX = "#";
     public static final String REGEX_PREFIX = "~";
+    public static final String NEGATIVE_PREFIX = "!";
 
     public static <T> boolean matches(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
         if (pattern == null) {
@@ -26,7 +27,15 @@ public class PatternMatching {
         if (pattern.startsWith(REGEX_PREFIX)) {
             return regexMatches(id, pattern.substring(1));
         } else {
-            return id.equals(pattern);
+            if (pattern.startsWith(NEGATIVE_PREFIX)) {
+                pattern = pattern.substring(1);
+                if (pattern.isEmpty()) {
+                    return false;
+                }
+                return !id.equals(pattern);
+            } else {
+                return id.equals(pattern);
+            }
         }
     }
 

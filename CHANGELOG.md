@@ -1,9 +1,29 @@
+# 1.6.12
+
+Functional changes:
+- Fix orbiting effect renderer stutter (for example: Divine Protection)
+
+# 1.6.11
+
+Functional changes:
+- Fix effect removal out of bounds warning
+- Fix passive spells triggering on already dead targets
+- Bundles no longer have support for the Quiver slot
+- Improve FTB Teams support, thanks to Muon #115
+
+API changes:
+- Add Status Effect impact, `amplifier_cap` field
+
 # 1.6.10
 
 Functional changes:
 - Friend or Foe logic now supports FTB Teams membership
 - Friend or Foe logic extended with additional configuration options
 - Update loot injection defaults
+
+API changes:
+- Status effect impact type, remove mode, now supports id pattern
+- Universal pattern matcher now supports negated explicit match (prefix: `!`)
 
 # 1.6.9
 

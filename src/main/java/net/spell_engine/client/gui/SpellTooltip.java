@@ -35,6 +35,7 @@ public class SpellTooltip {
     public static final String itemToken = "item";
     public static final String effectDurationToken = "effect_duration";
     public static final String effectAmplifierToken = "effect_amplifier";
+    public static final String effectAmplifierCapToken = "effect_amplifier_cap";
     public static final String impactRangeToken = "impact_range";
     public static final String teleportDistanceToken = "teleport_distance";
     public static final String countToken = "count";
@@ -410,6 +411,9 @@ public class SpellTooltip {
                     case STATUS_EFFECT -> {
                         var statusEffect = impact.action.status_effect;
                         description = description.replace(placeholder(effectAmplifierToken), "" + (statusEffect.amplifier + 1));
+                        if (statusEffect.amplifier_cap > 0) {
+                            description = description.replace(placeholder(effectAmplifierCapToken), "" + (statusEffect.amplifier_cap + 1));
+                        }
                         description = description.replace(placeholder(effectDurationToken), formattedNumber(statusEffect.duration));
                     }
                     case TELEPORT -> {

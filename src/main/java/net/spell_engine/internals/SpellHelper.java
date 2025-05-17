@@ -10,6 +10,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -853,6 +854,10 @@ public class SpellHelper {
             if (!conditionResult.allowed) {
                 return false;
             }
+            var targetWasAlive = true;
+            if (target instanceof LivingEntity livingEntity) {
+                targetWasAlive = livingEntity.isAlive();
+            }
 
             // Power calculation
 
@@ -966,8 +971,14 @@ public class SpellHelper {
                         Optional<RegistryEntry<StatusEffect>> optionalEffect = Optional.empty();
                         if (data.remove != null) {
                             var effects = livingTarget.getStatusEffects()
-                                    .stream().filter(instance -> instance.getEffectType().value().isBeneficial() == data.remove.select_beneficial)
+                                    .stream().filter(instance ->
+                                            instance.getEffectType().value().isBeneficial() == data.remove.select_beneficial
+                                            && PatternMatching.matches(instance.getEffectType(), RegistryKeys.STATUS_EFFECT, data.remove.id)
+                                    )
                                     .toList();
+                            if (effects.isEmpty()) {
+                                return false;
+                            }
                             switch (data.remove.selector) {
                                 case RANDOM -> {
                                     optionalEffect = Optional.of(effects.get(world.random.nextInt(effects.size()))).map(StatusEffectInstance::getEffectType);
@@ -1001,11 +1012,16 @@ public class SpellHelper {
 
                                 if (data.apply_mode == Spell.Impact.Action.StatusEffect.ApplyMode.ADD) {
                                     var currentEffect = livingTarget.getStatusEffect(effect);
+
+                                    var legacyMode = data.amplifier_cap == 0 && data.amplifier > 0;
+                                    var cap = !legacyMode ? data.amplifier_cap : data.amplifier;
+                                    var increment = !legacyMode ? data.amplifier : 1;
+
                                     int newAmplifier = 0;
                                     if (currentEffect != null) {
                                         var currentAmplifier = currentEffect.getAmplifier();
-                                        var incrementedAmplifier = currentAmplifier + 1;
-                                        newAmplifier = Math.min(incrementedAmplifier, amplifier);
+                                        var incrementedAmplifier = currentAmplifier + increment;
+                                        newAmplifier = Math.min(incrementedAmplifier, cap);
                                         if (!data.refresh_duration) {
                                             if (currentAmplifier == newAmplifier) {
                                                 return false;
@@ -1014,6 +1030,10 @@ public class SpellHelper {
                                         }
                                     }
                                     amplifier = newAmplifier;
+                                } else {
+                                    if (data.amplifier_cap > 0) {
+                                        amplifier = Math.min(amplifier, data.amplifier_cap);
+                                    }
                                 }
                                 ///
                                 if (caster instanceof PlayerEntity player) {
@@ -1025,6 +1045,9 @@ public class SpellHelper {
                                 success = true;
                             }
                             case REMOVE -> {
+                                if (data.amplifier_cap > 0) {
+                                    amplifier = Math.min(amplifier, data.amplifier_cap);
+                                }
                                 if (livingTarget.hasStatusEffect(effect)) {
                                     ///
                                     if (caster instanceof PlayerEntity player) {
@@ -1204,7 +1227,7 @@ public class SpellHelper {
                 if (impact.sound != null) {
                     SoundHelper.playSound(world, target, impact.sound);
                 }
-                if (caster instanceof PlayerEntity player) {
+                if (targetWasAlive && caster instanceof PlayerEntity player) {
                     var finalTarget = target;
                     var finalCritical = critical;
                     ((WorldScheduler)world).schedule(0, () -> {
