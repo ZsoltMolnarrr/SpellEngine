@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.spell_engine.api.item.set.EquipmentSetTooltip;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.input.Keybindings;
@@ -33,6 +34,7 @@ public class FabricClientMod implements ClientModInitializer {
 
         ItemTooltipCallback.EVENT.register((itemStack, tooltipContext, tooltipType, lines) -> {
             SpellTooltip.addSpellLines(itemStack, tooltipType, lines);
+            EquipmentSetTooltip.appendLines(itemStack, lines);
         });
         EntityRendererRegistry.register(SpellProjectile.ENTITY_TYPE, SpellProjectileRenderer::new);
         EntityRendererRegistry.register(SpellCloud.ENTITY_TYPE, SpellCloudRenderer::new);

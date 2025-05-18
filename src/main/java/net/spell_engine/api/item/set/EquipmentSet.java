@@ -61,6 +61,10 @@ public class EquipmentSet {
                 Bonus.CODEC.listOf().fieldOf("bonuses").forGetter(Definition::bonuses)
         ).apply(instance, Definition::new));
     }
+    public static String translationKey(RegistryEntry<Definition> entry) {
+        var id = entry.getKey().get().getValue();
+        return "equipment." + id.getNamespace() + "." + id.getPath();
+    }
 
     public record DataComponent(Identifier id) {
         public static final Codec<DataComponent> CODEC = RecordCodecBuilder.create(instance -> instance.group(

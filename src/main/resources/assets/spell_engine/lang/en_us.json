@@ -153,6 +153,8 @@
   "gui.spell_engine.spell_binding.available" : "Bind spell",
   "gui.spell_engine.spell_binding.level_req_fail" : "Level Requirement: %s",
 
+  "equipment_set.bonus.count" : "(%s) Set: ",
+
   "advancements.rpg_series.root.title": "Spells",
   "advancements.rpg_series.root.description": "Discover the art of magical combat!",
   "advancements.rpg_series.enchant_spell_infinity.title": "Free Energy",

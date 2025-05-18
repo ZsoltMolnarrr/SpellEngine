@@ -85,7 +85,7 @@ public class SpellContainerSource {
             return new ItemEntry(name, source, dirtyChecker);
         }
         public static ItemEntry of(String name, ItemStackSource source)  {
-            return of(name, source, player -> source.getSpellContainers(player, name));
+            return of(name, source, player -> source.getSpellContainerItemStacks(player, name));
         }
     }
     public static final List<ItemEntry> itemSources = new ArrayList<>();
@@ -139,18 +139,18 @@ public class SpellContainerSource {
     public static final ItemEntry OFF_HAND = itemEntry("off_hand", (player, sourceName) -> {
         return List.of(player.getOffHandStack());
     });
-    public static final ItemEntry EQUIPMENT = itemEntry("equipment", (player, sourceName) -> {
+    public static final ItemEntry ARMOR = itemEntry("armor", (player, sourceName) -> {
         return List.of(player.getInventory().armor.get(0), player.getInventory().armor.get(1),
                 player.getInventory().armor.get(2), player.getInventory().armor.get(3));
     });
 
     public static void init() {
-        if (SpellEngineMod.config.spell_container_from_offhand) {
-            addItemSource(OFF_HAND);
-        }
-        if (SpellEngineMod.config.spell_container_from_equipment) {
-            addItemSource(EQUIPMENT);
-        }
+//        if (SpellEngineMod.config.spell_container_from_offhand) {
+//            addItemSource(OFF_HAND);
+//        }
+//        if (SpellEngineMod.config.spell_container_from_equipment) {
+//            addItemSource(EQUIPMENT);
+//        }
     }
 
     public static void update(PlayerEntity player) {

@@ -1,6 +1,8 @@
 package net.spell_engine.mixin.entity;
 
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -60,4 +62,16 @@ public class PlayerSpellContainerMixin implements SpellContainerSource.Owner {
 
         lastMainHandContainer = mainHandContainer;
     }
+
+//    @Inject(method = "equipStack", at = @At("TAIL"))
+//    private void equipStack_TAIL_SpellEngine_SpellContainer(EquipmentSlot slot, ItemStack stack, CallbackInfo ci) {
+//        var player = (PlayerEntity) (Object) this;
+//        if (slot == EquipmentSlot.MAINHAND) {
+//            SpellContainerSource.setDirty(player, SpellContainerSource.MAIN_HAND);
+//        } else if (slot == EquipmentSlot.OFFHAND) {
+//            SpellContainerSource.setDirty(player, SpellContainerSource.OFF_HAND);
+//        } else if (slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
+//            SpellContainerSource.setDirty(player, SpellContainerSource.ARMOR);
+//        }
+//    }
 }

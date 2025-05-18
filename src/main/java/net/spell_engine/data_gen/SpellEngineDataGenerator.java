@@ -21,6 +21,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         pack.addProvider(ParticlesGen::new);
         pack.addProvider(SoundGen::new);
         pack.addProvider(RPGSeriesDataGen.BaselineTagGenerator::new);
+        pack.addProvider(TestDataGen.TestEquipmentSetGenerator::new);
     }
 
     public static class ParticlesGen extends SimpleParticleGenerator {
