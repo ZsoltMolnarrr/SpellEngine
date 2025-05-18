@@ -36,23 +36,18 @@ public class TrinketsCompat {
             ContainerCompat.addProvider(TrinketsCompat::getAll);
 
             final var spellSourceName = "trinkets";
-            SpellContainerSource.addSource(
-                    new SpellContainerSource.Entry(
+            SpellContainerSource.addItemSource(
+                    SpellContainerSource.ItemEntry.of(
                             spellSourceName,
-                            TrinketsCompat::getSpellContainers,
-                            TrinketsCompat::getAll // DirtyChecker is necessary because TrinketUnequipCallback.EVENT doesn't work at all
+                            (player, name) -> getEquippedStacks(player)
                     ),
-                    SpellContainerSource.MAIN_HAND.name());
+                    SpellContainerSource.MAIN_HAND.name()
+            );
             TrinketEquipCallback.EVENT.register((stack, slot, entity) -> {
                 if (entity instanceof PlayerEntity player) {
                     SpellContainerSource.setDirty(player, spellSourceName);
                 }
             });
-//            TrinketUnequipCallback.EVENT.register((stack, slot, entity) -> {
-//                if (entity instanceof PlayerEntity player) {
-//                    SpellContainerSource.setDirty(player, sourceName);
-//                }
-//            });
         }
         intialized = true;
     }
@@ -95,6 +90,27 @@ public class TrinketsCompat {
 
         spellBooks.addAll(others);
         return spellBooks;
+    }
+
+    public static List<ItemStack> getEquippedStacks(PlayerEntity player) {
+        var component = TrinketsApi.getTrinketComponent(player);
+        if (component.isEmpty()) {
+            return List.of();
+        }
+        var equipped = new ArrayList<ItemStack>();
+        var trinketComponent = component.get();
+        trinketComponent.getAllEquipped().forEach(pair -> {
+            var stack = pair.getRight();
+            if (stack.isEmpty()) {
+                return;
+            }
+            if (pair.getLeft().getId().contains("spell/book")) {
+                equipped.addFirst(stack);
+            } else {
+                equipped.add(stack);
+            }
+        });
+        return equipped;
     }
 
     public static ItemStack getSpellBookStack(PlayerEntity player) {

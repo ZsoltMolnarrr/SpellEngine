@@ -7,6 +7,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.item.set.EquipmentSet;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
@@ -39,16 +40,19 @@ public class SpellContainerSource {
     public static void setDirty(PlayerEntity player, Entry source) {
         setDirty(player, source.name());
     }
+    public static void setDirty(PlayerEntity player, ItemEntry source) {
+        setDirty(player, source.name());
+    }
     public static void setDirty(PlayerEntity player, String source) {
         ((Owner)player).spellContainerCache().remove(source);
     }
 
+    public interface DirtyChecker {
+        Object current(PlayerEntity player);
+    }
     public record SourcedContainer(String name, ItemStack itemStack, SpellContainer container) { }
     public interface Source {
         List<SourcedContainer> getSpellContainers(PlayerEntity player, String name);
-    }
-    public interface DirtyChecker {
-        Object current(PlayerEntity player);
     }
     public record Entry(String name, Source source, @Nullable DirtyChecker checker) { }
     public static final List<Entry> sources = new ArrayList<>();
@@ -60,35 +64,43 @@ public class SpellContainerSource {
         sources.add(newEntry);
         return newEntry;
     }
-    public static final Entry MAIN_HAND = entry("main_hand", (player, sourceName) -> {
-        var heldItemStack = player.getMainHandStack();
-        var sources = new ArrayList<SourcedContainer>();
-        addSourceIfValid(heldItemStack, sources, sourceName);
-        return sources;
-    });
-    public static final Entry OFF_HAND = new Entry("off_hand", (player, sourceName) -> {
-        var offhandStack = player.getOffHandStack();
-        var sources = new ArrayList<SourcedContainer>();
-        addSourceIfValid(offhandStack, sources, sourceName);
-        return sources;
-    }, player -> player.getOffHandStack());
-    public static final Entry EQUIPMENT = new Entry("equipment", (player, sourceName) -> {
-        var sources = new ArrayList<SourcedContainer>();
-        if (SpellEngineMod.config.spell_container_from_equipment) {
-            for (var slot : player.getInventory().armor) {
-                addSourceIfValid(slot, sources, sourceName);
+
+    public interface ItemStackSource extends Source {
+        List<ItemStack> getSpellContainerItemStacks(PlayerEntity player, String name);
+        @Override
+        default List<SourcedContainer> getSpellContainers(PlayerEntity player, String name) {
+            var itemStacks = getSpellContainerItemStacks(player, name);
+            var sources = new ArrayList<SourcedContainer>();
+            for (var itemStack : itemStacks) {
+                SpellContainer container = SpellContainerHelper.containerFromItemStack(itemStack);
+                if (container != null && container.isValid()) {
+                    sources.add(new SpellContainerSource.SourcedContainer(name, itemStack, container));
+                }
             }
-        }
-        return sources;
-    }, player -> List.of(player.getInventory().armor.get(0), player.getInventory().armor.get(1),
-            player.getInventory().armor.get(2), player.getInventory().armor.get(3))
-    );
-    private static void addSourceIfValid(ItemStack fromItemStack, List<SourcedContainer> sources, String name) {
-        SpellContainer container = SpellContainerHelper.containerFromItemStack(fromItemStack);
-        if (container != null && container.isValid()) {
-            sources.add(new SpellContainerSource.SourcedContainer(name, fromItemStack, container));
+            return sources;
         }
     }
+    public record ItemEntry(String name, ItemStackSource source, @Nullable DirtyChecker checker) {
+        public static ItemEntry of(String name, ItemStackSource source, @Nullable DirtyChecker dirtyChecker) {
+            return new ItemEntry(name, source, dirtyChecker);
+        }
+        public static ItemEntry of(String name, ItemStackSource source)  {
+            return of(name, source, player -> source.getSpellContainers(player, name));
+        }
+    }
+    public static final List<ItemEntry> itemSources = new ArrayList<>();
+    private static ItemEntry itemEntry(String name, ItemStackSource source) {
+        var newEntry = ItemEntry.of(name, source);
+        addItemSource(newEntry);
+        return newEntry;
+    }
+
+//    private static void addSourceIfValid(ItemStack fromItemStack, List<SourcedContainer> sources, String name) {
+//        SpellContainer container = SpellContainerHelper.containerFromItemStack(fromItemStack);
+//        if (container != null && container.isValid()) {
+//            sources.add(new SpellContainerSource.SourcedContainer(name, fromItemStack, container));
+//        }
+//    }
 
     public static void addSource(Entry entry) {
         sources.add(entry);
@@ -113,13 +125,31 @@ public class SpellContainerSource {
             sources.add(entry);
         }
     }
+    public static void addItemSource(ItemEntry entry) {
+        addItemSource(entry, null);
+    }
+    public static void addItemSource(ItemEntry entry, @Nullable String after) {
+        itemSources.add(entry);
+        addSource(new Entry(entry.name(), entry.source(), entry.checker()), after);
+    }
+
+    public static final ItemEntry MAIN_HAND = itemEntry("main_hand", (player, sourceName) -> {
+        return List.of(player.getMainHandStack());
+    });
+    public static final ItemEntry OFF_HAND = itemEntry("off_hand", (player, sourceName) -> {
+        return List.of(player.getOffHandStack());
+    });
+    public static final ItemEntry EQUIPMENT = itemEntry("equipment", (player, sourceName) -> {
+        return List.of(player.getInventory().armor.get(0), player.getInventory().armor.get(1),
+                player.getInventory().armor.get(2), player.getInventory().armor.get(3));
+    });
 
     public static void init() {
         if (SpellEngineMod.config.spell_container_from_offhand) {
-            addSource(OFF_HAND);
+            addItemSource(OFF_HAND);
         }
         if (SpellEngineMod.config.spell_container_from_equipment) {
-            addSource(EQUIPMENT);
+            addItemSource(EQUIPMENT);
         }
     }
 
@@ -127,6 +157,7 @@ public class SpellContainerSource {
         var owner = (Owner)player;
         var allContainers = new ArrayList<SourcedContainer>();
         boolean updated = false;
+
         if (SpellEngineMod.config.spell_container_caching) {
             for (var entry : sources) {
                 if (owner.spellContainerCache().containsKey(entry.name())) {
@@ -148,6 +179,10 @@ public class SpellContainerSource {
         }
 
         if (updated) {
+            // Updates active equipment sets on the player (attribute set bonuses),
+            // appends to `allContainers` from active equipment sets (spell set bonuses)
+            updateEquipmentSets(player, allContainers);
+
             // System.out.println("Updating spell containers for " + player.getName());
             var heldItemStack = player.getMainHandStack();
             var heldContainer = SpellContainerHelper.containerFromItemStack(heldItemStack);
@@ -251,5 +286,30 @@ public class SpellContainerSource {
     }
     private static boolean contains(SpellContainer container, Identifier spellId) {
         return container != null && container.spell_ids().contains(spellId.toString());
+    }
+
+    private static void updateEquipmentSets(PlayerEntity player, ArrayList<SourcedContainer> allContainers) {
+        ArrayList<ItemStack> equipmentStacks = new ArrayList<>();
+        for (var entry : itemSources) {
+            var stacks = entry.source().getSpellContainerItemStacks(player, entry.name());
+            equipmentStacks.addAll(stacks);
+        }
+        var equipmentSets = EquipmentSet.collectFrom(equipmentStacks, player.getWorld());
+        ((EquipmentSet.Owner) player).setActiveEquipmentSets(equipmentSets);
+        allContainers.addAll(sourcedContainersFrom(equipmentSets));
+    }
+
+    private static List<SourcedContainer> sourcedContainersFrom(List<EquipmentSet.Result> results) {
+        var spellContainers = new ArrayList<SourcedContainer>();
+        for (var result : results) {
+            var set = result.set().value();
+            for (var bonus: set.bonuses()) {
+                if (result.items().size() >= bonus.requiredPieceCount()
+                        && bonus.spells() != null) {
+                    spellContainers.add(new SourcedContainer(set.name(), result.items().getFirst(), bonus.spells()));
+                }
+            }
+        }
+        return spellContainers;
     }
 }

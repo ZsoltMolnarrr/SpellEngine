@@ -4,12 +4,17 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.type.AttributeModifiersComponent;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryCodecs;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
+import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellContainer;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,29 +68,41 @@ public class EquipmentSet {
         ).apply(instance, DataComponent::new));
     }
 
-    public record Result(Identifier setId, List<RegistryKey<Item>> items) { }
 
-    public static final Map<Identifier, Definition> REGISTRY = new HashMap<>();
-    public List<SpellContainer> spellsFrom(List<Result> results) {
-        var spellContainers = new ArrayList<SpellContainer>();
-        for (var result : results) {
-            var set = REGISTRY.get(result.setId());
-            if (set == null) continue;
-            for (var bonus: set.bonuses) {
-                if (result.items().size() >= bonus.requiredPieceCount
-                    && bonus.spells != null) {
-                    spellContainers.add(bonus.spells);
-                }
+    public record Result(RegistryEntry<EquipmentSet.Definition> set, ArrayList<ItemStack> items) { }
+
+    public static List<Result> collectFrom(List<ItemStack> stacks, World world) {
+        LinkedHashMap<Identifier, ArrayList<ItemStack> > sets = new LinkedHashMap<>();
+        for (var stack : stacks) {
+            var component = stack.get(SpellDataComponents.EQUIPMENT_SET);
+            if (component != null) {
+                var id = component.id();
+                var items = sets.computeIfAbsent(id, k -> new ArrayList<>());
+                sets.get(id).add(stack);
             }
         }
-        return spellContainers;
+        var registry = world.getRegistryManager().get(EquipmentSetRegistry.KEY);
+        List<Result> results = new ArrayList<>();
+        for (var entry : sets.entrySet()) {
+            var setId = entry.getKey();
+            var set = registry.getEntry(setId);
+            if (set.isPresent()) {
+                var items = entry.getValue();
+                results.add(new Result(set.get(), items));
+            }
+        }
+        return results;
     }
 
-    public List<AttributeModifiersComponent> attributesFrom(List<Result> results) {
+    public interface Owner {
+        List<Result> getActiveEquipmentSets();
+        void setActiveEquipmentSets(List<Result> results);
+    }
+
+    public static List<AttributeModifiersComponent> attributesFrom(List<Result> results) {
         var attributeModifiers = new ArrayList<AttributeModifiersComponent>();
         for (var result : results) {
-            var set = REGISTRY.get(result.setId());
-            if (set == null) continue;
+            var set = result.set.value();
             for (var bonus: set.bonuses) {
                 if (result.items().size() >= bonus.requiredPieceCount
                     && bonus.attributes != null) {
