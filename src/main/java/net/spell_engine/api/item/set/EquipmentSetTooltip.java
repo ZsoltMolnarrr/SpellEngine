@@ -41,6 +41,8 @@ public class EquipmentSetTooltip {
                     }
                 }
 
+                text.add(Text.literal(" "));
+
                 // Title:
                 // Justicar Raiment (2/4)
                 text.add(
@@ -57,8 +59,10 @@ public class EquipmentSetTooltip {
                 for (var item : equipmentSet.items()) {
                     var isWorn = wornItems.stream().anyMatch(wornItem -> wornItem.isOf(item.value()));
                     text.add(
-                            Text.translatable(item.value().getTranslationKey())
-                                    .formatted(isWorn ? Formatting.GRAY : Formatting.DARK_GRAY)
+                            Text.literal(" ").append(
+                                Text.translatable(item.value().getTranslationKey())
+                                        .formatted(isWorn ? Formatting.GRAY : Formatting.DARK_GRAY)
+                            )
                     );
                 }
 
@@ -96,8 +100,9 @@ public class EquipmentSetTooltip {
         var finalLines = new ArrayList<Text>();
         Formatting formatting = isActive ? Formatting.GRAY : Formatting.DARK_GRAY;
         if (bonusLines.size() == 1) {
+            var line = bonusLines.get(0);
             finalLines.add(
-                    bonusTitle.append(bonusLines.get(0))
+                    bonusTitle.append(isActive ? line : Text.literal(line.getString()))
                             .formatted(formatting)
             );
         } else {
@@ -105,7 +110,7 @@ public class EquipmentSetTooltip {
             for (var line : bonusLines) {
                 finalLines.add(
                         Text.literal(" ")
-                                .append(line)
+                                .append(isActive ? line : Text.literal(line.getString()))
                                 .formatted(formatting)
                 );
             }
