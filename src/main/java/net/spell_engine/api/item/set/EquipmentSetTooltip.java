@@ -79,7 +79,7 @@ public class EquipmentSetTooltip {
     }
 
     public static List<Text> bonusText(PlayerEntity player, EquipmentSet.Bonus bonus, boolean isActive) {
-        var bonusTitle = Text.translatable("equipment_set.bonus.count", bonus.requiredPieceCount());
+        var bonusTitle = Text.translatable("equipment_set.logic.bonus.count", bonus.requiredPieceCount());
         var bonusLines = new ArrayList<Text>();
         if (bonus.attributes() != null) {
             var tooltipUtil = (ItemStackTooltipAccessor) (Object) ItemStack.EMPTY;

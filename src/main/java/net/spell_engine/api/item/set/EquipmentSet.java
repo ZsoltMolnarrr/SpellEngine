@@ -63,7 +63,7 @@ public class EquipmentSet {
     }
     public static String translationKey(RegistryEntry<Definition> entry) {
         var id = entry.getKey().get().getValue();
-        return "equipment." + id.getNamespace() + "." + id.getPath();
+        return "equipment_set." + id.getNamespace() + "." + id.getPath();
     }
 
     public record DataComponent(Identifier id) {
