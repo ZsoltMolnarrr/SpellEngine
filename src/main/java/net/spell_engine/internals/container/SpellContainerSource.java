@@ -289,10 +289,13 @@ public class SpellContainerSource {
     }
 
     private static void updateEquipmentSets(PlayerEntity player, ArrayList<SourcedContainer> allContainers) {
-        ArrayList<ItemStack> equipmentStacks = new ArrayList<>();
+        ArrayList<EquipmentSet.SourcedItemStack> equipmentStacks = new ArrayList<>();
         for (var entry : itemSources) {
-            var stacks = entry.source().getSpellContainerItemStacks(player, entry.name());
-            equipmentStacks.addAll(stacks);
+            final var sourceName = entry.name();
+            var stacks = entry.source().getSpellContainerItemStacks(player, sourceName);
+            stacks.stream()
+                    .map(stack -> new EquipmentSet.SourcedItemStack(stack, sourceName))
+                    .forEach(equipmentStacks::add);
         }
         var equipmentSets = EquipmentSet.collectFrom(equipmentStacks, player.getWorld());
         ((EquipmentSet.Owner) player).setActiveEquipmentSets(equipmentSets);

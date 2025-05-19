@@ -7,6 +7,7 @@ import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ToolItem;
 import net.minecraft.registry.RegistryCodecs;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -16,6 +17,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellContainer;
+import net.spell_engine.api.tags.SpellEngineItemTags;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -75,14 +77,21 @@ public class EquipmentSet {
 
     public record Result(RegistryEntry<EquipmentSet.Definition> set, List<ItemStack> items) { }
 
-    public static List<Result> collectFrom(List<ItemStack> stacks, World world) {
+    public record SourcedItemStack(ItemStack itemstack, String sourceName) { }
+    public static List<Result> collectFrom(List<SourcedItemStack> stacks, World world) {
         LinkedHashMap<Identifier, LinkedHashMap<RegistryKey<Item>, ItemStack> > sets = new LinkedHashMap<>();
-        for (var stack : stacks) {
+        for (var sourcedStack : stacks) {
+            var stack = sourcedStack.itemstack();
             var component = stack.get(SpellDataComponents.EQUIPMENT_SET);
             if (component != null) {
                 var id = component.id();
+                var itemEntry = stack.getItem().getRegistryEntry();
+                if (sourcedStack.sourceName.contains("hand") && !stack.isIn(SpellEngineItemTags.HANDHELD)) {
+                    // Prevent armor counted from hands
+                    continue;
+                }
                 var items = sets.computeIfAbsent(id, k -> new LinkedHashMap<>());
-                sets.get(id).put(stack.getItem().getRegistryEntry().registryKey(), stack);
+                sets.get(id).put(itemEntry.registryKey(), stack);
             }
         }
         var registry = world.getRegistryManager().get(EquipmentSetRegistry.KEY);

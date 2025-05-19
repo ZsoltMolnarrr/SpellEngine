@@ -34,4 +34,6 @@ public class SpellEngineItemTags {
      * (Example: Spell Scroll)
      */
     public static final TagKey<Item> GRINDABLE = TagKey.of(Registries.ITEM.getKey(), Identifier.of(SpellEngineMod.ID, "grindable"));
+
+    public static final TagKey<Item> HANDHELD = TagKey.of(Registries.ITEM.getKey(), Identifier.of(SpellEngineMod.ID, "handheld"));
 }
