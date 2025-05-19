@@ -6,7 +6,6 @@ import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.Item;
-import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -15,6 +14,7 @@ import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.item.set.EquipmentSet;
 import net.spell_engine.api.item.set.EquipmentSetRegistry;
+import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_power.api.SpellSchools;
 
 import java.util.List;
@@ -39,7 +39,7 @@ public class TestDataGen {
             var setId = RegistryKey.of(EquipmentSetRegistry.KEY, Identifier.of(NAMESPACE, "fire_power"));
 
             var firePowerBonus = new EquipmentSet.Bonus(
-                    2,
+                    1,
                     new AttributeModifiersComponent(
                             List.of(
                                     new AttributeModifiersComponent.Entry(
@@ -54,12 +54,23 @@ public class TestDataGen {
                             true
                     ),
                     null);
-            var items = RegistryEntryList.of(
-//                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.of("wizards", "fire_robe_head"))),
-//                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.of("wizards", "fire_robe_chest"))),
-//                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.of("wizards", "fire_robe_legs"))),
-//                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.of("wizards", "fire_robe_feet")))
+            var fireball = new EquipmentSet.Bonus(
+                    2,
+                    null,
+                    SpellContainerHelper.createForSpellHost(Identifier.of("wizards", "fireball"))
+            );
+            var fireProc = new EquipmentSet.Bonus(
+                    3,
+                    null,
+                    SpellContainerHelper.createForSpellHost(Identifier.of("relics_rpgs", "lesser_proc_arcane_fire"))
+            );
+            var explodingProc = new EquipmentSet.Bonus(
+                    4,
+                    null,
+                    SpellContainerHelper.createForSpellHost(Identifier.of("arsenal", "exploding_melee"))
+            );
 
+            var items = RegistryEntryList.of(
                     // Iron armor
                     itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("iron_helmet"))),
                     itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("iron_chestplate"))),
@@ -70,14 +81,14 @@ public class TestDataGen {
                     new EquipmentSet.Definition(
                             "fire_power",
                             items,
-                            List.of(firePowerBonus)
+                            List.of(firePowerBonus, fireball, fireProc, explodingProc)
                     )
             );
         }
 
         @Override
         public String getName() {
-            return "TestEquipmentSetGenerator";
+            return "Test EquipmentSet Generator";
         }
     }
 }

@@ -6,6 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.spell_engine.api.spell.SpellDataComponents;
+import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.mixin.client.ItemStackTooltipAccessor;
 import org.jetbrains.annotations.Nullable;
 
@@ -71,14 +72,14 @@ public class EquipmentSetTooltip {
                 // (4) Set : Reduces cooldown of Judgement by 3 seconds
                 for (var bonus: equipmentSet.bonuses()) {
                     var isActive = wornItems.size() >= bonus.requiredPieceCount();
-                    text.addAll(bonusText(player, bonus, isActive));
+                    text.addAll(bonusText(player, stack, bonus, isActive));
                 }
             }
         }
         return text;
     }
 
-    public static List<Text> bonusText(PlayerEntity player, EquipmentSet.Bonus bonus, boolean isActive) {
+    public static List<Text> bonusText(PlayerEntity player, ItemStack itemStack, EquipmentSet.Bonus bonus, boolean isActive) {
         var bonusTitle = Text.translatable("equipment_set.logic.bonus.count", bonus.requiredPieceCount());
         var bonusLines = new ArrayList<Text>();
         if (bonus.attributes() != null) {
@@ -94,7 +95,10 @@ public class EquipmentSetTooltip {
             }
         }
         if (bonus.spells() != null) {
-            // TODO: Add spell container text
+            var spellText = SpellTooltip.getSpellInfo(itemStack, bonus.spells(), player, true, false);
+            if (spellText != null) {
+                bonusLines.addAll(spellText.content());
+            }
         }
 
         var finalLines = new ArrayList<Text>();
@@ -106,7 +110,7 @@ public class EquipmentSetTooltip {
                             .formatted(formatting)
             );
         } else {
-            finalLines.add(bonusTitle);
+            finalLines.add(bonusTitle.formatted(formatting));
             for (var line : bonusLines) {
                 finalLines.add(
                         Text.literal(" ")

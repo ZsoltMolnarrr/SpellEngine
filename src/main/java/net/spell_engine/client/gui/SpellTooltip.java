@@ -3,6 +3,7 @@ package net.spell_engine.client.gui;
 import com.ibm.icu.text.DecimalFormat;
 import net.fabricmc.fabric.mixin.client.keybinding.KeyBindingAccessor;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -16,6 +17,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.client.SpellEngineClient;
@@ -24,6 +26,7 @@ import net.spell_engine.internals.Ammo;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_power.api.SpellPower;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -67,82 +70,11 @@ public class SpellTooltip {
                 addSectionDivider += 1;
             }
 
-            List<RegistryEntry<Spell>> spells = List.of();
-            final var world = MinecraftClient.getInstance().world;
-            if (world != null) {
-                spells = container.spell_ids().stream().map(idString -> {
-                    var spellId = Identifier.of(idString);
-                    var optionalSpellEntry = SpellRegistry.from(world).getEntry(spellId);
-                    if (optionalSpellEntry.isPresent()) {
-                        return (RegistryEntry<Spell>) optionalSpellEntry.get();
-                    } else {
-                        return null;
-                    }
-                })
-                .filter(Objects::nonNull)
-                .toList();
-            }
+            SpellInfo spellInfo = getSpellInfo(itemStack, container, player, false, true);
+            spellTextLines.addAll(spellInfo.content());
+            addSectionDivider += spellInfo.sectionDividersAdded();
 
-//            boolean showListHeader = !container.pool().isEmpty()
-//                    || container.spell_ids().size() > 1
-//                    || container.is_proxy();
-            // !itemStack.isIn(SpellEngineItemTags.SPELL_BOOK_MERGEABLE);
-            boolean forceHideHeader = itemStack.isIn(SpellEngineItemTags.SPELL_BOOK_MERGEABLE);
-            boolean showListHeader = false;
-            if (!forceHideHeader) {
-                for (var spellEntry : spells) {
-                    var spell = spellEntry.value();
-                    var tooltip = spell.tooltip != null ? spell.tooltip : Spell.Tooltip.DEFAULT;
-                    showListHeader = showListHeader || tooltip.show_header;
-                }
-            }
-            int indentLevel = showListHeader ? 1 : 0;
-
-            if (!spells.isEmpty() && showListHeader) {
-                String limit = "";
-                if (container.max_spell_count() > 0) {
-                    limit = I18n.translate("spell.tooltip.host.limit")
-                            .replace(placeholder("current"), "" + container.spell_ids().size())
-                            .replace(placeholder("max"), "" + container.max_spell_count());
-                }
-
-                var key = "spell.tooltip.host.list.spell";
-                switch (container.content()) {
-                    case MAGIC -> {
-                        key = "spell.tooltip.host.list.spell";
-                    }
-                    case ARCHERY -> {
-                        key = "spell.tooltip.host.list.archery";
-                    }
-                }
-                spellTextLines.add(Text.translatable(key)
-                        .append(Text.literal(" " + limit))
-                        .formatted(Formatting.GRAY));
-                addSectionDivider += 1;
-            }
-            var keybinding = Keybindings.bypass_spell_hotbar;
-            var showDetails = config.alwaysShowFullTooltip
-                    || (!keybinding.isUnbound() && InputUtil.isKeyPressed(
-                    MinecraftClient.getInstance().getWindow().getHandle(),
-                    ((KeyBindingAccessor) keybinding).fabric_getBoundKey().getCode())
-            );
-            for (int i = 0; i < spells.size(); i++) {
-                var spellEntry = spells.get(i);
-                var info = spellEntry(spellEntry, player, itemStack, showDetails, indentLevel);
-                if (!info.isEmpty()) {
-                    if (i > 0 && showDetails) {
-                        spellTextLines.add(Text.literal(" ")); // Separator: empty line
-                    }
-                    spellTextLines.addAll(info);
-                }
-
-            }
-            if (!showDetails) {
-                if (!keybinding.isUnbound() && container.spell_ids().size() > 0) {
-                    spellTextLines.add(Text.translatable("spell.tooltip.hold_for_details",
-                                    keybinding.getBoundKeyLocalizedText())
-                            .formatted(Formatting.DARK_GRAY));
-                }
+            if (!spellInfo.showDetails()) {
                 if (config.showSpellBindingTooltip
                         && container.pool() != null && !container.pool().isEmpty()
                         && container.spell_ids().isEmpty()) {
@@ -192,6 +124,90 @@ public class SpellTooltip {
             }
             lines.addAll(found, spellTextLines);
         }
+    }
+
+    public record SpellInfo(List<Text> content, int sectionDividersAdded, boolean showDetails) {  }
+    public static @NotNull SpellTooltip.SpellInfo getSpellInfo(ItemStack itemStack, SpellContainer container, PlayerEntity player,
+                                                               boolean forceHideHeader, boolean allowDetailsHint) {
+        var config = SpellEngineClient.config;
+        List<RegistryEntry<Spell>> spells = List.of();
+        final var world = MinecraftClient.getInstance().world;
+        var spellTextLines = new ArrayList<Text>();
+        int addSectionDivider = 0;
+        if (world != null) {
+            spells = container.spell_ids().stream().map(idString -> {
+                var spellId = Identifier.of(idString);
+                var optionalSpellEntry = SpellRegistry.from(world).getEntry(spellId);
+                if (optionalSpellEntry.isPresent()) {
+                    return (RegistryEntry<Spell>) optionalSpellEntry.get();
+                } else {
+                    return null;
+                }
+            })
+            .filter(Objects::nonNull)
+            .toList();
+        }
+
+        forceHideHeader = forceHideHeader || itemStack.isIn(SpellEngineItemTags.SPELL_BOOK_MERGEABLE);
+        boolean showListHeader = false;
+        if (!forceHideHeader) {
+            for (var spellEntry : spells) {
+                var spell = spellEntry.value();
+                var tooltip = spell.tooltip != null ? spell.tooltip : Spell.Tooltip.DEFAULT;
+                showListHeader = showListHeader || tooltip.show_header;
+            }
+        }
+        int indentLevel = showListHeader ? 1 : 0;
+
+        if (!spells.isEmpty() && showListHeader) {
+            String limit = "";
+            if (container.max_spell_count() > 0) {
+                limit = I18n.translate("spell.tooltip.host.limit")
+                        .replace(placeholder("current"), "" + container.spell_ids().size())
+                        .replace(placeholder("max"), "" + container.max_spell_count());
+            }
+
+            var key = "spell.tooltip.host.list.spell";
+            switch (container.content()) {
+                case MAGIC -> {
+                    key = "spell.tooltip.host.list.spell";
+                }
+                case ARCHERY -> {
+                    key = "spell.tooltip.host.list.archery";
+                }
+            }
+            spellTextLines.add(Text.translatable(key)
+                    .append(Text.literal(" " + limit))
+                    .formatted(Formatting.GRAY));
+            addSectionDivider += 1;
+        }
+        var keybinding = Keybindings.bypass_spell_hotbar;
+        var showDetails = config.alwaysShowFullTooltip
+                || (!keybinding.isUnbound() && InputUtil.isKeyPressed(
+                MinecraftClient.getInstance().getWindow().getHandle(),
+                ((KeyBindingAccessor) keybinding).fabric_getBoundKey().getCode())
+        );
+        for (int i = 0; i < spells.size(); i++) {
+            var spellEntry = spells.get(i);
+            var info = spellEntry(spellEntry, player, itemStack, showDetails, indentLevel);
+            if (!info.isEmpty()) {
+                if (i > 0 && showDetails) {
+                    spellTextLines.add(Text.literal(" ")); // Separator: empty line
+                }
+                spellTextLines.addAll(info);
+            }
+
+        }
+
+        if (allowDetailsHint && !showDetails) {
+            if (!keybinding.isUnbound() && container.spell_ids().size() > 0) {
+                spellTextLines.add(Text.translatable("spell.tooltip.hold_for_details",
+                                keybinding.getBoundKeyLocalizedText())
+                        .formatted(Formatting.DARK_GRAY));
+            }
+        }
+
+        return new SpellInfo(spellTextLines, addSectionDivider, showDetails);
     }
 
     public static List<Text> spellEntry(Identifier spellId, PlayerEntity player, ItemStack itemStack, boolean details, int indentLevel) {

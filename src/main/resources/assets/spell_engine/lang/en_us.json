@@ -154,6 +154,7 @@
   "gui.spell_engine.spell_binding.level_req_fail" : "Level Requirement: %s",
 
   "equipment_set.logic.bonus.count" : "(%s) Set: ",
+  "equipment_set.test.fire_power" : "Fiery Regalia",
 
   "advancements.rpg_series.root.title": "Spells",
   "advancements.rpg_series.root.description": "Discover the art of magical combat!",

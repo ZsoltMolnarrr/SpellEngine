@@ -39,6 +39,7 @@ public record SpellContainer(ContentType content, boolean is_proxy, String pool,
         this.spell_ids = spell_ids != null ? spell_ids : List.of();
     }
 
+
     // MARK: Helpers
 
     public boolean isValid() {
