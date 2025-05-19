@@ -73,16 +73,16 @@ public class EquipmentSet {
     }
 
 
-    public record Result(RegistryEntry<EquipmentSet.Definition> set, ArrayList<ItemStack> items) { }
+    public record Result(RegistryEntry<EquipmentSet.Definition> set, List<ItemStack> items) { }
 
     public static List<Result> collectFrom(List<ItemStack> stacks, World world) {
-        LinkedHashMap<Identifier, ArrayList<ItemStack> > sets = new LinkedHashMap<>();
+        LinkedHashMap<Identifier, LinkedHashMap<RegistryKey<Item>, ItemStack> > sets = new LinkedHashMap<>();
         for (var stack : stacks) {
             var component = stack.get(SpellDataComponents.EQUIPMENT_SET);
             if (component != null) {
                 var id = component.id();
-                var items = sets.computeIfAbsent(id, k -> new ArrayList<>());
-                sets.get(id).add(stack);
+                var items = sets.computeIfAbsent(id, k -> new LinkedHashMap<>());
+                sets.get(id).put(stack.getItem().getRegistryEntry().registryKey(), stack);
             }
         }
         var registry = world.getRegistryManager().get(EquipmentSetRegistry.KEY);
@@ -91,7 +91,7 @@ public class EquipmentSet {
             var setId = entry.getKey();
             var set = registry.getEntry(setId);
             if (set.isPresent()) {
-                var items = entry.getValue();
+                var items = entry.getValue().values().stream().toList();
                 results.add(new Result(set.get(), items));
             }
         }
