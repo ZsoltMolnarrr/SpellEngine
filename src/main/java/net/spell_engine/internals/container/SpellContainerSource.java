@@ -17,11 +17,17 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 public class SpellContainerSource {
-    public record Result(SpellContainer activeContainer, List<RegistryEntry<Spell>> actives, List<RegistryEntry<Spell>> passives, List<SpellContainerSource.SourcedContainer> sources) {
-        public static final Result EMPTY = new Result(SpellContainer.EMPTY, List.of(), List.of(), List.of());
+    public record Result(
+            SpellContainer activeContainer,
+            List<RegistryEntry<Spell>> actives,
+            List<RegistryEntry<Spell>> passives,
+            List<RegistryEntry<Spell>> modifiers,
+            List<SpellContainerSource.SourcedContainer> sources) {
+        public static final Result EMPTY = new Result(SpellContainer.EMPTY, List.of(), List.of(), List.of(), List.of());
     }
     public interface Owner {
         Map<String, List<SourcedContainer>> spellContainerCache();
+        Map<Identifier, List<Spell.Modifier>> spellModifierCache();
         void setSpellContainers(Result result);
         Result getSpellContainers();
     }
@@ -145,12 +151,6 @@ public class SpellContainerSource {
     });
 
     public static void init() {
-//        if (SpellEngineMod.config.spell_container_from_offhand) {
-//            addItemSource(OFF_HAND);
-//        }
-//        if (SpellEngineMod.config.spell_container_from_equipment) {
-//            addItemSource(EQUIPMENT);
-//        }
     }
 
     public static void update(PlayerEntity player) {
@@ -161,7 +161,6 @@ public class SpellContainerSource {
         if (SpellEngineMod.config.spell_container_caching) {
             for (var entry : sources) {
                 if (owner.spellContainerCache().containsKey(entry.name())) {
-                    allContainers.addAll(owner.spellContainerCache().get(entry.name()));
                 } else {
                     // System.out.println("Container source dirty: " + entry.name() + " for " + player.getName());
                     var freshContainers = entry.source().getSpellContainers(player, entry.name());
@@ -195,7 +194,20 @@ public class SpellContainerSource {
             }
             List<RegistryEntry<Spell>> passiveSpells = mergedContainerSources(allContainers, null, Spell.Type.PASSIVE, player.getWorld());
 
-            ((Owner) player).setSpellContainers(new Result(activeContainer, activeSpells, passiveSpells, allContainers));
+            var registry = SpellRegistry.from(player.getWorld());
+            LinkedHashSet<RegistryEntry<Spell>> modifiers = new LinkedHashSet<>();
+            for (var container : allContainers) {
+                var spellContainer = container.container();
+                for (var idString : spellContainer.spell_ids()) {
+                    var id = Identifier.of(idString);
+                    var spell = registry.getEntry(id).orElse(null);
+                    if (spell != null && spell.value().type == Spell.Type.MODIFIER) {
+                        modifiers.add(spell);
+                    }
+                }
+            }
+
+            ((Owner) player).setSpellContainers(new Result(activeContainer, activeSpells, passiveSpells, modifiers.stream().toList(), allContainers));
         }
     }
 

@@ -55,7 +55,7 @@ public class Spell {
     }
 
     public Type type = Type.ACTIVE;
-    public enum Type { ACTIVE, PASSIVE }
+    public enum Type { ACTIVE, PASSIVE, MODIFIER }
 
     public Active active;
     public static class Active {
@@ -89,6 +89,21 @@ public class Spell {
     public Passive passive;
     public static class Passive {
         public List<Trigger> triggers = List.of();
+    }
+
+    public List<Modifier> modifiers = List.of();
+    public static class Modifier {
+        /// Universal pattern matcher, against spell ID
+        public String spell_pattern;
+        public List<ImpactFilter> impact_filters = List.of();
+        public static class ImpactFilter {
+            @Nullable public SpellSchool school;
+            @Nullable public Spell.Impact.Action.Type type;
+        }
+
+        @Nullable public Impact.Modifier power_modifier;
+        public float effect_duration_add = 0;
+        public float cooldown_duration_deduct = 0;
     }
 
     public Release release = new Release();

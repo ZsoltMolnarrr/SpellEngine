@@ -121,12 +121,16 @@ public class SpellHelper {
         return new SpellCast.Duration(haste, Math.round(duration * 20F));
     }
 
-    public static float getCooldownDuration(LivingEntity caster, Spell spell) {
-        return getCooldownDuration(caster, spell, null);
+    public static float getCooldownDuration(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
+        return getCooldownDuration(caster, spellEntry, null);
     }
 
-    public static float getCooldownDuration(LivingEntity caster, Spell spell, ItemStack provisionedWeapon) {
+    public static float getCooldownDuration(LivingEntity caster, RegistryEntry<Spell> spellEntry, ItemStack provisionedWeapon) {
+        var spell = spellEntry.value();
         var duration = spell.cost.cooldown.duration;
+        if (caster instanceof PlayerEntity player) {
+            duration -= SpellModifiers.cooldownDeduction(player, spellEntry);
+        }
         if (duration > 0) {
             if (SpellEngineMod.config.haste_affects_cooldown && spell.cost.cooldown.haste_affected) {
                 duration = hasteAffectedValue(caster, spell.school, spell.cost.cooldown.duration, provisionedWeapon);
@@ -254,7 +258,7 @@ public class SpellHelper {
                         SoundHelper.playSound(world, player, spell.release.sound);
                         AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation, castingSpeed);
 
-                        consumeSpellCost(player, finalProgress, spellSource, spellId, spell, heldItemStack, ammoResult, false);
+                        consumeSpellCost(player, finalProgress, spellSource, spellId, spellEntry, heldItemStack, ammoResult, false);
 
                         var args = new SpellEvents.SpellCastEvent.Args(player, spellEntry, finalTargets, action, finalProgress);
                         SpellEvents.SPELL_CAST.invoke((listener) -> listener.onSpellCast(args));
@@ -340,20 +344,21 @@ public class SpellHelper {
         }
     }
 
-    private static void consumeSpellCost(PlayerEntity player, float progress, SpellContainerSource.SourcedContainer spellSource, Identifier spellId, Spell spell, ItemStack heldItemStack, Ammo.Result ammoResult, boolean scheduled) {
+    private static void consumeSpellCost(PlayerEntity player, float progress, SpellContainerSource.SourcedContainer spellSource, Identifier spellId, RegistryEntry<Spell> spellEntry, ItemStack heldItemStack, Ammo.Result ammoResult, boolean scheduled) {
+        var spell = spellEntry.value();
         var batching = spell.cost.batching;
         if (batching && !scheduled) {
             if (((SpellBatcher)player).hasBatchedCost(spellId)) {
                 return;
             }
-            ((WorldScheduler)player.getWorld()).schedule(0, () -> consumeSpellCost(player, progress, spellSource, spellId, spell, heldItemStack, ammoResult, true));
+            ((WorldScheduler)player.getWorld()).schedule(0, () -> consumeSpellCost(player, progress, spellSource, spellId, spellEntry, heldItemStack, ammoResult, true));
             ((SpellBatcher)player).batchCost(spellId, true);
             return;
         }
 
         // Consume things
         // Cooldown
-        imposeCooldown(player, spellSource, spellId, spell, progress);
+        imposeCooldown(player, spellSource, spellId, spellEntry, progress);
         // Exhaust
         player.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
         // Durability
@@ -480,8 +485,9 @@ public class SpellHelper {
         return delivered;
     }
 
-    public static void imposeCooldown(PlayerEntity player, SpellContainerSource.SourcedContainer source, Identifier spellId, Spell spell, float progress) {
-        var duration = cooldownToSet(player, spell, progress);
+    public static void imposeCooldown(PlayerEntity player, SpellContainerSource.SourcedContainer source, Identifier spellId, RegistryEntry<Spell> spellEntry, float progress) {
+        var spell = spellEntry.value();
+        var duration = cooldownToSet(player, spellEntry, progress);
         var durationTicks = Math.round(duration * 20F);
         if (duration > 0) {
             ((SpellCasterEntity) player).getCooldownManager().set(spellId, durationTicks);
@@ -497,11 +503,12 @@ public class SpellHelper {
         }
     }
 
-    private static float cooldownToSet(LivingEntity caster, Spell spell, float progress) {
+    private static float cooldownToSet(LivingEntity caster, RegistryEntry<Spell> spellEntry, float progress) {
+        var spell = spellEntry.value();
         if (spell.cost.cooldown.proportional) {
-            return getCooldownDuration(caster, spell) * progress;
+            return getCooldownDuration(caster, spellEntry) * progress;
         } else {
-            return getCooldownDuration(caster, spell);
+            return getCooldownDuration(caster, spellEntry);
         }
     }
 
@@ -824,7 +831,8 @@ public class SpellHelper {
 
     private static final float knockbackDefaultStrength = 0.4F;
 
-    private static boolean performImpact(World world, LivingEntity caster, Entity target, RegistryEntry<Spell> spellEntry, Spell.Impact impact, ImpactContext context, Collection<ServerPlayerEntity> trackers) {
+    private static boolean performImpact(World world, LivingEntity caster, Entity target, RegistryEntry<Spell> spellEntry,
+                                         Spell.Impact impact, ImpactContext context, Collection<ServerPlayerEntity> trackers) {
         if (!target.isAttackable()) {
             return false;
         }
@@ -861,6 +869,11 @@ public class SpellHelper {
 
             // Power calculation
 
+            List<Spell.Modifier> spellModifiers = List.of();
+            if (caster instanceof PlayerEntity player) {
+                spellModifiers = SpellModifiers.ofImpact(player, spellEntry, impact);
+            }
+
             double particleMultiplier = 1 * context.total();
             var power = context.power();
             var school = impact.school != null ? impact.school : spell.school;
@@ -881,9 +894,15 @@ public class SpellHelper {
                 power = new SpellPower.Result(power.school(), value, power.criticalChance(), power.criticalDamage());
             }
 
-            var bonusPower = 1 + (conditionResult.modifiers().stream().map(modifier -> modifier.power_multiplier).reduce(0F, Float::sum));
-            var bonusCritChance = conditionResult.modifiers().stream().map(modifier -> modifier.critical_chance_bonus).reduce(0F, Float::sum);
-            var bonusCritDamage = conditionResult.modifiers().stream().map(modifier -> modifier.critical_damage_bonus).reduce(0F, Float::sum);
+            var powerModifiers = new ArrayList<>(conditionResult.modifiers());
+            for (var spellModifier: spellModifiers) {
+                if (spellModifier.power_modifier != null) {
+                    powerModifiers.add(spellModifier.power_modifier);
+                }
+            }
+            var bonusPower = 1 + (powerModifiers.stream().map(modifier -> modifier.power_multiplier).reduce(0F, Float::sum));
+            var bonusCritChance = powerModifiers.stream().map(modifier -> modifier.critical_chance_bonus).reduce(0F, Float::sum);
+            var bonusCritDamage = powerModifiers.stream().map(modifier -> modifier.critical_damage_bonus).reduce(0F, Float::sum);
             power = new SpellPower.Result(power.school(),
                     power.baseValue() * bonusPower,
                     power.criticalChance() + bonusCritChance,
@@ -1007,7 +1026,12 @@ public class SpellHelper {
                                     return false;
                                 }
 
-                                var duration = Math.round(data.duration * 20F);
+                                var extraDuration = 0F;
+                                for (var spellModifier: spellModifiers) {
+                                    extraDuration += spellModifier.effect_duration_add;
+                                }
+                                var duration = Math.round((data.duration + extraDuration) * 20F);
+
                                 var showParticles = data.show_particles;
 
                                 if (data.apply_mode == Spell.Impact.Action.StatusEffect.ApplyMode.ADD) {

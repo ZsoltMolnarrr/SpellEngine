@@ -1,8 +1,8 @@
 package net.spell_engine.mixin.entity;
 
-import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.util.Identifier;
+import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -15,19 +15,23 @@ import java.util.*;
 
 @Mixin(PlayerEntity.class)
 public class PlayerSpellContainerMixin implements SpellContainerSource.Owner {
-    private SpellContainerSource.Result currentSpellContainers = SpellContainerSource.Result.EMPTY;
-
+    private Map<String, List<SpellContainerSource.SourcedContainer>> spellContainerCache = new LinkedHashMap<>();
     @Override
     public Map<String, List<SpellContainerSource.SourcedContainer>> spellContainerCache() {
         return spellContainerCache;
     }
-    private Map<String, List<SpellContainerSource.SourcedContainer>> spellContainerCache = new LinkedHashMap<>();
 
+    private Map<Identifier, List<Spell.Modifier>> spellModifierCache = new HashMap<>();
+    @Override
+    public Map<Identifier, List<Spell.Modifier>> spellModifierCache() {
+        return spellModifierCache;
+    }
+
+    private SpellContainerSource.Result currentSpellContainers = SpellContainerSource.Result.EMPTY;
     @Override
     public void setSpellContainers(SpellContainerSource.Result result) {
         currentSpellContainers = result;
     }
-
     @Override
     public SpellContainerSource.Result getSpellContainers() {
         return currentSpellContainers;
@@ -35,7 +39,6 @@ public class PlayerSpellContainerMixin implements SpellContainerSource.Owner {
 
     private SpellContainer lastMainHandContainer = SpellContainer.EMPTY;
     public Map<String, Object> lastProviderStates = new HashMap<>();
-
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick_TAIL_SpellEngine_SpellContainer(CallbackInfo ci) {
         var player = (PlayerEntity) (Object) this;

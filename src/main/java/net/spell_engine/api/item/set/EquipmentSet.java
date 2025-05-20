@@ -74,7 +74,6 @@ public class EquipmentSet {
         ).apply(instance, DataComponent::new));
     }
 
-
     public record Result(RegistryEntry<EquipmentSet.Definition> set, List<ItemStack> items) { }
 
     public record SourcedItemStack(ItemStack itemstack, String sourceName) { }
