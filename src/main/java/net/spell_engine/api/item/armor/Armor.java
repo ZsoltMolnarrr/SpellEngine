@@ -1,6 +1,7 @@
 package net.spell_engine.api.item.armor;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.minecraft.component.ComponentMap;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -16,10 +17,11 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.config.ArmorSetConfig;
 import net.spell_engine.api.item.Equipment;
-import net.spell_engine.api.item.Tiers;
 import net.spell_engine.mixin.item.ArmorMaterialLayerAccessor;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,6 +57,7 @@ public class Armor {
         public final String namespace;
         public final String name;
         public final A head, chest, legs, feet;
+        public String headTranslation, chestTranslation, legsTranslation, feetTranslation = "";
         public Set(String namespace, String name, A head, A chest, A legs, A feet) {
             this.namespace = namespace;
             this.name = name;
@@ -79,6 +82,14 @@ public class Armor {
             return pieces().stream().map(this::idOf).toList();
         }
 
+        public Set<A> translate(String headName, String chestName, String legsName, String feetName) {
+            this.headTranslation = headName;
+            this.chestTranslation = chestName;
+            this.legsTranslation = legsName;
+            this.feetTranslation = feetName;
+            return this;
+        }
+
         public void register(RegistryKey<ItemGroup> itemGroupKey) {
             for (var piece: pieces()) {
                 Registry.register(Registries.ITEM, idOf(piece), piece);
@@ -95,11 +106,24 @@ public class Armor {
         }
     }
 
+    public record ItemSettingsTweaker(Consumer<Item.Settings> helmet,
+                                      Consumer<Item.Settings> chestplate,
+                                      Consumer<Item.Settings> leggings,
+                                      Consumer<Item.Settings> boots) {
+        public static ItemSettingsTweaker standard(Consumer<Item.Settings> consumer) {
+            return new ItemSettingsTweaker(consumer, consumer, consumer, consumer);
+        }
+    }
+
     public record Entry(RegistryEntry<ArmorMaterial> material, Armor.Set armorSet, ArmorSetConfig defaults, Equipment.LootProperties lootProperties) {
         public static Entry create(RegistryEntry<ArmorMaterial> material, Identifier id, int durability, Set.ItemFactory factory, ArmorSetConfig defaults) {
             return create(material, id, durability, factory, defaults, Equipment.LootProperties.EMPTY);
         }
         public static Entry create(RegistryEntry<ArmorMaterial> material, Identifier id, int durability, Set.ItemFactory factory, ArmorSetConfig defaults, Equipment.LootProperties lootProperties) {
+            return create(material, id, durability, factory, defaults, lootProperties, null);
+        }
+        public static Entry create(RegistryEntry<ArmorMaterial> material, Identifier id, int durability, Set.ItemFactory factory, ArmorSetConfig defaults,
+                                   Equipment.LootProperties lootProperties, @Nullable ItemSettingsTweaker settingsTweaker) {
 
             var helmetSettings = new Item.Settings()
                     .maxDamage(ArmorItem.Type.HELMET.getMaxDamage(durability));
@@ -109,6 +133,12 @@ public class Armor {
                     .maxDamage(ArmorItem.Type.LEGGINGS.getMaxDamage(durability));
             var bootsSettings = new Item.Settings()
                     .maxDamage(ArmorItem.Type.BOOTS.getMaxDamage(durability));
+            if (settingsTweaker != null) {
+                settingsTweaker.helmet.accept(helmetSettings);
+                settingsTweaker.chestplate.accept(chestplateSettings);
+                settingsTweaker.leggings.accept(leggingsSettings);
+                settingsTweaker.boots.accept(bootsSettings);
+            }
 
             var tier = lootProperties.tier();
             if (tier >= 3) {
@@ -125,6 +155,12 @@ public class Armor {
                     factory.create(material, ArmorItem.Type.BOOTS, bootsSettings)
             );
             return new Entry(material, set, defaults, lootProperties);
+        }
+
+
+        public Entry translatedName(String headName, String chestName, String legsName, String feetName) {
+            armorSet.translate(headName, chestName, legsName, feetName);
+            return this;
         }
 
         public String name() {
