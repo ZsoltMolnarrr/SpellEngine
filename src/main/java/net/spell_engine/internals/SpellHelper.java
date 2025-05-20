@@ -136,7 +136,7 @@ public class SpellHelper {
                 duration = hasteAffectedValue(caster, spell.school, spell.cost.cooldown.duration, provisionedWeapon);
             }
         }
-        return duration;
+        return Math.max(duration, 0);
     }
 
     public static boolean isChanneled(Spell spell) {
