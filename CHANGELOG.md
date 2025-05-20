@@ -1,3 +1,22 @@
+# 1.7.0
+
+API changes:
+- Add new spell type `MODIFIER`, to allow modifying existing spells in narrow pre-defined ways
+  - `power_modifier` to add extra power, crit chance, crit damage
+  - `effect_duration_add` to add extra duration to status effects
+  - `cooldown_duration_deduct` to reduce cooldown duration
+  - spell specific modifiers are stored in a cached manner 
+- Add Equipment Sets functionality, for creating item set bonuses 
+  - Fully data driven (new data type, stored in DynamicRegistry), defined in data files
+  - Equipment set bonuses can provide: attributes, spells (active/passive/modifier)
+  - Supports any kind of equipment (weapons, armors, shields, trinkets...)
+- Spell tooltips now automatically work for all token types, in plural mode
+  - such as: `{effect_duration_1}`, `{effect_duration_2}`
+- Universal pattern matching logic now supports universal negate, such as:
+  - `!namespace:path` matches everything except `namespace:path`
+  - `!#namespace:path` matches all items except ones inside `namespace:path` tag
+  - `!~my_regex` matches everything except the regex
+
 # 1.6.12
 
 Functional changes:

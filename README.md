@@ -40,7 +40,16 @@ In game features
 
 ### Spells
 
-Fully data driven, stored in dynamic registry.
+Spells functionality allows creating custom spells, with various mechanics.
+
+Primary types:
+- Active - player interactable (casted) spells, performing wide set of impacts
+- Passive - non-interactable spells, triggered by various events, performing wide set of impacts
+- Modifier - non-interactable spells, modifying existing spells in pre-defined ways
+
+Fully data driven, (stored in a DynamicRegistry).
+- Data file example path: `resources/data/MOD_ID/spells/SPELL_ID.json`
+- Assigned to items using Spell Assignments type (see below)
 
 ### Spell assignments
 
@@ -70,6 +79,18 @@ Located at `data/MOD_ID/spell_assignments/ITEM_NAME.json`.
   "spell_ids": [ "wizards:fireball" ]
 }
 ```
+
+### Equipment sets
+
+Equipment Sets functionality, allows creating item set bonuses.
+
+Primary features:
+- Equipment set bonuses can provide:
+  - attributes modifiers
+  - any kind of spells
+- Supports any kind of equipment (weapons, armors, shields, trinkets...)
+
+Fully data driven, (stored in a DynamicRegistry).
 
 ### Extra inventory slots
 

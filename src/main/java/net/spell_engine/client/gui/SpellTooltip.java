@@ -484,7 +484,7 @@ public class SpellTooltip {
             var values = entry.getValue();
             description = replaceTokens(description, token, values);
         }
-
+ 
         var mutator = descriptionMutators.get(spellId);
         if (mutator != null) {
             var args = new DescriptionMutator.Args(description, player, spellEntry);

@@ -13,12 +13,20 @@ import java.util.regex.Pattern;
 public class PatternMatching {
     public static final String TAG_PREFIX = "#";
     public static final String REGEX_PREFIX = "~";
-    public static final String NEGATIVE_PREFIX = "!";
+    public static final String NEGATE_PREFIX = "!";
 
     public static <T> boolean matches(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
         if (pattern == null) {
             return true;
         }
+        if (pattern.startsWith(NEGATE_PREFIX)) {
+            return !matchesCore(entry, registryKey, pattern.substring(1));
+        } else {
+            return matchesCore(entry, registryKey, pattern);
+        }
+    }
+
+    public static <T> boolean matchesCore(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, String pattern) {
         if (pattern.startsWith(TAG_PREFIX)) {
             var tag = TagKey.of(registryKey, Identifier.of(pattern.substring(1)));
             return entry.isIn(tag);
@@ -27,15 +35,7 @@ public class PatternMatching {
         if (pattern.startsWith(REGEX_PREFIX)) {
             return regexMatches(id, pattern.substring(1));
         } else {
-            if (pattern.startsWith(NEGATIVE_PREFIX)) {
-                pattern = pattern.substring(1);
-                if (pattern.isEmpty()) {
-                    return false;
-                }
-                return !id.equals(pattern);
-            } else {
-                return id.equals(pattern);
-            }
+            return id.equals(pattern);
         }
     }
 
