@@ -68,11 +68,11 @@ public class EquipmentSet {
         return "equipment_set." + id.getNamespace() + "." + id.getPath();
     }
 
-    public record DataComponent(Identifier id) {
-        public static final Codec<DataComponent> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                Identifier.CODEC.fieldOf("id").forGetter(DataComponent::id)
-        ).apply(instance, DataComponent::new));
-    }
+//    public record DataComponent(Identifier id) {
+//        public static final Codec<DataComponent> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+//                Identifier.CODEC.fieldOf("id").forGetter(DataComponent::id)
+//        ).apply(instance, DataComponent::new));
+//    }
 
     public record Result(RegistryEntry<EquipmentSet.Definition> set, List<ItemStack> items) { }
 
@@ -83,7 +83,7 @@ public class EquipmentSet {
             var stack = sourcedStack.itemstack();
             var component = stack.get(SpellDataComponents.EQUIPMENT_SET);
             if (component != null) {
-                var id = component.id();
+                var id = component.getKey().get().getValue();
                 var itemEntry = stack.getItem().getRegistryEntry();
                 if (sourcedStack.sourceName.contains("hand") && !stack.isIn(SpellEngineItemTags.HANDHELD)) {
                     // Prevent armor counted from hands

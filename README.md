@@ -72,7 +72,7 @@ Assigning a spell container to an item, using a game command:
 
 Assigning a spell container to an item, using a data file.
 
-Located at `data/MOD_ID/spell_assignments/ITEM_NAME.json`.
+Example data file, located at `data/NAMESPACE/spell_assignments/ITEM_NAME.json`
 ```json
 {
   "is_proxy": true,
@@ -91,6 +91,10 @@ Primary features:
 - Supports any kind of equipment (weapons, armors, shields, trinkets...)
 
 Fully data driven, (stored in a DynamicRegistry).
+
+Example path: `resources/data/NAMESPACE/equipment_sets/SET_NAME.json`
+
+Example item with an equipment set: `/give @p minecraft:iron_boots[spell_engine:equipment_set="NAMESPACE:SET_NAME"]`
 
 ### Extra inventory slots
 

@@ -25,55 +25,50 @@ public class EquipmentSetTooltip {
 
     public static List<Text> textFor(ItemStack stack, @Nullable PlayerEntity player) {
         var text = new ArrayList<Text>();
-        var component = stack.get(SpellDataComponents.EQUIPMENT_SET);
-        if (component != null && player != null && player.getWorld() != null) {
-            var registry = player.getWorld().getRegistryManager().get(EquipmentSetRegistry.KEY);
-            var optionalSet = registry.getEntry(component.id());
-            if (optionalSet.isPresent()) {
-                var equipmentSetEntry = optionalSet.get();
-                var equipmentSet = equipmentSetEntry.value();
-                var setSize = equipmentSet.items().size();
+        var equipmentSetEntry = stack.get(SpellDataComponents.EQUIPMENT_SET);
+        if (equipmentSetEntry != null && player != null && player.getWorld() != null) {
+            var equipmentSet = equipmentSetEntry.value();
+            var setSize = equipmentSet.items().size();
 
-                var activeSets = ((EquipmentSet.Owner) player).getActiveEquipmentSets();
-                List<ItemStack> wornItems = List.of();
-                for (var entry : activeSets) {
-                    if (entry.set().getKey().get().equals(equipmentSetEntry.getKey().get())) {
-                        wornItems = entry.items();
-                    }
+            var activeSets = ((EquipmentSet.Owner) player).getActiveEquipmentSets();
+            List<ItemStack> wornItems = List.of();
+            for (var entry : activeSets) {
+                if (entry.set().getKey().get().equals(equipmentSetEntry.getKey().get())) {
+                    wornItems = entry.items();
                 }
+            }
 
-                text.add(Text.literal(" "));
+            text.add(Text.literal(" "));
 
-                // Title:
-                // Justicar Raiment (2/4)
+            // Title:
+            // Justicar Raiment (2/4)
+            text.add(
+                    Text.translatable(EquipmentSet.translationKey(equipmentSetEntry))
+                            .append(Text.literal(" (" + wornItems.size() + "/" + setSize + ")"))
+                            .formatted(Formatting.GOLD)
+            );
+
+            // Items:
+            //  Justicar Helm
+            //  Justicar Chestplate
+            //  Justicar Leggings
+            //  Justicar Boots
+            for (var item : equipmentSet.items()) {
+                var isWorn = wornItems.stream().anyMatch(wornItem -> wornItem.isOf(item.value()));
                 text.add(
-                        Text.translatable(EquipmentSet.translationKey(equipmentSetEntry))
-                                .append(Text.literal(" (" + wornItems.size() + "/" + setSize + ")"))
-                                .formatted(Formatting.GOLD)
-                );
-
-                // Items:
-                //  Justicar Helm
-                //  Justicar Chestplate
-                //  Justicar Leggings
-                //  Justicar Boots
-                for (var item : equipmentSet.items()) {
-                    var isWorn = wornItems.stream().anyMatch(wornItem -> wornItem.isOf(item.value()));
-                    text.add(
-                            Text.literal(" ").append(
+                        Text.literal(" ").append(
                                 Text.translatable(item.value().getTranslationKey())
                                         .formatted(isWorn ? Formatting.GRAY : Formatting.DARK_GRAY)
-                            )
-                    );
-                }
+                        )
+                );
+            }
 
-                // Bonuses:
-                // (2) Set : +5% Attack Damage
-                // (4) Set : Reduces cooldown of Judgement by 3 seconds
-                for (var bonus: equipmentSet.bonuses()) {
-                    var isActive = wornItems.size() >= bonus.requiredPieceCount();
-                    text.addAll(bonusText(player, stack, bonus, isActive));
-                }
+            // Bonuses:
+            // (2) Set : +5% Attack Damage
+            // (4) Set : Reduces cooldown of Judgement by 3 seconds
+            for (var bonus: equipmentSet.bonuses()) {
+                var isActive = wornItems.size() >= bonus.requiredPieceCount();
+                text.addAll(bonusText(player, stack, bonus, isActive));
             }
         }
         return text;
