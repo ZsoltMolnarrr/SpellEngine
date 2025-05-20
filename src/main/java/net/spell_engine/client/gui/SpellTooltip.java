@@ -357,6 +357,7 @@ public class SpellTooltip {
         var description = I18n.translate(spellKeyPrefix(spellId) + ".description");
 
         List<Spell.Trigger> triggers = new ArrayList<>();
+        var tokenReplacements = new HashMap<String, List<String>>();
         if (spell.passive != null) {
             triggers.addAll(spell.passive.triggers);
         }
@@ -370,16 +371,16 @@ public class SpellTooltip {
             }
             if (projectile != null) {
                 if (projectile.perks.ricochet > 0) {
-                    description = description.replace(placeholder("ricochet"), formattedNumber(projectile.perks.ricochet));
+                    addToken("ricochet", formattedNumber(projectile.perks.ricochet), tokenReplacements);
                 }
                 if (projectile.perks.bounce > 0) {
-                    description = description.replace(placeholder("bounce"), formattedNumber(projectile.perks.bounce));
+                    addToken("bounce", formattedNumber(projectile.perks.bounce), tokenReplacements);
                 }
                 if (projectile.perks.pierce > 0) {
-                    description = description.replace(placeholder("pierce"), formattedNumber(projectile.perks.pierce));
+                    addToken("pierce", formattedNumber(projectile.perks.pierce), tokenReplacements);
                 }
                 if (projectile.perks.chain_reaction_size > 0) {
-                    description = description.replace(placeholder("chain_reaction_size"), formattedNumber(projectile.perks.chain_reaction_size));
+                    addToken("chain_reaction_size", formattedNumber(projectile.perks.chain_reaction_size), tokenReplacements);
                 }
             }
 
@@ -393,7 +394,7 @@ public class SpellTooltip {
             if (launchProperties != null) {
                 var extra_launch_count = launchProperties.extra_launch_count;
                 if (extra_launch_count > 0) {
-                    description = description.replace(placeholder("extra_launch"), formattedNumber(extra_launch_count));
+                    addToken("extra_launch", formattedNumber(extra_launch_count), tokenReplacements);
                 }
             }
 
@@ -402,10 +403,10 @@ public class SpellTooltip {
                 if (cloud != null) {
                     var cloud_duration = cloud.time_to_live_seconds;
                     if (cloud_duration > 0) {
-                        description = description.replace(placeholder("cloud_duration"), formattedNumber(cloud_duration));
+                        addToken("cloud_duration", formattedNumber(cloud_duration), tokenReplacements);
                     }
                     var radius = cloud.volume.combinedRadius(primaryPower.baseValue());
-                    description = description.replace(placeholder("cloud_radius"), formattedNumber(radius));
+                    addToken("cloud_radius", formattedNumber(radius), tokenReplacements);
                 }
             }
             if (spell.deliver.stash_effect != null) {
@@ -426,18 +427,18 @@ public class SpellTooltip {
                     }
                     case STATUS_EFFECT -> {
                         var statusEffect = impact.action.status_effect;
-                        description = description.replace(placeholder(effectAmplifierToken), "" + (statusEffect.amplifier + 1));
+                        addToken(effectAmplifierToken, "" + (statusEffect.amplifier + 1), tokenReplacements);
                         if (statusEffect.amplifier_cap > 0) {
-                            description = description.replace(placeholder(effectAmplifierCapToken), "" + (statusEffect.amplifier_cap + 1));
+                            addToken(effectAmplifierCapToken, "" + (statusEffect.amplifier_cap + 1), tokenReplacements);
                         }
-                        description = description.replace(placeholder(effectDurationToken), formattedNumber(statusEffect.duration));
+                        addToken(effectDurationToken, formattedNumber(statusEffect.duration), tokenReplacements);
                     }
                     case TELEPORT -> {
                         var teleport = impact.action.teleport;
                         switch (teleport.mode) {
                             case FORWARD -> {
                                 var forward = teleport.forward;
-                                description = description.replace(placeholder(teleportDistanceToken), formattedNumber(forward.distance));
+                                addToken(teleportDistanceToken, formattedNumber(forward.distance), tokenReplacements);
                             }
                         }
                     }
@@ -446,12 +447,31 @@ public class SpellTooltip {
             var area_impact = spell.area_impact;
             if (area_impact != null) {
                 var radius = area_impact.combinedRadius(primaryPower.baseValue());
-                description = description.replace(placeholder(impactRangeToken), formattedNumber(radius));
+                addToken(impactRangeToken, formattedNumber(radius), tokenReplacements);
+            }
+        }
+        for(var trigger : triggers) {
+            addToken(trigger_chance, percent(trigger.chance), tokenReplacements);
+        }
+        for(var modifier: spell.modifiers) {
+            if (modifier.cooldown_duration_deduct > 0) {
+                if (modifier.power_modifier != null) {
+                    addToken("power_multiplier", percent(modifier.power_modifier.power_multiplier), tokenReplacements);
+                    addToken("critical_chance_bonus", percent(modifier.power_modifier.critical_chance_bonus), tokenReplacements);
+                    addToken("critical_damage_bonus", percent(modifier.power_modifier.critical_damage_bonus), tokenReplacements);
+                }
+                addToken("effect_duration_add", formattedNumber(modifier.effect_duration_add), tokenReplacements);
+                addToken("cooldown_duration_deduct", formattedNumber(modifier.cooldown_duration_deduct), tokenReplacements);
             }
         }
 
-        var triggerChances = triggers.stream().map(trigger -> percent(trigger.chance)).toList();
-        description = replaceTokens(description, trigger_chance, triggerChances);
+        // TODO: Optimize, perform replace for only tokens those are included in the description
+
+        for (var entry : tokenReplacements.entrySet()) {
+            var token = entry.getKey();
+            var values = entry.getValue();
+            description = replaceTokens(description, token, values);
+        }
 
         var mutator = descriptionMutators.get(spellId);
         if (mutator != null) {
@@ -459,6 +479,13 @@ public class SpellTooltip {
             description = mutator.mutate(args);
         }
         return description;
+    }
+
+    private static void addToken(String token, String value, Map<String, List<String>> tokenReplacements) {
+        if (!tokenReplacements.containsKey(token)) {
+            tokenReplacements.put(token, new ArrayList<>());
+        }
+        tokenReplacements.get(token).add(value);
     }
 
     private static MutableText indentation(int level) {
