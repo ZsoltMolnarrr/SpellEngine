@@ -543,12 +543,25 @@ public class SpellHelper {
         var data = spell.deliver.projectile;
         var projectileData = data.projectile;
         var mutablePerks = projectileData.perks.copy();
+        var mutableLaunchProperties = data.launch_properties.copy();
+
+        if (caster instanceof PlayerEntity player) {
+            var spellModifiers = SpellModifiers.of(player, spellEntry);
+            for (var modifier: spellModifiers) {
+                if (modifier.projectile_launch != null) {
+                    mutableLaunchProperties.mutatingCombine(modifier.projectile_launch);
+                }
+                if (modifier.projectile_perks != null) {
+                    mutablePerks.mutatingCombine(modifier.projectile_perks);
+                }
+            }
+        }
 
         var projectile = new SpellProjectile(world, caster,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
                 SpellProjectile.Behaviour.FLY, spellEntry, context, mutablePerks);
 
-        var mutableLaunchProperties = data.launch_properties.copy();
+
         if (SpellEvents.PROJECTILE_SHOOT.isListened()) {
             SpellEvents.PROJECTILE_SHOOT.invoke((listener) -> listener.onProjectileLaunch(
                     new SpellEvents.ProjectileLaunchEvent(projectile, mutableLaunchProperties, caster, target, spellEntry, context, sequenceIndex)));
@@ -622,6 +635,18 @@ public class SpellHelper {
         var projectileData = data.projectile;
         var mutableLaunchProperties = data.launch_properties.copy();
         var mutablePerks = projectileData.perks.copy();
+
+        if (caster instanceof PlayerEntity player) {
+            var spellModifiers = SpellModifiers.of(player, spellEntry);
+            for (var modifier: spellModifiers) {
+                if (modifier.projectile_launch != null) {
+                    mutableLaunchProperties.mutatingCombine(modifier.projectile_launch);
+                }
+                if (modifier.projectile_perks != null) {
+                    mutablePerks.mutatingCombine(modifier.projectile_perks);
+                }
+            }
+        }
 
         var projectile = new SpellProjectile(world, caster,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),

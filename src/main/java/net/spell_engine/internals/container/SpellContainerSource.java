@@ -178,6 +178,7 @@ public class SpellContainerSource {
         }
 
         if (updated) {
+            owner.spellModifierCache().clear();
             // Updates active equipment sets on the player (attribute set bonuses),
             // appends to `allContainers` from active equipment sets (spell set bonuses)
             updateEquipmentSets(player, allContainers);

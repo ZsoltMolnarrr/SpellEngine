@@ -101,6 +101,8 @@ public class Spell {
             @Nullable public Spell.Impact.Action.Type type;
         }
 
+        @Nullable public LaunchProperties projectile_launch;
+        @Nullable public ProjectileData.Perks projectile_perks;
         @Nullable public Impact.Modifier power_modifier;
         public float effect_duration_add = 0;
         public float cooldown_duration_deduct = 0;
@@ -582,6 +584,12 @@ public class Spell {
             copy.sound = this.sound != null ? this.sound.copy() : null;
             return copy;
         }
+
+        public void mutatingCombine(LaunchProperties other) {
+            this.velocity += other.velocity;
+            this.extra_launch_count += other.extra_launch_count;
+            this.extra_launch_delay += other.extra_launch_delay;
+        }
     }
 
     public static class ProjectileData { public ProjectileData() { }
@@ -624,6 +632,16 @@ public class Spell {
                 copy.chain_reaction_triggers = this.chain_reaction_triggers;
                 copy.chain_reaction_increment = this.chain_reaction_increment;
                 return copy;
+            }
+
+            public void mutatingCombine(Perks other) {
+                this.ricochet += other.ricochet;
+                this.ricochet_range += other.ricochet_range;
+                this.bounce += other.bounce;
+                this.pierce += other.pierce;
+                this.chain_reaction_size += other.chain_reaction_size;
+                this.chain_reaction_triggers += other.chain_reaction_triggers;
+                this.chain_reaction_increment += other.chain_reaction_increment;
             }
         }
 

@@ -5,6 +5,8 @@ API changes:
   - `power_modifier` to add extra power, crit chance, crit damage
   - `effect_duration_add` to add extra duration to status effects
   - `cooldown_duration_deduct` to reduce cooldown duration
+  - `projectile_launch` to modify projectile launch parameters (count, velocity, etc...)
+  - `projectile_perks` to modify projectile perks (ricochet, bounce etc...)
   - spell specific modifiers are stored in a cached manner 
 - Add Equipment Sets functionality, for creating item set bonuses 
   - Fully data driven (new data type, stored in DynamicRegistry), defined in data files
