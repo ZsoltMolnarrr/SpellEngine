@@ -29,6 +29,8 @@ import net.spell_power.api.SpellPower;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SpellTooltip {
     public static final String damageToken = "damage";
@@ -465,10 +467,20 @@ public class SpellTooltip {
             }
         }
 
-        // TODO: Optimize, perform replace for only tokens those are included in the description
+
+        Set<String> tokenStarts = new HashSet<>();
+        String regex = "\\{[a-z]{3}";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(description);
+        while (matcher.find()) {
+            tokenStarts.add(matcher.group().substring(1));
+        }
 
         for (var entry : tokenReplacements.entrySet()) {
             var token = entry.getKey();
+            if (!tokenStarts.contains(token.substring(0, 3))) {
+                continue;
+            }
             var values = entry.getValue();
             description = replaceTokens(description, token, values);
         }
