@@ -64,7 +64,9 @@ public class EquipmentSet {
         ).apply(instance, Definition::new));
     }
     public static String translationKey(RegistryEntry<Definition> entry) {
-        var id = entry.getKey().get().getValue();
+        return translationKey(entry.getKey().get().getValue());
+    }
+    public static String translationKey(Identifier id) {
         return "equipment_set." + id.getNamespace() + "." + id.getPath();
     }
 
@@ -83,7 +85,7 @@ public class EquipmentSet {
             var stack = sourcedStack.itemstack();
             var component = stack.get(SpellDataComponents.EQUIPMENT_SET);
             if (component != null) {
-                var id = component.getKey().get().getValue();
+                var id = component;
                 var itemEntry = stack.getItem().getRegistryEntry();
                 if (sourcedStack.sourceName.contains("hand") && !stack.isIn(SpellEngineItemTags.HANDHELD)) {
                     // Prevent armor counted from hands

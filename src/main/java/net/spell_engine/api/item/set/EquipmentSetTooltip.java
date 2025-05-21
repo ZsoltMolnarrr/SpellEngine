@@ -25,8 +25,13 @@ public class EquipmentSetTooltip {
 
     public static List<Text> textFor(ItemStack stack, @Nullable PlayerEntity player) {
         var text = new ArrayList<Text>();
-        var equipmentSetEntry = stack.get(SpellDataComponents.EQUIPMENT_SET);
-        if (equipmentSetEntry != null && player != null && player.getWorld() != null) {
+        var component = stack.get(SpellDataComponents.EQUIPMENT_SET);
+        if (component == null) {
+            return text;
+        }
+        var optionalEntry = EquipmentSetRegistry.from(player.getWorld()).getEntry(component);
+        if (optionalEntry.isPresent() && player != null && player.getWorld() != null) {
+            var equipmentSetEntry = optionalEntry.get();
             var equipmentSet = equipmentSetEntry.value();
             var setSize = equipmentSet.items().size();
 

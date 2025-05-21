@@ -2,7 +2,7 @@
   "values": [
     "#minecraft:enchantable/weapon",
     "#c:shields",
-    "#c:ranged_weapons",
+    "#minecraft:ranged_weapons",
     "#minecraft:enchantable/bow",
     "#minecraft:enchantable/crossbow"
   ]

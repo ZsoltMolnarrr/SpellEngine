@@ -69,6 +69,10 @@ public class SpellContainerHelper {
         return new SpellContainer(SpellContainer.ContentType.MAGIC, false, "", 0, List.of(spellId.toString()));
     }
 
+    public static SpellContainer createForModifier(Identifier spellId) {
+        return new SpellContainer(SpellContainer.ContentType.ANY, false, "", 0, List.of(spellId.toString()));
+    }
+
     // Read helpers
 
     public static SpellContainer containerFromItemStack(ItemStack itemStack) {
