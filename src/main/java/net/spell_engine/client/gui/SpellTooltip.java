@@ -456,13 +456,15 @@ public class SpellTooltip {
             addToken(trigger_chance, percent(trigger.chance), tokenReplacements);
         }
         for(var modifier: spell.modifiers) {
-            if (modifier.cooldown_duration_deduct > 0) {
-                if (modifier.power_modifier != null) {
-                    addToken("power_multiplier", percent(modifier.power_modifier.power_multiplier), tokenReplacements);
-                    addToken("critical_chance_bonus", percent(modifier.power_modifier.critical_chance_bonus), tokenReplacements);
-                    addToken("critical_damage_bonus", percent(modifier.power_modifier.critical_damage_bonus), tokenReplacements);
-                }
+            if (modifier.power_modifier != null) {
+                addToken("power_multiplier", percent(modifier.power_modifier.power_multiplier), tokenReplacements);
+                addToken("critical_chance_bonus", percent(modifier.power_modifier.critical_chance_bonus), tokenReplacements);
+                addToken("critical_damage_bonus", percent(modifier.power_modifier.critical_damage_bonus), tokenReplacements);
+            }
+            if (modifier.effect_duration_add != 0) {
                 addToken("effect_duration_add", formattedNumber(modifier.effect_duration_add), tokenReplacements);
+            }
+            if (modifier.cooldown_duration_deduct != 0) {
                 addToken("cooldown_duration_deduct", formattedNumber(modifier.cooldown_duration_deduct), tokenReplacements);
             }
         }
