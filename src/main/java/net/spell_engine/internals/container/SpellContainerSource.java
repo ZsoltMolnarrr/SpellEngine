@@ -160,7 +160,9 @@ public class SpellContainerSource {
 
         if (SpellEngineMod.config.spell_container_caching) {
             for (var entry : sources) {
-                if (owner.spellContainerCache().containsKey(entry.name())) {
+                var resolvedContainers = owner.spellContainerCache().get(entry.name());
+                if (resolvedContainers != null) {
+                    allContainers.addAll(resolvedContainers);
                 } else {
                     // System.out.println("Container source dirty: " + entry.name() + " for " + player.getName());
                     var freshContainers = entry.source().getSpellContainers(player, entry.name());

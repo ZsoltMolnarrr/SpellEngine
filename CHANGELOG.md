@@ -1,5 +1,8 @@
 # 1.7.0
 
+Functional changes:
+- Fixed spell container caching (spells sometimes not showing up on hotbar)
+
 API changes:
 - Add new spell type `MODIFIER`, to allow modifying existing spells in narrow pre-defined ways
   - `power_modifier` to add extra power, crit chance, crit damage
