@@ -133,7 +133,7 @@ public class SpellHelper {
         }
         if (duration > 0) {
             if (SpellEngineMod.config.haste_affects_cooldown && spell.cost.cooldown.haste_affected) {
-                duration = hasteAffectedValue(caster, spell.school, spell.cost.cooldown.duration, provisionedWeapon);
+                duration = hasteAffectedValue(caster, spell.school, duration, provisionedWeapon);
             }
         }
         return Math.max(duration, 0);

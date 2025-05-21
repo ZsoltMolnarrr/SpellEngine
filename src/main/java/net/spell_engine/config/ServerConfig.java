@@ -41,12 +41,8 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
 
     @Comment("Allow spell containers be cached for faster improved server performance. Might be buggy.")
     public boolean spell_container_caching = true;
-    @Comment("Allow spells on the offhand item be collected and used.")
-    public boolean spell_container_from_offhand = true;
     @Comment("Allow any spell containers to be resolved from the offhand not just offhand specific ones.")
     public boolean spell_container_from_offhand_any = false;
-    @Comment("Allow spell containers be resolved from the equipment slots.")
-    public boolean spell_container_from_equipment = true;
     @Comment("If set true, a Fireball doesn't collide with an ally, a healing projectile doesn't collide with an enemy")
     public boolean projectiles_pass_thru_irrelevant_targets = true;
     @Comment("Auto swap Bow & Spear cooldown ticks to apply for attack and itemUse")
