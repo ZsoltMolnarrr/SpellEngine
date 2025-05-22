@@ -15,6 +15,7 @@ import net.minecraft.world.World;
 import net.spell_engine.api.spell.Spell;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Stream;
@@ -41,6 +42,20 @@ public class SpellRegistry {
             spell -> {
                 JsonElement jsonElement = gson.toJsonTree(spell);
                 return jsonElement;
+            }
+    );
+
+    public static final Codec<Spell> NETWORK_CODEC_V2 = Codec.BYTE_BUFFER.comapFlatMap(
+            encoded -> {
+                var bytes = encoded.array();
+                var json = new String(bytes);
+                var spell = gson.fromJson(json, Spell.class);
+                return DataResult.success(spell);
+            },
+            spell -> {
+                var json = gson.toJson(spell);
+                var bytes = json.getBytes();
+                return ByteBuffer.wrap(bytes);
             }
     );
 

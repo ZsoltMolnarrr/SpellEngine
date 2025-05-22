@@ -2,6 +2,7 @@
 
 Functional changes:
 - Fixed spell container caching (spells sometimes not showing up on hotbar)
+- Improve Spell Registry synchronization (ditching base64), fixes  
 
 API changes:
 - Add new spell type `MODIFIER`, to allow modifying existing spells in narrow pre-defined ways

@@ -11,7 +11,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.spell_engine.api.effect.StatusEffectClassification;
 import net.spell_engine.api.item.set.EquipmentSetFeature;
-import net.spell_engine.api.item.set.EquipmentSetRegistry;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
@@ -41,7 +40,7 @@ public class SpellEngineMod {
         AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
 
-        DynamicRegistries.registerSynced(SpellRegistry.KEY, SpellRegistry.LOCAL_CODEC, SpellRegistry.NETWORK_CODEC);
+        DynamicRegistries.registerSynced(SpellRegistry.KEY, SpellRegistry.LOCAL_CODEC, SpellRegistry.NETWORK_CODEC_V2);
 
         SpellAssignments.init();
         ServerNetwork.init();
