@@ -1043,17 +1043,19 @@ public class SpellHelper {
                         if(!underApplyLimit(power, livingTarget, school, data.apply_limit)) {
                             return false;
                         }
+                        var extraDuration = 0F;
+                        var extraAmplifier = 0;
+                        for (var spellModifier: spellModifiers) {
+                            extraDuration += spellModifier.effect_duration_add;
+                            extraAmplifier += spellModifier.effect_amplifier_add;
+                        }
                         var amplifier = data.amplifier + (int)(data.amplifier_power_multiplier * power.nonCriticalValue());
+                        amplifier += extraAmplifier;
                         switch (data.apply_mode) {
                             case ADD, SET -> {
                                 if (target.getType().isIn(SpellEngineEntityTags.bosses)
                                         && (StatusEffectClassification.isMovementImpairing(effect) || StatusEffectClassification.disablesMobAI(effect) ) ) {
                                     return false;
-                                }
-
-                                var extraDuration = 0F;
-                                for (var spellModifier: spellModifiers) {
-                                    extraDuration += spellModifier.effect_duration_add;
                                 }
                                 var duration = Math.round((data.duration + extraDuration) * 20F);
 

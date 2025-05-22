@@ -453,6 +453,9 @@ public class SpellTooltip {
             if (modifier.projectile_perks != null) {
                 tokenizeProjectilePerks(modifier.projectile_perks, tokenReplacements);
             }
+            if (modifier.effect_amplifier_add != 0) {
+                addToken("effect_amplifier_add", formattedNumber(modifier.effect_amplifier_add), tokenReplacements);
+            }
             if (modifier.effect_duration_add != 0) {
                 addToken("effect_duration_add", formattedNumber(modifier.effect_duration_add), tokenReplacements);
             }

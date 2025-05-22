@@ -105,6 +105,7 @@ public class Spell {
         @Nullable public ProjectileData.Perks projectile_perks;
         @Nullable public Impact.Modifier power_modifier;
         public float cloud_duration_add = 0;
+        public int effect_amplifier_add = 0;
         public float effect_duration_add = 0;
         public float cooldown_duration_deduct = 0;
     }
@@ -591,6 +592,14 @@ public class Spell {
             this.extra_launch_count += other.extra_launch_count;
             this.extra_launch_delay += other.extra_launch_delay;
         }
+
+        public static LaunchProperties EMPTY() {
+            LaunchProperties empty = new LaunchProperties();
+            empty.velocity = 0;
+            empty.extra_launch_count = 0;
+            empty.extra_launch_delay = 0;
+            return empty;
+        }
     }
 
     public static class ProjectileData { public ProjectileData() { }
@@ -643,6 +652,18 @@ public class Spell {
                 this.chain_reaction_size += other.chain_reaction_size;
                 this.chain_reaction_triggers += other.chain_reaction_triggers;
                 this.chain_reaction_increment += other.chain_reaction_increment;
+            }
+
+            public static Perks EMPTY() {
+                Perks empty = new Perks();
+                empty.ricochet = 0;
+                empty.ricochet_range = 0;
+                empty.bounce = 0;
+                empty.pierce = 0;
+                empty.chain_reaction_size = 0;
+                empty.chain_reaction_triggers = 0;
+                empty.chain_reaction_increment = 0;
+                return empty;
             }
         }
 
