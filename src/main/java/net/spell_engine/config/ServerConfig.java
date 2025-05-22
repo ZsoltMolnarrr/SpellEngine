@@ -86,7 +86,7 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
         // put("minecraft:undead", TargetHelper.Relation.HOSTILE);
     }};
     @Comment("Relation to self, and self owned pets (tamed entities), changing this to `FRIENDLY` will make it impossible to hit pets with weapons")
-    public EntityRelation player_relation_to_self_and_pets = EntityRelation.FRIENDLY;
+    public EntityRelation player_relation_to_owned_pets = EntityRelation.FRIENDLY;
     @Comment("Relation to teammates (entities in the same team), changing this to `FRIENDLY` will automatically disable friendly fire for all teams")
     public EntityRelation player_relation_to_teammates = EntityRelation.FRIENDLY;
     @Comment("Relation to unspecified entities those are instance of PassiveEntity(Yarn)")

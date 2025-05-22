@@ -24,14 +24,16 @@ public class EntityRelations {
     public static EntityRelation getRelation(LivingEntity attacker, Entity target) {
         var config = SpellEngineMod.config;
         if (attacker == target) {
-            return config.player_relation_to_self_and_pets;
+            return EntityRelation.ALLY;
         }
         target = MultipartEntityCompat.coalesce(target);
 
         if (target instanceof Tameable tameable) {
             var owner = tameable.getOwner();
             if (owner != null) {
-                return getRelation(attacker, owner);
+                return attacker == owner
+                        ? config.player_relation_to_owned_pets
+                        : getRelation(attacker, owner);
             }
         }
         if (target instanceof AbstractDecorationEntity) {

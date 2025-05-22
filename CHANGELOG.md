@@ -5,7 +5,8 @@ WARNING: All players must use the same version, due to networking changes.
 
 Functional changes:
 - Fixed spell container caching (spells sometimes not showing up on hotbar)
-- Improve Spell Registry synchronization (ditching base64), fixes  
+- Fixed projectiles hitting the caster sometimes (chain reaction), fixes #117
+- Improve Spell Registry synchronization (ditching base64), fixes #119
 
 API changes:
 - Add new spell type `MODIFIER`, to allow modifying existing spells in narrow pre-defined ways
