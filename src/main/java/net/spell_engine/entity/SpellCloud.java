@@ -40,7 +40,7 @@ public class SpellCloud extends Entity implements Ownable {
         this.noClip = true;
     }
 
-    public void onCreatedFromSpell(Identifier spellId, Spell.Delivery.Cloud cloudData, SpellHelper.ImpactContext context) {
+    public void onCreatedFromSpell(Identifier spellId, Spell.Delivery.Cloud cloudData, SpellHelper.ImpactContext context, float time_to_live_seconds) {
         this.spellId = spellId;
         this.context = context;
 
@@ -58,7 +58,7 @@ public class SpellCloud extends Entity implements Ownable {
         this.getDataTracker().set(DATA_INDEX_TRACKER, this.dataIndex);
         this.getDataTracker().set(RADIUS_TRACKER, calculateRadius());
 
-        this.timeToLive = (int) (cloudData.time_to_live_seconds * 20);
+        this.timeToLive = (int) (time_to_live_seconds * 20);
     }
 
     private float calculateRadius() {

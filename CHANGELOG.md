@@ -1,5 +1,8 @@
 # 1.7.0
 
+WARNING: All players must use the same version, due to networking changes.
+(Players with Spell Engine 1.6.X, won't be able to connect to servers with Spell Engine 1.7.0)
+
 Functional changes:
 - Fixed spell container caching (spells sometimes not showing up on hotbar)
 - Improve Spell Registry synchronization (ditching base64), fixes  

@@ -372,18 +372,7 @@ public class SpellTooltip {
                 projectile = spell.deliver.meteor.projectile;
             }
             if (projectile != null) {
-                if (projectile.perks.ricochet > 0) {
-                    addToken("ricochet", formattedNumber(projectile.perks.ricochet), tokenReplacements);
-                }
-                if (projectile.perks.bounce > 0) {
-                    addToken("bounce", formattedNumber(projectile.perks.bounce), tokenReplacements);
-                }
-                if (projectile.perks.pierce > 0) {
-                    addToken("pierce", formattedNumber(projectile.perks.pierce), tokenReplacements);
-                }
-                if (projectile.perks.chain_reaction_size > 0) {
-                    addToken("chain_reaction_size", formattedNumber(projectile.perks.chain_reaction_size), tokenReplacements);
-                }
+                tokenizeProjectilePerks(projectile.perks, tokenReplacements);
             }
 
             Spell.LaunchProperties launchProperties = null;
@@ -461,14 +450,19 @@ public class SpellTooltip {
                 addToken("critical_chance_bonus", percent(modifier.power_modifier.critical_chance_bonus), tokenReplacements);
                 addToken("critical_damage_bonus", percent(modifier.power_modifier.critical_damage_bonus), tokenReplacements);
             }
+            if (modifier.projectile_perks != null) {
+                tokenizeProjectilePerks(modifier.projectile_perks, tokenReplacements);
+            }
             if (modifier.effect_duration_add != 0) {
                 addToken("effect_duration_add", formattedNumber(modifier.effect_duration_add), tokenReplacements);
+            }
+            if (modifier.cloud_duration_add != 0) {
+                addToken("cloud_duration_add", formattedNumber(modifier.cloud_duration_add), tokenReplacements);
             }
             if (modifier.cooldown_duration_deduct != 0) {
                 addToken("cooldown_duration_deduct", formattedNumber(modifier.cooldown_duration_deduct), tokenReplacements);
             }
         }
-
 
         Set<String> tokenStarts = new HashSet<>();
         String regex = "\\{[a-z]{3}";
@@ -493,6 +487,21 @@ public class SpellTooltip {
             description = mutator.mutate(args);
         }
         return description;
+    }
+
+    private static void tokenizeProjectilePerks(Spell.ProjectileData.Perks perks, HashMap<String, List<String>> tokenReplacements) {
+        if (perks.ricochet > 0) {
+            addToken("ricochet", formattedNumber(perks.ricochet), tokenReplacements);
+        }
+        if (perks.bounce > 0) {
+            addToken("bounce", formattedNumber(perks.bounce), tokenReplacements);
+        }
+        if (perks.pierce > 0) {
+            addToken("pierce", formattedNumber(perks.pierce), tokenReplacements);
+        }
+        if (perks.chain_reaction_size > 0) {
+            addToken("chain_reaction_size", formattedNumber(perks.chain_reaction_size), tokenReplacements);
+        }
     }
 
     private static void addToken(String token, String value, Map<String, List<String>> tokenReplacements) {

@@ -1364,6 +1364,15 @@ public class SpellHelper {
             target = caster;
         }
 
+        List<Spell.Modifier> spellModifiers = List.of();
+        if (caster instanceof PlayerEntity player) {
+            spellModifiers = SpellModifiers.of(player, spellEntry);
+        }
+        float extraTimeToLive = 0;
+        for (var spellModifier: spellModifiers) {
+            extraTimeToLive += spellModifier.cloud_duration_add;
+        }
+
         for (var cloud: clouds) {
             SpellCloud entity;
             if (cloud.entity_type_id != null) {
@@ -1374,7 +1383,7 @@ public class SpellHelper {
                 entity = new SpellCloud(world);
             }
             entity.setOwner(caster);
-            entity.onCreatedFromSpell(spellEntry.getKey().get().getValue(), cloud, context);
+            entity.onCreatedFromSpell(spellEntry.getKey().get().getValue(), cloud, context, cloud.time_to_live_seconds + extraTimeToLive);
             applyEntityPlacement(entity, target, target.getPos(), cloud.placement);
             ((WorldScheduler)world).schedule(cloud.delay_ticks, () -> {
                 world.spawnEntity(entity);

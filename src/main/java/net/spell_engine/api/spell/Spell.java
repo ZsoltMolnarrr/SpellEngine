@@ -104,6 +104,7 @@ public class Spell {
         @Nullable public LaunchProperties projectile_launch;
         @Nullable public ProjectileData.Perks projectile_perks;
         @Nullable public Impact.Modifier power_modifier;
+        public float cloud_duration_add = 0;
         public float effect_duration_add = 0;
         public float cooldown_duration_deduct = 0;
     }
