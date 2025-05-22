@@ -41,6 +41,8 @@ public class Defaults {
         var A1 = armors(1);
         var A2 = armors(2);
         var A3 = armors(3);
+        var A4 = armors(4);
+        var A5 = armors(5);
 
         var X0 = accessories(0);
         var X1 = accessories(1);
@@ -183,9 +185,11 @@ public class Defaults {
                         .bonus_rolls(0)
                         .add(W4, true).weight(4)
                         .add(A3, true).weight(4)
+                        .add(A4, true).weight(4)
                         .add(X4)
                         .add(R4)
                         .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
+                        .add(A5)
                 ));
 
         List.of("minecraft:chests/trial_chambers/corridor",
@@ -277,6 +281,7 @@ public class Defaults {
                 .add(X2).weight(2)
                 .add(R2).weight(2)
                 .add(W5)
+                .add(A5)
         );
 
         // MineCells bosses
@@ -288,6 +293,7 @@ public class Defaults {
                 .add(X4).weight(2)
                 .add(R2).weight(2)
                 .add(W5)
+                .add(A5)
         );
 
         items.put("minecells:entities/concierge", new LootConfig.Pool()
@@ -297,6 +303,7 @@ public class Defaults {
                 .add(X4).weight(2)
                 .add(R3)
                 .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
+                .add(A5)
         );
 
         // Bosses of Mass Destruction mod
@@ -324,6 +331,7 @@ public class Defaults {
                 .add(W3, true).weight(5)
                 .add(A3, true).weight(5)
                 .add(W5)
+                .add(A5)
                 .add(X3).weight(2)
                 .add(R3)
         );
@@ -331,10 +339,11 @@ public class Defaults {
         items.put("bosses_of_mass_destruction:chests/obsidilith", new LootConfig.Pool()
                 .rolls(2)
                 .add(W4, true).weight(4)
-                .add(A3, true).weight(4)
+                .add(A4, true).weight(4)
                 .add(X4).weight(2)
                 .add(R4)
                 .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
+                .add(A5)
         );
 
         // Friends or Foes
@@ -344,7 +353,9 @@ public class Defaults {
                 .add(A3, true).weight(6)
                 .add(X3).weight(2)
                 .add(R2)
+                .add(A5)
                 .add(W5)
+                .add(A5)
         );
 
         // Formidulus mod
@@ -356,6 +367,7 @@ public class Defaults {
                 .add(X2).weight(2)
                 .add(R2)
                 .add(W5)
+                .add(A5)
         );
 
         // RPG Mini bosses
@@ -430,6 +442,7 @@ public class Defaults {
                 .add(X4).weight(2)
                 .add(R4)
                 .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
+                .add(A5)
         );
 
         // Dungeons and Taverns
@@ -476,6 +489,7 @@ public class Defaults {
         items.put("nova_structures:chests/end_castle/greater_loot", new LootConfig.Pool()
                 .rolls(1)
                 .add(W4, true)
+                .add(A4, true)
                 .add(X3, true)
         );
         items.put("nova_structures:chests/end_castle/lesser_loot", new LootConfig.Pool()
@@ -486,12 +500,14 @@ public class Defaults {
         items.put("nova_structures:chests/end_castle/treasure_lighthouse", new LootConfig.Pool()
                 .rolls(0.5)
                 .add(W4, true)
+                .add(A4, true)
                 .add(X4)
         );
         items.put("nova_structures:chests/end_castle/vault_brigattine", new LootConfig.Pool()
                 .rolls(0.5)
                 .add(W4, true)
                 .add(A3, true)
+                .add(A4, true)
                 .add(R3)
                 .add(X4)
         );
@@ -499,6 +515,7 @@ public class Defaults {
                 .rolls(0.5)
                 .add(W4, true)
                 .add(A3, true)
+                .add(A4, true)
                 .add(X4)
                 .add(R4)
         );
@@ -506,6 +523,7 @@ public class Defaults {
                 .rolls(0.5)
                 .add(W4, true)
                 .add(A3, true)
+                .add(A4, true)
                 .add(X4)
         );
 
@@ -798,7 +816,8 @@ public class Defaults {
                 .rolls(1)
                 .add(A3).enchant().weight(4)
                 .add(W3).enchant().weight(4)
-                .add(W5)
+                .add(A4).enchant()
+                .add(W4).enchant()
                 .add(X4)
         ));
 
@@ -1302,6 +1321,7 @@ public class Defaults {
 
         items.put("betternether:chests/wither_tower_bonus", new LootConfig.Pool()
                 .add(W4)
+                .add(A4)
                 .add(A3)
                 .add(X3)
         );
@@ -1309,6 +1329,7 @@ public class Defaults {
         items.put("betternether:chests/city_surprise", new LootConfig.Pool()
                 .rolls(0.5)
                 .add(W4)
+                .add(A4)
                 .add(X3)
         );
 
@@ -1339,6 +1360,7 @@ public class Defaults {
         items.put("medievalend:end_castle", new LootConfig.Pool()
                 .rolls(0.5)
                 .add(W4).enchant()
+                .add(A4)
                 .add(A3).enchant()
                 .add(X4)
         );
@@ -1424,6 +1446,7 @@ public class Defaults {
                 .rolls(0.5)
                 .add(W4)
                 .add(W3)
+                .add(A4)
                 .add(A3)
                 .add(X3)
                 .add(X4)
