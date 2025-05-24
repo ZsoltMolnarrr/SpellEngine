@@ -135,12 +135,14 @@ public class SpellHotbar {
 
 
     private @Nullable Handle handledThisTick = null;
-    private @Nullable Handle handledPreviousTick = null;
+    private @Nullable Handle lastPressed = null;
     private int itemUseCooldown = 0;
     public void prepare(int itemUseCooldown) {
         this.itemUseCooldown = itemUseCooldown;
-        this.handledPreviousTick = this.handledThisTick;
         this.handledThisTick = null;
+        if (lastPressed == null) {
+            attemptedSpell = null;
+        }
         this.updateDebounced();
     }
 
@@ -178,6 +180,9 @@ public class SpellHotbar {
                 var keyBinding = unwrapped.keyBinding();
                 var pressed = keyBinding.isPressed();
                 var handle = Handle.from(slot, keyBinding, unwrapped.vanillaHandle());
+                if (pressed) {
+                    this.lastPressed = handle;
+                }
 
                 switch (slot.castMode()) {
                     case ITEM_USE -> {
@@ -189,7 +194,7 @@ public class SpellHotbar {
                         if (pressed) {
                             var attempt = caster.startSpellCast(casterStack, slot.spell);
                             handledThisTick = handle;
-                            displayAttempt(attempt);
+                            displayAttempt(attempt, slot.spell);
                             return handle;
                         }
                     }
@@ -219,7 +224,7 @@ public class SpellHotbar {
                                 var attempt = caster.startSpellCast(casterStack, slot.spell);
                                 debounce(keyBinding, UseCase.START);
                                 handledThisTick = handle;
-                                displayAttempt(attempt);
+                                displayAttempt(attempt, slot.spell);
                                 return handle;
                             }
                         }
@@ -232,19 +237,19 @@ public class SpellHotbar {
             }
         }
 
-        lastDisplayedAttempt = null; // Clearing last displayed attempt when no key is pressed
+        this.lastPressed = null;
         return null;
     }
 
-    private SpellCast.Attempt lastDisplayedAttempt = null;
-    private void displayAttempt(SpellCast.Attempt attempt) {
-        if (lastDisplayedAttempt != null) { // Require releasing hotbar keys before displaying another attempt
+    private RegistryEntry<Spell> attemptedSpell = null;
+    private void displayAttempt(SpellCast.Attempt attempt, RegistryEntry<Spell> spell) {
+        if (Objects.equals(spell, attemptedSpell)) {
             return;
         }
         if (attempt.isFail()) {
             HudMessages.INSTANCE.castAttemptError(attempt);
         }
-        lastDisplayedAttempt = attempt;
+        this.attemptedSpell = spell;
     }
 
     private Identifier lastSyncedSpellId = null;
