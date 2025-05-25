@@ -8,7 +8,9 @@ Functional changes:
 - Fixed projectiles hitting the caster sometimes (chain reaction), fixes #117
 - Improve Spell Registry synchronization (ditching base64), fixes #119
 - Improve "On Cooldown" HUD message, no to be shown right after spell cast
-- Loot injection defaults now include Armor Tier 4, and Armor Tier 5 entries
+- Update loot injection defaults
+  - Now include Armor Tier 4, and Armor Tier 5 entries
+  - Update Dungeons Arise: Infested Temple, Kisegi Sanctuary
 
 API changes:
 - Add new spell type `MODIFIER`, to allow modifying existing spells in narrow pre-defined ways

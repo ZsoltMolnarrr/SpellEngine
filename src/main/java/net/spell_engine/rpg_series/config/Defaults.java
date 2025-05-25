@@ -1399,6 +1399,29 @@ public class Defaults {
                 .add(A2, true)
                 .add(X2)
         );
+
+        items.put("dungeons_arise:chests/infested_temple/infested_temple_vault_normal", new LootConfig.Pool()
+                .rolls(0.25)
+                .add(W2).weight(2)
+                .add(A2)
+                .add(W1).weight(2)
+                .add(A1).weight(2)
+                .add(X2).weight(2)
+        );
+        items.put("dungeons_arise:chests/infested_temple/infested_temple_vault_ominous", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(W2).enchant()
+                .add(A2).enchant()
+        );
+        scrolls.put("dungeons_arise:chests/infested_temple/infested_temple_vault_ominous", new LootConfig.Pool()
+                .rolls(0.25)
+                .scroll(3, 4)
+        );
+        items.put("dungeons_arise:chests/infested_temple/infested_temple_vault_treasure", new LootConfig.Pool()
+                .add(W2).enchant()
+                .add(A2).enchant()
+        );
+
         items.put("dungeons_arise:chests/infested_temple/infested_temple_top_treasure", new LootConfig.Pool()
                 .add(W2, true)
                 .add(A2, true)
@@ -1408,6 +1431,56 @@ public class Defaults {
                 .rolls(0.25)
                 .scroll(2, 3)
         );
+
+
+//        items.put("dungeons_arise:chests/kisegi_sanctuary/kisegi_sanctuary_basement", new LootConfig.Pool() // Contains mostly trash
+//                .rolls(0.5)
+//                .add(W1, true)
+//                .add(A1, true)
+//                .add(X1)
+//        );
+
+        // Somehow already includes RPG items
+        // Likely includes Infested Temple table reference
+        // items.put("dungeons_arise:chests/kisegi_sanctuary/kisegi_sanctuary_basement", new LootConfig.Pool() }
+
+        items.put("dungeons_arise:chests/kisegi_sanctuary/kisegi_sanctuary_treasure", new LootConfig.Pool()
+                .add(W2).weight(2)
+                .add(A2)
+                .add(X2)
+                .add(X3)
+        );
+
+        // Somehow already includes RPG items (A1, W1)
+        //items.put("dungeons_arise:chests/kisegi_sanctuary/kisegi_sanctuary_vault_normal", new LootConfig.Pool() );
+
+        items.put("dungeons_arise:chests/kisegi_sanctuary/kisegi_sanctuary_vault_normal_treasure", new LootConfig.Pool()
+                .add(W2).enchant()
+                .add(A2).enchant()
+        );
+
+        items.put("dungeons_arise:chests/kisegi_sanctuary/kisegi_sanctuary_vault_ominous", new LootConfig.Pool()
+                .add(W2).enchant().weight(2)
+                .add(A2).enchant().weight(2)
+                .add(X3)
+        );
+        scrolls.put("dungeons_arise:chests/kisegi_sanctuary/kisegi_sanctuary_vault_ominous", new LootConfig.Pool()
+                .rolls(0.25)
+                .scroll(3, 4)
+        );
+        items.put("dungeons_arise:chests/kisegi_sanctuary/kisegi_sanctuary_vault_ominous_treasure", new LootConfig.Pool()
+                .add(W2).enchant().weight(2)
+                .add(A2).enchant().weight(2)
+                .add(A3)
+                .add(W3)
+                .add(X3)
+        );
+        scrolls.put("dungeons_arise:chests/kisegi_sanctuary/kisegi_sanctuary_vault_ominous_treasure", new LootConfig.Pool()
+                .rolls(0.5)
+                .scroll(3, 4)
+        );
+
+
         items.put("dungeons_arise:chests/illager_windmill/illager_windmill_treasure", new LootConfig.Pool()
                 .add(W1, true)
                 .add(A1, true)
@@ -1521,13 +1594,13 @@ public class Defaults {
                 .add(X2)
         );
         items.put("dungeons_arise:chests/illager_fort/illager_fort_treasure", new LootConfig.Pool()
-                .add(W1)
+                .add(W2)
                 .add(A2, true)
                 .add(X2)
         );
         scrolls.put("dungeons_arise:chests/illager_fort/illager_fort_treasure", new LootConfig.Pool()
                 .rolls(0.5)
-                .scroll(2, 3)
+                .scroll(2, 4)
         );
         items.put("dungeons_arise:chests/keep_kayra/keep_kayra_treasure", new LootConfig.Pool()
                 .add(W2)
