@@ -383,10 +383,7 @@ public class SpellTooltip {
                 launchProperties = spell.deliver.meteor.launch_properties;
             }
             if (launchProperties != null) {
-                var extra_launch_count = launchProperties.extra_launch_count;
-                if (extra_launch_count > 0) {
-                    addToken("extra_launch", formattedNumber(extra_launch_count), tokenReplacements);
-                }
+                tokenizeProjectileLaunch(launchProperties, tokenReplacements);
             }
 
             if (spell.deliver.clouds != null && !spell.deliver.clouds.isEmpty()) {
@@ -453,6 +450,9 @@ public class SpellTooltip {
             if (modifier.projectile_perks != null) {
                 tokenizeProjectilePerks(modifier.projectile_perks, tokenReplacements);
             }
+            if (modifier.projectile_launch != null) {
+                tokenizeProjectileLaunch(modifier.projectile_launch, tokenReplacements);
+            }
             if (modifier.effect_amplifier_add != 0) {
                 addToken("effect_amplifier_add", formattedNumber(modifier.effect_amplifier_add), tokenReplacements);
             }
@@ -490,6 +490,13 @@ public class SpellTooltip {
             description = mutator.mutate(args);
         }
         return description;
+    }
+
+    private static void tokenizeProjectileLaunch(Spell.LaunchProperties launchProperties, HashMap<String, List<String>> tokenReplacements) {
+        var extra_launch_count = launchProperties.extra_launch_count;
+        if (extra_launch_count > 0) {
+            addToken("extra_launch", formattedNumber(extra_launch_count), tokenReplacements);
+        }
     }
 
     private static void tokenizeProjectilePerks(Spell.ProjectileData.Perks perks, HashMap<String, List<String>> tokenReplacements) {
