@@ -943,7 +943,12 @@ public class SpellHelper {
             switch (impact.action.type) {
                 case DAMAGE -> {
                     var damageData = impact.action.damage;
-                    var knockbackMultiplier = Math.max(0F, damageData.knockback * context.total());
+                    var extraKnockback = 1F;
+                    for (var spellModifier: spellModifiers) {
+                        extraKnockback += spellModifier.knockback_multiply_base;
+                    }
+
+                    var knockbackMultiplier = Math.max(0F, damageData.knockback * context.total() * extraKnockback);
                     var vulnerability = SpellPower.Vulnerability.none;
                     var timeUntilRegen = target.timeUntilRegen;
                     if (target instanceof LivingEntity livingEntity) {
