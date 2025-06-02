@@ -363,7 +363,7 @@ public class SpellHelper {
         player.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
         // Durability
         if (SpellEngineMod.config.spell_cost_durability_allowed && spell.cost.durability > 0) {
-            var stackToDamage = spellSource.itemStack().isDamageable() ? spellSource.itemStack() : heldItemStack;
+            var stackToDamage = (spellSource.itemStack() != null && spellSource.itemStack().isDamageable()) ? spellSource.itemStack() : heldItemStack;
             stackToDamage.damage(spell.cost.durability, player, EquipmentSlot.MAINHAND);
         }
         // Item
@@ -492,7 +492,7 @@ public class SpellHelper {
         if (duration > 0) {
             ((SpellCasterEntity) player).getCooldownManager().set(spellId, durationTicks);
         }
-        if (SpellEngineMod.config.spell_item_cooldown_lock && spell.cost.cooldown.hosting_item) {
+        if (SpellEngineMod.config.spell_item_cooldown_lock && spell.cost.cooldown.hosting_item && source.itemStack() != null) {
             var hostingItem = source.itemStack().getItem();
             var itemCooldowns = player.getItemCooldownManager();
             var durationLeft = ((ItemCooldownManagerExtension)itemCooldowns).SE_getLastCooldownDuration(hostingItem)

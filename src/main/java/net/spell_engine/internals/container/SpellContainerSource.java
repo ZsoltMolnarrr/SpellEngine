@@ -56,7 +56,7 @@ public class SpellContainerSource {
     public interface DirtyChecker {
         Object current(PlayerEntity player);
     }
-    public record SourcedContainer(String name, ItemStack itemStack, SpellContainer container) { }
+    public record SourcedContainer(String name, @Nullable ItemStack itemStack, SpellContainer container) { }
     public interface Source {
         List<SourcedContainer> getSpellContainers(PlayerEntity player, String name);
     }
