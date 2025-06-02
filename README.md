@@ -292,7 +292,7 @@ Install dependencies:
 
 Create a new file at `resources/data/MOD_ID/spells/SPELL_ID.json`.
 
-Write the content of the JSON file to match the structure of the [Spell](common/src/main/java/net/spell_engine/api/spell/Spell.java) class. Your JSON will be parsed into a Spell instance.
+Write the content of the JSON file to match the structure of the [Spell](src/main/java/net/spell_engine/api/spell/Spell.java) class. Your JSON will be parsed into a Spell instance.
 
 Spells are automatically registered. 
 
