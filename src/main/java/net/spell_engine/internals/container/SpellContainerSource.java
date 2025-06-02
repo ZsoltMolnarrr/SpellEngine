@@ -1,9 +1,11 @@
 package net.spell_engine.internals.container;
 
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
@@ -12,6 +14,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -28,6 +31,7 @@ public class SpellContainerSource {
     public interface Owner {
         Map<String, List<SourcedContainer>> spellContainerCache();
         Map<Identifier, List<Spell.Modifier>> spellModifierCache();
+        LinkedHashMap<String, SpellContainer> serverSideSpellContainers();
         void setSpellContainers(Result result);
         Result getSpellContainers();
     }
@@ -51,6 +55,14 @@ public class SpellContainerSource {
     }
     public static void setDirty(PlayerEntity player, String source) {
         ((Owner)player).spellContainerCache().remove(source);
+    }
+    public static void syncServerSideContainers(PlayerEntity player) {
+        if (!player.getWorld().isClient) {
+            var containers = ((Owner)player).serverSideSpellContainers();
+            var packet = new Packets.SpellContainerSync(containers);
+            ServerPlayNetworking.send((ServerPlayerEntity) player, packet);
+            setDirty(player, MAIN_HAND);
+        }
     }
 
     public interface DirtyChecker {
@@ -177,6 +189,9 @@ public class SpellContainerSource {
                 allContainers.addAll(freshContainers);
             }
             updated = true;
+        }
+        for (var entry: owner.serverSideSpellContainers().entrySet()) {
+            allContainers.add(new SourcedContainer(entry.getKey(), null, entry.getValue()));
         }
 
         if (updated) {

@@ -15,6 +15,7 @@ import net.spell_engine.internals.casting.SpellCastSyncHelper;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.container.SpellAssignments;
+import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.target.SpellTarget;
 
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ public class ServerNetwork {
         PayloadTypeRegistry.playS2C().register(Packets.SpellCooldownSync.PACKET_ID, Packets.SpellCooldownSync.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.ParticleBatches.PACKET_ID, Packets.ParticleBatches.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.SpellAnimation.PACKET_ID, Packets.SpellAnimation.CODEC);
+        PayloadTypeRegistry.playS2C().register(Packets.SpellContainerSync.PACKET_ID, Packets.SpellContainerSync.CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(Packets.SpellCastSync.PACKET_ID, (packet, context) -> {
             var server = context.server();
@@ -120,10 +122,13 @@ public class ServerNetwork {
         });
 
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            var player = handler.getPlayer();
             ((SpellCasterEntity)handler.getPlayer()).getCooldownManager().pushSync();
+            SpellContainerSource.syncServerSideContainers(player);
         });
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, target) -> {
             ((SpellCasterEntity)player).getCooldownManager().pushSync();
+            SpellContainerSource.syncServerSideContainers(player);
         });
     }
 

@@ -30,6 +30,7 @@ API changes:
   - `!namespace:path` matches everything except `namespace:path`
   - `!#namespace:path` matches all items except ones inside `namespace:path` tag
   - `!~my_regex` matches everything except the regex
+- Add server side spell container sources (with sync to players)
 
 # 1.6.12
 

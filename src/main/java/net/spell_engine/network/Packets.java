@@ -8,16 +8,14 @@ import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.internals.SpellCooldownManager;
 import net.spell_engine.internals.casting.SpellCast;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Packets {
 
@@ -259,6 +257,38 @@ public class Packets {
                 ));
             }
             return new ParticleBatches(sourceType, 1, spawns);
+        }
+    }
+
+    public record SpellContainerSync(LinkedHashMap<String, SpellContainer> containers) implements CustomPayload {
+        public static Identifier ID = Identifier.of(SpellEngineMod.ID, "spell_container_sync");
+        public static final CustomPayload.Id<SpellContainerSync> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<PacketByteBuf, SpellContainerSync> CODEC = PacketCodec.of(SpellContainerSync::write, SpellContainerSync::read);
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
+        }
+
+        private static final Gson gson = new Gson();
+        public void write(PacketByteBuf buffer) {
+            buffer.writeInt(containers.size());
+            for (var entry: containers.entrySet()) {
+                buffer.writeString(entry.getKey());
+                var json = gson.toJson(entry.getValue());
+                buffer.writeString(json);
+            }
+        }
+
+        public static SpellContainerSync read(PacketByteBuf buffer) {
+            int size = buffer.readInt();
+            var containers = new LinkedHashMap<String, SpellContainer>();
+            for (int i = 0; i < size; ++i) {
+                var key = buffer.readString();
+                var json = buffer.readString();
+                var container = gson.fromJson(json, SpellContainer.class);
+                containers.put(key, container);
+            }
+            return new SpellContainerSync(containers);
         }
     }
 

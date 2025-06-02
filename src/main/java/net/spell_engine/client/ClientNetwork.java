@@ -7,6 +7,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.container.SpellAssignments;
+import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.network.Packets;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.fx.ParticleHelper;
@@ -54,6 +55,19 @@ public class ClientNetwork {
             var client = context.client();
             client.execute(() -> {
                 ((SpellCasterEntity)client.player).getCooldownManager().acceptSync(packet.baseTick(), packet.cooldowns());
+            });
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(Packets.SpellContainerSync.PACKET_ID, (packet, context) -> {
+            var client = context.client();
+            client.execute(() -> {
+                var player = client.player;
+                if (player != null) {
+                    var containers = ((SpellContainerSource.Owner) player).serverSideSpellContainers();
+                    containers.clear();
+                    containers.putAll(packet.containers());
+                }
+                SpellContainerSource.setDirty(client.player, SpellContainerSource.MAIN_HAND);
             });
         });
     }

@@ -27,6 +27,12 @@ public class PlayerSpellContainerMixin implements SpellContainerSource.Owner {
         return spellModifierCache;
     }
 
+    private LinkedHashMap<String, SpellContainer> serverSideSpellContainers = new LinkedHashMap<>();
+    @Override
+    public LinkedHashMap<String, SpellContainer> serverSideSpellContainers() {
+        return serverSideSpellContainers;
+    }
+
     private SpellContainerSource.Result currentSpellContainers = SpellContainerSource.Result.EMPTY;
     @Override
     public void setSpellContainers(SpellContainerSource.Result result) {
