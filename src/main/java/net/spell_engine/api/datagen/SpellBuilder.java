@@ -13,10 +13,7 @@ public class SpellBuilder {
         spell.type = Spell.Type.ACTIVE;
         spell.active = new Spell.Active();
         spell.active.cast = new Spell.Active.Cast();
-
         spell.learn = new Spell.Learn();
-        spell.active.scroll = new Spell.Active.Scroll();
-
         return spell;
     }
 
@@ -24,7 +21,6 @@ public class SpellBuilder {
         var spell = new Spell();
         spell.type = Spell.Type.PASSIVE;
         spell.passive = new Spell.Passive();
-
         return spell;
     }
 
@@ -32,18 +28,17 @@ public class SpellBuilder {
         var spell = new Spell();
         spell.type = Spell.Type.MODIFIER;
         spell.modifiers = List.of();
-
         return spell;
     }
 
     private static Spell.Impact impactDamage(float coefficient, float knockback) {
-        var damage = new Spell.Impact();
-        damage.action = new Spell.Impact.Action();
-        damage.action.type = Spell.Impact.Action.Type.DAMAGE;
-        damage.action.damage = new Spell.Impact.Action.Damage();
-        damage.action.damage.spell_power_coefficient = coefficient;
-        damage.action.damage.knockback = knockback;
-        return damage;
+        var impact = new Spell.Impact();
+        impact.action = new Spell.Impact.Action();
+        impact.action.type = Spell.Impact.Action.Type.DAMAGE;
+        impact.action.damage = new Spell.Impact.Action.Damage();
+        impact.action.damage.spell_power_coefficient = coefficient;
+        impact.action.damage.knockback = knockback;
+        return impact;
     }
 
     private static Spell.Impact impactHeal(float spell_power_coefficient) {

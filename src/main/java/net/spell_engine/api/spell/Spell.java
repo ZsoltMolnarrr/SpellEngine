@@ -109,6 +109,8 @@ public class Spell {
         public int effect_amplifier_add = 0;
         public float effect_duration_add = 0;
         public float cooldown_duration_deduct = 0;
+        /// Additional cloud or entity spawn placements
+        public List<EntityPlacement> additional_placements = List.of();
     }
 
     public Release release = new Release();
@@ -224,6 +226,9 @@ public class Spell {
             public int impact_tick_interval = 5;
             public int delay_ticks = 0;
             public EntityPlacement placement = new EntityPlacement();
+            public boolean placement_delay_stacks = true;
+            public List<EntityPlacement> additional_placements = List.of();
+
             @Nullable public Sound presence_sound;
             public Cloud.ClientData client_data = new Cloud.ClientData();
             public static class ClientData {
@@ -704,6 +709,7 @@ public class Spell {
 
     public static class EntityPlacement { public EntityPlacement() { }
         // If greater than 0, the entity will be placed at the caster's look direction, by this many blocks
+        public int delay_ticks = 0;
         public boolean force_onto_ground = true;
         public float location_offset_by_look = 0;
         public float location_yaw_offset = 0;

@@ -15,10 +15,12 @@ Functional changes:
 API changes:
 - Add new spell type `MODIFIER`, to allow modifying existing spells in narrow pre-defined ways
   - `power_modifier` to add extra power, crit chance, crit damage
+  - `effect_amplifier_add` to add extra amplifier to status effects
   - `effect_duration_add` to add extra duration to status effects
   - `cooldown_duration_deduct` to reduce cooldown duration
   - `projectile_launch` to modify projectile launch parameters (count, velocity, etc...)
   - `projectile_perks` to modify projectile perks (ricochet, bounce etc...)
+  - `additional_placements` to extend placements of spell clouds
   - spell specific modifiers are stored in a cached manner 
 - Add Equipment Sets functionality, for creating item set bonuses 
   - Fully data driven (new data type, stored in DynamicRegistry), defined in data files

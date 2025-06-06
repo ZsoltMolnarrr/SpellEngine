@@ -1376,33 +1376,49 @@ public class SpellHelper {
             spellModifiers = SpellModifiers.of(player, spellEntry);
         }
         float extraTimeToLive = 0;
+        var extraPlacements = new ArrayList<Spell.EntityPlacement>();
         for (var spellModifier: spellModifiers) {
             extraTimeToLive += spellModifier.cloud_duration_add;
+            extraPlacements.addAll(spellModifier.additional_placements);
         }
 
         for (var cloud: clouds) {
-            SpellCloud entity;
-            if (cloud.entity_type_id != null) {
-                var id = Identifier.of(cloud.entity_type_id);
-                var type = Registries.ENTITY_TYPE.get(id);
-                entity = (SpellCloud) type.create(world);
-            } else {
-                entity = new SpellCloud(world);
+            var placements = new ArrayList<Spell.EntityPlacement>();
+            placements.add(cloud.placement);
+            placements.addAll(cloud.additional_placements);
+            placements.addAll(extraPlacements);
+            var base_delay = cloud.delay_ticks;
+
+            for (var placement: placements) {
+                var delay = base_delay + placement.delay_ticks;
+
+                SpellCloud entity;
+                if (cloud.entity_type_id != null) {
+                    var id = Identifier.of(cloud.entity_type_id);
+                    var type = Registries.ENTITY_TYPE.get(id);
+                    entity = (SpellCloud) type.create(world);
+                } else {
+                    entity = new SpellCloud(world);
+                }
+                entity.setOwner(caster);
+                entity.onCreatedFromSpell(spellEntry.getKey().get().getValue(), cloud, context, cloud.time_to_live_seconds + extraTimeToLive);
+                applyEntityPlacement(entity, target, target.getPos(), placement);
+                ((WorldScheduler)world).schedule(cloud.delay_ticks, () -> {
+                    world.spawnEntity(entity);
+                    var sound = cloud.spawn.sound;
+                    if (sound != null) {
+                        SoundHelper.playSound(world, entity, sound);
+                    }
+                    var particles = cloud.spawn.particles;
+                    if (particles != null) {
+                        ParticleHelper.sendBatches(entity, particles);
+                    }
+                });
+
+                if (cloud.placement_delay_stacks) {
+                    base_delay = delay;
+                }
             }
-            entity.setOwner(caster);
-            entity.onCreatedFromSpell(spellEntry.getKey().get().getValue(), cloud, context, cloud.time_to_live_seconds + extraTimeToLive);
-            applyEntityPlacement(entity, target, target.getPos(), cloud.placement);
-            ((WorldScheduler)world).schedule(cloud.delay_ticks, () -> {
-                world.spawnEntity(entity);
-                var sound = cloud.spawn.sound;
-                if (sound != null) {
-                    SoundHelper.playSound(world, entity, sound);
-                }
-                var particles = cloud.spawn.particles;
-                if (particles != null) {
-                    ParticleHelper.sendBatches(entity, particles);
-                }
-            });
         }
     }
 

@@ -46,6 +46,7 @@ public class SpellTooltip {
     public static final String countToken = "count";
     public static final String trigger_chance = "trigger_chance";
     public static final String trigger_list = "trigger_list";
+    public static final String additional_placement_count = "additional_placement_count";
     public static String placeholder(String token) { return "{" + token + "}"; }
 
     public static void addSpellLines(ItemStack itemStack, TooltipType tooltipType, List<Text> lines) {
@@ -464,6 +465,9 @@ public class SpellTooltip {
             }
             if (modifier.cooldown_duration_deduct != 0) {
                 addToken("cooldown_duration_deduct", formattedNumber(modifier.cooldown_duration_deduct), tokenReplacements);
+            }
+            if (!modifier.additional_placements.isEmpty()) {
+                addToken(additional_placement_count, formattedNumber(modifier.additional_placements.size()), tokenReplacements);
             }
         }
 
