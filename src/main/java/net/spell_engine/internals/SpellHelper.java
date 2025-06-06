@@ -1382,11 +1382,14 @@ public class SpellHelper {
             extraPlacements.addAll(spellModifier.additional_placements);
         }
 
+        var index = 0;
         for (var cloud: clouds) {
             var placements = new ArrayList<Spell.EntityPlacement>();
             placements.add(cloud.placement);
             placements.addAll(cloud.additional_placements);
-            placements.addAll(extraPlacements);
+            if (index == 0) {
+                placements.addAll(extraPlacements);
+            }
             var base_delay = cloud.delay_ticks;
 
             for (var placement: placements) {
@@ -1419,6 +1422,7 @@ public class SpellHelper {
                     base_delay = delay;
                 }
             }
+            index += 1;
         }
     }
 
