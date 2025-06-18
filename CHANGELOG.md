@@ -36,6 +36,8 @@ API changes:
   - Synced to players
   - Managing its content requires granular add/remove operations and imperative sync
 - Add spell cloud `impact_cap`
+- Add SpellEngineEffects, for common status effects, such as:
+  - `spell_engine:stun`
 
 # 1.6.12
 

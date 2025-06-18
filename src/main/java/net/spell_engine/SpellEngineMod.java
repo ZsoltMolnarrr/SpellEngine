@@ -9,6 +9,7 @@ import net.minecraft.client.resource.language.I18n;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.api.effect.StatusEffectClassification;
 import net.spell_engine.api.item.set.EquipmentSetFeature;
 import net.spell_engine.api.spell.ExternalSpellSchools;
@@ -59,6 +60,7 @@ public class SpellEngineMod {
         SpellContainerSource.init();
         StatusEffectClassification.init();
         SpellEngineCommands.register();
+        SpellEngineEffects.register();
 
         EquipmentSetFeature.init();
     }

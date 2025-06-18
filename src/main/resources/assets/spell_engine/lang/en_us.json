@@ -87,8 +87,10 @@
   "trinkets.slot.spell.quiver": "Quiver",
   "trinkets.slot.misc.quiver": "Quiver",
 
-  "text.autoconfig.spell_engine.title" : "Spell Engine",
+  "effect.spell_engine.stun": "Stunned",
+  "effect.spell_engine.stun.description": "Cannot move or act.",
 
+  "text.autoconfig.spell_engine.title" : "Spell Engine",
 
   "text.autoconfig.spell_engine.option.client.renderBeamsHighLuminance" : "High luminance beams",
   "text.autoconfig.spell_engine.option.client.renderBeamsHighLuminance.@Tooltip" : "Render spell beams with high luminance, for better spectacular visual effects",
