@@ -224,9 +224,12 @@ public class Spell {
 
             /// The number of ticks between looking for targets and trying to apply impact
             public int impact_tick_interval = 5;
+            /// The number of times impacts can be performed, zero means unlimited
+            public int impact_cap = 0;
+            /// Base spawn delay
             public int delay_ticks = 0;
-            public EntityPlacement placement = new EntityPlacement();
             public boolean placement_delay_stacks = true;
+            public EntityPlacement placement = new EntityPlacement();
             public List<EntityPlacement> additional_placements = List.of();
 
             @Nullable public Sound presence_sound;

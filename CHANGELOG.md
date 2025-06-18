@@ -35,6 +35,7 @@ API changes:
 - Add server side spell container sources
   - Synced to players
   - Managing its content requires granular add/remove operations and imperative sync
+- Add spell cloud `impact_cap`
 
 # 1.6.12
 

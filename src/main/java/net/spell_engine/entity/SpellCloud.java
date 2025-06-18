@@ -27,6 +27,8 @@ public class SpellCloud extends Entity implements Ownable {
     @Nullable
     private UUID ownerUuid;
     private int timeToLive;
+    private int impactsPerformed = 0;
+    private int impactCap = 0;
     private Identifier spellId;
     private int dataIndex = 0;
     private SpellHelper.ImpactContext context;
@@ -59,6 +61,7 @@ public class SpellCloud extends Entity implements Ownable {
         this.getDataTracker().set(RADIUS_TRACKER, calculateRadius());
 
         this.timeToLive = (int) (time_to_live_seconds * 20);
+        this.impactCap = cloudData.impact_cap;
     }
 
     private float calculateRadius() {
@@ -200,7 +203,8 @@ public class SpellCloud extends Entity implements Ownable {
 
         } else {
             // Server side tick
-            if (this.age >= this.timeToLive) {
+            if (this.age >= this.timeToLive
+                    || (this.impactCap > 0 && this.impactsPerformed >= this.impactCap)) {
                 this.discard();
                 return;
             }
@@ -217,6 +221,7 @@ public class SpellCloud extends Entity implements Ownable {
                     }
                     SpellHelper.lookupAndPerformAreaImpact(area_impact, spellEntry, owner,null,
                             this, spell.impacts, context.position(this.getPos()), true);
+                    this.impactsPerformed++;
                 }
             }
         }
