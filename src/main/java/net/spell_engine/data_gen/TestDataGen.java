@@ -1,5 +1,6 @@
 package net.spell_engine.data_gen;
 
+import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
 import net.minecraft.component.type.AttributeModifierSlot;
@@ -12,8 +13,11 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.util.Identifier;
+import net.spell_engine.api.datagen.SpellBuilder;
+import net.spell_engine.api.datagen.SpellGenerator;
 import net.spell_engine.api.item.set.EquipmentSet;
 import net.spell_engine.api.item.set.EquipmentSetRegistry;
+import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_power.api.SpellSchools;
 
@@ -23,6 +27,11 @@ import java.util.concurrent.CompletableFuture;
 public class TestDataGen {
 
     public static final String NAMESPACE = "test";
+
+    public static void addTo(FabricDataGenerator.Pack pack) {
+        pack.addProvider(TestDataGen.TestEquipmentSetGenerator::new);
+        pack.addProvider(TestDataGen.TestSpellGen::new);
+    }
 
     public static class TestEquipmentSetGenerator extends FabricDynamicRegistryProvider {
 
@@ -89,6 +98,29 @@ public class TestDataGen {
         @Override
         public String getName() {
             return "Test EquipmentSet Generator";
+        }
+    }
+
+    public static class TestSpellGen extends SpellGenerator {
+        public TestSpellGen(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+            super(dataOutput, registryLookup);
+        }
+
+        private static Spell shoutTaunt() {
+            var spell = SpellBuilder.createSpellModifier();
+            var impact = SpellBuilder.impactTaunt();
+
+            var modifier = new Spell.Modifier();
+            modifier.mutate_impacts = Spell.Modifier.ImpactListModifier.APPEND;
+            modifier.impacts = List.of(impact);
+
+            spell.modifiers = List.of(modifier);
+            return spell;
+        }
+
+        @Override
+        public void generateSpells(Builder builder) {
+            builder.add(Identifier.of(NAMESPACE, "shout_taunt"), shoutTaunt());
         }
     }
 }
