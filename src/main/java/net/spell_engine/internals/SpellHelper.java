@@ -1074,9 +1074,11 @@ public class SpellHelper {
                         }
                         var extraDuration = 0F;
                         var extraAmplifier = 0;
+                        var extraCap = 0;
                         for (var spellModifier: spellModifiers) {
                             extraDuration += spellModifier.effect_duration_add;
                             extraAmplifier += spellModifier.effect_amplifier_add;
+                            extraCap += spellModifier.effect_amplifier_cap_add;
                         }
                         var amplifier = data.amplifier + (int)(data.amplifier_power_multiplier * power.nonCriticalValue());
                         amplifier += extraAmplifier;
@@ -1089,15 +1091,14 @@ public class SpellHelper {
                                 var duration = Math.round((data.duration + extraDuration) * 20F);
 
                                 var showParticles = data.show_particles;
+                                var cap = data.amplifier_cap + extraCap;
 
                                 if (data.apply_mode == Spell.Impact.Action.StatusEffect.ApplyMode.ADD) {
                                     var currentEffect = livingTarget.getStatusEffect(effect);
 
-                                    var legacyMode = data.amplifier_cap == 0 && data.amplifier > 0;
-                                    var cap = !legacyMode ? data.amplifier_cap : data.amplifier;
-                                    var increment = !legacyMode ? data.amplifier : 1;
+                                    var increment = amplifier;
 
-                                    int newAmplifier = 0;
+                                    int newAmplifier = Math.max(increment - 1, 0);
                                     if (currentEffect != null) {
                                         var currentAmplifier = currentEffect.getAmplifier();
                                         var incrementedAmplifier = currentAmplifier + increment;
@@ -1111,8 +1112,8 @@ public class SpellHelper {
                                     }
                                     amplifier = newAmplifier;
                                 } else {
-                                    if (data.amplifier_cap > 0) {
-                                        amplifier = Math.min(amplifier, data.amplifier_cap);
+                                    if (cap > 0) {
+                                        amplifier = Math.min(amplifier, cap);
                                     }
                                 }
                                 ///

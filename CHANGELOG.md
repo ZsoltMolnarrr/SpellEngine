@@ -25,6 +25,7 @@ API changes:
   - spell specific modifiers are stored in a cached manner 
 - Add Equipment Sets functionality, for creating item set bonuses 
   - Fully data driven (new data type, stored in DynamicRegistry), defined in data files
+  - Data file location: `data/NAMESPACE/equipment_set/MY_SET.json`
   - Equipment set bonuses can provide: attributes, spells (active/passive/modifier)
   - Supports any kind of equipment (weapons, armors, shields, trinkets...)
 - Spell tooltips now automatically work for all token types, in plural mode

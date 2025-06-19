@@ -357,7 +357,7 @@ public class SpellTooltip {
     }
 
     private static String createDescription(RegistryEntry<Spell> spellEntry, Identifier spellId, PlayerEntity player, ItemStack itemStack, Spell spell, SpellPower.Result primaryPower) {
-        var description = I18n.translate(spellKeyPrefix(spellId) + ".description");
+        var description = I18n.translate(spellDescriptionTranslationKey(spellId));
 
         List<Spell.Trigger> triggers = new ArrayList<>();
         var tokenReplacements = new HashMap<String, List<String>>();
@@ -462,6 +462,9 @@ public class SpellTooltip {
             }
             if (modifier.effect_amplifier_add != 0) {
                 addToken("effect_amplifier_add", formattedNumber(modifier.effect_amplifier_add), tokenReplacements);
+            }
+            if (modifier.effect_amplifier_cap_add != 0) {
+                addToken("effect_amplifier_cap_add", formattedNumber(modifier.effect_amplifier_cap_add), tokenReplacements);
             }
             if (modifier.effect_duration_add != 0) {
                 addToken("effect_duration_add", formattedNumber(modifier.effect_duration_add), tokenReplacements);
@@ -595,6 +598,10 @@ public class SpellTooltip {
 
     public static String spellTranslationKey(Identifier spellId) {
         return spellKeyPrefix(spellId) + ".name";
+    }
+
+    public static String spellDescriptionTranslationKey(Identifier spellId) {
+        return spellKeyPrefix(spellId) + ".description";
     }
 
     public static String spellKeyPrefix(Identifier spellId) {

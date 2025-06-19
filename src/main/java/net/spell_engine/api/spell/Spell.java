@@ -116,6 +116,7 @@ public class Spell {
         public float knockback_multiply_base = 0;
         public float cloud_duration_add = 0;
         public int effect_amplifier_add = 0;
+        public int effect_amplifier_cap_add = 0;
         public float effect_duration_add = 0;
         public float cooldown_duration_deduct = 0;
         /// Additional cloud or entity spawn placements
