@@ -318,7 +318,15 @@ public class Spell {
             public float min_power = 1;
             public float max_power = 999999;
             public enum Type {
-                DAMAGE, HEAL, STATUS_EFFECT, FIRE, SPAWN, TELEPORT, COOLDOWN, CUSTOM
+                DAMAGE,
+                HEAL,
+                STATUS_EFFECT,
+                FIRE,
+                SPAWN,
+                TELEPORT,
+                COOLDOWN,
+                TAUNT,
+                CUSTOM
             }
             public Damage damage;
             public static class Damage { public Damage() { }
@@ -418,6 +426,11 @@ public class Spell {
                     public float duration_add = 0;
                     public float duration_multiplier = 1;
                 }
+            }
+
+            public Taunt taunt;
+            public static class Taunt {
+                public float chance = 1F;
             }
 
             public Custom custom;

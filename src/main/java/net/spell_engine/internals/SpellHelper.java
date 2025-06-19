@@ -7,6 +7,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
@@ -1258,6 +1259,16 @@ public class SpellHelper {
                     }
                     success = modified;
                 }
+                case TAUNT -> {
+                    if (target instanceof MobEntity mob) {
+                        var tauntData = impact.action.taunt;
+                        if (tauntData == null) {
+                            return false;
+                        }
+                        mob.setTarget(caster);
+                        success = true;
+                    }
+                }
                 case CUSTOM -> {
                     if (impact.action.custom != null) {
                         var handler = SpellHandlers.customImpact.get(impact.action.custom.handler);
@@ -1490,7 +1501,7 @@ public class SpellHelper {
 
     public static SpellTarget.Intent impactIntent(Spell.Impact.Action action) {
         switch (action.type) {
-            case DAMAGE, FIRE -> {
+            case DAMAGE, FIRE, TAUNT -> {
                 return SpellTarget.Intent.HARMFUL;
             }
             case HEAL, SPAWN -> {

@@ -38,6 +38,7 @@ API changes:
 - Add spell cloud `impact_cap`
 - Add SpellEngineEffects, for common status effects, such as:
   - `spell_engine:stun`
+- Add new impact action: `TAUNT`, forcing entities to attack the caster
 
 # 1.6.12
 
