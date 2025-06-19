@@ -51,6 +51,7 @@ public class SpellEngineClient {
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
         CompatFeatures.initialize();
         BeamRenderer.setup();
+        registerEffectParticles();
     }
 
     private static void injectRangedWeaponModelPredicates() {
@@ -68,5 +69,6 @@ public class SpellEngineClient {
         CustomParticleStatusEffect.register(
                 SpellEngineEffects.STUN.effect,
                 new StunParticleSpawner()
-        );}
+        );
+    }
 }
