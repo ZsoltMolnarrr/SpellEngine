@@ -1288,6 +1288,9 @@ public class SpellHelper {
                         if (tauntData == null) {
                             return false;
                         }
+                        if (tauntData.chance < 1F && world.random.nextFloat() > tauntData.chance) {
+                            return false;
+                        }
                         mob.setTarget(caster);
                         success = true;
                     }

@@ -17,6 +17,7 @@ import net.spell_engine.api.datagen.SpellBuilder;
 import net.spell_engine.api.datagen.SpellGenerator;
 import net.spell_engine.api.item.set.EquipmentSet;
 import net.spell_engine.api.item.set.EquipmentSetRegistry;
+import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_power.api.SpellSchools;
@@ -108,6 +109,7 @@ public class TestDataGen {
 
         private static Spell shoutTaunt() {
             var spell = SpellBuilder.createSpellModifier();
+            spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
             var impact = SpellBuilder.impactTaunt();
 
             var modifier = new Spell.Modifier();

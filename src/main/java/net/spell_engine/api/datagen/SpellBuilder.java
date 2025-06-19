@@ -6,6 +6,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.client.util.Color;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SpellBuilder {
@@ -30,7 +31,8 @@ public class SpellBuilder {
     public static Spell createSpellModifier() {
         var spell = new Spell();
         spell.type = Spell.Type.MODIFIER;
-        spell.modifiers = List.of();
+        spell.range = 0;
+        spell.modifiers = new ArrayList<>();
         return spell;
     }
 
