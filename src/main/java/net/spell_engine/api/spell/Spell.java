@@ -95,6 +95,15 @@ public class Spell {
     public static class Modifier {
         /// Universal pattern matcher, against spell ID
         public String spell_pattern;
+        public enum ImpactListModifier {
+            PREPEND, /// Adds the impacts to the start of the list
+            APPEND /// Adds the impacts to the end of the list
+        }
+        @Nullable public ImpactListModifier mutate_impacts;
+        public List<Impact> impacts = List.of();
+        @Nullable public AreaImpact replacing_area_impact;
+
+        /// Determines which impacts to apply, the changes below
         public List<ImpactFilter> impact_filters = List.of();
         public static class ImpactFilter {
             @Nullable public SpellSchool school;

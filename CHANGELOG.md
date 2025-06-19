@@ -21,6 +21,7 @@ API changes:
   - `projectile_launch` to modify projectile launch parameters (count, velocity, etc...)
   - `projectile_perks` to modify projectile perks (ricochet, bounce etc...)
   - `additional_placements` to extend placements of spell clouds
+  - `mutate_impacts` and `impacts` to add additional impacts to the spell
   - spell specific modifiers are stored in a cached manner 
 - Add Equipment Sets functionality, for creating item set bonuses 
   - Fully data driven (new data type, stored in DynamicRegistry), defined in data files

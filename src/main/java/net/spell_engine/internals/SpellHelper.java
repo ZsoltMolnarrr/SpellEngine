@@ -822,7 +822,30 @@ public class SpellHelper {
         var spell = spellEntry.value();
         var anyPerformed = false;
         SpellTarget.Intent selectedIntent = null;
-        for (var impact: impacts) {
+
+        var area_impact = spell.area_impact;
+        var mutableImpacts = new ArrayList<>(impacts);
+
+        if (caster instanceof PlayerEntity player) {
+            var modifiers = SpellModifiers.of(player, spellEntry);
+            for (var modifier: modifiers) {
+                if (modifier.mutate_impacts != null) {
+                    switch (modifier.mutate_impacts) {
+                        case PREPEND -> {
+                            mutableImpacts.addAll(0, modifier.impacts);
+                        }
+                        case APPEND -> {
+                            mutableImpacts.addAll(modifier.impacts);
+                        }
+                    }
+                }
+                if (modifier.replacing_area_impact != null) {
+                    area_impact = modifier.replacing_area_impact;
+                }
+            }
+        }
+
+        for (var impact: mutableImpacts) {
             var intent = impactIntent(impact.action);
             if (!impact.action.apply_to_caster // Only filtering for cases when another entity is actually targeted
                     && (selectedIntent != null && selectedIntent != intent)) {
@@ -839,7 +862,7 @@ public class SpellHelper {
                 }
             }
         }
-        var area_impact = spell.area_impact;
+
         if (area_impact != null
                 && additionalTargetLookup
                 && (anyPerformed || target == null) ) {
