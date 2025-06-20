@@ -97,7 +97,7 @@ public class FabricClientMod implements ClientModInitializer {
 
         // Macro, billboard, whatever
 
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.fire_explosion.particleType(), SpellExplosionParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.fire_explosion.particleType(), SpellExplosionParticle.TemplateFactory::new);
 
         ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.smoke_large.particleType(), SpellSmokeParticle.CosySmokeFactory::new);
 

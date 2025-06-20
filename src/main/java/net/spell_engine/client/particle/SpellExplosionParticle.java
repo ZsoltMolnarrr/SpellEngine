@@ -55,6 +55,18 @@ public class SpellExplosionParticle extends ExplosionLargeParticle {
             particle.green = 1F;
             particle.blue = 1F;
             particle.maxAge = 10;
+
+            TemplateParticleType.apply(particleType, particle);
+            var appearance = particleType.getAppearance();
+            if (appearance != null) {
+                var color = appearance.color;
+                if (color != null) {
+                    particle.alpha *= appearance.color.alpha();
+                }
+                particle.scale *= appearance.scale;
+                // particle.followEntity = appearance.entityFollowed;
+            }
+
             return particle;
         }
     }

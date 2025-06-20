@@ -233,7 +233,7 @@ public class SpellEngineParticles {
                 .findFirst().orElse(null);
     }
 
-    public static final Entry fire_explosion = add(new Entry("fire_explosion", Texture.of("fire_explosion", 10)));
+    public static final TemplateEntry fire_explosion = addTemplate(new TemplateEntry("fire_explosion", Texture.of("fire_explosion", 10)));
     public static final Entry flame = add(new Entry("flame", Texture.vanilla("flame")));
     public static final Entry flame_spark = add(new Entry("flame_spark", Texture.of("flame_spark", 8) ));
     public static final Entry flame_ground = add(new Entry("flame_ground", Texture.of("flame_ground", 8)));
