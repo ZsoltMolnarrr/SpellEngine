@@ -229,7 +229,6 @@ public class SpellTooltip {
         var lines = new ArrayList<Text>();
         var spell = spellEntry.value();
         var spellId = spellEntry.getKey().get().getValue();
-        var primaryPower = SpellPower.getSpellPower(spell.school, player);
         var tooltipData = spell.tooltip != null ? spell.tooltip : Spell.Tooltip.DEFAULT;
 
         if (shouldShow(tooltipData.name, details)) {
@@ -249,114 +248,142 @@ public class SpellTooltip {
             indentLevel += 1;
         }
 
+        addSpellDescription(spellEntry, player, itemStack, details, indentLevel, lines);
+        if (details) {
+            addSpellDetails(spellEntry, player, itemStack, indentLevel, lines);
+        }
+
+        return lines;
+    }
+
+    private static void addSpellDescription(RegistryEntry<Spell> spellEntry, PlayerEntity player, ItemStack itemStack, boolean details, int indentLevel, ArrayList<Text> lines) {
+        var spell = spellEntry.value();
+        var tooltipData = spell.tooltip != null ? spell.tooltip : Spell.Tooltip.DEFAULT;
         if (shouldShow(tooltipData.description, details)) {
+            var primaryPower = SpellPower.getSpellPower(spell.school, player);
             var color = Formatting.byName(tooltipData.description.color);
-            var description = createDescription(spellEntry, spellId, player, itemStack, spell, primaryPower);
+            var description = createDescription(spellEntry, player, itemStack, spell, primaryPower);
             lines.add(indentation(indentLevel)
                     .append(Text.translatable(description))
                     .formatted(color));
         }
+    }
 
-        if (details) {
-            var active = spell.active;
-            if (active != null) {
-                if (active.cast != null) {
-                    if (SpellHelper.isInstant(spell)) {
-                        lines.add(indentation(indentLevel)
-                                .append(Text.translatable("spell.tooltip.cast_instant"))
-                                .formatted(Formatting.GOLD));
-                    } else {
-                        var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
-                        var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
-                        var castTime = I18n.translate(castTimeKey).replace(placeholder(durationToken), formattedNumber(castDuration));
-                        lines.add(indentation(indentLevel)
-                                .append(Text.literal(castTime))
-                                .formatted(Formatting.GOLD));
-                    }
-                }
-            }
-            var passive = spell.passive;
-            if (passive != null) {
-                if (!passive.triggers.isEmpty()) {
-                    var triggerList = passive.triggers.stream()
-                            .map(trigger -> "spell.tooltip.trigger." + trigger.type.toString().toLowerCase(Locale.ENGLISH))
-                            .map(I18n::translate)
-                            .toList();
-                    var joinedTriggers = String.join(", ", triggerList);
-                    var triggerText = I18n.translate("spell.tooltip.trigger.base")
-                        .replace(placeholder(trigger_list), joinedTriggers);
+    public static List<Text> spellDescriptionWithDetails(Identifier spellId, PlayerEntity player, ItemStack itemStack, int indentLevel) {
+        var world = player.getWorld();
+        if (world == null) {
+            return List.of();
+        }
+        var optionalSpellEntry = SpellRegistry.from(world).getEntry(spellId);
+        if (optionalSpellEntry.isEmpty()) {
+            return List.of();
+        }
+        var lines = new ArrayList<Text>();
+        var spellEntry = optionalSpellEntry.get();
+        addSpellDescription(spellEntry, player, itemStack, true, indentLevel, lines);
+        addSpellDetails(spellEntry, player, itemStack, indentLevel, lines);
+        return lines;
+    }
 
+    private static void addSpellDetails(RegistryEntry<Spell> spellEntry, PlayerEntity player, ItemStack itemStack, int indentLevel, ArrayList<Text> lines) {
+        var spell = spellEntry.value();
+        var active = spell.active;
+        if (active != null) {
+            if (active.cast != null) {
+                if (SpellHelper.isInstant(spell)) {
                     lines.add(indentation(indentLevel)
-                            .append(Text.literal(triggerText))
+                            .append(Text.translatable("spell.tooltip.cast_instant"))
+                            .formatted(Formatting.GOLD));
+                } else {
+                    var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
+                    var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
+                    var castTime = I18n.translate(castTimeKey).replace(placeholder(durationToken), formattedNumber(castDuration));
+                    lines.add(indentation(indentLevel)
+                            .append(Text.literal(castTime))
                             .formatted(Formatting.GOLD));
                 }
             }
+        }
+        var passive = spell.passive;
+        if (passive != null) {
+            if (!passive.triggers.isEmpty()) {
+                var triggerList = passive.triggers.stream()
+                        .map(trigger -> "spell.tooltip.trigger." + trigger.type.toString().toLowerCase(Locale.ENGLISH))
+                        .map(I18n::translate)
+                        .toList();
+                var joinedTriggers = String.join(", ", triggerList);
+                var triggerText = I18n.translate("spell.tooltip.trigger.base")
+                    .replace(placeholder(trigger_list), joinedTriggers);
 
-            if (spell.range > 0 || spell.range_mechanic != null) {
-                String rangeText = "";
-                if (spell.range_mechanic != null) {
-                    switch (spell.range_mechanic) {
-                        case MELEE -> {
-                            if (spell.range == 0) {
-                                rangeText = I18n.translate("spell.tooltip.range.melee");
-                            } else {
-                                var key = spell.range > 0 ? "spell.tooltip.range.melee.plus" : "spell.tooltip.range.melee.minus";
-                                var rangeKey = keyWithPlural(key, spell.range);
-                                rangeText = I18n.translate(rangeKey).replace(placeholder(rangeToken), formattedNumber(Math.abs(spell.range))); // Abs to avoid "--1"
-                            }
-                        }
-                    }
-                } else {
-                    var rangeKey = keyWithPlural("spell.tooltip.range", spell.range);
-                    rangeText = I18n.translate(rangeKey).replace(placeholder(rangeToken), formattedNumber(spell.range));
-                }
                 lines.add(indentation(indentLevel)
-                        .append(Text.literal(rangeText))
+                        .append(Text.literal(triggerText))
                         .formatted(Formatting.GOLD));
-            }
-
-            var cooldownDuration = SpellHelper.getCooldownDuration(player, spellEntry, itemStack);
-            if (cooldownDuration > 0) {
-                String cooldown;
-                if (spell.cost.cooldown.proportional) {
-                    cooldown = I18n.translate("spell.tooltip.cooldown.proportional");
-                } else {
-                    var cooldownKey = keyWithPlural("spell.tooltip.cooldown", cooldownDuration);
-                    cooldown = I18n.translate(cooldownKey).replace(placeholder(durationToken), formattedNumber(cooldownDuration));
-                }
-                lines.add(indentation(indentLevel)
-                        .append(Text.literal(cooldown))
-                        .formatted(Formatting.GOLD));
-            }
-
-            var showItemCost = true;
-            var config = SpellEngineMod.config;
-            if (config != null) {
-                showItemCost = config.spell_cost_item_allowed;
-            }
-            if (showItemCost) {
-                var ammoResult = Ammo.ammoForSpell(player, spell, itemStack);
-                if (ammoResult.item() != null) {
-                    var amount = spell.cost.item.amount;
-                    var ammoKey = keyWithPlural("spell.tooltip.ammo", amount);
-                    var itemName = I18n.translate(ammoResult.item().getTranslationKey());
-                    var ammo = I18n.translate(ammoKey)
-                            .replace(placeholder(itemToken), itemName)
-                            .replace(placeholder(countToken), amount + "");
-                    lines.add(indentation(indentLevel)
-                            .append(Text.literal(ammo).formatted(ammoResult.satisfied() ? Formatting.GREEN : Formatting.RED)));
-                }
             }
         }
 
-        return lines;
+        if (spell.range > 0 || spell.range_mechanic != null) {
+            String rangeText = "";
+            if (spell.range_mechanic != null) {
+                switch (spell.range_mechanic) {
+                    case MELEE -> {
+                        if (spell.range == 0) {
+                            rangeText = I18n.translate("spell.tooltip.range.melee");
+                        } else {
+                            var key = spell.range > 0 ? "spell.tooltip.range.melee.plus" : "spell.tooltip.range.melee.minus";
+                            var rangeKey = keyWithPlural(key, spell.range);
+                            rangeText = I18n.translate(rangeKey).replace(placeholder(rangeToken), formattedNumber(Math.abs(spell.range))); // Abs to avoid "--1"
+                        }
+                    }
+                }
+            } else {
+                var rangeKey = keyWithPlural("spell.tooltip.range", spell.range);
+                rangeText = I18n.translate(rangeKey).replace(placeholder(rangeToken), formattedNumber(spell.range));
+            }
+            lines.add(indentation(indentLevel)
+                    .append(Text.literal(rangeText))
+                    .formatted(Formatting.GOLD));
+        }
+
+        var cooldownDuration = SpellHelper.getCooldownDuration(player, spellEntry, itemStack);
+        if (cooldownDuration > 0) {
+            String cooldown;
+            if (spell.cost.cooldown.proportional) {
+                cooldown = I18n.translate("spell.tooltip.cooldown.proportional");
+            } else {
+                var cooldownKey = keyWithPlural("spell.tooltip.cooldown", cooldownDuration);
+                cooldown = I18n.translate(cooldownKey).replace(placeholder(durationToken), formattedNumber(cooldownDuration));
+            }
+            lines.add(indentation(indentLevel)
+                    .append(Text.literal(cooldown))
+                    .formatted(Formatting.GOLD));
+        }
+
+        var showItemCost = true;
+        var config = SpellEngineMod.config;
+        if (config != null) {
+            showItemCost = config.spell_cost_item_allowed;
+        }
+        if (showItemCost) {
+            var ammoResult = Ammo.ammoForSpell(player, spell, itemStack);
+            if (ammoResult.item() != null) {
+                var amount = spell.cost.item.amount;
+                var ammoKey = keyWithPlural("spell.tooltip.ammo", amount);
+                var itemName = I18n.translate(ammoResult.item().getTranslationKey());
+                var ammo = I18n.translate(ammoKey)
+                        .replace(placeholder(itemToken), itemName)
+                        .replace(placeholder(countToken), amount + "");
+                lines.add(indentation(indentLevel)
+                        .append(Text.literal(ammo).formatted(ammoResult.satisfied() ? Formatting.GREEN : Formatting.RED)));
+            }
+        }
     }
 
     public static boolean shouldShow(Spell.Tooltip.LineOptions options, boolean details) {
         return details ? options.show_in_details : options.show_in_compact;
     }
 
-    private static String createDescription(RegistryEntry<Spell> spellEntry, Identifier spellId, PlayerEntity player, ItemStack itemStack, Spell spell, SpellPower.Result primaryPower) {
+    private static String createDescription(RegistryEntry<Spell> spellEntry, PlayerEntity player, ItemStack itemStack, Spell spell, SpellPower.Result primaryPower) {
+        var spellId = spellEntry.getKey().get().getValue();
         var description = I18n.translate(spellDescriptionTranslationKey(spellId));
 
         List<Spell.Trigger> triggers = new ArrayList<>();
