@@ -823,7 +823,6 @@ public class SpellHelper {
                                          List<Spell.Impact> impacts, ImpactContext context, boolean additionalTargetLookup) {
         var trackers = target != null ? PlayerLookup.tracking(target) : null;
         var spell = spellEntry.value();
-        var anyPerformed = false;
         SpellTarget.Intent selectedIntent = null;
 
         var area_impact = spell.area_impact;
@@ -848,6 +847,7 @@ public class SpellHelper {
             }
         }
 
+        EnumSet<Spell.Impact.Action.Type> performedActionTypes = EnumSet.noneOf(Spell.Impact.Action.Type.class);
         for (var impact: mutableImpacts) {
             var intent = impactIntent(impact.action);
             if (!impact.action.apply_to_caster // Only filtering for cases when another entity is actually targeted
@@ -859,8 +859,8 @@ public class SpellHelper {
 
             if (target != null) {
                 var result = performImpact(world, caster, target, spellEntry, impact, context, trackers);
-                anyPerformed = anyPerformed || result;
                 if (result) {
+                    performedActionTypes.add(impact.action.type);
                     selectedIntent = intent;
                 }
             }
@@ -868,10 +868,11 @@ public class SpellHelper {
 
         if (area_impact != null
                 && additionalTargetLookup
-                && (anyPerformed || target == null) ) {
+                && (shouldApplyAreaImpact(area_impact, performedActionTypes) || target == null) ) {
             lookupAndPerformAreaImpact(area_impact, spellEntry, caster, target, aoeSource, impacts, context, false);
         }
 
+        var anyPerformed = !performedActionTypes.isEmpty();
         if (anyPerformed && caster instanceof PlayerEntity player) {
             ((WorldScheduler)world).schedule(0, () -> {
                 SpellTriggers.onSpellImpactAny(player, target, aoeSource, spellEntry);
@@ -879,6 +880,13 @@ public class SpellHelper {
         }
 
         return anyPerformed;
+    }
+
+    private static boolean shouldApplyAreaImpact(Spell.AreaImpact areaImpact, EnumSet<Spell.Impact.Action.Type> performedActionTypes) {
+        if (areaImpact.triggering_action_type == null)  {
+            return true; // No specific action type, always apply
+        }
+        return performedActionTypes.contains(areaImpact.triggering_action_type);
     }
 
     private static final float knockbackDefaultStrength = 0.4F;

@@ -580,6 +580,9 @@ public class Spell {
     }
 
     public static class AreaImpact { public AreaImpact() { }
+        /// Only impacts of this type to trigger area impact
+        /// If null, all impacts trigger area impact
+        @Nullable public Impact.Action.Type triggering_action_type;
         public float radius = 1F;
         public ExtraRadius extra_radius = new ExtraRadius();
         public static class ExtraRadius {

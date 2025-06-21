@@ -467,10 +467,7 @@ public class SpellTooltip {
                 }
             }
             var area_impact = spell.area_impact;
-            if (area_impact != null) {
-                var radius = area_impact.combinedRadius(primaryPower.baseValue());
-                addToken(impactRangeToken, formattedNumber(radius), tokenReplacements);
-            }
+            tokenizeAreaImpact(primaryPower, area_impact, tokenReplacements);
         }
         for(var trigger : triggers) {
             addToken(trigger_chance, percent(trigger.chance), tokenReplacements);
@@ -480,6 +477,9 @@ public class SpellTooltip {
                 addToken("power_multiplier", percent(modifier.power_modifier.power_multiplier), tokenReplacements);
                 addToken("critical_chance_bonus", percent(modifier.power_modifier.critical_chance_bonus), tokenReplacements);
                 addToken("critical_damage_bonus", percent(modifier.power_modifier.critical_damage_bonus), tokenReplacements);
+            }
+            if (modifier.replacing_area_impact != null) {
+                tokenizeAreaImpact(primaryPower, modifier.replacing_area_impact, tokenReplacements);
             }
             if (modifier.knockback_multiply_base != 0) {
                 addToken("knockback_multiply_base", percent(modifier.knockback_multiply_base), tokenReplacements);
@@ -533,6 +533,13 @@ public class SpellTooltip {
             description = mutator.mutate(args);
         }
         return description;
+    }
+
+    private static void tokenizeAreaImpact(SpellPower.Result primaryPower, Spell.AreaImpact area_impact, HashMap<String, List<String>> tokenReplacements) {
+        if (area_impact != null) {
+            var radius = area_impact.combinedRadius(primaryPower.baseValue());
+            addToken(impactRangeToken, formattedNumber(radius), tokenReplacements);
+        }
     }
 
     private static void tokenizeProjectileLaunch(Spell.LaunchProperties launchProperties, HashMap<String, List<String>> tokenReplacements) {

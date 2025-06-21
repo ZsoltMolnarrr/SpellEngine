@@ -38,10 +38,12 @@ API changes:
 - Add server side spell container sources
   - Synced to players
   - Managing its content requires granular add/remove operations and imperative sync
-- Add spell cloud `impact_cap`
+- Spell structure changes:
+  - Add spell cloud `impact_cap` (for trap-like mechanics)
+  - Add new impact action: `TAUNT`, forcing entities to attack the caster
+  - Add `area_impact.triggering_action_type`, for only matching impact types to trigger area impact
 - Add SpellEngineEffects, for common status effects, such as:
   - `spell_engine:stun`
-- Add new impact action: `TAUNT`, forcing entities to attack the caster
 
 # 1.6.12
 
