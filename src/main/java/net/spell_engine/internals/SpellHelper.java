@@ -408,7 +408,10 @@ public class SpellHelper {
                 var casterPos = caster.getPos().add(0, caster.getHeight() / 2F, 0);
                 for(var targeted: targets) {
                     var target = targeted.entity;
-                    var targetSpecificContext = targeted.context.position(casterPos);
+                    var position = target == caster
+                            ? casterPos
+                            : target.getPos().add(0, target.getHeight() / 2F, 0).lerp(casterPos, 0.001F);
+                    var targetSpecificContext = targeted.context.position(position);
                     var result = performImpacts(world, caster, target, target, spellEntry, spell.impacts, targetSpecificContext);
                     anySuccess = anySuccess || result;
                 }

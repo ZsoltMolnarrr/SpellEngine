@@ -482,7 +482,7 @@ public class SpellTooltip {
                 addToken("critical_damage_bonus", percent(modifier.power_modifier.critical_damage_bonus), tokenReplacements);
             }
             if (modifier.knockback_multiply_base != 0) {
-                addToken("knockback_multiply_base", formattedNumber(modifier.knockback_multiply_base), tokenReplacements);
+                addToken("knockback_multiply_base", percent(modifier.knockback_multiply_base), tokenReplacements);
             }
             if (modifier.projectile_perks != null) {
                 tokenizeProjectilePerks(modifier.projectile_perks, tokenReplacements);

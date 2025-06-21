@@ -6,6 +6,7 @@ WARNING: All players must use the same version, due to networking changes.
 Functional changes:
 - Fixed spell container caching (spells sometimes not showing up on hotbar)
 - Fixed projectiles hitting the caster sometimes (chain reaction), fixes #117
+- Fixed direct spells delivering additional area impacts
 - Improve Spell Registry synchronization (ditching base64), fixes #119
 - Improve "On Cooldown" HUD message, no to be shown right after spell cast
 - Update loot injection defaults
