@@ -43,6 +43,9 @@ API changes:
   - Add spell cloud `impact_cap` (for trap-like mechanics)
   - Add new impact action: `TAUNT`, forcing entities to attack the caster
   - Add `area_impact.triggering_action_type`, for only matching impact types to trigger area impact
+- Update included particle types
+  - magic/vertical_stripe particles are now animated
+  - Add `sign_fist` particle type
 - Add SpellEngineEffects, for common status effects, such as:
   - `spell_engine:stun`
 

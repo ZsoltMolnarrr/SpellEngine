@@ -13,6 +13,7 @@ public class SpellUniversalParticle extends SpriteBillboardParticle  {
     private static final Random RANDOM = Random.create();
     private final SpriteProvider spriteProvider;
     private final SpellEngineParticles.MagicParticles.Motion motion;
+    private boolean animated = false;
     public boolean glows = true;
     public boolean translucent = true;
     @Nullable Entity followEntity;
@@ -99,6 +100,15 @@ public class SpellUniversalParticle extends SpriteBillboardParticle  {
         super.move(dx, dy, dz);
     }
 
+    @Override
+    public void tick() {
+        super.tick();
+        if (animated) {
+            this.setSpriteForAge(this.spriteProvider);
+        }
+    }
+
+
     // MARK: Factories
 
     @Environment(EnvType.CLIENT)
@@ -114,7 +124,7 @@ public class SpellUniversalParticle extends SpriteBillboardParticle  {
         public Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
             var particle = new SpellUniversalParticle(clientWorld, this.spriteProvider, particleVariant.motion(), d, e, f, g, h, i);
             particle.glows = true;
-
+            particle.animated = particleVariant.shape().animated;
             particle.red = 1F;
             particle.green = 1F;
             particle.blue = 1F;

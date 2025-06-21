@@ -1,5 +1,12 @@
 {
   "textures": [
-    "spell_engine:magic/vertical_stripe"
+    "spell_engine:magic/vertical_stripe_0",
+    "spell_engine:magic/vertical_stripe_1",
+    "spell_engine:magic/vertical_stripe_2",
+    "spell_engine:magic/vertical_stripe_3",
+    "spell_engine:magic/vertical_stripe_4",
+    "spell_engine:magic/vertical_stripe_5",
+    "spell_engine:magic/vertical_stripe_6",
+    "spell_engine:magic/vertical_stripe_7"
   ]
 }

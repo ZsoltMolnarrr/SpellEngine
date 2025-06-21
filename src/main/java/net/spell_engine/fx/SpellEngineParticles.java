@@ -133,12 +133,19 @@ public class SpellEngineParticles {
             }
         }
     }
+    @Deprecated
     public static final MagicParticleFamily ARCANE = addMagicFamily(new MagicParticleFamily("arcane", Color.from(SpellSchools.ARCANE.color)));
+    @Deprecated
     public static final MagicParticleFamily HOLY = addMagicFamily(new MagicParticleFamily("holy", Color.HOLY));
+    @Deprecated
     public static final MagicParticleFamily NATURE = addMagicFamily(new MagicParticleFamily("nature", Color.NATURE));
+    @Deprecated
     public static final MagicParticleFamily FROST = addMagicFamily(new MagicParticleFamily("frost", Color.FROST));
+    @Deprecated
     public static final MagicParticleFamily RAGE = addMagicFamily(new MagicParticleFamily("rage", Color.RAGE));
+    @Deprecated
     public static final MagicParticleFamily WHITE = addMagicFamily(new MagicParticleFamily("white", Color.WHITE));
+    @Deprecated
     public static final Supplier<List<MagicParticleFamily.Variant>> MAGIC_FAMILY_VARIANTS = Suppliers.memoize(() -> {
         var variants = new ArrayList<MagicParticleFamily.Variant>();
         for(var family: MAGIC_FAMILIES) {
@@ -150,12 +157,18 @@ public class SpellEngineParticles {
 
     public record MagicParticles(String name, Color color) {
         public enum Shape {
-            SPELL(8), SPARK, STRIPE,
+            SPELL(8), SPARK, STRIPE(8, true),
             ARCANE, FROST, HOLY, HEAL, SKULL;
 
+            public boolean animated = false;
             int frameCount = 1;
-            Shape(int frameCount) { this.frameCount = frameCount; }
+
             Shape() { }
+            Shape(int frameCount) { this.frameCount = frameCount; }
+            Shape(int frameCount, boolean animated) {
+                this.frameCount = frameCount;
+                this.animated = animated;
+            }
         }
         public enum Motion { FLOAT, ASCEND, DECELERATE, BURST }
 
@@ -227,6 +240,7 @@ public class SpellEngineParticles {
     /**
      * WARNING! This method is very slow, only to be used for data file generation!
      */
+    @Deprecated
     public static MagicParticleFamily.Variant getMagicParticleVariant(MagicParticleFamily family, MagicParticleFamily.Shape shape, MagicParticleFamily.Motion motion) {
         return MAGIC_FAMILY_VARIANTS.get().stream()
                 .filter(variant -> variant.familyName().equals(family.name) && variant.shape == shape && variant.motion == motion)
@@ -253,6 +267,7 @@ public class SpellEngineParticles {
     public static final TemplateEntry sign_speed = addSignEffect(new TemplateEntry("sign_speed", Texture.of("sign/speed")));
     public static final TemplateEntry sign_shield = addSignEffect(new TemplateEntry("sign_shield", Texture.of("sign/shield")));
     public static final TemplateEntry sign_hourglass = addSignEffect(new TemplateEntry("sign_hourglass", Texture.of("sign/hourglass")));
+    public static final TemplateEntry sign_fist = addSignEffect(new TemplateEntry("sign_fist", Texture.of("sign/fist")));
 
     // Hand made
     public static final TemplateEntry ground_glow = addAreaEffect(new TemplateEntry("ground_glow", Texture.of("area/ground_glow")).fading(Fading.IN_OUT));
