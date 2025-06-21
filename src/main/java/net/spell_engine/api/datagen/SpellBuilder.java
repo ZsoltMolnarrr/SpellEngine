@@ -7,7 +7,6 @@ import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.client.util.Color;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class SpellBuilder {
     public static final String GROUP_PRIMARY = "primary";

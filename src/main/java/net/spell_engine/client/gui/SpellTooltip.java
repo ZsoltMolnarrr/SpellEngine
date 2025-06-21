@@ -431,9 +431,18 @@ public class SpellTooltip {
             }
         }
 
+        ArrayList<Spell.Impact> impacts = new ArrayList<>();
         if (spell.impacts != null) {
+            impacts.addAll(spell.impacts);
+        }
+        if (spell.modifiers != null) {
+            for (var modifier : spell.modifiers) {
+                impacts.addAll(modifier.impacts);
+            }
+        }
+        if (!impacts.isEmpty()) {
             var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);
-            for (var impact : spell.impacts) {
+            for (var impact : impacts) {
                 switch (impact.action.type) {
                     case DAMAGE -> {
                         description = replaceDamageTokens(description, damageToken, estimatedOutput.damage());
