@@ -1148,9 +1148,8 @@ public class SpellHelper {
                                     ///
                                     var currentEffect = livingTarget.getStatusEffect(effect);
                                     var newAmplifier = (amplifier > 0) ? (currentEffect.getAmplifier() - amplifier) : -1;
-                                    if (newAmplifier < 0) {
-                                        livingTarget.removeStatusEffect(effect);
-                                    } else {
+                                    livingTarget.removeStatusEffect(effect);
+                                    if (newAmplifier >= 0) {
                                         livingTarget.addStatusEffect(new StatusEffectInstance(
                                                 effect, currentEffect.getDuration(), newAmplifier, currentEffect.isAmbient(), currentEffect.shouldShowParticles(),
                                                         currentEffect.shouldShowIcon()),
