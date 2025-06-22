@@ -587,6 +587,8 @@ public class Spell {
         /// Only impacts of this type to execute upon area impact
         /// If null, all impacts execute upon area impact
         @Nullable public Impact.Action.Type execute_action_type;
+        /// Whether the area impact should be executed on the center target
+        public boolean skip_center_target = false;
 
         public float radius = 1F;
         public ExtraRadius extra_radius = new ExtraRadius();

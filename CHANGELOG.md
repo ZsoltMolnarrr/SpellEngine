@@ -45,6 +45,7 @@ API changes:
   - Add new impact action: `TAUNT`, forcing entities to attack the caster
   - Add `area_impact.triggering_action_type`, for only matching impact types to trigger area impact
   - Add `area_impact.execute_action_type`, for filtering impact types to execute area impact actions
+  - Add `area_imoact.skip_center_target`, to skip center target for area impact
 - Update included particle types
   - magic/vertical_stripe particles are now animated
   - Add `sign_fist` particle type

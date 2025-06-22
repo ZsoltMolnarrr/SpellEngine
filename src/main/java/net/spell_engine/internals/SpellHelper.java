@@ -859,25 +859,30 @@ public class SpellHelper {
             }
         }
 
+        var skipImpacts = area_impact != null
+                ? (area_impact.skip_center_target && additionalTargetLookup)
+                : false;
         EnumSet<Spell.Impact.Action.Type> performedActionTypes = EnumSet.noneOf(Spell.Impact.Action.Type.class);
-        for (var impact: mutableImpacts) {
-            var intent = impactIntent(impact.action);
-            if (!impact.action.apply_to_caster // Only filtering for cases when another entity is actually targeted
-                    && (selectedIntent != null && selectedIntent != intent)) {
-                // Filter out mixed intents
-                // So dual intent spells either damage or heal, and not do both
-                continue;
-            }
-            if (filteredAction != null && impact.action.type != filteredAction) {
-                // Filter out actions that are not of the specified type
-                continue;
-            }
+        if (!skipImpacts) {
+            for (var impact : mutableImpacts) {
+                var intent = impactIntent(impact.action);
+                if (!impact.action.apply_to_caster // Only filtering for cases when another entity is actually targeted
+                        && (selectedIntent != null && selectedIntent != intent)) {
+                    // Filter out mixed intents
+                    // So dual intent spells either damage or heal, and not do both
+                    continue;
+                }
+                if (filteredAction != null && impact.action.type != filteredAction) {
+                    // Filter out actions that are not of the specified type
+                    continue;
+                }
 
-            if (target != null) {
-                var result = performImpact(world, caster, target, spellEntry, impact, context, trackers);
-                if (result) {
-                    performedActionTypes.add(impact.action.type);
-                    selectedIntent = intent;
+                if (target != null) {
+                    var result = performImpact(world, caster, target, spellEntry, impact, context, trackers);
+                    if (result) {
+                        performedActionTypes.add(impact.action.type);
+                        selectedIntent = intent;
+                    }
                 }
             }
         }
@@ -1618,8 +1623,14 @@ public class SpellHelper {
         var damageEffects = new ArrayList<EstimatedValue>();
         var healEffects = new ArrayList<EstimatedValue>();
         var isEquipped = AttributeModifierUtil.isItemStackEquipped(itemStack, caster);
+        ArrayList<Spell.Impact> impacts = new ArrayList<>(spell.impacts);
+        if (spell.modifiers != null) {
+            for (var modifier : spell.modifiers) {
+                impacts.addAll(modifier.impacts);
+            }
+        }
 
-        for (var impact: spell.impacts) {
+        for (var impact: impacts) {
             var school = impact.school != null ? impact.school : spellSchool;
             var attribute = school.attributeEntry;
             boolean attributeOverride = false;
