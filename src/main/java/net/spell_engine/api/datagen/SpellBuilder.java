@@ -47,6 +47,7 @@ public class SpellBuilder {
 
     public static Spell.Impact impactHeal(float spell_power_coefficient) {
         var impact = new Spell.Impact();
+        impact.action = new Spell.Impact.Action();
         impact.action.type = Spell.Impact.Action.Type.HEAL;
         impact.action.heal = new Spell.Impact.Action.Heal();
         impact.action.heal.spell_power_coefficient = spell_power_coefficient;
