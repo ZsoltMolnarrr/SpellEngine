@@ -24,6 +24,7 @@ API changes:
   - `projectile_perks` to modify projectile perks (ricochet, bounce etc...)
   - `additional_placements` to extend placements of spell clouds
   - `mutate_impacts` and `impacts` to add additional impacts to the spell
+  - `stash_amplifier_add` to add extra amplifier to spell stashes
   - spell specific modifiers are stored in a cached manner 
 - Add Equipment Sets functionality, for creating item set bonuses 
   - Fully data driven (new data type, stored in DynamicRegistry), defined in data files
@@ -43,6 +44,7 @@ API changes:
   - Add spell cloud `impact_cap` (for trap-like mechanics)
   - Add new impact action: `TAUNT`, forcing entities to attack the caster
   - Add `area_impact.triggering_action_type`, for only matching impact types to trigger area impact
+  - Add `area_impact.execute_action_type`, for filtering impact types to execute area impact actions
 - Update included particle types
   - magic/vertical_stripe particles are now animated
   - Add `sign_fist` particle type

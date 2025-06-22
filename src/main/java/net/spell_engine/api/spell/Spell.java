@@ -117,6 +117,7 @@ public class Spell {
         public float cloud_duration_add = 0;
         public int effect_amplifier_add = 0;
         public int effect_amplifier_cap_add = 0;
+        public int stash_amplifier_add = 0;
         public float effect_duration_add = 0;
         public float cooldown_duration_deduct = 0;
         /// Additional cloud or entity spawn placements
@@ -583,6 +584,10 @@ public class Spell {
         /// Only impacts of this type to trigger area impact
         /// If null, all impacts trigger area impact
         @Nullable public Impact.Action.Type triggering_action_type;
+        /// Only impacts of this type to execute upon area impact
+        /// If null, all impacts execute upon area impact
+        @Nullable public Impact.Action.Type execute_action_type;
+
         public float radius = 1F;
         public ExtraRadius extra_radius = new ExtraRadius();
         public static class ExtraRadius {

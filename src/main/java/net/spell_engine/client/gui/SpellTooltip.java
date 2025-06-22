@@ -508,6 +508,9 @@ public class SpellTooltip {
             if (modifier.effect_duration_add != 0) {
                 addToken("effect_duration_add", formattedNumber(modifier.effect_duration_add), tokenReplacements);
             }
+            if (modifier.stash_amplifier_add != 0) {
+                addToken("stash_amplifier_add", formattedNumber(modifier.stash_amplifier_add), tokenReplacements);
+            }
             if (modifier.cloud_duration_add != 0) {
                 addToken("cloud_duration_add", formattedNumber(modifier.cloud_duration_add), tokenReplacements);
             }

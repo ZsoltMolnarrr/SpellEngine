@@ -463,8 +463,15 @@ public class SpellHelper {
                 var stash = spell.deliver.stash_effect;
                 var id = Identifier.of(stash.id);
                 var effect = Registries.STATUS_EFFECT.getEntry(id).get();
+                var amplifier = stash.amplifier;
+                if (caster instanceof PlayerEntity player) {
+                    var spellModifiers = SpellModifiers.of(player, spellEntry);
+                    for (var modifier: spellModifiers) {
+                        amplifier += modifier.stash_amplifier_add;
+                    }
+                }
                 for (var targeted: targets) {
-                    var instance = new StatusEffectInstance(effect, (int) (stash.duration * 20), stash.amplifier, false, stash.show_particles, true);
+                    var instance = new StatusEffectInstance(effect, (int) (stash.duration * 20), amplifier, false, stash.show_particles, true);
                     if (targeted.entity() instanceof LivingEntity livingEntity) {
                         livingEntity.addStatusEffect(instance);
                         anyAdded = true;
@@ -733,6 +740,9 @@ public class SpellHelper {
     public static boolean arrowImpact(LivingEntity caster, Entity projectile, Entity target, RegistryEntry<Spell> spellEntry, ImpactContext context) {
         var spell = spellEntry.value();
         if (spell.impacts != null) {
+            if (context.power() == null) {
+                context = context.power(SpellPower.getSpellPower(spell.school, caster));
+            }
             return performImpacts(projectile.getWorld(), caster, target, projectile, spellEntry, spell.impacts, context);
         }
         return false;
@@ -747,14 +757,15 @@ public class SpellHelper {
             targets.remove(exclude);
         }
         applyAreaImpact(aoeSource.getWorld(), caster, targets, radius, area_impact.area, spellEntry, impacts,
-                context.target(SpellTarget.FocusMode.AREA), additionalTargetLookup);
+                context.target(SpellTarget.FocusMode.AREA), additionalTargetLookup, area_impact.execute_action_type);
         ParticleHelper.sendBatches(aoeSource, area_impact.particles);
         SoundHelper.playSound(aoeSource.getWorld(), aoeSource, area_impact.sound);
     }
 
     private static void applyAreaImpact(World world, LivingEntity caster, List<Entity> targets,
                                         float range, Spell.Target.Area area,
-                                        RegistryEntry<Spell> spellEntry, List<Spell.Impact> impacts, ImpactContext context, boolean additionalTargetLookup) {
+                                        RegistryEntry<Spell> spellEntry, List<Spell.Impact> impacts, ImpactContext context,
+                                        boolean additionalTargetLookup, @Nullable Spell.Impact.Action.Type filteredAction) {
         double squaredRange = range * range;
         var center = context.position();
         for(var target: targets) {
@@ -768,7 +779,7 @@ public class SpellHelper {
             }
             performImpacts(world, caster, target, target, spellEntry, impacts, context
                             .distance(distanceBasedMultiplier),
-                    additionalTargetLookup
+                    additionalTargetLookup, filteredAction
             );
         }
     }
@@ -816,11 +827,12 @@ public class SpellHelper {
     }
 
     public static boolean performImpacts(World world, LivingEntity caster, @Nullable Entity target, Entity aoeSource, RegistryEntry<Spell> spellEntry, List<Spell.Impact> impacts, ImpactContext context) {
-        return performImpacts(world, caster, target, aoeSource, spellEntry, impacts, context, true);
+        return performImpacts(world, caster, target, aoeSource, spellEntry, impacts, context, true, null);
     }
 
-    public static boolean performImpacts(World world, LivingEntity caster, @Nullable Entity target, Entity aoeSource, RegistryEntry<Spell> spellEntry,
-                                         List<Spell.Impact> impacts, ImpactContext context, boolean additionalTargetLookup) {
+    public static boolean performImpacts(World world, LivingEntity caster, @Nullable Entity target, Entity aoeSource,
+                                         RegistryEntry<Spell> spellEntry, List<Spell.Impact> impacts, ImpactContext context,
+                                         boolean additionalTargetLookup, @Nullable Spell.Impact.Action.Type filteredAction) {
         var trackers = target != null ? PlayerLookup.tracking(target) : null;
         var spell = spellEntry.value();
         SpellTarget.Intent selectedIntent = null;
@@ -854,6 +866,10 @@ public class SpellHelper {
                     && (selectedIntent != null && selectedIntent != intent)) {
                 // Filter out mixed intents
                 // So dual intent spells either damage or heal, and not do both
+                continue;
+            }
+            if (filteredAction != null && impact.action.type != filteredAction) {
+                // Filter out actions that are not of the specified type
                 continue;
             }
 
