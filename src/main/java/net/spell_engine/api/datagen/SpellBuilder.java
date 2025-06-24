@@ -5,8 +5,10 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.client.util.Color;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SpellBuilder {
     public static final String GROUP_PRIMARY = "primary";
@@ -33,6 +35,18 @@ public class SpellBuilder {
         spell.range = 0;
         spell.modifiers = new ArrayList<>();
         return spell;
+    }
+
+    public static Spell.Trigger triggerActiveSpellHit(float chance, @Nullable String schoolRegex) {
+        var trigger = new Spell.Trigger();
+        trigger.impact = new Spell.Trigger.ImpactCondition();
+        trigger.impact.impact_type = Spell.Impact.Action.Type.DAMAGE.toString();
+        trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+        trigger.spell = new Spell.Trigger.SpellCondition();
+        trigger.spell.school = schoolRegex;
+        trigger.spell.type = Spell.Type.ACTIVE;
+        trigger.chance = chance;
+        return trigger;
     }
 
     public static Spell.Impact impactDamage(float coefficient, float knockback) {

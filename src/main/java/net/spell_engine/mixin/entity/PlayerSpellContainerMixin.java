@@ -33,6 +33,12 @@ public class PlayerSpellContainerMixin implements SpellContainerSource.Owner {
         return serverSideSpellContainers;
     }
 
+    private boolean serverSideSpellContainersDirty = false;
+    @Override
+    public void markServerSideSpellContainersDirty() {
+        serverSideSpellContainersDirty = true;
+    }
+
     private SpellContainerSource.Result currentSpellContainers = SpellContainerSource.Result.EMPTY;
     @Override
     public void setSpellContainers(SpellContainerSource.Result result) {
@@ -48,6 +54,12 @@ public class PlayerSpellContainerMixin implements SpellContainerSource.Owner {
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick_TAIL_SpellEngine_SpellContainer(CallbackInfo ci) {
         var player = (PlayerEntity) (Object) this;
+
+        if (serverSideSpellContainersDirty) {
+            // If the server-side containers are dirty, we need to update them
+            SpellContainerSource.syncServerSideContainers(player);
+            serverSideSpellContainersDirty = false;
+        }
 
         // Special treatment for main hand stack
         // as it changes the most frequently

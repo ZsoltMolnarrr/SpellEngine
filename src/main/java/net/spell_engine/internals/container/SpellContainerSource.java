@@ -32,6 +32,7 @@ public class SpellContainerSource {
         Map<String, List<SourcedContainer>> spellContainerCache();
         Map<Identifier, List<Spell.Modifier>> spellModifierCache();
         LinkedHashMap<String, SpellContainer> serverSideSpellContainers();
+        void markServerSideSpellContainersDirty();
         void setSpellContainers(Result result);
         Result getSpellContainers();
     }
@@ -55,6 +56,9 @@ public class SpellContainerSource {
     }
     public static void setDirty(PlayerEntity player, String source) {
         ((Owner)player).spellContainerCache().remove(source);
+    }
+    public static void setDirtyServerSide(PlayerEntity player) {
+        ((Owner)player).markServerSideSpellContainersDirty();
     }
     public static void syncServerSideContainers(PlayerEntity player) {
         if (!player.getWorld().isClient) {
