@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.MobEntity;
@@ -1032,7 +1033,11 @@ public class SpellHelper {
                     ///
 
                     caster.onAttacking(target);
-                    target.damage(SpellDamageSource.create(school, caster), (float) amount);
+                    var damageSource = SpellDamageSource.create(school, caster);
+                    var directOrIndirectDamageSource = context.focusMode() == SpellTarget.FocusMode.DIRECT
+                            ? damageSource
+                            : new DamageSource(damageSource.getTypeRegistryEntry(), caster, null);
+                    target.damage(directOrIndirectDamageSource, (float) amount);
 
                     if (target instanceof LivingEntity livingEntity) {
                         ((ConfigurableKnockback)livingEntity).popKnockbackMultiplier_SpellEngine();

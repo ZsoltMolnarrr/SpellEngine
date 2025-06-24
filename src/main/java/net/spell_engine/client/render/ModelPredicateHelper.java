@@ -87,7 +87,7 @@ public class ModelPredicateHelper {
     private static SpellCast.Progress getItemStackRangedSkillProgress(ItemStack itemStack, LivingEntity entity) {
         if (entity instanceof SpellCasterEntity caster && entity.getMainHandStack() == itemStack) {
             var process = caster.getSpellCastProcess();
-            // Watch out! This condition check is duplicated
+            // Watch out! This mode check is duplicated
             if (process != null && process.spell().value().active.cast.animates_ranged_weapon) {
                 return process.progress(entity.getWorld().getTime());
             }
@@ -98,7 +98,7 @@ public class ModelPredicateHelper {
     private static boolean isItemStackUsedForRangedSkill(ItemStack itemStack, LivingEntity entity) {
         if (entity instanceof SpellCasterEntity caster && entity.getMainHandStack() == itemStack) {
             var process = caster.getSpellCastProcess();
-            // Watch out! This condition check is duplicated
+            // Watch out! This mode check is duplicated
             if (process != null && process.spell().value().active.cast.animates_ranged_weapon) {
                 return true;
             }

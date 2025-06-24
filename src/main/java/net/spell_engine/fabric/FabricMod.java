@@ -11,12 +11,10 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.RemoveOnHit;
 import net.spell_engine.compat.CompatFeatures;
-import net.spell_engine.compat.trinkets.TrinketsCompat;
 import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.item.SpellEngineItems;
-import net.spell_engine.utils.SoundHelper;
 
 public class FabricMod implements ModInitializer {
     static {
@@ -55,7 +53,7 @@ public class FabricMod implements ModInitializer {
             if (amount > 0 && attacker != null) {
                 for (var instance : entity.getStatusEffects()) {
                     var effect = instance.getEffectType();
-                    if (RemoveOnHit.shouldRemoveOnDirectHit(effect.value())) {
+                    if (RemoveOnHit.shouldRemoveOnHit(effect.value(), source)) {
                         entity.removeStatusEffect(effect);
                         break;
                     }

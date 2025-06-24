@@ -3,19 +3,21 @@ package net.spell_engine.mixin.effect;
 import net.minecraft.entity.effect.StatusEffect;
 import net.spell_engine.api.effect.RemoveOnHit;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 
 @Mixin(StatusEffect.class)
 public class StatusEffectRemoveOnHit implements RemoveOnHit {
-    private boolean SpellEngine_isRemovedOnDirectHit = false;
+    @Unique
+    private RemoveOnHit.Args SpellEngine_removalArgs = null;
 
     @Override
-    public boolean shouldRemoveOnDirectHit() {
-        return SpellEngine_isRemovedOnDirectHit;
+    public RemoveOnHit.Args getRemovalOnHit() {
+        return SpellEngine_removalArgs;
     }
 
     @Override
-    public StatusEffect removedOnDirectHit(boolean value) {
-        SpellEngine_isRemovedOnDirectHit = value;
+    public StatusEffect setRemovalOnHit(Args args) {
+        SpellEngine_removalArgs = args;
         return (StatusEffect)((Object)this);
     }
 }

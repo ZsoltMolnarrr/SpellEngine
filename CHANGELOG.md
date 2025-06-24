@@ -46,6 +46,9 @@ API changes:
   - Add `area_impact.triggering_action_type`, for only matching impact types to trigger area impact
   - Add `area_impact.execute_action_type`, for filtering impact types to execute area impact actions
   - Add `area_impact.skip_center_target`, to skip center target for area impact
+- Spell damage direct/indirect distinction
+  - Indirect spell damage events (such as area effects) now produce DamageSource that counts as indirect
+  - `RemoveOnHit` status effect API, can now configure effects, to only be removed upon direct or indirect hits
 - Update included particle types
   - magic/vertical_stripe particles are now animated
   - Add `sign_fist` particle type
