@@ -53,7 +53,7 @@ public class FabricMod implements ModInitializer {
             if (amount > 0 && attacker != null) {
                 for (var instance : entity.getStatusEffects()) {
                     var effect = instance.getEffectType();
-                    if (RemoveOnHit.shouldRemoveOnHit(effect.value(), source)) {
+                    if (RemoveOnHit.shouldRemoveOnHit(entity.getWorld(), effect.value(), source)) {
                         entity.removeStatusEffect(effect);
                         break;
                     }

@@ -49,6 +49,7 @@ API changes:
 - Spell damage direct/indirect distinction
   - Indirect spell damage events (such as area effects) now produce DamageSource that counts as indirect
   - `RemoveOnHit` status effect API, can now configure effects, to only be removed upon direct or indirect hits
+  - `RemoveOnHit` now also accepts removal chance
 - Update included particle types
   - magic/vertical_stripe particles are now animated
   - Add `sign_fist` particle type
