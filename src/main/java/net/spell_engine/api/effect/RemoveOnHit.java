@@ -3,6 +3,7 @@ package net.spell_engine.api.effect;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.world.World;
+import net.spell_engine.entity.DamageSourceExtension;
 import org.jetbrains.annotations.Nullable;
 
 public interface RemoveOnHit {
@@ -33,10 +34,11 @@ public interface RemoveOnHit {
         if (args.chance < 1.0F && world.random.nextFloat() > args.chance) {
             return false;
         }
+        var isInDirect = !damageSource.isDirect() || ((DamageSourceExtension)damageSource).isSpellIndirect();
         return switch (args.mode) {
             case ANY_HIT -> true;
-            case DIRECT_HIT -> damageSource.isDirect();
-            case INDIRECT_HIT -> !damageSource.isDirect();
+            case DIRECT_HIT -> !isInDirect;
+            case INDIRECT_HIT -> isInDirect;
         };
     }
 }

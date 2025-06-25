@@ -33,6 +33,7 @@ import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.event.SpellHandlers;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.entity.ConfigurableKnockback;
+import net.spell_engine.entity.DamageSourceExtension;
 import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.arrow.ArrowHelper;
@@ -1034,10 +1035,8 @@ public class SpellHelper {
 
                     caster.onAttacking(target);
                     var damageSource = SpellDamageSource.create(school, caster);
-                    var directOrIndirectDamageSource = context.focusMode() == SpellTarget.FocusMode.DIRECT
-                            ? damageSource
-                            : new DamageSource(damageSource.getTypeRegistryEntry(), caster, null);
-                    target.damage(directOrIndirectDamageSource, (float) amount);
+                    ((DamageSourceExtension)damageSource).setSpellIndirect(context.focusMode() != SpellTarget.FocusMode.DIRECT);
+                    target.damage(damageSource, (float) amount);
 
                     if (target instanceof LivingEntity livingEntity) {
                         ((ConfigurableKnockback)livingEntity).popKnockbackMultiplier_SpellEngine();

@@ -1,5 +1,6 @@
 package net.spell_engine.api.datagen;
 
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
@@ -37,6 +38,13 @@ public class SpellBuilder {
         return spell;
     }
 
+    public static Spell.TargetCondition entityConditionDead() {
+        var deadCondition = new Spell.TargetCondition();
+        deadCondition.health_percent_below = 0F;
+        deadCondition.health_percent_above = 0F;
+        return deadCondition;
+    }
+
     public static Spell.Trigger triggerActiveSpellHit(float chance, @Nullable String schoolRegex) {
         var trigger = new Spell.Trigger();
         trigger.impact = new Spell.Trigger.ImpactCondition();
@@ -46,6 +54,26 @@ public class SpellBuilder {
         trigger.spell.school = schoolRegex;
         trigger.spell.type = Spell.Type.ACTIVE;
         trigger.chance = chance;
+        return trigger;
+    }
+
+    public static Spell.Trigger triggerActiveSpellHeal(float chance) {
+        var trigger = new Spell.Trigger();
+        trigger.impact = new Spell.Trigger.ImpactCondition();
+        trigger.impact.impact_type = Spell.Impact.Action.Type.HEAL.toString();
+        trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+        trigger.spell = new Spell.Trigger.SpellCondition();
+        trigger.spell.type = Spell.Type.ACTIVE;
+        trigger.chance = chance;
+        return trigger;
+    }
+
+    public static Spell.Trigger triggerMeleeAttack(boolean mustWield) {
+        var trigger = new Spell.Trigger();
+        trigger.type = Spell.Trigger.Type.MELEE_IMPACT;
+        if (mustWield) {
+            trigger.equipment_condition = EquipmentSlot.MAINHAND;
+        }
         return trigger;
     }
 
