@@ -861,30 +861,29 @@ public class SpellHelper {
             }
         }
 
-        var skipImpacts = area_impact != null
-                ? (area_impact.skip_center_target && additionalTargetLookup)
-                : false;
         EnumSet<Spell.Impact.Action.Type> performedActionTypes = EnumSet.noneOf(Spell.Impact.Action.Type.class);
-        if (!skipImpacts) {
-            for (var impact : mutableImpacts) {
-                var intent = impactIntent(impact.action);
-                if (!impact.action.apply_to_caster // Only filtering for cases when another entity is actually targeted
-                        && (selectedIntent != null && selectedIntent != intent)) {
-                    // Filter out mixed intents
-                    // So dual intent spells either damage or heal, and not do both
-                    continue;
-                }
-                if (filteredAction != null && impact.action.type != filteredAction) {
-                    // Filter out actions that are not of the specified type
-                    continue;
-                }
+        for (var impact : mutableImpacts) {
+            var intent = impactIntent(impact.action);
+            if (!impact.action.apply_to_caster // Only filtering for cases when another entity is actually targeted
+                    && (selectedIntent != null && selectedIntent != intent)) {
+                // Filter out mixed intents
+                // So dual intent spells either damage or heal, and not do both
+                continue;
+            }
+            if (filteredAction != null && impact.action.type != filteredAction) {
+                // Filter out actions that are not of the specified type
+                continue;
+            }
+            if (additionalTargetLookup && !impact.action.allow_on_center_target) {
+                // Skip center target if additional target lookup is enabled
+                continue;
+            }
 
-                if (target != null) {
-                    var result = performImpact(world, caster, target, spellEntry, impact, context, trackers);
-                    if (result) {
-                        performedActionTypes.add(impact.action.type);
-                        selectedIntent = intent;
-                    }
+            if (target != null) {
+                var result = performImpact(world, caster, target, spellEntry, impact, context, trackers);
+                if (result) {
+                    performedActionTypes.add(impact.action.type);
+                    selectedIntent = intent;
                 }
             }
         }

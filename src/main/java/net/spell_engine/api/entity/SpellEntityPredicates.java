@@ -79,4 +79,22 @@ public class SpellEntityPredicates {
     public static Entry IS_ON_FIRE = register(Identifier.of(SpellEngineMod.ID, "is_on_fire"), args -> {
         return args.entity.isOnFire();
     });
+
+    public static Entry registerOrGet(Identifier id, Predicate<Input> predicate) {
+        var entry = get(id);
+        if (entry == null) {
+            entry = register(id, predicate);
+        }
+        return entry;
+    }
+
+    public static Entry hasEffectOptimized(Identifier effectId) {
+        var predicateId = Identifier.of("has_effect_optimized", effectId.getNamespace() + "." + effectId.getPath());
+        return registerOrGet(predicateId, args -> {
+            if (args.entity instanceof LivingEntity livingEntity) {
+                return livingEntity.hasStatusEffect(Registries.STATUS_EFFECT.getEntry(effectId).orElse(null));
+            }
+            return false;
+        });
+    }
 }

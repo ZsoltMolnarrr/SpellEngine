@@ -3,13 +3,13 @@ package net.spell_engine.api.datagen;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.util.Identifier;
+import net.spell_engine.api.entity.SpellEntityPredicates;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.client.util.Color;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class SpellBuilder {
     public static final String GROUP_PRIMARY = "primary";
@@ -38,11 +38,18 @@ public class SpellBuilder {
         return spell;
     }
 
-    public static Spell.TargetCondition entityConditionDead() {
+    public static Spell.TargetCondition targetConditionDead() {
         var deadCondition = new Spell.TargetCondition();
         deadCondition.health_percent_below = 0F;
         deadCondition.health_percent_above = 0F;
         return deadCondition;
+    }
+
+    public static Spell.TargetCondition targetConditionHasEffect(Identifier effectId) {
+        var effectCondition = new Spell.TargetCondition();
+        effectCondition.entity_predicate_id = SpellEntityPredicates.HAS_EFFECT.id().toString();
+        effectCondition.entity_predicate_param = effectId.toString();
+        return effectCondition;
     }
 
     public static Spell.Trigger triggerActiveSpellHit(float chance, @Nullable String schoolRegex) {
@@ -74,6 +81,18 @@ public class SpellBuilder {
         if (mustWield) {
             trigger.equipment_condition = EquipmentSlot.MAINHAND;
         }
+        return trigger;
+    }
+
+    public static Spell.Trigger triggerShieldBlock() {
+        var trigger = new Spell.Trigger();
+        trigger.type = Spell.Trigger.Type.SHIELD_BLOCK;
+        return trigger;
+    }
+
+    public static Spell.Trigger triggerArrowHit() {
+        var trigger = new Spell.Trigger();
+        trigger.type = Spell.Trigger.Type.ARROW_IMPACT;
         return trigger;
     }
 
