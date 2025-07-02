@@ -4,12 +4,14 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.entity.SpellEntityPredicates;
+import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.client.util.Color;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SpellBuilder {
     public static final String GROUP_PRIMARY = "primary";
@@ -42,6 +44,13 @@ public class SpellBuilder {
         var deadCondition = new Spell.TargetCondition();
         deadCondition.health_percent_below = 0F;
         deadCondition.health_percent_above = 0F;
+        return deadCondition;
+    }
+
+    private static Spell.TargetCondition targetConditionWeak() {
+        var deadCondition = new Spell.TargetCondition();
+        deadCondition.health_percent_below = 0.5F;
+        deadCondition.health_percent_above = 0.01F;
         return deadCondition;
     }
 
@@ -82,6 +91,40 @@ public class SpellBuilder {
             trigger.equipment_condition = EquipmentSlot.MAINHAND;
         }
         return trigger;
+    }
+
+    private static Spell.Trigger triggerMeleeKill(boolean mustWield) {
+        var trigger = triggerMeleeAttack(mustWield);
+        var deadCondition = targetConditionDead();
+        trigger.target_conditions = List.of(deadCondition);
+        return trigger;
+    }
+
+    private static Spell.Trigger triggerSpellKill() {
+        var trigger = new Spell.Trigger();
+        trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+        trigger.impact = new Spell.Trigger.ImpactCondition();
+        trigger.impact.impact_type = Spell.Impact.Action.Type.DAMAGE.toString();
+        var deadCondition = targetConditionDead();
+        trigger.target_conditions = List.of(deadCondition);
+        return trigger;
+    }
+
+    private static List<Spell.Trigger> triggerRangedKill() {
+        var deadCondition = targetConditionDead();
+
+        var arrowTrigger = new Spell.Trigger();
+        arrowTrigger.type = Spell.Trigger.Type.ARROW_IMPACT;
+        arrowTrigger.equipment_condition = EquipmentSlot.MAINHAND;
+        arrowTrigger.target_conditions = List.of(deadCondition);
+
+        var skillTrigger = new Spell.Trigger();
+        skillTrigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+        skillTrigger.spell = new Spell.Trigger.SpellCondition();
+        skillTrigger.spell.school = ExternalSpellSchools.PHYSICAL_RANGED.id.toString();
+        skillTrigger.target_conditions = List.of(deadCondition);
+
+        return List.of(arrowTrigger, skillTrigger);
     }
 
     public static Spell.Trigger triggerShieldBlock() {
