@@ -47,7 +47,7 @@ public class SpellBuilder {
         return deadCondition;
     }
 
-    private static Spell.TargetCondition targetConditionWeak() {
+    public static Spell.TargetCondition targetConditionWeak() {
         var deadCondition = new Spell.TargetCondition();
         deadCondition.health_percent_below = 0.5F;
         deadCondition.health_percent_above = 0.01F;
@@ -73,6 +73,16 @@ public class SpellBuilder {
         return trigger;
     }
 
+    public static Spell.Trigger triggerSpecificSpellHit(String spellId) {
+        var trigger = new Spell.Trigger();
+        trigger.impact = new Spell.Trigger.ImpactCondition();
+        trigger.impact.impact_type = Spell.Impact.Action.Type.DAMAGE.toString();
+        trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+        trigger.spell = new Spell.Trigger.SpellCondition();
+        trigger.spell.id = spellId;
+        return trigger;
+    }
+
     public static Spell.Trigger triggerActiveSpellHeal(float chance) {
         var trigger = new Spell.Trigger();
         trigger.impact = new Spell.Trigger.ImpactCondition();
@@ -93,14 +103,14 @@ public class SpellBuilder {
         return trigger;
     }
 
-    private static Spell.Trigger triggerMeleeKill(boolean mustWield) {
+    public static Spell.Trigger triggerMeleeKill(boolean mustWield) {
         var trigger = triggerMeleeAttack(mustWield);
         var deadCondition = targetConditionDead();
         trigger.target_conditions = List.of(deadCondition);
         return trigger;
     }
 
-    private static Spell.Trigger triggerSpellKill() {
+    public static Spell.Trigger triggerSpellKill() {
         var trigger = new Spell.Trigger();
         trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
         trigger.impact = new Spell.Trigger.ImpactCondition();
@@ -110,7 +120,7 @@ public class SpellBuilder {
         return trigger;
     }
 
-    private static List<Spell.Trigger> triggerRangedKill() {
+    public static List<Spell.Trigger> triggerRangedKill() {
         var deadCondition = targetConditionDead();
 
         var arrowTrigger = new Spell.Trigger();

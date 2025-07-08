@@ -482,6 +482,9 @@ public class SpellTooltip {
             addToken(trigger_chance, percent(trigger.chance), tokenReplacements);
         }
         for(var modifier: spell.modifiers) {
+            if (modifier.range_add != 0) {
+                addToken("range_add", formattedNumber(modifier.range_add), tokenReplacements);
+            }
             if (modifier.power_modifier != null) {
                 addToken("power_multiplier", percent(modifier.power_modifier.power_multiplier), tokenReplacements);
                 addToken("critical_chance_bonus", percent(modifier.power_modifier.critical_chance_bonus), tokenReplacements);

@@ -4,6 +4,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.api.entity.SpellEntityPredicates;
 import net.spell_engine.api.spell.Spell;
@@ -38,7 +39,8 @@ public class SpellTarget {
         }
     }
 
-    public static SearchResult findTargets(PlayerEntity caster, Spell currentSpell, SearchResult previous, boolean filterInvalidTargets) {
+    public static SearchResult findTargets(PlayerEntity caster, RegistryEntry<Spell> spellEntry, SearchResult previous, boolean filterInvalidTargets) {
+        var currentSpell = spellEntry.value();
         List<Entity> targets = List.of();
         var previousTargets = previous.entities;
         Vec3d location = null;
@@ -48,7 +50,7 @@ public class SpellTarget {
         boolean fallbackToPreviousTargets = false;
         var focusMode = SpellHelper.focusMode(currentSpell);
         var targetType = currentSpell.target.type;
-        var range = SpellHelper.getRange(caster, currentSpell) * caster.getScale();
+        var range = SpellHelper.getRange(caster, spellEntry) * caster.getScale();
 
         Predicate<Entity> selectionPredicate = (target) -> {
             var deliveryIntent = SpellHelper.deliveryIntent(currentSpell);

@@ -95,6 +95,8 @@ public class Spell {
     public static class Modifier {
         /// Universal pattern matcher, against spell ID
         public String spell_pattern;
+        /// Bonus to add to the range of the spell
+        public float range_add = 0;
         public enum ImpactListModifier {
             PREPEND, /// Adds the impacts to the start of the list
             APPEND /// Adds the impacts to the end of the list
@@ -294,6 +296,8 @@ public class Spell {
 
     public List<Impact> impacts = List.of();
     public static class Impact { public Impact() { }
+        /// The chance to perform this impact
+        public float chance = 1F;
         /// Magic school of this specific impact, if null then spell school is used
         @Nullable public SpellSchool school;
         public boolean attribute_from_target = false;
@@ -359,10 +363,12 @@ public class Spell {
                 public float duration = 10;
                 /// How many stacks to apply (0 = 1, 1 = 2, 2 = 3, etc...)
                 public int amplifier = 0;
-                /// Maximum stacks to apply (ignored by mode `ADD`, where this is achieved by `amplifier`)
-                public int amplifier_cap = 0;
                 /// How many additional stacks to apply based on power
                 public float amplifier_power_multiplier = 0;
+                /// Maximum stacks to apply (ignored by mode `ADD`, where this is achieved by `amplifier`)
+                public int amplifier_cap = 0;
+                /// Maximum additional stacks to apply based on power
+                public float amplifier_cap_power_multiplier = 0;
                 /// Whether already applied stacks should be refreshed
                 public boolean refresh_duration = true;
 
@@ -609,6 +615,8 @@ public class Spell {
     public static class LaunchProperties { public LaunchProperties() { }
         /// Initial velocity of the projectile
         public float velocity = 1F;
+        /// When channeling, the index of the channel to, when extra projectiles to shoot
+        public int extra_launch_mod = -1;
         /// How many additional projectiles are spawned after launch
         public int extra_launch_count = 0;
         /// How many ticks after launch additional projectiles are spawned
@@ -623,14 +631,16 @@ public class Spell {
         public LaunchProperties copy() {
             LaunchProperties copy = new LaunchProperties();
             copy.velocity = this.velocity;
+            copy.extra_launch_mod = this.extra_launch_mod;
             copy.extra_launch_count = this.extra_launch_count;
             copy.extra_launch_delay = this.extra_launch_delay;
             copy.sound = this.sound != null ? this.sound.copy() : null;
             return copy;
         }
 
-        public void mutatingCombine(LaunchProperties other) {
+        public void mutatingCombine(LaunchProperties other)  {
             this.velocity += other.velocity;
+            this.extra_launch_mod = other.extra_launch_mod >= 0 ? other.extra_launch_mod : this.extra_launch_mod;
             this.extra_launch_count += other.extra_launch_count;
             this.extra_launch_delay += other.extra_launch_delay;
         }
@@ -638,6 +648,7 @@ public class Spell {
         public static LaunchProperties EMPTY() {
             LaunchProperties empty = new LaunchProperties();
             empty.velocity = 0;
+            empty.extra_launch_mod = -1;
             empty.extra_launch_count = 0;
             empty.extra_launch_delay = 0;
             return empty;

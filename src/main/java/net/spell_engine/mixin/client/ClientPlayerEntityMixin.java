@@ -178,7 +178,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             }
             var spell = process.spell().value();
             var cast = spell.active.cast;
-            spellTarget = SpellTarget.findTargets(player, spell, spellTarget, SpellEngineClient.config.filterInvalidTargets);
+            spellTarget = SpellTarget.findTargets(player, process.spell(), spellTarget, SpellEngineClient.config.filterInvalidTargets);
 
             var spellCastTicks = process.spellCastTicksSoFar(player.getWorld().getTime());
             if (SpellHelper.isChanneled(spell)) {

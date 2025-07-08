@@ -16,6 +16,7 @@ Functional changes:
 
 API changes:
 - Add new spell type `MODIFIER`, to allow modifying existing spells in narrow pre-defined ways
+  - `range_add` to add extra range to spells 
   - `power_modifier` to add extra power, crit chance, crit damage
   - `effect_amplifier_add` to add extra amplifier to status effects
   - `effect_duration_add` to add extra duration to status effects
@@ -46,6 +47,7 @@ API changes:
   - Add `area_impact.triggering_action_type`, for only matching impact types to trigger area impact
   - Add `area_impact.execute_action_type`, for filtering impact types to execute area impact actions
   - Add `area_impact.skip_center_target`, to skip center target for area impact
+  - Add `impact.chance`, to allow random chance for impact to happen
 - Spell damage direct/indirect distinction
   - Indirect spell damage events (such as area effects) now produce DamageSource that counts as indirect
   - `RemoveOnHit` status effect API, can now configure effects, to only be removed upon direct or indirect hits

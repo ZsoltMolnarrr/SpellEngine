@@ -5,7 +5,6 @@ import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.MobEntity;
@@ -93,15 +92,22 @@ public class SpellHelper {
         return hasteAffectedValue(value, haste) ;
     }
 
-    public static float getRange(PlayerEntity player, Spell spell) {
+    public static float getRange(PlayerEntity player, RegistryEntry<Spell> spellEntry) {
+        var spell = spellEntry.value();
+        var range = spell.range;
         if (spell.range_mechanic != null) {
             switch (spell.range_mechanic) {
                 case MELEE -> {
-                    return (float) player.getEntityInteractionRange() + spell.range;
+                    range = (float) (player.getEntityInteractionRange() + spell.range);
                 }
             }
         }
-        return spell.range;
+        for (var modifier: SpellModifiers.of(player, spellEntry)) {
+            if (modifier.range_add != 0) {
+                range += modifier.range_add;
+            }
+        }
+        return range;
     }
 
     public static float getCastDuration(LivingEntity caster, Spell spell) {
@@ -253,7 +259,7 @@ public class SpellHelper {
                             ParticleBatch[] scaledParticles = new ParticleBatch[spell.release.particles_scaled_with_ranged.length];
                             for (int i = 0; i < spell.release.particles_scaled_with_ranged.length; i++) {
                                 var particles = spell.release.particles_scaled_with_ranged[i];
-                                var range = getRange(player, spell);
+                                var range = getRange(player, spellEntry);
                                 scaledParticles[i] = particles.copy().scale(range);
                             }
                             ParticleHelper.sendBatches(player, scaledParticles);
@@ -303,7 +309,7 @@ public class SpellHelper {
                     case AREA -> {
                         var center = player.getPos().add(0, player.getHeight() / 2F, 0);
                         var area = spell.target.area;
-                        var range = getRange(player, spell) * player.getScale();
+                        var range = getRange(player, spellEntry) * player.getScale();
                         final var centeredContext = context; // .position(center);
                         double squaredRange = range * range;
                         var targetsWithContext = targets.stream().map(target -> {
@@ -612,7 +618,10 @@ public class SpellHelper {
         world.spawnEntity(projectile);
         SoundHelper.playSound(world, projectile, mutableLaunchProperties.sound);
 
-        if (sequenceIndex == 0 && mutableLaunchProperties.extra_launch_count > 0) {
+        var allowExtraShoot = (context.isChanneled() && mutableLaunchProperties.extra_launch_mod >= 0)
+                ? context.channelTickIndex() % mutableLaunchProperties.extra_launch_mod == 0
+                : true;
+        if (sequenceIndex == 0 && mutableLaunchProperties.extra_launch_count > 0 && allowExtraShoot) {
             for (int i = 0; i < mutableLaunchProperties.extra_launch_count; i++) {
                 var ticks = (i + 1) * mutableLaunchProperties.extra_launch_delay;
                 var nextSequenceIndex = i + 1;
@@ -924,6 +933,9 @@ public class SpellHelper {
         var spell = spellEntry.value();
         try {
             // Guards
+            if (impact.chance < 1F && world.random.nextFloat() > impact.chance) {
+                return false; // Skip impact if chance is not met
+            }
 
             var originalTarget = target;
 
@@ -1126,7 +1138,9 @@ public class SpellHelper {
                                 var duration = Math.round((data.duration + extraDuration) * 20F);
 
                                 var showParticles = data.show_particles;
-                                var cap = data.amplifier_cap + extraCap;
+                                var cap = data.amplifier_cap
+                                        + (int)(data.amplifier_cap_power_multiplier * power.nonCriticalValue())
+                                        + extraCap;
 
                                 if (data.apply_mode == Spell.Impact.Action.StatusEffect.ApplyMode.ADD) {
                                     var currentEffect = livingTarget.getStatusEffect(effect);

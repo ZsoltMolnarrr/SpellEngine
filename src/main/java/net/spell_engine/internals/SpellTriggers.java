@@ -193,7 +193,7 @@ public class SpellTriggers {
                             List<Entity> targets = List.of(event.target(trigger));
                             targetResult = SpellTarget.SearchResult.of(targets);
                         } else {
-                            targetResult = SpellTarget.findTargets(player, spell, SpellTarget.SearchResult.empty(), true);
+                            targetResult = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), true);
                         }
                         SpellHelper.performSpell(player.getWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
                         break;
