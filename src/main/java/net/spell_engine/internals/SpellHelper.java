@@ -1396,37 +1396,6 @@ public class SpellHelper {
         return success;
     }
 
-    public record ResolvedImpacts(List<Spell.Impact> combinedImpacts, @Nullable Spell.AreaImpact overrideAreaImpact) { }
-    public static ResolvedImpacts resolveImpacts(RegistryEntry<Spell> spellEntry, PlayerEntity player) {
-        var spell = spellEntry.value();
-        return resolveImpacts(spell.impacts, spell.area_impact, SpellModifiers.of(player, spellEntry));
-    }
-    public static ResolvedImpacts resolveImpacts(RegistryEntry<Spell> spellEntry, List<Spell.Modifier> modifiers) {
-        var spell = spellEntry.value();
-        return resolveImpacts(spell.impacts, spell.area_impact, modifiers);
-    }
-    public static ResolvedImpacts resolveImpacts(List<Spell.Impact> defaultImpacts, Spell.AreaImpact defaultAreaImpact, List<Spell.Modifier> modifiers) {
-        var mutableImpacts = new ArrayList<>(defaultImpacts);
-        @Nullable Spell.AreaImpact overrideAreaImpact = null;
-
-        for (var modifier: modifiers) {
-            if (modifier.mutate_impacts != null) {
-                switch (modifier.mutate_impacts) {
-                    case PREPEND -> {
-                        mutableImpacts.addAll(0, modifier.impacts);
-                    }
-                    case APPEND -> {
-                        mutableImpacts.addAll(modifier.impacts);
-                    }
-                }
-            }
-            if (modifier.replacing_area_impact != null) {
-                overrideAreaImpact = modifier.replacing_area_impact;
-            }
-        }
-        return new ResolvedImpacts(mutableImpacts, overrideAreaImpact);
-    }
-
     private static boolean modifyCooldowns(List<RegistryEntry<Spell>> spells, Spell.Impact.Action.Cooldown.Modify modifier, SpellCooldownManager cooldownManager) {
         var modifiedAny = false;
         for (var spell: spells) {
