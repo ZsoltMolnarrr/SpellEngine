@@ -38,8 +38,10 @@ public class Spell {
     }
 
     @Nullable public Tooltip tooltip;
+    public Tooltip tooltip() { return tooltip != null ? tooltip : Tooltip.DEFAULT; }
     public static class Tooltip { public Tooltip() { }; public static final Tooltip DEFAULT = new Tooltip();
         public boolean show_header = true;
+        public boolean show_activation = true;
         public LineOptions name = new LineOptions(true, true);
         public LineOptions description = new LineOptions(false, true);
         public static class LineOptions { public LineOptions() { }

@@ -156,7 +156,7 @@ public class SpellTooltip {
         if (!forceHideHeader) {
             for (var spellEntry : spells) {
                 var spell = spellEntry.value();
-                var tooltip = spell.tooltip != null ? spell.tooltip : Spell.Tooltip.DEFAULT;
+                var tooltip = spell.tooltip();
                 showListHeader = showListHeader || tooltip.show_header;
             }
         }
@@ -288,36 +288,38 @@ public class SpellTooltip {
     private static void addSpellDetails(RegistryEntry<Spell> spellEntry, PlayerEntity player, ItemStack itemStack, int indentLevel, ArrayList<Text> lines) {
         var spell = spellEntry.value();
         var active = spell.active;
-        if (active != null) {
-            if (active.cast != null) {
-                if (SpellHelper.isInstant(spell)) {
-                    lines.add(indentation(indentLevel)
-                            .append(Text.translatable("spell.tooltip.cast_instant"))
-                            .formatted(Formatting.GOLD));
-                } else {
-                    var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
-                    var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
-                    var castTime = I18n.translate(castTimeKey).replace(placeholder(durationToken), formattedNumber(castDuration));
-                    lines.add(indentation(indentLevel)
-                            .append(Text.literal(castTime))
-                            .formatted(Formatting.GOLD));
+        if (spell.tooltip().show_activation) {
+            if (active != null) {
+                if (active.cast != null) {
+                    if (SpellHelper.isInstant(spell)) {
+                        lines.add(indentation(indentLevel)
+                                .append(Text.translatable("spell.tooltip.cast_instant"))
+                                .formatted(Formatting.GOLD));
+                    } else {
+                        var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
+                        var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
+                        var castTime = I18n.translate(castTimeKey).replace(placeholder(durationToken), formattedNumber(castDuration));
+                        lines.add(indentation(indentLevel)
+                                .append(Text.literal(castTime))
+                                .formatted(Formatting.GOLD));
+                    }
                 }
             }
-        }
-        var passive = spell.passive;
-        if (passive != null) {
-            if (!passive.triggers.isEmpty()) {
-                var triggerList = passive.triggers.stream()
-                        .map(trigger -> "spell.tooltip.trigger." + trigger.type.toString().toLowerCase(Locale.ENGLISH))
-                        .map(I18n::translate)
-                        .toList();
-                var joinedTriggers = String.join(", ", triggerList);
-                var triggerText = I18n.translate("spell.tooltip.trigger.base")
-                    .replace(placeholder(trigger_list), joinedTriggers);
+            var passive = spell.passive;
+            if (passive != null) {
+                if (!passive.triggers.isEmpty()) {
+                    var triggerList = passive.triggers.stream()
+                            .map(trigger -> "spell.tooltip.trigger." + trigger.type.toString().toLowerCase(Locale.ENGLISH))
+                            .map(I18n::translate)
+                            .toList();
+                    var joinedTriggers = String.join(", ", triggerList);
+                    var triggerText = I18n.translate("spell.tooltip.trigger.base")
+                            .replace(placeholder(trigger_list), joinedTriggers);
 
-                lines.add(indentation(indentLevel)
-                        .append(Text.literal(triggerText))
-                        .formatted(Formatting.GOLD));
+                    lines.add(indentation(indentLevel)
+                            .append(Text.literal(triggerText))
+                            .formatted(Formatting.GOLD));
+                }
             }
         }
 
