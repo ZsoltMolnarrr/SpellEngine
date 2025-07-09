@@ -1218,6 +1218,7 @@ public class SpellHelper {
                     if (target.getFireTicks() > 0) {
                         target.setFireTicks(target.getFireTicks() + data.tick_offset);
                     }
+                    success = target.isOnFire();
                 }
                 case SPAWN -> {
                     var spawns = impact.action.spawns;
