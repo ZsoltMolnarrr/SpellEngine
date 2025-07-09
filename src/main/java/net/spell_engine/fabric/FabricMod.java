@@ -15,6 +15,9 @@ import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.item.SpellEngineItems;
+import net.spell_engine.utils.StatusEffectUtil;
+
+import java.util.ArrayList;
 
 public class FabricMod implements ModInitializer {
     static {
@@ -51,13 +54,17 @@ public class FabricMod implements ModInitializer {
         ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
             var attacker = source.getAttacker();
             if (amount > 0 && attacker != null) {
+                var effectChanges = new ArrayList<StatusEffectUtil.Diff>();
                 for (var instance : entity.getStatusEffects()) {
                     var effect = instance.getEffectType();
-                    if (RemoveOnHit.shouldRemoveOnHit(entity.getWorld(), effect.value(), source)) {
-                        entity.removeStatusEffect(effect);
-                        break;
+                    var remove = RemoveOnHit.removeCount(entity.getWorld(), effect.value(), source);
+                    if (remove > 0) {
+                        effectChanges.add(new StatusEffectUtil.Diff(instance, instance.getAmplifier() - remove));
+                    } else if (remove < 0) {
+                        effectChanges.add(new StatusEffectUtil.Diff(instance, -1));
                     }
                 }
+                StatusEffectUtil.applyChanges(entity, effectChanges);
             }
             return true;
         });

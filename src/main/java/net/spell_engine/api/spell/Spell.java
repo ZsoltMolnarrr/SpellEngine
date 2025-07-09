@@ -596,6 +596,8 @@ public class Spell {
         /// If null, all impacts execute upon area impact
         @Nullable public Impact.Action.Type execute_action_type;
 
+        public boolean force_indirect = false;
+
         public float radius = 1F;
         public ExtraRadius extra_radius = new ExtraRadius();
         public static class ExtraRadius {

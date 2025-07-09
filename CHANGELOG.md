@@ -48,10 +48,11 @@ API changes:
   - Add `area_impact.execute_action_type`, for filtering impact types to execute area impact actions
   - Add `area_impact.skip_center_target`, to skip center target for area impact
   - Add `impact.chance`, to allow random chance for impact to happen
-- Spell damage direct/indirect distinction
+- Status Effect `RemoveOnHit` API reworked, expanded:
   - Indirect spell damage events (such as area effects) now produce DamageSource that counts as indirect
-  - `RemoveOnHit` status effect API, can now configure effects, to only be removed upon direct or indirect hits
-  - `RemoveOnHit` now also accepts removal chance
+  - `RemoveOnHit` accepts trigger type, to only be removed upon direct or indirect hits
+  - `RemoveOnHit` accepts removal chance
+  - `RemoveOnHit` accepts remove stack count
 - Update included particle types
   - magic/vertical_stripe particles are now animated
   - Add `sign_fist` particle type
