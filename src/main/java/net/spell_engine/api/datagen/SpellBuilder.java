@@ -214,6 +214,15 @@ public class SpellBuilder {
         return taunt;
     }
 
+    public static Spell.Impact impactFire(float duration) {
+        var fire = new Spell.Impact();
+        fire.action = new Spell.Impact.Action();
+        fire.action.type = Spell.Impact.Action.Type.FIRE;
+        fire.action.fire = new Spell.Impact.Action.Fire();
+        fire.action.fire.duration = duration;
+        return fire;
+    }
+
     public static void configureCooldown(Spell spell, float duration) {
         if (spell.cost == null) {
             spell.cost = new Spell.Cost();

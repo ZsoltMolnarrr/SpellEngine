@@ -395,11 +395,12 @@ public class Spell {
 
             public Fire fire;
             public static class Fire { public Fire() { }
+                /// Number of seconds the target is on fire
+                public float duration = 2;
                 // Entity.java - Notice `% 20` - tick offset is used to avoid instant hits
                 // if (this.fireTicks % 20 == 0 && !this.isInLava()) {
                 //    this.damage(DamageSource.ON_FIRE, 1.0f);
                 // }
-                public int duration = 2;
                 public int tick_offset = 10;
             }
 
