@@ -40,187 +40,213 @@ public class SpellBuilder {
         return spell;
     }
 
-    public static Spell.TargetCondition targetConditionDead() {
-        var deadCondition = new Spell.TargetCondition();
-        deadCondition.health_percent_below = 0F;
-        deadCondition.health_percent_above = 0F;
-        return deadCondition;
+    public static void configureImpactEnableCondition(Spell.Impact impact, Spell.TargetCondition targetCondition) {
+        var targetModifier = new Spell.Impact.TargetModifier();
+        targetModifier.conditions = List.of(targetCondition);
+        impact.target_modifiers = List.of(targetModifier);
     }
 
-    public static Spell.TargetCondition targetConditionWeak() {
-        var deadCondition = new Spell.TargetCondition();
-        deadCondition.health_percent_below = 0.5F;
-        deadCondition.health_percent_above = 0.01F;
-        return deadCondition;
-    }
-
-    public static Spell.TargetCondition targetConditionHasEffect(Identifier effectId) {
-        var effectCondition = new Spell.TargetCondition();
-        effectCondition.entity_predicate_id = SpellEntityPredicates.HAS_EFFECT.id().toString();
-        effectCondition.entity_predicate_param = effectId.toString();
-        return effectCondition;
-    }
-
-    public static Spell.Trigger triggerActiveSpellHit(float chance, @Nullable String schoolRegex) {
-        var trigger = new Spell.Trigger();
-        trigger.impact = new Spell.Trigger.ImpactCondition();
-        trigger.impact.impact_type = Spell.Impact.Action.Type.DAMAGE.toString();
-        trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
-        trigger.spell = new Spell.Trigger.SpellCondition();
-        trigger.spell.school = schoolRegex;
-        trigger.spell.type = Spell.Type.ACTIVE;
-        trigger.chance = chance;
-        return trigger;
-    }
-
-    public static Spell.Trigger triggerSpecificSpellHit(String spellId) {
-        var trigger = new Spell.Trigger();
-        trigger.impact = new Spell.Trigger.ImpactCondition();
-        trigger.impact.impact_type = Spell.Impact.Action.Type.DAMAGE.toString();
-        trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
-        trigger.spell = new Spell.Trigger.SpellCondition();
-        trigger.spell.id = spellId;
-        return trigger;
-    }
-
-    public static Spell.Trigger triggerActiveSpellHeal(float chance) {
-        var trigger = new Spell.Trigger();
-        trigger.impact = new Spell.Trigger.ImpactCondition();
-        trigger.impact.impact_type = Spell.Impact.Action.Type.HEAL.toString();
-        trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
-        trigger.spell = new Spell.Trigger.SpellCondition();
-        trigger.spell.type = Spell.Type.ACTIVE;
-        trigger.chance = chance;
-        return trigger;
-    }
-
-    public static Spell.Trigger triggerMeleeAttack(boolean mustWield) {
-        var trigger = new Spell.Trigger();
-        trigger.type = Spell.Trigger.Type.MELEE_IMPACT;
-        if (mustWield) {
-            trigger.equipment_condition = EquipmentSlot.MAINHAND;
+    public static class TargetConditions {
+        public static Spell.TargetCondition dead() {
+            var deadCondition = new Spell.TargetCondition();
+            deadCondition.health_percent_below = 0F;
+            deadCondition.health_percent_above = 0F;
+            return deadCondition;
         }
-        return trigger;
+
+        public static Spell.TargetCondition weak() {
+            var deadCondition = new Spell.TargetCondition();
+            deadCondition.health_percent_below = 0.5F;
+            deadCondition.health_percent_above = 0.01F;
+            return deadCondition;
+        }
+
+        public static Spell.TargetCondition hasEffect(Identifier effectId) {
+            var effectCondition = new Spell.TargetCondition();
+            effectCondition.entity_predicate_id = SpellEntityPredicates.HAS_EFFECT.id().toString();
+            effectCondition.entity_predicate_param = effectId.toString();
+            return effectCondition;
+        }
+
+        public static Spell.TargetCondition ofPredicate(SpellEntityPredicates.Entry entityPredicate) {
+            var targetCondition = new Spell.TargetCondition();
+            targetCondition.entity_predicate_id = entityPredicate.id().toString();
+            return targetCondition;
+        }
     }
 
-    public static Spell.Trigger triggerMeleeKill(boolean mustWield) {
-        var trigger = triggerMeleeAttack(mustWield);
-        var deadCondition = targetConditionDead();
-        trigger.target_conditions = List.of(deadCondition);
-        return trigger;
+    public static class Triggers {
+        public static Spell.Trigger activeSpellHit(float chance, @Nullable String schoolRegex) {
+            var trigger = new Spell.Trigger();
+            trigger.impact = new Spell.Trigger.ImpactCondition();
+            trigger.impact.impact_type = Spell.Impact.Action.Type.DAMAGE.toString();
+            trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+            trigger.spell = new Spell.Trigger.SpellCondition();
+            trigger.spell.school = schoolRegex;
+            trigger.spell.type = Spell.Type.ACTIVE;
+            trigger.chance = chance;
+            return trigger;
+        }
+
+        public static Spell.Trigger specificSpellHit(String spellId) {
+            var trigger = new Spell.Trigger();
+            trigger.impact = new Spell.Trigger.ImpactCondition();
+            trigger.impact.impact_type = Spell.Impact.Action.Type.DAMAGE.toString();
+            trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+            trigger.spell = new Spell.Trigger.SpellCondition();
+            trigger.spell.id = spellId;
+            return trigger;
+        }
+
+        public static Spell.Trigger specificSpellCast(String spellId) {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.SPELL_CAST;
+            trigger.spell = new Spell.Trigger.SpellCondition();
+            trigger.spell.id = spellId;
+            return trigger;
+        }
+
+        public static Spell.Trigger activeSpellHeal(float chance) {
+            var trigger = new Spell.Trigger();
+            trigger.impact = new Spell.Trigger.ImpactCondition();
+            trigger.impact.impact_type = Spell.Impact.Action.Type.HEAL.toString();
+            trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+            trigger.spell = new Spell.Trigger.SpellCondition();
+            trigger.spell.type = Spell.Type.ACTIVE;
+            trigger.chance = chance;
+            return trigger;
+        }
+
+        public static Spell.Trigger meleeAttack(boolean mustWield) {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.MELEE_IMPACT;
+            if (mustWield) {
+                trigger.equipment_condition = EquipmentSlot.MAINHAND;
+            }
+            return trigger;
+        }
+
+        public static Spell.Trigger meleeKill(boolean mustWield) {
+            var trigger = meleeAttack(mustWield);
+            var deadCondition = TargetConditions.dead();
+            trigger.target_conditions = List.of(deadCondition);
+            return trigger;
+        }
+
+        public static Spell.Trigger spellKill() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+            trigger.impact = new Spell.Trigger.ImpactCondition();
+            trigger.impact.impact_type = Spell.Impact.Action.Type.DAMAGE.toString();
+            var deadCondition = TargetConditions.dead();
+            trigger.target_conditions = List.of(deadCondition);
+            return trigger;
+        }
+
+        public static List<Spell.Trigger> rangedKill() {
+            var deadCondition = TargetConditions.dead();
+
+            var arrowTrigger = new Spell.Trigger();
+            arrowTrigger.type = Spell.Trigger.Type.ARROW_IMPACT;
+            arrowTrigger.equipment_condition = EquipmentSlot.MAINHAND;
+            arrowTrigger.target_conditions = List.of(deadCondition);
+
+            var skillTrigger = new Spell.Trigger();
+            skillTrigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+            skillTrigger.spell = new Spell.Trigger.SpellCondition();
+            skillTrigger.spell.school = ExternalSpellSchools.PHYSICAL_RANGED.id.toString();
+            skillTrigger.target_conditions = List.of(deadCondition);
+
+            return List.of(arrowTrigger, skillTrigger);
+        }
+
+        public static Spell.Trigger shieldBlock() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.SHIELD_BLOCK;
+            return trigger;
+        }
+
+        public static Spell.Trigger arrowHit() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.ARROW_IMPACT;
+            return trigger;
+        }
     }
 
-    public static Spell.Trigger triggerSpellKill() {
-        var trigger = new Spell.Trigger();
-        trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
-        trigger.impact = new Spell.Trigger.ImpactCondition();
-        trigger.impact.impact_type = Spell.Impact.Action.Type.DAMAGE.toString();
-        var deadCondition = targetConditionDead();
-        trigger.target_conditions = List.of(deadCondition);
-        return trigger;
-    }
+    public static class Impacts {
+        public static Spell.Impact damage(float coefficient, float knockback) {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.DAMAGE;
+            impact.action.damage = new Spell.Impact.Action.Damage();
+            impact.action.damage.spell_power_coefficient = coefficient;
+            impact.action.damage.knockback = knockback;
+            return impact;
+        }
 
-    public static List<Spell.Trigger> triggerRangedKill() {
-        var deadCondition = targetConditionDead();
+        public static Spell.Impact heal(float spell_power_coefficient) {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.HEAL;
+            impact.action.heal = new Spell.Impact.Action.Heal();
+            impact.action.heal.spell_power_coefficient = spell_power_coefficient;
+            return impact;
+        }
 
-        var arrowTrigger = new Spell.Trigger();
-        arrowTrigger.type = Spell.Trigger.Type.ARROW_IMPACT;
-        arrowTrigger.equipment_condition = EquipmentSlot.MAINHAND;
-        arrowTrigger.target_conditions = List.of(deadCondition);
+        public static Spell.Impact effectSet(String effectIdString, float duration, int amplifier) {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.STATUS_EFFECT;
+            impact.action.status_effect = new Spell.Impact.Action.StatusEffect();
+            impact.action.status_effect.apply_mode = Spell.Impact.Action.StatusEffect.ApplyMode.SET;
+            impact.action.status_effect.effect_id = effectIdString;
+            impact.action.status_effect.duration = duration;
+            impact.action.status_effect.amplifier = amplifier;
+            return impact;
+        }
 
-        var skillTrigger = new Spell.Trigger();
-        skillTrigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
-        skillTrigger.spell = new Spell.Trigger.SpellCondition();
-        skillTrigger.spell.school = ExternalSpellSchools.PHYSICAL_RANGED.id.toString();
-        skillTrigger.target_conditions = List.of(deadCondition);
+        public static Spell.Impact effectAdd(String effectIdString, float duration, int amplifier, int amplifierCap) {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.STATUS_EFFECT;
+            impact.action.status_effect = new Spell.Impact.Action.StatusEffect();
+            impact.action.status_effect.apply_mode = Spell.Impact.Action.StatusEffect.ApplyMode.ADD;
+            impact.action.status_effect.effect_id = effectIdString;
+            impact.action.status_effect.duration = duration;
+            impact.action.status_effect.amplifier = amplifier;
+            impact.action.status_effect.amplifier_cap = amplifierCap;
+            return impact;
+        }
 
-        return List.of(arrowTrigger, skillTrigger);
-    }
+        public static Spell.Impact effectCleanse() {
+            var cleanse = new Spell.Impact();
+            cleanse.action = new Spell.Impact.Action();
+            cleanse.action.type = Spell.Impact.Action.Type.STATUS_EFFECT;
+            cleanse.action.status_effect = new Spell.Impact.Action.StatusEffect();
+            cleanse.action.status_effect.apply_mode = Spell.Impact.Action.StatusEffect.ApplyMode.REMOVE;
+            cleanse.action.status_effect.remove = new Spell.Impact.Action.StatusEffect.Remove();
+            cleanse.action.status_effect.remove.id = "!" + StatusEffects.TRIAL_OMEN.getIdAsString();
+            cleanse.action.status_effect.remove.selector = Spell.Impact.Action.StatusEffect.Remove.Selector.RANDOM;
+            cleanse.action.status_effect.remove.select_beneficial = false;
+            return cleanse;
+        }
 
-    public static Spell.Trigger triggerShieldBlock() {
-        var trigger = new Spell.Trigger();
-        trigger.type = Spell.Trigger.Type.SHIELD_BLOCK;
-        return trigger;
-    }
+        public static Spell.Impact taunt() {
+            var taunt = new Spell.Impact();
+            taunt.action = new Spell.Impact.Action();
+            taunt.action.type = Spell.Impact.Action.Type.TAUNT;
+            taunt.action.taunt = new Spell.Impact.Action.Taunt();
+            return taunt;
+        }
 
-    public static Spell.Trigger triggerArrowHit() {
-        var trigger = new Spell.Trigger();
-        trigger.type = Spell.Trigger.Type.ARROW_IMPACT;
-        return trigger;
-    }
-
-    public static Spell.Impact impactDamage(float coefficient, float knockback) {
-        var impact = new Spell.Impact();
-        impact.action = new Spell.Impact.Action();
-        impact.action.type = Spell.Impact.Action.Type.DAMAGE;
-        impact.action.damage = new Spell.Impact.Action.Damage();
-        impact.action.damage.spell_power_coefficient = coefficient;
-        impact.action.damage.knockback = knockback;
-        return impact;
-    }
-
-    public static Spell.Impact impactHeal(float spell_power_coefficient) {
-        var impact = new Spell.Impact();
-        impact.action = new Spell.Impact.Action();
-        impact.action.type = Spell.Impact.Action.Type.HEAL;
-        impact.action.heal = new Spell.Impact.Action.Heal();
-        impact.action.heal.spell_power_coefficient = spell_power_coefficient;
-        return impact;
-    }
-
-    public static Spell.Impact impactEffectSet(String effectIdString, float duration, int amplifier) {
-        var impact = new Spell.Impact();
-        impact.action = new Spell.Impact.Action();
-        impact.action.type = Spell.Impact.Action.Type.STATUS_EFFECT;
-        impact.action.status_effect = new Spell.Impact.Action.StatusEffect();
-        impact.action.status_effect.apply_mode = Spell.Impact.Action.StatusEffect.ApplyMode.SET;
-        impact.action.status_effect.effect_id = effectIdString;
-        impact.action.status_effect.duration = duration;
-        impact.action.status_effect.amplifier = amplifier;
-        return impact;
-    }
-
-    public static Spell.Impact impactEffectAdd(String effectIdString, float duration, int amplifier, int amplifierCap) {
-        var impact = new Spell.Impact();
-        impact.action = new Spell.Impact.Action();
-        impact.action.type = Spell.Impact.Action.Type.STATUS_EFFECT;
-        impact.action.status_effect = new Spell.Impact.Action.StatusEffect();
-        impact.action.status_effect.apply_mode = Spell.Impact.Action.StatusEffect.ApplyMode.ADD;
-        impact.action.status_effect.effect_id = effectIdString;
-        impact.action.status_effect.duration = duration;
-        impact.action.status_effect.amplifier = amplifier;
-        impact.action.status_effect.amplifier_cap = amplifierCap;
-        return impact;
-    }
-
-    public static Spell.Impact impactEffectCleanse() {
-        var cleanse = new Spell.Impact();
-        cleanse.action = new Spell.Impact.Action();
-        cleanse.action.type = Spell.Impact.Action.Type.STATUS_EFFECT;
-        cleanse.action.status_effect = new Spell.Impact.Action.StatusEffect();
-        cleanse.action.status_effect.apply_mode = Spell.Impact.Action.StatusEffect.ApplyMode.REMOVE;
-        cleanse.action.status_effect.remove = new Spell.Impact.Action.StatusEffect.Remove();
-        cleanse.action.status_effect.remove.id = "!" + StatusEffects.TRIAL_OMEN.getIdAsString();
-        cleanse.action.status_effect.remove.selector = Spell.Impact.Action.StatusEffect.Remove.Selector.RANDOM;
-        cleanse.action.status_effect.remove.select_beneficial = false;
-        return cleanse;
-    }
-
-    public static Spell.Impact impactTaunt() {
-        var taunt = new Spell.Impact();
-        taunt.action = new Spell.Impact.Action();
-        taunt.action.type = Spell.Impact.Action.Type.TAUNT;
-        taunt.action.taunt = new Spell.Impact.Action.Taunt();
-        return taunt;
-    }
-
-    public static Spell.Impact impactFire(float duration) {
-        var fire = new Spell.Impact();
-        fire.action = new Spell.Impact.Action();
-        fire.action.type = Spell.Impact.Action.Type.FIRE;
-        fire.action.fire = new Spell.Impact.Action.Fire();
-        fire.action.fire.duration = duration;
-        return fire;
+        public static Spell.Impact fire(float duration) {
+            var fire = new Spell.Impact();
+            fire.action = new Spell.Impact.Action();
+            fire.action.type = Spell.Impact.Action.Type.FIRE;
+            fire.action.fire = new Spell.Impact.Action.Fire();
+            fire.action.fire.duration = duration;
+            return fire;
+        }
     }
 
     public static void configureCooldown(Spell spell, float duration) {

@@ -323,7 +323,8 @@ public class SpellTooltip {
             }
         }
 
-        if (spell.range > 0 || spell.range_mechanic != null) {
+        if (spell.tooltip().show_range &&
+                (spell.range > 0 || spell.range_mechanic != null)) {
             String rangeText = "";
             if (spell.range_mechanic != null) {
                 switch (spell.range_mechanic) {

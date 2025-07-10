@@ -110,7 +110,7 @@ public class TestDataGen {
         private static Spell shoutTaunt() {
             var spell = SpellBuilder.createSpellModifier();
             spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
-            var impact = SpellBuilder.impactTaunt();
+            var impact = SpellBuilder.Impacts.taunt();
 
             var modifier = new Spell.Modifier();
             modifier.mutate_impacts = Spell.Modifier.ImpactListModifier.APPEND;
