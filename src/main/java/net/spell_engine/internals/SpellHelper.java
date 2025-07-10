@@ -738,12 +738,10 @@ public class SpellHelper {
             performImpacts(world, caster, target, target, spellEntry, spellEntry.value().impacts, context.position(target.getPos()));
         }
     }
-
     public static void fallImpact(LivingEntity caster, Entity projectile, RegistryEntry<Spell> spellEntry, ImpactContext context) {
         var adjustedCenter = context.position().add(0, 1, 0); // Adding a bit of height to avoid raycast hitting the ground
         performImpacts(projectile.getWorld(), caster, null, projectile, spellEntry, spellEntry.value().impacts, context.position(adjustedCenter));
     }
-
     public static boolean projectileImpact(LivingEntity caster, Entity projectile, Entity target, RegistryEntry<Spell> spellEntry, ImpactContext context) {
         return performImpacts(projectile.getWorld(), caster, target, projectile, spellEntry, spellEntry.value().impacts, context);
     }
@@ -1342,13 +1340,11 @@ public class SpellHelper {
                 }
                 case TAUNT -> {
                     if (target instanceof MobEntity mob) {
-                        var tauntData = impact.action.taunt;
-                        if (tauntData == null) {
-                            return false;
-                        }
-                        if (tauntData.chance < 1F && world.random.nextFloat() > tauntData.chance) {
-                            return false;
-                        }
+                        // Ignoring taunt data, as it is empty currently
+                        //var tauntData = impact.action.taunt;
+                        // if (tauntData == null) {
+                        //    return false;
+                        // }
                         mob.setTarget(caster);
                         success = true;
                     }

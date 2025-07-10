@@ -452,8 +452,7 @@ public class Spell {
             }
 
             public Taunt taunt;
-            public static class Taunt {
-                public float chance = 1F;
+            public static class Taunt { public Taunt() { }
             }
 
             public Custom custom;

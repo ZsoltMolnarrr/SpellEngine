@@ -44,6 +44,7 @@ public class SpellTooltip {
     public static final String impactRangeToken = "impact_range";
     public static final String teleportDistanceToken = "teleport_distance";
     public static final String countToken = "count";
+    public static final String impact_chance = "impact_chance";
     public static final String trigger_chance = "trigger_chance";
     public static final String trigger_list = "trigger_list";
     public static final String additional_placement_count = "additional_placement_count";
@@ -446,6 +447,9 @@ public class SpellTooltip {
         if (!impacts.isEmpty()) {
             var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);
             for (var impact : impacts) {
+                if (impact.chance != 1) {
+                    addToken(impact_chance, percent(impact.chance), tokenReplacements);
+                }
                 switch (impact.action.type) {
                     case DAMAGE -> {
                         description = replaceDamageTokens(description, damageToken, estimatedOutput.damage());
