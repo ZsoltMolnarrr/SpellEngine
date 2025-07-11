@@ -14,6 +14,11 @@
       "spell_engine:generic_arcane_release"
     ]
   },
+  "generic_dispel_1": {
+    "sounds": [
+      "spell_engine:generic_dispel_1"
+    ]
+  },
   "generic_fire_casting": {
     "sounds": [
       "spell_engine:generic_fire_casting"
