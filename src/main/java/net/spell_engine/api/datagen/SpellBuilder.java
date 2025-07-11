@@ -7,7 +7,10 @@ import net.spell_engine.api.entity.SpellEntityPredicates;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.client.util.Color;
+import net.spell_engine.fx.SpellEngineParticles;
+import net.spell_engine.fx.SpellEngineSounds;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -267,6 +270,60 @@ public class SpellBuilder {
                     .scale(0.8F)
                     .color(color.toRGBA())
                     .followEntity(true);
+        }
+    }
+
+    public static class Complex {
+        /**
+         * Sets delivery and impact
+         */
+        public static void flameCloud(Spell spell, float radius, float coefficient, float timeToLive, @Nullable String attribute) {
+            spell.deliver.type = Spell.Delivery.Type.CLOUD;
+            spell.deliver.delay = 10;
+            var cloud = new Spell.Delivery.Cloud();
+            cloud.volume.radius = radius;
+            cloud.volume.area.vertical_range_multiplier = 0.3F;
+            cloud.volume.sound = new Sound(SpellEngineSounds.GENERIC_FIRE_IMPACT_2.id().toString());
+            cloud.impact_tick_interval = 8;
+            cloud.time_to_live_seconds = timeToLive;
+            cloud.spawn.sound = new Sound(SpellEngineSounds.GENERIC_FIRE_IGNITE.id().toString());
+            cloud.client_data = new Spell.Delivery.Cloud.ClientData();
+            cloud.client_data.light_level = 15;
+            cloud.client_data.particles = new ParticleBatch[] {
+                    new ParticleBatch(SpellEngineParticles.flame_ground.id().toString(),
+                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
+                            3, 0, 0),
+                    new ParticleBatch(SpellEngineParticles.flame_medium_a.id().toString(),
+                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
+                            2, 0.02F, 0.1F),
+                    new ParticleBatch(SpellEngineParticles.flame_medium_b.id().toString(),
+                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
+                            1, 0.02F, 0.1F),
+                    new ParticleBatch(SpellEngineParticles.flame_spark.id().toString(),
+                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
+                            3, 0.03F, 0.2F),
+            };
+            spell.deliver.clouds = List.of(cloud);
+
+            var damage = new Spell.Impact();
+            if (attribute != null) {
+                damage.attribute = attribute;
+            }
+            damage.action = new Spell.Impact.Action();
+            damage.action.type = Spell.Impact.Action.Type.DAMAGE;
+            damage.action.damage = new Spell.Impact.Action.Damage();
+            damage.action.damage.knockback = 0.2F;
+            damage.action.damage.spell_power_coefficient = coefficient;
+            damage.sound = new Sound(SpellEngineSounds.GENERIC_FIRE_IMPACT_1.id().toString());
+            damage.particles = new ParticleBatch[]{
+                    new ParticleBatch(SpellEngineParticles.flame.id().toString(),
+                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
+                            20, 0.05F, 0.15F),
+                    new ParticleBatch(SpellEngineParticles.flame_medium_a.id().toString(),
+                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
+                            20, 0.05F, 0.15F),
+            };
+            spell.impacts = List.of(damage);
         }
     }
 }

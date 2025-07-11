@@ -1,5 +1,6 @@
 package net.spell_engine.utils;
 
+import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
@@ -224,9 +225,11 @@ public class TargetHelper {
         return null;
     }
 
-    @Nullable public static Vec3d findSolidBlockBelow(Entity entity, Vec3d position, World world, float height) {
-        var hit = world.raycast(new RaycastContext(position, position.add(0, height, 0),
-                RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
+    @Nullable public static Vec3d findSolidBlockBelow(@Nullable Entity entity, Vec3d position, World world, float height) {
+        var raycast = entity != null
+                ? new RaycastContext(position, position.add(0, height, 0), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity)
+                : new RaycastContext(position, position.add(0, height, 0), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, ShapeContext.absent());
+        var hit =  world.raycast(raycast);
         if (hit.getType() == HitResult.Type.BLOCK) {
             var blockHit = (BlockHitResult)hit;
             return new Vec3d(position.getX(), blockHit.getBlockPos().getY() + 1F, position.getZ());

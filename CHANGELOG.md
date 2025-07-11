@@ -48,6 +48,8 @@ API changes:
   - Add `area_impact.execute_action_type`, for filtering impact types to execute area impact actions
   - Add `area_impact.skip_center_target`, to skip center target for area impact
   - Add `impact.chance`, to allow random chance for impact to happen
+  - Add new trigger `SPELL_AREA_IMPACT` firing after `area_impact` is executed
+  - Cloud delivery now supports location
 - Status Effect `RemoveOnHit` API reworked, expanded:
   - Indirect spell damage events (such as area effects) now produce DamageSource that counts as indirect
   - `RemoveOnHit` accepts trigger type, to only be removed upon direct or indirect hits

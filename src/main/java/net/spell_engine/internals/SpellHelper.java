@@ -1,6 +1,7 @@
 package net.spell_engine.internals;
 
 import com.google.common.base.Suppliers;
+import net.bettercombat.client.collision.TargetFinder;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
@@ -327,9 +328,13 @@ public class SpellHelper {
                         deliver(world, spellEntry, player, targetsWithContext, context, null, completion, true, false);
                         // success = true; // Always true, otherwise area spells don't go to CD without targets
                     }
-                    case BEAM, FROM_TRIGGER -> {
+                    case BEAM -> {
                         var targetsWithContext = targets.stream().map(target -> new DeliveryTarget(target, context)).toList();
                         success = deliver(world, spellEntry, player, targetsWithContext, context, null, completion);
+                    }
+                    case FROM_TRIGGER -> {
+                        var targetsWithContext = targets.stream().map(target -> new DeliveryTarget(target, context)).toList();
+                        success = deliver(world, spellEntry, player, targetsWithContext, context, targetResult.location(), completion);
                     }
                     default -> throw new IllegalStateException("Unexpected value: " + targeting.type);
                 }
@@ -454,11 +459,16 @@ public class SpellHelper {
             }
             case CLOUD -> {
                 var placedAny = false;
-                for(var targeted: targets) {
-                    var target = targeted.entity;
-                    var targetSpecificContext = targeted.context;
-                    placeCloud(world, caster, target, spellEntry, targetSpecificContext);
+                if (targets.isEmpty() && targetLocation != null) {
+                    placeCloud(world, caster, null, targetLocation, spellEntry, context.position(targetLocation));
                     placedAny = true;
+                } else {
+                    for(var targeted: targets) {
+                        var target = targeted.entity;
+                        var targetSpecificContext = targeted.context;
+                        placeCloud(world, caster, target, null, spellEntry, targetSpecificContext);
+                        placedAny = true;
+                    }
                 }
                 delivered = placedAny;
             }
@@ -907,6 +917,12 @@ public class SpellHelper {
                 && (shouldApplyAreaImpact(area_impact, performedActionTypes) || target == null) ) {
             var exclude = area_impact.force_indirect ? null : target;
             lookupAndPerformAreaImpact(area_impact, spellEntry, caster, exclude, aoeSource, impacts, context, false);
+            if (caster instanceof PlayerEntity player) {
+                ((WorldScheduler)world).schedule(0, () -> {
+                    var location = target != null ? target.getPos() : context.position;
+                    SpellTriggers.onSpellAreaImpact(player, target, location, spellEntry);
+                });
+            }
         }
 
         var anyPerformed = !performedActionTypes.isEmpty();
@@ -1452,13 +1468,15 @@ public class SpellHelper {
         return new TargetConditionResult(true, modifiers);
     }
 
-    public static void placeCloud(World world, LivingEntity caster, Entity target, RegistryEntry<Spell> spellEntry, ImpactContext context) {
+    public static void placeCloud(World world, LivingEntity caster,
+                                  @Nullable Entity target, @Nullable Vec3d location,
+                                  RegistryEntry<Spell> spellEntry, ImpactContext context) {
         var spell = spellEntry.value();
         var clouds = spell.deliver.clouds;
         if (clouds == null || clouds.isEmpty()) {
             return;
         }
-        if (target == null) {
+        if (target == null && location == null) {
             target = caster;
         }
 
@@ -1496,7 +1514,18 @@ public class SpellHelper {
                 }
                 entity.setOwner(caster);
                 entity.onCreatedFromSpell(spellEntry.getKey().get().getValue(), cloud, context, cloud.time_to_live_seconds + extraTimeToLive);
-                applyEntityPlacement(entity, target, target.getPos(), placement);
+
+                if (target != null) {
+                    applyEntityPlacement(entity, target, target.getPos(), placement);
+                } else if (location != null) {
+                    applyEntityPlacement(caster.getWorld(), entity,
+                            caster.getYaw(), caster.getPitch(), null,
+                            location, placement);
+                } else {
+                    continue;
+                }
+
+
                 ((WorldScheduler)world).schedule(cloud.delay_ticks, () -> {
                     world.spawnEntity(entity);
                     var sound = cloud.spawn.sound;
@@ -1518,31 +1547,37 @@ public class SpellHelper {
     }
 
     public static void applyEntityPlacement(Entity entity, Entity target, Vec3d initialPosition, Spell.EntityPlacement placement) {
+        applyEntityPlacement(target.getWorld(), entity, target.getYaw(), target.getPitch(), target, initialPosition, placement);
+    }
+
+    public static void applyEntityPlacement(World world, Entity placedEntity,
+                                            float targetedYaw, float targetedPitch, @Nullable Entity rayCastEntity,
+                                            Vec3d initialPosition, Spell.EntityPlacement placement) {
         var position = initialPosition;
         if (placement != null) {
             if (placement.location_offset_by_look > 0) {
-                float yaw = target.getYaw() + placement.location_yaw_offset;
+                float yaw = targetedYaw + placement.location_yaw_offset;
                 position = position.add(Vec3d.fromPolar(0, yaw).multiply(placement.location_offset_by_look));
             }
             position = position.add(new Vec3d(placement.location_offset_x, placement.location_offset_y, placement.location_offset_z));
             if (placement.force_onto_ground) {
                 var searchPosition = position;
                 var blockPos = BlockPos.ofFloored(searchPosition.getX(), searchPosition.getY(), searchPosition.getZ());
-                if (target.getWorld().getBlockState(blockPos).isSolid()) {
+                if (world.getBlockState(blockPos).isSolid()) {
                     searchPosition = searchPosition.add(0, 2, 0);
                 }
-                var groundPosBelow = TargetHelper.findSolidBlockBelow(target, searchPosition, target.getWorld(), -20);
+                var groundPosBelow = TargetHelper.findSolidBlockBelow(rayCastEntity, searchPosition, world, -20);
                 position = groundPosBelow != null ? groundPosBelow : position;
             }
             if (placement.apply_yaw) {
-                entity.setYaw(target.getYaw());
+                placedEntity.setYaw(targetedYaw);
             }
             if (placement.apply_pitch) {
-                entity.setPitch(target.getPitch());
+                placedEntity.setPitch(targetedPitch);
             }
             position = position.add(new Vec3d(placement.location_offset_x, placement.location_offset_y, placement.location_offset_z));
         }
-        entity.setPosition(position.getX(), position.getY(), position.getZ());
+        placedEntity.setPosition(position.getX(), position.getY(), position.getZ());
     }
 
     public static SpellTarget.FocusMode focusMode(Spell spell) {

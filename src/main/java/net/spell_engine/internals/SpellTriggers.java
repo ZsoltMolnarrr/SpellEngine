@@ -5,6 +5,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.util.math.Vec3d;
 import net.spell_engine.api.event.CombatEvents;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
@@ -39,6 +40,8 @@ public class SpellTriggers {
         @Nullable private final Entity target;
         /// Arrow that was fired
         public ArrowExtension arrow;
+        /// Location of the trigger
+        @Nullable private Vec3d location;
 
         @Nullable public RegistryEntry<Spell> spell;
         @Nullable public Spell.Impact impact;
@@ -147,6 +150,13 @@ public class SpellTriggers {
         fireTriggers(event);
     }
 
+    public static void onSpellAreaImpact(PlayerEntity player, @Nullable Entity target, Vec3d location, RegistryEntry<Spell> spell) {
+        var event = new Event(Spell.Trigger.Type.SPELL_AREA_IMPACT, player, target, target);
+        event.location = location;
+        event.spell = spell;
+        fireTriggers(event);
+    }
+
     public static void onDamageTaken(PlayerEntity player, DamageSource source, float amount) {
         Entity sourceEntity = source.getAttacker();
         if (sourceEntity == null) {
@@ -190,8 +200,12 @@ public class SpellTriggers {
                     if (evaluateTrigger(spellEntry, trigger, event)) {
                         SpellTarget.SearchResult targetResult;
                         if (spell.target.type == Spell.Target.Type.FROM_TRIGGER) {
-                            List<Entity> targets = List.of(event.target(trigger));
-                            targetResult = SpellTarget.SearchResult.of(targets);
+                            if (event.target == null && event.location != null) {
+                                targetResult = SpellTarget.SearchResult.of(event.location);
+                            } else {
+                                List<Entity> targets = List.of(event.target(trigger));
+                                targetResult = SpellTarget.SearchResult.of(targets);
+                            }
                         } else {
                             targetResult = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), true);
                         }
@@ -266,7 +280,7 @@ public class SpellTriggers {
 
         boolean result;
         switch (trigger.type) {
-            case SPELL_CAST, SPELL_IMPACT_ANY -> {
+            case SPELL_CAST, SPELL_IMPACT_ANY, SPELL_AREA_IMPACT -> {
                 result = evaluate(event.spell, trigger.spell);
             }
             case SPELL_IMPACT_SPECIFIC -> {

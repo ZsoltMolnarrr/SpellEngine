@@ -475,10 +475,9 @@ public class SpellTooltip {
                         }
                     }
                     case TAUNT -> {
-                        if (impact.action.taunt != null) {
-                            var taunt = impact.action.taunt;
-                            addToken("taunt_chance", percent(taunt.chance), tokenReplacements);
-                        }
+                        // if (impact.action.taunt != null) {
+                        //    var taunt = impact.action.taunt;
+                        // }
                     }
                 }
             }

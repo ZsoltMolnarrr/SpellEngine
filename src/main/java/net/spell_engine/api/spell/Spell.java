@@ -533,6 +533,7 @@ public class Spell {
             ARROW_SHOT, ARROW_IMPACT,
             MELEE_IMPACT,
             SPELL_CAST, SPELL_IMPACT_ANY, SPELL_IMPACT_SPECIFIC,
+            SPELL_AREA_IMPACT,
             DAMAGE_TAKEN, SHIELD_BLOCK,
             ROLL  /// Only works when Combat Roll mod is installed
         }
