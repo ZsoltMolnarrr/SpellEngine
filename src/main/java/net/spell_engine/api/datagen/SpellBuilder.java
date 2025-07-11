@@ -101,6 +101,14 @@ public class SpellBuilder {
             return trigger;
         }
 
+        public static Spell.Trigger specificSpellAreaImpact(String spellId) {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.SPELL_AREA_IMPACT;
+            trigger.spell = new Spell.Trigger.SpellCondition();
+            trigger.spell.id = spellId;
+            return trigger;
+        }
+
         public static Spell.Trigger specificSpellCast(String spellId) {
             var trigger = new Spell.Trigger();
             trigger.type = Spell.Trigger.Type.SPELL_CAST;
@@ -324,6 +332,26 @@ public class SpellBuilder {
                             20, 0.05F, 0.15F),
             };
             spell.impacts = List.of(damage);
+        }
+
+
+        public static Spell.AreaImpact fireExplosion(float radius) {
+            return fireExplosion(radius, radius / 2.5F);
+        }
+
+        public static Spell.AreaImpact fireExplosion(float radius, float scale) {
+            var area_impact = new Spell.AreaImpact();
+            area_impact.radius = radius;
+            area_impact.area.distance_dropoff = Spell.Target.Area.DropoffCurve.SQUARED;
+            area_impact.particles = new ParticleBatch[]{
+                    new ParticleBatch(
+                            SpellEngineParticles.fire_explosion.id().toString(),
+                            ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER,
+                            1, 0, 0)
+                            .scale(scale)
+            };
+            area_impact.sound = new Sound(SpellEngineSounds.GENERIC_FIRE_IMPACT_1.id());
+            return area_impact;
         }
     }
 }
