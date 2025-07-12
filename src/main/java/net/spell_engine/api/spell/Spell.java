@@ -282,6 +282,8 @@ public class Spell {
             public List<Trigger> triggers = List.of();
             /// Status effect stacks to consume upon triggering
             public int consume = 1;
+            /// Whether the stash effect should be consumed next tick
+            public boolean consumed_next_tick = false;
             /// Determines what happens to the impacts of the spell when using this stash
             public ImpactMode impact_mode = ImpactMode.PERFORM;
             public enum ImpactMode {

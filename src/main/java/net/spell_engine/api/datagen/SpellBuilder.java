@@ -3,6 +3,7 @@ package net.spell_engine.api.datagen;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.util.Identifier;
+import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.api.entity.SpellEntityPredicates;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
@@ -75,6 +76,18 @@ public class SpellBuilder {
             var targetCondition = new Spell.TargetCondition();
             targetCondition.entity_predicate_id = entityPredicate.id().toString();
             return targetCondition;
+        }
+    }
+
+    public static class Deliver {
+        public static void stash(Spell spell, String stashEffectId, Spell.Trigger trigger) {
+            stash(spell, stashEffectId, List.of(trigger));
+        }
+        public static void stash(Spell spell, String stashEffectId, List<Spell.Trigger> triggers) {
+            spell.deliver.type = Spell.Delivery.Type.STASH_EFFECT;
+            spell.deliver.stash_effect = new Spell.Delivery.StashEffect();
+            spell.deliver.stash_effect.id = stashEffectId;
+            spell.deliver.stash_effect.triggers = triggers;
         }
     }
 
@@ -240,6 +253,12 @@ public class SpellBuilder {
             cleanse.action.status_effect.remove.selector = Spell.Impact.Action.StatusEffect.Remove.Selector.RANDOM;
             cleanse.action.status_effect.remove.select_beneficial = false;
             return cleanse;
+        }
+
+        public static Spell.Impact stun(float duration) {
+            var impact = effectSet(SpellEngineEffects.STUN.id.toString(), duration, 0);
+            impact.sound = new Sound(SpellEngineSounds.STUN_GENERIC.id().toString());
+            return impact;
         }
 
         public static Spell.Impact taunt() {

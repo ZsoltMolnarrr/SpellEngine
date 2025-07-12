@@ -1,6 +1,7 @@
 package net.spell_engine.internals.delivery;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
@@ -10,6 +11,7 @@ import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellTriggers;
 import net.spell_engine.internals.target.SpellTarget;
+import net.spell_engine.utils.StatusEffectUtil;
 import net.spell_power.api.SpellPower;
 
 import java.util.HashMap;
@@ -47,7 +49,7 @@ public class SpellStashHelper {
                     System.err.println("Spell Engine: Stash spell linking error! Spell:" + id + " found no status effect for `stash_effect.id`: " + stashEffect.id);
                     return;
                 }
-                SpellStash.configure(statusEffect, entry, stashEffect.triggers, stashEffect.impact_mode, stashEffect.consume);
+                SpellStash.configure(statusEffect, entry, stashEffect.triggers, stashEffect.impact_mode, stashEffect.consume, stashEffect.consumed_next_tick);
             }
         });
     }
@@ -55,7 +57,7 @@ public class SpellStashHelper {
     public static void useStashes(SpellTriggers.Event event) {
         var caster = event.player;
         var world = caster.getWorld();
-        Map<StatusEffectInstance, Integer> updateEffectStacks = new HashMap<>();
+        Map<StatusEffectInstance, StatusEffectUtil.Diff> effectChanges = new HashMap<>();
         var activeEffects = Map.copyOf(caster.getActiveStatusEffects()); // Create copy to avoid concurrent modification
         for(var entry: activeEffects.entrySet()) {
             var effect = entry.getKey().value();
@@ -68,7 +70,7 @@ public class SpellStashHelper {
                     if (!SpellTriggers.evaluateTrigger(spellEntry, trigger, event)) { continue; }
 
                     var consume = stash.consume();
-                    var stacksAvailable = updateEffectStacks.getOrDefault(stack, stack.getAmplifier());
+                    var stacksAvailable = effectChanges.getOrDefault(stack, new StatusEffectUtil.Diff(stack, stack.getAmplifier(), stash.delayConsume() ? 1 : 0)).newAmplifier();
                     if ((stacksAvailable + 1) < consume) {
                         continue;
                     }
@@ -98,23 +100,14 @@ public class SpellStashHelper {
                     }
 
                     if (consume != 0) {
-                        updateEffectStacks.put(stack, stacksAvailable - consume);
+                        effectChanges.put(stack, new StatusEffectUtil.Diff(stack, stacksAvailable - consume, stash.delayConsume() ? 1 : 0));
                     }
                     break; // Stop processing other triggers for this effect
                 }
             }
         }
 
-        for (var entry: updateEffectStacks.entrySet()) {
-            var instance = entry.getKey();
-            var newAmplifier = entry.getValue();
-            var effect = instance.getEffectType();
-
-            caster.removeStatusEffect(effect);
-            if (newAmplifier >= 0) {
-                caster.addStatusEffect(new StatusEffectInstance(effect, instance.getDuration(), newAmplifier,
-                        instance.isAmbient(), instance.shouldShowParticles(), instance.shouldShowIcon()));
-            }
-        }
+        var changes = effectChanges.values().stream().toList();
+        StatusEffectUtil.applyChanges(caster, changes);
     }
 }
