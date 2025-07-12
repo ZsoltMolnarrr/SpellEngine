@@ -35,6 +35,7 @@
     "entity.PlayerEntityMixin",
     "entity.PlayerEntitySpellBatching",
     "entity.PlayerEquipmentSetMixin",
+    "entity.PlayerProtectionEffectMixin",
     "entity.PlayerSpellContainerMixin",
     "item.ArmorMaterialLayerAccessor",
     "item.GrindstoneScreenHandlerMixin",
