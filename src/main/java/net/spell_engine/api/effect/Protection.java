@@ -12,6 +12,7 @@ import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.utils.SoundHelper;
 import net.spell_engine.utils.StatusEffectUtil;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.Map;
  * DISCLAIMER: This API only works on PlayerEntities (due to performance)
  */
 public class Protection {
-    public record Pop(ParticleBatch[] particles, SoundEvent sound) { }
+    public record Pop(ParticleBatch[] particles, @Nullable SoundEvent sound) { }
     public record Entry(RegistryEntry<StatusEffect> effectEntry, TagKey<DamageType> protects,
                         int decrement, Pop onDecrement, Pop onRemove) { }
     public static final Map<RegistryKey<StatusEffect>, Entry> PROTECTIONS = new HashMap<>();
@@ -48,7 +49,9 @@ public class Protection {
                 var pop = newAmplifier < 0 ? protection.onRemove : protection.onDecrement;
                 if (pop != null) {
                     ParticleHelper.sendBatches(entity, pop.particles);
-                    SoundHelper.playSoundEvent(entity.getWorld(), entity, pop.sound);
+                    if (pop.sound != null) {
+                        SoundHelper.playSoundEvent(entity.getWorld(), entity, pop.sound);
+                    }
                 }
                 StatusEffectUtil.applyChanges(entity, List.of(
                         new StatusEffectUtil.Diff(effect, newAmplifier)

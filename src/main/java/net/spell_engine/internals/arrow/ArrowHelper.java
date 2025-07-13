@@ -11,6 +11,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.utils.WorldScheduler;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.mixin.item.RangedWeaponAccessor;
@@ -32,7 +33,15 @@ public class ArrowHelper {
         if (shoot_arrow != null
                 && (world instanceof ServerWorld serverWorld)
                 && (weapon instanceof RangedWeaponItem rangedWeapon)) {
-            var launchProperties = shoot_arrow.launch_properties.copy();
+            var mutableLaunchProperties = shoot_arrow.launch_properties.copy();
+            if (shooter instanceof PlayerEntity player) {
+                var spellModifiers = SpellModifiers.of(player, spellEntry);
+                for (var modifier: spellModifiers) {
+                    if (modifier.projectile_launch != null) {
+                        mutableLaunchProperties.mutatingCombine(modifier.projectile_launch);
+                    }
+                }
+            }
 
             ItemStack ammo;
             if (shooter instanceof PlayerEntity player) {
@@ -81,10 +90,10 @@ public class ArrowHelper {
                 caster.setTemporaryActiveSpell(null);
             }
 
-            var extra_launch = launchProperties.extra_launch_count;
+            var extra_launch = mutableLaunchProperties.extra_launch_count;
             if (sequenceIndex == 0 && extra_launch > 0) {
                 for (int i = 0; i < extra_launch; i++) {
-                    var ticks = (i + 1) * launchProperties.extra_launch_delay;
+                    var ticks = (i + 1) * mutableLaunchProperties.extra_launch_delay;
                     var nextSequenceIndex = i + 1;
                     ((WorldScheduler)world).schedule(ticks, () -> {
                         if (shooter == null || !shooter.isAlive()) {
