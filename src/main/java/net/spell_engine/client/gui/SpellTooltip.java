@@ -431,6 +431,7 @@ public class SpellTooltip {
             }
             if (spell.deliver.stash_effect != null) {
                 var stash = spell.deliver.stash_effect;
+                addToken("stash_duration", formattedNumber(stash.duration), tokenReplacements);
                 triggers.addAll(stash.triggers);
             }
         }

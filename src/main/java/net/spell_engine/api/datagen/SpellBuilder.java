@@ -80,13 +80,14 @@ public class SpellBuilder {
     }
 
     public static class Deliver {
-        public static void stash(Spell spell, String stashEffectId, Spell.Trigger trigger) {
-            stash(spell, stashEffectId, List.of(trigger));
+        public static void stash(Spell spell, String stashEffectId, float duration, Spell.Trigger trigger) {
+            stash(spell, stashEffectId, duration, List.of(trigger));
         }
-        public static void stash(Spell spell, String stashEffectId, List<Spell.Trigger> triggers) {
+        public static void stash(Spell spell, String stashEffectId, float duration, List<Spell.Trigger> triggers) {
             spell.deliver.type = Spell.Delivery.Type.STASH_EFFECT;
             spell.deliver.stash_effect = new Spell.Delivery.StashEffect();
             spell.deliver.stash_effect.id = stashEffectId;
+            spell.deliver.stash_effect.duration = duration;
             spell.deliver.stash_effect.triggers = triggers;
         }
     }

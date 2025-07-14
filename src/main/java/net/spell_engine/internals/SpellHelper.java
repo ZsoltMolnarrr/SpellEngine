@@ -1,7 +1,6 @@
 package net.spell_engine.internals;
 
 import com.google.common.base.Suppliers;
-import net.bettercombat.client.collision.TargetFinder;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
@@ -24,6 +23,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityImmunity;
+import net.spell_engine.api.effect.InstantCast;
 import net.spell_engine.api.effect.StatusEffectClassification;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.tags.SpellEngineEntityTags;
@@ -133,6 +133,13 @@ public class SpellHelper {
 
     public static float getCooldownDuration(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
         return getCooldownDuration(caster, spellEntry, null);
+    }
+
+    public static boolean isInstantCast(RegistryEntry<Spell> spellEntry, LivingEntity caster) {
+        var spell = spellEntry.value();
+        if (spell.active == null) { return true; }
+        return spell.active.cast.duration == 0
+                || (!isChanneled(spell) && InstantCast.instantify(spellEntry, caster));
     }
 
     public static float getCooldownDuration(LivingEntity caster, RegistryEntry<Spell> spellEntry, ItemStack provisionedWeapon) {
@@ -1208,13 +1215,8 @@ public class SpellHelper {
                                     ///
                                     var currentEffect = livingTarget.getStatusEffect(effect);
                                     var newAmplifier = (amplifier > 0) ? (currentEffect.getAmplifier() - amplifier) : -1;
-                                    livingTarget.removeStatusEffect(effect);
-                                    if (newAmplifier >= 0) {
-                                        livingTarget.addStatusEffect(new StatusEffectInstance(
-                                                effect, currentEffect.getDuration(), newAmplifier, currentEffect.isAmbient(), currentEffect.shouldShowParticles(),
-                                                        currentEffect.shouldShowIcon()),
-                                                caster);
-                                    }
+                                    StatusEffectUtil.applyChanges(livingTarget, List.of(new StatusEffectUtil.Diff(currentEffect, newAmplifier)));
+
                                     success = true;
                                 }
                             }
