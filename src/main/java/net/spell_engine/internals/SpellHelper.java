@@ -1528,7 +1528,7 @@ public class SpellHelper {
                 }
 
 
-                ((WorldScheduler)world).schedule(cloud.delay_ticks, () -> {
+                ((WorldScheduler)world).schedule(delay, () -> {
                     world.spawnEntity(entity);
                     var sound = cloud.spawn.sound;
                     if (sound != null) {

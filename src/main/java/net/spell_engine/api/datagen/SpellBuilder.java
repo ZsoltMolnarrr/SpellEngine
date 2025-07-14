@@ -50,6 +50,53 @@ public class SpellBuilder {
         impact.target_modifiers = List.of(targetModifier);
     }
 
+    public static class Casting {
+        public static void instant(Spell spell) {
+            spell.active.cast = new Spell.Active.Cast();
+            spell.active.cast.duration = 0;
+        }
+
+        public static void cast(Spell spell, float duration) {
+            spell.active.cast = new Spell.Active.Cast();
+            spell.active.cast.duration = duration;
+        }
+
+        public static void channel(Spell spell, float duration, int ticks) {
+            spell.active.cast = new Spell.Active.Cast();
+            spell.active.cast.duration = duration;
+            spell.active.cast.channel_ticks = ticks;
+        }
+
+        public static void visuals(Spell spell,
+                                       @Nullable String playerAnimation, @Nullable ParticleBatch[] particles, @Nullable Sound sound) {
+            if (spell.active.cast == null) {
+                spell.active.cast = new Spell.Active.Cast();
+            }
+            if (playerAnimation != null) {
+                spell.active.cast.animation = playerAnimation;
+            }
+            if (particles != null) {
+                spell.active.cast.particles = particles;
+            }
+        }
+    }
+
+    public static class Release {
+        public static void visuals(Spell spell,
+                                   @Nullable String playerAnimation, @Nullable ParticleBatch[] particles, @Nullable Sound sound) {
+            spell.release = new Spell.Release();
+            if (playerAnimation != null) {
+                spell.release.animation = playerAnimation;
+            }
+            if (particles != null) {
+                spell.release.particles = particles;
+            }
+            if (sound != null) {
+                spell.release.sound = sound;
+            }
+        }
+    }
+
     public static class TargetConditions {
         public static Spell.TargetCondition dead() {
             var deadCondition = new Spell.TargetCondition();
@@ -89,6 +136,16 @@ public class SpellBuilder {
             spell.deliver.stash_effect.id = stashEffectId;
             spell.deliver.stash_effect.duration = duration;
             spell.deliver.stash_effect.triggers = triggers;
+        }
+
+        public static Spell.EntityPlacement placementByLook(float distanceOffset, float angleOffset, int delay) {
+            var placement = new Spell.EntityPlacement();
+            placement.location_offset_by_look = distanceOffset;
+            placement.location_yaw_offset = angleOffset;
+            placement.apply_yaw = true;
+
+            placement.delay_ticks = delay;
+            return placement;
         }
     }
 
@@ -280,14 +337,38 @@ public class SpellBuilder {
         }
     }
 
-    public static void configureCooldown(Spell spell, float duration) {
-        if (spell.cost == null) {
-            spell.cost = new Spell.Cost();
+    public static class Cost {
+        public static void exhaust(Spell spell, float exhaust) {
+            if (spell.cost == null) {
+                spell.cost = new Spell.Cost();
+            }
+            spell.cost.exhaust = exhaust;
         }
-        if (spell.cost.cooldown == null) {
-            spell.cost.cooldown = new Spell.Cost.Cooldown();
+
+        public static void cooldown(Spell spell, float duration) {
+            if (spell.cost == null) {
+                spell.cost = new Spell.Cost();
+            }
+            if (spell.cost.cooldown == null) {
+                spell.cost.cooldown = new Spell.Cost.Cooldown();
+            }
+            spell.cost.cooldown.duration = duration;
         }
-        spell.cost.cooldown.duration = duration;
+
+        public static void item(Spell spell, String itemId) {
+            item(spell, itemId, 1);
+        }
+
+        public static void item(Spell spell, String itemId, int amount) {
+            if (spell.cost == null) {
+                spell.cost = new Spell.Cost();
+            }
+            if (spell.cost.item == null) {
+                spell.cost.item = new Spell.Cost.Item();
+            }
+            spell.cost.item.id = itemId;
+            spell.cost.item.amount = amount;
+        }
     }
 
     public static class Particles {
