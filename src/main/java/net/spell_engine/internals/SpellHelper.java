@@ -1242,14 +1242,21 @@ public class SpellHelper {
                         return false;
                     }
 
+                    float extraTimeToLive = 0;
+                    for (var spellModifier: spellModifiers) {
+                        extraTimeToLive += spellModifier.spawn_duration_add;
+                    }
+
                     for(var data: spawns) {
-                        var id = Identifier.of(data.entity_type_id);
+                        var mutableData = data.copy();
+                        mutableData.time_to_live_seconds += extraTimeToLive;
+                        var id = Identifier.of(mutableData.entity_type_id);
                         var type = Registries.ENTITY_TYPE.get(id);
 
                         var entity = (Entity)type.create(world);
-                        applyEntityPlacement(entity, caster, target.getPos(), data.placement);
+                        applyEntityPlacement(entity, caster, target.getPos(), mutableData.placement);
                         if (entity instanceof SpellEntity.Spawned spellSpawnedEntity) {
-                            var args = new SpellEntity.Spawned.Args(caster, spellEntry, data, context);
+                            var args = new SpellEntity.Spawned.Args(caster, spellEntry, mutableData, context);
                             spellSpawnedEntity.onSpawnedBySpell(args);
                         }
                         ///
@@ -1257,7 +1264,7 @@ public class SpellHelper {
                             SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
                         }
                         ///
-                        ((WorldScheduler)world).schedule(data.delay_ticks, () -> {
+                        ((WorldScheduler)world).schedule(mutableData.delay_ticks, () -> {
                             world.spawnEntity(entity);
                         });
                         success = true;
@@ -1489,7 +1496,7 @@ public class SpellHelper {
         float extraTimeToLive = 0;
         var extraPlacements = new ArrayList<Spell.EntityPlacement>();
         for (var spellModifier: spellModifiers) {
-            extraTimeToLive += spellModifier.cloud_duration_add;
+            extraTimeToLive += spellModifier.spawn_duration_add;
             extraPlacements.addAll(spellModifier.additional_placements);
         }
 

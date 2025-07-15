@@ -335,6 +335,32 @@ public class SpellBuilder {
             fire.action.fire.duration = duration;
             return fire;
         }
+
+        public static Spell.Impact resetCooldownActive(String spellPattern) {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.COOLDOWN;
+            impact.action.cooldown = new Spell.Impact.Action.Cooldown();
+
+            impact.action.cooldown.actives = new Spell.Impact.Action.Cooldown.Modify();
+            impact.action.cooldown.actives.id = spellPattern;
+            impact.action.cooldown.actives.duration_multiplier = 0F; // reset cooldown
+
+            return impact;
+        }
+
+        public static Spell.Impact resetCooldownActiveAll() {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.COOLDOWN;
+            impact.action.cooldown = new Spell.Impact.Action.Cooldown();
+
+            impact.action.cooldown.actives = new Spell.Impact.Action.Cooldown.Modify();
+            impact.action.cooldown.actives.id = "*"; // reset cooldown for all active spells
+            impact.action.cooldown.actives.duration_multiplier = 0F; // reset cooldown
+
+            return impact;
+        }
     }
 
     public static class Cost {

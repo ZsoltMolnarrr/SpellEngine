@@ -3,7 +3,6 @@ package net.spell_engine.client.gui;
 import com.ibm.icu.text.DecimalFormat;
 import net.fabricmc.fabric.mixin.client.keybinding.KeyBindingAccessor;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -521,8 +520,8 @@ public class SpellTooltip {
             if (modifier.stash_amplifier_add != 0) {
                 addToken("stash_amplifier_add", formattedNumber(modifier.stash_amplifier_add), tokenReplacements);
             }
-            if (modifier.cloud_duration_add != 0) {
-                addToken("cloud_duration_add", formattedNumber(modifier.cloud_duration_add), tokenReplacements);
+            if (modifier.spawn_duration_add != 0) {
+                addToken("spawn_duration_add", formattedNumber(modifier.spawn_duration_add), tokenReplacements);
             }
             if (modifier.cooldown_duration_deduct != 0) {
                 addToken("cooldown_duration_deduct", formattedNumber(modifier.cooldown_duration_deduct), tokenReplacements);

@@ -119,7 +119,7 @@ public class Spell {
         @Nullable public ProjectileData.Perks projectile_perks;
         @Nullable public Impact.Modifier power_modifier;
         public float knockback_multiply_base = 0;
-        public float cloud_duration_add = 0;
+        public float spawn_duration_add = 0;
         public int effect_amplifier_add = 0;
         public int effect_amplifier_cap_add = 0;
         public int stash_amplifier_add = 0;
@@ -418,6 +418,15 @@ public class Spell {
                 public int time_to_live_seconds = 0;
                 public int delay_ticks = 0;
                 public EntityPlacement placement = new EntityPlacement();
+
+                public Spawn copy() {
+                    Spawn copy = new Spawn();
+                    copy.entity_type_id = this.entity_type_id;
+                    copy.time_to_live_seconds = this.time_to_live_seconds;
+                    copy.delay_ticks = this.delay_ticks;
+                    copy.placement = this.placement;
+                    return copy;
+                }
             }
 
             public Teleport teleport;
