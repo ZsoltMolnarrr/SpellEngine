@@ -111,12 +111,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 cancelSpellCast(false);
             }
             var instant = SpellHelper.isInstantCast(spellEntry, caster);
-            System.out.println("SpellEngine: Starting spell cast for " + spellId + " (instant: " + instant + ")");
             if (instant) {
                 // Release instant spell
                 var process = new SpellCast.Process(spellEntry, itemStack.getItem(), 1, 0, caster.getWorld().getTime());
                 this.setSpellCastProcess(process, false);
-                System.out.println("SpellEngine: Instant cast for " + spellId);
                 this.updateSpellCast();
                 applyInstantGlobalCooldown();
             } else {

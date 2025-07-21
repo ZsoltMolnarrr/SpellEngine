@@ -70,15 +70,19 @@ public class SpellEngineParticles {
     }
 
     public enum Fading { NONE, IN, OUT, IN_OUT }
-    public record TemplateEntry(Identifier id, Texture texture, TemplateParticleType particleType, Fading fading) {
+    public enum Orientation { HORIZONTAL, VERTICAL }
+    public record TemplateEntry(Identifier id, Texture texture, TemplateParticleType particleType, Fading fading, Orientation orientation) {
         public TemplateEntry(String name, Texture texture) {
             this(Identifier.of(SpellEngineMod.ID, name), texture);
         }
         public TemplateEntry(Identifier id, Texture texture) {
-            this(id, texture, new TemplateParticleType(), Fading.NONE);
+            this(id, texture, new TemplateParticleType(), Fading.NONE, Orientation.HORIZONTAL);
         }
         public TemplateEntry fading(Fading fading) {
-            return new TemplateEntry(id, texture, particleType, fading);
+            return new TemplateEntry(id, texture, particleType, fading, orientation);
+        }
+        public TemplateEntry orientation(Orientation orientation) {
+            return new TemplateEntry(id, texture, particleType, fading, orientation);
         }
     }
     private static final ArrayList<TemplateEntry> templateEntries = new ArrayList<>();
@@ -285,6 +289,11 @@ public class SpellEngineParticles {
     public static final TemplateEntry area_effect_714 = addAreaEffect(new TemplateEntry("area_effect_714", Texture.of("area/effect_714", 22)));
     // area effect #741
     public static final TemplateEntry area_effect_741 = addAreaEffect(new TemplateEntry("area_effect_741", Texture.of("area/effect_741", 23)));
+
+    // area effect #642
+    public static final TemplateEntry area_effect_642 = addAreaEffect(new TemplateEntry("area_effect_642", Texture.of("area/effect_642", 14)).orientation(Orientation.VERTICAL));
+    // area effect #649
+    public static final TemplateEntry area_effect_649 = addAreaEffect(new TemplateEntry("area_effect_649", Texture.of("area/effect_649", 13)).orientation(Orientation.VERTICAL));
 
     static {
         for (var variant: MagicParticles.all) {

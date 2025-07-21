@@ -17,12 +17,17 @@ import org.joml.Vector3f;
 public class SpellAreaParticle extends SpriteBillboardParticle {
     @Nullable Entity followEntity;
     public SpellEngineParticles.Fading fading = SpellEngineParticles.Fading.NONE;
+    public SpellEngineParticles.Orientation orientation = SpellEngineParticles.Orientation.HORIZONTAL;
     private final SpriteProvider spriteProvider;
     private float initialAlpha = 1F;
     public boolean grounded = false;
 
-    protected SpellAreaParticle(ClientWorld world, double d, double e, double f, double g, double h, double i, SpriteProvider spriteProvider) {
-        super(world, d, e, f, g, h, i);
+    protected SpellAreaParticle(ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, SpriteProvider spriteProvider) {
+        super(world, x, y, z, velocityX, velocityY, velocityZ);
+        this.velocityX = velocityX;
+        this.velocityY = velocityY;
+        this.velocityZ = velocityZ;
+
         this.spriteProvider = spriteProvider;
         this.setSpriteForAge(spriteProvider);
     }
@@ -95,6 +100,17 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
 
     @Override
     public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
+        switch (orientation) {
+            case HORIZONTAL -> {
+                this.buildHorizontalGeometry(vertexConsumer, camera, tickDelta);
+            }
+            case VERTICAL -> {
+                super.buildGeometry(vertexConsumer, camera, tickDelta);
+            }
+        }
+    }
+
+    private void buildHorizontalGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
         Vec3d vec3d = camera.getPos();
         float f = (float) (MathHelper.lerp(tickDelta, this.prevPosX, this.x) - vec3d.getX());
         float g = (float) (MathHelper.lerp(tickDelta, this.prevPosY, this.y) - vec3d.getY());
@@ -138,11 +154,13 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
         private final SpriteProvider spriteProvider;
         private final SpellEngineParticles.Texture texture;
         private final SpellEngineParticles.Fading fading;
+        private final SpellEngineParticles.Orientation orientation;
 
-        public Factory(SpriteProvider spriteProvider, SpellEngineParticles.Texture texture, SpellEngineParticles.Fading fading) {
+        public Factory(SpriteProvider spriteProvider, SpellEngineParticles.Texture texture, SpellEngineParticles.Fading fading, SpellEngineParticles.Orientation orientation) {
             this.spriteProvider = spriteProvider;
             this.texture = texture;
             this.fading = fading;
+            this.orientation = orientation;
         }
 
         public Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
@@ -151,6 +169,7 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
             particle.velocityY = h;
             particle.velocityZ = i;
             particle.ascending = false;
+            particle.orientation = this.orientation;
 
             particle.red = 1F;
             particle.green = 1F;

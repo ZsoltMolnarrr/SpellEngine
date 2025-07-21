@@ -13,6 +13,9 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
     private final ParticleBatch[] particles;
     @Nullable private ParticleBatch groundEffect;
     private int groundFrequency = 0;
+    private int frequency = 0;
+    private boolean invertedFrequency = false;
+    private boolean scaleWithAmplifier = true;
 
     private static ParticleBatch defaultBatch(String particleId, float particleCount, float min_speed, float max_speed) {
         return new ParticleBatch(
@@ -56,15 +59,36 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
         return this;
     }
 
+    public BuffParticleSpawner scaleWithAmplifier(boolean scaleWithAmplifier) {
+        this.scaleWithAmplifier = scaleWithAmplifier;
+        return this;
+    }
+
+    public BuffParticleSpawner withFrequency(int frequency) {
+        this.frequency = frequency;
+        return this;
+    }
+
+    public BuffParticleSpawner invertFrequency() {
+        this.invertedFrequency = true;
+        return this;
+    }
+
     @Override
     public void spawnParticles(LivingEntity livingEntity, int amplifier) {
-        var scaledParticles = new ParticleBatch[particles.length];
-        for (int i = 0; i < particles.length; i++) {
-            var copiedBatch = new ParticleBatch(particles[i]);
-            copiedBatch.count *= (amplifier + 1);
-            scaledParticles[i] = copiedBatch;
+        var time = livingEntity.age;
+        var spawn = frequency == 0
+                || (!invertedFrequency ? (time % frequency == 0) : (time % (frequency / (amplifier + 1)) == 0));
+        if (spawn) {
+            var scaledParticles = new ParticleBatch[particles.length];
+            var scale = this.scaleWithAmplifier ? (amplifier + 1) : 1;
+            for (int i = 0; i < particles.length; i++) {
+                var copiedBatch = new ParticleBatch(particles[i]);
+                copiedBatch.count *= scale;
+                scaledParticles[i] = copiedBatch;
+            }
+            ParticleHelper.play(livingEntity.getWorld(), livingEntity, scaledParticles);
         }
-        ParticleHelper.play(livingEntity.getWorld(), livingEntity, scaledParticles);
         if (groundEffect != null && groundFrequency > 0) {
             if (livingEntity.age % groundFrequency == 0) {
                 ParticleHelper.play(livingEntity.getWorld(), livingEntity, groundEffect);

@@ -103,7 +103,7 @@ public class FabricClientMod implements ClientModInitializer {
 
         for (var entry: SpellEngineParticles.areaEffects()) {
             ParticleFactoryRegistry.getInstance().register(
-                    entry.particleType(), (provider) -> new SpellAreaParticle.Factory(provider, entry.texture(), entry.fading())
+                    entry.particleType(), (provider) -> new SpellAreaParticle.Factory(provider, entry.texture(), entry.fading(), entry.orientation())
             );
         }
         for (var entry: SpellEngineParticles.signEffects()) {
