@@ -14,4 +14,8 @@ public interface SpellStash {
     static void configure(StatusEffect effect, RegistryEntry<Spell> spell, List<Spell.Trigger> triggers, Spell.Delivery.StashEffect.ImpactMode impactMode, int consume, boolean delayConsume) {
         ((SpellStash)effect).stashedSpell(new Entry(spell, triggers, impactMode, consume,  delayConsume));
     }
+
+    static List<Entry> getStashedSpells(StatusEffect effect) {
+        return ((SpellStash)effect).getStashedSpells();
+    }
 }

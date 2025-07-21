@@ -49,6 +49,15 @@ public class SpellStashHelper {
                     System.err.println("Spell Engine: Stash spell linking error! Spell:" + id + " found no status effect for `stash_effect.id`: " + stashEffect.id);
                     return;
                 }
+
+                var stashes = SpellStash.getStashedSpells(statusEffect);
+                for (var existingStash: stashes) {
+                    if (existingStash.spell().equals(entry)) {
+                        System.err.println("Spell Engine: Stash spell linking error! Spell:" + id + " already has a stash effect linked to " + stashEffect.id);
+                        return;
+                    }
+                }
+
                 SpellStash.configure(statusEffect, entry, stashEffect.triggers, stashEffect.impact_mode, stashEffect.consume, stashEffect.consumed_next_tick);
             }
         });
