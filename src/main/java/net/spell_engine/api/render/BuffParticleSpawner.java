@@ -17,8 +17,20 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
     private boolean invertedFrequency = false;
     private boolean scaleWithAmplifier = true;
 
-    private static ParticleBatch defaultBatch(String particleId, float particleCount, float min_speed, float max_speed) {
-        return new ParticleBatch(
+    public static ParticleBatch defaultBatch(String particleId, float particleCount) {
+        return defaultBatch(particleId, particleCount, 0);
+    }
+
+    public static ParticleBatch defaultBatch(String particleId, float particleCount, long color) {
+        return defaultBatch(particleId, particleCount, 0.11F, 0.12F, color);
+    }
+
+    public static ParticleBatch defaultBatch(String particleId, float particleCount, float min_speed, float max_speed) {
+        return defaultBatch(particleId, particleCount, min_speed, max_speed, 0);
+    }
+
+    public static ParticleBatch defaultBatch(String particleId, float particleCount, float min_speed, float max_speed, long color) {
+        var batch = new ParticleBatch(
                 particleId,
                 ParticleBatch.Shape.WIDE_PIPE,
                 ParticleBatch.Origin.FEET,
@@ -28,6 +40,10 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
                 max_speed,
                 0,
                 -0.2F);
+        if (color != 0) {
+            batch.color(color);
+        }
+        return batch;
     }
 
     public BuffParticleSpawner(List<String> particleIds, float particleCount, float min_speed, float max_speed) {
@@ -43,6 +59,10 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
 
     public BuffParticleSpawner(String particleId, float particleCount) {
         this(particleId, particleCount, 0.11F, 0.12F);
+    }
+
+    public BuffParticleSpawner(ParticleBatch particleBatch) {
+        this(new ParticleBatch[] { particleBatch });
     }
 
     public BuffParticleSpawner(ParticleBatch[] particles) {

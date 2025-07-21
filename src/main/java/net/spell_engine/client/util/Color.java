@@ -48,6 +48,7 @@ public record Color(float red, float green, float blue, float alpha) {
     public static final Color BLUE = new Color(0, 0, 1);
     public static final Color WHITE = new Color(1, 1, 1);
 
+    public static final Color ARCANE = Color.from(0xff66ff);
     public static final Color HOLY = Color.from(0xffffcc);
     public static final Color NATURE = Color.from(0x66ff66);
     public static final Color FROST = Color.from(0x66ccff);

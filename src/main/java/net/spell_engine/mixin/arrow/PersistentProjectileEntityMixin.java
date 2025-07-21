@@ -260,8 +260,8 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
             }
 
             var result = original.call(entity, damageSource, amount);
-            for (var spellEnrty : spellEntries) {
-                performImpacts(spellEnrty, entity, entityHitResult);
+            for (var spellEntry : spellEntries) {
+                performImpacts(spellEntry, entity, entityHitResult);
             }
             if (owner instanceof PlayerEntity shooter) {
                 SpellTriggers.onArrowImpact((ArrowExtension) arrow, shooter, entity);
