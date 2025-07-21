@@ -45,6 +45,6 @@ public class StatusEffectUtil {
     public static StatusEffectInstance copyWithNewAmplifier(StatusEffectInstance instance, int newAmplifier) {
         return new StatusEffectInstance(
                 instance.getEffectType(), instance.getDuration(), newAmplifier, instance.isAmbient(),
-                instance.shouldShowIcon(), instance.shouldShowParticles());
+                instance.shouldShowParticles(), instance.shouldShowIcon());
     }
 }
