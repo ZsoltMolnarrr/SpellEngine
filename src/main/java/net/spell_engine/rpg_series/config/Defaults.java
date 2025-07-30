@@ -258,8 +258,9 @@ public class Defaults {
         // Vanilla large bosses
 
         items.put("minecraft:entities/ender_dragon", new LootConfig.Pool()
-                .rolls(3)
+                .rolls(4)
                 .add(W5)
+                .add(A5)
                 .add(W3).enchant().weight(4)
                 .add(X4).weight(2)
                 .add(R3).filter(DRAGON)
@@ -278,7 +279,7 @@ public class Defaults {
                 .rolls(2)
                 .add(W2, true).weight(4)
                 .add(A2, true).weight(4)
-                .add(X2).weight(2)
+                .add(X4).weight(2)
                 .add(R2).weight(2)
                 .add(W5)
                 .add(A5)
@@ -353,7 +354,6 @@ public class Defaults {
                 .add(A3, true).weight(6)
                 .add(X3).weight(2)
                 .add(R2)
-                .add(A5)
                 .add(W5)
                 .add(A5)
         );
@@ -362,10 +362,9 @@ public class Defaults {
 
         items.put("formidulus:entities/deer_god", new LootConfig.Pool()
                 .rolls(2)
-                .add(W2, true).weight(4)
-                .add(A2, true).weight(4)
-                .add(X2).weight(2)
-                .add(R2)
+                .add(W3, true)
+                .add(A3, true)
+                .add(R3)
                 .add(W5)
                 .add(A5)
         );
@@ -1364,6 +1363,16 @@ public class Defaults {
                 .add(A3).enchant()
                 .add(X4)
         );
+        items.put("medievalend:medievalend:ship_chests_under_the_stairs", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(W4).enchant()
+                .add(A4)
+        );
+        items.put("medievalend:end_pyramid_chests", new LootConfig.Pool()
+                .rolls(0.3)
+                .add(W4).enchant()
+                .add(A4)
+        );
 
         // Dungeons Arise mod
 
@@ -1694,7 +1703,7 @@ public class Defaults {
                 .rolls(2)
                 .add(W3, true).weight(4)
                 .add(A3, true).weight(4)
-                .add(X3).weight(4)
+                .add(X4).weight(4)
                 .add(R3)
         );
     }
