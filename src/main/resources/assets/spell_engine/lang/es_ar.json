@@ -34,6 +34,7 @@
   "spell.tooltip.trigger.spell_cast": "lanzar hechizo",
   "spell.tooltip.trigger.spell_impact_any": "golpear con hechizo",
   "spell.tooltip.trigger.spell_impact_specific": "golpear con hechizo",
+  "spell.tooltip.trigger.spell_area_impact": "efecto de hechizo en área",
   "spell.tooltip.trigger.damage_taken": "recibir daño",
   "spell.tooltip.trigger.shield_block": "bloquear con escudo",
   "spell.tooltip.trigger.roll": "rodar",
@@ -87,8 +88,10 @@
   "trinkets.slot.spell.quiver": "Carcaj",
   "trinkets.slot.misc.quiver": "Carcaj",
 
-  "text.autoconfig.spell_engine.title" : "Motor de Hechizos",
+  "effect.spell_engine.stun": "Aturdido",
+  "effect.spell_engine.stun.description": "No podés moverte ni realizar acciones.",
 
+  "text.autoconfig.spell_engine.title" : "Motor de Hechizos",
 
   "text.autoconfig.spell_engine.option.client.renderBeamsHighLuminance" : "Haz de alta luminiscencia",
   "text.autoconfig.spell_engine.option.client.renderBeamsHighLuminance.@Tooltip" : "Renderizar haces de hechizos con alta luminiscencia para mejores efectos visuales espectaculares",
@@ -152,6 +155,9 @@
   "gui.spell_engine.spell_binding.no_more_slots" : "No hay más espacios para hechizos",
   "gui.spell_engine.spell_binding.available" : "Unir hechizo",
   "gui.spell_engine.spell_binding.level_req_fail" : "Requisito de nivel: %s",
+
+  "equipment_set.logic.bonus.count" : "Conjunto (%s):",
+  "equipment_set.test.fire_power" : "Vestimenta Ígnea",
 
   "advancements.rpg_series.root.title": "Hechizos",
   "advancements.rpg_series.root.description": "¡Descubre el arte del combate mágico!",
