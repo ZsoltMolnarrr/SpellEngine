@@ -1,3 +1,11 @@
+# 1.7.1
+
+Functional changes:
+- Update loot injection defaults
+
+API Changes:
+- Extend `SpellBuilder`
+
 # 1.7.0
 
 WARNING: All players must use the same version, due to networking changes.

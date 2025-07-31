@@ -147,6 +147,22 @@ public class SpellBuilder {
             placement.delay_ticks = delay;
             return placement;
         }
+
+        public static Spell.Delivery.Cloud cloud(float timeToLive, float radius, Identifier spawnSound, int light_level, ParticleBatch[] presenceParticles) {
+            var cloud = new Spell.Delivery.Cloud();
+            cloud.volume = new Spell.AreaImpact();
+            cloud.volume.area.vertical_range_multiplier = 0.3F;
+            cloud.volume.radius = radius;
+
+            cloud.impact_tick_interval = 4;
+            cloud.time_to_live_seconds = timeToLive;
+            cloud.spawn.sound = new Sound(spawnSound.toString());
+            cloud.client_data = new Spell.Delivery.Cloud.ClientData();
+            cloud.client_data.light_level = light_level;
+            cloud.client_data.particles = presenceParticles;
+
+            return cloud;
+        }
     }
 
     public static class Triggers {
@@ -209,9 +225,17 @@ public class SpellBuilder {
         }
 
         public static Spell.Trigger meleeKill(boolean mustWield) {
-            var trigger = meleeAttack(mustWield);
             var deadCondition = TargetConditions.dead();
+
+            var trigger = meleeAttack(mustWield);
             trigger.target_conditions = List.of(deadCondition);
+
+            var skillTrigger = new Spell.Trigger();
+            skillTrigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+            skillTrigger.spell = new Spell.Trigger.SpellCondition();
+            skillTrigger.spell.school = ExternalSpellSchools.PHYSICAL_MELEE.id.toString();
+            skillTrigger.target_conditions = List.of(deadCondition);
+
             return trigger;
         }
 
@@ -225,12 +249,26 @@ public class SpellBuilder {
             return trigger;
         }
 
-        public static List<Spell.Trigger> rangedKill() {
-            var deadCondition = TargetConditions.dead();
+        public static Spell.Trigger rangedAttack() {
+            return rangedAttack(false);
+        }
 
+        public static Spell.Trigger rangedAttack(boolean mustWield) {
             var arrowTrigger = new Spell.Trigger();
             arrowTrigger.type = Spell.Trigger.Type.ARROW_IMPACT;
-            arrowTrigger.equipment_condition = EquipmentSlot.MAINHAND;
+            if (mustWield) {
+                arrowTrigger.equipment_condition = EquipmentSlot.MAINHAND;
+            }
+            return arrowTrigger;
+        }
+
+        public static List<Spell.Trigger> rangedKill() {
+            return rangedKill(false);
+        }
+
+        public static List<Spell.Trigger> rangedKill(boolean mustWield) {
+            var deadCondition = TargetConditions.dead();
+            var arrowTrigger = rangedAttack(mustWield);
             arrowTrigger.target_conditions = List.of(deadCondition);
 
             var skillTrigger = new Spell.Trigger();
@@ -251,6 +289,12 @@ public class SpellBuilder {
         public static Spell.Trigger arrowHit() {
             var trigger = new Spell.Trigger();
             trigger.type = Spell.Trigger.Type.ARROW_IMPACT;
+            return trigger;
+        }
+
+        public static Spell.Trigger roll() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.ROLL;
             return trigger;
         }
     }
@@ -405,6 +449,27 @@ public class SpellBuilder {
                     .scale(0.8F)
                     .color(color.toRGBA())
                     .followEntity(true);
+        }
+
+        public static ParticleBatch[] zoneMagic(long color, Identifier contour, List<Identifier> fillers, float multiplier, float radius) {
+            var particles = new ArrayList<ParticleBatch>();
+            particles.add(
+                    new ParticleBatch(
+                            contour.toString(),
+                            ParticleBatch.Shape.PIPE, ParticleBatch.Origin.GROUND,
+                            3 * multiplier, 0.05F, 0.15F)
+                            .color(color)
+            );
+            for (var filler : fillers) {
+                particles.add(
+                        new ParticleBatch(
+                                filler.toString(),
+                                ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.GROUND,
+                                3 * multiplier, 0.05F, 0.1F)
+                                .color(color)
+                );
+            }
+            return particles.toArray(new ParticleBatch[0]);
         }
     }
 

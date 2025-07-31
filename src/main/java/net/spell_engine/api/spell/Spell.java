@@ -242,6 +242,8 @@ public class Spell {
             public int impact_tick_interval = 5;
             /// The number of times impacts can be performed, zero means unlimited
             public int impact_cap = 0;
+            public ParticleBatch[] impact_particles = new ParticleBatch[]{};
+
             /// Base spawn delay
             public int delay_ticks = 0;
             public boolean placement_delay_stacks = true;

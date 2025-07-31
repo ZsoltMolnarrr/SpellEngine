@@ -219,9 +219,12 @@ public class SpellCloud extends Entity implements Ownable {
                     if (context == null) {
                         context = new SpellHelper.ImpactContext();
                     }
-                    SpellHelper.lookupAndPerformAreaImpact(area_impact, spellEntry, owner,null,
+                    var performed = SpellHelper.lookupAndPerformAreaImpact(area_impact, spellEntry, owner,null,
                             this, spell.impacts, context.position(this.getPos()), true);
-                    this.impactsPerformed++;
+                    if (performed) {
+                        ParticleHelper.play(world, this, cloudData.impact_particles);
+                        this.impactsPerformed++;
+                    }
                 }
             }
         }

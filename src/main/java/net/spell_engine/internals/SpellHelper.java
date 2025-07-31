@@ -774,7 +774,7 @@ public class SpellHelper {
         return false;
     }
 
-    public static void lookupAndPerformAreaImpact(Spell.AreaImpact area_impact, RegistryEntry<Spell> spellEntry, LivingEntity caster, Entity exclude, Entity aoeSource,
+    public static boolean lookupAndPerformAreaImpact(Spell.AreaImpact area_impact, RegistryEntry<Spell> spellEntry, LivingEntity caster, Entity exclude, Entity aoeSource,
                                                   List<Spell.Impact> impacts, ImpactContext context, boolean additionalTargetLookup) {
         var center = context.position();
         var radius = area_impact.combinedRadius(context.power().baseValue());
@@ -782,18 +782,20 @@ public class SpellHelper {
         if (exclude != null) {
             targets.remove(exclude);
         }
-        applyAreaImpact(aoeSource.getWorld(), caster, targets, radius, area_impact.area, spellEntry, impacts,
+        var result = applyAreaImpact(aoeSource.getWorld(), caster, targets, radius, area_impact.area, spellEntry, impacts,
                 context.target(SpellTarget.FocusMode.AREA), additionalTargetLookup, area_impact.execute_action_type);
         ParticleHelper.sendBatches(aoeSource, area_impact.particles);
         SoundHelper.playSound(aoeSource.getWorld(), aoeSource, area_impact.sound);
+        return result;
     }
 
-    private static void applyAreaImpact(World world, LivingEntity caster, List<Entity> targets,
+    private static boolean applyAreaImpact(World world, LivingEntity caster, List<Entity> targets,
                                         float range, Spell.Target.Area area,
                                         RegistryEntry<Spell> spellEntry, List<Spell.Impact> impacts, ImpactContext context,
                                         boolean additionalTargetLookup, @Nullable Spell.Impact.Action.Type filteredAction) {
         double squaredRange = range * range;
         var center = context.position();
+        var anyPerformed = false;
         for(var target: targets) {
             float distanceBasedMultiplier = 1F;
             switch (area.distance_dropoff) {
@@ -803,11 +805,12 @@ public class SpellHelper {
                     distanceBasedMultiplier = Math.max(distanceBasedMultiplier, 0F);
                 }
             }
-            performImpacts(world, caster, target, target, spellEntry, impacts, context
+            anyPerformed = performImpacts(world, caster, target, target, spellEntry, impacts, context
                             .distance(distanceBasedMultiplier),
                     additionalTargetLookup, filteredAction
             );
         }
+        return anyPerformed;
     }
 
     public record ImpactContext(float channel, float distance, @Nullable Vec3d position, SpellPower.Result power, SpellTarget.FocusMode focusMode, int channelTickIndex) {
