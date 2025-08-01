@@ -92,9 +92,11 @@ Primary features:
 
 Fully data driven, (stored in a DynamicRegistry).
 
-Example path: `resources/data/NAMESPACE/equipment_set/SET_NAME.json`
-
-Example item with an equipment set: `/give @p minecraft:iron_boots[spell_engine:equipment_set="NAMESPACE:SET_NAME"]`
+Equipment sets require a two-way association:
+- Define the set in a data file
+  - Example path: `resources/data/NAMESPACE/equipment_set/SET_NAME.json`
+- Assign the set to items, using an item component
+  - Example item with an equipment set: `/give @p minecraft:iron_boots[spell_engine:equipment_set="NAMESPACE:SET_NAME"]`
 
 ### Extra inventory slots
 
