@@ -256,6 +256,8 @@ public class Spell {
                 public int light_level = 0;
                 public ParticleBatch[] particles = new ParticleBatch[]{};
                 public int particle_spawn_interval = 1;
+                /// Particles to be spawned at the interval of `particle_spawn_interval`
+                /// Useful for ground particles with fixed animation duration
                 public ParticleBatch[] interval_particles = new ParticleBatch[]{};
                 public ProjectileModel model;
             }

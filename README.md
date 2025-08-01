@@ -92,7 +92,7 @@ Primary features:
 
 Fully data driven, (stored in a DynamicRegistry).
 
-Example path: `resources/data/NAMESPACE/equipment_sets/SET_NAME.json`
+Example path: `resources/data/NAMESPACE/equipment_set/SET_NAME.json`
 
 Example item with an equipment set: `/give @p minecraft:iron_boots[spell_engine:equipment_set="NAMESPACE:SET_NAME"]`
 
