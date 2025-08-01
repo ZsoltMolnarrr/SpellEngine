@@ -2,6 +2,7 @@ package net.spell_engine.client.particle;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.VertexConsumer;
@@ -22,6 +23,7 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
     private float initialAlpha = 1F;
     public boolean grounded = false;
     private Vec3d ownerPositionDiff = Vec3d.ZERO;
+    private boolean skipRender = false;
 
     protected SpellAreaParticle(ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, SpriteProvider spriteProvider) {
         super(world, x, y, z, velocityX, velocityY, velocityZ);
@@ -40,6 +42,7 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
                     this.y - followEntity.getY(),
                     this.z - followEntity.getZ()
             );
+            checkSkip();
         }
     }
 
@@ -70,12 +73,19 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
     @Override
     public void tick() {
         super.tick();
+        checkSkip();
         if (this.age >= this.maxAge) {
             // this.markDead();
         } else {
             this.setSpriteForAge(this.spriteProvider);
             this.updateAlpha(fading, initialAlpha);
         }
+    }
+
+    private void checkSkip() {
+        this.skipRender = this.orientation == SpellEngineParticles.Orientation.VERTICAL
+                && (this.followEntity == MinecraftClient.getInstance().getCameraEntity())
+                && MinecraftClient.getInstance().options.getPerspective().isFirstPerson();
     }
 
     private static final float EASE_DURATION = 0.3F;
@@ -110,6 +120,9 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
 
     @Override
     public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
+        if (this.skipRender) {
+            return;
+        }
         switch (orientation) {
             case HORIZONTAL -> {
                 this.buildHorizontalGeometry(vertexConsumer, camera, tickDelta);
