@@ -21,6 +21,7 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
     private final SpriteProvider spriteProvider;
     private float initialAlpha = 1F;
     public boolean grounded = false;
+    private Vec3d ownerPositionDiff = Vec3d.ZERO;
 
     protected SpellAreaParticle(ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, SpriteProvider spriteProvider) {
         super(world, x, y, z, velocityX, velocityY, velocityZ);
@@ -30,6 +31,16 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
 
         this.spriteProvider = spriteProvider;
         this.setSpriteForAge(spriteProvider);
+    }
+
+    private void postInit() {
+        if (followEntity != null) {
+            ownerPositionDiff = new Vec3d(
+                    this.x - followEntity.getX(),
+                    this.y - followEntity.getY(),
+                    this.z - followEntity.getZ()
+            );
+        }
     }
 
     @Override
@@ -47,9 +58,8 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
             this.velocityZ = velocity.z;
         } else {
             if (followEntity != null && !followEntity.isRemoved()) {
-                dx += followEntity.getX() - followEntity.prevX;
-                dy += followEntity.getY() - followEntity.prevY;
-                dz += followEntity.getZ() - followEntity.prevZ;
+                var newPos = followEntity.getPos().add(ownerPositionDiff);
+                this.setPos(newPos.x, newPos.y, newPos.z);
             }
             this.setBoundingBox(this.getBoundingBox().offset(dx, dy, dz));
             this.repositionFromBoundingBox();
@@ -197,6 +207,7 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
 
             particle.fading = fading;
             particle.initialAlpha = particle.alpha;
+            particle.postInit();
             return particle;
         }
     }
