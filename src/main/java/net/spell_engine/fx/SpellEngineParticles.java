@@ -277,27 +277,24 @@ public class SpellEngineParticles {
     public static final TemplateEntry ground_glow = addAreaEffect(new TemplateEntry("ground_glow", Texture.of("area/ground_glow")).fading(Fading.IN_OUT));
     public static final TemplateEntry area_circle_1 = addAreaEffect(new TemplateEntry("area_circle_1", Texture.of("area/circle_1")).fading(Fading.OUT));
 
+    // Area Effects
+
     // area effect #48 (for swirling)
     public static final TemplateEntry area_swirl = addAreaEffect(new TemplateEntry("area_swirl", Texture.of("area/swirl", 16)));
-    // area effect #293
     public static final TemplateEntry area_effect_293 = addAreaEffect(new TemplateEntry("area_effect_293", Texture.of("area/effect_293", 9)));
-    // area effect #480
     public static final TemplateEntry area_effect_480 = addAreaEffect(new TemplateEntry("area_effect_480", Texture.of("area/effect_480", 12)));
-    // area effect #658
     public static final TemplateEntry area_effect_658 = addAreaEffect(new TemplateEntry("area_effect_658", Texture.of("area/effect_658", 16)));
-    // area effect #714
     public static final TemplateEntry area_effect_714 = addAreaEffect(new TemplateEntry("area_effect_714", Texture.of("area/effect_714", 22)));
-    // area effect #715
     public static final TemplateEntry area_effect_715 = addAreaEffect(new TemplateEntry("area_effect_715", Texture.of("area/effect_715", 22)));
-    // area effect #741
     public static final TemplateEntry area_effect_741 = addAreaEffect(new TemplateEntry("area_effect_741", Texture.of("area/effect_741", 23)));
 
-    // area effect #622
-    public static final TemplateEntry area_effect_622 = addAreaEffect(new TemplateEntry("area_effect_622", Texture.of("area/effect_622", 14)).orientation(Orientation.VERTICAL));
-    // area effect #642
-    public static final TemplateEntry area_effect_642 = addAreaEffect(new TemplateEntry("area_effect_642", Texture.of("area/effect_642", 14)).orientation(Orientation.VERTICAL));
-    // area effect #649
-    public static final TemplateEntry area_effect_649 = addAreaEffect(new TemplateEntry("area_effect_649", Texture.of("area/effect_649", 13)).orientation(Orientation.VERTICAL));
+    // Aura Effects
+
+    public static final TemplateEntry aura_effect_620 = addAreaEffect(new TemplateEntry("aura_effect_620", Texture.of("aura/effect_620", 18)).orientation(Orientation.VERTICAL));
+    public static final TemplateEntry aura_effect_622 = addAreaEffect(new TemplateEntry("aura_effect_622", Texture.of("aura/effect_622", 14)).orientation(Orientation.VERTICAL));
+    public static final TemplateEntry aura_effect_642 = addAreaEffect(new TemplateEntry("aura_effect_642", Texture.of("aura/effect_642", 14)).orientation(Orientation.VERTICAL));
+    public static final TemplateEntry aura_effect_649 = addAreaEffect(new TemplateEntry("aura_effect_649", Texture.of("aura/effect_649", 13)).orientation(Orientation.VERTICAL));
+    public static final TemplateEntry aura_effect_716 = addAreaEffect(new TemplateEntry("aura_effect_716", Texture.of("aura/effect_716", 23)).orientation(Orientation.VERTICAL));
 
     static {
         for (var variant: MagicParticles.all) {

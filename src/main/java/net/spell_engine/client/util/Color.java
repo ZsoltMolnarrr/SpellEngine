@@ -42,6 +42,9 @@ public record Color(float red, float green, float blue, float alpha) {
     public long toRGBA() {
         return ((long) (red * 255) << 24) | ((long) (green * 255) << 16) | ((long) (blue * 255) << 8) | ((long) (alpha * 255));
     }
+    public long toARGB() {
+        return ((long) (alpha * 255) << 24) | ((long) (red * 255) << 16) | ((long) (green * 255) << 8) | ((long) (blue * 255));
+    }
 
     public static final Color RED = new Color(1, 0, 0);
     public static final Color GREEN = new Color(0, 1, 0);
