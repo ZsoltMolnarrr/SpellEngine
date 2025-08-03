@@ -11,6 +11,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.fx.SpellEngineParticles;
+import org.apache.commons.compress.archivers.zip.ScatterZipOutputStream;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -53,17 +54,14 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
 
     @Override
     public void move(double dx, double dy, double dz) {
-        if (this.grounded && followEntity != null && !followEntity.isRemoved()) {
-            this.setPos(followEntity.getX(), followEntity.getY() + 0.05F, followEntity.getZ());
-            var velocity = followEntity.getVelocity();
-            this.velocityX = velocity.x;
-            this.velocityY = velocity.y;
-            this.velocityZ = velocity.z;
+        if (followEntity != null && !followEntity.isRemoved()) {
+
+            // Updating diff with velocity, otherwise the movement would be cancelled, due to force following
+            this.ownerPositionDiff = ownerPositionDiff.add(dx, dy, dz);
+
+            var newPos = followEntity.getPos().add(ownerPositionDiff);
+            this.setPos(newPos.x, newPos.y, newPos.z);
         } else {
-            if (followEntity != null && !followEntity.isRemoved()) {
-                var newPos = followEntity.getPos().add(ownerPositionDiff);
-                this.setPos(newPos.x, newPos.y, newPos.z);
-            }
             this.setBoundingBox(this.getBoundingBox().offset(dx, dy, dz));
             this.repositionFromBoundingBox();
         }

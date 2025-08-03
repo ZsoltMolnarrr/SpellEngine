@@ -12,6 +12,7 @@ import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.fx.SpellEngineSounds;
+import net.spell_power.api.SpellSchool;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -204,6 +205,28 @@ public class SpellBuilder {
             return trigger;
         }
 
+        public static Spell.Trigger spellCast(SpellSchool school) {
+            return spellCast(school.id.toString());
+        }
+
+        public static Spell.Trigger spellCast(String school) {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.SPELL_CAST;
+            trigger.spell = new Spell.Trigger.SpellCondition();
+            trigger.spell.school = school;
+            return trigger;
+        }
+
+        public static Spell.Trigger activeSpellCast(SpellSchool school) {
+            return spellCast(school.id.toString());
+        }
+
+        public static Spell.Trigger activeSpellCast(String school) {
+            var trigger = spellCast(school);
+            trigger.spell.type = Spell.Type.ACTIVE;
+            return trigger;
+        }
+
         public static Spell.Trigger activeSpellHeal(float chance) {
             var trigger = new Spell.Trigger();
             trigger.impact = new Spell.Trigger.ImpactCondition();
@@ -295,6 +318,12 @@ public class SpellBuilder {
         public static Spell.Trigger roll() {
             var trigger = new Spell.Trigger();
             trigger.type = Spell.Trigger.Type.ROLL;
+            return trigger;
+        }
+
+        public static Spell.Trigger damageTaken() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.DAMAGE_TAKEN;
             return trigger;
         }
     }
