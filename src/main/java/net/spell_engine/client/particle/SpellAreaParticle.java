@@ -11,7 +11,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.fx.SpellEngineParticles;
-import org.apache.commons.compress.archivers.zip.ScatterZipOutputStream;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
