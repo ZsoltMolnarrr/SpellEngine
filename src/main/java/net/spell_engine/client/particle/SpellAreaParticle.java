@@ -8,6 +8,7 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.fx.SpellEngineParticles;
@@ -21,9 +22,10 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
     public SpellEngineParticles.Orientation orientation = SpellEngineParticles.Orientation.HORIZONTAL;
     private final SpriteProvider spriteProvider;
     private float initialAlpha = 1F;
-    public boolean grounded = false;
+    private float initialScale = 1F;
     private Vec3d ownerPositionDiff = Vec3d.ZERO;
     private boolean skipRender = false;
+    private boolean scaleWithEntity = false;
 
     protected SpellAreaParticle(ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, SpriteProvider spriteProvider) {
         super(world, x, y, z, velocityX, velocityY, velocityZ);
@@ -36,6 +38,8 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
     }
 
     private void postInit() {
+        initialAlpha = this.alpha;
+        initialScale = this.scale;
         if (followEntity != null) {
             ownerPositionDiff = new Vec3d(
                     this.x - followEntity.getX(),
@@ -76,6 +80,7 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
         } else {
             this.setSpriteForAge(this.spriteProvider);
             this.updateAlpha(fading, initialAlpha);
+            this.updateScale();
         }
     }
 
@@ -83,6 +88,14 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
         this.skipRender = this.orientation == SpellEngineParticles.Orientation.VERTICAL
                 && (this.followEntity == MinecraftClient.getInstance().getCameraEntity())
                 && MinecraftClient.getInstance().options.getPerspective().isFirstPerson();
+    }
+
+    private void updateScale() {
+        if (this.scaleWithEntity && this.followEntity != null && !this.followEntity.isRemoved() && this.followEntity instanceof LivingEntity livingEntity) {
+            this.scale = initialScale * livingEntity.getScale();
+        } else {
+            this.scale = initialScale;
+        }
     }
 
     private static final float EASE_DURATION = 0.3F;
@@ -113,8 +126,6 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
         // return ParticleTextureSheet.PARTICLE_SHEET_LIT;
     }
 
-    // Credit: Fichte (CircleGroundParticle)
-
     @Override
     public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
         if (this.skipRender) {
@@ -130,6 +141,7 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
         }
     }
 
+    // Credit: Fichte (CircleGroundParticle)
     private void buildHorizontalGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
         Vec3d vec3d = camera.getPos();
         float f = (float) (MathHelper.lerp(tickDelta, this.prevPosX, this.x) - vec3d.getX());
@@ -175,12 +187,14 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
         private final SpellEngineParticles.Texture texture;
         private final SpellEngineParticles.Fading fading;
         private final SpellEngineParticles.Orientation orientation;
+        private final boolean isAura;
 
         public Factory(SpriteProvider spriteProvider, SpellEngineParticles.Texture texture, SpellEngineParticles.Fading fading, SpellEngineParticles.Orientation orientation) {
             this.spriteProvider = spriteProvider;
             this.texture = texture;
             this.fading = fading;
             this.orientation = orientation;
+            this.isAura = texture.id().toString().contains("aura");
         }
 
         public Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
@@ -212,11 +226,10 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
                 particle.scale *= appearance.scale;
                 particle.maxAge = (int) (particle.maxAge * appearance.max_age);
                 particle.followEntity = appearance.entityFollowed;
-                particle.grounded = appearance.grounded;
             }
 
             particle.fading = fading;
-            particle.initialAlpha = particle.alpha;
+            particle.scaleWithEntity = isAura;
             particle.postInit();
             return particle;
         }
