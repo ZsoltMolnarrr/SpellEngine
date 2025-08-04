@@ -87,7 +87,6 @@ public class FabricClientMod implements ClientModInitializer {
 
         ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.weakness_smoke.particleType(), SpellFlameParticle.WeaknessSmokeFactory::new);
 
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.sign_charge.particleType(), SpellFlameParticle.RageSignFactory::new);
         ParticleFactoryRegistry.getInstance().register(
                 SpellEngineParticles.shield_small.particleType(), (provider) -> new UniversalSpellParticle.Opaque(provider, SpellEngineParticles.MagicParticleFamily.Motion.DECELERATE)
         );

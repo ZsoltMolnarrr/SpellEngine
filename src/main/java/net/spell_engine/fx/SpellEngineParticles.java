@@ -305,8 +305,6 @@ public class SpellEngineParticles {
 
     @Deprecated
     public static final Entry weakness_smoke = add(new Entry("weakness_smoke", Texture.of("smoke_medium", 9)));
-    @Deprecated
-    public static final Entry sign_charge = add(new Entry("sign_charge", Texture.of("sign/speed")));
 
     public static void register() {
         for(var entry: simples) {

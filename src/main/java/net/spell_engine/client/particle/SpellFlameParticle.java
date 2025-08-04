@@ -6,6 +6,7 @@ import net.minecraft.client.particle.*;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.particle.SimpleParticleType;
+import net.minecraft.util.math.Vec3d;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_power.api.SpellSchools;
@@ -17,6 +18,7 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
     boolean translucent = false;
     private SpriteProvider spriteProviderForAnimation = null;
     @Nullable Entity followEntity;
+    private Vec3d ownerPositionDiff = Vec3d.ZERO;
 
     public SpellFlameParticle(ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
         super(clientWorld, d, e, f, g, h, i);
@@ -32,12 +34,16 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
     @Override
     public void move(double dx, double dy, double dz) {
         if (followEntity != null && !followEntity.isRemoved()) {
-            dx += followEntity.getX() - followEntity.prevX;
-            dy += followEntity.getY() - followEntity.prevY;
-            dz += followEntity.getZ() - followEntity.prevZ;
+
+            // Updating diff with velocity, otherwise the movement would be cancelled, due to force following
+            this.ownerPositionDiff = ownerPositionDiff.add(dx, dy, dz);
+
+            var newPos = followEntity.getPos().add(ownerPositionDiff);
+            this.setPos(newPos.x, newPos.y, newPos.z);
+        } else {
+            this.setBoundingBox(this.getBoundingBox().offset(dx, dy, dz));
+            this.repositionFromBoundingBox();
         }
-        this.setBoundingBox(this.getBoundingBox().offset(dx, dy, dz));
-        this.repositionFromBoundingBox();
     }
 
     @Override
@@ -326,36 +332,6 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
     }
 
     @Environment(EnvType.CLIENT)
-    public static class PopupSignFactory implements ParticleFactory<SimpleParticleType> {
-        private final SpriteProvider spriteProvider;
-        public Color color = Color.from(0xffffff);
-        public PopupSignFactory(SpriteProvider spriteProvider, Color color) {
-            this.spriteProvider = spriteProvider;
-            this.color = color;
-        }
-
-        @Override
-        public @Nullable Particle createParticle(SimpleParticleType SimpleParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
-            particle.setSprite(this.spriteProvider);
-            particle.setColor(color.red(), color.green(), color.blue());
-            particle.velocityMultiplier = 0.6F;
-            particle.scale = 0.4F;
-            particle.maxAge = 40;
-            particle.alpha = 0.9F;
-            particle.translucent = true;
-            return particle;
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static class RageSignFactory extends PopupSignFactory {
-        public RageSignFactory(SpriteProvider spriteProvider) {
-            super(spriteProvider, Color.RAGE);
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
     public static class SignFactory implements ParticleFactory<TemplateParticleType> {
         private final SpriteProvider spriteProvider;
         private final SpellEngineParticles.Texture texture;
@@ -369,7 +345,7 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
         public @Nullable Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
             var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
             particle.setSprite(this.spriteProvider);
-            particle.velocityMultiplier = 0.6F;
+            particle.velocityMultiplier = 0.7F;
             particle.scale = 0.4F;
             particle.alpha = 0.9F;
             particle.translucent = true;
