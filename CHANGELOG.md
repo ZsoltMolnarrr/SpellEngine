@@ -5,6 +5,11 @@ Functional changes:
 
 API Changes:
 - Extend `SpellBuilder`
+- Vertically rendered `area_...` particle effects renamed to `aura_...`
+- Improved Spell Area Effect renderer
+  - Properly follows entity motion
+  - Aura effects automatically scale with followed entity
+- Add new `area` and `aura` particle effects
 
 # 1.7.0
 
