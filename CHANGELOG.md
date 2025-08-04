@@ -10,6 +10,7 @@ API Changes:
   - Properly follows entity motion
   - Aura effects automatically scale with followed entity
 - Add new `area` and `aura` particle effects
+- Stash effects are now scalable with the new field: `amplifier_power_multiplier`
 
 # 1.7.0
 

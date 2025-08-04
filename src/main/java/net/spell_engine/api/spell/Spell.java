@@ -278,6 +278,7 @@ public class Spell {
             public String id;
             /// Stacks to apply (-1)
             public int amplifier = 0;
+            public float amplifier_power_multiplier = 0;
             /// Duration of the status effect in seconds
             public float duration = 10;
             public boolean show_particles = false;

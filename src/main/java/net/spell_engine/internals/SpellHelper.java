@@ -488,7 +488,12 @@ public class SpellHelper {
                 var stash = spell.deliver.stash_effect;
                 var id = Identifier.of(stash.id);
                 var effect = Registries.STATUS_EFFECT.getEntry(id).get();
+
                 var amplifier = stash.amplifier;
+                if (stash.amplifier_power_multiplier != 0) {
+                    var power = SpellPower.getSpellPower(spell.school, caster);
+                    amplifier += (int)(stash.amplifier_power_multiplier * power.nonCriticalValue());
+                }
                 if (caster instanceof PlayerEntity player) {
                     var spellModifiers = SpellModifiers.of(player, spellEntry);
                     for (var modifier: spellModifiers) {

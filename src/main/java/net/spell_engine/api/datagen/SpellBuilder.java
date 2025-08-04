@@ -218,7 +218,7 @@ public class SpellBuilder {
         }
 
         public static Spell.Trigger activeSpellCast(SpellSchool school) {
-            return spellCast(school.id.toString());
+            return activeSpellCast(school.id.toString());
         }
 
         public static Spell.Trigger activeSpellCast(String school) {
