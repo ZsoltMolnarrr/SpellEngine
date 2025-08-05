@@ -222,6 +222,10 @@ public class SpellBuilder {
             return trigger;
         }
 
+        public static Spell.Trigger activeSpellCast() {
+            return activeSpellCast((String)null);
+        }
+
         public static Spell.Trigger activeSpellCast(SpellSchool school) {
             return activeSpellCast(school.id.toString());
         }
@@ -491,7 +495,15 @@ public class SpellBuilder {
                     1, 0, 0);
         }
 
-        public static ParticleBatch[] zoneMagic(long color, Identifier contour, List<Identifier> fillers, float multiplier, float radius) {
+        public static ParticleBatch aura(Identifier id) {
+            return new ParticleBatch(
+                    id.toString(),
+                    ParticleBatch.Shape.LINE, ParticleBatch.Origin.CENTER,
+                    1, 0, 0)
+                    .followEntity(true);
+        }
+
+        public static ParticleBatch[] zoneMagic(long color, Identifier contour, List<Identifier> fillers, float multiplier) {
             var particles = new ArrayList<ParticleBatch>();
             particles.add(
                     new ParticleBatch(
