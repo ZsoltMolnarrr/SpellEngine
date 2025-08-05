@@ -1371,14 +1371,25 @@ public class SpellHelper {
                     }
                     success = modified;
                 }
-                case TAUNT -> {
+                case AGGRO -> {
                     if (target instanceof MobEntity mob) {
                         // Ignoring taunt data, as it is empty currently
-                        //var tauntData = impact.action.taunt;
-                        // if (tauntData == null) {
-                        //    return false;
-                        // }
-                        mob.setTarget(caster);
+                        var aggroData = impact.action.aggro;
+                        if (aggroData == null) {
+                            return false;
+                        }
+                        if (aggroData.only_if_targeted && mob.getTarget() != caster) {
+                            return false; // Only taunt if the mob is already targeting the caster
+                        }
+                        // mob.setTarget(tauntData.reverse ? null : caster);
+                        switch (aggroData.mode) {
+                            case SET -> {
+                                mob.setTarget(caster);
+                            }
+                            case CLEAR -> {
+                                mob.setTarget(null);
+                            }
+                        }
                         success = true;
                     }
                 }
@@ -1633,7 +1644,7 @@ public class SpellHelper {
 
     public static SpellTarget.Intent impactIntent(Spell.Impact.Action action) {
         switch (action.type) {
-            case DAMAGE, FIRE, TAUNT -> {
+            case DAMAGE, FIRE, AGGRO -> {
                 return SpellTarget.Intent.HARMFUL;
             }
             case HEAL, SPAWN -> {

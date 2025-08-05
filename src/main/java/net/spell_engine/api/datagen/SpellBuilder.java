@@ -404,8 +404,19 @@ public class SpellBuilder {
         public static Spell.Impact taunt() {
             var taunt = new Spell.Impact();
             taunt.action = new Spell.Impact.Action();
-            taunt.action.type = Spell.Impact.Action.Type.TAUNT;
-            taunt.action.taunt = new Spell.Impact.Action.Taunt();
+            taunt.action.type = Spell.Impact.Action.Type.AGGRO;
+            taunt.action.aggro = new Spell.Impact.Action.Aggro();
+            taunt.action.aggro.mode = Spell.Impact.Action.Aggro.Mode.SET;
+            return taunt;
+        }
+
+        public static Spell.Impact disengage(boolean onlyIfTargeted) {
+            var taunt = new Spell.Impact();
+            taunt.action = new Spell.Impact.Action();
+            taunt.action.type = Spell.Impact.Action.Type.AGGRO;
+            taunt.action.aggro = new Spell.Impact.Action.Aggro();
+            taunt.action.aggro.mode = Spell.Impact.Action.Aggro.Mode.CLEAR;
+            taunt.action.aggro.only_if_targeted = onlyIfTargeted;
             return taunt;
         }
 

@@ -474,7 +474,7 @@ public class SpellTooltip {
                             }
                         }
                     }
-                    case TAUNT -> {
+                    case AGGRO -> {
                         // if (impact.action.taunt != null) {
                         //    var taunt = impact.action.taunt;
                         // }

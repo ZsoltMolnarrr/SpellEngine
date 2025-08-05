@@ -352,7 +352,7 @@ public class Spell {
                 SPAWN,
                 TELEPORT,
                 COOLDOWN,
-                TAUNT,
+                AGGRO,
                 CUSTOM
             }
             public Damage damage;
@@ -467,8 +467,18 @@ public class Spell {
                 }
             }
 
-            public Taunt taunt;
-            public static class Taunt { public Taunt() { }
+            public Aggro aggro;
+            public static class Aggro { public Aggro() { }
+                /// Executes the aggro change only of the caster is targeted by the target
+                public boolean only_if_targeted = false;
+                /// What to do with the aggro
+                public enum Mode {
+                    /// Taunt the target, so it will attack the caster
+                    SET,
+                    /// Clear the taunt from the target, so it will not attack the caster
+                    CLEAR
+                }
+                public Mode mode = Mode.SET;
             }
 
             public Custom custom;

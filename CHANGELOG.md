@@ -4,7 +4,10 @@ Functional changes:
 - Update loot injection defaults
 
 API Changes:
-- Extend `SpellBuilder`
+- Rework `TAUNT` action
+  - Now called `AGGRO`
+  - Options: `SET`, `CLEAR`
+- Extend `SpellBuilder` with new spell making methods
 - Vertically rendered `area_...` particle effects renamed to `aura_...`
 - Improved Spell Area Effect renderer
   - Properly follows entity motion
