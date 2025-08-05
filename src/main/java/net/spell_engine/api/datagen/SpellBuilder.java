@@ -168,13 +168,18 @@ public class SpellBuilder {
 
     public static class Triggers {
         public static Spell.Trigger activeSpellHit(float chance, @Nullable String schoolRegex) {
+            var trigger = spellHit(chance, schoolRegex);
+            trigger.spell.type = Spell.Type.ACTIVE;
+            return trigger;
+        }
+
+        public static Spell.Trigger spellHit(float chance, @Nullable String schoolRegex) {
             var trigger = new Spell.Trigger();
             trigger.impact = new Spell.Trigger.ImpactCondition();
             trigger.impact.impact_type = Spell.Impact.Action.Type.DAMAGE.toString();
             trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
             trigger.spell = new Spell.Trigger.SpellCondition();
             trigger.spell.school = schoolRegex;
-            trigger.spell.type = Spell.Type.ACTIVE;
             trigger.chance = chance;
             return trigger;
         }
@@ -474,10 +479,16 @@ public class SpellBuilder {
         public static ParticleBatch popUpSign(Identifier signId, Color color) {
             return new ParticleBatch(signId.toString(),
                     ParticleBatch.Shape.LINE_VERTICAL, ParticleBatch.Origin.CENTER,
-                    1, 0.75F, 0.75F)
+                    1, 0.8F, 0.8F)
                     .scale(0.8F)
                     .color(color.toRGBA())
                     .followEntity(true);
+        }
+
+        public static ParticleBatch area(Identifier id) {
+            return new ParticleBatch(id.toString(),
+                    ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.GROUND,
+                    1, 0, 0);
         }
 
         public static ParticleBatch[] zoneMagic(long color, Identifier contour, List<Identifier> fillers, float multiplier, float radius) {

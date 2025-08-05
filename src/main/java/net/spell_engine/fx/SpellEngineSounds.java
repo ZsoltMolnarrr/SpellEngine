@@ -97,6 +97,8 @@ public class SpellEngineSounds {
 
     public static final Entry STUN_GENERIC = add(new Entry("stun_generic"));
     public static final Entry GENERIC_DISPEL_1 = add(new Entry("generic_dispel_1"));
+    public static final Entry SPELL_COOLDOWN_IMPACT = add(new Entry("spell_cooldown_impact"));
+
 
     // MARK: Spell binding sounds
 

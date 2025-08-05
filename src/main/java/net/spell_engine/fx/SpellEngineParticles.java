@@ -283,6 +283,7 @@ public class SpellEngineParticles {
     public static final TemplateEntry area_swirl = addAreaEffect(new TemplateEntry("area_swirl", Texture.of("area/swirl", 16)));
     public static final TemplateEntry area_effect_293 = addAreaEffect(new TemplateEntry("area_effect_293", Texture.of("area/effect_293", 9)));
     public static final TemplateEntry area_effect_480 = addAreaEffect(new TemplateEntry("area_effect_480", Texture.of("area/effect_480", 12)));
+    public static final TemplateEntry area_effect_609 = addAreaEffect(new TemplateEntry("area_effect_609", Texture.of("area/effect_609", 13)));
     public static final TemplateEntry area_effect_658 = addAreaEffect(new TemplateEntry("area_effect_658", Texture.of("area/effect_658", 16)));
     public static final TemplateEntry area_effect_714 = addAreaEffect(new TemplateEntry("area_effect_714", Texture.of("area/effect_714", 22)));
     public static final TemplateEntry area_effect_715 = addAreaEffect(new TemplateEntry("area_effect_715", Texture.of("area/effect_715", 22)));
@@ -290,11 +291,11 @@ public class SpellEngineParticles {
 
     // Aura Effects
 
-    public static final TemplateEntry aura_effect_620 = addAreaEffect(new TemplateEntry("aura_effect_620", Texture.of("aura/effect_620", 18)).orientation(Orientation.VERTICAL));
     public static final TemplateEntry aura_effect_622 = addAreaEffect(new TemplateEntry("aura_effect_622", Texture.of("aura/effect_622", 14)).orientation(Orientation.VERTICAL));
     public static final TemplateEntry aura_effect_642 = addAreaEffect(new TemplateEntry("aura_effect_642", Texture.of("aura/effect_642", 14)).orientation(Orientation.VERTICAL));
     public static final TemplateEntry aura_effect_649 = addAreaEffect(new TemplateEntry("aura_effect_649", Texture.of("aura/effect_649", 13)).orientation(Orientation.VERTICAL));
     public static final TemplateEntry aura_effect_668 = addAreaEffect(new TemplateEntry("aura_effect_668", Texture.of("aura/effect_668", 16)).orientation(Orientation.VERTICAL));
+    public static final TemplateEntry aura_effect_691 = addAreaEffect(new TemplateEntry("aura_effect_691", Texture.of("aura/effect_691", 16)).orientation(Orientation.VERTICAL));
     public static final TemplateEntry aura_effect_716 = addAreaEffect(new TemplateEntry("aura_effect_716", Texture.of("aura/effect_716", 23)).orientation(Orientation.VERTICAL));
 
     static {
