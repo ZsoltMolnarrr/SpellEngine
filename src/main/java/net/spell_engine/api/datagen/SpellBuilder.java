@@ -106,9 +106,13 @@ public class SpellBuilder {
             return deadCondition;
         }
 
-        public static Spell.TargetCondition weak() {
+        public static Spell.TargetCondition lowHP() {
+            return lowHP(0.5F);
+        }
+
+        public static Spell.TargetCondition lowHP(float maxHealthPercent) {
             var deadCondition = new Spell.TargetCondition();
-            deadCondition.health_percent_below = 0.5F;
+            deadCondition.health_percent_below = maxHealthPercent;
             deadCondition.health_percent_above = 0.01F;
             return deadCondition;
         }

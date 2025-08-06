@@ -23,6 +23,17 @@ public record Color(float red, float green, float blue, float alpha) {
         return new Color(red, green, blue, alpha);
     }
 
+    public Color blend(Color other, float ratio) {
+        return blend(this, other, ratio);
+    }
+    public static Color blend(Color color1, Color color2, float ratio) {
+        float red = color1.red * (1 - ratio) + color2.red * ratio;
+        float green = color1.green * (1 - ratio) + color2.green * ratio;
+        float blue = color1.blue * (1 - ratio) + color2.blue * ratio;
+        float alpha = color1.alpha * (1 - ratio) + color2.alpha * ratio;
+        return new Color(red, green, blue, alpha);
+    }
+
     public record IntFormat(int red, int green, int blue, int alpha) {
         public static IntFormat fromLongRGBA(long rgba) {
             var red = (rgba >> 24) & 255;
