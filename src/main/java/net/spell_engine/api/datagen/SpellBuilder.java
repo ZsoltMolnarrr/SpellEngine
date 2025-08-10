@@ -198,6 +198,16 @@ public class SpellBuilder {
             return trigger;
         }
 
+        public static Spell.Trigger activeSpellCrit() {
+            var trigger = new Spell.Trigger();
+            trigger.impact = new Spell.Trigger.ImpactCondition();
+            trigger.impact.critical = true;
+            trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+            trigger.spell = new Spell.Trigger.SpellCondition();
+            trigger.spell.type = Spell.Type.ACTIVE;
+            return trigger;
+        }
+
         public static Spell.Trigger specificSpellAreaImpact(String spellId) {
             var trigger = new Spell.Trigger();
             trigger.type = Spell.Trigger.Type.SPELL_AREA_IMPACT;

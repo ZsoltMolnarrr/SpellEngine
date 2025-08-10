@@ -430,6 +430,7 @@ public class SpellTooltip {
             }
             if (spell.deliver.stash_effect != null) {
                 var stash = spell.deliver.stash_effect;
+                addToken("stash_amplifier", formattedNumber(stash.amplifier + 1), tokenReplacements);
                 addToken("stash_duration", formattedNumber(stash.duration), tokenReplacements);
                 triggers.addAll(stash.triggers);
             }
