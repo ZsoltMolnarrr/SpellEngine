@@ -426,14 +426,22 @@ public class SpellHelper {
             case DIRECT -> {
                 var anySuccess = false;
                 var casterPos = caster.getPos().add(0, caster.getHeight() / 2F, 0);
-                for(var targeted: targets) {
-                    var target = targeted.entity;
-                    var position = target == caster
-                            ? casterPos
-                            : target.getPos().add(0, target.getHeight() / 2F, 0).lerp(casterPos, 0.001F);
-                    var targetSpecificContext = targeted.context.position(position);
-                    var result = performImpacts(world, caster, target, target, spellEntry, spell.impacts, targetSpecificContext);
-                    anySuccess = anySuccess || result;
+                if (targets.isEmpty() && targetLocation != null
+                        && spell.area_impact != null) { // Special check to allow area impacts only, in the absence of targets
+                    var position = targetLocation.lerp(casterPos, 0.001F);
+                    var targetSpecificContext = context.position(position);
+                    performImpacts(world, caster, caster, caster, spellEntry, spell.impacts, targetSpecificContext);
+                    anySuccess = true; // The area impact will be executed, hence always true
+                } else {
+                    for(var targeted: targets) {
+                        var target = targeted.entity;
+                        var position = target == caster
+                                ? casterPos
+                                : target.getPos().add(0, target.getHeight() / 2F, 0).lerp(casterPos, 0.001F);
+                        var targetSpecificContext = targeted.context.position(position);
+                        var result = performImpacts(world, caster, target, target, spellEntry, spell.impacts, targetSpecificContext);
+                        anySuccess = anySuccess || result;
+                    }
                 }
                 delivered = anySuccess;
             }

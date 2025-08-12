@@ -2,6 +2,7 @@
 
 Functional changes:
 - Update loot injection defaults
+- Fix `flame_ground` particle frames
 
 API Changes:
 - Rework `TAUNT` action
@@ -14,6 +15,7 @@ API Changes:
   - Aura effects automatically scale with followed entity
 - Add new `area` and `aura` particle effects
 - Stash effects are now scalable with the new field: `amplifier_power_multiplier`
+- Allow `DIRECT` spell delivery, to perform its impacts with no target, when `area_impact` is present
 
 # 1.7.0
 
