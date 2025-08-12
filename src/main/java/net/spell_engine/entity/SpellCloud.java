@@ -5,6 +5,7 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -194,11 +195,15 @@ public class SpellCloud extends Entity implements Ownable {
 
             var presence_sound = cloudData.presence_sound;
             if (!presenceSoundFired && presence_sound != null) {
-                var soundEvent = SoundEvent.of(Identifier.of(presence_sound.id()));
-                ((SoundPlayerWorld)world).playSoundFromEntity(this, soundEvent, SoundCategory.PLAYERS,
-                        presence_sound.volume(),
-                        presence_sound.randomizedPitch());
-                presenceSoundFired = true;
+                var soundEvent = Registries.SOUND_EVENT.get(Identifier.of(presence_sound.id()));
+                if (soundEvent != null) {
+                    ((SoundPlayerWorld) world).playSoundFromEntity(this, soundEvent, SoundCategory.PLAYERS,
+                            presence_sound.volume(),
+                            presence_sound.randomizedPitch());
+                    presenceSoundFired = true;
+                } else {
+                    System.out.println("SpellCloud: Failed to find presence sound " + presence_sound.id());
+                }
             }
 
         } else {

@@ -3,6 +3,7 @@
 Functional changes:
 - Update loot injection defaults
 - Fix `flame_ground` particle frames
+- Fix rare spell cloud presence sound resolution crashes
 
 API Changes:
 - Rework `TAUNT` action
