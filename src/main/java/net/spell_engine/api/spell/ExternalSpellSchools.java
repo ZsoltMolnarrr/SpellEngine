@@ -34,6 +34,16 @@ public class ExternalSpellSchools {
             DamageTypes.ARROW,
             rangedDamageAttribute() // Extra compatibility for the absence of `ranged_weapon_api`
     );
+    public static final SpellSchool DEFENSE = new SpellSchool(SpellSchool.Archetype.MELEE,
+            Identifier.of(SpellPowerMod.ID, "defense"),
+            0xcccccc,
+            DamageTypes.PLAYER_ATTACK,
+            EntityAttributes.GENERIC_ARMOR);
+    public static final SpellSchool HEALTH = new SpellSchool(SpellSchool.Archetype.MELEE,
+            Identifier.of(SpellPowerMod.ID, "health"),
+            0xcc0000,
+            DamageTypes.PLAYER_ATTACK,
+            EntityAttributes.GENERIC_MAX_HEALTH);
 
     private static boolean initialized = false;
     public static void init() {
@@ -43,30 +53,14 @@ public class ExternalSpellSchools {
         // Probably several other mods perform this operation, but its no problem.
         EntityAttributes.GENERIC_ATTACK_DAMAGE.value().setTracked(true);
         PHYSICAL_MELEE.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {
-            var power = query.entity().getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
-
-            var world = query.entity().getWorld();
-            var sharpness = world.getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntry(Enchantments.SHARPNESS);
-            if (sharpness.isPresent()) {
-                var level = EnchantmentHelper.getLevel(sharpness.get(), query.entity().getMainHandStack());
-                power *= 1 + (0.05 * level);
-            }
-            return power;
+            return query.entity().getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
         });
         SpellSchools.configureSpellHaste(PHYSICAL_MELEE);
         SpellSchools.register(PHYSICAL_MELEE);
 
         if (FabricLoader.getInstance().isModLoaded("ranged_weapon_api")) {
             PHYSICAL_RANGED.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {
-                var power = query.entity().getAttributeValue(EntityAttributes_RangedWeapon.DAMAGE.entry);
-
-                var world = query.entity().getWorld();
-                var powerEnch = world.getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntry(Enchantments.POWER);
-                if (powerEnch.isPresent()) {
-                    var level = EnchantmentHelper.getLevel(powerEnch.get(), query.entity().getMainHandStack());
-                    power *= 1 + (0.05 * level);
-                }
-                return power;
+                return query.entity().getAttributeValue(EntityAttributes_RangedWeapon.DAMAGE.entry);
             });
             PHYSICAL_RANGED.addSource(SpellSchool.Trait.HASTE, SpellSchool.Apply.ADD, query -> {
                 var haste = query.entity().getAttributeValue(EntityAttributes_RangedWeapon.HASTE.entry); // 110
@@ -75,6 +69,16 @@ public class ExternalSpellSchools {
             });
         }
         SpellSchools.register(PHYSICAL_RANGED);
+
+        DEFENSE.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {
+            return query.entity().getAttributeValue(EntityAttributes.GENERIC_ARMOR);
+        });
+        SpellSchools.register(DEFENSE);
+
+        HEALTH.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {
+            return query.entity().getAttributeValue(EntityAttributes.GENERIC_MAX_HEALTH);
+        });
+        SpellSchools.register(HEALTH);
 
         initialized = true;
     }

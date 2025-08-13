@@ -4,6 +4,7 @@ Functional changes:
 - Update loot injection defaults
 - Fix `flame_ground` particle frames
 - Fix rare spell cloud presence sound resolution crashes
+- Fix Melee and Ranged spell schools double counting enchantments
 
 API Changes:
 - Rework `TAUNT` action
@@ -17,6 +18,7 @@ API Changes:
 - Add new `area` and `aura` particle effects
 - Stash effects are now scalable with the new field: `amplifier_power_multiplier`
 - Allow `DIRECT` spell delivery, to perform its impacts with no target, when `area_impact` is present
+- Add new external Spell Schools (Defense, Health)
 
 # 1.7.0
 
