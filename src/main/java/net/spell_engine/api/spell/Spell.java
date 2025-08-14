@@ -276,9 +276,11 @@ public class Spell {
 
             /// ID of the status effect, that will stash this spell.
             public String id;
-            /// Stacks to apply (-1)
+            /// Stacks to apply -1
             public int amplifier = 0;
             public float amplifier_power_multiplier = 0;
+            /// Whether effect stacks should be added one by one, or all at once
+            public boolean stacking = false;
             /// Duration of the status effect in seconds
             public float duration = 10;
             public boolean show_particles = false;
@@ -289,6 +291,8 @@ public class Spell {
             public int consume = 1;
             /// Whether the stash effect should be consumed next tick
             public boolean consumed_next_tick = false;
+            /// Whether the stash effect should consume the stack available, or wait for larger than `consume` stacks
+            public boolean consume_any_stacks = false;
             /// Determines what happens to the impacts of the spell when using this stash
             public ImpactMode impact_mode = ImpactMode.PERFORM;
             public enum ImpactMode {

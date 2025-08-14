@@ -109,6 +109,16 @@
       "spell_engine:generic_wind_charging"
     ]
   },
+  "poison_cloud_spawn": {
+    "sounds": [
+      "spell_engine:poison_cloud_spawn"
+    ]
+  },
+  "poison_cloud_tick": {
+    "sounds": [
+      "spell_engine:poison_cloud_tick"
+    ]
+  },
   "spell_cooldown_impact": {
     "sounds": [
       "spell_engine:spell_cooldown_impact"

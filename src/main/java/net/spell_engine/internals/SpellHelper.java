@@ -509,9 +509,21 @@ public class SpellHelper {
                     }
                 }
                 for (var targeted: targets) {
-                    var instance = new StatusEffectInstance(effect, (int) (stash.duration * 20), amplifier, false, stash.show_particles, true);
                     if (targeted.entity() instanceof LivingEntity livingEntity) {
-                        livingEntity.addStatusEffect(instance);
+                        if (stash.stacking) {
+                            var stack = -1;
+                            var existingInstance = livingEntity.getStatusEffect(effect);
+                            if (existingInstance != null) {
+                                stack = existingInstance.getAmplifier();
+                                livingEntity.removeStatusEffect(effect);
+                            }
+                            stack += 1;
+                            var instance = new StatusEffectInstance(effect, (int) (stash.duration * 20), Math.min(stack, amplifier), false, stash.show_particles, true);
+                            livingEntity.addStatusEffect(instance);
+                        } else {
+                            var instance = new StatusEffectInstance(effect, (int) (stash.duration * 20), amplifier, false, stash.show_particles, true);
+                            livingEntity.addStatusEffect(instance);
+                        }
                         anyAdded = true;
                     }
                 }

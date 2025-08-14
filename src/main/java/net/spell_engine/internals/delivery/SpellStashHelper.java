@@ -1,7 +1,6 @@
 package net.spell_engine.internals.delivery;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
@@ -58,7 +57,7 @@ public class SpellStashHelper {
                     }
                 }
 
-                SpellStash.configure(statusEffect, entry, stashEffect.triggers, stashEffect.impact_mode, stashEffect.consume, stashEffect.consumed_next_tick);
+                SpellStash.configure(statusEffect, entry, stashEffect.triggers, stashEffect.impact_mode, stashEffect.consume, stashEffect.consumed_next_tick, stashEffect.consume_any_stacks);
             }
         });
     }
@@ -80,7 +79,7 @@ public class SpellStashHelper {
 
                     var consume = stash.consume();
                     var stacksAvailable = effectChanges.getOrDefault(stack, new StatusEffectUtil.Diff(stack, stack.getAmplifier(), stash.delayConsume() ? 1 : 0)).newAmplifier();
-                    if ((stacksAvailable + 1) < consume) {
+                    if (!stash.consume_any_stacks() && ((stacksAvailable + 1) < consume) ) {
                         continue;
                     }
 

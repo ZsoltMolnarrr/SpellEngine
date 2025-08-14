@@ -424,6 +424,17 @@ public class SpellBuilder {
             return cleanse;
         }
 
+        public static Spell.Impact effectRemove(String effectIdString) {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.STATUS_EFFECT;
+            impact.action.status_effect = new Spell.Impact.Action.StatusEffect();
+            impact.action.status_effect.apply_mode = Spell.Impact.Action.StatusEffect.ApplyMode.REMOVE;
+            impact.action.status_effect.remove = new Spell.Impact.Action.StatusEffect.Remove();
+            impact.action.status_effect.remove.id = effectIdString;
+            return impact;
+        }
+
         public static Spell.Impact stun(float duration) {
             var impact = effectSet(SpellEngineEffects.STUN.id.toString(), duration, 0);
             impact.sound = new Sound(SpellEngineSounds.STUN_GENERIC.id().toString());
@@ -636,6 +647,50 @@ public class SpellBuilder {
             };
             area_impact.sound = new Sound(SpellEngineSounds.GENERIC_FIRE_IMPACT_1.id());
             return area_impact;
+        }
+
+        public static void poisonCloud(Spell spell, float radius, float cloudDuration, float effectDuration, int effectAmplifierCap, float coefficient) {
+            spell.deliver.type = Spell.Delivery.Type.CLOUD;
+            spell.deliver.delay = 8;
+            var cloud = new Spell.Delivery.Cloud();
+            cloud.volume.radius = radius;
+            cloud.volume.area.vertical_range_multiplier = 0.3F;
+            cloud.volume.sound = new Sound(SpellEngineSounds.POISON_CLOUD_TICK.id().toString());
+            cloud.impact_tick_interval = 8;
+            cloud.time_to_live_seconds = cloudDuration;
+            cloud.spawn.sound = new Sound(SpellEngineSounds.POISON_CLOUD_SPAWN.id().toString());
+            cloud.client_data = new Spell.Delivery.Cloud.ClientData();
+            cloud.client_data.light_level = 0;
+            cloud.client_data.particles = new ParticleBatch[] {
+                    new ParticleBatch(SpellEngineParticles.smoke_large.id().toString(),
+                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
+                            1, 0.01F, 0.02F)
+                            .color(0x99FF66AAL),
+                    new ParticleBatch(SpellEngineParticles.smoke_large.id().toString(),
+                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
+                            1, 0.01F, 0.02F)
+                            .color(0x33DD33EE),
+            };
+            spell.deliver.clouds = List.of(cloud);
+
+            var impact = SpellBuilder.Impacts.effectAdd("poison", effectDuration, 1, effectAmplifierCap);
+            impact.action.status_effect.amplifier_cap_power_multiplier = coefficient;
+            impact.action.status_effect.show_particles = true;
+
+            impact.particles = new ParticleBatch[]{
+                    new ParticleBatch(SpellEngineParticles.smoke_large.id().toString(),
+                            ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER,
+                            0.5F, 0.01F, 0.02F)
+                            .color(0x33DD33AA),
+                    new ParticleBatch(
+                            SpellEngineParticles.MagicParticles.get(
+                                    SpellEngineParticles.MagicParticles.Shape.SKULL,
+                                    SpellEngineParticles.MagicParticles.Motion.DECELERATE).id().toString(),
+                            ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER,
+                            3, 0.1F, 0.2F)
+                            .color(0x33DD33AA)
+            };
+            spell.impacts = List.of(impact);
         }
     }
 }

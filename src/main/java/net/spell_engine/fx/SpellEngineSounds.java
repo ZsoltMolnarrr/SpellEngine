@@ -99,6 +99,9 @@ public class SpellEngineSounds {
     public static final Entry GENERIC_DISPEL_1 = add(new Entry("generic_dispel_1"));
     public static final Entry SPELL_COOLDOWN_IMPACT = add(new Entry("spell_cooldown_impact"));
 
+    public static final Entry POISON_CLOUD_SPAWN = add(new Entry("poison_cloud_spawn"));
+    public static final Entry POISON_CLOUD_TICK = add(new Entry("poison_cloud_tick"));
+
 
     // MARK: Spell binding sounds
 
