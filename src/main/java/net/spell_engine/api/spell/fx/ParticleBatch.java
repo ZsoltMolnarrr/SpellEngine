@@ -136,6 +136,16 @@ public class ParticleBatch { public ParticleBatch() { }
         return new ParticleBatch(this);
     }
 
+    public ParticleBatch origin(Origin origin) {
+        this.origin = origin;
+        return this;
+    }
+
+    public ParticleBatch shape(Shape shape) {
+        this.shape = shape;
+        return this;
+    }
+
     public ParticleBatch rotate(Rotation rotation) {
         this.rotation = rotation;
         return this;

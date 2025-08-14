@@ -357,6 +357,13 @@ public class SpellBuilder {
             trigger.effect.id = effectId;
             return trigger;
         }
+
+        public static Spell.Trigger becomingLowHP(float healthThreshold) {
+            var trigger = SpellBuilder.Triggers.damageTaken();
+            trigger.stage = Spell.Trigger.Stage.POST;
+            trigger.caster_conditions = List.of(SpellBuilder.TargetConditions.lowHP(healthThreshold));
+            return trigger;
+        }
     }
 
     public static class Impacts {
