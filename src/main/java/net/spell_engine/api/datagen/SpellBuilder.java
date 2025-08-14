@@ -349,6 +349,14 @@ public class SpellBuilder {
             trigger.type = Spell.Trigger.Type.DAMAGE_TAKEN;
             return trigger;
         }
+
+        public static Spell.Trigger effectTick(String effectId) {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.EFFECT_TICK;
+            trigger.effect = new Spell.Trigger.EffectCondition();
+            trigger.effect.id = effectId;
+            return trigger;
+        }
     }
 
     public static class Impacts {

@@ -3,6 +3,7 @@ package net.spell_engine.internals;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.Vec3d;
@@ -25,6 +26,7 @@ import net.spell_engine.utils.PatternMatching;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 public class SpellTriggers {
@@ -51,6 +53,8 @@ public class SpellTriggers {
         public float damageAmount = 0;
 
         @Nullable public MeleeCompat.Attack melee;
+
+        @Nullable public RegistryEntry<StatusEffect> statusEffect;
 
         public Event(Spell.Trigger.Type type, PlayerEntity player, @Nullable Entity aoeSource, @Nullable Entity target) {
             this.type = type;
@@ -154,6 +158,12 @@ public class SpellTriggers {
         var event = new Event(Spell.Trigger.Type.SPELL_AREA_IMPACT, player, target, target);
         event.location = location;
         event.spell = spell;
+        fireTriggers(event);
+    }
+
+    public static void onEffectTick(PlayerEntity player, RegistryEntry<StatusEffect> effect) {
+        var event = new Event(Spell.Trigger.Type.EFFECT_TICK, player, player, null);
+        event.statusEffect = effect;
         fireTriggers(event);
     }
 
@@ -289,6 +299,9 @@ public class SpellTriggers {
             case MELEE_IMPACT -> {
                 result = evaluate(event.melee, trigger.melee);
             }
+            case EFFECT_TICK -> {
+                result = evaluate(event, trigger.effect);
+            }
             default -> {
                 result = true;
             }
@@ -362,6 +375,22 @@ public class SpellTriggers {
             return false;
         }
         if (condition.is_offhand != null && melee.isOffhand() != condition.is_offhand) {
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean evaluate(Event event, Spell.Trigger.EffectCondition condition) {
+        if (condition == null) {
+            return true;
+        }
+        if (event.statusEffect == null) {
+            return false;
+        }
+        // PatternMatching.matches(event.statusEffect, Registries.STATUS_EFFECT.getKey(), condition.effect_id)
+        // doesn't work due to the legacy type of Registries.STATUS_EFFECT
+        if (condition.id != null
+                && !Objects.equals(event.statusEffect.getKey().get().getValue().toString(), condition.id)) {
             return false;
         }
         return true;

@@ -560,6 +560,7 @@ public class Spell {
             MELEE_IMPACT,
             SPELL_CAST, SPELL_IMPACT_ANY, SPELL_IMPACT_SPECIFIC,
             SPELL_AREA_IMPACT,
+            EFFECT_TICK, /// Only works for specifically coded Status Effect implementations
             DAMAGE_TAKEN, SHIELD_BLOCK,
             ROLL  /// Only works when Combat Roll mod is installed
         }
@@ -615,6 +616,12 @@ public class Spell {
         public static class MeleeCondition { public MeleeCondition() { }
             @Nullable public Boolean is_combo;
             @Nullable public Boolean is_offhand;
+        }
+        /// Evaluated for: EFFECT_TICK
+        public EffectCondition effect;
+        public static class EffectCondition { public EffectCondition() { }
+            /// ID of the status effect
+            public String id;
         }
     }
 

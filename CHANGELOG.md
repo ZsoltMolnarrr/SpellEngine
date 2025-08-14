@@ -19,6 +19,9 @@ API Changes:
 - Stash effects are now scalable with the new field: `amplifier_power_multiplier`
 - Allow `DIRECT` spell delivery, to perform its impacts with no target, when `area_impact` is present
 - Add new external Spell Schools (Defense, Health)
+- Add new trigger: `EFFECT_TICK`
+  - Only works for specifically coded Status Effect implementations
+  - Reference implementation: `TickingStatusEffect`
 
 # 1.7.0
 

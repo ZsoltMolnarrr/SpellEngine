@@ -20,13 +20,13 @@ public class PatternMatching {
             return true;
         }
         if (pattern.startsWith(NEGATE_PREFIX)) {
-            return !matchesCore(entry, registryKey, pattern.substring(1));
+            return !entryMatches(entry, registryKey, pattern.substring(1));
         } else {
-            return matchesCore(entry, registryKey, pattern);
+            return entryMatches(entry, registryKey, pattern);
         }
     }
 
-    public static <T> boolean matchesCore(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, String pattern) {
+    public static <T> boolean entryMatches(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, String pattern) {
         if (pattern.startsWith(TAG_PREFIX)) {
             var tag = TagKey.of(registryKey, Identifier.of(pattern.substring(1)));
             return entry.isIn(tag);
