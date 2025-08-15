@@ -126,6 +126,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
             getOrCreateTagBuilder(SpellEngineDamageTypeTags.EVADABLE)
                     // .addTag(DamageTypeTags.IS_PROJECTILE)
+                    .addOptionalTag(DamageTypeTags.IS_PROJECTILE.id())
                     .add(DamageTypes.PLAYER_ATTACK)
                     .add(DamageTypes.GENERIC)
                     .add(DamageTypes.MOB_ATTACK)

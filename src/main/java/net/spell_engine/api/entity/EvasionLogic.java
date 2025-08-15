@@ -15,6 +15,10 @@ import net.spell_engine.utils.VectorHelper;
 import java.util.Random;
 
 public class EvasionLogic {
+    public interface Evader {
+        DamageSource getLastEvaded();
+        void setLastEvaded(DamageSource source);
+    }
     private static final Random RNG = new Random();
     public static boolean tryEvade(LivingEntity entity, DamageSource source) {
         if (entity.isSleeping()) {

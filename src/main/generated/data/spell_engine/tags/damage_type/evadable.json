@@ -1,5 +1,9 @@
 {
   "values": [
+    {
+      "id": "#minecraft:is_projectile",
+      "required": false
+    },
     "minecraft:player_attack",
     "minecraft:generic",
     "minecraft:mob_attack",

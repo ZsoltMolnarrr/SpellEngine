@@ -38,6 +38,7 @@
     "entity.PlayerProtectionEffectMixin",
     "entity.PlayerSpellContainerMixin",
     "evasion.LivingEntityEvasionMixin",
+    "evasion.ProjectileEvasionMixin",
     "item.ArmorMaterialLayerAccessor",
     "item.GrindstoneScreenHandlerMixin",
     "item.GrindstoneSlotInputMixin",

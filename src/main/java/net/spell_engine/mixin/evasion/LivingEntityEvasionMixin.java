@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
-public class LivingEntityEvasionMixin {
+public class LivingEntityEvasionMixin implements EvasionLogic.Evader {
     @Inject(
             method = "damage",
             at = @At(
@@ -22,8 +22,19 @@ public class LivingEntityEvasionMixin {
         var entity = (LivingEntity) (Object) this;
         if (EvasionLogic.tryEvade(entity, source)) {
             EvasionLogic.onEvade(entity, source);
+            lastEvaded = source;
             cir.setReturnValue(false);
             cir.cancel();
         }
+    }
+
+    private DamageSource lastEvaded = null;
+    @Override
+    public DamageSource getLastEvaded() {
+        return lastEvaded;
+    }
+    @Override
+    public void setLastEvaded(DamageSource source) {
+        this.lastEvaded = source;
     }
 }
