@@ -13,6 +13,7 @@
 
   "attribute.name.spell_engine.healing_taken" : "Healing Taken",
   "attribute.name.spell_engine.damage_taken" : "Damage Taken",
+  "attribute.name.spell_engine.evasion_chance" : "Evasion Chance",
 
   "spell.spell_engine.use_item.name": "Use Item",
   "spell.spell_engine.use_item.description": "Use one of the held items.",

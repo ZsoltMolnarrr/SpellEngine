@@ -57,6 +57,14 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     public String blacklist_spell_casting_regex = "";
 
     @Comment("""
+            Evasion to work within certain angle of attack
+            Example values:
+            - `0` - any attack can be evaded
+            - `90` (default) - no attack from behind can be evaded
+            """)
+    public float attribute_evasion_angle = 120F;
+
+    @Comment("""
             Relations determine which cases the effect of a player casted spell can effect a target.
             +----------------+-------+----------+----------+----------+--------+
             |                | ALLY  | FRIENDLY | NEUTRAL  | HOSTILE  | MIXED  |

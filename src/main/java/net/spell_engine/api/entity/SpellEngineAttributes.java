@@ -43,6 +43,10 @@ public class SpellEngineAttributes {
             return attributeValue / baseValue;
         }
 
+        public double asChance(double attributeValue) {
+            return (attributeValue - baseValue) / baseValue;
+        }
+
         public void register() {
             entry = Registry.registerReference(Registries.ATTRIBUTE, id, attribute);
         }
@@ -51,6 +55,7 @@ public class SpellEngineAttributes {
     public static Entry HEALING_TAKEN = add(new Entry("healing_taken", 0, 100, false));
     public static Entry DAMAGE_TAKEN = add(new Entry("damage_taken", 0, 100, false))
             .category(EntityAttribute.Category.NEGATIVE);
+    public static Entry EVASION_CHANCE = add(new Entry("evasion_chance", 0, 100, false));
 
     public static void register() {
         all.forEach(Entry::register);

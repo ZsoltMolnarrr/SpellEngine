@@ -3,10 +3,16 @@ package net.spell_engine.data_gen;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.minecraft.entity.damage.DamageType;
+import net.minecraft.entity.damage.DamageTypes;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.datagen.SimpleParticleGenerator;
 import net.spell_engine.api.datagen.SimpleSoundGeneratorV2;
+import net.spell_engine.api.tags.SpellEngineDamageTypeTags;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.rpg_series.datagen.RPGSeriesDataGen;
@@ -20,6 +26,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
         pack.addProvider(ParticlesGen::new);
         pack.addProvider(SoundGen::new);
+        pack.addProvider(DamageTypeTagGen::new);
         pack.addProvider(RPGSeriesDataGen.BaselineTagGenerator::new);
 
         // TestDataGen.addTo(pack);
@@ -107,6 +114,22 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
                                     .toList()
                     )
             );
+        }
+    }
+
+    public static class DamageTypeTagGen extends FabricTagProvider<DamageType> {
+        public DamageTypeTagGen(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+            super(output, RegistryKeys.DAMAGE_TYPE, registriesFuture);
+        }
+
+        @Override
+        protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
+            getOrCreateTagBuilder(SpellEngineDamageTypeTags.EVADABLE)
+                    // .addTag(DamageTypeTags.IS_PROJECTILE)
+                    .add(DamageTypes.PLAYER_ATTACK)
+                    .add(DamageTypes.GENERIC)
+                    .add(DamageTypes.MOB_ATTACK)
+                    .add(DamageTypes.MOB_ATTACK_NO_AGGRO);
         }
     }
 }

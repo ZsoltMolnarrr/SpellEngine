@@ -22,6 +22,10 @@ API Changes:
 - Add new trigger: `EFFECT_TICK`
   - Only works for specifically coded Status Effect implementations
   - Reference implementation: `TickingStatusEffect`
+- Add new mechanic: Evasion
+  - new attribute: `spell_engine:evasion_chance` (applied to all living entities)
+  - melee attacks and ranged attacks can be evaded, preventing damage taken
+  - evadable damage types listed under `spell_engine:evadable` damage type tag
 
 # 1.7.0
 

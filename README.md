@@ -49,7 +49,7 @@ Primary types:
 
 Fully data driven, (stored in a DynamicRegistry).
 - Data file example path: `resources/data/MOD_ID/spells/SPELL_ID.json`
-- Assigned to items using Spell Assignments type (see below)
+- Assigned to items susing Spell Assignments type (see below)
 
 ### Spell assignments
 

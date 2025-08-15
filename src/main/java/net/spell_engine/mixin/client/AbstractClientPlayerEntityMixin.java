@@ -42,6 +42,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
 
     private final AnimationSubStack castingAnimation = new AnimationSubStack(createPitchAdjustment_SpellEngine());
     private final AnimationSubStack releaseAnimation = new AnimationSubStack(createPitchAdjustment_SpellEngine());
+    private final AnimationSubStack miscAnimation = new AnimationSubStack(createPitchAdjustment_SpellEngine());
     private boolean castingAnimationPitching = true;
 
     @Inject(method = "<init>", at = @At("TAIL"))
@@ -49,6 +50,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         var stack = ((IAnimatedPlayer) this).getAnimationStack();
         stack.addAnimLayer(950, releaseAnimation.base);
         stack.addAnimLayer(900, castingAnimation.base);
+        stack.addAnimLayer(200, miscAnimation.base);
     }
 
     @Override
@@ -183,6 +185,9 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
                 copy.head.pitch.setEnabled(false);
                 copy.head.yaw.setEnabled(true);
                 var mirror = isLeftHanded_SpellEngine();
+                if (type == SpellCast.Animation.MISC) {
+                    mirror = getWorld().random.nextBoolean();
+                }
 
                 var fadeIn = copy.beginTick;
                 stack.mirror.setEnabled(mirror);
@@ -210,6 +215,9 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             }
             case RELEASE -> {
                 return releaseAnimation;
+            }
+            case MISC -> {
+                return miscAnimation;
             }
         }
         assert true;

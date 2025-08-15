@@ -1,0 +1,29 @@
+package net.spell_engine.mixin.evasion;
+
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
+import net.spell_engine.api.entity.EvasionLogic;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+@Mixin(LivingEntity.class)
+public class LivingEntityEvasionMixin {
+    @Inject(
+            method = "damage",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/entity/LivingEntity;isSleeping()Z"
+            ),
+            cancellable = true
+    )
+    private void damage_SpellEngine_Evasion(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+        var entity = (LivingEntity) (Object) this;
+        if (EvasionLogic.tryEvade(entity, source)) {
+            EvasionLogic.onEvade(entity, source);
+            cir.setReturnValue(false);
+            cir.cancel();
+        }
+    }
+}

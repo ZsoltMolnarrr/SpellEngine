@@ -121,6 +121,6 @@ public class SpellCast {
     }
 
     public enum Animation {
-        CASTING, RELEASE
+        CASTING, RELEASE, MISC
     }
 }
