@@ -8,7 +8,25 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public record SpellContainer(ContentType content, boolean is_proxy, String pool, String slot, int max_spell_count, List<String> spell_ids) {
+public record SpellContainer(
+        /// Type of content this container, needs to be matched with the container
+        /// that is allowing the spell casting
+        /// (Serves to avoid using archery spells in melee weapons, etc.)
+        ContentType content,
+        /// If set to true, this container allows container resolution
+        /// all spells the player has access to, will be available to cast
+        boolean is_proxy,
+        /// Pool (spell tag) of spells this container can be assigned to.
+        /// For example: `#wizards:fire`
+        String pool,
+        /// Restrict the container to provide its content only when equipped in a specified slot.
+        /// For example: `off_hand` for shield specific spells
+        /// If absent, no restriction is applied.
+        String slot,
+        /// Maximum number of spells that can be assigned to this container.
+        int max_spell_count,
+        /// List of spells by ID, this container currently holds.
+        List<String> spell_ids) {
     public enum ContentType {
         ANY, MAGIC, ARCHERY;
         public static Codec<ContentType> CODEC = Codec.STRING.xmap(ContentType::valueOf, ContentType::name);
