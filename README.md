@@ -55,11 +55,16 @@ Fully data driven, (stored in a DynamicRegistry).
 
 Spells can be assigned to items, by pairing a `SpellContainer` to the item.
 
-This can be done in multiple ways:
-- Item Component
-- Data file
+A [Spell Container](src/main/java/net/spell_engine/api/spell/container/SpellContainer.java) can be assigned to an item, or hosted by a skill tree node. Contains information about:
+- List of spells it holds
+- Maximum number of spells it can hold
+- Whether it is a proxy (allows casting all currently owned spells)
 
-(Priority of these methods follows the order of the list above.) 
+Spell Container to item assignment methods (listed in priority of use):
+- Item data component from meta data (for example: spawning item with command)
+- Item data component from default components 
+- Spell Assignment data file (this is a legacy feature)
+- Automatic (fallback) container assignment done by Spell Engine   
 
 #### Assignment with Item Component
 
@@ -388,7 +393,7 @@ The two solutions can be combined.
 
 Assign zero, one or more spells to an item, by creating a JSON file at: `resources/data/MOD_ID/spell_assignments/ITEM_ID.json`.
 
-Your JSON file will be parsed into a [Spell Container](common/src/main/java/net/spell_engine/api/spell/SpellContainer.java).
+Your JSON file will be parsed into a [Spell Container](src/main/java/net/spell_engine/api/spell/container/SpellContainer.java).
 
 Example wand (one spell assigned, no more can be added)
 ```
