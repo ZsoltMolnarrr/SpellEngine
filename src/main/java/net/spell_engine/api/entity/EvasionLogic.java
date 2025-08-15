@@ -7,6 +7,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.event.CombatEvents;
 import net.spell_engine.api.tags.SpellEngineDamageTypeTags;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.utils.AnimationHelper;
@@ -20,7 +21,7 @@ public class EvasionLogic {
         void setLastEvaded(DamageSource source);
     }
     private static final Random RNG = new Random();
-    public static boolean tryEvade(LivingEntity entity, DamageSource source) {
+    public static boolean tryEvade(LivingEntity entity, float damage, DamageSource source) {
         if (entity.isSleeping()) {
             return false;
         }
@@ -42,12 +43,13 @@ public class EvasionLogic {
         return false;
     }
 
-    public static void onEvade(LivingEntity entity, DamageSource source) {
+    public static void onEvade(LivingEntity entity, float damage, DamageSource source) {
         // System.out.println("SpellEngine: " + entity.getName().getString() + " evaded damage from " + source.getName() + "!");
         if (entity instanceof ServerPlayerEntity player) {
             var tracker = PlayerLookup.tracking(player);
             AnimationHelper.sendAnimation(player, tracker, SpellCast.Animation.MISC, "spell_engine:dodge", 1F);
         }
         entity.getWorld().playSound(null, entity.getX(), entity.getY(), entity.getZ(), SoundEvents.ENTITY_PLAYER_ATTACK_NODAMAGE, entity.getSoundCategory(), 1.0F, 1.0F);
+        CombatEvents.ENTITY_EVASION.invoke(listener -> listener.onEntityEvasion(new CombatEvents.EntityEvasion.Args(entity, damage, source)));
     }
 }

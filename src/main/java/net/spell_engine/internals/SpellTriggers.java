@@ -107,6 +107,9 @@ public class SpellTriggers {
         SpellEvents.SPELL_CAST.register(args -> {
             onSpellCast(args.caster(), args.spell(), args.targets());
         });
+        CombatEvents.ENTITY_EVASION.register(args -> {
+            onEvasion(args.entity(), args.damageAmount(), args.source());
+        });
     }
 
     public static void onArrowShot(ArrowExtension arrow, PlayerEntity player) {
@@ -192,6 +195,18 @@ public class SpellTriggers {
 
     public static void onRoll(PlayerEntity player) {
         var event = new Event(Spell.Trigger.Type.ROLL, player, player, null);
+        fireTriggers(event);
+    }
+
+    public static void onEvasion(LivingEntity entity, float damageAmount, DamageSource source) {
+        var player = (PlayerEntity) entity;
+        Entity sourceEntity = source.getAttacker();
+        if (sourceEntity == null) {
+            return; // No event without attacker (environmental damage)
+        }
+        var event = new Event(Spell.Trigger.Type.EVASION, player, player, sourceEntity);
+        event.damageSource = source;
+        event.damageAmount = damageAmount;
         fireTriggers(event);
     }
 

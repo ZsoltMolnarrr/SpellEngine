@@ -19,13 +19,15 @@ API Changes:
 - Stash effects are now scalable with the new field: `amplifier_power_multiplier`
 - Allow `DIRECT` spell delivery, to perform its impacts with no target, when `area_impact` is present
 - Add new external Spell Schools (Defense, Health)
-- Add new trigger: `EFFECT_TICK`
+- Add new spell trigger: `EFFECT_TICK`
   - Only works for specifically coded Status Effect implementations
   - Reference implementation: `TickingStatusEffect`
 - Add new mechanic: Evasion
   - new attribute: `spell_engine:evasion_chance` (applied to all living entities)
   - melee attacks and ranged attacks can be evaded, preventing damage taken
   - evadable damage types listed under `spell_engine:evadable` damage type tag
+- Add new spell trigger: `EVASION`
+  - triggers when evading an attack
 
 # 1.7.0
 

@@ -20,8 +20,8 @@ public class LivingEntityEvasionMixin implements EvasionLogic.Evader {
     )
     private void damage_SpellEngine_Evasion(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         var entity = (LivingEntity) (Object) this;
-        if (EvasionLogic.tryEvade(entity, source)) {
-            EvasionLogic.onEvade(entity, source);
+        if (EvasionLogic.tryEvade(entity, amount, source)) {
+            EvasionLogic.onEvade(entity, amount, source);
             lastEvaded = source;
             cir.setReturnValue(false);
             cir.cancel();

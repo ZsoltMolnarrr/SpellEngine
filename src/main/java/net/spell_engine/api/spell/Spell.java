@@ -565,6 +565,7 @@ public class Spell {
             SPELL_CAST, SPELL_IMPACT_ANY, SPELL_IMPACT_SPECIFIC,
             SPELL_AREA_IMPACT,
             EFFECT_TICK, /// Only works for specifically coded Status Effect implementations
+            EVASION, /// Performed when the caster evades an attack
             DAMAGE_TAKEN, SHIELD_BLOCK,
             ROLL  /// Only works when Combat Roll mod is installed
         }

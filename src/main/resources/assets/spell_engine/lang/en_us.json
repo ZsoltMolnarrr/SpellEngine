@@ -38,6 +38,8 @@
   "spell.tooltip.trigger.spell_area_impact": "spell area effect",
   "spell.tooltip.trigger.damage_taken": "taking damage",
   "spell.tooltip.trigger.shield_block": "blocking with shield",
+  "spell.tooltip.trigger.effect_tick": "effect presence",
+  "spell.tooltip.trigger.evasion": "evasion",
   "spell.tooltip.trigger.roll": "rolling",
   "spell.tooltip.range": "Range: {range} block",
   "spell.tooltip.range.plural": "Range: {range} blocks",

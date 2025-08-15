@@ -48,4 +48,10 @@ public class CombatEvents {
         record Args(PlayerEntity player, DamageSource source, float amount) {}
         void onShieldBlock(Args args);
     }
+
+    public static final Event<EntityEvasion> ENTITY_EVASION = new Event<EntityEvasion>();
+    public interface EntityEvasion {
+        record Args(LivingEntity entity, float damageAmount, DamageSource source) {}
+        void onEntityEvasion(Args args);
+    }
 }
