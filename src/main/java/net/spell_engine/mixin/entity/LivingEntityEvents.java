@@ -33,26 +33,28 @@ public abstract class LivingEntityEvents {
         }
     }
 
-    @WrapOperation(
-            method = "damage",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;applyDamage(Lnet/minecraft/entity/damage/DamageSource;F)V")
-    )
-    private void damage_ApplyDamage_entity(
-            // Mixin parameters
-            LivingEntity instance, DamageSource source, float amount, Operation<Void> original
-    ) {
-        if (CombatEvents.ENTITY_DAMAGE_INCOMING.isListened()) {
-            var args = new CombatEvents.EntityDamageTaken.Args(instance, source, amount);
-            CombatEvents.ENTITY_DAMAGE_INCOMING.invoke(listener -> listener.onDamageTaken(args));
-        }
-        if (instance instanceof PlayerEntity player) {
-            if (CombatEvents.PLAYER_DAMAGE_INCOMING.isListened()) {
-                var args = new CombatEvents.PlayerDamageTaken.Args(player, source, amount);
-                CombatEvents.PLAYER_DAMAGE_INCOMING.invoke(listener -> listener.onPlayerDamageTaken(args));
-            }
-        }
-        original.call(instance, source, amount);
-    }
+    /// Logic moved into `LivingEntityHealthImpacting` mixin
+    /// to avoid conflicting order
+//    @WrapOperation(
+//            method = "damage",
+//            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;applyDamage(Lnet/minecraft/entity/damage/DamageSource;F)V")
+//    )
+//    private void damage_ApplyDamage_entity(
+//            // Mixin parameters
+//            LivingEntity instance, DamageSource source, float amount, Operation<Void> original
+//    ) {
+//        if (CombatEvents.ENTITY_DAMAGE_INCOMING.isListened()) {
+//            var args = new CombatEvents.EntityDamageTaken.Args(instance, source, amount);
+//            CombatEvents.ENTITY_DAMAGE_INCOMING.invoke(listener -> listener.onDamageTaken(args));
+//        }
+//        if (instance instanceof PlayerEntity player) {
+//            if (CombatEvents.PLAYER_DAMAGE_INCOMING.isListened()) {
+//                var args = new CombatEvents.PlayerDamageTaken.Args(player, source, amount);
+//                CombatEvents.PLAYER_DAMAGE_INCOMING.invoke(listener -> listener.onPlayerDamageTaken(args));
+//            }
+//        }
+//        original.call(instance, source, amount);
+//    }
 
     @Inject(method = "damage", at = @At("RETURN"))
     private void damage_RETURN_entity(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {

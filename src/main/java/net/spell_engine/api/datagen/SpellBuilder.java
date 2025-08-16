@@ -344,6 +344,12 @@ public class SpellBuilder {
             return trigger;
         }
 
+        public static Spell.Trigger evade() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.EVASION;
+            return trigger;
+        }
+
         public static Spell.Trigger damageTaken() {
             var trigger = new Spell.Trigger();
             trigger.type = Spell.Trigger.Type.DAMAGE_TAKEN;
