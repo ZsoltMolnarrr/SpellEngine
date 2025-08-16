@@ -1,6 +1,7 @@
 # 1.7.1
 
 Functional changes:
+- Add spell cooldown reset announcements
 - Update loot injection defaults
 - Fix `flame_ground` particle frames
 - Fix rare spell cloud presence sound resolution crashes

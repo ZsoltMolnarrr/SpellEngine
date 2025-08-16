@@ -11,6 +11,7 @@ import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class SpellCooldownManager {
@@ -153,5 +154,9 @@ public class SpellCooldownManager {
         this.tick = baseTick;
         this.entries.clear();
         this.entries.putAll(cooldowns);
+    }
+
+    public List<Identifier> spellsOnCooldown() {
+        return this.entries.keySet().stream().toList();
     }
 }

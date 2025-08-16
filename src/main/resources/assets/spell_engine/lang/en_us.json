@@ -73,6 +73,8 @@
   "hud.action_impaired.silence": "Silenced",
   "hud.action_impaired.incapacitate": "Incapacitated",
   "hud.action_impaired.stun": "Stunned",
+  "hud.cooldown_cleared.single": "%1$s ready!",
+  "hud.cooldown_cleared.multiple": "Spells ready!",
 
   "keybindings.spell_engine.tooltip_details" : "Tooltip spell details",
   "keybindings.spell_engine.bypass_spell_hotbar" : "Bypass Spell Hotbar",

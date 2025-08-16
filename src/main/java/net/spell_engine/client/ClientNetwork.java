@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.animation.AnimatablePlayer;
+import net.spell_engine.client.gui.HudMessages;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.container.SpellAssignments;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -54,7 +55,11 @@ public class ClientNetwork {
         ClientPlayNetworking.registerGlobalReceiver(Packets.SpellCooldownSync.PACKET_ID, (packet, context) -> {
             var client = context.client();
             client.execute(() -> {
-                ((SpellCasterEntity)client.player).getCooldownManager().acceptSync(packet.baseTick(), packet.cooldowns());
+                var cooldownManager = ((SpellCasterEntity)client.player).getCooldownManager();
+                var cooldownsBefore = cooldownManager.spellsOnCooldown();
+                cooldownManager.acceptSync(packet.baseTick(), packet.cooldowns());
+                var cooldownsAfter = cooldownManager.spellsOnCooldown();
+                HudMessages.INSTANCE.onCooldownsChanged(cooldownsBefore, cooldownsAfter);
             });
         });
 

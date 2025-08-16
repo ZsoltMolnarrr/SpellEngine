@@ -5,10 +5,13 @@ import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.spell_engine.api.effect.EntityActionsAllowed;
+import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.internals.casting.SpellCast;
 
+import java.util.List;
 import java.util.Locale;
 
 public class HudMessages {
@@ -16,7 +19,7 @@ public class HudMessages {
     public static final int DEFAULT_ERROR_MESSAGE_DURATION = 20;
     public static final int DEFAULT_ERROR_MESSAGE_FADEOUT = 10;
 
-    private ErrorMessageState currentError;
+    private MessageState currentMessage;
 
     private static final String castAttemptPrefix = "hud.cast_attempt_error.";
     private boolean attemptDisplayed = false;
@@ -56,7 +59,7 @@ public class HudMessages {
     }
 
     public void error(String message, int duration, int fadeOut) {
-        currentError = new ErrorMessageState(message, duration, fadeOut);
+        currentMessage = MessageState.error(message, duration, fadeOut);
     }
 
     public void error(Text text) {
@@ -64,15 +67,51 @@ public class HudMessages {
     }
 
     public void error(Text text, int duration, int fadeOut) {
-        currentError = new ErrorMessageState(text, duration, fadeOut);
+        currentMessage = new MessageState(text, duration, fadeOut);
+    }
+
+    public void onCooldownsChanged(List<Identifier> before, List<Identifier> after) {
+        var cooldownsRemoved = before.stream()
+                .filter(spellId -> !after.contains(spellId))
+                .toList();
+        var world = MinecraftClient.getInstance().world;
+        if (world == null) {
+            return; // No world loaded, cannot display message
+        }
+        if (cooldownsRemoved.isEmpty()) {
+            return;
+        }
+        if (cooldownsRemoved.size() == 1) {
+            var spellId = cooldownsRemoved.getFirst();
+            var spellEntry = SpellRegistry.from(world).getEntry(spellId).orElse(null);
+            if (spellEntry == null) {
+                return; // Spell not found, cannot display message
+            }
+            var spellName = SpellTooltip.spellTranslationKey(spellId);
+            infoQuick(Text.translatable("hud.cooldown_cleared.single", I18n.translate(spellName) ));
+        } else {
+            infoQuick(Text.translatable("hud.cooldown_cleared.multiple"));
+        }
+    }
+
+    public void info(Text message) {
+        info(message, DEFAULT_ERROR_MESSAGE_DURATION, DEFAULT_ERROR_MESSAGE_FADEOUT);
+    }
+
+    public void infoQuick(Text message) {
+        info(message, DEFAULT_ERROR_MESSAGE_DURATION / 2, DEFAULT_ERROR_MESSAGE_FADEOUT / 2);
+    }
+
+    public void info(Text message, int duration, int fadeOut) {
+        currentMessage = new MessageState(message, duration, fadeOut);
     }
 
     public void tick() {
-        if (currentError != null) {
-            if (currentError.durationLeft <= 0) {
-                currentError = null;
+        if (currentMessage != null) {
+            if (currentMessage.durationLeft <= 0) {
+                currentMessage = null;
             } else {
-                currentError.durationLeft -= 1;
+                currentMessage.durationLeft -= 1;
             }
         }
         var client = MinecraftClient.getInstance();
@@ -81,17 +120,15 @@ public class HudMessages {
         }
     }
 
-    public static class ErrorMessageState {
-        public ErrorMessageState(String message, int durationLeft, int fadeOut) {
-            this.message = Text.literal(message).formatted(Formatting.RED);
+    public static class MessageState {
+        public MessageState(Text message, int durationLeft, int fadeOut) {
+            this.message = message;
             this.durationLeft = durationLeft;
             this.fadeOut = fadeOut;
         }
 
-        public ErrorMessageState(Text message, int durationLeft, int fadeOut) {
-            this.message = message;
-            this.durationLeft = durationLeft;
-            this.fadeOut = fadeOut;
+        public static MessageState error(String message, int durationLeft, int fadeOut) {
+            return new MessageState(Text.literal(message).formatted(Formatting.RED), durationLeft, fadeOut);
         }
 
         public Text message;
@@ -99,7 +136,7 @@ public class HudMessages {
         public int fadeOut;
     }
 
-    public ErrorMessageState currentError() {
-        return currentError;
+    public MessageState currentError() {
+        return currentMessage;
     }
 }
