@@ -11,12 +11,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PatternMatching {
+    public static final String ANY = "*";
     public static final String TAG_PREFIX = "#";
     public static final String REGEX_PREFIX = "~";
     public static final String NEGATE_PREFIX = "!";
 
     public static <T> boolean matches(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
-        if (pattern == null) {
+        if (pattern == null || pattern.isEmpty() || pattern.equals(ANY)) {
             return true;
         }
         if (pattern.startsWith(NEGATE_PREFIX)) {
@@ -43,7 +44,7 @@ public class PatternMatching {
         if (subject == null) {
             return false;
         }
-        if (regex == null || regex.isEmpty() || regex.equals("*")) {
+        if (regex == null || regex.isEmpty()) {
             return true;
         }
         Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);

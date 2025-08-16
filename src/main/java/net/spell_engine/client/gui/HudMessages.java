@@ -88,9 +88,9 @@ public class HudMessages {
                 return; // Spell not found, cannot display message
             }
             var spellName = SpellTooltip.spellTranslationKey(spellId);
-            infoQuick(Text.translatable("hud.cooldown_cleared.single", I18n.translate(spellName) ));
+            info(Text.translatable("hud.cooldown_cleared.single", I18n.translate(spellName) ));
         } else {
-            infoQuick(Text.translatable("hud.cooldown_cleared.multiple"));
+            info(Text.translatable("hud.cooldown_cleared.multiple"));
         }
     }
 
