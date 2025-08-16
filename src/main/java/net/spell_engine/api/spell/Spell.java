@@ -616,6 +616,19 @@ public class Spell {
             @Nullable public String impact_type;
             @Nullable public Boolean critical;
         }
+
+        public DamageCondition damage;
+        public static class DamageCondition { public DamageCondition() { }
+            /// Minimum damage
+            @Nullable public Float amount_min = null;
+            /// Maximum damage
+            @Nullable public Float amount_max = null;
+            /// Damage type pattern
+            @Nullable public String damage_type;
+            /// Whether the damage amount is greater than the amount of health the target has
+            @Nullable public Boolean fatal;
+        }
+
         /// Evaluated for: MELEE_IMPACT
         public MeleeCondition melee;
         public static class MeleeCondition { public MeleeCondition() { }

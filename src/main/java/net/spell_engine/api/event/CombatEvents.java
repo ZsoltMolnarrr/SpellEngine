@@ -25,12 +25,14 @@ public class CombatEvents {
         void onItemUseStart(Args args);
     }
 
+    public static final Event<EntityDamageTaken> ENTITY_DAMAGE_INCOMING = new Event<EntityDamageTaken>();
     public static final Event<EntityDamageTaken> ENTITY_DAMAGE_TAKEN = new Event<EntityDamageTaken>();
     public interface EntityDamageTaken {
         record Args(LivingEntity entity, DamageSource source, float amount) {}
         void onDamageTaken(Args args);
     }
 
+    public static final Event<PlayerDamageTaken> PLAYER_DAMAGE_INCOMING = new Event<PlayerDamageTaken>();
     public static final Event<PlayerDamageTaken> PLAYER_DAMAGE_TAKEN = new Event<PlayerDamageTaken>();
     public interface PlayerDamageTaken {
         record Args(PlayerEntity player, DamageSource source, float amount) {}

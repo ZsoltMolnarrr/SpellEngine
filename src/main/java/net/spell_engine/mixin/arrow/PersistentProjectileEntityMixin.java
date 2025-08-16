@@ -222,9 +222,9 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         var owner = arrow.getOwner();
         if (entity.getWorld().isClient() || spellEntries.isEmpty()) {
 
-            var result =  original.call(entity, damageSource, amount);
+            var result = original.call(entity, damageSource, amount);
             if (owner instanceof PlayerEntity shooter) {
-                SpellTriggers.onArrowImpact((ArrowExtension) arrow, shooter, entity);
+                SpellTriggers.onArrowImpact((ArrowExtension) arrow, shooter, entity, damageSource, amount);
             }
             return result;
         } else {
@@ -264,7 +264,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
                 performImpacts(spellEntry, entity, entityHitResult);
             }
             if (owner instanceof PlayerEntity shooter) {
-                SpellTriggers.onArrowImpact((ArrowExtension) arrow, shooter, entity);
+                SpellTriggers.onArrowImpact((ArrowExtension) arrow, shooter, entity, damageSource, amount);
             }
 
             if (pushedKnockback) {

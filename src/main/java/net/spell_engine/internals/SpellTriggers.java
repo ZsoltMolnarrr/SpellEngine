@@ -5,6 +5,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.api.event.CombatEvents;
@@ -51,6 +52,7 @@ public class SpellTriggers {
 
         @Nullable public DamageSource damageSource;
         public float damageAmount = 0;
+        public boolean damageFatal = false;
 
         @Nullable public MeleeCompat.Attack melee;
 
@@ -101,6 +103,9 @@ public class SpellTriggers {
         CombatEvents.PLAYER_DAMAGE_TAKEN.register(args -> {
             onDamageTaken(args.player(), args.source(), args.amount());
         });
+        CombatEvents.PLAYER_DAMAGE_INCOMING.register(args -> {
+            onDamageIncoming(args.player(), args.source(), args.amount());
+        });
         CombatEvents.PLAYER_SHIELD_BLOCK.register(args -> {
             onShieldBlock(args.player(), args.source(), args.amount());
         });
@@ -118,9 +123,11 @@ public class SpellTriggers {
         fireTriggers(event);
     }
 
-    public static void onArrowImpact(ArrowExtension arrow, PlayerEntity player, Entity target) {
+    public static void onArrowImpact(ArrowExtension arrow, PlayerEntity player, Entity target, DamageSource damageSource, float damageAmount) {
         var event = new Event(Spell.Trigger.Type.ARROW_IMPACT, player, target, target);
         event.arrow = arrow;
+        event.damageSource = damageSource;
+        event.damageAmount = damageAmount;
         fireTriggers(event);
     }
 
@@ -167,6 +174,19 @@ public class SpellTriggers {
     public static void onEffectTick(PlayerEntity player, RegistryEntry<StatusEffect> effect) {
         var event = new Event(Spell.Trigger.Type.EFFECT_TICK, player, player, null);
         event.statusEffect = effect;
+        fireTriggers(event);
+    }
+
+    public static void onDamageIncoming(PlayerEntity player, DamageSource source, float amount) {
+        Entity sourceEntity = source.getAttacker();
+        if (sourceEntity == null) {
+            return; // No event without attacker (environmental damage)
+        }
+        var event = new Event(Spell.Trigger.Type.DAMAGE_TAKEN, player, player, sourceEntity);
+        event.stage = Spell.Trigger.Stage.PRE;
+        event.damageFatal = amount >= player.getHealth();
+        event.damageSource = source;
+        event.damageAmount = amount;
         fireTriggers(event);
     }
 
@@ -306,16 +326,30 @@ public class SpellTriggers {
         boolean result;
         switch (trigger.type) {
             case SPELL_CAST, SPELL_IMPACT_ANY, SPELL_AREA_IMPACT -> {
-                result = evaluate(event.spell, trigger.spell);
+                result = evaluateSpellCast(event.spell, trigger.spell)
+                    && evaluateDamage(trigger.damage, event);
             }
             case SPELL_IMPACT_SPECIFIC -> {
-                result = evaluate(event.spell, trigger.spell) && evaluate(event.impact, event.criticalImpact, trigger.impact);
+                result = evaluateSpellCast(event.spell, trigger.spell)
+                        && evaluateSpellImpact(event.impact, event, trigger.impact)
+                        && evaluateDamage(trigger.damage, event);
+            }
+            case ARROW_IMPACT, EVASION -> {
+                result = evaluateDamage(trigger.damage, event);
             }
             case MELEE_IMPACT -> {
-                result = evaluate(event.melee, trigger.melee);
+                result = evaluateMelee(event.melee, trigger.melee)
+                        && evaluateDamage(trigger.damage, event);
             }
             case EFFECT_TICK -> {
-                result = evaluate(event, trigger.effect);
+                result = evaluateEffect(event, trigger.effect);
+            }
+            case DAMAGE_TAKEN -> {
+                result = evaluateSpellImpact(null, event, trigger.impact)
+                        && evaluateDamage(trigger.damage, event);
+            }
+            case ARROW_SHOT, SHIELD_BLOCK, ROLL -> {
+                result = true;
             }
             default -> {
                 result = true;
@@ -329,7 +363,7 @@ public class SpellTriggers {
         return result;
     }
 
-    private static boolean evaluate(@Nullable RegistryEntry<Spell> spellEntry, @Nullable Spell.Trigger.SpellCondition condition) {
+    private static boolean evaluateSpellCast(@Nullable RegistryEntry<Spell> spellEntry, @Nullable Spell.Trigger.SpellCondition condition) {
         if (condition == null) {
             return true;
         }
@@ -361,7 +395,7 @@ public class SpellTriggers {
         return true;
     }
 
-    private static boolean evaluate(@Nullable Spell.Impact impact, boolean eventImpactIsCritical, @Nullable Spell.Trigger.ImpactCondition condition) {
+    private static boolean evaluateSpellImpact(@Nullable Spell.Impact impact, Event event, @Nullable Spell.Trigger.ImpactCondition condition) {
         if (condition == null) {
             return true;
         }
@@ -373,13 +407,33 @@ public class SpellTriggers {
             return false;
         }
         if (condition.critical != null
-                && condition.critical != eventImpactIsCritical) {
+                && condition.critical != event.criticalImpact) {
             return false;
         }
         return true;
     }
 
-    private static boolean evaluate(@Nullable MeleeCompat.Attack melee, @Nullable Spell.Trigger.MeleeCondition condition) {
+    private static boolean evaluateDamage(@Nullable Spell.Trigger.DamageCondition condition, Event event) {
+        if (condition == null) {
+            return true;
+        }
+        if (condition.damage_type != null && event.damageSource != null
+                && !PatternMatching.matches(event.damageSource.getTypeRegistryEntry(), RegistryKeys.DAMAGE_TYPE, condition.damage_type)) {
+            return false;
+        }
+        if (condition.amount_min != null && event.damageAmount < condition.amount_min) {
+            return false;
+        }
+        if (condition.amount_max != null && event.damageAmount > condition.amount_max) {
+            return false;
+        }
+        if (condition.fatal != null && event.damageFatal != condition.fatal) {
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean evaluateMelee(@Nullable MeleeCompat.Attack melee, @Nullable Spell.Trigger.MeleeCondition condition) {
         if (condition == null) {
             return true;
         }
@@ -395,7 +449,7 @@ public class SpellTriggers {
         return true;
     }
 
-    private static boolean evaluate(Event event, Spell.Trigger.EffectCondition condition) {
+    private static boolean evaluateEffect(Event event, Spell.Trigger.EffectCondition condition) {
         if (condition == null) {
             return true;
         }

@@ -29,6 +29,8 @@ API Changes:
   - evadable damage types listed under `spell_engine:evadable` damage type tag
 - Add new spell trigger: `EVASION`
   - triggers when evading an attack
+- Add new spell trigger: `DAMAGE_TAKEN` with stage `PRE` 
+  - triggers when taking damage, before the damage is applied (damage amount is unmitigated)
 
 # 1.7.0
 

@@ -350,6 +350,20 @@ public class SpellBuilder {
             return trigger;
         }
 
+        public static Spell.Trigger damageIncoming() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.DAMAGE_TAKEN;
+            trigger.stage = Spell.Trigger.Stage.PRE;
+            return trigger;
+        }
+
+        public static Spell.Trigger damageIncomingFatal() {
+            var trigger = damageIncoming();
+            trigger.damage = new Spell.Trigger.DamageCondition();
+            trigger.damage.fatal = true;
+            return trigger;
+        }
+
         public static Spell.Trigger effectTick(String effectId) {
             var trigger = new Spell.Trigger();
             trigger.type = Spell.Trigger.Type.EFFECT_TICK;

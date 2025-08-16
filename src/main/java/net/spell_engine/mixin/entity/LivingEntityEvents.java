@@ -8,13 +8,14 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.api.event.CombatEvents;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
-public class LivingEntityEvents {
+public abstract class LivingEntityEvents {
     @Inject(method = "onAttacking", at = @At("HEAD"))
     private void onAttacking_HEAD_Event(Entity target, CallbackInfo ci) {
         var entity = (LivingEntity) (Object) this;
@@ -30,6 +31,27 @@ public class LivingEntityEvents {
                 CombatEvents.PLAYER_ANY_ATTACK.invoke(listener -> listener.onPlayerAttack(args));
             }
         }
+    }
+
+    @WrapOperation(
+            method = "damage",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;applyDamage(Lnet/minecraft/entity/damage/DamageSource;F)V")
+    )
+    private void damage_ApplyDamage_entity(
+            // Mixin parameters
+            LivingEntity instance, DamageSource source, float amount, Operation<Void> original
+    ) {
+        if (CombatEvents.ENTITY_DAMAGE_INCOMING.isListened()) {
+            var args = new CombatEvents.EntityDamageTaken.Args(instance, source, amount);
+            CombatEvents.ENTITY_DAMAGE_INCOMING.invoke(listener -> listener.onDamageTaken(args));
+        }
+        if (instance instanceof PlayerEntity player) {
+            if (CombatEvents.PLAYER_DAMAGE_INCOMING.isListened()) {
+                var args = new CombatEvents.PlayerDamageTaken.Args(player, source, amount);
+                CombatEvents.PLAYER_DAMAGE_INCOMING.invoke(listener -> listener.onPlayerDamageTaken(args));
+            }
+        }
+        original.call(instance, source, amount);
     }
 
     @Inject(method = "damage", at = @At("RETURN"))
