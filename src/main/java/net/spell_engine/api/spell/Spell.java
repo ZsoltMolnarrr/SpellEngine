@@ -509,6 +509,8 @@ public class Spell {
         public int pierce = 0;
         public float knockback = 1;
         public ParticleBatch[] travel_particles = new ParticleBatch[]{};
+        public ParticleBatch[] launch_particles = new ParticleBatch[]{};
+        @Nullable public Sound launch_sound;
         @Nullable public ProjectileModel override_render;
     }
 
@@ -628,7 +630,6 @@ public class Spell {
             /// Whether the damage amount is greater than the amount of health the target has
             @Nullable public Boolean fatal;
         }
-
         /// Evaluated for: MELEE_IMPACT
         public MeleeCondition melee;
         public static class MeleeCondition { public MeleeCondition() { }
@@ -640,6 +641,14 @@ public class Spell {
         public static class EffectCondition { public EffectCondition() { }
             /// ID of the status effect
             public String id;
+        }
+        /// Evaluated for: ARROW_SHOT
+        public ArrowShotCondition arrow_shot;
+        public static class ArrowShotCondition { public ArrowShotCondition() { }
+            /// Defines the source of the arrow shot
+            /// `true`  - from a spell
+            /// `false` - from a bow or crossbow
+            @Nullable public Boolean from_spell;
         }
     }
 

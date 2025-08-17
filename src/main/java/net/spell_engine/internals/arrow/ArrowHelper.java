@@ -4,17 +4,23 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellModifiers;
+import net.spell_engine.utils.SoundHelper;
 import net.spell_engine.utils.WorldScheduler;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.mixin.item.RangedWeaponAccessor;
+
+import java.util.Collection;
+import java.util.function.Supplier;
 
 public class ArrowHelper {
     public static void shootArrow(World world, LivingEntity shooter, RegistryEntry<Spell> spellEntry, SpellHelper.ImpactContext context) {
@@ -56,7 +62,10 @@ public class ArrowHelper {
 
             // Save as active spell
             if (shooter instanceof SpellCasterEntity caster) {
-                caster.setTemporaryActiveSpell(spellEntry);
+                var shotContext = new ArrowShootContext();
+                shotContext.firedBySpell = true;
+                shotContext.activeSpells.add(spellEntry);
+                caster.setArrowShootContext(shotContext);
             }
             var divergence = (sequenceIndex == 0) ? 0F : shoot_arrow.divergence;
             // Perform shoot
@@ -87,7 +96,7 @@ public class ArrowHelper {
             }
 
             if (shooter instanceof SpellCasterEntity caster) {
-                caster.setTemporaryActiveSpell(null);
+                caster.setArrowShootContext(ArrowShootContext.EMPTY);
             }
 
             var extra_launch = mutableLaunchProperties.extra_launch_count;
@@ -103,6 +112,17 @@ public class ArrowHelper {
                     });
                 }
             }
+        }
+    }
+
+    public static void onArrowShot(ArrowExtension arrow, LivingEntity shooter, RegistryEntry<Spell> spellEntry,
+                                   Supplier<Collection<ServerPlayerEntity>> trackers) {
+        if (spellEntry.value().arrow_perks != null) {
+            var arrowPerks = spellEntry.value().arrow_perks;
+            var world = shooter.getWorld();
+            arrow.applyArrowPerks(spellEntry);
+            ParticleHelper.sendBatches(shooter, arrowPerks.launch_particles, 1F, trackers.get());
+            SoundHelper.playSound(world, shooter, arrowPerks.launch_sound);
         }
     }
 }

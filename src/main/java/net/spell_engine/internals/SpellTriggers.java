@@ -58,6 +58,8 @@ public class SpellTriggers {
 
         @Nullable public RegistryEntry<StatusEffect> statusEffect;
 
+        public boolean arrowFiredBySpell = false;
+
         public Event(Spell.Trigger.Type type, PlayerEntity player, @Nullable Entity aoeSource, @Nullable Entity target) {
             this.type = type;
             this.player = player;
@@ -117,9 +119,10 @@ public class SpellTriggers {
         });
     }
 
-    public static void onArrowShot(ArrowExtension arrow, PlayerEntity player) {
+    public static void onArrowShot(ArrowExtension arrow, PlayerEntity player, boolean firedBySpell) {
         var event = new Event(Spell.Trigger.Type.ARROW_SHOT, player, player, null);
         event.arrow = arrow;
+        event.arrowFiredBySpell = firedBySpell;
         fireTriggers(event);
     }
 
@@ -348,7 +351,10 @@ public class SpellTriggers {
                 result = evaluateSpellImpact(null, event, trigger.impact)
                         && evaluateDamage(trigger.damage, event);
             }
-            case ARROW_SHOT, SHIELD_BLOCK, ROLL -> {
+            case ARROW_SHOT -> {
+                result = evaluateArrowShot(event, trigger.arrow_shot);
+            }
+            case SHIELD_BLOCK, ROLL -> {
                 result = true;
             }
             default -> {
@@ -460,6 +466,20 @@ public class SpellTriggers {
         // doesn't work due to the legacy type of Registries.STATUS_EFFECT
         if (condition.id != null
                 && !Objects.equals(event.statusEffect.getKey().get().getValue().toString(), condition.id)) {
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean evaluateArrowShot(Event event, Spell.Trigger.ArrowShotCondition condition) {
+        if (condition == null) {
+            return true;
+        }
+        if (event.arrow == null) {
+            return false;
+        }
+        if (condition.from_spell != null
+                && event.arrowFiredBySpell != condition.from_spell) {
             return false;
         }
         return true;

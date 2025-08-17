@@ -10,6 +10,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.*;
+import net.spell_engine.internals.arrow.ArrowShootContext;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCastSyncHelper;
 import net.spell_engine.internals.casting.SpellCasterEntity;
@@ -78,14 +79,14 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         return 1F; // Fallback value
     }
 
-    private RegistryEntry<Spell> temporaryActiveSpell = null;
+    private ArrowShootContext arrowShotContext = ArrowShootContext.EMPTY;
     @Override
-    public void setTemporaryActiveSpell(@Nullable RegistryEntry<Spell> spellEntry) {
-        temporaryActiveSpell = spellEntry;
+    public void setArrowShootContext(ArrowShootContext shotContext) {
+        arrowShotContext = shotContext;
     }
     @Override
-    @Nullable public RegistryEntry<Spell> getTemporaryActiveSpell() {
-        return temporaryActiveSpell;
+    public ArrowShootContext getArrowShootContext() {
+        return arrowShotContext;
     }
 
     @Override

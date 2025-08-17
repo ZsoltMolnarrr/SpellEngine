@@ -1,6 +1,8 @@
 package net.spell_engine.internals.delivery;
 
+import com.google.common.base.Suppliers;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
@@ -9,6 +11,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellTriggers;
+import net.spell_engine.internals.arrow.ArrowHelper;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.utils.StatusEffectUtil;
 import net.spell_power.api.SpellPower;
@@ -101,8 +104,10 @@ public class SpellStashHelper {
                         }
                         case TRANSFER -> {
                             var arrow = event.arrow;
-                            if (arrow != null && spellEntry.value().arrow_perks != null) {
-                                arrow.applyArrowPerks(spellEntry);
+                            if (arrow != null) {
+                                var shooter = event.player;
+                                var trackers = Suppliers.memoize(() -> PlayerLookup.tracking(shooter));
+                                ArrowHelper.onArrowShot(arrow, shooter, spellEntry, trackers);
                             }
                         }
                     }

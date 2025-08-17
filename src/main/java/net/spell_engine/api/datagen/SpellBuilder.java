@@ -338,6 +338,19 @@ public class SpellBuilder {
             return trigger;
         }
 
+        public static Spell.Trigger arrowShot() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.ARROW_SHOT;
+            return trigger;
+        }
+
+        public static Spell.Trigger arrowShot(boolean firedBySpell) {
+            var trigger = arrowShot();
+            trigger.arrow_shot = new Spell.Trigger.ArrowShotCondition();
+            trigger.arrow_shot.from_spell = firedBySpell;
+            return trigger;
+        }
+
         public static Spell.Trigger roll() {
             var trigger = new Spell.Trigger();
             trigger.type = Spell.Trigger.Type.ROLL;

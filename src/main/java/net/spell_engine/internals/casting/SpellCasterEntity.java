@@ -3,6 +3,7 @@ package net.spell_engine.internals.casting;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.SpellCooldownManager;
+import net.spell_engine.internals.arrow.ArrowShootContext;
 import org.jetbrains.annotations.Nullable;
 
 public interface SpellCasterEntity {
@@ -18,8 +19,8 @@ public interface SpellCasterEntity {
     float getCurrentCastingSpeed();
 
     // Used for Archery
-    void setTemporaryActiveSpell(@Nullable RegistryEntry<Spell> spellEntry);
-    @Nullable RegistryEntry<Spell> getTemporaryActiveSpell();
+    void setArrowShootContext(ArrowShootContext shotContext);
+    ArrowShootContext getArrowShootContext();
 
     boolean isBeaming();
     @Nullable

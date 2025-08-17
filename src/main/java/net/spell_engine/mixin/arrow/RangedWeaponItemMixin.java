@@ -1,7 +1,9 @@
 package net.spell_engine.mixin.arrow;
 
+import com.google.common.base.Suppliers;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
@@ -10,10 +12,13 @@ import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.world.World;
 import net.spell_engine.internals.SpellTriggers;
 import net.spell_engine.internals.arrow.ArrowExtension;
+import net.spell_engine.internals.arrow.ArrowHelper;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.utils.WorldScheduler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+
+import java.util.function.Supplier;
 
 @Mixin(RangedWeaponItem.class)
 public class RangedWeaponItemMixin {
@@ -26,16 +31,16 @@ public class RangedWeaponItemMixin {
         if (shooter instanceof PlayerEntity player
                 && projectile instanceof ArrowExtension arrow) {
             var caster = (SpellCasterEntity) player;
-            var activeSpellEntry = caster.getTemporaryActiveSpell();
-            if (activeSpellEntry != null) {
-                if (activeSpellEntry.value().arrow_perks != null) {
-                    arrow.applyArrowPerks(activeSpellEntry);
-                }
-            }
+            var shotContext = caster.getArrowShootContext();
 
+            var trackers = Suppliers.memoize(() -> PlayerLookup.tracking(shooter));
+            for (var spellEntry: shotContext.activeSpells) {
+                ArrowHelper.onArrowShot(arrow, shooter, spellEntry, trackers);
+            }
             // Avoid arrow shot event listeners self triggering
+            final var firedBySpell = shotContext.firedBySpell;
             ((WorldScheduler)world).schedule(0, () -> {
-                SpellTriggers.onArrowShot(arrow, player);
+                SpellTriggers.onArrowShot(arrow, player, firedBySpell);
             });
             // SpellTriggers.onArrowShot(arrow, player);
         }
