@@ -516,6 +516,32 @@ public class SpellBuilder {
         }
     }
 
+    public static class ImpactModifiers {
+        private static Spell.Impact.TargetModifier create(String entityType) {
+            var condition = new Spell.TargetCondition();
+            condition.entity_type = entityType;
+            var modifier = new Spell.Impact.TargetModifier();
+            modifier.conditions = List.of(condition);
+            return modifier;
+        }
+
+        private static Spell.Impact.TargetModifier extraDamageAgainstUndead() {
+            var modifier = create("#minecraft:undead");
+            var powerModifier = new Spell.Impact.Modifier();
+            powerModifier.power_multiplier = 0.5F;
+            modifier.modifier = powerModifier;
+            return modifier;
+        }
+
+        private static Spell.Impact.TargetModifier alwaysCritAgainstUndead() {
+            var modifier = create("#minecraft:undead");
+            var powerModifier = new Spell.Impact.Modifier();
+            powerModifier.critical_chance_bonus = 1F;
+            modifier.modifier = powerModifier;
+            return modifier;
+        }
+    }
+
     public static class Cost {
         public static void exhaust(Spell spell, float exhaust) {
             if (spell.cost == null) {

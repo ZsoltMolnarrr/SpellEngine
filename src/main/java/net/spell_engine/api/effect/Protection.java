@@ -31,6 +31,10 @@ public class Protection {
         register(effectEntry.getKey().get(), new Entry(effectEntry, null, 1, pop, pop));
     }
 
+    public static void register(RegistryEntry<StatusEffect> effectEntry, TagKey<DamageType> protects, Pop pop) {
+        register(effectEntry.getKey().get(), new Entry(effectEntry, protects, 1, pop, pop));
+    }
+
     public static void register(RegistryKey<StatusEffect> key, Entry entry) {
         PROTECTIONS.put(key, entry);
     }
