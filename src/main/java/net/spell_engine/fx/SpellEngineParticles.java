@@ -268,10 +268,15 @@ public class SpellEngineParticles {
     public static final TemplateEntry smoke_medium = addTemplate(new TemplateEntry("smoke_medium", Texture.of("smoke_medium", 9)));
     public static final TemplateEntry smoke_large = addTemplate(new TemplateEntry("smoke_large", Texture.vanilla("big_smoke", 12)));
 
-    public static final TemplateEntry sign_speed = addSignEffect(new TemplateEntry("sign_speed", Texture.of("sign/speed")));
-    public static final TemplateEntry sign_shield = addSignEffect(new TemplateEntry("sign_shield", Texture.of("sign/shield")));
-    public static final TemplateEntry sign_hourglass = addSignEffect(new TemplateEntry("sign_hourglass", Texture.of("sign/hourglass")));
+    public static final TemplateEntry sign_aggro = addSignEffect(new TemplateEntry("sign_aggro", Texture.of("sign/aggro")));
+    public static final TemplateEntry sign_arrow = addSignEffect(new TemplateEntry("sign_arrow", Texture.of("sign/arrow")));
+    public static final TemplateEntry sign_cast = addSignEffect(new TemplateEntry("sign_cast", Texture.of("sign/cast")));
     public static final TemplateEntry sign_fist = addSignEffect(new TemplateEntry("sign_fist", Texture.of("sign/fist")));
+    public static final TemplateEntry sign_hourglass = addSignEffect(new TemplateEntry("sign_hourglass", Texture.of("sign/hourglass")));
+    public static final TemplateEntry sign_roll = addSignEffect(new TemplateEntry("sign_roll", Texture.of("sign/roll")));
+    public static final TemplateEntry sign_shield = addSignEffect(new TemplateEntry("sign_shield", Texture.of("sign/shield")));
+    public static final TemplateEntry sign_speed = addSignEffect(new TemplateEntry("sign_speed", Texture.of("sign/speed")));
+    public static final TemplateEntry sign_wand = addSignEffect(new TemplateEntry("sign_wand", Texture.of("sign/wand")));
 
     // Hand made
     public static final TemplateEntry ground_glow = addAreaEffect(new TemplateEntry("ground_glow", Texture.of("area/ground_glow")).fading(Fading.IN_OUT));
