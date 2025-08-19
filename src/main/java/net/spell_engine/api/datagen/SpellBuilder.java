@@ -530,7 +530,7 @@ public class SpellBuilder {
     }
 
     public static class ImpactModifiers {
-        private static Spell.Impact.TargetModifier create(String entityType) {
+        public static Spell.Impact.TargetModifier create(String entityType) {
             var condition = new Spell.TargetCondition();
             condition.entity_type = entityType;
             var modifier = new Spell.Impact.TargetModifier();
@@ -538,7 +538,7 @@ public class SpellBuilder {
             return modifier;
         }
 
-        private static Spell.Impact.TargetModifier extraDamageAgainstUndead() {
+        public static Spell.Impact.TargetModifier extraDamageAgainstUndead() {
             var modifier = create("#minecraft:undead");
             var powerModifier = new Spell.Impact.Modifier();
             powerModifier.power_multiplier = 0.5F;
@@ -546,7 +546,7 @@ public class SpellBuilder {
             return modifier;
         }
 
-        private static Spell.Impact.TargetModifier alwaysCritAgainstUndead() {
+        public static Spell.Impact.TargetModifier alwaysCritAgainstUndead() {
             var modifier = create("#minecraft:undead");
             var powerModifier = new Spell.Impact.Modifier();
             powerModifier.critical_chance_bonus = 1F;

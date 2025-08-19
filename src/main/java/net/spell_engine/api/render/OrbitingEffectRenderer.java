@@ -17,6 +17,7 @@ public class OrbitingEffectRenderer implements CustomModelStatusEffect.Renderer 
     private List<Model> models;
     private float scale;
     private float horizontalOffset;
+    protected float orbitingSpeed = 2.25F; // Speed of orbiting effect
 
     public OrbitingEffectRenderer(List<Model> models, float scale, float horizontalOffset) {
         this.models = models;
@@ -29,7 +30,7 @@ public class OrbitingEffectRenderer implements CustomModelStatusEffect.Renderer 
         matrixStack.push();
         var time = livingEntity.age + delta;
 
-        var initialAngle = time * 2.25F - 45.0F;
+        var initialAngle = time * orbitingSpeed - 45.0F;
         var horizontalOffset = this.horizontalOffset * livingEntity.getScaleFactor();
         var verticalOffset = livingEntity.getHeight() / 2F;
         var itemRenderer = MinecraftClient.getInstance().getItemRenderer();
