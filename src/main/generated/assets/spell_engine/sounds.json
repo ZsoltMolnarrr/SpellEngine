@@ -119,6 +119,11 @@
       "spell_engine:poison_cloud_tick"
     ]
   },
+  "speed_boost": {
+    "sounds": [
+      "spell_engine:speed_boost"
+    ]
+  },
   "spell_cooldown_impact": {
     "sounds": [
       "spell_engine:spell_cooldown_impact"
