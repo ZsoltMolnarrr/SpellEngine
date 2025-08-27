@@ -39,6 +39,11 @@
       "spell_engine:generic_fire_impact_2"
     ]
   },
+  "generic_fire_impact_3": {
+    "sounds": [
+      "spell_engine:generic_fire_impact_3"
+    ]
+  },
   "generic_fire_release": {
     "sounds": [
       "spell_engine:generic_fire_release"
@@ -79,6 +84,11 @@
       "spell_engine:generic_healing_impact_3"
     ]
   },
+  "generic_healing_impact_4": {
+    "sounds": [
+      "spell_engine:generic_healing_impact_4"
+    ]
+  },
   "generic_healing_release": {
     "sounds": [
       "spell_engine:generic_healing_release"
@@ -117,6 +127,21 @@
   "poison_cloud_tick": {
     "sounds": [
       "spell_engine:poison_cloud_tick"
+    ]
+  },
+  "radiance_impact": {
+    "sounds": [
+      "spell_engine:radiance_impact"
+    ]
+  },
+  "signal_instant_cast": {
+    "sounds": [
+      "spell_engine:signal_instant_cast"
+    ]
+  },
+  "signal_spell_crit": {
+    "sounds": [
+      "spell_engine:signal_spell_crit"
     ]
   },
   "speed_boost": {

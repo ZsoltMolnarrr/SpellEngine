@@ -454,6 +454,7 @@ public class SpellBuilder {
             cleanse.action.status_effect.remove.id = "!" + StatusEffects.TRIAL_OMEN.getIdAsString();
             cleanse.action.status_effect.remove.selector = Spell.Impact.Action.StatusEffect.Remove.Selector.RANDOM;
             cleanse.action.status_effect.remove.select_beneficial = false;
+            cleanse.sound = new Sound(SpellEngineSounds.GENERIC_DISPEL_1.id());
             return cleanse;
         }
 

@@ -77,6 +77,7 @@ public class SpellEngineSounds {
     public static final Entry GENERIC_FIRE_IGNITE = add(new Entry("generic_fire_ignite"));
     public static final Entry GENERIC_FIRE_IMPACT_1 = add(new Entry("generic_fire_impact_1"));
     public static final Entry GENERIC_FIRE_IMPACT_2 = add(new Entry("generic_fire_impact_2"));
+    public static final Entry GENERIC_FIRE_IMPACT_3 = add(new Entry("generic_fire_impact_3"));
 
     public static final Entry GENERIC_FROST_CASTING = add(new Entry("generic_frost_casting"));
     public static final Entry GENERIC_FROST_RELEASE = add(new Entry("generic_frost_release"));
@@ -87,6 +88,7 @@ public class SpellEngineSounds {
     public static final Entry GENERIC_HEALING_IMPACT_1 = add(new Entry("generic_healing_impact_1"));
     public static final Entry GENERIC_HEALING_IMPACT_2 = add(new Entry("generic_healing_impact_2"));
     public static final Entry GENERIC_HEALING_IMPACT_3 = add(new Entry("generic_healing_impact_3"));
+    public static final Entry GENERIC_HEALING_IMPACT_4 = add(new Entry("generic_healing_impact_4"));
 
     public static final Entry GENERIC_LIGHTNING_CASTING = add(new Entry("generic_lightning_casting"));
     public static final Entry GENERIC_LIGHTNING_RELEASE = add(new Entry("generic_lightning_release"));
@@ -99,6 +101,10 @@ public class SpellEngineSounds {
     public static final Entry GENERIC_DISPEL_1 = add(new Entry("generic_dispel_1"));
     public static final Entry SPELL_COOLDOWN_IMPACT = add(new Entry("spell_cooldown_impact"));
     public static final Entry SPEED_BOOST = add(new Entry("speed_boost"));
+    public static final Entry RADIANCE_IMPACT = add(new Entry("radiance_impact"));
+
+    public static final Entry SIGNAL_INSTANT_CAST = add(new Entry("signal_instant_cast"));
+    public static final Entry SIGNAL_SPELL_CRIT = add(new Entry("signal_spell_crit"));
 
     public static final Entry POISON_CLOUD_SPAWN = add(new Entry("poison_cloud_spawn"));
     public static final Entry POISON_CLOUD_TICK = add(new Entry("poison_cloud_tick"));

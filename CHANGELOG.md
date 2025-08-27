@@ -1,3 +1,8 @@
+# 1.7.2
+
+API Changes:
+- Add some common sounds
+
 # 1.7.1
 
 Functional changes:
