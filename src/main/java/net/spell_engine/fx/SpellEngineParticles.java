@@ -296,6 +296,8 @@ public class SpellEngineParticles {
 
     // Aura Effects
 
+    public static final TemplateEntry aura_effect_415 = addAreaEffect(new TemplateEntry("aura_effect_415", Texture.of("aura/effect_415", 9)).orientation(Orientation.VERTICAL));
+    public static final TemplateEntry aura_effect_538 = addAreaEffect(new TemplateEntry("aura_effect_538", Texture.of("aura/effect_538", 13)).orientation(Orientation.VERTICAL));
     public static final TemplateEntry aura_effect_553 = addAreaEffect(new TemplateEntry("aura_effect_553", Texture.of("aura/effect_553", 13)).orientation(Orientation.VERTICAL));
     public static final TemplateEntry aura_effect_619 = addAreaEffect(new TemplateEntry("aura_effect_619", Texture.of("aura/effect_619", 15)).orientation(Orientation.VERTICAL));
     public static final TemplateEntry aura_effect_622 = addAreaEffect(new TemplateEntry("aura_effect_622", Texture.of("aura/effect_622", 14)).orientation(Orientation.VERTICAL));

@@ -2,6 +2,7 @@
 
 API Changes:
 - Add some common sounds
+- Add some particles
 
 # 1.7.1
 
