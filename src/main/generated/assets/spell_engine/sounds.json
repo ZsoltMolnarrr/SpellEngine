@@ -104,6 +104,11 @@
       "spell_engine:generic_lightning_release"
     ]
   },
+  "generic_poison_impact": {
+    "sounds": [
+      "spell_engine:generic_poison_impact"
+    ]
+  },
   "generic_soul_casting": {
     "sounds": [
       "spell_engine:generic_soul_casting"
@@ -117,6 +122,11 @@
   "generic_wind_charging": {
     "sounds": [
       "spell_engine:generic_wind_charging"
+    ]
+  },
+  "leeching_impact": {
+    "sounds": [
+      "spell_engine:leeching_impact"
     ]
   },
   "poison_cloud_spawn": {

@@ -90,6 +90,8 @@ public class SpellEngineSounds {
     public static final Entry GENERIC_HEALING_IMPACT_3 = add(new Entry("generic_healing_impact_3"));
     public static final Entry GENERIC_HEALING_IMPACT_4 = add(new Entry("generic_healing_impact_4"));
 
+    public static final Entry GENERIC_POISON_IMPACT = add(new Entry("generic_poison_impact"));
+
     public static final Entry GENERIC_LIGHTNING_CASTING = add(new Entry("generic_lightning_casting"));
     public static final Entry GENERIC_LIGHTNING_RELEASE = add(new Entry("generic_lightning_release"));
 
@@ -105,7 +107,7 @@ public class SpellEngineSounds {
 
     public static final Entry SIGNAL_INSTANT_CAST = add(new Entry("signal_instant_cast"));
     public static final Entry SIGNAL_SPELL_CRIT = add(new Entry("signal_spell_crit"));
-
+    public static final Entry LEECHING_IMPACT = add(new Entry("leeching_impact"));
     public static final Entry POISON_CLOUD_SPAWN = add(new Entry("poison_cloud_spawn"));
     public static final Entry POISON_CLOUD_TICK = add(new Entry("poison_cloud_tick"));
 
