@@ -13,6 +13,7 @@
 
   "attribute.name.spell_engine.healing_taken" : "Curación Recibida",
   "attribute.name.spell_engine.damage_taken" : "Daño Recibido",
+  "attribute.name.spell_engine.evasion_chance": "Probabilidad de Evasión",
 
   "spell.spell_engine.use_item.name": "Usar Ítem",
   "spell.spell_engine.use_item.description": "Usar uno de los ítems en mano.",
@@ -37,6 +38,8 @@
   "spell.tooltip.trigger.spell_area_impact": "efecto de hechizo en área",
   "spell.tooltip.trigger.damage_taken": "recibir daño",
   "spell.tooltip.trigger.shield_block": "bloquear con escudo",
+  "spell.tooltip.trigger.effect_tick": "presencia del efecto",
+  "spell.tooltip.trigger.evasion": "evasión",
   "spell.tooltip.trigger.roll": "rodar",
   "spell.tooltip.range": "Alcance: {range} bloque",
   "spell.tooltip.range.plural": "Alcance: {range} bloques",
@@ -70,6 +73,8 @@
   "hud.action_impaired.silence": "Silenciado",
   "hud.action_impaired.incapacitate": "Incapacitado",
   "hud.action_impaired.stun": "Aturdido",
+  "hud.cooldown_cleared.single": "¡%1$s listo!",
+  "hud.cooldown_cleared.multiple": "¡Hechizos listos!",
 
   "keybindings.spell_engine.tooltip_details" : "Detalles del hechizo en el tooltip",
   "keybindings.spell_engine.bypass_spell_hotbar" : "Ignorar la barra de hechizos",
