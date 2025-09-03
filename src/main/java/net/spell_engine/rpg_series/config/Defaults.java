@@ -289,22 +289,26 @@ public class Defaults {
 
         items.put("minecells:entities/conjunctivius", new LootConfig.Pool()
                 .rolls(2)
-                .add(W2, true).weight(4)
-                .add(A2, true).weight(4)
-                .add(X4).weight(2)
-                .add(R2).weight(2)
-                .add(W5)
+                .add(A3)
+                .add(A4)
                 .add(A5)
         );
 
         items.put("minecells:entities/concierge", new LootConfig.Pool()
                 .rolls(2)
-                .add(W2, true).weight(4)
-                .add(A2, true).weight(4)
+                .add(W4)
+                .add(W5)
+                .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
+        );
+
+        items.put("minecells:chests/common/general_treasure", new LootConfig.Pool()
+                .rolls(1)
+                .add(A3, true)
+                .add(A4, true)
+                .add(W3, true)
+                .add(W4, true)
                 .add(X4).weight(2)
                 .add(R3)
-                .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
-                .add(A5)
         );
 
         // Bosses of Mass Destruction mod
