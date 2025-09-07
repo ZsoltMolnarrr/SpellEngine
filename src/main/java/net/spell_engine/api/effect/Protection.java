@@ -41,7 +41,11 @@ public class Protection {
 
     public static boolean tryProtect(LivingEntity entity, DamageSource damageSource) {
         for (var entry: entity.getActiveStatusEffects().entrySet()) {
-            var key = entry.getKey().getKey().get();
+            var optionalKey = entry.getKey().getKey();
+            if (optionalKey.isEmpty()) { // Should never happen, added due to some incompatibility crash
+                continue;
+            }
+            var key = optionalKey.get();
             var protection = PROTECTIONS.get(key);
             if (protection != null) {
                 if (protection.protects != null && !damageSource.isIn(protection.protects)) {

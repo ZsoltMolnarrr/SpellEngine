@@ -1,3 +1,8 @@
+# 1.7.3
+
+Functional changes:
+- Fix crash when Custom NPC applies potion effects to player #131
+
 # 1.7.2
 
 API Changes:
