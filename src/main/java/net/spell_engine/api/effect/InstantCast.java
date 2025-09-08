@@ -36,14 +36,18 @@ public class InstantCast {
 
     public static boolean instantify(RegistryEntry<Spell> spellEntry, LivingEntity caster) {
         for (var entry : caster.getActiveStatusEffects().entrySet()) {
-            var args = instantCastEffects.get(entry.getValue().getEffectType().getKey().get());
+            var effectKey = entry.getValue().getEffectType().getKey();
+            if (effectKey.isEmpty()) { // Should never happen, added due to some incompatibility
+                continue;
+            }
+            var args = instantCastEffects.get(effectKey.get());
             if (args != null) {
                 switch (args.selection) {
                     case NONE -> {
                         return true;
                     }
                     case SINGLE -> {
-                        if (args.spell.equals(spellEntry.getKey())) {
+                        if (args.spell.equals(spellEntry.getKey().get())) {
                             return true;
                         }
                     }

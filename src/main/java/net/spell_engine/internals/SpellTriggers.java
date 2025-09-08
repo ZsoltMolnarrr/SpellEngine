@@ -464,8 +464,9 @@ public class SpellTriggers {
         }
         // PatternMatching.matches(event.statusEffect, Registries.STATUS_EFFECT.getKey(), condition.effect_id)
         // doesn't work due to the legacy type of Registries.STATUS_EFFECT
-        if (condition.id != null
-                && !Objects.equals(event.statusEffect.getKey().get().getValue().toString(), condition.id)) {
+        var key = event.statusEffect.getKey();
+        if (condition.id != null && key.isPresent()
+                && !Objects.equals(key.get().getValue().toString(), condition.id)) {
             return false;
         }
         return true;

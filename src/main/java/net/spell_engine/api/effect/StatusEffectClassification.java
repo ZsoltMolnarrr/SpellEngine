@@ -52,7 +52,11 @@ public class StatusEffectClassification {
     }
 
     public static boolean isMovementImpairing(RegistryEntry<StatusEffect> effect) {
-        return movementImpairingEffects.contains(effect.getKey().get());
+        var key = effect.getKey();
+        if (key.isEmpty()) { // Should never happen, added due to some incompatibility crash
+            return false;
+        }
+        return movementImpairingEffects.contains(key.get());
     }
 
     public static boolean disablesMobAI(RegistryEntry<StatusEffect> effectEntry) {
