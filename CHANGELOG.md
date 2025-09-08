@@ -2,6 +2,7 @@
 
 Functional changes:
 - Fix crash when Custom NPC applies potion effects to player #131
+- Fix crash onEvasion for entities
 
 # 1.7.2
 

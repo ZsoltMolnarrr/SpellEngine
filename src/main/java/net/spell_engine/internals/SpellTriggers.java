@@ -222,7 +222,9 @@ public class SpellTriggers {
     }
 
     public static void onEvasion(LivingEntity entity, float damageAmount, DamageSource source) {
-        var player = (PlayerEntity) entity;
+        if (!(entity instanceof PlayerEntity player)) {
+            return;
+        }
         Entity sourceEntity = source.getAttacker();
         if (sourceEntity == null) {
             return; // No event without attacker (environmental damage)
