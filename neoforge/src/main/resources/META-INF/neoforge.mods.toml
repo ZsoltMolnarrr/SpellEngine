@@ -1,17 +1,17 @@
 modLoader = "javafml"
 loaderVersion = "[4,)"
-#issueTrackerURL = ""
-license = "Insert License Here"
+issueTrackerURL = "https://github.com/ZsoltMolnarrr/SpellEngine/issues"
+license = "GPL-3.0"
 
 [[mods]]
 modId = "spell_engine"
 version = "${version}"
 displayName = "Spell Engine"
-authors = "Me!"
+authors = "Daedelus"
 description = '''
-This is an example description! Tell everyone what your mod is about!
+Data driven magic library.
 '''
-#logoFile = ""
+logoFile = "icon.png"
 
 [[dependencies.spell_engine]]
 modId = "neoforge"
@@ -23,7 +23,35 @@ side = "BOTH"
 [[dependencies.spell_engine]]
 modId = "minecraft"
 type = "required"
-versionRange = "[1.21.1,)"
+versionRange = "[${minecraft_compat_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.spell_engine]]
+modId = "fabric_api_base"
+type = "required"
+versionRange = "*"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.spell_engine]]
+modId = "cloth_config"
+type = "required"
+versionRange = "[${cloth_config_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.spell_engine]]
+modId = "playeranimator"
+type = "required"
+versionRange = "[1.9.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.spell_engine]]
+modId = "spell_power"
+type = "required"
+versionRange = "[${spell_power_version},)"
 ordering = "NONE"
 side = "BOTH"
 

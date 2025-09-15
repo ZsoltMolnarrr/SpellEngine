@@ -38,7 +38,7 @@ import net.tiny_config.ConfigManager;
 public class SpellEngineClient {
     public static ClientConfig config;
 
-    public static ConfigManager<HudConfig> hudConfig = new ConfigManager<HudConfig>
+    public static ConfigManager<HudConfig> hudConfig = new ConfigManager<>
             ("hud_config", HudConfig.createDefault())
             .builder()
             .setDirectory(SpellEngineMod.ID)

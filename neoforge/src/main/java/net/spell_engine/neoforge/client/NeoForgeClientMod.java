@@ -1,14 +1,16 @@
 package net.spell_engine.neoforge.client;
 
-import net.bettercombat.client.Keybindings;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
+import net.spell_engine.client.gui.ConfigMenuScreen;
 import net.spell_engine.client.gui.HudRenderHelper;
 
 @EventBusSubscriber(modid = SpellEngineMod.ID, value = Dist.CLIENT)
@@ -17,9 +19,7 @@ public class NeoForgeClientMod {
     public static void onClientSetup(FMLClientSetupEvent event) {
         SpellEngineClient.init();
 
-//        ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class, () -> {
-//            return (IConfigScreenFactory) (modContainer, parent) -> AutoConfig.getConfigScreen(ClientConfigWrapper.class, parent).get();
-//        });
+        ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class, () -> (modContainer, parent) -> new ConfigMenuScreen(parent));
     }
 
     @SubscribeEvent

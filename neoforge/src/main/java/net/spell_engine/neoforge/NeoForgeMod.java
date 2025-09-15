@@ -36,8 +36,9 @@ public final class NeoForgeMod {
         event.register(RegistryKeys.SOUND_EVENT, reg -> {
             SpellEngineSounds.register();
         });
-        // Block
         event.register(RegistryKeys.BLOCK, reg -> {
+            // Warning this registers not only blocks!
+            // May cause issues, cba for now :)
             SpellEngineMod.registerSpellBinding();
         });
         event.register(RegistryKeys.CRITERION, reg -> {
