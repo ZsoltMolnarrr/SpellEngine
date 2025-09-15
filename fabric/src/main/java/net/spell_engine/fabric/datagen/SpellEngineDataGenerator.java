@@ -20,6 +20,8 @@ import net.spell_engine.rpg_series.datagen.RPGSeriesDataGen;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
+import net.spell_engine.fx.SpellEngineParticles.MagicParticleFamily.Shape;
+
 public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
     @Override
     public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {

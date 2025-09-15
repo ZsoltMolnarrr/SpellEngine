@@ -1,7 +1,8 @@
 package net.spell_engine;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.entity.attribute.ClampedEntityAttribute;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 
 public class Platform {
     public static final boolean Fabric;
@@ -24,6 +25,8 @@ public class Platform {
 
     public interface Util {
         boolean isModLoaded(String modid);
+        void awakeTrinketsCompat();
+        ItemStack getSpellBookStack(PlayerEntity player);
     }
 
     @ExpectPlatform

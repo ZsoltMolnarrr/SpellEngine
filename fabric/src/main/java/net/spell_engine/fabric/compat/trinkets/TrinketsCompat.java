@@ -5,13 +5,16 @@ import dev.emi.trinkets.api.event.TrinketEquipCallback;
 import net.fabricmc.fabric.api.util.TriState;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.compat.container.ContainerCompat;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
+import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.internals.container.SpellContainerSource;
+import net.spell_engine.item.SpellEngineItems;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +53,13 @@ public class TrinketsCompat {
             });
         }
         intialized = true;
+
+        SpellEngineItems.setSpellScrollFactory(
+                () -> new SpellScrollTrinketItem(new Item.Settings().maxCount(1), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
+        );
+        SpellEngineItems.setSpellBookFactory(
+                (poolId) -> new SpellBookTrinketItem(new Item.Settings().maxCount(1), poolId, SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
+        );
     }
 
     private static List<ItemStack> getAll(PlayerEntity player) {

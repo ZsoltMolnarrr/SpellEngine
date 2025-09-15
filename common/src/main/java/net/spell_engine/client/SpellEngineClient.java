@@ -33,7 +33,7 @@ import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 import net.spell_engine.spellbinding.SpellBindingScreen;
 import net.spell_engine.spellbinding.SpellBindingScreenHandler;
-import net.tinyconfig.ConfigManager;
+import net.tiny_config.ConfigManager;
 
 public class SpellEngineClient {
     public static ClientConfig config;

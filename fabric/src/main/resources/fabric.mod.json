@@ -16,7 +16,7 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "net.spell_engine.fabric.client.FabricClientMod"r
+      "net.spell_engine.fabric.client.FabricClientMod"
     ],
     "main": [
       "net.spell_engine.fabric.FabricMod"

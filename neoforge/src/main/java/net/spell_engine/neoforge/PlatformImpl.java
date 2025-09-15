@@ -1,5 +1,7 @@
 package net.spell_engine.neoforge;
 
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.neoforged.fml.ModList;
 import net.spell_engine.Platform;
 
@@ -12,6 +14,16 @@ public class PlatformImpl {
         @Override
         public boolean isModLoaded(String modid) {
             return ModList.get().isLoaded(modid);
+        }
+
+        @Override
+        public void awakeTrinketsCompat() {
+
+        }
+
+        @Override
+        public ItemStack getSpellBookStack(PlayerEntity player) {
+            return ItemStack.EMPTY;
         }
     }
     private static final Platform.Util UTIL = new NeoForgeUtil();

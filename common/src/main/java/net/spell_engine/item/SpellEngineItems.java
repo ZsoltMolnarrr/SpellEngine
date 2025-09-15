@@ -12,14 +12,16 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.item.trinket.ISpellBookItem;
+import net.spell_engine.api.item.trinket.SpellBookItem;
 import net.spell_engine.api.spell.registry.SpellRegistry;
-import net.spell_engine.compat.trinkets.SpellScrollTrinketItem;
-import net.spell_engine.compat.trinkets.TrinketsCompat;
-import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.spellbinding.SpellBinding;
 import net.spell_engine.spellbinding.SpellBindingBlock;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class SpellEngineItems {
     public static class Group {
@@ -31,13 +33,23 @@ public class SpellEngineItems {
                 .build();
     }
 
+    @Nullable private static Supplier<Item> spellScrollFactory = () -> new ScrollItem(new Item.Settings().maxCount(1));
+    public static void setSpellScrollFactory(Supplier<Item> factory) {
+        if (spellScrollFactory != null) { return; }
+        spellScrollFactory = factory;
+    }
+    @Nullable private static Function<Identifier, ISpellBookItem> spellBookFactory = (poolId) -> new SpellBookItem(poolId, new Item.Settings().maxCount(1));
+    public static void setSpellBookFactory(Function<Identifier, ISpellBookItem> factory) {
+        if (spellBookFactory != null) { return; }
+        spellBookFactory = factory;
+    }
+
     public static final Lazy<Item> SCROLL = new Lazy<>(() -> {
-        if (TrinketsCompat.isEnabled()) {
-            return new SpellScrollTrinketItem(new Item.Settings().maxCount(1), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent());
-        } else {
-            return new ScrollItem(new Item.Settings().maxCount(1));
-        }
+        return spellScrollFactory != null ? spellScrollFactory.get() : new ScrollItem(new Item.Settings().maxCount(1));
     });
+    public static ISpellBookItem createBook(Identifier poolId) {
+        return spellBookFactory != null ? spellBookFactory.apply(poolId) : new SpellBookItem(poolId, new Item.Settings().maxCount(1));
+    }
 
     public static void register() {
         Registry.register(Registries.ITEM_GROUP, Group.KEY, Group.SPELLS);

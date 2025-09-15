@@ -8,21 +8,18 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import net.spell_engine.Platform;
 import net.spell_engine.api.item.trinket.ISpellBookItem;
-import net.spell_engine.api.item.trinket.SpellBookItem;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.registry.SpellRegistry;
-import net.spell_engine.compat.trinkets.SpellBookTrinketItem;
-import net.spell_engine.compat.trinkets.TrinketsCompat;
-import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.internals.container.SpellAssignments;
+import net.spell_engine.item.SpellEngineItems;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// TODO: This class should probably be moved to net.spell_engine.api.item as it seems to be mod-agnostic
 public class SpellBooks {
     public static final ArrayList<ISpellBookItem> all = new ArrayList<>();
 
@@ -48,15 +45,8 @@ public class SpellBooks {
     public static ISpellBookItem create(Identifier poolId, SpellContainer.ContentType contentType, int maxSpellCount) {
         var container = new SpellContainer(contentType, false, poolId.toString(), maxSpellCount, List.of());
         SpellAssignments.book_containers.put(itemIdFor(poolId), container);
-        ISpellBookItem book = null;
-        TrinketsCompat.init();
-        if (TrinketsCompat.isEnabled()) {
-            book = new SpellBookTrinketItem(new Item.Settings().maxCount(1), poolId, SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent());
-        }
-        // TODO: Add support for Curios
-        else {
-            book = new SpellBookItem(poolId, new Item.Settings().maxCount(1));
-        }
+        Platform.util().awakeTrinketsCompat();
+        ISpellBookItem book = SpellEngineItems.createBook(poolId);
         all.add(book);
         return book;
     }

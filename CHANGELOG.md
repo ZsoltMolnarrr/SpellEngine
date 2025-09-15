@@ -1,3 +1,8 @@
+# 1.8.0
+
+Project changes:
+- Move to Architectury workspace
+
 # 1.7.3
 
 Functional changes:

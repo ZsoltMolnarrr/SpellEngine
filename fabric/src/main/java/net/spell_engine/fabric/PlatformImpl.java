@@ -1,7 +1,10 @@
 package net.spell_engine.fabric;
 
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.spell_engine.Platform;
+import net.spell_engine.fabric.compat.trinkets.TrinketsCompat;
 
 public class PlatformImpl {
     public static Platform.Type getPlatformType() {
@@ -12,6 +15,16 @@ public class PlatformImpl {
         @Override
         public boolean isModLoaded(String modid) {
             return FabricLoader.getInstance().isModLoaded(modid);
+        }
+
+        @Override
+        public void awakeTrinketsCompat() {
+            TrinketsCompat.init();
+        }
+
+        @Override
+        public ItemStack getSpellBookStack(PlayerEntity player) {
+            return TrinketsCompat.getSpellBookStack(player);
         }
     }
     private static final Platform.Util UTIL = new FabricUtil();

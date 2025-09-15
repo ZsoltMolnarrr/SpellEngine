@@ -9,7 +9,7 @@ import net.spell_engine.api.item.weapon.StaffItem;
 import net.spell_engine.rpg_series.loot.LootConfig;
 import net.spell_engine.rpg_series.loot.LootHelper;
 import net.spell_engine.rpg_series.config.Defaults;
-import net.tinyconfig.ConfigManager;
+import net.tiny_config.ConfigManager;
 
 import java.util.HashMap;
 import java.util.Set;

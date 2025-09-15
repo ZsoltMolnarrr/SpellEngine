@@ -16,7 +16,7 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.spell_engine.rpg_series.RPGSeriesCore;
 import net.spell_engine.spellbinding.SpellBindRandomlyLootFunction;
-import net.tinyconfig.ConfigManager;
+import net.tiny_config.ConfigManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
