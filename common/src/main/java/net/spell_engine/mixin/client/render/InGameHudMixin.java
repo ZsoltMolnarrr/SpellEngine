@@ -29,7 +29,12 @@ public class InGameHudMixin {
         }
     }
 
-    @Inject(method = "renderMainHud", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/hud/InGameHud;renderMountHealth(Lnet/minecraft/client/gui/DrawContext;)V", shift = At.Shift.AFTER))
+    @Inject(method = "renderMainHud",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/hud/InGameHud;renderMountHealth(Lnet/minecraft/client/gui/DrawContext;)V",
+                    shift = At.Shift.AFTER)
+            , require = 0) // Gotta love the all-brilliant NeoForge
     private void renderMainHud_AFTER_renderMountHealth(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
         HudRenderHelper.render(context, tickCounter.getTickDelta(true));
     }
