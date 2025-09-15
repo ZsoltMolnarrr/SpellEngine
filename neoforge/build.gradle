@@ -136,7 +136,7 @@ shadowJar {
 
 remapJar {
     inputFile.set shadowJar.archiveFile
-    atAccessWideners.add("structure_pool.accesswidener")
+    atAccessWideners.add("spell_engine.accesswidener")
 }
 
 if(project.hasProperty('release_type')) {
