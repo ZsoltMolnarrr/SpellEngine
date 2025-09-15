@@ -1,0 +1,36 @@
+architectury {
+    common rootProject.enabled_platforms.split(',')
+}
+
+def platform = project.name;
+
+dependencies {
+    // We depend on Fabric Loader here to use the Fabric @Environment annotations,
+    // which get remapped to the correct annotations on each platform.
+    // Do NOT use other classes from Fabric Loader.
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
+
+    modImplementation("net.tiny_config:tiny_config-${platform}:${project.tiny_config_version}")
+    modImplementation("dev.kosmx.player-anim:player-animation-lib-${platform}:${project.player_anim_version}")
+    modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${project.cloth_config_version}")
+    modImplementation("maven.modrinth:spell-power:${project.spell_power_version}")
+    modImplementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}")
+//    modImplementation(files("run/mods/dev/spell_power-${project.spell_power_version}.jar"))
+//    modImplementation(files("run/mods/dev/ranged_weapon_api-${project.ranged_weapon_api_version}.jar"))
+
+    // Compatibility
+    // modImplementation("com.terraformersmc:modmenu:${project.mod_menu_version}")
+    modCompileOnly("maven.modrinth:shoulder-surfing-reloaded:${project.shoulder_surfing_version}+${platform}")
+
+    modCompileOnly("maven.modrinth:lambdynamiclights:${project.lamb_dynamic_lights_version}")
+    modCompileOnly("maven.modrinth:better-combat:${project.better_combat_version}-${platform}")
+    modCompileOnly("maven.modrinth:combat-roll:${project.combat_roll_version}-${platform}")
+    modCompileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
+    modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${project.ftb_teams_version}")
+    modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
+
+    // Fabric specific
+//    modImplementation("dev.emi:trinkets:${project.trinkets_version}")
+//    modCompileOnly("maven.modrinth:iris:${project.iris_version}")
+}
