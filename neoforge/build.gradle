@@ -83,6 +83,12 @@ repositories {
     maven {
         url "https://maven.su5ed.dev/releases"
     }
+
+    // For Accessories
+    maven { url 'https://maven.wispforest.io/releases' }
+    maven { url 'https://maven.su5ed.dev/releases' }
+    maven { url 'https://maven.fabricmc.net' }
+
     mavenLocal()
 }
 
@@ -119,6 +125,15 @@ dependencies {
 //    modImplementation("com.terraformersmc:modmenu:${project.mod_menu_version}")
     modCompileOnly("maven.modrinth:iris:${project.iris_version}")
 //    modCompileOnly("maven.modrinth:lambdynamiclights:${project.lamb_dynamic_lights_version}")
+
+    // NeoForge specific
+    // Accessories - https://docs.wispforest.io/accessories/developer/dev_setup
+    modImplementation("io.wispforest:accessories-neoforge:${project.accessories_version}")
+    forgeRuntimeLibrary("blue.endless:jankson:1.2.2")
+    forgeRuntimeLibrary("io.wispforest:endec:0.1.5.1")
+    forgeRuntimeLibrary("io.wispforest.endec:gson:0.1.3.1")
+    forgeRuntimeLibrary("io.wispforest.endec:jankson:0.1.3.1")
+    forgeRuntimeLibrary("io.wispforest.endec:netty:0.1.2")
 }
 
 processResources {
