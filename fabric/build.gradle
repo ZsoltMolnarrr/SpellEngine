@@ -18,7 +18,6 @@ loom {
 
 fabricApi {
     configureDataGeneration() {
-        modId = "spell_engine"
         client = true
         outputDirectory = project(':common').file('src/main/generated')
     }
