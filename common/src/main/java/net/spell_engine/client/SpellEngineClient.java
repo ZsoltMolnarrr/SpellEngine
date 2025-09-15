@@ -46,7 +46,7 @@ public class SpellEngineClient {
             .validate(HudConfig::isValid)
             .build();
 
-    public static void initialize() {
+    public static void init() {
         AutoConfig.register(ClientConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ClientConfigWrapper.class).getConfig().client;
         hudConfig.refresh();

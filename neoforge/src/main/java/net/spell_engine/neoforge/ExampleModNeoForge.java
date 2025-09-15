@@ -2,12 +2,12 @@ package net.spell_engine.neoforge;
 
 import net.neoforged.fml.common.Mod;
 
-import net.spell_engine.ExampleMod;
+import net.spell_engine.SpellEngineMod;
 
-@Mod(ExampleMod.MOD_ID)
+@Mod(SpellEngineMod.ID)
 public final class ExampleModNeoForge {
     public ExampleModNeoForge() {
         // Run our common setup.
-        ExampleMod.init();
+        SpellEngineMod.init();
     }
 }

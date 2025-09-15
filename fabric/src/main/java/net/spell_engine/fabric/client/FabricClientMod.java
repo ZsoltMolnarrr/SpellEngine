@@ -6,6 +6,6 @@ import net.spell_engine.client.SpellEngineClient;
 public final class FabricClientMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
-        SpellEngineClient.initialize();
+        SpellEngineClient.init();
     }
 }

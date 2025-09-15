@@ -45,7 +45,7 @@ public class SpellBooks {
     public static ISpellBookItem create(Identifier poolId, SpellContainer.ContentType contentType, int maxSpellCount) {
         var container = new SpellContainer(contentType, false, poolId.toString(), maxSpellCount, List.of());
         SpellAssignments.book_containers.put(itemIdFor(poolId), container);
-        Platform.util().awakeTrinketsCompat();
+        Platform.util().awakeSlotModCompat();
         ISpellBookItem book = SpellEngineItems.createBook(poolId);
         all.add(book);
         return book;

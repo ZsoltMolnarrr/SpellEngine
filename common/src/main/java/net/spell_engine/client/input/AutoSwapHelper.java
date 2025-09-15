@@ -57,7 +57,7 @@ public class AutoSwapHelper {
 
         var mainHandType = spellContentType(mainHand);
         var offHandType = spellContentType(offHand);
-        var spellbookType = spellContentType(Platform.util().getSpellBookStack(player));
+        var spellbookType = spellContentType(Platform.util().getSpellBookSlot(player));
         if (spellbookType != null) {
             if (!hasSpells(mainHand) && mainHandType != spellbookType && offHandType == spellbookType) {
                 swapHeldItems();

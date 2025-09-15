@@ -18,12 +18,12 @@ public class PlatformImpl {
         }
 
         @Override
-        public void awakeTrinketsCompat() {
+        public void awakeSlotModCompat() {
             TrinketsCompat.init();
         }
 
         @Override
-        public ItemStack getSpellBookStack(PlayerEntity player) {
+        public ItemStack getSpellBookSlot(PlayerEntity player) {
             return TrinketsCompat.getSpellBookStack(player);
         }
     }
