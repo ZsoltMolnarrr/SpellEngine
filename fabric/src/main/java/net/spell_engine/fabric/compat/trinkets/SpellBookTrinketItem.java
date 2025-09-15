@@ -1,4 +1,4 @@
-package net.spell_engine.compat.trinkets;
+package net.spell_engine.fabric.compat.trinkets;
 
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;

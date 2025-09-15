@@ -1,4 +1,4 @@
-package net.spell_engine.client.compatibility;
+package net.spell_engine.fabric.client.compat;
 
 import dev.lambdaurora.lambdynlights.api.DynamicLightHandlers;
 import dev.lambdaurora.lambdynlights.api.DynamicLightsInitializer;

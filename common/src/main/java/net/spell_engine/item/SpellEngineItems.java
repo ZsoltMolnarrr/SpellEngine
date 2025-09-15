@@ -8,22 +8,16 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.spell.SpellTagsNumbered;
-import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.compat.trinkets.SpellScrollTrinketItem;
 import net.spell_engine.compat.trinkets.TrinketsCompat;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.spellbinding.SpellBinding;
 import net.spell_engine.spellbinding.SpellBindingBlock;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
 

@@ -1,4 +1,4 @@
-package net.spell_engine.compat.trinkets;
+package net.spell_engine.fabric.compat.trinkets;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;

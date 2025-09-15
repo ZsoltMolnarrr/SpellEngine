@@ -1,4 +1,4 @@
-package net.spell_engine.compat.trinkets;
+package net.spell_engine.fabric.compat.trinkets;
 
 import dev.emi.trinkets.api.TrinketsApi;
 import dev.emi.trinkets.api.event.TrinketEquipCallback;

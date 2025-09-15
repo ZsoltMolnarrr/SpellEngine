@@ -16,7 +16,7 @@
   "environment": "*",
   "entrypoints": {
     "client": [
-      "net.spell_engine.fabric.client.FabricClientMod"
+      "net.spell_engine.fabric.client.FabricClientMod"r
     ],
     "main": [
       "net.spell_engine.fabric.FabricMod"
@@ -25,13 +25,13 @@
       "net.spell_engine.fabric.datagen.SpellEngineDataGenerator"
     ],
     "modmenu": [
-      "net.spell_engine.client.compatibility.ModMenuCompatibility"
+      "net.spell_engine.fabric.client.compat.ModMenuCompatibility"
     ],
     "dynamiclights": [
-      "net.spell_engine.client.compatibility.DynamicLightsCompatibility"
+      "net.spell_engine.fabric.client.compat.DynamicLightsCompatibility"
     ],
     "from 1.21.4: lambdynlights:initializer": [
-      "net.spell_engine.client.compatibility.DynamicLightsCompatibility"
+      "net.spell_engine.fabric.client.compat.DynamicLightsCompatibility"
     ]
   },
   "mixins": [

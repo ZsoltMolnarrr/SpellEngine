@@ -117,8 +117,7 @@ dependencies {
 
     // Fabric specific
 //    modImplementation("com.terraformersmc:modmenu:${project.mod_menu_version}")
-//    modImplementation("dev.emi:trinkets:${project.trinkets_version}")
-//    modCompileOnly("maven.modrinth:iris:${project.iris_version}")
+    modCompileOnly("maven.modrinth:iris:${project.iris_version}")
 //    modCompileOnly("maven.modrinth:lambdynamiclights:${project.lamb_dynamic_lights_version}")
 }
 
