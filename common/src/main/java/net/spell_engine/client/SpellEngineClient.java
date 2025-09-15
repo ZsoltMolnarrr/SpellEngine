@@ -69,8 +69,6 @@ public class SpellEngineClient {
         });
         EntityRendererRegistry.register(SpellProjectile.ENTITY_TYPE, SpellProjectileRenderer::new);
         EntityRendererRegistry.register(SpellCloud.ENTITY_TYPE, SpellCloudRenderer::new);
-
-        registerParticleAppearances();
     }
 
     private static void injectRangedWeaponModelPredicates() {
@@ -91,7 +89,7 @@ public class SpellEngineClient {
         );
     }
 
-    private static void registerParticleAppearances() {
+    public static void registerParticleAppearances() {
         /* Adds our particle textures to vanilla's Texture Atlas so it can be shown properly.
          * Modify the namespace and particle id accordingly.
          *

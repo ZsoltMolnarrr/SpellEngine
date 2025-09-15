@@ -6,6 +6,7 @@ import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.spell_engine.SpellEngineMod;
@@ -30,5 +31,10 @@ public class NeoForgeClientMod {
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event){
         SpellEngineClient.registerKeyBindings();
+    }
+
+    @SubscribeEvent // on the mod event bus only on the physical client
+    public static void registerParticleProviders(RegisterParticleProvidersEvent event) {
+        SpellEngineClient.registerParticleAppearances();
     }
 }

@@ -8,5 +8,6 @@ public final class FabricClientMod implements ClientModInitializer {
     public void onInitializeClient() {
         SpellEngineClient.init();
         SpellEngineClient.registerKeyBindings();
+        SpellEngineClient.registerParticleAppearances();
     }
 }
