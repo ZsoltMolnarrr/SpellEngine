@@ -1,4 +1,4 @@
-package net.spell_engine.data_gen;
+package net.spell_engine.fabric.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
@@ -44,16 +44,16 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
                 int frameCount = variant.frameCount();
                 String texture = "";
                 switch (variant.shape()) {
-                    case SPELL -> {
+                    case Shape.SPELL -> {
                         texture = "minecraft:spell";
                     }
-                    case IMPACT -> {
+                    case Shape.IMPACT -> {
                         texture = "spell_engine:magic/impact_" + variant.familyName();
                     }
-                    case SPARK -> {
+                    case Shape.SPARK -> {
                         texture = "minecraft:generic_0";
                     }
-                    case STRIPE -> {
+                    case Shape.STRIPE -> {
                         texture = "spell_engine:magic/vertical_stripe";
                     }
                 }

@@ -3,20 +3,30 @@ package net.spell_engine;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.client.resource.language.I18n;
+import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
+import net.spell_engine.api.effect.RemoveOnHit;
 import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.api.effect.StatusEffectClassification;
 import net.spell_engine.api.item.set.EquipmentSetFeature;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.compat.CompatFeatures;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
+import net.spell_engine.entity.SpellCloud;
+import net.spell_engine.entity.SpellProjectile;
+import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.internals.SpellEngineCommands;
 import net.spell_engine.internals.SpellTriggers;
 import net.spell_engine.internals.container.SpellAssignments;
@@ -24,15 +34,42 @@ import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.criteria.EnchantmentSpecificCriteria;
 import net.spell_engine.internals.criteria.SpellCastCriteria;
 import net.spell_engine.internals.delivery.SpellStashHelper;
+import net.spell_engine.item.SpellEngineItems;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.rpg_series.RPGSeriesCore;
 import net.spell_engine.spellbinding.*;
+import net.spell_engine.utils.StatusEffectUtil;
+
+import java.util.ArrayList;
 
 public class SpellEngineMod {
     public static final String ID = "spell_engine";
     public static String modName() {
         return I18n.translate("spell_engine.mod_name");
+    }
+
+    static {
+        SpellProjectile.ENTITY_TYPE = Registry.register(
+                Registries.ENTITY_TYPE,
+                Identifier.of(SpellEngineMod.ID, "spell_projectile"),
+                FabricEntityTypeBuilder.<SpellProjectile>create(SpawnGroup.MISC, SpellProjectile::new)
+                        .dimensions(EntityDimensions.fixed(0.25F, 0.25F)) // dimensions in Minecraft units of the render
+                        .fireImmune()
+                        .trackRangeBlocks(128)
+                        .trackedUpdateRate(2)
+                        .build()
+        );
+        SpellCloud.ENTITY_TYPE = Registry.register(
+                Registries.ENTITY_TYPE,
+                Identifier.of(SpellEngineMod.ID, "spell_area_effect"),
+                FabricEntityTypeBuilder.<SpellCloud>create(SpawnGroup.MISC, SpellCloud::new)
+                        .dimensions(EntityDimensions.changing(6F, 0.5F)) // dimensions in Minecraft units of the render
+                        .fireImmune()
+                        .trackRangeBlocks(128)
+                        .trackedUpdateRate(20)
+                        .build()
+        );
     }
 
     public static ServerConfig config;
@@ -63,6 +100,29 @@ public class SpellEngineMod {
         SpellEngineEffects.register();
 
         EquipmentSetFeature.init();
+
+        SpellEngineMod.registerSpellBinding();
+        SpellEngineSounds.register();
+        CompatFeatures.initialize();
+        SpellEngineItems.register();
+
+        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
+            var attacker = source.getAttacker();
+            if (amount > 0 && attacker != null) {
+                var effectChanges = new ArrayList<StatusEffectUtil.Diff>();
+                for (var instance : entity.getStatusEffects()) {
+                    var effect = instance.getEffectType();
+                    var remove = RemoveOnHit.removeCount(entity.getWorld(), effect.value(), source);
+                    if (remove > 0) {
+                        effectChanges.add(new StatusEffectUtil.Diff(instance, instance.getAmplifier() - remove));
+                    } else if (remove < 0) {
+                        effectChanges.add(new StatusEffectUtil.Diff(instance, -1));
+                    }
+                }
+                StatusEffectUtil.applyChanges(entity, effectChanges);
+            }
+            return true;
+        });
     }
 
     public static void registerSpellBinding() {

@@ -22,6 +22,7 @@ subprojects {
         // Set up a suffixed format for the mod jar names, e.g. `example-fabric`.
         archivesName = "$rootProject.archives_name-$project.name"
     }
+    version = rootProject.mod_version + "+${rootProject.minecraft_version}"
 
     repositories {
         // Add repositories to retrieve artifacts from in here.
@@ -70,4 +71,8 @@ subprojects {
             // retrieving dependencies.
         }
     }
+}
+
+ext.changelog_last_section = { ->
+    return new File("CHANGELOG.md").text.split('\n# ')[0]
 }

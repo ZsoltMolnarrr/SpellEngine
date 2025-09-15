@@ -14,7 +14,6 @@
   "license": "GPL-3.0",
   "icon": "icon.png",
   "environment": "*",
-  "accessWidener" : "spell_engine.accesswidener",
   "entrypoints": {
     "client": [
       "net.spell_engine.fabric.client.FabricClientMod"
@@ -23,7 +22,7 @@
       "net.spell_engine.fabric.FabricMod"
     ],
     "fabric-datagen": [
-      "net.spell_engine.data_gen.SpellEngineDataGenerator"
+      "net.spell_engine.fabric.datagen.SpellEngineDataGenerator"
     ],
     "modmenu": [
       "net.spell_engine.client.compatibility.ModMenuCompatibility"
