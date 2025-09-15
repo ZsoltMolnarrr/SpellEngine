@@ -63,8 +63,6 @@ public class SpellEngineClient {
         BeamRenderer.setup();
         registerEffectParticles();
 
-        registerKeyBindings();
-
         ItemTooltipCallback.EVENT.register((itemStack, tooltipContext, tooltipType, lines) -> {
             SpellTooltip.addSpellLines(itemStack, tooltipType, lines);
             EquipmentSetTooltip.appendLines(itemStack, lines);
@@ -172,7 +170,7 @@ public class SpellEngineClient {
         });
     }
 
-    private static void registerKeyBindings() {
+    public static void registerKeyBindings() {
         for(var keybinding: Keybindings.all()) {
             KeyBindingHelper.registerKeyBinding(keybinding);
         }

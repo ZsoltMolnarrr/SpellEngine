@@ -16,7 +16,7 @@ public final class FabricMod implements ModInitializer {
         SpellEngineParticles.register();
         SpellEngineEffects.register();
         SpellEngineItems.register();
-
+        SpellEngineMod.registerCriteria();
         SpellEngineMod.registerSpellBinding();
 
         SpellEngineMod.init();

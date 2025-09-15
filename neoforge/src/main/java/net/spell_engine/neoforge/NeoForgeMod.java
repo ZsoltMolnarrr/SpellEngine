@@ -1,6 +1,5 @@
 package net.spell_engine.neoforge;
 
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -40,6 +39,9 @@ public final class NeoForgeMod {
         // Block
         event.register(RegistryKeys.BLOCK, reg -> {
             SpellEngineMod.registerSpellBinding();
+        });
+        event.register(RegistryKeys.CRITERION, reg -> {
+            SpellEngineMod.registerCriteria();
         });
     }
 }

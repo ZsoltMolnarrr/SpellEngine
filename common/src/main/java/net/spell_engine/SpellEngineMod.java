@@ -15,7 +15,6 @@ import net.minecraft.registry.Registry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.effect.RemoveOnHit;
-import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.api.effect.StatusEffectClassification;
 import net.spell_engine.api.item.set.EquipmentSetFeature;
 import net.spell_engine.api.spell.ExternalSpellSchools;
@@ -26,7 +25,6 @@ import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
 import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellProjectile;
-import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.internals.SpellEngineCommands;
 import net.spell_engine.internals.SpellTriggers;
 import net.spell_engine.internals.container.SpellAssignments;
@@ -34,9 +32,7 @@ import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.criteria.EnchantmentSpecificCriteria;
 import net.spell_engine.internals.criteria.SpellCastCriteria;
 import net.spell_engine.internals.delivery.SpellStashHelper;
-import net.spell_engine.item.SpellEngineItems;
 import net.spell_engine.network.ServerNetwork;
-import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.rpg_series.RPGSeriesCore;
 import net.spell_engine.spellbinding.*;
 import net.spell_engine.utils.StatusEffectUtil;
@@ -60,8 +56,6 @@ public class SpellEngineMod {
         SpellAssignments.init();
         ServerNetwork.init();
 
-        Criteria.register(EnchantmentSpecificCriteria.ID.toString(), EnchantmentSpecificCriteria.INSTANCE);
-        Criteria.register(SpellCastCriteria.ID.toString(), SpellCastCriteria.INSTANCE);
         SpellEvents.SPELL_CAST.register(args -> {
             SpellCastCriteria.INSTANCE.trigger((ServerPlayerEntity) args.caster(), args.spell());
         });
@@ -100,8 +94,6 @@ public class SpellEngineMod {
         Registry.register(Registries.BLOCK, SpellBinding.ID, SpellBindingBlock.INSTANCE);
         Registry.register(Registries.BLOCK_ENTITY_TYPE, SpellBinding.ID, SpellBindingBlockEntity.ENTITY_TYPE);
         Registry.register(Registries.SCREEN_HANDLER, SpellBinding.ID, SpellBindingScreenHandler.HANDLER_TYPE);
-        Criteria.register(SpellBindingCriteria.ID.toString(), SpellBindingCriteria.INSTANCE);
-        Criteria.register(SpellBookCreationCriteria.ID.toString(), SpellBookCreationCriteria.INSTANCE);
         Registry.register(Registries.LOOT_FUNCTION_TYPE, SpellBindRandomlyLootFunction.ID, SpellBindRandomlyLootFunction.TYPE);
     }
 
@@ -126,5 +118,13 @@ public class SpellEngineMod {
                         .trackedUpdateRate(20)
                         .build()
         );
+    }
+
+    public static void registerCriteria() {
+        Criteria.register(EnchantmentSpecificCriteria.ID.toString(), EnchantmentSpecificCriteria.INSTANCE);
+        Criteria.register(SpellCastCriteria.ID.toString(), SpellCastCriteria.INSTANCE);
+
+        Criteria.register(SpellBindingCriteria.ID.toString(), SpellBindingCriteria.INSTANCE);
+        Criteria.register(SpellBookCreationCriteria.ID.toString(), SpellBookCreationCriteria.INSTANCE);
     }
 }

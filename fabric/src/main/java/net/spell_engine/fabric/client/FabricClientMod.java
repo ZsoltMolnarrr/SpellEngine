@@ -7,5 +7,6 @@ public final class FabricClientMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         SpellEngineClient.init();
+        SpellEngineClient.registerKeyBindings();
     }
 }
