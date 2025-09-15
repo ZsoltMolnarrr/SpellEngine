@@ -42,6 +42,12 @@ repositories {
             includeGroup "mezz.jei"
         }
     }
+
+    // For Accessories:
+    maven { url 'https://maven.wispforest.io/releases' }
+    maven { url 'https://maven.su5ed.dev/releases' }
+    maven { url 'https://maven.fabricmc.net' }
+
     mavenLocal()
 }
 
@@ -79,4 +85,6 @@ dependencies {
 //    modImplementation("dev.emi:trinkets:${project.trinkets_version}")
     modCompileOnly("maven.modrinth:iris:${project.iris_version}")
 //    modCompileOnly("maven.modrinth:lambdynamiclights:${project.lamb_dynamic_lights_version}")
+
+    modImplementation("io.wispforest:accessories-common:${project.accessories_version}")
 }
