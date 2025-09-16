@@ -15,7 +15,6 @@ import net.spell_engine.compat.SlotModCompat;
 import net.spell_engine.compat.container.ContainerCompat;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.internals.container.SpellContainerSource;
-import net.spell_engine.item.SpellEngineItems;
 
 import java.util.ArrayList;
 import java.util.List;

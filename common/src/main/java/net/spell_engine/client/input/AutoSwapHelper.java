@@ -11,9 +11,9 @@ import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.util.UseAction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.spell_engine.Platform;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
+import net.spell_engine.compat.SlotModCompat;
 import net.spell_engine.utils.AttributeModifierUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -57,7 +57,7 @@ public class AutoSwapHelper {
 
         var mainHandType = spellContentType(mainHand);
         var offHandType = spellContentType(offHand);
-        var spellbookType = spellContentType(Platform.util().getSpellBookSlot(player));
+        var spellbookType = spellContentType(SlotModCompat.getEquippedSpellBook(player));
         if (spellbookType != null) {
             if (!hasSpells(mainHand) && mainHandType != spellbookType && offHandType == spellbookType) {
                 swapHeldItems();

@@ -12,6 +12,9 @@ import java.util.function.Function;
 public class SlotModCompat {
     @Nullable
     public static Function<PlayerEntity, ItemStack> spellBookResolver = (player) -> ItemStack.EMPTY;
+    public static ItemStack getEquippedSpellBook(PlayerEntity player) {
+        return spellBookResolver.apply(player);
+    }
 
     public record SpellBookArs(Identifier poolId, Item.Settings settings) { }
     @Nullable public static Function<SpellBookArs, ISpellBookItem> spellBookFactory = null;
