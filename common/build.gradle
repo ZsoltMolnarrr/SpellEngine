@@ -86,5 +86,6 @@ dependencies {
     modCompileOnly("maven.modrinth:iris:${project.iris_version}")
 //    modCompileOnly("maven.modrinth:lambdynamiclights:${project.lamb_dynamic_lights_version}")
 
+    modCompileOnly "io.wispforest:owo-lib:${project.owo_version}" // Accessories needs this
     modImplementation("io.wispforest:accessories-common:${project.accessories_version}")
 }
