@@ -1,0 +1,5 @@
+{
+  "icon": "spell_engine:gui/slot/spell_quiver",
+  "order": 3,
+  "validator_predicates": ["accessories:tag"]
+}

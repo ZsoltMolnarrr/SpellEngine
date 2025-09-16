@@ -28,7 +28,7 @@ public class AccessoriesCompat {
         if (intialized) {
             return;
         }
-        enabled = Platform.util().isModLoaded("trinkets");
+        enabled = Platform.util().isModLoaded("accessories");
 
         if (enabled) {
             AccessoriesAPI.registerPredicate(Identifier.of(SpellEngineMod.ID, SLOT_SPELL_BOOK), (world, slotType, i, itemStack) -> {
@@ -39,7 +39,7 @@ public class AccessoriesCompat {
             });
             ContainerCompat.addProvider(AccessoriesCompat::getAll);
 
-            final var spellSourceName = "trinkets";
+            final var spellSourceName = "accessories";
             SpellContainerSource.addItemSource(
                     SpellContainerSource.ItemEntry.of(
                             spellSourceName,

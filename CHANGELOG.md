@@ -2,6 +2,7 @@
 
 Project changes:
 - Move to Architectury workspace
+- Add support for Accessories mod (NeoForge)
 
 # 1.7.3
 
