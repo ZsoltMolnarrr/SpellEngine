@@ -99,26 +99,24 @@ dependencies {
     modImplementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
 //    modImplementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
     modImplementation("net.foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
-
-    // Compatibility
 //    modCompileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
     modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}")
+
+    // Compatibility
 
     modCompileOnly("maven.modrinth:shoulder-surfing-reloaded:${project.shoulder_surfing_version}+${platform}")
     modCompileOnly("maven.modrinth:better-combat:${project.better_combat_version}-${platform}")
     modCompileOnly("maven.modrinth:combat-roll:${project.combat_roll_version}-${platform}")
-
     modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${project.ftb_teams_version}")
     modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
 
-
-    modCompileOnly "maven.modrinth:owo-lib:${project.owo_version}"
+    modCompileOnly "maven.modrinth:owo-lib:${project.owo_version}" // Accessories needs this
     modImplementation("io.wispforest:accessories-${platform}:${project.accessories_version}")
+    modCompileOnly("maven.modrinth:iris:${project.iris_version}")
 
     // Fabric specific
     modImplementation("com.terraformersmc:modmenu:${project.mod_menu_version}")
     modImplementation("dev.emi:trinkets:${project.trinkets_version}")
-    modCompileOnly("maven.modrinth:iris:${project.iris_version}")
     modCompileOnly("maven.modrinth:lambdynamiclights:${project.lamb_dynamic_lights_version}")
 }
 

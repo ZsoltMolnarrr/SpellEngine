@@ -86,7 +86,6 @@ repositories {
 
     // For Accessories
     maven { url 'https://maven.wispforest.io/releases' }
-    maven { url 'https://maven.su5ed.dev/releases' }
     maven { url 'https://maven.fabricmc.net' }
 
     mavenLocal()
@@ -94,10 +93,8 @@ repositories {
 
 dependencies {
     neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
-
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
-
     modImplementation "org.sinytra.forgified-fabric-api:forgified-fabric-api:${project.forgified_fabric_api_version}"
 
     modImplementation("dev.kosmx.player-anim:player-animation-lib-forge:${project.player_anim_version}")
@@ -109,27 +106,22 @@ dependencies {
     modImplementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
 //    modImplementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
     modImplementation("net.foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
-
-    // Compatibility
 //    modCompileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
     modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}")
+
+    // Compatibility
 
     modCompileOnly("maven.modrinth:shoulder-surfing-reloaded:${project.shoulder_surfing_version}+${platform}")
     modCompileOnly("maven.modrinth:better-combat:${project.better_combat_version}-${platform}")
     modCompileOnly("maven.modrinth:combat-roll:${project.combat_roll_version}-${platform}")
-
     modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${project.ftb_teams_version}")
     modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
-
-    // Fabric specific
-//    modImplementation("com.terraformersmc:modmenu:${project.mod_menu_version}")
     modCompileOnly("maven.modrinth:iris:${project.iris_version}")
-//    modCompileOnly("maven.modrinth:lambdynamiclights:${project.lamb_dynamic_lights_version}")
 
     // NeoForge specific
-    // Accessories - https://docs.wispforest.io/accessories/developer/dev_setup
-    modImplementation "maven.modrinth:owo-lib:${project.owo_neo_version}" // AccessoryItem wouldn't compile without this
-    modImplementation("io.wispforest:accessories-neoforge:${project.accessories_version}")
+    // - Accessories - https://docs.wispforest.io/accessories/developer/dev_setup
+    modCompileOnly "maven.modrinth:owo-lib:${project.owo_neo_version}" // AccessoryItem wouldn't compile without this
+    modCompileOnly("io.wispforest:accessories-neoforge:${project.accessories_version}")
     forgeRuntimeLibrary("blue.endless:jankson:1.2.2")
     forgeRuntimeLibrary("io.wispforest:endec:0.1.5.1")
     forgeRuntimeLibrary("io.wispforest.endec:gson:0.1.3.1")
