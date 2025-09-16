@@ -55,5 +55,12 @@ versionRange = "[${spell_power_version},)"
 ordering = "NONE"
 side = "BOTH"
 
+[[dependencies.spell_engine]]
+modId = "accessories"
+type = "required"
+versionRange = "*"
+ordering = "NONE"
+side = "BOTH"
+
 [[mixins]]
 config = "spell_engine.mixins.json"

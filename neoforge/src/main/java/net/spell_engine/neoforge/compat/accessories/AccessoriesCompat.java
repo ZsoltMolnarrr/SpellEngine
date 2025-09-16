@@ -28,33 +28,34 @@ public class AccessoriesCompat {
         if (intialized) {
             return;
         }
-        enabled = Platform.util().isModLoaded("accessories");
-
-        if (enabled) {
-            AccessoriesAPI.registerPredicate(Identifier.of(SpellEngineMod.ID, SLOT_SPELL_BOOK), (world, slotType, i, itemStack) -> {
-                if (ISpellBookItem.isSpellBook(itemStack.getItem())) {
-                    return TriState.TRUE;
-                }
-                return TriState.DEFAULT;
-            });
-            ContainerCompat.addProvider(AccessoriesCompat::getAll);
-
-            final var spellSourceName = "accessories";
-            SpellContainerSource.addItemSource(
-                    SpellContainerSource.ItemEntry.of(
-                            spellSourceName,
-                            (player, name) -> getEquippedStacks(player)
-                    ),
-                    SpellContainerSource.MAIN_HAND.name()
-            );
-
-            AccessoryChangeCallback.EVENT.register((prevStack, currentStack, slotReference, stateChange) -> {
-                if (slotReference.entity() instanceof PlayerEntity player) {
-                    SpellContainerSource.setDirty(player, spellSourceName);
-                }
-            });
-        }
         intialized = true;
+        enabled = Platform.util().isModLoaded("accessories");
+        if (!enabled) {
+            return;
+        }
+
+        AccessoriesAPI.registerPredicate(Identifier.of(SpellEngineMod.ID, SLOT_SPELL_BOOK), (world, slotType, i, itemStack) -> {
+            if (ISpellBookItem.isSpellBook(itemStack.getItem())) {
+                return TriState.TRUE;
+            }
+            return TriState.DEFAULT;
+        });
+        ContainerCompat.addProvider(AccessoriesCompat::getAll);
+
+        final var spellSourceName = "accessories";
+        SpellContainerSource.addItemSource(
+                SpellContainerSource.ItemEntry.of(
+                        spellSourceName,
+                        (player, name) -> getEquippedStacks(player)
+                ),
+                SpellContainerSource.MAIN_HAND.name()
+        );
+
+        AccessoryChangeCallback.EVENT.register((prevStack, currentStack, slotReference, stateChange) -> {
+            if (slotReference.entity() instanceof PlayerEntity player) {
+                SpellContainerSource.setDirty(player, spellSourceName);
+            }
+        });
 
         SpellEngineItems.setSpellScrollFactory(
                 (args) -> new SpellScrollAccessoryItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP::entry)

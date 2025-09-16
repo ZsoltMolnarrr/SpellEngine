@@ -25,32 +25,33 @@ public class TrinketsCompat {
         if (intialized) {
             return;
         }
-        enabled = Platform.util().isModLoaded("trinkets");
-
-        if (enabled) {
-            TrinketsApi.registerTrinketPredicate(Identifier.of(SpellEngineMod.ID, "spell_book"), (itemStack, slotReference, livingEntity) -> {
-                if (ISpellBookItem.isSpellBook(itemStack.getItem())) {
-                    return TriState.TRUE;
-                }
-                return TriState.DEFAULT;
-            });
-            ContainerCompat.addProvider(TrinketsCompat::getAll);
-
-            final var spellSourceName = "trinkets";
-            SpellContainerSource.addItemSource(
-                    SpellContainerSource.ItemEntry.of(
-                            spellSourceName,
-                            (player, name) -> getEquippedStacks(player)
-                    ),
-                    SpellContainerSource.MAIN_HAND.name()
-            );
-            TrinketEquipCallback.EVENT.register((stack, slot, entity) -> {
-                if (entity instanceof PlayerEntity player) {
-                    SpellContainerSource.setDirty(player, spellSourceName);
-                }
-            });
-        }
         intialized = true;
+        enabled = Platform.util().isModLoaded("trinkets");
+        if (!enabled) {
+            return;
+        }
+
+        TrinketsApi.registerTrinketPredicate(Identifier.of(SpellEngineMod.ID, "spell_book"), (itemStack, slotReference, livingEntity) -> {
+            if (ISpellBookItem.isSpellBook(itemStack.getItem())) {
+                return TriState.TRUE;
+            }
+            return TriState.DEFAULT;
+        });
+        ContainerCompat.addProvider(TrinketsCompat::getAll);
+
+        final var spellSourceName = "trinkets";
+        SpellContainerSource.addItemSource(
+                SpellContainerSource.ItemEntry.of(
+                        spellSourceName,
+                        (player, name) -> getEquippedStacks(player)
+                ),
+                SpellContainerSource.MAIN_HAND.name()
+        );
+        TrinketEquipCallback.EVENT.register((stack, slot, entity) -> {
+            if (entity instanceof PlayerEntity player) {
+                SpellContainerSource.setDirty(player, spellSourceName);
+            }
+        });
 
         SpellEngineItems.setSpellScrollFactory(
                 (args) -> new SpellScrollTrinketItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
