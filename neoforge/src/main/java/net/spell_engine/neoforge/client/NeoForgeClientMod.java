@@ -24,7 +24,7 @@ public class NeoForgeClientMod {
     }
 
     @SubscribeEvent
-    public static void onRenderGuiLayerPost(RenderGuiLayerEvent.Post event) {
+    public static void onRenderGuiLayerPost(RenderGuiLayerEvent.Pre event) {
         HudRenderHelper.render(event.getGuiGraphics(), event.getPartialTick().getTickDelta(true));
     }
 

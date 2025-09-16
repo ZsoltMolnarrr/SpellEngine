@@ -31,14 +31,14 @@ side = "BOTH"
 modId = "fabric_api_base"
 type = "required"
 versionRange = "*"
-ordering = "NONE"
+ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.spell_engine]]
 modId = "cloth_config"
 type = "required"
 versionRange = "[${cloth_config_version},)"
-ordering = "NONE"
+ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.spell_engine]]
@@ -52,7 +52,7 @@ side = "BOTH"
 modId = "spell_power"
 type = "required"
 versionRange = "[${spell_power_version},)"
-ordering = "NONE"
+ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.spell_engine]]
