@@ -11,17 +11,15 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
-import net.spell_engine.compat.SlotModCompat;
 import net.spell_engine.compat.container.ContainerCompat;
-import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.internals.container.SpellContainerSource;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class AccessoriesCompat {
-    public static final String MOD_ID = "accessories";
-    public static final String SLOT_SPELL_BOOK = "spell_book";
+    private static final String MOD_ID = AccessoriesCompatHeader.MOD_ID;
+    private static final String SLOT_SPELL_BOOK = "spell_book";
     private static boolean intialized = false;
     private static boolean enabled = false;
 
@@ -60,13 +58,7 @@ public class AccessoriesCompat {
             }
         });
 
-        SlotModCompat.setSpellScrollFactory(
-                (args) -> new SpellScrollAccessoryItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP::entry)
-        );
-        SlotModCompat.setSpellBookFactory(
-                (args) -> new SpellBookAccessoryItem(args.settings(), args.poolId(), SpellEngineSounds.SPELLBOOK_EQUIP::entry)
-        );
-        SlotModCompat.spellBookResolver = AccessoriesCompat::getSpellBookStack;
+        AccessoriesItemHelper.register();
 
         return enabled;
     }

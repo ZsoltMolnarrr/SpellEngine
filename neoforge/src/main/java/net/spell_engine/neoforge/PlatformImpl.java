@@ -2,7 +2,7 @@ package net.spell_engine.neoforge;
 
 import net.neoforged.fml.ModList;
 import net.spell_engine.Platform;
-import net.spell_engine.compat.accessories.NeoForgeCompatFeatures;
+import net.spell_engine.neoforge.compat.NeoForgeCompatFeatures;
 
 public class PlatformImpl {
     public static Platform.Type getPlatformType() {

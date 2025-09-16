@@ -111,12 +111,12 @@ dependencies {
     modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
 
     modCompileOnly "maven.modrinth:owo-lib:${project.owo_version}" // Accessories needs this
-    modImplementation("io.wispforest:accessories-${platform}:${project.accessories_version}")
+    modCompileOnly("io.wispforest:accessories-${platform}:${project.accessories_version}") // Appearantly this doesn't work as a modCompileOnly?
     modCompileOnly("maven.modrinth:iris:${project.iris_version}")
 
     // Fabric specific
-    modImplementation("com.terraformersmc:modmenu:${project.mod_menu_version}")
-    modImplementation("dev.emi:trinkets:${project.trinkets_version}")
+    modCompileOnly("com.terraformersmc:modmenu:${project.mod_menu_version}")
+    modCompileOnly("dev.emi:trinkets:${project.trinkets_version}")
     modCompileOnly("maven.modrinth:lambdynamiclights:${project.lamb_dynamic_lights_version}")
 }
 

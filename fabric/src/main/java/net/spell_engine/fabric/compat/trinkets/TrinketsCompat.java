@@ -9,16 +9,14 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.Platform;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.trinket.ISpellBookItem;
-import net.spell_engine.compat.SlotModCompat;
 import net.spell_engine.compat.container.ContainerCompat;
-import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.internals.container.SpellContainerSource;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TrinketsCompat {
-    public static final String MOD_ID = "trinkets";
+    private static final String MOD_ID = TrinketsCompatHeader.MOD_ID;
     private static boolean intialized = false;
     private static boolean enabled = false;
 
@@ -54,13 +52,7 @@ public class TrinketsCompat {
             }
         });
 
-        SlotModCompat.setSpellScrollFactory(
-                (args) -> new SpellScrollTrinketItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
-        );
-        SlotModCompat.setSpellBookFactory(
-                (args) -> new SpellBookTrinketItem(args.settings(), args.poolId(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
-        );
-        SlotModCompat.spellBookResolver = TrinketsCompat::getSpellBookStack;
+        TrinketsItemHelper.register();
 
         return enabled;
     }

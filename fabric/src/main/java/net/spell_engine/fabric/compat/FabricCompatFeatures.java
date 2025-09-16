@@ -1,10 +1,14 @@
 package net.spell_engine.fabric.compat;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.compat.accessories.AccessoriesCompat;
+import net.spell_engine.compat.accessories.AccessoriesCompatHeader;
 import net.spell_engine.fabric.compat.trinkets.TrinketsCompat;
+import net.spell_engine.fabric.compat.trinkets.TrinketsCompatHeader;
 import net.tiny_config.ConfigManager;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -29,10 +33,13 @@ public class FabricCompatFeatures {
     }
 
     public static void initSlotCompat() {
-        Map<String, Supplier<Boolean>> compatLoaders = Map.of(
-                AccessoriesCompat.MOD_ID, AccessoriesCompat::init,
-                TrinketsCompat.MOD_ID, TrinketsCompat::init
-        );
+        Map<String, Supplier<Boolean>> compatLoaders = new HashMap<>();
+        if (FabricLoader.getInstance().isModLoaded(AccessoriesCompatHeader.MOD_ID)) {
+            compatLoaders.put(AccessoriesCompatHeader.MOD_ID, AccessoriesCompat::init);
+        }
+        if (FabricLoader.getInstance().isModLoaded(TrinketsCompatHeader.MOD_ID)) {
+            compatLoaders.put(TrinketsCompatHeader.MOD_ID, TrinketsCompat::init);
+        }
         var preferred = compatLoaders.get(safeConfig().preferred_slot_mod_id);
         if (preferred != null) {
             if (preferred.get()) {
