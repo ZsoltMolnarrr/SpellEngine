@@ -10,6 +10,12 @@ name: Publish
 on:
   workflow_dispatch:
     inputs:
+      loader:
+        type: choice
+        description: Mod loader
+        options:
+          - fabric
+          - neoforge
       release_type:
         type: choice
         description: Release type
@@ -36,7 +42,7 @@ jobs:
       - name: Build with Gradle
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
-          arguments: publishMod -Prelease_type=${{ inputs.release_type }}
+          arguments: :${{ inputs.loader }}:publishMod -Prelease_type=${{ inputs.release_type }}
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
           CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}
