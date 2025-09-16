@@ -7,6 +7,7 @@ import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.spell_engine.Platform;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.HudRenderHelper;
 import net.spell_engine.client.input.SpellHotbar;
@@ -36,6 +37,11 @@ public class InGameHudMixin {
                     shift = At.Shift.AFTER)
             , require = 0) // Gotta love the all-brilliant NeoForge
     private void renderMainHud_AFTER_renderMountHealth(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        HudRenderHelper.render(context, tickCounter.getTickDelta(true));
+        // NeoForge disables this mixin by erasing the parent function
+        // however some mods somewhat restore it, so we only run this on Fabric
+        // NeoForge specific invocation is in NeoForge-Client subscription
+        if (Platform.Fabric) {
+            HudRenderHelper.render(context, tickCounter.getTickDelta(true));
+        }
     }
 }
