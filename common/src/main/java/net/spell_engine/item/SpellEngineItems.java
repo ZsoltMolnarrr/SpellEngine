@@ -33,22 +33,28 @@ public class SpellEngineItems {
                 .build();
     }
 
-    @Nullable private static Supplier<Item> spellScrollFactory = () -> new ScrollItem(new Item.Settings().maxCount(1));
-    public static void setSpellScrollFactory(Supplier<Item> factory) {
+    public record SpellScrollArs(Item.Settings settings) { }
+    @Nullable private static Function<SpellScrollArs, Item> spellScrollFactory = null;
+    public static void setSpellScrollFactory(Function<SpellScrollArs, Item> factory) {
         if (spellScrollFactory != null) { return; }
         spellScrollFactory = factory;
     }
-    @Nullable private static Function<Identifier, ISpellBookItem> spellBookFactory = (poolId) -> new SpellBookItem(poolId, new Item.Settings().maxCount(1));
-    public static void setSpellBookFactory(Function<Identifier, ISpellBookItem> factory) {
+    public static final Lazy<Item> SCROLL = new Lazy<>(() -> {
+        var settings = new Item.Settings().maxCount(1);
+        var args = new SpellScrollArs(settings);
+        return spellScrollFactory != null ? spellScrollFactory.apply(args) : new ScrollItem(args.settings);
+    });
+
+    public record SpellBookArs(Identifier poolId, Item.Settings settings) { }
+    @Nullable private static Function<SpellBookArs, ISpellBookItem> spellBookFactory = null;
+    public static void setSpellBookFactory(Function<SpellBookArs, ISpellBookItem> factory) {
         if (spellBookFactory != null) { return; }
         spellBookFactory = factory;
     }
-
-    public static final Lazy<Item> SCROLL = new Lazy<>(() -> {
-        return spellScrollFactory != null ? spellScrollFactory.get() : new ScrollItem(new Item.Settings().maxCount(1));
-    });
     public static ISpellBookItem createBook(Identifier poolId) {
-        return spellBookFactory != null ? spellBookFactory.apply(poolId) : new SpellBookItem(poolId, new Item.Settings().maxCount(1));
+        var settings = new Item.Settings().maxCount(1);
+        var args = new SpellBookArs(poolId, settings);
+        return spellBookFactory != null ? spellBookFactory.apply(args) : new SpellBookItem(args.poolId, args.settings);
     }
 
     public static void register() {

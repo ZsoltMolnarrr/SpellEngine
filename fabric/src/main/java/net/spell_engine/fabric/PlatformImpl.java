@@ -4,6 +4,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.spell_engine.Platform;
+import net.spell_engine.fabric.compat.FabricCompatFeatures;
 import net.spell_engine.fabric.compat.trinkets.TrinketsCompat;
 
 public class PlatformImpl {
@@ -19,12 +20,15 @@ public class PlatformImpl {
 
         @Override
         public void awakeSlotModCompat() {
-            TrinketsCompat.init();
+            FabricCompatFeatures.initSlotCompat();
         }
 
         @Override
         public ItemStack getSpellBookSlot(PlayerEntity player) {
-            return TrinketsCompat.getSpellBookStack(player);
+            if (TrinketsCompat.isEnabled()) {
+                return TrinketsCompat.getSpellBookStack(player);
+            }
+            return ItemStack.EMPTY;
         }
     }
     private static final Platform.Util UTIL = new FabricUtil();

@@ -4,6 +4,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.neoforged.fml.ModList;
 import net.spell_engine.Platform;
+import net.spell_engine.neoforge.compat.accessories.AccessoriesCompat;
+import net.spell_engine.neoforge.compat.accessories.NeoForgeCompatFeatures;
 
 public class PlatformImpl {
     public static Platform.Type getPlatformType() {
@@ -18,11 +20,14 @@ public class PlatformImpl {
 
         @Override
         public void awakeSlotModCompat() {
-
+            NeoForgeCompatFeatures.initSlotCompat();
         }
 
         @Override
         public ItemStack getSpellBookSlot(PlayerEntity player) {
+            if (AccessoriesCompat.isEnabled()) {
+                return AccessoriesCompat.getSpellBookStack(player);
+            }
             return ItemStack.EMPTY;
         }
     }

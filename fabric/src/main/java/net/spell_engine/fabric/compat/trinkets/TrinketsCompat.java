@@ -3,15 +3,13 @@ package net.spell_engine.fabric.compat.trinkets;
 import dev.emi.trinkets.api.TrinketsApi;
 import dev.emi.trinkets.api.event.TrinketEquipCallback;
 import net.fabricmc.fabric.api.util.TriState;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
+import net.spell_engine.Platform;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.compat.container.ContainerCompat;
-import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.item.SpellEngineItems;
@@ -27,7 +25,7 @@ public class TrinketsCompat {
         if (intialized) {
             return;
         }
-        enabled = FabricLoader.getInstance().isModLoaded("trinkets");
+        enabled = Platform.util().isModLoaded("trinkets");
 
         if (enabled) {
             TrinketsApi.registerTrinketPredicate(Identifier.of(SpellEngineMod.ID, "spell_book"), (itemStack, slotReference, livingEntity) -> {
@@ -55,10 +53,10 @@ public class TrinketsCompat {
         intialized = true;
 
         SpellEngineItems.setSpellScrollFactory(
-                () -> new SpellScrollTrinketItem(new Item.Settings().maxCount(1), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
+                (args) -> new SpellScrollTrinketItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
         );
         SpellEngineItems.setSpellBookFactory(
-                (poolId) -> new SpellBookTrinketItem(new Item.Settings().maxCount(1), poolId, SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
+                (args) -> new SpellBookTrinketItem(args.settings(), args.poolId(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
         );
     }
 
@@ -73,33 +71,6 @@ public class TrinketsCompat {
 
     public static boolean isEnabled() {
         return enabled;
-    }
-
-    public static List<SpellContainerSource.SourcedContainer> getSpellContainers(PlayerEntity player, String sourceName) {
-        var component = TrinketsApi.getTrinketComponent(player);
-        if (component.isEmpty()) {
-            return List.of();
-        }
-        var spellBooks = new ArrayList<SpellContainerSource.SourcedContainer>();
-        var others = new ArrayList<SpellContainerSource.SourcedContainer>();
-        var trinketComponent = component.get();
-        trinketComponent.getAllEquipped().forEach(pair -> {
-            var stack = pair.getRight();
-            if (stack.isEmpty()) {
-                return;
-            }
-            var container = SpellContainerHelper.containerFromItemStack(stack);
-            if (container != null && container.isValid()) {
-                if (pair.getLeft().getId().contains("spell/book")) {
-                    spellBooks.add(new SpellContainerSource.SourcedContainer(sourceName, stack, container));
-                } else {
-                    others.add(new SpellContainerSource.SourcedContainer(sourceName, stack, container));
-                }
-            }
-        });
-
-        spellBooks.addAll(others);
-        return spellBooks;
     }
 
     public static List<ItemStack> getEquippedStacks(PlayerEntity player) {
