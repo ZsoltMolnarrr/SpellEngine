@@ -5,7 +5,6 @@
   ],
   "slots": [
     "spell_book",
-    "spell_scroll",
     "spell_quiver"
   ]
 }
