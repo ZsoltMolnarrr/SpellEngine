@@ -4,10 +4,10 @@ import io.wispforest.accessories.api.events.AccessoryChangeCallback;
 import io.wispforest.accessories.api.AccessoriesAPI;
 import io.wispforest.accessories.api.AccessoriesCapability;
 import net.fabricmc.fabric.api.util.TriState;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
-import net.spell_engine.Platform;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
@@ -29,7 +29,10 @@ public class AccessoriesCompat {
             return;
         }
         intialized = true;
-        enabled = Platform.util().isModLoaded("accessories");
+        // Seems like Fabric specific query works better on NeoForge :)
+        // as pure neo query doesn't have data at early runtime
+        enabled = FabricLoader.getInstance().isModLoaded("accessories");
+                //Platform.util().isModLoaded("accessories");
         if (!enabled) {
             return;
         }
