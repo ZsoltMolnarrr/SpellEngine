@@ -1,4 +1,4 @@
-package net.spell_engine.neoforge.compat.accessories;
+package net.spell_engine.compat.accessories;
 
 import io.wispforest.accessories.api.AccessoryItem;
 import io.wispforest.accessories.api.SoundEventData;

@@ -9,6 +9,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.Platform;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.trinket.ISpellBookItem;
+import net.spell_engine.compat.SlotModCompat;
 import net.spell_engine.compat.container.ContainerCompat;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -18,17 +19,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TrinketsCompat {
+    public static final String MOD_ID = "trinkets";
     private static boolean intialized = false;
     private static boolean enabled = false;
 
-    public static void init() {
+    public static boolean init() {
         if (intialized) {
-            return;
+            return enabled;
         }
         intialized = true;
-        enabled = Platform.util().isModLoaded("trinkets");
+        enabled = Platform.util().isModLoaded(MOD_ID);
         if (!enabled) {
-            return;
+            return enabled;
         }
 
         TrinketsApi.registerTrinketPredicate(Identifier.of(SpellEngineMod.ID, "spell_book"), (itemStack, slotReference, livingEntity) -> {
@@ -53,12 +55,15 @@ public class TrinketsCompat {
             }
         });
 
-        SpellEngineItems.setSpellScrollFactory(
+        SlotModCompat.setSpellScrollFactory(
                 (args) -> new SpellScrollTrinketItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
         );
-        SpellEngineItems.setSpellBookFactory(
+        SlotModCompat.setSpellBookFactory(
                 (args) -> new SpellBookTrinketItem(args.settings(), args.poolId(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
         );
+        SlotModCompat.spellBookResolver = TrinketsCompat::getSpellBookStack;
+
+        return enabled;
     }
 
     private static List<ItemStack> getAll(PlayerEntity player) {

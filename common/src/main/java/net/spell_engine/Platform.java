@@ -26,7 +26,6 @@ public class Platform {
     public interface Util {
         boolean isModLoaded(String modid);
         void awakeSlotModCompat();
-        ItemStack getSpellBookSlot(PlayerEntity player);
     }
 
     @ExpectPlatform

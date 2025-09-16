@@ -1,11 +1,8 @@
 package net.spell_engine.fabric;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 import net.spell_engine.Platform;
 import net.spell_engine.fabric.compat.FabricCompatFeatures;
-import net.spell_engine.fabric.compat.trinkets.TrinketsCompat;
 
 public class PlatformImpl {
     public static Platform.Type getPlatformType() {
@@ -21,14 +18,6 @@ public class PlatformImpl {
         @Override
         public void awakeSlotModCompat() {
             FabricCompatFeatures.initSlotCompat();
-        }
-
-        @Override
-        public ItemStack getSpellBookSlot(PlayerEntity player) {
-            if (TrinketsCompat.isEnabled()) {
-                return TrinketsCompat.getSpellBookStack(player);
-            }
-            return ItemStack.EMPTY;
         }
     }
     private static final Platform.Util UTIL = new FabricUtil();

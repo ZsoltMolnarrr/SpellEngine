@@ -2,7 +2,8 @@
 
 Project changes:
 - Move to Architectury workspace
-- Add support for Accessories mod (NeoForge)
+- Add support for Accessories mod (Fabric & NeoForge)
+- Fabric installations can choose between Trinkets and Accessories mod (config/spell_engine/fabric_compatibility.json)
 
 # 1.7.3
 

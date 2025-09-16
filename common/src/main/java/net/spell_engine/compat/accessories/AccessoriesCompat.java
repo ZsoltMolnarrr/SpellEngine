@@ -1,4 +1,4 @@
-package net.spell_engine.neoforge.compat.accessories;
+package net.spell_engine.compat.accessories;
 
 import io.wispforest.accessories.api.events.AccessoryChangeCallback;
 import io.wispforest.accessories.api.AccessoriesAPI;
@@ -11,6 +11,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
+import net.spell_engine.compat.SlotModCompat;
 import net.spell_engine.compat.container.ContainerCompat;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -20,21 +21,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AccessoriesCompat {
+    public static final String MOD_ID = "accessories";
     public static final String SLOT_SPELL_BOOK = "spell_book";
     private static boolean intialized = false;
     private static boolean enabled = false;
 
-    public static void init() {
+    public static boolean init() {
         if (intialized) {
-            return;
+            return enabled;
         }
         intialized = true;
         // Seems like Fabric specific query works better on NeoForge :)
         // as pure neo query doesn't have data at early runtime
-        enabled = FabricLoader.getInstance().isModLoaded("accessories");
-                //Platform.util().isModLoaded("accessories");
+        enabled = FabricLoader.getInstance().isModLoaded(MOD_ID);
         if (!enabled) {
-            return;
+            return enabled;
         }
 
         AccessoriesAPI.registerPredicate(Identifier.of(SpellEngineMod.ID, SLOT_SPELL_BOOK), (world, slotType, i, itemStack) -> {
@@ -60,12 +61,15 @@ public class AccessoriesCompat {
             }
         });
 
-        SpellEngineItems.setSpellScrollFactory(
+        SlotModCompat.setSpellScrollFactory(
                 (args) -> new SpellScrollAccessoryItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP::entry)
         );
-        SpellEngineItems.setSpellBookFactory(
+        SlotModCompat.setSpellBookFactory(
                 (args) -> new SpellBookAccessoryItem(args.settings(), args.poolId(), SpellEngineSounds.SPELLBOOK_EQUIP::entry)
         );
+        SlotModCompat.spellBookResolver = AccessoriesCompat::getSpellBookStack;
+
+        return enabled;
     }
 
     private static List<ItemStack> getAll(PlayerEntity player) {

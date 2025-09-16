@@ -15,6 +15,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.api.item.trinket.SpellBookItem;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.compat.SlotModCompat;
 import net.spell_engine.spellbinding.SpellBinding;
 import net.spell_engine.spellbinding.SpellBindingBlock;
 import org.jetbrains.annotations.Nullable;
@@ -33,28 +34,19 @@ public class SpellEngineItems {
                 .build();
     }
 
-    public record SpellScrollArs(Item.Settings settings) { }
-    @Nullable private static Function<SpellScrollArs, Item> spellScrollFactory = null;
-    public static void setSpellScrollFactory(Function<SpellScrollArs, Item> factory) {
-        if (spellScrollFactory != null) { return; }
-        spellScrollFactory = factory;
-    }
+
     public static final Lazy<Item> SCROLL = new Lazy<>(() -> {
         var settings = new Item.Settings().maxCount(1);
-        var args = new SpellScrollArs(settings);
-        return spellScrollFactory != null ? spellScrollFactory.apply(args) : new ScrollItem(args.settings);
+        var args = new SlotModCompat.SpellScrollArs(settings);
+        var factory = SlotModCompat.spellScrollFactory;
+        return factory != null ? factory.apply(args) : new ScrollItem(args.settings());
     });
 
-    public record SpellBookArs(Identifier poolId, Item.Settings settings) { }
-    @Nullable private static Function<SpellBookArs, ISpellBookItem> spellBookFactory = null;
-    public static void setSpellBookFactory(Function<SpellBookArs, ISpellBookItem> factory) {
-        if (spellBookFactory != null) { return; }
-        spellBookFactory = factory;
-    }
     public static ISpellBookItem createBook(Identifier poolId) {
         var settings = new Item.Settings().maxCount(1);
-        var args = new SpellBookArs(poolId, settings);
-        return spellBookFactory != null ? spellBookFactory.apply(args) : new SpellBookItem(args.poolId, args.settings);
+        var args = new SlotModCompat.SpellBookArs(poolId, settings);
+        var factory = SlotModCompat.spellBookFactory;
+        return factory != null ? factory.apply(args) : new SpellBookItem(args.poolId(), args.settings());
     }
 
     public static void register() {

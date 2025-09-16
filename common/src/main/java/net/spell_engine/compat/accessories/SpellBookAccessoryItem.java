@@ -1,4 +1,4 @@
-package net.spell_engine.neoforge.compat.accessories;
+package net.spell_engine.compat.accessories;
 
 import net.minecraft.item.Item;
 import net.minecraft.registry.entry.RegistryEntry;

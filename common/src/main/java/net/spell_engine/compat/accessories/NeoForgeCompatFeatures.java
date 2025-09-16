@@ -1,4 +1,4 @@
-package net.spell_engine.neoforge.compat.accessories;
+package net.spell_engine.compat.accessories;
 
 public class NeoForgeCompatFeatures {
     public static void init() {
