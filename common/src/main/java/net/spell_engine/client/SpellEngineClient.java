@@ -167,10 +167,4 @@ public class SpellEngineClient {
             pluginCtx.addModels(CustomModelRegistry.modelIds);
         });
     }
-
-    public static void registerKeyBindings() {
-        for(var keybinding: Keybindings.all()) {
-            KeyBindingHelper.registerKeyBinding(keybinding);
-        }
-    }
 }

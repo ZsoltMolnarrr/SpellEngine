@@ -13,6 +13,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.ConfigMenuScreen;
 import net.spell_engine.client.gui.HudRenderHelper;
+import net.spell_engine.client.input.Keybindings;
 
 @EventBusSubscriber(modid = SpellEngineMod.ID, value = Dist.CLIENT)
 public class NeoForgeClientMod {
@@ -30,7 +31,9 @@ public class NeoForgeClientMod {
 
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event){
-        SpellEngineClient.registerKeyBindings();
+        for(var keybinding: Keybindings.all()) {
+            event.register(keybinding);
+        }
     }
 
     @SubscribeEvent // on the mod event bus only on the physical client

@@ -52,7 +52,7 @@ side = "BOTH"
 modId = "spell_power"
 type = "required"
 versionRange = "[${spell_power_version},)"
-ordering = "AFTER"
+ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.spell_engine]]
