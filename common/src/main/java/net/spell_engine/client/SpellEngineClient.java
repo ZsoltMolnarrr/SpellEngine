@@ -164,7 +164,7 @@ public class SpellEngineClient {
         }
 
         ModelLoadingPlugin.register(pluginCtx -> {
-            pluginCtx.addModels(CustomModelRegistry.modelIds);
+            pluginCtx.addModels(CustomModelRegistry.getModelIds());
         });
     }
 }
