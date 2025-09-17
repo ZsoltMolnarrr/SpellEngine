@@ -162,9 +162,5 @@ public class SpellEngineClient {
                     variant.entry().particleType(), (provider) -> new SpellUniversalParticle.MagicVariant(provider, variant)
             );
         }
-
-        ModelLoadingPlugin.register(pluginCtx -> {
-            pluginCtx.addModels(CustomModelRegistry.getModelIds());
-        });
     }
 }

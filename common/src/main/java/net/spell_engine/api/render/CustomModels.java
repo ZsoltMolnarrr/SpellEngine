@@ -6,10 +6,12 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import net.spell_engine.Platform;
 import net.spell_engine.client.render.CustomModelRegistry;
 import net.spell_engine.mixin.client.render.ItemRendererAccessor;
 
@@ -22,7 +24,13 @@ public class CustomModels {
 
     public static void render(RenderLayer renderLayer, ItemRenderer itemRenderer, Identifier modelId,
                               MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int seed) {
-        var model = MinecraftClient.getInstance().getBakedModelManager().getModel(modelId);
+        var manager = MinecraftClient.getInstance().getBakedModelManager();
+        BakedModel model;
+        if (Platform.Fabric) { // Not outsourcing to Platform, to avoid dedicated server issues
+            model = manager.getModel(modelId);
+        } else {
+            model = manager.getModel(new ModelIdentifier(modelId, "standalone"));
+        }
         if (model == null) {
             var stack = Registries.ITEM.get(modelId).getDefaultStack();
             if (!stack.isEmpty()) {

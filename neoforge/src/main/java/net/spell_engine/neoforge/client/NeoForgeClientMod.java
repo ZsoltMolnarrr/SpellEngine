@@ -1,12 +1,14 @@
 package net.spell_engine.neoforge.client;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.util.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
@@ -17,6 +19,7 @@ import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.ConfigMenuScreen;
 import net.spell_engine.client.gui.HudRenderHelper;
 import net.spell_engine.client.input.Keybindings;
+import net.spell_engine.client.render.CustomModelRegistry;
 
 @EventBusSubscriber(modid = SpellEngineMod.ID, value = Dist.CLIENT)
 public class NeoForgeClientMod {
@@ -46,5 +49,14 @@ public class NeoForgeClientMod {
     @SubscribeEvent // on the mod event bus only on the physical client
     public static void registerParticleProviders(RegisterParticleProvidersEvent event) {
         SpellEngineClient.registerParticleAppearances();
+    }
+
+    @SubscribeEvent
+    public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
+        // WARNING! Models registered like this, need to be retrieved with `ModelIdentifier.standalone(id)` !!
+        for (var id: CustomModelRegistry.getModelIds()) {
+            var modelId = ModelIdentifier.standalone(id);
+            event.register(modelId);
+        }
     }
 }
