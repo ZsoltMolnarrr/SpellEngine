@@ -5,6 +5,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.*;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
+
+import java.util.function.BiFunction;
 
 public class CustomLayers extends RenderLayer {
     public CustomLayers(String name, VertexFormat vertexFormat, VertexFormat.DrawMode drawMode, int expectedBufferSize, boolean hasCrumbling, boolean translucent, Runnable startAction, Runnable endAction) {
@@ -27,6 +30,19 @@ public class CustomLayers extends RenderLayer {
                 true,
                 multiPhaseParameters);
     }
+
+    BiFunction<Identifier, Boolean, RenderLayer> BEACON_BEAM = Util.memoize((texture, affectsOutline) -> {
+        MultiPhaseParameters multiPhaseParameters = RenderLayer
+                .MultiPhaseParameters.builder()
+                .program(BEACON_BEAM_PROGRAM)
+                .cull(DISABLE_CULLING)
+                .texture(new RenderPhase.Texture(texture, false, false))
+                .transparency(affectsOutline ? TRANSLUCENT_TRANSPARENCY : NO_TRANSPARENCY)
+                .writeMaskState(affectsOutline ? COLOR_MASK : ALL_MASK)
+                .build(false);
+        return of("beacon_beam", VertexFormats.POSITION_COLOR_TEXTURE_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 1536, false, true, multiPhaseParameters);
+    });
+
 
     protected static final Transparency BEAM_TRANSPARENCY = new Transparency("beam_transparency", () -> {
         RenderSystem.enableBlend();

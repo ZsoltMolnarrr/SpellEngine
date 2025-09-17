@@ -49,10 +49,16 @@ public class BeamRenderer extends RenderLayer {
             return layerSet;
         }
     }
+    public static LayerSet vanilla(Identifier texture) {
+        return new LayerSet(
+                CustomLayers.beam(texture, false, true),
+                CustomLayers.spellObject(texture, LightEmission.GLOW, true)
+        );
+    }
     public static LayerSet low(Identifier texture) {
         return new LayerSet(
-                RenderLayer.getBeaconBeam(texture, false),
-                RenderLayer.getBeaconBeam(texture, true)
+                CustomLayers.beam(texture, false, false),
+                CustomLayers.beam(texture, false, true)
         );
     }
     public static LayerSet medium(Identifier texture) {
@@ -153,10 +159,15 @@ public class BeamRenderer extends RenderLayer {
         var outerColor = Color.IntFormat.fromLongRGBA(beam.color_rgba);
         var innerColor = Color.IntFormat.fromLongRGBA(beam.inner_color_rgba);
 
-        var luminance = ShaderCompatibility.isShaderPackInUse()
-                ? (SpellEngineClient.config.renderBeamsHighLuminance ? beam.luminance : Spell.Target.Beam.Luminance.MEDIUM)
-                : Spell.Target.Beam.Luminance.LOW;
-        LayerSet renderLayers = layerSetFor(texture, luminance);
+        LayerSet renderLayers;
+        if (ShaderCompatibility.isVanillaRenderSystem()) {
+            renderLayers = vanilla(texture);
+        } else {
+            var luminance = ShaderCompatibility.isShaderPackInUse()
+                    ? (SpellEngineClient.config.renderBeamsHighLuminance ? beam.luminance : Spell.Target.Beam.Luminance.MEDIUM)
+                    : Spell.Target.Beam.Luminance.LOW;
+            renderLayers = layerSetFor(texture, luminance);
+        }
         BeamRenderer.renderBeam(matrixStack, vertexConsumerProvider,
                 time, tickDelta, beam.flow, true,
                 innerColor, outerColor, renderLayers,

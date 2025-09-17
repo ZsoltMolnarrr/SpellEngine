@@ -9,6 +9,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
+import net.spell_engine.Platform;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.Spell;
@@ -248,7 +249,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         updateSpellCast();
         var player = player();
         if (isBeaming()) {
-            networkHandler.sendPacket(new PlayerMoveC2SPacket.Full(
+            Platform.util().sendVanillaPacket_C2S(player, new PlayerMoveC2SPacket.Full(
                     player.getX(), player.getY(), player.getZ(),
                     player.getYaw(), player.getPitch(),
                     player.isOnGround())

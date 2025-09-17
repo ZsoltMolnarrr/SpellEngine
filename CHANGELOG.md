@@ -5,6 +5,9 @@ Project changes:
 - Add support for Accessories mod (Fabric & NeoForge)
 - Fabric installations can choose between Trinkets and Accessories mod (config/spell_engine/fabric_compatibility.json)
 
+Functional changes:
+- Improved beam rendering on vanilla pipeline
+
 # 1.7.3
 
 Functional changes:
