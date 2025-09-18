@@ -106,7 +106,8 @@ public class LootHelper {
             List<String> filters = entry.filters != null ? entry.filters : List.of();
 
             if (itemList == null) {
-                System.err.println("RPG Series loot config: failed to resolve itemList for: " + entryId);
+                System.err.println("RPG Series loot config: failed to resolve itemList for: " + entryId
+                + " (Probably just needs a game restart)");
                 continue;
             }
 
