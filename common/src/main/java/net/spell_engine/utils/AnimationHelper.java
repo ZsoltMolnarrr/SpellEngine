@@ -2,7 +2,6 @@ package net.spell_engine.utils;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.network.Packets;
