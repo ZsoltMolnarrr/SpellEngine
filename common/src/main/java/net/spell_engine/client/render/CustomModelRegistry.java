@@ -2,13 +2,14 @@ package net.spell_engine.client.render;
 
 import net.minecraft.util.Identifier;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class CustomModelRegistry {
-    public static final ArrayList<Identifier> modelIds = new ArrayList<>();
+    // NeoForge client initializers may run parallel, so use a thread-safe collection
+    public static final ConcurrentLinkedQueue<Identifier> modelIds = new ConcurrentLinkedQueue<>();
 
-    public static List<Identifier> getModelIds() {
+    public static Collection<Identifier> getModelIds() {
         return modelIds;
     }
 }
