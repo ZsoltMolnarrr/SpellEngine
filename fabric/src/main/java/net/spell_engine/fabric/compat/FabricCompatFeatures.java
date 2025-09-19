@@ -8,8 +8,7 @@ import net.spell_engine.fabric.compat.trinkets.TrinketsCompat;
 import net.spell_engine.fabric.compat.trinkets.TrinketsCompatHeader;
 import net.tiny_config.ConfigManager;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.function.Supplier;
 
 public class FabricCompatFeatures {
@@ -32,27 +31,27 @@ public class FabricCompatFeatures {
         initSlotCompat();
     }
 
-    public static void initSlotCompat() {
-        Map<String, Supplier<Boolean>> compatLoaders = new HashMap<>();
+    public static String initSlotCompat() {
+        LinkedHashMap<String, Supplier<Boolean>> compatLoaders = new LinkedHashMap<>();
         if (FabricLoader.getInstance().isModLoaded(AccessoriesCompatHeader.MOD_ID)) {
             compatLoaders.put(AccessoriesCompatHeader.MOD_ID, AccessoriesCompat::init);
         }
         if (FabricLoader.getInstance().isModLoaded(TrinketsCompatHeader.MOD_ID)) {
             compatLoaders.put(TrinketsCompatHeader.MOD_ID, TrinketsCompat::init);
         }
+
+        var preferredId = safeConfig().preferred_slot_mod_id;
         var preferred = compatLoaders.get(safeConfig().preferred_slot_mod_id);
         if (preferred != null) {
-            if (preferred.get()) {
-                // Loaded
-                return;
-            }
+            compatLoaders.remove(preferredId);
+            compatLoaders.putFirst(preferredId, preferred);
         }
         for (var entry : compatLoaders.entrySet()) {
             if (entry.getValue().get()) {
-                // Loaded
-                return;
+                return entry.getKey();
             }
         }
+        return null;
     }
 }
 
