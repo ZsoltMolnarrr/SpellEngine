@@ -97,6 +97,7 @@
   "accessories.slot.spell_book": "Spell Book",
   "accessories.slot.spell_scroll": "Spell Scroll",
   "accessories.slot.spell_quiver": "Quiver",
+  "accessories.slot.spell_trinket": "Trinket",
 
   "effect.spell_engine.stun": "Stunned",
   "effect.spell_engine.stun.description": "Cannot move or act.",

@@ -3,6 +3,7 @@
   "order": 100,
   "slots": [
     "spell_book",
+    "spell_trinket",
     "spell_quiver"
   ],
   "icon": "spell_engine:gui/group/spell"

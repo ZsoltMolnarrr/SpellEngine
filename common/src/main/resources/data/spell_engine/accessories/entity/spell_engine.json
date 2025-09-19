@@ -5,6 +5,7 @@
   ],
   "slots": [
     "spell_book",
-    "spell_quiver"
+    "spell_quiver",
+    "spell_trinket"
   ]
 }
