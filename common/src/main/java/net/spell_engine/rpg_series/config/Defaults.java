@@ -1710,6 +1710,197 @@ public class Defaults {
                 .add(X4).weight(4)
                 .add(R3)
         );
+
+        //
+        // NeoForge exclusive loot tables
+        //
+        items.put("block_factorys_bosses:chests/dragon_trial", new LootConfig.Pool()
+                .rolls(2)
+                .add(A3).enchant()
+                .add(A4)
+                .add(A5)
+        );
+        items.put("block_factorys_bosses:chests/undead_arena_rare", new LootConfig.Pool()
+                .rolls(1)
+                .add(A2).enchant()
+                .add(W2).enchant()
+        );
+
+        // Qliphoth Awakening (fdbosses)
+        items.put("fdbosses:entities/chesed", new LootConfig.Pool()
+                .rolls(1)
+                .add(W3).enchant()
+                .add(W4).enchant()
+                .add(W5).enchant()
+        );
+        items.put("fdbosses:entities/malkuth", new LootConfig.Pool()
+                .rolls(1)
+                .add(A3).enchant()
+                .add(A4).enchant()
+                .add(A5).enchant()
+        );
+
+        // L_Ender Cataclysm (cataclysm)
+        items.put("cataclysm:entities/ender_golem", new LootConfig.Pool()
+                .rolls(1)
+                .add(W4).enchant()
+                .add(A4).enchant()
+                .add(X4)
+        );
+        items.put("cataclysm:entities/ender_guardian", new LootConfig.Pool()
+                .rolls(2)
+                .add(W4, true).weight(4)
+                .add(A4, true).weight(4)
+                .add(X4).weight(2)
+                .add(R4)
+                .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
+                .add(A5)
+        );
+        items.put("cataclysm:entities/netherite_monstrosity", new LootConfig.Pool()
+                .rolls(2)
+                .add(W3, true).weight(5)
+                .add(A3, true).weight(5)
+                .add(W5)
+                .add(A5)
+                .add(X3).weight(2)
+                .add(R3)
+        );
+        items.put("cataclysm:entities/ignited_revenant", new LootConfig.Pool()
+                .rolls(2)
+                .add(A3, true).weight(6)
+                .add(X3).weight(2)
+                .add(R2)
+                .add(A4)
+                .add(A5)
+        );
+        items.put("cataclysm:entities/ignis", new LootConfig.Pool()
+                .rolls(2)
+                .add(W3)
+                .add(W4, true).weight(4)
+                .add(X4)
+                .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
+        );
+        items.put("cataclysm:entities/the_harbinger", new LootConfig.Pool()
+                .rolls(2)
+                .add(W4, true)
+                .add(A4, true)
+                .add(X4).weight(2)
+                .add(R4).weight(2)
+                .add(A5)
+        );
+
+        // Mowzie's Mobs
+
+        items.put("mowziesmobs:entities/foliaath", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(W2, true)
+                .add(A2, true)
+        );
+        //ferrous_wroughtnaut
+        items.put("mowziesmobs:entities/ferrous_wroughtnaut", new LootConfig.Pool()
+                .rolls(2)
+                .add(W2, true).weight(6)
+                .add(A2, true).weight(3)
+                .add(X2).weight(2)
+                .add(R2)
+                .add(W5)
+        );
+        //frostmaw
+        items.put("mowziesmobs:entities/frostmaw", new LootConfig.Pool()
+                .rolls(2)
+                .add(W2, true).weight(4)
+                .add(A2, true).weight(3)
+                .add(R2)
+                .add(A5)
+        );
+        //grottol
+        items.put("mowziesmobs:entities/grottol", new LootConfig.Pool()
+                .rolls(2)
+                .add(W2, true)
+                .add(W1, true)
+                .add(A1, true)
+                .add(X2).weight(8)
+        );
+        //sculptor
+        items.put("mowziesmobs:entities/sculptor", new LootConfig.Pool()
+                .rolls(2)
+                .add(W2, true)
+                .add(A2, true)
+        );
+
+        // Twilight Forest
+
+        //naga
+        items.put("twilightforest:entities/naga", new LootConfig.Pool()
+                .rolls(2)
+                .add(W2, true).weight(4)
+                .add(A2, true).weight(3)
+                .add(X2).weight(2)
+                .add(R2)
+                .add(W5)
+        );
+        //lich
+        items.put("twilightforest:entities/lich", new LootConfig.Pool()
+                .rolls(2)
+                .add(W2, true).weight(4)
+                .add(A2, true).weight(3)
+                .add(X2).weight(2)
+                .add(R2)
+                .add(A5)
+        );
+        //minotaur
+        items.put("twilightforest:entities/minotaur", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(W2, true)
+                .add(A2, true)
+        );
+        // minoshroom
+        items.put("twilightforest:entities/minoshroom", new LootConfig.Pool()
+                .rolls(1)
+                .add(W2, true)
+                .add(A2, true)
+                .add(W3, true)
+                .add(A3, true)
+                .add(X3)
+        );
+        // hydra
+        items.put("twilightforest:entities/hydra", new LootConfig.Pool()
+                .rolls(2)
+                .add(W3, true).weight(4)
+                .add(A3, true).weight(3)
+                .add(W4, true)
+                .add(X3)
+                .add(R3)
+                .add(W5)
+        );
+        //ur_ghast
+        items.put("twilightforest:entities/ur_ghast", new LootConfig.Pool()
+                .rolls(2)
+                .add(W3, true).weight(4)
+                .add(A3, true).weight(3)
+                .add(X3).weight(2)
+                .add(R3)
+                .add(A5)
+        );
+        //alpha_yeti
+        items.put("twilightforest:entities/alpha_yeti", new LootConfig.Pool()
+                .rolls(2)
+                .add(W4, true)
+                .add(A3, true)
+                .add(X4).weight(2)
+                .add(R3)
+                .add(W5)
+        );
+        //snow_queen
+        items.put("twilightforest:entities/snow_queen", new LootConfig.Pool()
+                .rolls(2)
+                .add(W4, true)
+                .add(A3, true)
+                .add(X3).weight(2)
+                .add(X4).weight(2)
+                .add(R4)
+                .add(A5)
+        );
     }
 
 
