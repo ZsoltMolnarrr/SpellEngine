@@ -13,7 +13,7 @@ public class Defaults {
     private static String armors(int tier) {
         return "#" + RPGSeriesItemTags.LootTiers.id(tier, RPGSeriesItemTags.LootCategory.ARMORS).toString();
     }
-    
+
     private static String weapons(int tier) {
         return "#" + RPGSeriesItemTags.LootTiers.id(tier, RPGSeriesItemTags.LootCategory.WEAPONS).toString();
     }
@@ -78,21 +78,21 @@ public class Defaults {
         );
 
         List.of("minecraft:chests/abandoned_mineshaft",
-                "minecraft:chests/igloo_chest",
-                "minecraft:chests/shipwreck_supply",
-                "minecraft:chests/spawn_bonus_chest").
+                        "minecraft:chests/igloo_chest",
+                        "minecraft:chests/shipwreck_supply",
+                        "minecraft:chests/spawn_bonus_chest").
                 forEach(id ->
                         items.put(id, new LootConfig.Pool()
-                        .rolls(0.5)
-                        .add(W0)
-                        .add(X0)
-                ));
+                                .rolls(0.5)
+                                .add(W0)
+                                .add(X0)
+                        ));
 
         List.of("minecraft:chests/bastion_bridge",
-                "minecraft:chests/simple_dungeon",
-                "minecraft:chests/stronghold_corridor",
-                "minecraft:chests/stronghold_crossing",
-                "minecraft:chests/buried_treasure")
+                        "minecraft:chests/simple_dungeon",
+                        "minecraft:chests/stronghold_corridor",
+                        "minecraft:chests/stronghold_crossing",
+                        "minecraft:chests/buried_treasure")
                 .forEach(id -> {
                     items.put(id, new LootConfig.Pool()
                             .rolls(0.5)
@@ -110,10 +110,10 @@ public class Defaults {
                 ));
 
         List.of("minecraft:chests/desert_pyramid",
-                "minecraft:chests/underwater_ruin_small",
-                "minecraft:chests/jungle_temple",
-                "minecraft:chests/pillager_outpost",
-                "minecraft:chests/woodland_mansion")
+                        "minecraft:chests/underwater_ruin_small",
+                        "minecraft:chests/jungle_temple",
+                        "minecraft:chests/pillager_outpost",
+                        "minecraft:chests/woodland_mansion")
                 .forEach(id -> {
                     items.put(id, new LootConfig.Pool()
                             .rolls(1)
@@ -129,12 +129,12 @@ public class Defaults {
                 });
 
         List.of("minecraft:chests/nether_bridge",
-                    "minecraft:chests/underwater_ruin_big")
+                        "minecraft:chests/underwater_ruin_big")
                 .forEach(id -> {
                     items.put(id, new LootConfig.Pool()
-                        .rolls(0.75)
-                        .add(W2)
-                        .add(X2));
+                            .rolls(0.75)
+                            .add(W2)
+                            .add(X2));
                     scrolls.put(id, new LootConfig.Pool()
                             .rolls(0.2)
                             .scroll(2, 3));
@@ -169,13 +169,13 @@ public class Defaults {
         List.of("minecraft:chests/stronghold_library")
                 .forEach(id -> {
                     items.put(id, new LootConfig.Pool()
-                        .rolls(0.8)
-                        .add(A2, true)
-                        .add(X2, false)
+                            .rolls(0.8)
+                            .add(A2, true)
+                            .add(X2, false)
                     );
                     scrolls.put(id, new LootConfig.Pool()
-                        .rolls(0.5)
-                        .scroll(3, 4)
+                            .rolls(0.5)
+                            .scroll(3, 4)
                     );
                 });
 
@@ -203,14 +203,14 @@ public class Defaults {
                         "minecraft:chests/trial_chambers/reward_common")
                 .forEach(id -> {
                     items.put(id, new LootConfig.Pool()
-                        .rolls(0.5)
-                        .add(W1).weight(2)
-                        .add(A1).weight(2)
-                        .add(R1)
+                            .rolls(0.5)
+                            .add(W1).weight(2)
+                            .add(A1).weight(2)
+                            .add(R1)
                     );
                     scrolls.put(id, new LootConfig.Pool()
-                        .rolls(0.25)
-                        .scroll(2, 3)
+                            .rolls(0.25)
+                            .scroll(2, 3)
                     );
                 });
 
@@ -218,15 +218,15 @@ public class Defaults {
                         "minecraft:chests/trial_chambers/reward_rare")
                 .forEach(id -> {
                     items.put(id, new LootConfig.Pool()
-                        .rolls(1)
-                        .add(W2, true).weight(2)
-                        .add(A2, true).weight(2)
-                        .add(X2).weight(2)
-                        .add(R2)
+                            .rolls(1)
+                            .add(W2, true).weight(2)
+                            .add(A2, true).weight(2)
+                            .add(X2).weight(2)
+                            .add(R2)
                     );
                     scrolls.put(id, new LootConfig.Pool()
-                        .rolls(0.25)
-                        .scroll(3, 4)
+                            .rolls(0.25)
+                            .scroll(3, 4)
                     );
                 });
 
@@ -234,10 +234,10 @@ public class Defaults {
                         "minecraft:chests/trial_chambers/reward_unique")
                 .forEach(id -> {
                     items.put(id, new LootConfig.Pool()
-                        .rolls(1)
-                        .add(W3, true).weight(2)
-                        .add(X4).weight(2)
-                        .add(R3)
+                            .rolls(1)
+                            .add(W3, true).weight(2)
+                            .add(X4).weight(2)
+                            .add(R3)
                     );
                 });
 
@@ -759,13 +759,13 @@ public class Defaults {
                 "nova_structures:chests/hamlet/hamlet_tresure",                     // Medium sized rare
                 "nova_structures:chests/piglin_outstation/outstation_treasure",     // Medium sized rare
                 "nova_structures:chests/piglin_outstation/vault_piglin_outstation"
-                ).forEach(id -> items.put(id, new LootConfig.Pool()
-                        .rolls(1)
-                        .add(A3).enchant().weight(3)
-                        .add(W3).enchant().weight(3)
-                        .add(X3)
-                        .add(R3)
-                ));
+        ).forEach(id -> items.put(id, new LootConfig.Pool()
+                .rolls(1)
+                .add(A3).enchant().weight(3)
+                .add(W3).enchant().weight(3)
+                .add(X3)
+                .add(R3)
+        ));
 
         List.of("nova_structures:combat_treasure_1",
                 "nova_structures:combat_treasure_2"
