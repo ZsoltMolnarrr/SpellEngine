@@ -248,13 +248,13 @@ public class SpellContainerSource {
                     }
                 }
             }
-            if (container.contentMatches(contentType)) {
-                for (var idString : container.spell_ids()) {
-                    var id = Identifier.of(idString);
-                    var spell = registry.getEntry(id).orElse(null);
-                    if (spell != null && spell.value().type == type) {
-                        spells.add(spell);
-                    }
+            for (var idString : container.spell_ids()) {
+                var id = Identifier.of(idString);
+                var spell = registry.getEntry(id).orElse(null);
+                if (spell != null && spell.value().type == type
+                        && ( spellMatchesContentType(spell.value(), contentType)
+                        || container.content() == SpellContainer.ContentType.ANY )) { // Legacy mode
+                    spells.add(spell);
                 }
             }
         }
@@ -285,6 +285,26 @@ public class SpellContainerSource {
         spells.removeAll(toRemove);
 
         return spells;
+    }
+
+    private static boolean spellMatchesContentType(Spell spell, @Nullable SpellContainer.ContentType contentType) {
+        if (contentType == null || contentType == SpellContainer.ContentType.ANY) {
+            return true;
+        }
+        var matches = switch (spell.school.archetype) {
+            case ARCHERY -> contentType == SpellContainer.ContentType.ARCHERY;
+            case MAGIC, MELEE -> contentType == SpellContainer.ContentType.MAGIC;
+            default -> false;
+        };
+        if (spell.secondary_archetype != null) {
+            matches = matches || switch (spell.secondary_archetype) {
+                case ARCHERY -> contentType == SpellContainer.ContentType.ARCHERY;
+                case MAGIC, MELEE -> contentType == SpellContainer.ContentType.MAGIC;
+                case ANY -> true;
+                default -> false;
+            };
+        }
+        return matches;
     }
 
     public record MergeResult(SpellContainer container, List<RegistryEntry<Spell>> spells) {

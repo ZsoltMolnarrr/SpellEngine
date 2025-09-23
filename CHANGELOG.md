@@ -3,6 +3,12 @@
 Functional changes:
 - Fix generic Spell Power base value for existing players
 
+API changes:
+- Reworked Spell Container merge logic
+  - Now ignores `contentType` when collecting containers
+  - Accessible spells are filtered by Spell School archetype
+  - with an additional new field `spell.secondary_archetype`
+
 # 1.8.0
 
 Project changes:

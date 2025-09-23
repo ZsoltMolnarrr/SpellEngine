@@ -15,6 +15,8 @@ import java.util.List;
 
 public class Spell {
     public SpellSchool school;
+    public enum ExtendedArchetype { ARCHERY, MAGIC, MELEE, ANY }
+    @Nullable public ExtendedArchetype secondary_archetype = null;
     public float range = 50;
     /// Provide a value for a non-static range mechanic
     @Nullable public RangeMechanic range_mechanic;
