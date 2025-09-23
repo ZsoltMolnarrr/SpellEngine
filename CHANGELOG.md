@@ -1,3 +1,8 @@
+# 1.8.1
+
+Functional changes:
+- Fix generic Spell Power base value for existing players
+
 # 1.8.0
 
 Project changes:

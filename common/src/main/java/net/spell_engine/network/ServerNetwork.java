@@ -125,6 +125,7 @@ public class ServerNetwork {
             var player = handler.getPlayer();
             ((SpellCasterEntity)handler.getPlayer()).getCooldownManager().pushSync();
             SpellContainerSource.syncServerSideContainers(player);
+            SpellEngineMod.migrateAttributes(player);
         });
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, target) -> {
             ((SpellCasterEntity)player).getCooldownManager().pushSync();

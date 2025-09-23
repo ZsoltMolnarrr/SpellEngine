@@ -36,8 +36,10 @@ import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.rpg_series.RPGSeriesCore;
 import net.spell_engine.spellbinding.*;
 import net.spell_engine.utils.StatusEffectUtil;
+import net.spell_power.api.SpellSchools;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class SpellEngineMod {
     public static final String ID = "spell_engine";
@@ -126,5 +128,22 @@ public class SpellEngineMod {
 
         Criteria.register(SpellBindingCriteria.ID.toString(), SpellBindingCriteria.INSTANCE);
         Criteria.register(SpellBookCreationCriteria.ID.toString(), SpellBookCreationCriteria.INSTANCE);
+    }
+
+    public static void migrateAttributes(ServerPlayerEntity player) {
+        var attributes = List.of(SpellSchools.GENERIC.attributeEntry);
+        for (var attribute: attributes) {
+            if (attribute == null) {
+                continue;
+            }
+            var instance = player.getAttributeInstance(attribute);
+            if (instance == null) {
+                continue;
+            }
+            var defaultValue = attribute.value().getDefaultValue();
+            if (instance.getBaseValue() != defaultValue) {
+                instance.setBaseValue(defaultValue);
+            }
+        }
     }
 }
