@@ -1,6 +1,5 @@
 package net.spell_engine.neoforge;
 
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.neoforged.fml.ModList;
@@ -21,11 +20,6 @@ public class PlatformImpl {
         @Override
         public void awakeSlotModCompat() {
             NeoForgeCompatFeatures.initSlotCompat();
-        }
-
-        @Override
-        public void sendVanillaPacket_C2S(ClientPlayerEntity player, Packet<?> packet) {
-            player.networkHandler.send(packet);
         }
 
         @Override

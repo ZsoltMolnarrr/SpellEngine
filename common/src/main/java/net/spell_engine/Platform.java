@@ -1,7 +1,6 @@
 package net.spell_engine;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.network.ServerPlayerEntity;
 
@@ -27,9 +26,6 @@ public class Platform {
     public interface Util {
         boolean isModLoaded(String modid);
         void awakeSlotModCompat();
-
-        // These are likely necessary due to some mapping differences
-        void sendVanillaPacket_C2S(ClientPlayerEntity player, Packet<?> packet);
         void sendVanillaPacket_S2C(ServerPlayerEntity player, Packet<?> packet);
     }
 

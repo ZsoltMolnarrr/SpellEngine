@@ -13,6 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
+import net.spell_engine.PlatformClient;
 import net.spell_engine.compat.SlotModCompat;
 import net.spell_engine.utils.AttributeModifierUtil;
 import org.jetbrains.annotations.Nullable;
@@ -68,10 +69,13 @@ public class AutoSwapHelper {
     }
 
     public static void swapHeldItems() {
-        MinecraftClient
-                .getInstance()
-                .getNetworkHandler()
-                .sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND, BlockPos.ORIGIN, Direction.DOWN));
+        var player = MinecraftClient.getInstance().player;
+        PlatformClient.util().sendVanillaPacket_C2S(player,
+                new PlayerActionC2SPacket(
+                        PlayerActionC2SPacket.Action.SWAP_ITEM_WITH_OFFHAND,
+                        BlockPos.ORIGIN,
+                        Direction.DOWN)
+        );
     }
 
     public static boolean isPlaceable(ItemStack itemStack) {

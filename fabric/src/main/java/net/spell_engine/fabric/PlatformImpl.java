@@ -1,7 +1,6 @@
 package net.spell_engine.fabric;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.spell_engine.Platform;
@@ -21,11 +20,6 @@ public class PlatformImpl {
         @Override
         public void awakeSlotModCompat() {
             FabricCompatFeatures.initSlotCompat();
-        }
-
-        @Override
-        public void sendVanillaPacket_C2S(ClientPlayerEntity player, Packet<?> packet) {
-            player.networkHandler.sendPacket(packet);
         }
 
         @Override
