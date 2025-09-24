@@ -253,7 +253,7 @@ public class SpellContainerSource {
                 var spell = registry.getEntry(id).orElse(null);
                 if (spell != null && spell.value().type == type
                         && ( spellMatchesContentType(spell.value(), contentType)
-                        || container.content() == SpellContainer.ContentType.ANY )) { // Legacy mode
+                        || container.content() == SpellContainer.ContentType.ANY )) { // FIXME: Legacy mode
                     spells.add(spell);
                 }
             }
