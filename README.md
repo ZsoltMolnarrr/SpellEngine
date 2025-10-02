@@ -11,29 +11,51 @@
 ## 🪄️ Features
 
 Data driven API
-- 🗡️ Spells can be assigned to any weapon (data driven)
+- 🗡️ Spells can be assigned to any weapon (data driven with automatic weapon compatibility)
 - 🔮 Spells deal damage based on [Spell Power](https://github.com/ZsoltMolnarrr/SpellPower) entity attributes
-- ✍️ Spells defined in JSON format
-- ⚙️ Spells have a set of different mechanical behaviours:
-    - Active spells, can be casted, with various options: charged, channeled, instant
-    - Passive spells can be triggered: melee impact, arrow impact, spell impact (and much more...)
-    - Targeting mode: Aim, Beam, Area (and  more...)
-    - Delivery mode: Direct, Projectile, Cloud (and more...), including custom coded
-    - Impact actions: Damage, Heal, StatusEffect, Teleport, Spawn (and more...), including custom coded
-    - Cost: exhaust (hunger), item (runes), cooldown (time), durability, consume effects
-    - Support for various archery skills
+- ✍️ Spells defined in JSON format with hot-reloading and network synchronization
+- 📦 Spell Container System with proxy mode, equipment slots, and dynamic spell resolution
+- 🔄 Universal pattern matching for tags, regex, and exact matches across all spell properties
+- 🛠️ Programmatic spell generation with SpellBuilder and SpellGenerator for mod developers
+- ⚙️ Spells have a comprehensive set of mechanical behaviours:
+    - **Spell Types**: Active (casted), Passive (triggered), Modifier (spell-modifying)
+    - **Cast Modes**: Instant, charged, channeled, with configurable haste effects
+    - **Trigger System**: 14+ trigger types (melee, arrow, spell, damage, evasion, roll, etc.) with conditional logic
+    - **Targeting**: Aim, Beam, Area, Caster, None, FromTrigger - with caps, conditions, and health-based limits
+    - **Delivery**: Direct, Projectile, Meteor, Cloud, ShootArrow, StashEffect, Custom - with delays and multi-placement
+    - **Projectile Features**: Homing, ricochet, bounce, pierce, chain reactions, divergence, custom hitboxes
+    - **Impact Actions**: Damage, Heal, StatusEffect, Fire, Teleport, Spawn, Cooldown, Aggro, Custom
+    - **Conditional Logic**: Target modifiers, impact filters, chance-based execution, entity type conditions
+    - **Cost System**: Exhaust, items/runes, cooldowns, durability, status effect consumption, with batching
+    - **Equipment Sets**: Set bonuses providing spells, attributes, and special abilities
 
 Fancy audio and visuals
-- 🔈 Spells have sound effects: at the start of casting, while casting, at release, at impact
-- ✨ Spells have particle effects (any particle can be referenced by id), and the engine offers its custom set magical of particles
-- 🎨 Custom Item/Block models can be used for Spell Projectiles and Status Effects
-- 🤸 Custom player animations can be played at different stages of spell casting
+- 🔈 Advanced sound system: casting start/loop, release, impact, travel sounds with randomization
+- ✨ Sophisticated particle system with shapes, entity following, scaling, and custom magical particles
+- 🎨 Custom Item/Block models for projectiles, status effects, and spell clouds with BlockBench support
+- 🤸 Player animations at all spell stages with pitch control and ranged weapon animation support
+- 💡 Dynamic lighting integration (LambDynamicLights) for magical illumination
+- 🌈 Customizable beam rendering with colors, textures, width, and flow effects
+- 📍 Area effect visualization with ground indicators and range-scaled particles
 
 In game features
-- 🔧 Spell selection and casting is visible on the HUD (fully player configurable)
-- 😌 QoL features included (such as automatic spell cast release)
-- ⛓️ Add spells to eligible weapons using the Spell Binding Table
-- 💰 Loot table injection
+- 🔧 Spell selection and casting visible on HUD (fully player configurable)
+- 😌 QoL features: automatic spell cast release, client prediction, smart targeting
+- ⛓️ Spell Binding Table for adding spells to weapons and creating spell books
+- 📜 Spell Scroll system with creative tab generation and dungeon loot integration
+- 🎒 Equipment integration: Spell books, trinket slots (Trinkets/Accessories), automatic weapon detection
+- ⚡ Spell Infinity enchantment with configurable item tag support
+- 🎮 Commands: `/spell_cooldowns` for server administration and debugging
+- 💰 Advanced loot system with `spell_bind_randomly` function for dynamic spell assignment
+
+Developer & Mod Integration
+- 🔌 Extensive mod compatibility: Better Combat, Combat Roll, FTB Teams, Shoulder Surfing, and more
+- 📊 Comprehensive event system for spell casting, healing, and projectile lifecycle
+- 🏗️ Custom handler registration for delivery methods and impact actions
+- 🎯 Entity predicate system for complex targeting conditions
+- 🔧 Performance optimizations: batching, scheduling, client-side prediction
+- 📝 Data generation framework for programmatic spell creation and validation
+- 🌐 Multi-platform support (Fabric & NeoForge) with unified API
 
 
 ## ⌨️ Game technical features
