@@ -1,3 +1,9 @@
+# 1.8.3
+
+Functional changes:
+- Updated NeoForge dependencies
+- "Primary Spell" now show up as "Main Spell" for better clarity
+
 # 1.8.2
 
 Functional changes:
