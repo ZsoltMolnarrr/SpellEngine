@@ -131,3 +131,5 @@ src/main/generated/.cache
 /common/src/main/resources/data/spell_engine/spell_pools/test*
 
 common/src/main/generated/.cache
+
+.claude/
