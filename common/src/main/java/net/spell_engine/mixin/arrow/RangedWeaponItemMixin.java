@@ -37,12 +37,16 @@ public class RangedWeaponItemMixin {
             for (var spellEntry: shotContext.activeSpells) {
                 ArrowHelper.onArrowShot(arrow, shooter, spellEntry, trackers);
             }
+
             // Avoid arrow shot event listeners self triggering
+            // For example: Bonus Shot (triggering itself infinitely)
+//            final var firedBySpell = shotContext.firedBySpell;
+//            ((WorldScheduler)world).schedule(0, () -> {
+//                SpellTriggers.onArrowShot(arrow, player, firedBySpell);
+//            });
+
             final var firedBySpell = shotContext.firedBySpell;
-            ((WorldScheduler)world).schedule(0, () -> {
-                SpellTriggers.onArrowShot(arrow, player, firedBySpell);
-            });
-            // SpellTriggers.onArrowShot(arrow, player);
+            SpellTriggers.onArrowShot(arrow, player, firedBySpell);
         }
         return projectile;
     }

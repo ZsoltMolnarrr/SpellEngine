@@ -24,6 +24,7 @@ import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.mixin.entity.LivingEntityAccessor;
 import net.spell_engine.utils.ObjectHelper;
 import net.spell_engine.utils.PatternMatching;
+import net.spell_engine.utils.WorldScheduler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -259,7 +260,13 @@ public class SpellTriggers {
                         } else {
                             targetResult = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), true);
                         }
-                        SpellHelper.performSpell(player.getWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
+                        if (trigger.fire_delay > 0) {
+                            ((WorldScheduler)player.getWorld()).schedule(trigger.fire_delay - 1, () -> {
+                                SpellHelper.performSpell(player.getWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
+                            });
+                        } else {
+                            SpellHelper.performSpell(player.getWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
+                        }
                         break;
                     }
                 }

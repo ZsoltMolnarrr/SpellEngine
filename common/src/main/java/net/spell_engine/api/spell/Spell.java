@@ -580,7 +580,8 @@ public class Spell {
         /// - POST: After the actual event
         /// Only works for some trigger types
         public Stage stage = Stage.POST;
-
+        /// Number of ticks to wait before the spell is performed after a successful trigger
+        public int fire_delay = 0;
         /// Limits the number of times this trigger can be executed per game tick
         /// (0 = unlimited)
         public int cap_per_tick = 0;

@@ -3,6 +3,7 @@
 Functional changes:
 - Updated NeoForge dependencies
 - "Primary Spell" now show up as "Main Spell" for better clarity
+- Fix Power Shot does not apply Mark at close ranges #133
 
 # 1.8.2
 
