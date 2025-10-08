@@ -13,6 +13,7 @@
 
   "attribute.name.spell_engine.healing_taken" : "受到的治疗效果",
   "attribute.name.spell_engine.damage_taken" : "受到的伤害",
+  "attribute.name.spell_engine.evasion_chance" : "闪避概率",
 
   "spell.spell_engine.use_item.name": "使用物品",
   "spell.spell_engine.use_item.description": "使用一件手持物品",
@@ -34,8 +35,11 @@
   "spell.tooltip.trigger.spell_cast": "施放法术",
   "spell.tooltip.trigger.spell_impact_any": "法术命中",
   "spell.tooltip.trigger.spell_impact_specific": "特定法术命中",
+  "spell.tooltip.trigger.spell_area_impact": "法术范围效果",
   "spell.tooltip.trigger.damage_taken": "受到伤害",
   "spell.tooltip.trigger.shield_block": "盾牌格挡",
+  "spell.tooltip.trigger.effect_tick": "存在的效果",
+  "spell.tooltip.trigger.evasion": "闪避",
   "spell.tooltip.trigger.roll": "翻滚",
   "spell.tooltip.range": "范围：{range}格",
   "spell.tooltip.range.plural": "范围：{range}格",
@@ -69,6 +73,8 @@
   "hud.action_impaired.silence": "沉默",
   "hud.action_impaired.incapacitate": "失能",
   "hud.action_impaired.stun": "眩晕",
+  "hud.cooldown_cleared.single": "%1$s 完毕！",
+  "hud.cooldown_cleared.multiple": "可以施法！",
 
   "keybindings.spell_engine.tooltip_details" : "法术详情提示",
   "keybindings.spell_engine.bypass_spell_hotbar" : "绕过法术快捷栏",
@@ -86,6 +92,15 @@
   "trinkets.slot.spell.scroll": "法术卷轴",
   "trinkets.slot.spell.quiver": "箭袋",
   "trinkets.slot.misc.quiver": "箭袋",
+
+  "accessories.slot_group.spell": "法术",
+  "accessories.slot.spell_book": "法术书",
+  "accessories.slot.spell_scroll": "法术卷轴",
+  "accessories.slot.spell_quiver": "箭袋",
+  "accessories.slot.spell_trinket": "饰品",
+
+  "text.autoconfig.spell_engine.title" : "法术引擎",
+  "effect.spell_engine.stun.description": "禁用移动和攻击。",
 
   "text.autoconfig.spell_engine.title" : "法术引擎",
 
@@ -142,6 +157,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations" : "第一人称动画",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip" : "显示施法动作（仅在自定义镜头模组冲突时建议调整）",
 
+
   "gui.spell_engine.spell_binding" : "法术绑定",
   "gui.spell_engine.spell_binding.title" : "绑定法术",
   "block.spell_engine.spell_binding": "法术绑定台",
@@ -151,6 +167,9 @@
   "gui.spell_engine.spell_binding.available" : "绑定法术",
   "gui.spell_engine.spell_binding.level_req_fail" : "等级需求：%s",
 
+  "equipment_set.logic.bonus.count" : "（%s）套装：",
+  "equipment_set.test.fire_power" : "火焰标记",
+
   "advancements.rpg_series.root.title": "法术之道",
   "advancements.rpg_series.root.description": "探索魔法战斗的艺术！",
   "advancements.rpg_series.enchant_spell_infinity.title": "无限能量",
@@ -159,6 +178,8 @@
   "advancements.rpg_series.rune_crafter.description": "使用符文合成台获得双倍符文",
   "advancements.rpg_series.spellbinder.title": "法术束缚者",
   "advancements.rpg_series.spellbinder.description": "将法术绑定至符合条件的魔法武器",
-  "advancements.rpg_series.classes.title": "选择你的道路",
-  "advancements.rpg_series.classes.description": "使用法术绑定台创建你的第一本法术书！"
+  "advancements.rpg_series.classes.title": "择路而行",
+  "advancements.rpg_series.classes.description": "使用法术绑定台创建你的第一本法术书！",
+  "advancements.rpg_series.misc_items.title": "魔法物品",
+  "advancements.rpg_series.misc_items.description": "发现施法所必需的各种物品！"
 }
