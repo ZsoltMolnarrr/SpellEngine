@@ -1,10 +1,13 @@
 package net.spell_engine.network;
 
 import com.google.gson.Gson;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
@@ -169,6 +172,27 @@ public class Packets {
             var name = buffer.readString();
             var speed = buffer.readFloat();
             return new SpellAnimation(playerId, type, name, speed);
+        }
+    }
+
+    public record SpellMessage(String translationKey, Formatting format) implements CustomPayload {
+        public static Identifier ID = Identifier.of(SpellEngineMod.ID, "spell_message");
+        public static final CustomPayload.Id<SpellMessage> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<RegistryByteBuf, SpellMessage> CODEC = PacketCodec.of(SpellMessage::write, SpellMessage::read);
+        @Override
+        public CustomPayload.Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
+        }
+
+        public void write(RegistryByteBuf buffer) {
+            buffer.writeString(translationKey);
+            buffer.writeInt(format.ordinal());
+        }
+
+        public static SpellMessage read(RegistryByteBuf buffer) {
+            var text = buffer.readString();
+            var format = Formatting.values()[buffer.readInt()];
+            return new SpellMessage(text, format);
         }
     }
 

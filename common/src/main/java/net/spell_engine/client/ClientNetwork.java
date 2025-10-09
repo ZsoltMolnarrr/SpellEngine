@@ -3,6 +3,7 @@ package net.spell_engine.client;
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.Language;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.client.gui.HudMessages;
@@ -49,6 +50,14 @@ public class ClientNetwork {
             var client = context.client();
             client.execute(() -> {
                 ((SpellCasterEntity)client.player).getCooldownManager().set(packet.spellId(), packet.duration());
+            });
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(Packets.SpellMessage.PACKET_ID, (packet, context) -> {
+            var client = context.client();
+            client.execute(() -> {
+                var translation = Language.getInstance().get(packet.translationKey());
+                HudMessages.INSTANCE.error(translation);
             });
         });
 

@@ -2,6 +2,7 @@ package net.spell_engine.internals;
 
 import com.google.common.base.Suppliers;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -15,6 +16,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -45,6 +47,7 @@ import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.fx.ParticleHelper;
+import net.spell_engine.network.Packets;
 import net.spell_engine.utils.*;
 import net.spell_power.api.SpellSchool;
 import net.spell_power.api.SpellDamageSource;
@@ -312,6 +315,12 @@ public class SpellHelper {
                         }
                         if (!aim.required || firstTarget.isPresent()) {
                             success = deliver(world, spellEntry, player, targetsWithContext, context, targetResult.location(), completion);
+                        }
+                        // Very specific attempt failure display, generic solution would be very difficult
+                        if (!success && aim.required && firstTarget.isEmpty()) {
+                            if (player instanceof ServerPlayerEntity serverPlayer) {
+                                ServerPlayNetworking.send(serverPlayer, new Packets.SpellMessage("hud.cast_attempt_error.missing_target", Formatting.RED));
+                            }
                         }
                     }
                     case AREA -> {
