@@ -165,15 +165,34 @@ public class RPGSeriesDataGen {
             }
         }
 
+        public record ArmorOptions(
+                boolean allowLootTierTags,
+                boolean allowLootThemeTags
+        ) {
+            public static final ArmorOptions DEFAULT = new ArmorOptions(true);
+        }
+
         public void generateArmorTags(List<Armor.Entry> armors) {
             generateArmorTags(armors, EnumSet.noneOf(RPGSeriesItemTags.ArmorMetaType.class));
+        }
+
+        public void generateArmorTags(List<Armor.Entry> armors, ArmorOptions options) {
+            generateArmorTags(armors, EnumSet.noneOf(RPGSeriesItemTags.ArmorMetaType.class), options);
         }
 
         public void generateArmorTags(List<Armor.Entry> armors, RPGSeriesItemTags.ArmorMetaType metaType) {
             generateArmorTags(armors, EnumSet.of(metaType));
         }
 
+        public void generateArmorTags(List<Armor.Entry> armors, RPGSeriesItemTags.ArmorMetaType metaType, ArmorOptions options) {
+            generateArmorTags(armors, EnumSet.of(metaType), options);
+        }
+
         public void generateArmorTags(List<Armor.Entry> armors, EnumSet<RPGSeriesItemTags.ArmorMetaType> metaTypes) {
+            generateArmorTags(armors, metaTypes, ArmorOptions.DEFAULT);
+        }
+
+        public void generateArmorTags(List<Armor.Entry> armors, EnumSet<RPGSeriesItemTags.ArmorMetaType> metaTypes, ArmorOptions options) {
             for (var armor: armors) {
 
                 var set = armor.armorSet();
@@ -187,7 +206,7 @@ public class RPGSeriesDataGen {
                 feetTag.add(set.feet);
 
                 var tier = armor.lootProperties().tier();
-                if (tier >= 0) {
+                if (options.allowLootTierTags && tier >= 0) {
                     var tierTag = getOrCreateTagBuilder(RPGSeriesItemTags.LootTiers.get(tier, RPGSeriesItemTags.LootCategory.ARMORS));
                     for (var id: armor.armorSet().pieceIds()) {
                         tierTag.addOptional((Identifier) id);
@@ -195,7 +214,7 @@ public class RPGSeriesDataGen {
                 }
 
                 var lootTheme = armor.lootProperties().theme();
-                if (lootTheme != null && !lootTheme.isEmpty()) {
+                if (options.allowLootThemeTags && lootTheme != null && !lootTheme.isEmpty()) {
                     var themeTag = getOrCreateTagBuilder(RPGSeriesItemTags.LootThemes.get(lootTheme));
                     for (var id: armor.armorSet().pieceIds()) {
                         themeTag.addOptional((Identifier) id);
