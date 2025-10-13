@@ -18,6 +18,7 @@ import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Language;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.gui.CustomButton;
@@ -119,7 +120,9 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         var lapisCount = handler.getLapisCount();
         var itemStack = handler.getStacks().get(0);
         for (var button: buttonViewModels) {
-            if (button.spell != null && button.mouseOver(mouseX, mouseY)) {
+            var mouseOver = button.mouseOver(mouseX, mouseY);
+            if (!mouseOver) { continue; }
+            if (button.spell != null) {
                 ArrayList<Text> tooltip = Lists.newArrayList();
                 boolean showSpellDetails = true;
                 switch (button.binding.state) {
@@ -168,8 +171,21 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                 if (button.isDetailsPublic) {
                     context.drawTooltip(textRenderer, tooltip, mouseX, mouseY);
                 }
-                break;
+            } else if (button.item != null) {
+                var mouseOverIcon = button.mouseOverIcon(mouseX, mouseY);
+                if (!mouseOverIcon) { continue; }
+                var key = button.item.getTranslationKey() + ".spell_binding.description";
+                if (Language.getInstance().hasTranslation(key)) {
+                    ArrayList<Text> tooltip = Lists.newArrayList();
+                    tooltip.add(button.item.getName());
+                    var rawDescription = Language.getInstance().get(key);
+                    for (var line: rawDescription.split(System.lineSeparator())) {
+                        tooltip.add(Text.literal(line).formatted(Formatting.GRAY));
+                    }
+                    context.drawTooltip(textRenderer, tooltip, mouseX, mouseY);
+                }
             }
+            break;
         }
     }
 
@@ -327,6 +343,10 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         public boolean mouseOver(int mouseX, int mouseY) {
             if(!shown) { return false; }
             return (mouseX > x && mouseX < x + width) && (mouseY > y && mouseY < y + height);
+        }
+        public boolean mouseOverIcon(int mouseX, int mouseY) {
+            if(!shown) { return false; }
+            return (mouseX > x && mouseX < x + height) && (mouseY > y && mouseY < y + height);
         }
     }
 

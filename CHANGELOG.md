@@ -6,6 +6,7 @@ Functional changes:
 - Fix Power Shot does not apply Mark at close ranges #133
 - Add "Missing target" spell casting failure reason, for some spells
 - Add "Passive" suffix to passive spell names in tooltips 
+- Add spell book explanation support
 
 # 1.8.2
 

@@ -241,14 +241,16 @@ public class SpellTooltip {
                         .formatted(Formatting.RESET);
                 name.append(Text.translatable("spell.type.passive"));
             }
-            name = name.formatted(color);
             if (spell.group != null) {
-                var group = spellGroup(spell.group);
-                if (!group.isEmpty()) {
-                    name.append(Text.literal(" " + group))
+                var translatedGroup = spellGroup(spell.group);
+                if (!translatedGroup.isEmpty()) {
+                    name.append(Text.literal(" "))
+                            .formatted(Formatting.RESET);
+                    name.append(Text.literal(translatedGroup))
                             .formatted(color);
                 }
             }
+            name = name.formatted(color);
             lines.add(indentation(indentLevel)
                     .append(name));
             indentLevel += 1;
