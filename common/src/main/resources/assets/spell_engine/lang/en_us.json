@@ -20,6 +20,7 @@
   "spell.spell_engine.use_offhand_item.name": "Use Offhand Item",
   "spell.spell_engine.use_offhand_item.description": "Use offhand item when present.",
   "spell.group.primary": "(Main Spell)",
+  "spell.type.passive": "(Passive)",
   "spell.tooltip.host.proxy.spell": "Allows spell casting",
   "spell.tooltip.host.proxy.archery": "Allows archery skill use",
   "spell.tooltip.host.list.spell": "Spells:",

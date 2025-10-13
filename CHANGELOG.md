@@ -5,6 +5,7 @@ Functional changes:
 - "Primary Spell" now show up as "Main Spell" for better clarity
 - Fix Power Shot does not apply Mark at close ranges #133
 - Add "Missing target" spell casting failure reason, for some spells
+- Add "Passive" suffix to passive spell names in tooltips 
 
 # 1.8.2
 

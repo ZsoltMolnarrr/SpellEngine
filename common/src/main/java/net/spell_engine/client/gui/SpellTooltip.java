@@ -233,9 +233,15 @@ public class SpellTooltip {
 
         if (shouldShow(tooltipData.name, details)) {
             var color = Formatting.byName(tooltipData.name.color);
-            var name = Text.translatable(spellTranslationKey(spellId))
-                    .formatted(Formatting.BOLD)
-                    .formatted(color);
+            var name = Text.empty().formatted(Formatting.BOLD);
+            name.append(Text.translatable(spellTranslationKey(spellId))
+                    .formatted(Formatting.BOLD));
+            if (spell.type == Spell.Type.PASSIVE) {
+                name.append(Text.literal(" "))
+                        .formatted(Formatting.RESET);
+                name.append(Text.translatable("spell.type.passive"));
+            }
+            name = name.formatted(color);
             if (spell.group != null) {
                 var group = spellGroup(spell.group);
                 if (!group.isEmpty()) {

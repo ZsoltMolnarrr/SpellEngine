@@ -169,7 +169,7 @@ public class RPGSeriesDataGen {
                 boolean allowLootTierTags,
                 boolean allowLootThemeTags
         ) {
-            public static final ArmorOptions DEFAULT = new ArmorOptions(true);
+            public static final ArmorOptions DEFAULT = new ArmorOptions(true, true);
         }
 
         public void generateArmorTags(List<Armor.Entry> armors) {
