@@ -2,9 +2,15 @@ package net.spell_engine.api.tags;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.EntityTypeTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
+import net.spell_power.api.SpellSchool;
+import net.spell_power.api.SpellSchools;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SpellEngineEntityTags {
     /**
@@ -17,4 +23,34 @@ public class SpellEngineEntityTags {
      * Categories of entities that are considered mechanical.
      */
     public static final TagKey<EntityType<?>> mechanical = TagKey.of(Registries.ENTITY_TYPE.getKey(), Identifier.of(SpellEngineMod.ID, "mechanical"));
+
+    public static class Vulnerability {
+        enum Category {
+            WEAK_TO,
+            RESISTANT_TO
+        }
+        public record Entry(SpellSchool school, Category category, List<TagKey<EntityType<?>>> included) {
+            public Identifier id() {
+                return Identifier.of(SpellEngineMod.ID, "vulnerability/" + category.name().toLowerCase() + "_" + school.id.getPath());
+            }
+            public TagKey<EntityType<?>> tag() {
+                return TagKey.of(Registries.ENTITY_TYPE.getKey(), id());
+            }
+        }
+        public static final List<Entry> ALL = new ArrayList<>();
+        public static Entry add(Entry entry) {
+            ALL.add(entry);
+            return entry;
+        }
+
+        public static final Entry WEAK_TO_FIRE = add(new Entry(SpellSchools.FIRE, Category.WEAK_TO, List.of(
+                EntityTypeTags.FREEZE_IMMUNE_ENTITY_TYPES
+        )));
+        public static final Entry WEAK_TO_FROST = add(new Entry(SpellSchools.FROST, Category.WEAK_TO, List.of(
+                EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES
+        )));
+        public static final Entry RESISTANT_TO_FROST = add(new Entry(SpellSchools.FROST, Category.RESISTANT_TO, List.of(
+                EntityTypeTags.FREEZE_IMMUNE_ENTITY_TYPES
+        )));
+    }
 }

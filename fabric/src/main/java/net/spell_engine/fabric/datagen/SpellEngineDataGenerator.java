@@ -4,8 +4,11 @@ import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.damage.DamageTypes;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.DamageTypeTags;
@@ -13,6 +16,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.datagen.SimpleParticleGenerator;
 import net.spell_engine.api.datagen.SimpleSoundGeneratorV2;
 import net.spell_engine.api.tags.SpellEngineDamageTypeTags;
+import net.spell_engine.api.tags.SpellEngineEntityTags;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.rpg_series.datagen.RPGSeriesDataGen;
@@ -29,6 +33,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         pack.addProvider(ParticlesGen::new);
         pack.addProvider(SoundGen::new);
         pack.addProvider(DamageTypeTagGen::new);
+        pack.addProvider(EntityTypeTagGen::new);
         pack.addProvider(RPGSeriesDataGen.BaselineTagGenerator::new);
 
         // TestDataGen.addTo(pack);
@@ -133,6 +138,22 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
                     .add(DamageTypes.GENERIC)
                     .add(DamageTypes.MOB_ATTACK)
                     .add(DamageTypes.MOB_ATTACK_NO_AGGRO);
+        }
+    }
+
+    public static class EntityTypeTagGen extends FabricTagProvider<EntityType<?>> {
+        public EntityTypeTagGen(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+            super(output, RegistryKeys.ENTITY_TYPE, registriesFuture);
+        }
+
+        @Override
+        protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
+            SpellEngineEntityTags.Vulnerability.ALL.forEach(entry -> {
+                var builder = getOrCreateTagBuilder(entry.tag());
+                entry.included().forEach(tag -> {
+                    builder.addOptionalTag(tag.id());
+                });
+            });
         }
     }
 }

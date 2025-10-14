@@ -27,6 +27,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityImmunity;
 import net.spell_engine.api.effect.InstantCast;
 import net.spell_engine.api.effect.StatusEffectClassification;
+import net.spell_engine.api.spell.SpellSchoolWeakness;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.tags.SpellEngineEntityTags;
 import net.spell_engine.api.entity.SpellEntity;
@@ -1002,7 +1003,7 @@ public class SpellHelper {
             if (impact.chance < 1F && world.random.nextFloat() > impact.chance) {
                 return false; // Skip impact if chance is not met
             }
-
+            var school = impact.school != null ? impact.school : spell.school;
             var originalTarget = target;
 
             if (impact.action.apply_to_caster) {
@@ -1018,7 +1019,14 @@ public class SpellHelper {
                     return false;
                 }
             }
-            var conditionResult = evaluateImpactConditions(target, caster, impact.target_modifiers);
+            // Merge school-level weaknesses with spell-level target modifiers
+            var mergedTargetModifiers = new ArrayList<>(impact.target_modifiers);
+            var schoolWeaknesses = SpellSchoolWeakness.getWeaknesses(school);
+            if (!schoolWeaknesses.isEmpty()) {
+                mergedTargetModifiers.addAll(0, schoolWeaknesses); // Prepend school weaknesses
+            }
+
+            var conditionResult = evaluateImpactConditions(target, caster, mergedTargetModifiers);
             if (!conditionResult.allowed) {
                 return false;
             }
@@ -1036,7 +1044,6 @@ public class SpellHelper {
 
             double particleMultiplier = 1 * context.total();
             var power = context.power();
-            var school = impact.school != null ? impact.school : spell.school;
             if (power == null || power.school() != school) {
                 power = SpellPower.getSpellPower(school, caster);
             }

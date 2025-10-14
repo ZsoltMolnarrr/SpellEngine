@@ -18,11 +18,14 @@ import net.spell_engine.api.effect.RemoveOnHit;
 import net.spell_engine.api.effect.StatusEffectClassification;
 import net.spell_engine.api.item.set.EquipmentSetFeature;
 import net.spell_engine.api.spell.ExternalSpellSchools;
+import net.spell_engine.api.spell.SpellSchoolWeakness;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.compat.CompatFeatures;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
+import net.spell_engine.config.WeaknessConfig;
+import net.tiny_config.ConfigManager;
 import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.SpellEngineCommands;
@@ -49,9 +52,18 @@ public class SpellEngineMod {
 
     public static ServerConfig config;
 
+    public static ConfigManager<WeaknessConfig> weaknessConfig = new ConfigManager<>
+            ("school_weaknesses", SpellSchoolWeakness.createDefault())
+            .builder()
+            .setDirectory(ID)
+            .sanitize(true)
+            .validate(WeaknessConfig::isValid)
+            .build();
+
     public static void init() {
         AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
+        weaknessConfig.refresh();
 
         DynamicRegistries.registerSynced(SpellRegistry.KEY, SpellRegistry.LOCAL_CODEC, SpellRegistry.NETWORK_CODEC_V2);
 
