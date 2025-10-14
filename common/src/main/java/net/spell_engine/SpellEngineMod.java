@@ -18,7 +18,7 @@ import net.spell_engine.api.effect.RemoveOnHit;
 import net.spell_engine.api.effect.StatusEffectClassification;
 import net.spell_engine.api.item.set.EquipmentSetFeature;
 import net.spell_engine.api.spell.ExternalSpellSchools;
-import net.spell_engine.api.spell.SpellSchoolWeakness;
+import net.spell_engine.api.spell.weakness.SpellSchoolWeakness;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.compat.CompatFeatures;

@@ -52,5 +52,8 @@ public class SpellEngineEntityTags {
         public static final Entry RESISTANT_TO_FROST = add(new Entry(SpellSchools.FROST, Category.RESISTANT_TO, List.of(
                 EntityTypeTags.FREEZE_IMMUNE_ENTITY_TYPES
         )));
+        public static final Entry WEAK_TO_HOLY = add(new Entry(SpellSchools.HEALING, Category.WEAK_TO, List.of(
+                EntityTypeTags.UNDEAD
+        )));
     }
 }

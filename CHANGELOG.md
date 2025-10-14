@@ -7,6 +7,7 @@ Functional changes:
 - Add "Missing target" spell casting failure reason, for some spells
 - Add "Passive" suffix to passive spell names in tooltips 
 - Add spell book explanation support
+- Add global elemental weakness and resistances, configurable in `config/spell_engine/school_weaknesses.json`
 
 # 1.8.2
 
