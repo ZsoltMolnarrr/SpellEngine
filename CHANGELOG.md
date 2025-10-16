@@ -10,6 +10,9 @@ Functional changes:
 - Fix Power Shot does not apply Mark at close ranges #133
 - Fix Mobs panic indefinitely #142 (NeoForge)
 
+API changes:
+- Remove deprecated `Spell.Active.Scroll` structure definition
+
 # 1.8.2
 
 Functional changes:

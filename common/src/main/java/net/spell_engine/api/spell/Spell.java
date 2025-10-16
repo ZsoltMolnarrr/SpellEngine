@@ -64,17 +64,6 @@ public class Spell {
 
     public Active active;
     public static class Active {
-        @Deprecated
-        @Nullable public Scroll scroll;
-        @Deprecated
-        public static class Scroll { public Scroll() {}
-            /// Cost of experience levels to apply the scroll
-            public int apply_cost_base = 0;
-            public int level_cost_per_tier = 1;
-            public int level_requirement_per_tier = 0;
-            @Nullable public Rarity custom_rarity = null;
-        }
-
         public Cast cast = new Cast();
         public static class Cast { public Cast() { }
             public boolean haste_affected = true;
