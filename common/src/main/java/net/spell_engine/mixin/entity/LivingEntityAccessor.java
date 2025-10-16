@@ -8,14 +8,14 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(LivingEntity.class)
 public interface LivingEntityAccessor {
-    @Accessor
-    float getLastDamageTaken();
-    @Accessor
-    DamageSource getLastDamageSource();
-    @Accessor
-    int getLastAttackedTicks();
-    @Accessor("lastAttackedTicks")
-    void setLastAttackedTicks(int lastAttackedTicks);
+    @Accessor("lastDamageTaken")
+    float spellEngine_getLastDamageTaken();
+    @Accessor("lastDamageSource")
+    DamageSource spellEngine_getLastDamageSource();
+//    @Accessor
+//    int getLastAttackedTicks();
+//    @Accessor("lastAttackedTicks")
+//    void setLastAttackedTicks(int lastAttackedTicks);
     @Invoker("turnHead")
-    float invokeTurnHead(float bodyRotation, float headRotation);
+    float spellEngine_invoke_TurnHead(float bodyRotation, float headRotation);
 }

@@ -55,7 +55,7 @@ public class WrappedKeybinding {
     public record Unwrapped(KeyBinding keyBinding, @Nullable Category vanillaHandle) { }
     @Nullable
     public Unwrapped get(GameOptions options) {
-        var assignedKey = ((KeybindingAccessor)original).getBoundKey();
+        var assignedKey = ((KeybindingAccessor)original).spellEngine_getBoundKey();
         if (assignedKey != null && assignedKey.getCode() != InputUtil.UNKNOWN_KEY.getCode()) {
             return new Unwrapped(original, null);
         }

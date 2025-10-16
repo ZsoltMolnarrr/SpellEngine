@@ -138,8 +138,8 @@ public class SpellTriggers {
     public static void onMeleeImpact(PlayerEntity player, Entity target) {
         var event = new Event(Spell.Trigger.Type.MELEE_IMPACT, player, target, target);
         if (target instanceof LivingEntity livingTarget) {
-            event.damageSource = ((LivingEntityAccessor)livingTarget).getLastDamageSource();
-            event.damageAmount = ((LivingEntityAccessor)livingTarget).getLastDamageTaken();
+            event.damageSource = ((LivingEntityAccessor)livingTarget).spellEngine_getLastDamageSource();
+            event.damageAmount = ((LivingEntityAccessor)livingTarget).spellEngine_getLastDamageTaken();
         }
         event.melee = MeleeCompat.attackProperties.apply(player);
         fireTriggers(event);

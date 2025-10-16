@@ -3,11 +3,12 @@
 Functional changes:
 - Updated NeoForge dependencies
 - "Primary Spell" now show up as "Main Spell" for better clarity
-- Fix Power Shot does not apply Mark at close ranges #133
 - Add "Missing target" spell casting failure reason, for some spells
 - Add "Passive" suffix to passive spell names in tooltips 
 - Add spell book explanation support
 - Add global elemental weakness and resistances, configurable in `config/spell_engine/school_weaknesses.json`
+- Fix Power Shot does not apply Mark at close ranges #133
+- Fix Mobs panic indefinitely #142 (NeoForge)
 
 # 1.8.2
 

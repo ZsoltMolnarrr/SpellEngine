@@ -283,7 +283,7 @@ public class HudRenderHelper {
                 if (keyBinding == null) {
                     return new KeyBindingViewModel("", null);
                 }
-                var boundKey = ((KeybindingAccessor)keyBinding).getBoundKey();
+                var boundKey = ((KeybindingAccessor)keyBinding).spellEngine_getBoundKey();
                 var key = boundKey.toString();
                 var drawable = HudKeyVisuals.custom.get(key);
                 if (drawable != null) {

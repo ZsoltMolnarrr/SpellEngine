@@ -10,6 +10,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 public interface KeybindingAccessor {
     @Invoker("reset")
     void spellEngine_reset();
-    @Accessor
-    InputUtil.Key getBoundKey();
+    @Accessor("boundKey")
+    InputUtil.Key spellEngine_getBoundKey();
 }

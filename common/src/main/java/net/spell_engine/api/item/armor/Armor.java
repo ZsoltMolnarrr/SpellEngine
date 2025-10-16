@@ -1,7 +1,6 @@
 package net.spell_engine.api.item.armor;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.minecraft.component.ComponentMap;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -49,7 +48,7 @@ public class Armor {
 
         public Identifier getFirstLayerId() {
             var fristLayer = customMaterial.value().layers().getFirst();
-            return ((ArmorMaterialLayerAccessor) (Object)fristLayer).getId();
+            return ((ArmorMaterialLayerAccessor) (Object)fristLayer).spellEngine_getId();
         }
     }
 

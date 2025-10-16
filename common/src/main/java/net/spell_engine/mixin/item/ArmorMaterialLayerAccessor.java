@@ -8,5 +8,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(ArmorMaterial.Layer.class)
 public interface ArmorMaterialLayerAccessor {
     @Accessor("id")
-    Identifier getId();
+    Identifier spellEngine_getId();
 }
