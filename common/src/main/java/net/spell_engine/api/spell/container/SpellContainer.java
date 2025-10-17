@@ -98,6 +98,14 @@ public record SpellContainer(
         return new SpellContainer(content, is_proxy, pool, max_spell_count, spell_ids);
     }
 
+    public SpellContainer withBindingPool(Identifier poolId) {
+        return new SpellContainer(content, is_proxy, poolId.toString(), max_spell_count, spell_ids);
+    }
+
+    public SpellContainer withMaxSpellCount(int maxSpellCount) {
+        return new SpellContainer(content, is_proxy, pool, maxSpellCount, spell_ids);
+    }
+
     public SpellContainer withAdditionalSpell(List<String> spellIds) {
         var newSpellIds = new ArrayList<>(spell_ids);
         newSpellIds.addAll(spellIds);

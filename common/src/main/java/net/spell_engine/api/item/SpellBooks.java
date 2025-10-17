@@ -11,6 +11,7 @@ import net.minecraft.world.World;
 import net.spell_engine.Platform;
 import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.api.spell.container.SpellContainer;
+import net.spell_engine.api.spell.container.SpellContainerTemplates;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.container.SpellAssignments;
 import net.spell_engine.item.SpellEngineItems;
@@ -43,7 +44,9 @@ public class SpellBooks {
     }
 
     public static ISpellBookItem create(Identifier poolId, SpellContainer.ContentType contentType, int maxSpellCount) {
-        var container = new SpellContainer(contentType, false, poolId.toString(), maxSpellCount, List.of());
+        var config = SpellContainerTemplates.config.safeValue();
+        var baseContainer = config.spell_book != null ? config.spell_book : SpellContainerTemplates.defaults().spell_book;
+        var container = baseContainer.withContentType(contentType).withBindingPool(poolId).withMaxSpellCount(maxSpellCount);
         SpellAssignments.book_containers.put(itemIdFor(poolId), container);
         Platform.util().awakeSlotModCompat();
         ISpellBookItem book = SpellEngineItems.createBook(poolId);
