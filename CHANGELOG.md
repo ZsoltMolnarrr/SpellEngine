@@ -7,9 +7,11 @@ Functional changes:
 - Add "Passive" suffix to passive spell names in tooltips 
 - Add spell book explanation support
 - Add global elemental weakness and resistances, configurable in `config/spell_engine/elemental_weaknesses.json`
-- Improve Spell Hotbar interaction with vanilla `Use` keybinding (spell casting and item usage should no longer overlap, offhand blocks are no longer placed after spell casting)
 - Fix Power Shot does not apply Mark at close ranges #133
 - Fix Mobs panic indefinitely #142 (NeoForge)
+- Improve Spell Hotbar interaction with vanilla `Use` keybinding (spell casting and item usage should no longer overlap, offhand blocks are no longer placed after spell casting)
+- Improve evasion sound effect
+- Evasion no longer works while casting spells or using items (configurable)
 
 API changes:
 - Remove deprecated `Spell.Active.Scroll` structure definition

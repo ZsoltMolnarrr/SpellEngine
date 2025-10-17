@@ -63,6 +63,10 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
             - `90` (default) - no attack from behind can be evaded
             """)
     public float attribute_evasion_angle = 120F;
+    @Comment("Allow evasion to work while the player is casting a spell")
+    public boolean attribute_evasion_allowed_while_spell_casting = false;
+    @Comment("Allow evasion to work while the player is using an item (e.g. eating, drawing a bow)")
+    public boolean attribute_evasion_allowed_while_item_usage = false;
 
     @Comment("""
             Relations determine which cases the effect of a player casted spell can effect a target.

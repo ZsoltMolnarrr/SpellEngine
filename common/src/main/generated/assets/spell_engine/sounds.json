@@ -4,6 +4,12 @@
       "spell_engine:bind_spell"
     ]
   },
+  "dodge": {
+    "sounds": [
+      "spell_engine:dodge_1",
+      "spell_engine:dodge_2"
+    ]
+  },
   "generic_arcane_casting": {
     "sounds": [
       "spell_engine:generic_arcane_casting"
