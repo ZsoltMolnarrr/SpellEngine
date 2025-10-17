@@ -146,22 +146,28 @@ public class SpellHotbar {
         this.updateDebounced();
     }
 
-    @Nullable public Handle handle(ClientPlayerEntity player, GameOptions options) {
-        return handle(player, this.slots, options);
+    @Nullable public Handle handleAll(ClientPlayerEntity player, GameOptions options) {
+        return handleSlotsInternal(player, this.slots, options);
     }
 
-    @Nullable public Handle handle(ClientPlayerEntity player, @Nullable Slot slot, GameOptions options) {
+    @Nullable public Handle handleSome(ClientPlayerEntity player, @Nullable Slot slot, GameOptions options) {
         if (slot == null) { return null; }
-        return handle(player, List.of(slot), options);
+        return handleSlotsInternal(player, List.of(slot), options);
     }
 
-    public record Handle(RegistryEntry<Spell> spell, KeyBinding keyBinding, @Nullable WrappedKeybinding.Category category) {
+    public record Handle(RegistryEntry<Spell> spell, KeyBinding keyBinding, @Nullable WrappedKeybinding.Category category, SpellCast.Attempt attempt) {
         public static Handle from(Slot slot, KeyBinding keyBinding, @Nullable WrappedKeybinding.Category category) {
-            return new Handle(slot.spell, keyBinding, category);
+            return new Handle(slot.spell, keyBinding, category, null);
+        }
+        public Handle withAttempt(SpellCast.Attempt attempt) {
+            return new Handle(this.spell, this.keyBinding, this.category, attempt);
+        }
+        public boolean isSuccessfulAttempt() {
+            return attempt != null && attempt.isSuccess();
         }
     }
 
-    @Nullable public Handle handle(ClientPlayerEntity player, List<Slot> slots, GameOptions options) {
+    @Nullable private Handle handleSlotsInternal(ClientPlayerEntity player, List<Slot> slots, GameOptions options) {
         if (handledThisTick != null || player.isSpectator()) { return null; }
         if (Keybindings.bypass_spell_hotbar.isPressed()
                 || (SpellEngineClient.config.sneakingByPassSpellHotbar && options.sneakKey.isPressed())) {
@@ -193,7 +199,7 @@ public class SpellHotbar {
                     case INSTANT -> {
                         if (pressed) {
                             var attempt = caster.startSpellCast(casterStack, slot.spell);
-                            handledThisTick = handle;
+                            handledThisTick = handle.withAttempt(attempt);
                             displayAttempt(attempt, slot.spell);
                             return handle;
                         }
@@ -223,7 +229,7 @@ public class SpellHotbar {
                             if (pressed && isReleased(keyBinding, UseCase.STOP)) {
                                 var attempt = caster.startSpellCast(casterStack, slot.spell);
                                 debounce(keyBinding, UseCase.START);
-                                handledThisTick = handle;
+                                handledThisTick = handle.withAttempt(attempt);
                                 displayAttempt(attempt, slot.spell);
                                 return handle;
                             }

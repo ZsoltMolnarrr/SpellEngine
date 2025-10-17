@@ -138,8 +138,6 @@
   "text.autoconfig.spell_engine.option.client.spell_hotbar_9_defer.@Tooltip" : "Spell Hotbar Slot 9 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
   "text.autoconfig.spell_engine.option.client.sneakingByPassSpellHotbar" : "Sneaking bypasses Spell Hotbar",
   "text.autoconfig.spell_engine.option.client.sneakingByPassSpellHotbar.@Tooltip" : "If enabled, sneak to use shield with an active Spell Hotbar",
-  "text.autoconfig.spell_engine.option.client.useKeyHighPriority" : "Prioritize casting spell for 'use' keybind",
-  "text.autoconfig.spell_engine.option.client.useKeyHighPriority.@Tooltip" : "Spell on the 'use' keybind will try to cast spells before interacting blocks and entities",
   "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple" : "Show target name when multiple",
   "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple.@Tooltip" : "Show target name when more than one entity is being targeted",
   "text.autoconfig.spell_engine.option.client.highlightTarget" : "Highlight target",

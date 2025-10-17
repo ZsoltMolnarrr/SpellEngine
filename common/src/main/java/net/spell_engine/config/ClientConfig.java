@@ -42,8 +42,6 @@ public class ClientConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip
     public boolean sneakingByPassSpellHotbar = false;
     @ConfigEntry.Gui.Tooltip
-    public boolean useKeyHighPriority = false;
-    @ConfigEntry.Gui.Tooltip
     public boolean highlightTarget = true;
     @ConfigEntry.Gui.Tooltip
     public boolean filterInvalidTargets = true;

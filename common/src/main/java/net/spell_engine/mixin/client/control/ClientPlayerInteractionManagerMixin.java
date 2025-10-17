@@ -11,6 +11,7 @@ import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.AutoSwapHelper;
+import net.spell_engine.client.input.MinecraftClientExtension;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.internals.casting.SpellCasterClient;
 import org.spongepowered.asm.mixin.Final;
@@ -36,16 +37,7 @@ public class ClientPlayerInteractionManagerMixin {
                 }
             }
 
-            if (!SpellEngineClient.config.useKeyHighPriority) {
-                var handled = SpellHotbar.INSTANCE.handle(clientPlayer, SpellHotbar.INSTANCE.structuredSlots.onUseKey(), client.options);
-                if (handled != null) {
-                    cir.setReturnValue(ActionResult.FAIL);
-                    cir.cancel();
-                }
-            }
-
-            var caster = (SpellCasterClient)clientPlayer;
-            if (caster.isCastingSpell()) {
+            if (((MinecraftClientExtension)client).isSpellCastLockActive()) {
                 cir.setReturnValue(ActionResult.FAIL);
                 cir.cancel();
             }
