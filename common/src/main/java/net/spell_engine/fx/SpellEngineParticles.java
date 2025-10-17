@@ -137,27 +137,6 @@ public class SpellEngineParticles {
             }
         }
     }
-    @Deprecated
-    public static final MagicParticleFamily ARCANE = addMagicFamily(new MagicParticleFamily("arcane", Color.from(SpellSchools.ARCANE.color)));
-    @Deprecated
-    public static final MagicParticleFamily HOLY = addMagicFamily(new MagicParticleFamily("holy", Color.HOLY));
-    @Deprecated
-    public static final MagicParticleFamily NATURE = addMagicFamily(new MagicParticleFamily("nature", Color.NATURE));
-    @Deprecated
-    public static final MagicParticleFamily FROST = addMagicFamily(new MagicParticleFamily("frost", Color.FROST));
-    @Deprecated
-    public static final MagicParticleFamily RAGE = addMagicFamily(new MagicParticleFamily("rage", Color.RAGE));
-    @Deprecated
-    public static final MagicParticleFamily WHITE = addMagicFamily(new MagicParticleFamily("white", Color.WHITE));
-    @Deprecated
-    public static final Supplier<List<MagicParticleFamily.Variant>> MAGIC_FAMILY_VARIANTS = Suppliers.memoize(() -> {
-        var variants = new ArrayList<MagicParticleFamily.Variant>();
-        for(var family: MAGIC_FAMILIES) {
-            variants.addAll(family.variants());
-        }
-        return variants;
-    });
-
 
     public record MagicParticles(String name, Color color) {
         public enum Shape {
@@ -241,16 +220,6 @@ public class SpellEngineParticles {
         return entry;
     }
 
-    /**
-     * WARNING! This method is very slow, only to be used for data file generation!
-     */
-    @Deprecated
-    public static MagicParticleFamily.Variant getMagicParticleVariant(MagicParticleFamily family, MagicParticleFamily.Shape shape, MagicParticleFamily.Motion motion) {
-        return MAGIC_FAMILY_VARIANTS.get().stream()
-                .filter(variant -> variant.familyName().equals(family.name) && variant.shape == shape && variant.motion == motion)
-                .findFirst().orElse(null);
-    }
-
     public static final TemplateEntry fire_explosion = addTemplate(new TemplateEntry("fire_explosion", Texture.of("fire_explosion", 10)));
     public static final Entry flame = add(new Entry("flame", Texture.vanilla("flame")));
     public static final Entry flame_spark = add(new Entry("flame_spark", Texture.of("flame_spark", 8) ));
@@ -321,9 +290,6 @@ public class SpellEngineParticles {
     public static void register() {
         for(var entry: simples) {
             Registry.register(Registries.PARTICLE_TYPE, entry.id, entry.particleType);
-        }
-        for (var variant: MAGIC_FAMILY_VARIANTS.get()) {
-            Registry.register(Registries.PARTICLE_TYPE, variant.id(), variant.particleType());
         }
         for (var entry: templateEntries) {
             Registry.register(Registries.PARTICLE_TYPE, entry.id, entry.particleType);

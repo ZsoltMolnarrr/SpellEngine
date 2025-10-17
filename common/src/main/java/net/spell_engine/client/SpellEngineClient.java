@@ -104,12 +104,6 @@ public class SpellEngineClient {
          * Second argument is the particle's factory. The factory controls how the particle behaves.
          * In this example, we'll use FlameParticle's Factory.*/
 
-        for (var variant: SpellEngineParticles.MAGIC_FAMILY_VARIANTS.get()) {
-            ParticleFactoryRegistry.getInstance().register(
-                    variant.particleType(), (provider) -> new UniversalSpellParticle.MagicVariant(provider, variant)
-            );
-        }
-
         // Elemental
 
         ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.flame.particleType(), SpellFlameParticle.FlameFactory::new);

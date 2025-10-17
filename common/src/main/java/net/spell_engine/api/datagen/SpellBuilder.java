@@ -400,6 +400,15 @@ public class SpellBuilder {
     }
 
     public static class Impacts {
+        public static Spell.Impact damage(float coefficient) {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.DAMAGE;
+            impact.action.damage = new Spell.Impact.Action.Damage();
+            impact.action.damage.spell_power_coefficient = coefficient;
+            return impact;
+        }
+
         public static Spell.Impact damage(float coefficient, float knockback) {
             var impact = new Spell.Impact();
             impact.action = new Spell.Impact.Action();

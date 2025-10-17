@@ -46,39 +46,6 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
 
         @Override
         public void generateSimpleParticles(Builder builder) {
-            for (var variant: SpellEngineParticles.MAGIC_FAMILY_VARIANTS.get()) {
-                var textures = new ArrayList<String>();
-                int frameCount = variant.frameCount();
-                String texture = "";
-                switch (variant.shape()) {
-                    case Shape.SPELL -> {
-                        texture = "minecraft:spell";
-                    }
-                    case Shape.IMPACT -> {
-                        texture = "spell_engine:magic/impact_" + variant.familyName();
-                    }
-                    case Shape.SPARK -> {
-                        texture = "minecraft:generic_0";
-                    }
-                    case Shape.STRIPE -> {
-                        texture = "spell_engine:magic/vertical_stripe";
-                    }
-                }
-
-                if (frameCount > 1) {
-                    for (int i = 0; i < frameCount; i++) {
-                        var reversedIndex = frameCount - 1 - i;
-                        textures.add(texture + "_" + reversedIndex);
-                    }
-                } else {
-                    textures.add(texture);
-                }
-
-                if (textures.isEmpty())  {
-                    assert true;
-                }
-                builder.add(variant.id(), new SimpleParticleGenerator.ParticleData(textures));
-            }
             for (var entry: SpellEngineParticles.simpleEntries()) {
                 ArrayList<String> textures = new ArrayList<>();
                 var frameCount = entry.texture().frames();

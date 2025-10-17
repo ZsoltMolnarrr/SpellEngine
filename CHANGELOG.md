@@ -12,6 +12,7 @@ Functional changes:
 
 API changes:
 - Remove deprecated `Spell.Active.Scroll` structure definition
+- Remove deprecated particles with hardcoded colors (such as: magic_white_stripe_float) 
 
 # 1.8.2
 
