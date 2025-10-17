@@ -53,7 +53,7 @@ public class SpellEngineMod {
     public static ServerConfig config;
 
     public static ConfigManager<WeaknessConfig> weaknessConfig = new ConfigManager<>
-            ("school_weaknesses", SpellSchoolWeakness.createDefault())
+            ("elemental_weaknesses", SpellSchoolWeakness.createDefault())
             .builder()
             .setDirectory(ID)
             .sanitize(true)
