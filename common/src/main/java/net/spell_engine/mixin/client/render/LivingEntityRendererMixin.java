@@ -23,9 +23,15 @@ public class LivingEntityRendererMixin {
             for (var entry: Synchronized.effectsOf(livingEntity)) {
                 var effect = entry.effect();
                 var amplifier = entry.amplifier();
-                var renderer = CustomModelStatusEffect.rendererOf(effect);
-                if (renderer != null) {
-                    renderer.renderEffect(amplifier, livingEntity, delta, matrixStack, vertexConsumerProvider, light);
+                var rendererEntry = CustomModelStatusEffect.entryOf(effect);
+                if (rendererEntry != null) {
+                    matrixStack.push();
+                    if (rendererEntry.args().scaleWithEntity()) {
+                        var scale = livingEntity.getScale();
+                        matrixStack.scale(scale, scale, scale);
+                    }
+                    rendererEntry.renderer().renderEffect(amplifier, livingEntity, delta, matrixStack, vertexConsumerProvider, light);
+                    matrixStack.pop();
                 }
             }
         }

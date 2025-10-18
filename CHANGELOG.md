@@ -15,7 +15,8 @@ Functional changes:
 
 API changes:
 - Remove deprecated `Spell.Active.Scroll` structure definition
-- Remove deprecated particles with hardcoded colors (such as: magic_white_stripe_float) 
+- Remove deprecated particles with hardcoded colors (such as: magic_white_stripe_float)
+- Custom Effect renderers are now automatically scaled with the entity (can be disabled at registration)
 
 # 1.8.2
 

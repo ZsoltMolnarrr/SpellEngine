@@ -9,18 +9,30 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class CustomModelStatusEffect {
-    private static final Map<StatusEffect, Renderer> renderers = new HashMap<>();
-
-    public static void register(StatusEffect statusEffect, Renderer renderer) {
-        renderers.put(statusEffect, renderer);
-    }
-
-    public static Renderer rendererOf(StatusEffect statusEffect) {
-        return renderers.get(statusEffect);
-    }
-
     public interface Renderer {
         void renderEffect(int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack,
                           VertexConsumerProvider vertexConsumers, int light);
+    }
+    public record Args(boolean scaleWithEntity) {
+        public static final Args DEFAULT = new Args(true);
+    }
+    public record Entry(Renderer renderer, Args args) { }
+
+    private static final Map<StatusEffect, Entry> renderers = new HashMap<>();
+
+    public static void register(StatusEffect statusEffect, Renderer renderer) {
+        register(statusEffect, renderer, Args.DEFAULT);
+    }
+
+    public static void register(StatusEffect statusEffect, Renderer renderer, Args args) {
+        renderers.put(statusEffect, new Entry(renderer, args));
+    }
+
+    public static Entry entryOf(StatusEffect statusEffect) {
+        return renderers.get(statusEffect);
+    }
+
+    public static Renderer rendererOf(StatusEffect statusEffect) {
+        return renderers.get(statusEffect).renderer();
     }
 }

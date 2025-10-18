@@ -31,8 +31,9 @@ public class OrbitingEffectRenderer implements CustomModelStatusEffect.Renderer 
         var time = livingEntity.age + delta;
 
         var initialAngle = time * orbitingSpeed - 45.0F;
+        var entityScale = livingEntity.getScale();
         var horizontalOffset = this.horizontalOffset * livingEntity.getScaleFactor();
-        var verticalOffset = livingEntity.getHeight() / 2F;
+        var verticalOffset = livingEntity.getHeight() / (2F * entityScale);
         var itemRenderer = MinecraftClient.getInstance().getItemRenderer();
 
         var stacks = amplifier + 1;
@@ -48,6 +49,7 @@ public class OrbitingEffectRenderer implements CustomModelStatusEffect.Renderer 
     private void renderModel(MatrixStack matrixStack, float scale, float verticalOffset, float horizontalOffset, float rotation,
                                ItemRenderer itemRenderer, VertexConsumerProvider vertexConsumers, int light, LivingEntity livingEntity) {
         matrixStack.push();
+
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotation));
         matrixStack.translate(0, verticalOffset, -horizontalOffset);
         matrixStack.scale(scale, scale, scale);

@@ -87,7 +87,7 @@ repositories {
     // For Accessories
     maven { url 'https://maven.wispforest.io/releases' }
     maven { url 'https://maven.fabricmc.net' }
-
+    maven { url 'https://maven.azuredoom.com/mods' }
     mavenLocal()
 }
 
@@ -127,6 +127,12 @@ dependencies {
     forgeRuntimeLibrary("io.wispforest.endec:gson:0.1.3.1")
     forgeRuntimeLibrary("io.wispforest.endec:jankson:0.1.3.1")
     forgeRuntimeLibrary("io.wispforest.endec:netty:0.1.2")
+
+    // TESTING
+    modImplementation("net.rpg_series:runes-${platform}:1.2.0+1.21.1")
+    modImplementation("net.rpg_series:wizards-${platform}:2.6.0+1.21.1")
+    modImplementation("net.rpg_series:archers-${platform}:2.6.4+1.21.1")
+    modImplementation("net.rpg_series:rogues-${platform}:2.6.0+1.21.1")
 }
 
 processResources {
