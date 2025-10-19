@@ -440,6 +440,18 @@ public class SpellBuilder {
             return impact;
         }
 
+        public static Spell.Impact effectSet_ScaledAmplifier(String effectIdString, float duration, int amplifier, float coefficient) {
+            var impact = effectSet(effectIdString, duration, amplifier);
+            impact.action.status_effect.amplifier_power_multiplier = coefficient;
+            return impact;
+        }
+
+        public static Spell.Impact effectSet_ScaledAmplifier_Cap(String effectIdString, float duration, int amplifier, float coefficient, int amplifierCap) {
+            var impact = effectSet_ScaledAmplifier(effectIdString, duration, amplifier, coefficient);
+            impact.action.status_effect.amplifier_cap = amplifierCap;
+            return impact;
+        }
+
         public static Spell.Impact effectAdd(String effectIdString, float duration, int amplifier, int amplifierCap) {
             var impact = new Spell.Impact();
             impact.action = new Spell.Impact.Action();
@@ -450,6 +462,12 @@ public class SpellBuilder {
             impact.action.status_effect.duration = duration;
             impact.action.status_effect.amplifier = amplifier;
             impact.action.status_effect.amplifier_cap = amplifierCap;
+            return impact;
+        }
+
+        public static Spell.Impact effectAdd_ScaledCap(String effectIdString, float duration, float coefficient) {
+            var impact = effectAdd(effectIdString, duration, 1, 1);
+            impact.action.status_effect.amplifier_cap_power_multiplier = coefficient;
             return impact;
         }
 
