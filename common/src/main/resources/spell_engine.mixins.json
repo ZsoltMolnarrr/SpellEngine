@@ -20,6 +20,7 @@
     "effect.LivingEntityEffectRemoval",
     "effect.LivingEntityHealthImpacting",
     "effect.LivingEntityStatusEffectSync",
+    "effect.PoisonEffectMixin",
     "effect.StatusEffectActionImpairing",
     "effect.StatusEffectOnRemoval",
     "effect.StatusEffectRemoveOnHit",

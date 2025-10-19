@@ -9,6 +9,7 @@ Functional changes:
 - Add global elemental weakness and resistances, configurable in `config/spell_engine/elemental_weaknesses.json`
 - Fix Power Shot does not apply Mark at close ranges #133
 - Fix Mobs panic indefinitely #142 (NeoForge)
+- Fix all Poison related skills (by fixing the vanilla Poison effect to scale linearly with amplifier)
 - Improve Spell Hotbar interaction with vanilla `Use` keybinding (spell casting and item usage should no longer overlap, offhand blocks are no longer placed after spell casting)
 - Improve evasion sound effect
 - Evasion no longer works while casting spells or using items (configurable)
