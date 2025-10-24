@@ -185,7 +185,7 @@ public class TargetHelper {
     }
 
     public static boolean isTargetedByPlayer(Entity entity, PlayerEntity player) {
-        if (entity.getWorld().isClient && player instanceof SpellCasterClient casterClient) {
+        if (entity != null && entity.getWorld().isClient && player instanceof SpellCasterClient casterClient) {
             var targets = casterClient.getCurrentTargets();
             if (entity instanceof EnderDragonEntity dragon) {
                 // Targets contain any of the dragon's body parts

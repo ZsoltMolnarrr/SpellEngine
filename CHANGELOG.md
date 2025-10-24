@@ -1,3 +1,8 @@
+# 1.8.4
+
+Functional changes:
+- Attempt some compatibility fix with Minecolonies
+
 # 1.8.3
 
 Functional changes:
