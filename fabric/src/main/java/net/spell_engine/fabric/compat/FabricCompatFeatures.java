@@ -18,13 +18,8 @@ public class FabricCompatFeatures {
             .setDirectory(SpellEngineMod.ID)
             .sanitize(true)
             .build();
-    private static boolean configLoaded = false;
     private static FabricCompatConfig safeConfig() {
-        if (!configLoaded) {
-            config.refresh();
-            configLoaded = true;
-        }
-        return config.value;
+        return config.safeValue();
     }
 
     public static void initialize() {

@@ -3,6 +3,8 @@ package net.spell_engine.rpg_series.loot;
 import net.minecraft.item.Item;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTable;
+import net.minecraft.loot.condition.KilledByPlayerLootCondition;
+import net.minecraft.loot.condition.LootConditionTypes;
 import net.minecraft.loot.entry.ItemEntry;
 import net.minecraft.loot.function.EnchantWithLevelsLootFunction;
 import net.minecraft.loot.provider.number.BinomialLootNumberProvider;
@@ -71,8 +73,9 @@ public class LootHelper {
         LootHelper.TAG_CACHE.save();
     }
 
-    public static void configureV2(RegistryWrapper.WrapperLookup registries, Identifier id, LootTable.Builder tableBuilder, LootConfig config, HashMap<String, Item> entries) {
-        var tableId = id.toString();
+    public static void configureV2(RegistryWrapper.WrapperLookup registries, Identifier lootTableId, LootTable.Builder tableBuilder, LootConfig config, HashMap<String, Item> entries) {
+        boolean isEntityLootTable = lootTableId.getPath().startsWith("entities");
+        var tableId = lootTableId.toString();
         var pool = config.injectors.get(tableId);
         if (pool == null) {
             for (var regex: config.regex_injectors.keySet()) {
@@ -86,7 +89,9 @@ public class LootHelper {
 
         var rolls = pool.rolls > 0 ? pool.rolls : 1F;
         LootPool.Builder lootPoolBuilder = LootPool.builder();
-
+        if (isEntityLootTable) {
+            lootPoolBuilder.conditionally(KilledByPlayerLootCondition.builder());
+        }
 
         var attempts = Math.ceil(rolls);
         var chance = pool.rolls / attempts;

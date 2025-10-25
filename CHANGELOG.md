@@ -1,3 +1,9 @@
+# 1.8.5
+
+Functional changes:
+- Loot injection to entity loot tables, now comes with `killed_by_player` condition, to prevent automatic farming
+- Improve some config loading safety
+
 # 1.8.4
 
 Functional changes:
