@@ -3,6 +3,7 @@ package net.spell_engine.fabric.compat.trinkets;
 import dev.emi.trinkets.api.TrinketsApi;
 import dev.emi.trinkets.api.event.TrinketEquipCallback;
 import net.fabricmc.fabric.api.util.TriState;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
@@ -25,7 +26,7 @@ public class TrinketsCompat {
             return enabled;
         }
         intialized = true;
-        enabled = Platform.util().isModLoaded(MOD_ID);
+        enabled = FabricLoader.getInstance().isModLoaded(MOD_ID);
         if (!enabled) {
             return enabled;
         }

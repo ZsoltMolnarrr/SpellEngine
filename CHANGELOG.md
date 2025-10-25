@@ -1,3 +1,8 @@
+# 1.8.6
+
+Functional changes:
+- Update loot injection defaults (RPG Structures)
+
 # 1.8.5
 
 Functional changes:

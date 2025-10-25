@@ -1711,6 +1711,30 @@ public class Defaults {
                 .add(R3)
         );
 
+        // RPG Structures by Disco
+        scrolls.put("rpgstructures:chests/mage/guild_tier_1", new LootConfig.Pool()
+                .rolls(0.8)
+                .scroll(1, 1)
+        );
+        scrolls.put("rpgstructures:chests/mage/guild_tier_2", new LootConfig.Pool()
+                .rolls(0.8)
+                .scroll(2, 2)
+        );
+        scrolls.put("rpgstructures:chests/mage/guild_tier_3", new LootConfig.Pool()
+                .rolls(1)
+                .scroll(3, 3)
+        );
+        scrolls.put("rpgstructures:chests/mage/guild_tier_4", new LootConfig.Pool()
+                .rolls(1)
+                .scroll(4, 4)
+        );
+        items.put("rpgstructures:chests/mage/guild_barrels", new LootConfig.Pool()
+                .rolls(0.25)
+                .add(X1)
+                .add(X2)
+                .add(X3)
+        );
+
         //
         // NeoForge exclusive loot tables
         //
