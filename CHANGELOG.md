@@ -1,3 +1,9 @@
+# 1.8.8
+
+Functional changes:
+- Fix dev crash: using a StashEffect Spell with a weapon in the off-hand #147
+
+
 # 1.8.7
 
 Functional changes:

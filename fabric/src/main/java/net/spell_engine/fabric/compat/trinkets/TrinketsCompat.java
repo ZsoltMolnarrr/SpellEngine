@@ -5,6 +5,7 @@ import dev.emi.trinkets.api.event.TrinketEquipCallback;
 import net.fabricmc.fabric.api.util.TriState;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
@@ -99,6 +100,9 @@ public class TrinketsCompat {
         if (component.isEmpty()) {
             return ItemStack.EMPTY;
         }
-        return component.get().getInventory().get("spell").get("book").getStack(0);
+        var trinketInventory = component.get().getInventory().get("spell").get("book");
+
+        // Casting to vanilla type to avoid mapping issues for content mod dev environments
+        return ((Inventory)trinketInventory).getStack(0);
     }
 }
