@@ -1,3 +1,8 @@
+# 1.8.7
+
+Functional changes:
+- Improve Spell Hotbar handling, restored config for priority handler
+
 # 1.8.6
 
 Functional changes:
