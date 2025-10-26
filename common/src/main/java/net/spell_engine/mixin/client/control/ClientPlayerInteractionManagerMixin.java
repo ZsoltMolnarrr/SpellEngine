@@ -35,7 +35,7 @@ public class ClientPlayerInteractionManagerMixin {
                 }
             }
 
-            if (!((MinecraftClientExtension)client).isSpellCastLockActive()) {
+            if (SpellHotbar.INSTANCE.lastHandled() == null) {
                 var handled = SpellHotbar.INSTANCE.handleUseKey(clientPlayer, client.options);
                 ((MinecraftClientExtension) client).onSpellHotbarInputHandled(handled);
             }

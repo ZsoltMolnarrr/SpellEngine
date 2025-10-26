@@ -53,7 +53,7 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
             return;
         }
         SpellHotbar.Handle handled;
-        if (useKeySpellCastingLock) {
+        if (useKeySpellCastingLock || SpellEngineClient.config.useKeyHighPriority) {
             handled = SpellHotbar.INSTANCE.handleAll(player, options);
         } else {
             handled = SpellHotbar.INSTANCE.handleOther(player, options);

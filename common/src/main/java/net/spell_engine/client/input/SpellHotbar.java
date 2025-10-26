@@ -163,6 +163,10 @@ public class SpellHotbar {
         return handleSlotsInternal(player, List.of(slot), options);
     }
 
+    @Nullable public Handle lastHandled() {
+        return handledThisTick;
+    }
+
     public record Handle(RegistryEntry<Spell> spell, KeyBinding keyBinding, @Nullable WrappedKeybinding.Category category, SpellCast.Attempt attempt) {
         public static Handle from(Slot slot, KeyBinding keyBinding, @Nullable WrappedKeybinding.Category category) {
             return new Handle(slot.spell, keyBinding, category, null);
@@ -172,6 +176,9 @@ public class SpellHotbar {
         }
         public boolean isSuccessfulAttempt() {
             return attempt != null && attempt.isSuccess();
+        }
+        public boolean isUseKey(GameOptions options) {
+            return keyBinding == null ? false : keyBinding.equals(options.useKey);
         }
     }
 
