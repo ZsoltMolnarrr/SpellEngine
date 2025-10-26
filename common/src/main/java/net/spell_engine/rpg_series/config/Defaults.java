@@ -266,7 +266,7 @@ public class Defaults {
                 .add(R3).filter(DRAGON)
         );
 
-        items.put("minecraft:entities/wither", new LootConfig.Pool()
+        items.put("minecraft:entities/wither", new LootConfig.Pool().skip_conditions()
                 .rolls(2)
                 .add(W3).enchant().weight(4)
                 .add(A3).enchant().weight(4)

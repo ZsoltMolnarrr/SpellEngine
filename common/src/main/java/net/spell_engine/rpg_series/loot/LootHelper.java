@@ -89,7 +89,8 @@ public class LootHelper {
 
         var rolls = pool.rolls > 0 ? pool.rolls : 1F;
         LootPool.Builder lootPoolBuilder = LootPool.builder();
-        if (isEntityLootTable) {
+        boolean skipConditions = pool.skip_conditions != null ? pool.skip_conditions : false;
+        if (isEntityLootTable && !skipConditions) {
             lootPoolBuilder.conditionally(KilledByPlayerLootCondition.builder());
         }
 

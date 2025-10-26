@@ -24,6 +24,11 @@ public class LootConfig {
             this.bonus_rolls = (float)bonus_roll;
             return this;
         }
+        @Nullable Boolean skip_conditions = null;
+        public Pool skip_conditions() {
+            this.skip_conditions = true;
+            return this;
+        }
 
         public List<Entry> entries = new ArrayList<>();
         public static class Entry {

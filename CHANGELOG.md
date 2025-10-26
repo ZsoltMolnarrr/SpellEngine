@@ -2,6 +2,8 @@
 
 Functional changes:
 - Update loot injection defaults (RPG Structures)
+- Add loot injection `skip_conditions` flag for Wither
+- Update some translations
 
 # 1.8.5
 
