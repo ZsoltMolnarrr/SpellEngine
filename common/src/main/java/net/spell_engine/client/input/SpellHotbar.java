@@ -150,6 +150,14 @@ public class SpellHotbar {
         return handleSlotsInternal(player, this.slots, options);
     }
 
+    @Nullable public Handle handleUseKey(ClientPlayerEntity player, GameOptions options) {
+        return handleSlotsInternal(player, this.structuredSlots.onUseKey != null ? List.of(this.structuredSlots.onUseKey) : List.of(), options);
+    }
+
+    @Nullable public Handle handleOther(ClientPlayerEntity player, GameOptions options) {
+        return handleSlotsInternal(player, this.structuredSlots.other(), options);
+    }
+
     @Nullable public Handle handleSome(ClientPlayerEntity player, @Nullable Slot slot, GameOptions options) {
         if (slot == null) { return null; }
         return handleSlotsInternal(player, List.of(slot), options);
@@ -173,9 +181,9 @@ public class SpellHotbar {
                 || (SpellEngineClient.config.sneakingByPassSpellHotbar && options.sneakKey.isPressed())) {
             return null;
         }
-        if (itemUseCooldown > 0) {
-            return null;
-        }
+//        if (itemUseCooldown > 0) {
+//            return null;
+//        }
         var caster = ((SpellCasterClient) player);
         var casted = caster.getSpellCastProgress();
         var casterStack = player.getMainHandStack();
@@ -199,9 +207,10 @@ public class SpellHotbar {
                     case INSTANT -> {
                         if (pressed) {
                             var attempt = caster.startSpellCast(casterStack, slot.spell);
-                            handledThisTick = handle.withAttempt(attempt);
+                            var handledWithAttempt = handle.withAttempt(attempt);
+                            handledThisTick = handledWithAttempt;
                             displayAttempt(attempt, slot.spell);
-                            return handle;
+                            return handledWithAttempt;
                         }
                     }
                     case CHARGE, CHANNEL -> {
@@ -229,9 +238,10 @@ public class SpellHotbar {
                             if (pressed && isReleased(keyBinding, UseCase.STOP)) {
                                 var attempt = caster.startSpellCast(casterStack, slot.spell);
                                 debounce(keyBinding, UseCase.START);
-                                handledThisTick = handle.withAttempt(attempt);
+                                var handledWithAttempt = handle.withAttempt(attempt);
+                                handledThisTick = handledWithAttempt;
                                 displayAttempt(attempt, slot.spell);
-                                return handle;
+                                return handledWithAttempt;
                             }
                         }
                     }

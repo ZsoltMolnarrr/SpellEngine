@@ -52,7 +52,16 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
         if (player.isUsingItem()) {
             return;
         }
-        var handled = SpellHotbar.INSTANCE.handleAll(player, options);
+        SpellHotbar.Handle handled;
+        if (useKeySpellCastingLock) {
+            handled = SpellHotbar.INSTANCE.handleAll(player, options);
+        } else {
+            handled = SpellHotbar.INSTANCE.handleOther(player, options);
+        }
+        onSpellHotbarInputHandled(handled);
+    }
+
+    public void onSpellHotbarInputHandled(SpellHotbar.Handle handled) {
         if (handled != null) {
             // spellHotbarHandle = handled.category();
             if (player.isUsingItem()) {
@@ -83,39 +92,8 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
     @Inject(method = "handleInputEvents", at = @At(value = "TAIL"))
     private void handleInputEvents_TAIL_SpellHotbar(CallbackInfo ci) {
         if (player == null || options == null) { return; }
-//        popConflictingPressState();
         SpellHotbar.INSTANCE.syncItemUseSkill(player);
     }
-
-//    private Map<KeyBinding, Boolean> conflictingPressState = new HashMap<>();
-//    private void pushConflictingPressState(WrappedKeybinding.Category spellHotbarHandle, boolean value) {
-//        if (spellHotbarHandle != null) {
-//            switch (spellHotbarHandle) {
-//                case USE_KEY -> {
-//                    conflictingPressState.put(options.useKey, options.useKey.isPressed());
-//                    options.useKey.setPressed(value);
-//                }
-//                case ITEM_HOTBAR_KEY -> {
-//                    // This case is better handled by `handleInputEvents_OverrideNumberKeys`
-//                    break;
-////                    for (var hotbarKey : options.hotbarKeys) {
-////                        conflictingPressState.put(hotbarKey, hotbarKey.isPressed());
-////                        hotbarKey.setPressed(value);
-////                        if (!value) {
-////                            ((KeybindingAccessor) hotbarKey).spellEngine_reset();
-////                        }
-////                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    private void popConflictingPressState() {
-//        for (var entry : conflictingPressState.entrySet()) {
-//            entry.getKey().setPressed(entry.getValue());
-//        }
-//        conflictingPressState.clear();
-//    }
 
     @WrapWithCondition(method = "handleInputEvents", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerInventory;selectedSlot:I", ordinal = 0, opcode = Opcodes.PUTFIELD))
     private boolean handleInputEvents_OverrideNumberKeys(PlayerInventory instance, int index) {
@@ -144,6 +122,7 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
             ci.cancel();
             return;
         }
+
         // Auto swap right click is handled instead in ClientPlayerInteractionManagerMixin
         // to allow block interactions to be handled first
     }

@@ -7,7 +7,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
-import net.spell_engine.Platform;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.compat.container.ContainerCompat;

@@ -8,12 +8,10 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
-import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.AutoSwapHelper;
 import net.spell_engine.client.input.MinecraftClientExtension;
 import net.spell_engine.client.input.SpellHotbar;
-import net.spell_engine.internals.casting.SpellCasterClient;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -37,12 +35,15 @@ public class ClientPlayerInteractionManagerMixin {
                 }
             }
 
+            if (!((MinecraftClientExtension)client).isSpellCastLockActive()) {
+                var handled = SpellHotbar.INSTANCE.handleUseKey(clientPlayer, client.options);
+                ((MinecraftClientExtension) client).onSpellHotbarInputHandled(handled);
+            }
             if (((MinecraftClientExtension)client).isSpellCastLockActive()) {
                 cir.setReturnValue(ActionResult.FAIL);
                 cir.cancel();
             }
         }
-
         if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ITEM_USE, true)) {
             cir.setReturnValue(ActionResult.FAIL);
             cir.cancel();
