@@ -138,6 +138,8 @@
   "text.autoconfig.spell_engine.option.client.spell_hotbar_9_defer.@Tooltip" : "当未在控制设置中分配时，使用原版键位绑定",
   "text.autoconfig.spell_engine.option.client.sneakingByPassSpellHotbar" : "潜行绕过法术快捷栏",
   "text.autoconfig.spell_engine.option.client.sneakingByPassSpellHotbar.@Tooltip" : "启用后，潜行时可在法术快捷栏激活状态下使用盾牌",
+  "text.autoconfig.spell_engine.option.client.useKeyHighPriority" : "施法优先于绑定的'使用'键",
+  "text.autoconfig.spell_engine.option.client.useKeyHighPriority.@Tooltip" : "绑定'使用'键的法术会在与方块和实体交互之前尝试施放法术",
   "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple" : "多个目标时显示名称",
   "text.autoconfig.spell_engine.option.client.showTargetNameWhenMultiple.@Tooltip" : "当有多个实体被选中时显示目标名称",
   "text.autoconfig.spell_engine.option.client.highlightTarget" : "高亮目标",
