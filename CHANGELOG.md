@@ -2,7 +2,7 @@
 
 Functional changes:
 - Fix dev crash: using a StashEffect Spell with a weapon in the off-hand #147
-
+- Fix Poison effect not dealing damage at stack 1 #148
 
 # 1.8.7
 
