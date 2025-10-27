@@ -19,7 +19,9 @@ public class PoisonEffectMixin {
     public boolean applyUpdateEffect_SpellEngine(
             LivingEntity instance, DamageSource source, float amount, Operation<Boolean> original,
             LivingEntity entity, int amplifier) {
-        return original.call(instance, source, amount * (amplifier + 1));
+        var amplifiedAmount = amount * (amplifier + 1);
+        var cappedAmount = Math.min(amplifiedAmount, entity.getHealth() - 1.0F);
+        return original.call(instance, source, cappedAmount);
     }
 
     @Inject(method = "canApplyUpdateEffect", at = @At("HEAD"), cancellable = true, require = 0)

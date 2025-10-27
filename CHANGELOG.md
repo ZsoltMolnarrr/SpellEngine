@@ -1,3 +1,8 @@
+# 1.8.9
+
+Functional changes:
+- Improve Poison effect damage calculation, now doesn't kill
+
 # 1.8.8
 
 Functional changes:
