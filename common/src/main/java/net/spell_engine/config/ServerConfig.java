@@ -93,6 +93,7 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
         put("minecraft:iron_golem", EntityRelation.FRIENDLY);
         put("guardvillagers:guard", EntityRelation.FRIENDLY);
         put("minecraft:cat", EntityRelation.FRIENDLY);
+        put("minecraft:minecart", EntityRelation.FRIENDLY);
     }};
     public LinkedHashMap<String, EntityRelation> player_relation_tags = new LinkedHashMap<>() {{
         // put("minecraft:undead", TargetHelper.Relation.HOSTILE);
