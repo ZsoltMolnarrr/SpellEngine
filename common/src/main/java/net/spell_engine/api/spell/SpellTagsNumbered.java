@@ -30,7 +30,7 @@ public class SpellTagsNumbered {
     }
 
     static {
-        int number = 1;
+        int number = 1; // RPG Series
         register(Identifier.of("wizards:arcane"), number++);
         register(Identifier.of("wizards:fire"), number++);
         register(Identifier.of("wizards:frost"), number++);
@@ -40,18 +40,21 @@ public class SpellTagsNumbered {
         register(Identifier.of("rogues:rogue"), number++);
         register(Identifier.of("rogues:warrior"), number++);
 
-        int mprgc_number = 100;
-        register(Identifier.of("archers_expansion:deadeye"), mprgc_number++);
-        register(Identifier.of("archers_expansion:tundra_hunter"), mprgc_number++);
-        register(Identifier.of("archers_expansion:war_archer"), mprgc_number++);
-        register(Identifier.of("berserker_rpg:berserker"), mprgc_number++);
-        register(Identifier.of("elemental_wizards_rpg:aqua"), mprgc_number++);
-        register(Identifier.of("elemental_wizards_rpg:terra"), mprgc_number++);
-        register(Identifier.of("elemental_wizards_rpg:wind"), mprgc_number++);
-        register(Identifier.of("forcemaster_rpg:forcemaster"), mprgc_number++);
-        register(Identifier.of("witcher_rpg:base_signs"), mprgc_number++);
-        register(Identifier.of("witcher_rpg:enhanced_signs"), mprgc_number++);
-        register(Identifier.of("witcher_rpg:fencing"), mprgc_number++);
-        register(Identifier.of("witcher_rpg:enhanced_fencing"), mprgc_number++);
+        number = 100; // More RPG Series
+        register(Identifier.of("archers_expansion:deadeye"), number++);
+        register(Identifier.of("archers_expansion:tundra_hunter"), number++);
+        register(Identifier.of("archers_expansion:war_archer"), number++);
+        register(Identifier.of("berserker_rpg:berserker"), number++);
+        register(Identifier.of("elemental_wizards_rpg:aqua"), number++);
+        register(Identifier.of("elemental_wizards_rpg:terra"), number++);
+        register(Identifier.of("elemental_wizards_rpg:wind"), number++);
+        register(Identifier.of("forcemaster_rpg:forcemaster"), number++);
+        register(Identifier.of("witcher_rpg:base_signs"), number++);
+        register(Identifier.of("witcher_rpg:enhanced_signs"), number++);
+        register(Identifier.of("witcher_rpg:fencing"), number++);
+        register(Identifier.of("witcher_rpg:enhanced_fencing"), number++);
+
+        number = 200; // Wompwomp Addons
+        register(Identifier.of("druids:druid"), number++);
     }
 }

@@ -123,6 +123,12 @@
         "custom_model_data": 111
       },
       "model": "witcher_rpg:item/enhanced_fencing_scroll"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 200
+      },
+      "model": "druids:item/druid_scroll"
     }
   ]
 }
