@@ -53,5 +53,6 @@ public class SpellTagsNumbered {
         register(Identifier.of("witcher_rpg:enhanced_signs"), mprgc_number++);
         register(Identifier.of("witcher_rpg:fencing"), mprgc_number++);
         register(Identifier.of("witcher_rpg:enhanced_fencing"), mprgc_number++);
+        register(Identifier.of("druids:druid"), mprgc_number++);
     }
 }
