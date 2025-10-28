@@ -20,6 +20,7 @@ public final class FabricMod implements ModInitializer {
         SpellEngineMod.registerSpellBinding();
 
         SpellEngineMod.init();
+
         FabricCompatFeatures.initialize();
     }
 }

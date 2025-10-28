@@ -1,3 +1,11 @@
+# 1.8.10
+
+- Fix automatic compatibility with Accessories and Trinkets mods 
+- Fabric version ships with both, only one set of the compatibility data files will be loaded, depending on which mod is present (priority config available for when both are present)
+- Fabric slot mod compatibility config: `config/spell_engine/fabric_compatibility.json`
+- NeoForge version only ships with Accessories mod compatibility
+- NeoForge version should no longer have any Trinkets mod related conflict
+
 # 1.8.9
 
 Functional changes:

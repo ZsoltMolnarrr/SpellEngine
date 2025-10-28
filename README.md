@@ -127,6 +127,13 @@ Equipment sets require a two-way association:
 
 ### Extra inventory slots
 
+Fabric version 
+- ships with Accessories and Trinkets support, only one set of the compatibility data files will be loaded, depending on which mod is present
+- priority config available for when both are present: `config/spell_engine/fabric_compatibility.json`
+
+NeoForge version
+- only ships with Accessories mod compatibility
+
 #### Trinkets integration
 
 The following slots are implemented, using Trinkets mod:
@@ -134,6 +141,14 @@ The following slots are implemented, using Trinkets mod:
 - Spell Scroll slot `spell/scroll` (disabled by default)
 - Quiver slot (in standalone group) `misc/quiver` (enabled by default)
 - Quiver slot (in the `spell group`) `spell/quiver` (disabled by default)
+
+#### Accessories integration
+
+The following slots are implemented, using Accessories mod:
+- Spell Book slot `spell/book` (enabled by default)
+- Spell Scroll slot `spell/scroll` (disabled by default)
+- Quiver slot `spell/quiver` (enabled by default)
+- Spell Trinket slot `spell/trinket` (enabled by default)
 
 ### Tags for customization
 

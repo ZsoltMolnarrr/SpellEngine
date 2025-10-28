@@ -1,0 +1,5 @@
+{
+  "icon": "spell_engine:gui/slot/spell_trinket",
+  "order": 1,
+  "validator_predicates": ["accessories:tag"]
+}
