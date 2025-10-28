@@ -126,7 +126,7 @@
     },
     {
       "predicate": {
-        "custom_model_data": 112
+        "custom_model_data": 200
       },
       "model": "druids:item/druid_scroll"
     }
