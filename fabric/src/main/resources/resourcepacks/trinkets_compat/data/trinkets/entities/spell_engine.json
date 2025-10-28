@@ -5,6 +5,8 @@
   "slots": [
     "spell/book",
     "spell/trinket",
-    "misc/quiver"
+    "misc/quiver",
+    "chest/necklace",
+    "hand/ring"
   ]
 }
