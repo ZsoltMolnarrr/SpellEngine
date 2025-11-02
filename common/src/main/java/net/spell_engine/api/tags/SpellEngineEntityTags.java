@@ -11,6 +11,7 @@ import net.spell_power.api.SpellSchools;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class SpellEngineEntityTags {
     /**
@@ -31,7 +32,7 @@ public class SpellEngineEntityTags {
         }
         public record Entry(SpellSchool school, Category category, List<TagKey<EntityType<?>>> included) {
             public Identifier id() {
-                return Identifier.of(SpellEngineMod.ID, "vulnerability/" + category.name().toLowerCase() + "_" + school.id.getPath());
+                return Identifier.of(SpellEngineMod.ID, "vulnerability/" + category.name().toLowerCase(Locale.ROOT) + "_" + school.id.getPath());
             }
             public TagKey<EntityType<?>> tag() {
                 return TagKey.of(Registries.ENTITY_TYPE.getKey(), id());

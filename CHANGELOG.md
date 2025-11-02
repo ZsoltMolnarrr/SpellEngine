@@ -1,3 +1,8 @@
+# 1.8.11
+
+Functional changes:
+- Attempt to fix turkish lowercasing issues #152
+
 # 1.8.10
 
 Functional changes:

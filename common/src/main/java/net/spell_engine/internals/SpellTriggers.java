@@ -28,6 +28,7 @@ import net.spell_engine.utils.WorldScheduler;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Random;
 
@@ -387,7 +388,7 @@ public class SpellTriggers {
         }
         var spell = spellEntry.value();
         if (condition.school != null
-                && !PatternMatching.regexMatches(spell.school.id.toString(), condition.school.toLowerCase()) ) {
+                && !PatternMatching.regexMatches(spell.school.id.toString(), condition.school.toLowerCase(Locale.ROOT)) ) {
             return false;
         }
         if (condition.id != null
@@ -418,7 +419,7 @@ public class SpellTriggers {
             return false;
         }
         if (condition.impact_type != null
-                && !PatternMatching.regexMatches(condition.impact_type.toLowerCase(), impact.action.type.toString().toLowerCase())) {
+                && !PatternMatching.regexMatches(condition.impact_type.toLowerCase(Locale.ROOT), impact.action.type.toString().toLowerCase(Locale.ROOT))) {
             return false;
         }
         if (condition.critical != null
