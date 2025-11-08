@@ -7,6 +7,7 @@ public class CompatFeatures {
         ContainerCompat.init();
         CombatRollCompat.init();
         MeleeCompat.init();
+        CriticalStrikeCompat.init();
         FTBTeamsCompat.init();
     }
 }

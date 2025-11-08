@@ -14,6 +14,7 @@ import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.compat.MeleeCompat;
+import net.spell_engine.compat.CriticalStrikeCompat;
 import net.spell_engine.internals.arrow.ArrowExtension;
 import net.spell_engine.internals.casting.SpellBatcher;
 import net.spell_engine.internals.casting.SpellCast;
@@ -133,6 +134,7 @@ public class SpellTriggers {
         event.arrow = arrow;
         event.damageSource = damageSource;
         event.damageAmount = damageAmount;
+        event.criticalImpact = CriticalStrikeCompat.isCriticalStrike(damageSource);
         fireTriggers(event);
     }
 
@@ -141,6 +143,7 @@ public class SpellTriggers {
         if (target instanceof LivingEntity livingTarget) {
             event.damageSource = ((LivingEntityAccessor)livingTarget).spellEngine_getLastDamageSource();
             event.damageAmount = ((LivingEntityAccessor)livingTarget).spellEngine_getLastDamageTaken();
+            event.criticalImpact = CriticalStrikeCompat.isCriticalStrike(event.damageSource);
         }
         event.melee = MeleeCompat.attackProperties.apply(player);
         fireTriggers(event);
@@ -191,6 +194,7 @@ public class SpellTriggers {
         event.stage = Spell.Trigger.Stage.PRE;
         event.damageFatal = amount >= player.getHealth();
         event.damageSource = source;
+        event.criticalImpact = CriticalStrikeCompat.isCriticalStrike(event.damageSource);
         event.damageAmount = amount;
         fireTriggers(event);
     }
@@ -203,6 +207,7 @@ public class SpellTriggers {
         Entity aoeSourceEntity = ObjectHelper.coalesce(sourceEntity, player);
         var event = new Event(Spell.Trigger.Type.DAMAGE_TAKEN, player, aoeSourceEntity, sourceEntity);
         event.damageSource = source;
+        event.criticalImpact = CriticalStrikeCompat.isCriticalStrike(event.damageSource);
         event.damageAmount = amount;
         fireTriggers(event);
     }
@@ -214,6 +219,7 @@ public class SpellTriggers {
         }
         var event = new Event(Spell.Trigger.Type.SHIELD_BLOCK, player, player, sourceEntity);
         event.damageSource = source;
+        event.criticalImpact = CriticalStrikeCompat.isCriticalStrike(event.damageSource);
         event.damageAmount = amount;
         fireTriggers(event);
     }
@@ -233,6 +239,7 @@ public class SpellTriggers {
         }
         var event = new Event(Spell.Trigger.Type.EVASION, player, player, sourceEntity);
         event.damageSource = source;
+        event.criticalImpact = CriticalStrikeCompat.isCriticalStrike(event.damageSource);
         event.damageAmount = damageAmount;
         fireTriggers(event);
     }

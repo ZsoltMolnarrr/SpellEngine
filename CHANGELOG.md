@@ -1,7 +1,11 @@
 # 1.8.11
 
 Functional changes:
+- Added compatibility for Critical Strike mod
+  - Physical Melee and Ranged attacks can now critically strike based on Critical Strike mod's attributes
+  - Melee and Ranged impact events (Spell Triggers) are now flagged for critical strikes
 - Attempt to fix turkish lowercasing issues #152
+
 
 # 1.8.10
 

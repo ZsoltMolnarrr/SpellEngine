@@ -35,6 +35,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.event.SpellHandlers;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.compat.CriticalStrikeCompat;
 import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.DamageSourceExtension;
 import net.spell_engine.entity.SpellCloud;
@@ -1123,6 +1124,9 @@ public class SpellHelper {
 
                     caster.onAttacking(target);
                     var damageSource = SpellDamageSource.create(school, caster);
+                    if (critical) {
+                        CriticalStrikeCompat.setCriticalStrike(damageSource, (float) power.criticalDamage());
+                    }
                     ((DamageSourceExtension)damageSource).setSpellIndirect(context.focusMode() != SpellTarget.FocusMode.DIRECT);
                     target.damage(damageSource, (float) amount);
 
