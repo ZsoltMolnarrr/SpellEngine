@@ -87,7 +87,15 @@ repositories {
     // For Accessories
     maven { url 'https://maven.wispforest.io/releases' }
     maven { url 'https://maven.fabricmc.net' }
-    
+
+    // CurseMaven
+    maven {
+        url = "https://www.cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
+
     mavenLocal()
 }
 
@@ -106,6 +114,7 @@ dependencies {
 //    modImplementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
     modImplementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
 //    modImplementation("net.foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
+    modCompileOnly("curse.maven:critical-strike-1379562:${project.critical_strike_file_id}")
     modCompileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
 //    modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}")
 

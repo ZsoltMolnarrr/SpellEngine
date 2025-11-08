@@ -1,13 +1,11 @@
 package net.spell_engine.api.spell;
 
+import net.critical_strike.api.CriticalStrikeAttributes;
 import net.fabric_extras.ranged_weapon.api.EntityAttributes_RangedWeapon;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageTypes;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.spell_power.SpellPowerMod;
@@ -66,6 +64,24 @@ public class ExternalSpellSchools {
                 var haste = query.entity().getAttributeValue(EntityAttributes_RangedWeapon.HASTE.entry); // 110
                 var rate = EntityAttributes_RangedWeapon.HASTE.asMultiplier(haste);    // For example: 110/100 = 1.1
                 return rate - 1;  // 0.1
+            });
+        }
+        if (FabricLoader.getInstance().isModLoaded("critical_strike")) {
+            PHYSICAL_RANGED.addSource(SpellSchool.Trait.CRIT_CHANCE, SpellSchool.Apply.ADD, query ->  {
+                var value = query.entity().getAttributeValue(CriticalStrikeAttributes.CHANCE.attributeEntry);    // 20
+                return (double) CriticalStrikeAttributes.CHANCE.asChance(value); // 0.2
+            });
+            PHYSICAL_RANGED.addSource(SpellSchool.Trait.CRIT_DAMAGE, SpellSchool.Apply.ADD, query -> {
+                var value = query.entity().getAttributeValue(CriticalStrikeAttributes.DAMAGE.attributeEntry); // 150
+                return CriticalStrikeAttributes.DAMAGE.asMultiplier(value) - 1;
+            });
+            PHYSICAL_MELEE.addSource(SpellSchool.Trait.CRIT_CHANCE, SpellSchool.Apply.ADD, query ->  {
+                var value = query.entity().getAttributeValue(CriticalStrikeAttributes.CHANCE.attributeEntry);    // 20
+                return (double) CriticalStrikeAttributes.CHANCE.asChance(value); // 0.2
+            });
+            PHYSICAL_MELEE.addSource(SpellSchool.Trait.CRIT_DAMAGE, SpellSchool.Apply.ADD, query -> {
+                var value = query.entity().getAttributeValue(CriticalStrikeAttributes.DAMAGE.attributeEntry); // 150
+                return CriticalStrikeAttributes.DAMAGE.asMultiplier(value) - 1;
             });
         }
         SpellSchools.register(PHYSICAL_RANGED);
