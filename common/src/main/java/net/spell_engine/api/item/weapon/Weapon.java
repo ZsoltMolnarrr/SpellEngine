@@ -258,7 +258,7 @@ public class Weapon {
                         config.attack_speed,
                         EntityAttributeModifier.Operation.ADD_VALUE),
                 AttributeModifierSlot.MAINHAND);
-        for(var attribute: config.attributes) {
+        for(var attribute: config.selectedAttributes()) {
             try {
                 var attributeId = Identifier.of(attribute.attribute);
                 var entityAttribute = Registries.ATTRIBUTE.getEntry(attributeId).get();

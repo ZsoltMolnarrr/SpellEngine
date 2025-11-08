@@ -240,7 +240,7 @@ public class Armor {
                             EntityAttributeModifier.Operation.ADD_VALUE),
                     attributeModifierSlot);
         }
-        for (var attribute: piece.attributes) {
+        for (var attribute: piece.selectedAttributes()) {
             try {
                 var entityAttribute = Registries.ATTRIBUTE.getEntry(Identifier.of(attribute.attribute)).get();
                 builder.add(entityAttribute,

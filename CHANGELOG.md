@@ -6,6 +6,11 @@ Functional changes:
   - Melee and Ranged impact events (Spell Triggers) are now flagged for critical strikes
 - Attempt to fix turkish lowercasing issues #152
 
+API Changes:
+- Add conditional attributes to config structures
+  - WeaponConfig
+  - ArmorSetConfig.Piece
+  - ShieldConfig
 
 # 1.8.10
 
