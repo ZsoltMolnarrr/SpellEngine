@@ -1,7 +1,6 @@
 package net.spell_engine.api.spell;
 
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.util.Rarity;
 import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
