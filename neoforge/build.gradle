@@ -108,7 +108,7 @@ dependencies {
     modImplementation("dev.kosmx.player-anim:player-animation-lib-forge:${project.player_anim_version}")
     modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${project.cloth_config_version}")
 
-    modImplementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}")
+    include(modImplementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}"))
 //    modImplementation("net.tiny_config:tiny_config-${platform}:${project.tiny_config_version}")
     modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
 //    modImplementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
