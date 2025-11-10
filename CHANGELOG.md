@@ -1,3 +1,8 @@
+# 1.8.12
+
+Functional changes:
+- Spell Volatility enchantment now applies for Weapons
+
 # 1.8.11
 
 Functional changes:

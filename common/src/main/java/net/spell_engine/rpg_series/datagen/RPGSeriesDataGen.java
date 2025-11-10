@@ -91,7 +91,10 @@ public class RPGSeriesDataGen {
 
             /// Spell Volatility enchantables
             var spellVolatilityTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.CRITICAL_CHANCE);
-            spellVolatilityTag.addTag(RPGSeriesItemTags.ArmorType.get(RPGSeriesItemTags.ArmorMetaType.MAGIC));
+            for (var type: fullSpellWeaponTypes) {
+                spellVolatilityTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
+            }
+            // spellVolatilityTag.addTag(RPGSeriesItemTags.ArmorType.get(RPGSeriesItemTags.ArmorMetaType.MAGIC));
 
             /// Unbreaking enchantables
             var unbreakingTypes = Equipment.WeaponType.values();

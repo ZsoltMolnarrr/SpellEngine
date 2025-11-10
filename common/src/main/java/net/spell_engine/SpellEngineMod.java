@@ -141,21 +141,4 @@ public class SpellEngineMod {
         Criteria.register(SpellBindingCriteria.ID.toString(), SpellBindingCriteria.INSTANCE);
         Criteria.register(SpellBookCreationCriteria.ID.toString(), SpellBookCreationCriteria.INSTANCE);
     }
-
-    public static void migrateAttributes(ServerPlayerEntity player) {
-        var attributes = List.of(SpellSchools.GENERIC.attributeEntry);
-        for (var attribute: attributes) {
-            if (attribute == null) {
-                continue;
-            }
-            var instance = player.getAttributeInstance(attribute);
-            if (instance == null) {
-                continue;
-            }
-            var defaultValue = attribute.value().getDefaultValue();
-            if (instance.getBaseValue() != defaultValue) {
-                instance.setBaseValue(defaultValue);
-            }
-        }
-    }
 }
