@@ -2,6 +2,7 @@
 
 Functional changes:
 - Spell Volatility enchantment now applies for Weapons
+- Fix crash without Spell Power mod (tiny config embed)
 
 # 1.8.11
 
