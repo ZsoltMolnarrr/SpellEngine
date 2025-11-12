@@ -66,24 +66,6 @@ public class ExternalSpellSchools {
                 return rate - 1;  // 0.1
             });
         }
-        if (FabricLoader.getInstance().isModLoaded("critical_strike")) {
-            PHYSICAL_RANGED.addSource(SpellSchool.Trait.CRIT_CHANCE, SpellSchool.Apply.ADD, query ->  {
-                var value = query.entity().getAttributeValue(CriticalStrikeAttributes.CHANCE.attributeEntry);    // 20
-                return (double) CriticalStrikeAttributes.CHANCE.asChance(value); // 0.2
-            });
-            PHYSICAL_RANGED.addSource(SpellSchool.Trait.CRIT_DAMAGE, SpellSchool.Apply.ADD, query -> {
-                var value = query.entity().getAttributeValue(CriticalStrikeAttributes.DAMAGE.attributeEntry); // 150
-                return CriticalStrikeAttributes.DAMAGE.asMultiplier(value) - 1;
-            });
-            PHYSICAL_MELEE.addSource(SpellSchool.Trait.CRIT_CHANCE, SpellSchool.Apply.ADD, query ->  {
-                var value = query.entity().getAttributeValue(CriticalStrikeAttributes.CHANCE.attributeEntry);    // 20
-                return (double) CriticalStrikeAttributes.CHANCE.asChance(value); // 0.2
-            });
-            PHYSICAL_MELEE.addSource(SpellSchool.Trait.CRIT_DAMAGE, SpellSchool.Apply.ADD, query -> {
-                var value = query.entity().getAttributeValue(CriticalStrikeAttributes.DAMAGE.attributeEntry); // 150
-                return CriticalStrikeAttributes.DAMAGE.asMultiplier(value) - 1;
-            });
-        }
         SpellSchools.register(PHYSICAL_RANGED);
 
         DEFENSE.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {

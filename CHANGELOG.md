@@ -1,3 +1,8 @@
+# 1.8.13
+
+Functional changes:
+- Fix crash for entities without critical attributes
+
 # 1.8.12
 
 Functional changes:
