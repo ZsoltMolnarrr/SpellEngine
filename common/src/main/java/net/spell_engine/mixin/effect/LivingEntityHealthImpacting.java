@@ -49,8 +49,6 @@ public abstract class LivingEntityHealthImpacting {
             }
         }
 
-        amount *= (float) SpellEngineAttributes.DAMAGE_TAKEN
-                .asMultiplier(getAttributeValue(SpellEngineAttributes.DAMAGE_TAKEN.entry));
         original.call(instance, source, amount);
     }
 }

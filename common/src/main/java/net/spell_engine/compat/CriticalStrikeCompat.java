@@ -1,7 +1,6 @@
 package net.spell_engine.compat;
 
 import net.critical_strike.api.CriticalDamageSource;
-import net.critical_strike.api.CriticalStrikeAttributes;
 import net.critical_strike.internal.CriticalStriker;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.damage.DamageSource;

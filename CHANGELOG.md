@@ -1,3 +1,8 @@
+# 1.8.14
+
+Functional changes:
+- Fix Damage Taken attribute being applied twice
+
 # 1.8.13
 
 Functional changes:
