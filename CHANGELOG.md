@@ -1,3 +1,8 @@
+# 1.8.15
+
+Functional changes:
+- Update loot injection defaults (vanilla loot tables)
+
 # 1.8.14
 
 Functional changes:

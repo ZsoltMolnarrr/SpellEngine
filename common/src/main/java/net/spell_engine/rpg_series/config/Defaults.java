@@ -183,13 +183,11 @@ public class Defaults {
                 .forEach(id -> items.put(id, new LootConfig.Pool()
                         .rolls(1)
                         .bonus_rolls(0)
-                        .add(W4, true).weight(4)
-                        .add(A3, true).weight(4)
-                        .add(A4, true).weight(4)
+                        .add(W4, true).weight(2)
+                        .add(A4, true).weight(2)
                         .add(X4)
-                        .add(R4)
                         .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
-                        .add(A5)
+                        .add(A5).weight(2)
                 ));
 
         List.of("minecraft:chests/trial_chambers/corridor",
@@ -259,10 +257,9 @@ public class Defaults {
 
         items.put("minecraft:entities/ender_dragon", new LootConfig.Pool()
                 .rolls(4)
+                .add(W4).enchant()
                 .add(W5)
-                .add(A5)
-                .add(W3).enchant().weight(4)
-                .add(X4).weight(2)
+                .add(A5).weight(3)
                 .add(R3).filter(DRAGON)
         );
 
@@ -277,11 +274,10 @@ public class Defaults {
 
         items.put("minecraft:entities/warden", new LootConfig.Pool()
                 .rolls(2)
-                .add(W2, true).weight(4)
-                .add(A2, true).weight(4)
+                .add(W2, true).weight(2)
+                .add(A2, true)
                 .add(X4).weight(2)
                 .add(R2).weight(2)
-                .add(W5)
                 .add(A5)
         );
 
