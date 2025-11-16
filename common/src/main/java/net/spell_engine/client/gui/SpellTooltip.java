@@ -3,6 +3,7 @@ package net.spell_engine.client.gui;
 import com.ibm.icu.text.DecimalFormat;
 import net.fabricmc.fabric.mixin.client.keybinding.KeyBindingAccessor;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -186,9 +187,7 @@ public class SpellTooltip {
         }
         var keybinding = Keybindings.bypass_spell_hotbar;
         var showDetails = config.alwaysShowFullTooltip
-                || (!keybinding.isUnbound() && InputUtil.isKeyPressed(
-                MinecraftClient.getInstance().getWindow().getHandle(),
-                ((KeyBindingAccessor) keybinding).fabric_getBoundKey().getCode())
+                || (!keybinding.isUnbound() && isKeyPressed(keybinding)
         );
         for (int i = 0; i < spells.size(); i++) {
             var spellEntry = spells.get(i);
@@ -211,6 +210,17 @@ public class SpellTooltip {
         }
 
         return new SpellInfo(spellTextLines, addSectionDivider, showDetails);
+    }
+
+    private static boolean isKeyPressed(KeyBinding keybinding) {
+        var client = MinecraftClient.getInstance();
+        // Checking execution on render thread
+        // some loaders like to call these concurrently
+        if (client.isOnThread()) {
+            return InputUtil.isKeyPressed(client.getWindow().getHandle(),
+                    ((KeyBindingAccessor) keybinding).fabric_getBoundKey().getCode());
+        }
+        return false;
     }
 
     public static List<Text> spellEntry(Identifier spellId, PlayerEntity player, ItemStack itemStack, boolean details, int indentLevel) {
