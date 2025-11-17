@@ -1,7 +1,7 @@
 # 1.8.16
 
 Functional changes:
-- Fix obscure NeoForge tooltip concurrency crash #154
+- Fix obscure tooltip related concurrency crash #154
 
 # 1.8.15
 
