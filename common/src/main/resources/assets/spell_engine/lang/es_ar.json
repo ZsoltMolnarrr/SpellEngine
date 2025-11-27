@@ -20,6 +20,7 @@
   "spell.spell_engine.use_offhand_item.name": "Usar Ítem de Mano Secundaria",
   "spell.spell_engine.use_offhand_item.description": "Usar el ítem de la mano secundaria si está presente.",
   "spell.group.primary": "(Hechizo Primario)",
+  "spell.type.passive": "(Pasivo)",
   "spell.tooltip.host.proxy.spell": "Permite lanzar hechizos",
   "spell.tooltip.host.proxy.archery": "Permite usar la habilidad de arquería",
   "spell.tooltip.host.list.spell": "Hechizos:",
@@ -69,6 +70,7 @@
 
   "hud.leave_spell_hotbar": "Presioná %1$s para salir",
   "hud.cast_attempt_error.missing_item": "Falta %1$s",
+  "hud.cast_attempt_error.missing_target": "Objetivo faltante",
   "hud.cast_attempt_error.on_cooldown": "En recarga",
   "hud.action_impaired.silence": "Silenciado",
   "hud.action_impaired.incapacitate": "Incapacitado",
@@ -92,6 +94,12 @@
   "trinkets.slot.spell.scroll": "Pergamino de Hechizo",
   "trinkets.slot.spell.quiver": "Carcaj",
   "trinkets.slot.misc.quiver": "Carcaj",
+
+  "accessories.slot_group.spell": "Hechizo",
+  "accessories.slot.spell_book": "Libro de Hechizos",
+  "accessories.slot.spell_scroll": "Pergamino de Hechizos",
+  "accessories.slot.spell_quiver": "Carcaj",
+  "accessories.slot.spell_trinket": "Amuleto",
 
   "effect.spell_engine.stun": "Aturdido",
   "effect.spell_engine.stun.description": "No podés moverte ni realizar acciones.",
