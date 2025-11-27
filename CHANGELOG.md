@@ -2,6 +2,7 @@
 
 Functional changes:
 - Fix obscure tooltip related concurrency crash #154
+- Update translations
 
 # 1.8.15
 
