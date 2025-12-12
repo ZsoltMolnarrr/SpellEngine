@@ -58,7 +58,14 @@ public class TrinketsCompat {
         var trinketComponent = component.get();
         var allowedContent = proxyContainer.content;
         var items = new LinkedHashSet<ItemStack>();
-        var spellBookSlot = trinketComponent.getInventory().get("charm").get("spell_book");
+        var charm = trinketComponent.getInventory().get("charm");
+        if(charm == null) {
+            return Collections.emptyList();
+        }
+        var spellBookSlot = charm.get("spell_book");
+        if(spellBookSlot == null) {
+            return Collections.emptyList();
+        }
 
         // Add the spell book slot first
         items.add(spellBookSlot.getStack(0));
