@@ -51,10 +51,14 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 
     protected void init() {
         super.init();
+        this.backgroundHeight = 176;
+        this.x = (this.width - this.backgroundWidth) / 2;
+        this.y = (this.height - this.backgroundHeight) / 2;
+
         int originX = (this.width - this.backgroundWidth) / 2;
         int originY = (this.height - this.backgroundHeight) / 2;
         var x = originX + 156;
-        var y = originY + 5;
+        var y = originY - 10;
         var width = 16;
         var height = 10;
 
@@ -205,7 +209,9 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 //        RenderSystem.setShaderTexture(0, TEXTURE);
         int originX = (this.width - this.backgroundWidth) / 2;
         int originY = (this.height - this.backgroundHeight) / 2;
-        context.drawTexture(TEXTURE, originX, originY, 0, 0, this.backgroundWidth, this.backgroundHeight);
+
+        // `originY - 10` due to the background texture being that much taller
+        context.drawTexture(TEXTURE, originX, originY - 10, 0, 0, this.backgroundWidth, this.backgroundHeight);
 
         this.mainSlotIcon.render(this.handler, context, delta, this.x, this.y);
         this.consumableSlotIcon.render(this.handler, context, delta, this.x, this.y);
@@ -252,7 +258,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     private List<ButtonViewModel> buttonViewModels = List.of();
 
     private static final int BUTTONS_ORIGIN_X = 60;
-    private static final int BUTTONS_ORIGIN_Y = 14;
+    private static final int BUTTONS_ORIGIN_Y = -1;
 
     private void updatePageControls() {
         var isPaging = isPagingEnabled();
@@ -356,14 +362,14 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     }
 
     private static final int BUTTON_TEXTURE_U = 0;
-    private static final int BUTTON_TEXTURE_V = 166;
+    private static final int BUTTON_TEXTURE_V = 176;
     private static final int BUTTON_WIDTH = 108;
-    private static final int BUTTON_HEIGHT = 19;
+    private static final int BUTTON_HEIGHT = 24;
     private static final int SPELL_ICON_SIZE = 16;
     private static final int SPELL_ICON_INDENT = (int) Math.ceil((BUTTON_HEIGHT - SPELL_ICON_SIZE) / 2.0);
     private static final int ORB_INDENT = 1;
     private static final int ORB_ICON_SIZE = 13;
-    private static final int ORB_TEXTURE_U = 0;
+    private static final int ORB_TEXTURE_U = 242;
     private static final int ORB_TEXTURE_V = 242;
     private static final int BOTTOM_TEXT_OFFSET = 10;
     private static final int COLOR_GOOD = 0x36ff00;
