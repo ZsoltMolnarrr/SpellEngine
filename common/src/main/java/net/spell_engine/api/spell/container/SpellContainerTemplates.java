@@ -12,12 +12,12 @@ public class SpellContainerTemplates {
 
     public static Config defaults() {
         Config config = new Config();
-        config.spell_book = new SpellContainer(null, false, null, 0, List.of());
+        config.spell_book = new SpellContainer(null, false, null, "", 0, List.of(), true);
         return config;
     }
 
     public static ConfigManager<Config> config = new ConfigManager<>
-            ("spell_container_templates", defaults())
+            ("spell_container_templates_v2", defaults())
             .builder()
             .setDirectory(SpellEngineMod.ID)
             .sanitize(true)

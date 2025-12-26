@@ -1,3 +1,8 @@
+# 1.9
+
+API Changes:
+- Add new `binding_mutex` field to Spell Containers, to enable spell choices per spell tiers
+
 # 1.8.16
 
 Functional changes:

@@ -229,7 +229,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                         return false;
                     }
                     var spellId = spellEntry.get().getKey().get().getValue();
-                    var binding = SpellBinding.State.of(spellId, mainStack, requiredLevel, levelCost, lapisCost);
+                    var binding = SpellBinding.State.of(playerWorld, spellId, mainStack, levelCost, requiredLevel, lapisCost);
                     if (binding.state == SpellBinding.State.ApplyState.INVALID) {
                         return false;
                     }

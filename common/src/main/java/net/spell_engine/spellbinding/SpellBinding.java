@@ -143,7 +143,7 @@ public class SpellBinding {
     }
 
     public static class State {
-        public enum ApplyState { ALREADY_APPLIED, NO_MORE_SLOT, APPLICABLE, INVALID }
+        public enum ApplyState { ALREADY_APPLIED, NO_MORE_SLOT, TIER_CONFLICT, APPLICABLE, INVALID }
         public ApplyState state;
         public State(ApplyState state, Requirements requirements) {
             this.state = state;
@@ -178,10 +178,10 @@ public class SpellBinding {
             if (spellEntry.isEmpty()) {
                 return new State(ApplyState.INVALID, null);
             }
-            return State.of(spellEntry.get().getKey().get().getValue(), itemStack, levelCost, requiredLevel, lapisCost);
+            return State.of(world, spellEntry.get().getKey().get().getValue(), itemStack, levelCost, requiredLevel, lapisCost);
         }
 
-        public static State of(Identifier spellId, ItemStack itemStack, int requiredLevel, int levelCost, int lapisCost) {
+        public static State of(World world, Identifier spellId, ItemStack itemStack, int levelCost, int requiredLevel, int lapisCost) {
             var container = SpellContainerHelper.containerFromItemStack(itemStack);
             var requirements = new Requirements(
                     lapisCost,
@@ -196,6 +196,25 @@ public class SpellBinding {
             if (container.max_spell_count() > 0 && container.spell_ids().size() >= container.max_spell_count()) {
                 return new State(ApplyState.NO_MORE_SLOT, requirements);
             }
+
+            // Check for tier conflict if binding_mutex is enabled
+            if (container.binding_mutex()) {
+                var registry = SpellRegistry.from(world);
+                var spellEntry = registry.getEntry(spellId);
+                if (spellEntry.isPresent()) {
+                    var newSpellTier = spellEntry.get().value().tier;
+
+                    // Check if any existing spell has the same tier
+                    for (var existingSpellIdString : container.spell_ids()) {
+                        var existingSpellId = Identifier.of(existingSpellIdString);
+                        var existingSpellEntry = registry.getEntry(existingSpellId);
+                        if (existingSpellEntry.isPresent() && existingSpellEntry.get().value().tier == newSpellTier) {
+                            return new State(ApplyState.TIER_CONFLICT, requirements);
+                        }
+                    }
+                }
+            }
+
             return new State(ApplyState.APPLICABLE, requirements);
         }
 

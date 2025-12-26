@@ -135,6 +135,11 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                                 .formatted(Formatting.GRAY));
                         showSpellDetails = false;
                     }
+                    case TIER_CONFLICT -> {
+                        tooltip.add(Text.translatable("gui.spell_engine.spell_binding.tier_conflict")
+                                .formatted(Formatting.GRAY));
+                        showSpellDetails = false;
+                    }
                     case APPLICABLE -> {
                         if (button.binding.readyToApply(player, lapisCount)) {
                             tooltip.add(Text.translatable("gui.spell_engine.spell_binding.available")
@@ -285,7 +290,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                             continue;
                         }
                         var id = spellEntry.get().getKey().get().getValue();
-                        SpellBinding.State bindingState = SpellBinding.State.of(id, itemStack, requirement, levelCost, lapisCost);
+                        SpellBinding.State bindingState = SpellBinding.State.of(world, id, itemStack, levelCost, requirement, lapisCost);
                         boolean isDetailsPublic = powered || bindingState.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
                         boolean isEnabled = powered && bindingState.readyToApply(player, lapisCount);
                         var text = Text.translatable(SpellTooltip.spellTranslationKey(id));
