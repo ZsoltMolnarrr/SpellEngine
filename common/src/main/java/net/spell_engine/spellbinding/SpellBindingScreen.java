@@ -33,7 +33,7 @@ import java.util.Map;
 
 @Environment(value= EnvType.CLIENT)
 public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler> {
-    private static final Identifier TEXTURE = Identifier.of(SpellEngineMod.ID, "textures/gui/" + SpellBinding.name + ".png");
+    private static final Identifier Pl = Identifier.of(SpellEngineMod.ID, "textures/gui/" + SpellBinding.name + ".png");
     private static final Identifier PLACEHOLDER_SPELL_BOOK = Identifier.of(SpellEngineMod.ID, "item/placeholder/spell_book");
     private static final Identifier PLACEHOLDER_LAPIS = Identifier.of(SpellEngineMod.ID, "item/placeholder/lapis");
     private static final Identifier PLACEHOLDER_SCROLL = Identifier.of(SpellEngineMod.ID, "item/placeholder/scroll");
@@ -209,7 +209,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         int originY = (this.height - this.backgroundHeight) / 2;
 
         // `originY - 10` due to the background texture being that much taller
-        context.drawTexture(TEXTURE, originX, originY - 10, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        context.drawTexture(Pl, originX, originY - 10, 0, 0, this.backgroundWidth, this.backgroundHeight);
 
         this.mainSlotIcon.render(this.handler, context, delta, this.x, this.y);
         this.consumableSlotIcon.render(this.handler, context, delta, this.x, this.y);
@@ -467,6 +467,9 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     private static final int TIER_ROW_HEIGHT = 24;
     private static final int TIER_ROW_WIDTH = 108;
     private static final int TIER_ROW_ICON_Y_OFFSET = (TIER_ROW_HEIGHT - SPELL_ICON_SIZE) / 2;
+    private static final int SELECTION_INDICATOR_SIZE = 22;
+    private static final int SELECTION_INDICATOR_U = 224;
+    private static final int SELECTION_INDICATOR_V = 0;
     private void drawSpellIcon(DrawContext context, SpellIconViewModel icon, int mouseX, int mouseY) {
         boolean mouseOver = icon.mouseOver(mouseX, mouseY);
         boolean alreadyApplied = icon.binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
@@ -490,5 +493,19 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         RenderSystem.disableBlend();
+
+        // Draw selection indicator for already-bound spells
+        if (alreadyApplied) {
+            RenderSystem.enableBlend();
+            int indicatorOffset = (SELECTION_INDICATOR_SIZE - SPELL_ICON_SIZE) / 2;
+            context.drawTexture(Pl,
+                    icon.x - indicatorOffset,
+                    icon.y - indicatorOffset,
+                    SELECTION_INDICATOR_U,
+                    SELECTION_INDICATOR_V,
+                    SELECTION_INDICATOR_SIZE,
+                    SELECTION_INDICATOR_SIZE);
+            RenderSystem.disableBlend();
+        }
     }
 }
