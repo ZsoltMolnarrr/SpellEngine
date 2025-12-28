@@ -471,7 +471,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     private static final int TIER_ROW_HEIGHT = 24;
     private static final int TIER_ROW_WIDTH = 108;
     private static final int TIER_ROW_ICON_Y_OFFSET = (TIER_ROW_HEIGHT - SPELL_ICON_SIZE) / 2;
-    private static final int SELECTION_INDICATOR_SIZE = 22;
+    private static final int SELECTION_INDICATOR_SIZE = 24;
     private static final int SELECTION_INDICATOR_U = 224;
     private static final int SELECTION_INDICATOR_V = 0;
     private void drawSpellIcon(DrawContext context, SpellIconViewModel icon, int mouseX, int mouseY) {
