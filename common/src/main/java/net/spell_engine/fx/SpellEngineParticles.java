@@ -1,6 +1,5 @@
 package net.spell_engine.fx;
 
-import com.google.common.base.Suppliers;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.registry.Registries;
@@ -9,12 +8,10 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.particle.TemplateParticleType;
 import net.spell_engine.client.util.Color;
-import net.spell_power.api.SpellSchools;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Supplier;
 
 public class SpellEngineParticles {
     private static class Helper extends SimpleParticleType {

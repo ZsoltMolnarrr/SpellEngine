@@ -40,6 +40,10 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     private final CyclingSlotIcon mainSlotIcon = new CyclingSlotIcon(0);
     private final CyclingSlotIcon consumableSlotIcon = new CyclingSlotIcon(1);
 
+    private static final int BACKGROUND_STANDARD_HEIGHT = 166;
+    private static final int BACKGROUND_EXTRA_HEIGHT = 18;
+    private static final int BACKGROUND_HEIGHT = BACKGROUND_STANDARD_HEIGHT + BACKGROUND_EXTRA_HEIGHT;
+
     private ItemStack stack;
 
     public SpellBindingScreen(SpellBindingScreenHandler handler, PlayerInventory inventory, Text title) {
@@ -53,9 +57,10 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 
     protected void init() {
         super.init();
-        this.backgroundHeight = 176;
+        this.backgroundHeight = BACKGROUND_HEIGHT;
         this.x = (this.width - this.backgroundWidth) / 2;
         this.y = (this.height - this.backgroundHeight) / 2;
+        this.titleY = 6 - (BACKGROUND_EXTRA_HEIGHT - 2);
 
         int originX = (this.width - this.backgroundWidth) / 2;
         int originY = (this.height - this.backgroundHeight) / 2;
@@ -208,8 +213,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         int originX = (this.width - this.backgroundWidth) / 2;
         int originY = (this.height - this.backgroundHeight) / 2;
 
-        // `originY - 10` due to the background texture being that much taller
-        context.drawTexture(Pl, originX, originY - 10, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        context.drawTexture(Pl, originX, originY - BACKGROUND_EXTRA_HEIGHT, 0, 0, this.backgroundWidth, this.backgroundHeight);
 
         this.mainSlotIcon.render(this.handler, context, delta, this.x, this.y);
         this.consumableSlotIcon.render(this.handler, context, delta, this.x, this.y);
@@ -450,7 +454,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     }
 
     private static final int BUTTON_TEXTURE_U = 0;
-    private static final int BUTTON_TEXTURE_V = 176;
+    private static final int BUTTON_TEXTURE_V = 184;
     private static final int BUTTON_WIDTH = 108;
     private static final int BUTTON_HEIGHT = 24;
     private static final int SPELL_ICON_SIZE = 16;
