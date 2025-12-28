@@ -1,3 +1,9 @@
+# 1.8.17
+
+Functional changes:
+- Fix Accessories mod compatibility without class mods (Relics #16)
+- Update translations
+
 # 1.8.16
 
 Functional changes:

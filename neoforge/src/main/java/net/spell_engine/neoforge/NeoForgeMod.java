@@ -10,13 +10,14 @@ import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.item.SpellEngineItems;
+import net.spell_engine.neoforge.compat.NeoForgeCompatFeatures;
 
 @Mod(SpellEngineMod.ID)
 public final class NeoForgeMod {
     public NeoForgeMod(IEventBus modBus) {
         // Run our common setup.
         SpellEngineMod.init();
-
+        NeoForgeCompatFeatures.init();
         modBus.addListener(RegisterEvent.class, NeoForgeMod::register);
     }
 
