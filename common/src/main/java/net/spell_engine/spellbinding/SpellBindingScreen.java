@@ -160,8 +160,8 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                 switch (book.binding().state) {
                     case APPLICABLE -> {
                         if (book.binding().readyToApply(player, 0)) {  // Books don't use lapis
-                            tooltip.add(Text.translatable("gui.spell_engine.spell_binding.create")
-                                    .formatted(Formatting.GREEN));
+//                            tooltip.add(Text.translatable("gui.spell_engine.spell_binding.create")
+//                                    .formatted(Formatting.GREEN));
                         } else {
                             if (book.binding().requirements.requiredLevel() > 0) {
                                 var hasRequiredLevels = book.binding().requirements.metRequiredLevel(player);
@@ -185,7 +185,9 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                 if (book.isMouseOverIcon(mouseX, mouseY)) {
                     var key = book.item().getTranslationKey() + ".spell_binding.description";
                     if (Language.getInstance().hasTranslation(key)) {
-                        tooltip.add(Text.literal(" "));
+                        if (!tooltip.isEmpty()) {
+                            tooltip.add(Text.literal(" "));
+                        }
                         var rawDescription = Language.getInstance().get(key);
                         for (var line : rawDescription.split(System.lineSeparator())) {
                             tooltip.add(Text.literal(line).formatted(Formatting.GRAY));
@@ -193,7 +195,9 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                     }
                 }
 
-                context.drawTooltip(textRenderer, tooltip, mouseX, mouseY);
+                if (!tooltip.isEmpty()) {
+                    context.drawTooltip(textRenderer, tooltip, mouseX, mouseY);
+                }
                 return;  // Only one tooltip at a time
             }
         } else {
@@ -245,6 +249,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                                     MutableText levels = levelCost == 1 ? Text.translatable("container.enchant.level.one") : Text.translatable("container.enchant.level.many", levelCost);
                                     tooltip.add(levels.formatted(hasEnoughLevels ? Formatting.GRAY : Formatting.RED));
                                 }
+                                showSpellDetails = icon.isDetailsPublic();
                             }
                             case INVALID -> {
                                 continue;
@@ -254,10 +259,10 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                         if (showSpellDetails) {
                             tooltip.add(Text.literal(" "));
                             tooltip.addAll(SpellTooltip.spellEntry(icon.spell().id(), player, itemStack, true, 0));
+                        } else {
+                            tooltip.add(icon.spell().name());
                         }
-                        if (icon.isDetailsPublic()) {
-                            context.drawTooltip(textRenderer, tooltip, mouseX, mouseY);
-                        }
+                        context.drawTooltip(textRenderer, tooltip, mouseX, mouseY);
                     }
                     return; // Only one tooltip at a time
                 }
@@ -397,8 +402,8 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                         boolean isDetailsPublic = powered || bindingState.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
                         boolean isEnabled = powered && bindingState.readyToApply(player, lapisCount);
 
-                        var text = Text.translatable(SpellTooltip.spellTranslationKey(id));
-                        if (!isDetailsPublic) {
+                        var text = Text.translatable(SpellTooltip.spellTranslationKey(id)).formatted(Formatting.GRAY);
+                        if (!powered) {
                             text = text.formatted(Formatting.OBFUSCATED).fillStyle(RUNE_STYLE);
                         }
 
