@@ -103,6 +103,10 @@ public class SpellBindingScreenHandler extends ScreenHandler {
         return itemStack.getCount();
     }
 
+    public SpellBinding.Mode getMode() {
+        return SpellBinding.Mode.values()[this.mode[0]];
+    }
+
     @Override
     public void onContentChanged(Inventory inventory) {
         if (inventory != this.inventory) {

@@ -73,7 +73,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                 CustomButton.Type.SMALL_UP,
                 button -> { this.pageUp(); });
         upButton.visible = false;
-        downButton = new CustomButton(x , y + (PAGE_SIZE * TIER_ROW_HEIGHT) + height + 1,
+        downButton = new CustomButton(x , y + (PAGE_SIZE * SpellBindingWidgets.TIER_ROW_HEIGHT) + height + 1,
                 CustomButton.Type.SMALL_DOWN,
                 button -> { this.pageDown(); });
         downButton.visible = false;
@@ -92,15 +92,28 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         try {
-            for (var tierRow : tierRowViewModels) {
-                if (!tierRow.shown || !tierRow.mouseOver((int) mouseX, (int) mouseY)) {
-                    continue;
-                }
+            var mode = handler.getMode();
 
-                for (var icon : tierRow.spellIcons) {
-                    if (icon.mouseOver((int) mouseX, (int) mouseY)) {
-                        client.interactionManager.clickButton(this.handler.syncId, icon.originalIndex);
+            if (mode == SpellBinding.Mode.BOOK) {
+                // BOOK MODE: Check book clicks
+                for (var book : bookViewModels) {
+                    if (book.mouseOver((int) mouseX, (int) mouseY)) {
+                        client.interactionManager.clickButton(this.handler.syncId, book.originalIndex());
                         return true;
+                    }
+                }
+            } else {
+                // SPELL MODE: Check tier row icon clicks
+                for (var tierRow : tierRowViewModels) {
+                    if (!tierRow.shown() || !tierRow.mouseOver((int) mouseX, (int) mouseY)) {
+                        continue;
+                    }
+
+                    for (var icon : tierRow.spellIcons()) {
+                        if (icon.mouseOver((int) mouseX, (int) mouseY)) {
+                            client.interactionManager.clickButton(this.handler.syncId, icon.originalIndex());
+                            return true;
+                        }
                     }
                 }
             }
@@ -135,68 +148,117 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         var player = MinecraftClient.getInstance().player;
         var lapisCount = handler.getLapisCount();
         var itemStack = handler.getStacks().get(0);
-        for (var tierRow : tierRowViewModels) {
-            if (!tierRow.shown) continue;
+        var mode = handler.getMode();
 
-            for (var icon : tierRow.spellIcons) {
-                if (!icon.mouseOver(mouseX, mouseY)) continue;
+        if (mode == SpellBinding.Mode.BOOK) {
+            // BOOK MODE: Tooltip for books
+            for (var book : bookViewModels) {
+                if (!book.mouseOver(mouseX, mouseY)) continue;
 
-                if (icon.spell != null) {
-                    ArrayList<Text> tooltip = Lists.newArrayList();
-                    boolean showSpellDetails = true;
-                    switch (icon.binding.state) {
-                        case ALREADY_APPLIED -> {
-                            tooltip.add(Text.translatable("gui.spell_engine.spell_binding.already_bound")
-                                    .formatted(Formatting.GRAY));
-                        }
-                        case NO_MORE_SLOT -> {
-                            tooltip.add(Text.translatable("gui.spell_engine.spell_binding.no_more_slots")
-                                    .formatted(Formatting.GRAY));
-                            showSpellDetails = false;
-                        }
-                        case TIER_CONFLICT -> {
-                            tooltip.add(Text.translatable("gui.spell_engine.spell_binding.tier_conflict")
-                                    .formatted(Formatting.GRAY));
-                            showSpellDetails = false;
-                        }
-                        case APPLICABLE -> {
-                            if (icon.binding.readyToApply(player, lapisCount)) {
-                                tooltip.add(Text.translatable("gui.spell_engine.spell_binding.available")
-                                        .formatted(Formatting.GREEN));
-                            } else {
-                                var hasRequiredLevels = icon.binding.requirements.metRequiredLevel(player);
-                                if (icon.binding.requirements.requiredLevel() > 0) {
-                                    tooltip.add(Text.translatable("gui.spell_engine.spell_binding.level_req_fail",
-                                                    icon.binding.requirements.requiredLevel())
-                                            .formatted(hasRequiredLevels ? Formatting.GRAY : Formatting.RED));
-                                }
-                                var lapisCost = icon.binding.requirements.lapisCost();
-                                if (lapisCost > 0) {
-                                    var hasEnoughLapis = icon.binding.requirements.hasEnoughLapis(lapisCount);
-                                    MutableText lapis = lapisCost == 1 ? Text.translatable("container.enchant.lapis.one") : Text.translatable("container.enchant.lapis.many", lapisCost);
-                                    tooltip.add(lapis.formatted(hasEnoughLapis ? Formatting.GRAY : Formatting.RED));
-                                }
-                                var levelCost = icon.binding.requirements.levelCost();
-                                if (levelCost > 0) {
-                                    var hasEnoughLevels = icon.binding.requirements.hasEnoughLevelsToSpend(player);
-                                    MutableText levels = levelCost == 1 ? Text.translatable("container.enchant.level.one") : Text.translatable("container.enchant.level.many", levelCost);
-                                    tooltip.add(levels.formatted(hasEnoughLevels ? Formatting.GRAY : Formatting.RED));
-                                }
+                ArrayList<Text> tooltip = Lists.newArrayList();
+
+                switch (book.binding().state) {
+                    case APPLICABLE -> {
+                        if (book.binding().readyToApply(player, 0)) {  // Books don't use lapis
+                            tooltip.add(Text.translatable("gui.spell_engine.spell_binding.available")
+                                    .formatted(Formatting.GREEN));
+                        } else {
+                            if (book.binding().requirements.requiredLevel() > 0) {
+                                var hasRequiredLevels = book.binding().requirements.metRequiredLevel(player);
+                                tooltip.add(Text.translatable("gui.spell_engine.spell_binding.level_req_fail",
+                                                book.binding().requirements.requiredLevel())
+                                        .formatted(hasRequiredLevels ? Formatting.GRAY : Formatting.RED));
+                            }
+                            var levelCost = book.binding().requirements.levelCost();
+                            if (levelCost > 0) {
+                                var hasEnoughLevels = book.binding().requirements.hasEnoughLevelsToSpend(player);
+                                MutableText levels = levelCost == 1 ? Text.translatable("container.enchant.level.one")
+                                        : Text.translatable("container.enchant.level.many", levelCost);
+                                tooltip.add(levels.formatted(hasEnoughLevels ? Formatting.GRAY : Formatting.RED));
                             }
                         }
-                        case INVALID -> {
-                            continue;
-                        }
                     }
-                    if (showSpellDetails) {
-                        tooltip.add(Text.literal(" "));
-                        tooltip.addAll(SpellTooltip.spellEntry(icon.spell.id(), player, itemStack, true, 0));
-                    }
-                    if (icon.isDetailsPublic) {
-                        context.drawTooltip(textRenderer, tooltip, mouseX, mouseY);
+                    default -> {}
+                }
+
+                // Add book description if available
+                var key = book.item().getTranslationKey() + ".spell_binding.description";
+                if (Language.getInstance().hasTranslation(key)) {
+                    tooltip.add(Text.literal(" "));
+                    var rawDescription = Language.getInstance().get(key);
+                    for (var line: rawDescription.split(System.lineSeparator())) {
+                        tooltip.add(Text.literal(line).formatted(Formatting.GRAY));
                     }
                 }
-                return; // Only one tooltip at a time
+
+                context.drawTooltip(textRenderer, tooltip, mouseX, mouseY);
+                return;  // Only one tooltip at a time
+            }
+        } else {
+            // SPELL MODE: Existing tooltip logic
+            for (var tierRow : tierRowViewModels) {
+                if (!tierRow.shown()) continue;
+
+                for (var icon : tierRow.spellIcons()) {
+                    if (!icon.mouseOver(mouseX, mouseY)) continue;
+
+                    if (icon.spell() != null) {
+                        ArrayList<Text> tooltip = Lists.newArrayList();
+                        boolean showSpellDetails = true;
+                        switch (icon.binding().state) {
+                            case ALREADY_APPLIED -> {
+                                tooltip.add(Text.translatable("gui.spell_engine.spell_binding.already_bound")
+                                        .formatted(Formatting.GRAY));
+                            }
+                            case NO_MORE_SLOT -> {
+                                tooltip.add(Text.translatable("gui.spell_engine.spell_binding.no_more_slots")
+                                        .formatted(Formatting.GRAY));
+                                showSpellDetails = false;
+                            }
+                            case TIER_CONFLICT -> {
+                                tooltip.add(Text.translatable("gui.spell_engine.spell_binding.tier_conflict")
+                                        .formatted(Formatting.GRAY));
+                                showSpellDetails = false;
+                            }
+                            case APPLICABLE -> {
+                                if (icon.binding().readyToApply(player, lapisCount)) {
+                                    tooltip.add(Text.translatable("gui.spell_engine.spell_binding.available")
+                                            .formatted(Formatting.GREEN));
+                                } else {
+                                    var hasRequiredLevels = icon.binding().requirements.metRequiredLevel(player);
+                                    if (icon.binding().requirements.requiredLevel() > 0) {
+                                        tooltip.add(Text.translatable("gui.spell_engine.spell_binding.level_req_fail",
+                                                        icon.binding().requirements.requiredLevel())
+                                                .formatted(hasRequiredLevels ? Formatting.GRAY : Formatting.RED));
+                                    }
+                                    var lapisCost = icon.binding().requirements.lapisCost();
+                                    if (lapisCost > 0) {
+                                        var hasEnoughLapis = icon.binding().requirements.hasEnoughLapis(lapisCount);
+                                        MutableText lapis = lapisCost == 1 ? Text.translatable("container.enchant.lapis.one") : Text.translatable("container.enchant.lapis.many", lapisCost);
+                                        tooltip.add(lapis.formatted(hasEnoughLapis ? Formatting.GRAY : Formatting.RED));
+                                    }
+                                    var levelCost = icon.binding().requirements.levelCost();
+                                    if (levelCost > 0) {
+                                        var hasEnoughLevels = icon.binding().requirements.hasEnoughLevelsToSpend(player);
+                                        MutableText levels = levelCost == 1 ? Text.translatable("container.enchant.level.one") : Text.translatable("container.enchant.level.many", levelCost);
+                                        tooltip.add(levels.formatted(hasEnoughLevels ? Formatting.GRAY : Formatting.RED));
+                                    }
+                                }
+                            }
+                            case INVALID -> {
+                                continue;
+                            }
+                        }
+                        if (showSpellDetails) {
+                            tooltip.add(Text.literal(" "));
+                            tooltip.addAll(SpellTooltip.spellEntry(icon.spell().id(), player, itemStack, true, 0));
+                        }
+                        if (icon.isDetailsPublic()) {
+                            context.drawTooltip(textRenderer, tooltip, mouseX, mouseY);
+                        }
+                    }
+                    return; // Only one tooltip at a time
+                }
             }
         }
     }
@@ -227,10 +289,18 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     private static final int PAGE_SIZE = 3;
 
     private boolean isPagingEnabled() {
+        var mode = handler.getMode();
+        if (mode == SpellBinding.Mode.BOOK) {
+            return bookViewModels.size() > PAGE_SIZE;
+        }
         return tierRowViewModels.size() > PAGE_SIZE;
     }
 
     private int maximalPageOffset() {
+        var mode = handler.getMode();
+        if (mode == SpellBinding.Mode.BOOK) {
+            return bookViewModels.size() - PAGE_SIZE;
+        }
         return tierRowViewModels.size() - PAGE_SIZE;
     }
     private boolean hasPageUp() {
@@ -257,7 +327,8 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         this.pageOffset = 0;
     }
 
-    private List<TierRowViewModel> tierRowViewModels = List.of();
+    private List<SpellBindingWidgets.TierRowViewModel> tierRowViewModels = List.of();
+    private List<SpellBindingWidgets.SpellBookViewModel> bookViewModels = List.of();
 
     private static final int BUTTONS_ORIGIN_X = 60;
     private static final int BUTTONS_ORIGIN_Y = -1;
@@ -277,24 +348,26 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     // Helper record for grouping spells
     private record SpellData(
         int originalIndex,
-        SpellViewModel spell,
+        SpellBindingWidgets.SpellViewModel spell,
         boolean isEnabled,
         boolean isDetailsPublic,
         SpellBinding.State binding,
         @Nullable Item item
     ) {
-        public SpellData(int originalIndex, SpellViewModel spell, boolean isEnabled, boolean isDetailsPublic, SpellBinding.State binding) {
+        public SpellData(int originalIndex, SpellBindingWidgets.SpellViewModel spell, boolean isEnabled, boolean isDetailsPublic, SpellBinding.State binding) {
             this(originalIndex, spell, isEnabled, isDetailsPublic, binding, null);
         }
     }
 
     private void updateButtons(int originX, int originY) {
-        var tiers = new ArrayList<TierRowViewModel>();
+        var tiers = new ArrayList<SpellBindingWidgets.TierRowViewModel>();
         var player = MinecraftClient.getInstance().player;
         var itemStack = handler.getStacks().get(0);
         var lapisCount = handler.getLapisCount();
-        var mode = SpellBinding.Mode.values()[handler.mode[0]];
+        var mode = handler.getMode();
         var world = MinecraftClient.getInstance().world;
+
+        int oldSize = (mode == SpellBinding.Mode.BOOK) ? bookViewModels.size() : tierRowViewModels.size();  // Simplified check
 
         try {
             // Group spells by tier
@@ -327,7 +400,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                             text = text.formatted(Formatting.OBFUSCATED).fillStyle(RUNE_STYLE);
                         }
 
-                        var spellViewModel = new SpellViewModel(id, SpellRender.iconTexture(id), text);
+                        var spellViewModel = new SpellBindingWidgets.SpellViewModel(id, SpellRender.iconTexture(id), text);
 
                         spellsByTier.computeIfAbsent(tier, k -> new ArrayList<>())
                             .add(new SpellData(i, spellViewModel, isEnabled, isDetailsPublic, bindingState));
@@ -338,7 +411,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                         SpellBinding.State bindingState = SpellBinding.State.forBook(levelCost, requirement);
                         boolean isEnabled = bindingState.readyToApply(player, lapisCount);
 
-                        var spellViewModel = new SpellViewModel(null, null, item.asItem().getName());
+                        var spellViewModel = new SpellBindingWidgets.SpellViewModel(null, null, item.asItem().getName());
 
                         spellsByTier.computeIfAbsent(0, k -> new ArrayList<>())
                             .add(new SpellData(i, spellViewModel, isEnabled, true, bindingState, item.asItem()));
@@ -346,170 +419,127 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                 }
             }
 
-            // Build tier rows
-            int rowIndex = 0;
-            for (Map.Entry<Integer, List<SpellData>> entry : spellsByTier.entrySet()) {
-                int tier = entry.getKey();
-                List<SpellData> spells = entry.getValue();
+            // Build UI elements based on mode
+            if (mode == SpellBinding.Mode.BOOK) {
+                // BOOK MODE: Build list of SpellBookViewModel (one book per line)
+                var books = new ArrayList<SpellBindingWidgets.SpellBookViewModel>();
+                int rowIndex = 0;
 
-                if (spells.isEmpty()) continue; // Skip empty tiers
+                for (Map.Entry<Integer, List<SpellData>> entry : spellsByTier.entrySet()) {
+                    List<SpellData> bookList = entry.getValue();
 
-                boolean shown = (rowIndex >= pageOffset) && (rowIndex < (pageOffset + PAGE_SIZE));
-                int rowY = originY + BUTTONS_ORIGIN_Y + ((rowIndex - pageOffset) * TIER_ROW_HEIGHT);
+                    for (SpellData bookData : bookList) {
+                        boolean shown = (rowIndex >= pageOffset) && (rowIndex < (pageOffset + PAGE_SIZE));
+                        int rowY = originY + BUTTONS_ORIGIN_Y + ((rowIndex - pageOffset) * SpellBindingWidgets.TIER_ROW_HEIGHT);
 
-                // Build spell icons for this tier with equal spacing
-                List<SpellIconViewModel> icons = new ArrayList<>();
+                        var book = new SpellBindingWidgets.SpellBookViewModel(
+                            bookData.originalIndex,
+                            shown,
+                            originX + BUTTONS_ORIGIN_X,
+                            rowY,
+                            SpellBindingWidgets.TIER_ROW_WIDTH,
+                            SpellBindingWidgets.TIER_ROW_HEIGHT,
+                            bookData.isEnabled,
+                            bookData.item,
+                            bookData.binding
+                        );
 
-                // Calculate equal spacing: total space divided by (iconCount + 1) gaps
-                int iconCount = spells.size();
-                int totalIconWidth = iconCount * SPELL_ICON_SIZE;
-                int remainingSpace = TIER_ROW_WIDTH - totalIconWidth;
-                int gapCount = iconCount + 1; // edge + between icons + edge
-                int spacing = remainingSpace / gapCount;
-
-                int tierRowX = originX + BUTTONS_ORIGIN_X;
-                int iconX = tierRowX + spacing;
-
-                for (SpellData spellData : spells) {
-                    var icon = new SpellIconViewModel(
-                        spellData.originalIndex,
-                        iconX, rowY + TIER_ROW_ICON_Y_OFFSET,
-                        SPELL_ICON_SIZE,
-                        spellData.isEnabled,
-                        spellData.isDetailsPublic,
-                        spellData.spell,
-                        spellData.binding
-                    );
-                    icons.add(icon);
-
-                    iconX += SPELL_ICON_SIZE + spacing;
+                        books.add(book);  // Always add all books
+                        rowIndex++;
+                    }
                 }
 
-                var tierRow = new TierRowViewModel(
-                    tier,
-                    shown,
-                    originX + BUTTONS_ORIGIN_X,
-                    rowY,
-                    TIER_ROW_WIDTH,
-                    TIER_ROW_HEIGHT,
-                    icons
-                );
-                tiers.add(tierRow);
-                rowIndex++;
+                bookViewModels = books;
+                tierRowViewModels = List.of();  // Clear tier rows in book mode
+
+            } else {
+                // SPELL MODE: Build tierRowViewModels (existing logic)
+                int rowIndex = 0;
+                for (Map.Entry<Integer, List<SpellData>> entry : spellsByTier.entrySet()) {
+                    int tier = entry.getKey();
+                    List<SpellData> spells = entry.getValue();
+
+                    if (spells.isEmpty()) continue; // Skip empty tiers
+
+                    boolean shown = (rowIndex >= pageOffset) && (rowIndex < (pageOffset + PAGE_SIZE));
+                    int rowY = originY + BUTTONS_ORIGIN_Y + ((rowIndex - pageOffset) * SpellBindingWidgets.TIER_ROW_HEIGHT);
+
+                    // Build spell icons for this tier with equal spacing
+                    List<SpellBindingWidgets.SpellIconViewModel> icons = new ArrayList<>();
+
+                    // Calculate equal spacing: total space divided by (iconCount + 1) gaps
+                    int iconCount = spells.size();
+                    int totalIconWidth = iconCount * SpellBindingWidgets.SPELL_ICON_SIZE;
+                    int remainingSpace = SpellBindingWidgets.TIER_ROW_WIDTH - totalIconWidth;
+                    int gapCount = iconCount + 1; // edge + between icons + edge
+                    int spacing = remainingSpace / gapCount;
+
+                    int tierRowX = originX + BUTTONS_ORIGIN_X;
+                    int iconX = tierRowX + spacing;
+
+                    for (SpellData spellData : spells) {
+                        var icon = new SpellBindingWidgets.SpellIconViewModel(
+                            spellData.originalIndex,
+                            iconX, rowY + SpellBindingWidgets.TIER_ROW_ICON_Y_OFFSET,
+                            SpellBindingWidgets.SPELL_ICON_SIZE,
+                            spellData.isEnabled,
+                            spellData.isDetailsPublic,
+                            spellData.spell,
+                            spellData.binding
+                        );
+                        icons.add(icon);
+
+                        iconX += SpellBindingWidgets.SPELL_ICON_SIZE + spacing;
+                    }
+
+                    var tierRow = new SpellBindingWidgets.TierRowViewModel(
+                        tier,
+                        shown,
+                        originX + BUTTONS_ORIGIN_X,
+                        rowY,
+                        SpellBindingWidgets.TIER_ROW_WIDTH,
+                        SpellBindingWidgets.TIER_ROW_HEIGHT,
+                        icons
+                    );
+                    tiers.add(tierRow);
+                    rowIndex++;
+                }
+
+                tierRowViewModels = tiers;
+                bookViewModels = List.of();  // Clear books in spell mode
             }
 
         } catch (Exception e) {
-            System.err.println("Error when updating Spell Binding Screen tier rows");
+            System.err.println("Error when updating Spell Binding Screen UI");
             System.err.println(e.getMessage());
         }
 
-        setTierRows(tiers);
-    }
-
-    private void setTierRows(List<TierRowViewModel> tiers) {
-        if(tiers.size() != tierRowViewModels.size()) {
+        // Update paging if size changed
+        int newSize = (mode == SpellBinding.Mode.BOOK) ? bookViewModels.size() : tierRowViewModels.size();
+        if(newSize != oldSize) {
             restartPaging();
         }
-        tierRowViewModels = tiers;
     }
 
     private void drawTierRows(DrawContext context, int mouseX, int mouseY) {
-        for(var tierRow : tierRowViewModels) {
-            if (!tierRow.shown) continue;
+        var mode = handler.getMode();
 
-            // NO tier row background rendering per requirements
-
-            for (var icon : tierRow.spellIcons) {
-                drawSpellIcon(context, icon, mouseX, mouseY);
+        if (mode == SpellBinding.Mode.BOOK) {
+            // BOOK MODE: Render books
+            for (var book : bookViewModels) {
+                SpellBindingWidgets.drawSpellBook(context, textRenderer, book, mouseX, mouseY);
             }
-        }
-    }
+        } else {
+            // SPELL MODE: Render tier rows with spell icons
+            for (var tierRow : tierRowViewModels) {
+                if (!tierRow.shown()) continue;
 
-    record SpellViewModel(Identifier id, Identifier icon, Text name) { }
+                // NO tier row background rendering per requirements
 
-    // New tier-based view models
-    record TierRowViewModel(
-        int tier,
-        boolean shown,
-        int x, int y, int width, int height,
-        List<SpellIconViewModel> spellIcons
-    ) {
-        public boolean mouseOver(int mouseX, int mouseY) {
-            if(!shown) { return false; }
-            return (mouseX > x && mouseX < x + width) && (mouseY > y && mouseY < y + height);
-        }
-    }
-
-    record SpellIconViewModel(
-        int originalIndex,
-        int x, int y, int size,
-        boolean isEnabled,
-        boolean isDetailsPublic,
-        SpellViewModel spell,
-        SpellBinding.State binding
-    ) {
-        public boolean mouseOver(int mouseX, int mouseY) {
-            return (mouseX >= x && mouseX < x + size) && (mouseY >= y && mouseY < y + size);
-        }
-    }
-
-    private static final int BUTTON_TEXTURE_U = 0;
-    private static final int BUTTON_TEXTURE_V = 184;
-    private static final int BUTTON_WIDTH = 108;
-    private static final int BUTTON_HEIGHT = 24;
-    private static final int SPELL_ICON_SIZE = 16;
-    private static final int SPELL_ICON_INDENT = (int) Math.ceil((BUTTON_HEIGHT - SPELL_ICON_SIZE) / 2.0);
-    private static final int ORB_INDENT = 1;
-    private static final int ORB_ICON_SIZE = 13;
-    private static final int ORB_TEXTURE_U = 242;
-    private static final int ORB_TEXTURE_V = 242;
-    private static final int BOTTOM_TEXT_OFFSET = 10;
-    private static final int COLOR_GOOD = 0x36ff00;
-    private static final int COLOR_BAD = 0xfc5c5c;
-    private static final int COLOR_GOOD_BUT_DISABLED = 0x48890e;
-    // Tier row constants
-    private static final int TIER_ROW_HEIGHT = 24;
-    private static final int TIER_ROW_WIDTH = 108;
-    private static final int TIER_ROW_ICON_Y_OFFSET = (TIER_ROW_HEIGHT - SPELL_ICON_SIZE) / 2;
-    private static final int SELECTION_INDICATOR_SIZE = 24;
-    private static final int SELECTION_INDICATOR_U = 224;
-    private static final int SELECTION_INDICATOR_V = 0;
-    private void drawSpellIcon(DrawContext context, SpellIconViewModel icon, int mouseX, int mouseY) {
-        boolean mouseOver = icon.mouseOver(mouseX, mouseY);
-        boolean alreadyApplied = icon.binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
-        float alpha = (icon.isEnabled || alreadyApplied) ? 1.0f : 0.5f;
-
-        // Draw subtle highlight on hover
-        if (mouseOver && icon.isEnabled) {
-            context.fill(icon.x - 1, icon.y - 1,
-                    icon.x + icon.size + 1, icon.y + icon.size + 1,
-                    0x40FFFFFF);
-        }
-
-        // Draw spell icon or item icon
-        context.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
-        RenderSystem.enableBlend();
-
-        if (icon.spell != null && icon.spell.icon != null) {
-            context.drawTexture(icon.spell.icon, icon.x, icon.y,
-                    0, 0, icon.size, icon.size, icon.size, icon.size);
-        }
-
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableBlend();
-
-        // Draw selection indicator for already-bound spells
-        if (alreadyApplied) {
-            RenderSystem.enableBlend();
-            int indicatorOffset = (SELECTION_INDICATOR_SIZE - SPELL_ICON_SIZE) / 2;
-            context.drawTexture(Pl,
-                    icon.x - indicatorOffset,
-                    icon.y - indicatorOffset,
-                    SELECTION_INDICATOR_U,
-                    SELECTION_INDICATOR_V,
-                    SELECTION_INDICATOR_SIZE,
-                    SELECTION_INDICATOR_SIZE);
-            RenderSystem.disableBlend();
+                for (var icon : tierRow.spellIcons()) {
+                    SpellBindingWidgets.drawSpellIcon(context, icon, mouseX, mouseY);
+                }
+            }
         }
     }
 }
