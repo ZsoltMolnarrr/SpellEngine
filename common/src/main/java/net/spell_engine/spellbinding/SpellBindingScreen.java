@@ -160,7 +160,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                 switch (book.binding().state) {
                     case APPLICABLE -> {
                         if (book.binding().readyToApply(player, 0)) {  // Books don't use lapis
-                            tooltip.add(Text.translatable("gui.spell_engine.spell_binding.available")
+                            tooltip.add(Text.translatable("gui.spell_engine.spell_binding.create")
                                     .formatted(Formatting.GREEN));
                         } else {
                             if (book.binding().requirements.requiredLevel() > 0) {
@@ -182,12 +182,14 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                 }
 
                 // Add book description if available
-                var key = book.item().getTranslationKey() + ".spell_binding.description";
-                if (Language.getInstance().hasTranslation(key)) {
-                    tooltip.add(Text.literal(" "));
-                    var rawDescription = Language.getInstance().get(key);
-                    for (var line: rawDescription.split(System.lineSeparator())) {
-                        tooltip.add(Text.literal(line).formatted(Formatting.GRAY));
+                if (book.isMouseOverIcon(mouseX, mouseY)) {
+                    var key = book.item().getTranslationKey() + ".spell_binding.description";
+                    if (Language.getInstance().hasTranslation(key)) {
+                        tooltip.add(Text.literal(" "));
+                        var rawDescription = Language.getInstance().get(key);
+                        for (var line : rawDescription.split(System.lineSeparator())) {
+                            tooltip.add(Text.literal(line).formatted(Formatting.GRAY));
+                        }
                     }
                 }
 
@@ -224,31 +226,31 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                                 if (icon.binding().readyToApply(player, lapisCount)) {
                                     tooltip.add(Text.translatable("gui.spell_engine.spell_binding.available")
                                             .formatted(Formatting.GREEN));
-                                } else {
-                                    var hasRequiredLevels = icon.binding().requirements.metRequiredLevel(player);
-                                    if (icon.binding().requirements.requiredLevel() > 0) {
-                                        tooltip.add(Text.translatable("gui.spell_engine.spell_binding.level_req_fail",
-                                                        icon.binding().requirements.requiredLevel())
-                                                .formatted(hasRequiredLevels ? Formatting.GRAY : Formatting.RED));
-                                    }
-                                    var lapisCost = icon.binding().requirements.lapisCost();
-                                    if (lapisCost > 0) {
-                                        var hasEnoughLapis = icon.binding().requirements.hasEnoughLapis(lapisCount);
-                                        MutableText lapis = lapisCost == 1 ? Text.translatable("container.enchant.lapis.one") : Text.translatable("container.enchant.lapis.many", lapisCost);
-                                        tooltip.add(lapis.formatted(hasEnoughLapis ? Formatting.GRAY : Formatting.RED));
-                                    }
-                                    var levelCost = icon.binding().requirements.levelCost();
-                                    if (levelCost > 0) {
-                                        var hasEnoughLevels = icon.binding().requirements.hasEnoughLevelsToSpend(player);
-                                        MutableText levels = levelCost == 1 ? Text.translatable("container.enchant.level.one") : Text.translatable("container.enchant.level.many", levelCost);
-                                        tooltip.add(levels.formatted(hasEnoughLevels ? Formatting.GRAY : Formatting.RED));
-                                    }
+                                }
+                                var hasRequiredLevels = icon.binding().requirements.metRequiredLevel(player);
+                                if (icon.binding().requirements.requiredLevel() > 0) {
+                                    tooltip.add(Text.translatable("gui.spell_engine.spell_binding.level_req_fail",
+                                                    icon.binding().requirements.requiredLevel())
+                                            .formatted(hasRequiredLevels ? Formatting.GRAY : Formatting.RED));
+                                }
+                                var lapisCost = icon.binding().requirements.lapisCost();
+                                if (lapisCost > 0) {
+                                    var hasEnoughLapis = icon.binding().requirements.hasEnoughLapis(lapisCount);
+                                    MutableText lapis = lapisCost == 1 ? Text.translatable("container.enchant.lapis.one") : Text.translatable("container.enchant.lapis.many", lapisCost);
+                                    tooltip.add(lapis.formatted(hasEnoughLapis ? Formatting.GRAY : Formatting.RED));
+                                }
+                                var levelCost = icon.binding().requirements.levelCost();
+                                if (levelCost > 0) {
+                                    var hasEnoughLevels = icon.binding().requirements.hasEnoughLevelsToSpend(player);
+                                    MutableText levels = levelCost == 1 ? Text.translatable("container.enchant.level.one") : Text.translatable("container.enchant.level.many", levelCost);
+                                    tooltip.add(levels.formatted(hasEnoughLevels ? Formatting.GRAY : Formatting.RED));
                                 }
                             }
                             case INVALID -> {
                                 continue;
                             }
                         }
+
                         if (showSpellDetails) {
                             tooltip.add(Text.literal(" "));
                             tooltip.addAll(SpellTooltip.spellEntry(icon.spell().id(), player, itemStack, true, 0));

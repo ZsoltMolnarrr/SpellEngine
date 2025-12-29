@@ -75,6 +75,13 @@ public class SpellBindingWidgets {
             if (!shown) { return false; }
             return (mouseX >= x && mouseX < x + width) && (mouseY >= y && mouseY < y + height);
         }
+
+        public boolean isMouseOverIcon(int mouseX, int mouseY) {
+            int iconX = x + SpellBindingWidgets.SPELL_ICON_INDENT;
+            int iconY = y + SpellBindingWidgets.TIER_ROW_ICON_Y_OFFSET;
+            return (mouseX >= iconX && mouseX < iconX + SpellBindingWidgets.SPELL_ICON_SIZE) &&
+                   (mouseY >= iconY && mouseY < iconY + SpellBindingWidgets.SPELL_ICON_SIZE);
+        }
     }
 
     public static void drawSpellIcon(DrawContext context, SpellBindingWidgets.SpellIconViewModel icon, int mouseX, int mouseY) {
