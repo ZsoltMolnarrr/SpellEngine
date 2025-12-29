@@ -1,3 +1,9 @@
+# 1.8.18
+
+API Changes:
+- Deprecated `SpellBuilder.Triggers.meleeKill`
+- Added  `SpellBuilder.Triggers.meleeKills` (to include attack and skill based kills too)
+
 # 1.8.17
 
 Functional changes:

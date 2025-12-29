@@ -270,11 +270,25 @@ public class SpellBuilder {
             return trigger;
         }
 
+        @Deprecated
         public static Spell.Trigger meleeKill(boolean mustWield) {
             var deadCondition = TargetConditions.dead();
 
             var trigger = meleeAttack(mustWield);
             trigger.target_conditions = List.of(deadCondition);
+
+            return trigger;
+        }
+
+        public static List<Spell.Trigger> meleeKills() {
+            return meleeKills(false);
+        }
+
+        public static List<Spell.Trigger> meleeKills(boolean mustWield) {
+            var deadCondition = TargetConditions.dead();
+
+            var attackTrigger = meleeAttack(mustWield);
+            attackTrigger.target_conditions = List.of(deadCondition);
 
             var skillTrigger = new Spell.Trigger();
             skillTrigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
@@ -282,7 +296,7 @@ public class SpellBuilder {
             skillTrigger.spell.school = ExternalSpellSchools.PHYSICAL_MELEE.id.toString();
             skillTrigger.target_conditions = List.of(deadCondition);
 
-            return trigger;
+            return List.of(attackTrigger, skillTrigger);
         }
 
         public static Spell.Trigger spellKill() {
