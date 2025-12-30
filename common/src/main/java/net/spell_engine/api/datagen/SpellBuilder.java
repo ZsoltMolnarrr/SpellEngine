@@ -283,10 +283,30 @@ public class SpellBuilder {
             return trigger;
         }
 
+        @Deprecated(forRemoval = true)
         public static Spell.Trigger meleeAttack() {
             var trigger = new Spell.Trigger();
             trigger.type = Spell.Trigger.Type.MELEE_IMPACT;
             return trigger;
+        }
+
+        public static Spell.Trigger meleeAttackImpact() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.MELEE_IMPACT;
+            return trigger;
+        }
+
+        public static Spell.Trigger meleeSkillImpact() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+            trigger.spell = new Spell.Trigger.SpellCondition();
+            trigger.spell.school = ExternalSpellSchools.PHYSICAL_MELEE.id.toString();
+            trigger.spell.type = Spell.Type.ACTIVE;
+            return trigger;
+        }
+
+        public static List<Spell.Trigger> meleeImpact() {
+            return List.of(meleeAttackImpact(), meleeSkillImpact());
         }
 
         @Deprecated(forRemoval = true)
@@ -316,18 +336,12 @@ public class SpellBuilder {
         }
 
         public static List<Spell.Trigger> meleeKills() {
-            var deadCondition = TargetConditions.dead();
-
-            var attackTrigger = meleeAttack();
-            attackTrigger.target_conditions = List.of(deadCondition);
-
-            var skillTrigger = new Spell.Trigger();
-            skillTrigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
-            skillTrigger.spell = new Spell.Trigger.SpellCondition();
-            skillTrigger.spell.archetype = SpellSchool.Archetype.MELEE;
-            skillTrigger.target_conditions = List.of(deadCondition);
-
-            return List.of(attackTrigger, skillTrigger);
+            var triggers = meleeImpact();
+            for (var trigger : triggers) {
+                var deadCondition = TargetConditions.dead();
+                trigger.target_conditions = List.of(deadCondition);
+            }
+            return triggers;
         }
 
         public static Spell.Trigger spellKill() {
@@ -340,10 +354,12 @@ public class SpellBuilder {
             return trigger;
         }
 
+        @Deprecated(forRemoval = true)
         public static Spell.Trigger rangedAttack() {
             return rangedAttack(false);
         }
 
+        @Deprecated(forRemoval = true)
         public static Spell.Trigger rangedAttack(boolean mustWield) {
             var arrowTrigger = new Spell.Trigger();
             arrowTrigger.type = Spell.Trigger.Type.ARROW_IMPACT;
@@ -353,19 +369,32 @@ public class SpellBuilder {
             return arrowTrigger;
         }
 
+        public static Spell.Trigger rangedAttackImpact() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.ARROW_IMPACT;
+            return trigger;
+        }
+
+        public static Spell.Trigger rangedSkillImpact() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+            trigger.spell = new Spell.Trigger.SpellCondition();
+            trigger.spell.archetype = SpellSchool.Archetype.ARCHERY;
+            trigger.spell.type = Spell.Type.ACTIVE;
+            return trigger;
+        }
+
+        public static List<Spell.Trigger> rangedImpact() {
+            return List.of(rangedAttackImpact(), rangedSkillImpact());
+        }
+
         public static List<Spell.Trigger> rangedKill() {
-            var deadCondition = TargetConditions.dead();
-            var arrowTrigger = rangedAttack();
-            arrowTrigger.target_conditions = List.of(deadCondition);
-
-            var skillTrigger = new Spell.Trigger();
-            skillTrigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
-            skillTrigger.spell = new Spell.Trigger.SpellCondition();
-            skillTrigger.spell.archetype = SpellSchool.Archetype.ARCHERY;
-            skillTrigger.spell.type = Spell.Type.ACTIVE;
-            skillTrigger.target_conditions = List.of(deadCondition);
-
-            return List.of(arrowTrigger, skillTrigger);
+            var triggers = rangedImpact();
+            for (var trigger : triggers) {
+                var deadCondition = TargetConditions.dead();
+                trigger.target_conditions = List.of(deadCondition);
+            }
+            return triggers;
         }
 
         @Deprecated(forRemoval = true)

@@ -1,7 +1,8 @@
 # 1.8.19
 
 API Changes:
-- Update `SpellBuilder` `meleeKills` and `rangedKill` methods to rely on spell school archetype
+- Update `SpellBuilder.Trigger` `meleeKills` and `rangedKill` methods to rely on spell school archetype
+- Reorganize `SpellBuilder.Trigger` methods melee and ranged impact trigger methods
 
 # 1.8.18
 
