@@ -1,3 +1,8 @@
+# 1.8.19
+
+API Changes:
+- Update `SpellBuilder` `meleeKills` and `rangedKill` methods to rely on spell school archetype
+
 # 1.8.18
 
 API Changes:
