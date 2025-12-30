@@ -300,7 +300,7 @@ public class SpellBuilder {
             var trigger = new Spell.Trigger();
             trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
             trigger.spell = new Spell.Trigger.SpellCondition();
-            trigger.spell.school = ExternalSpellSchools.PHYSICAL_MELEE.id.toString();
+            trigger.spell.archetype = SpellSchool.Archetype.MELEE;
             trigger.spell.type = Spell.Type.ACTIVE;
             return trigger;
         }
