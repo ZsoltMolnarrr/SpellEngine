@@ -15,6 +15,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
@@ -222,10 +223,6 @@ public class SpellBindingScreenHandler extends ScreenHandler {
             var consumableStack = getStacks().get(1);
             var playerWorld = player.getWorld();
 
-            if (poweredByLib == 0) {
-                return false;
-            }
-
             switch (mode) {
                 case SPELL -> {
                     var spellEntry = SpellRegistry.from(playerWorld).getEntry(rawId);
@@ -235,7 +232,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                     var spellId = spellEntry.get().getKey().get().getValue();
                     var binding = SpellBinding.State.of(playerWorld, spellId, mainStack, levelCost, requiredLevel, lapisCost);
 
-                    if (binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED) {
+                    if (allowUnbinding() && binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED) {
                         this.context.run((world, pos) -> {
                             SpellContainerHelper.removeSpell(world, spellId, mainStack);
                             this.inventory.markDirty();
@@ -245,6 +242,9 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                         return true;
                     }
 
+                    if (poweredByLib == 0) {
+                        return false;
+                    }
                     if (binding.state == SpellBinding.State.ApplyState.INVALID) {
                         return false;
                     }
@@ -280,6 +280,9 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                     });
                 }
                 case BOOK -> {
+                    if (poweredByLib == 0) {
+                        return false;
+                    }
                     var item = SpellBinding.availableSpellBooks(player.getWorld()).get(rawId - SpellBinding.BOOK_OFFSET);
                     var itemStack = ((Item)item).getDefaultStack(); // Upcast to `Item` to make sure this line is remapped for other devs
                     var container = SpellContainerHelper.containerFromItemStack(itemStack);
@@ -329,5 +332,9 @@ public class SpellBindingScreenHandler extends ScreenHandler {
         if (player instanceof ServerPlayerEntity serverPlayer) {
             serverPlayer.setExperienceLevel(player.experienceLevel); // Triggers XP sync
         }
+    }
+
+    public boolean allowUnbinding() {
+        return SpellEngineMod.config.spell_binding_allow_unbinding;
     }
 }

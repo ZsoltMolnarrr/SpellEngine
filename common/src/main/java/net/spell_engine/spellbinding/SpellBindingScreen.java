@@ -112,7 +112,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 
                     for (var icon : tierRow.spellIcons()) {
                         if (icon.mouseOver((int) mouseX, (int) mouseY)) {
-                            if (icon.binding().state == SpellBinding.State.ApplyState.ALREADY_APPLIED) {
+                            if (handler.allowUnbinding() && icon.binding().state == SpellBinding.State.ApplyState.ALREADY_APPLIED) {
                                 unbindDialog(icon);
                                 return true;
                             }

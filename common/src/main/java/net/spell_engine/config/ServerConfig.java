@@ -35,6 +35,8 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     public int spell_binding_level_cost_multiplier = 1;
     @Comment("Spell binding lapis lazuli levelCost multiplier")
     public int spell_binding_lapis_cost_multiplier = 1;
+    @Comment("Spell binding allow unbinding spells")
+    public boolean spell_binding_allow_unbinding = true;
 
     public int spell_scroll_level_cost_per_tier = 0;
     public int spell_scroll_apply_cost_base = 1;

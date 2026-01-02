@@ -159,7 +159,6 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations" : "First-person player animations",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip" : "Spell casting player animations to be shown. Only recommended to change if custom camera mods in use.",
 
-
   "gui.spell_engine.spell_binding" : "Spell Binding",
   "gui.spell_engine.spell_binding.title" : "Bind Spells",
   "block.spell_engine.spell_binding": "Spell Binding Table",
