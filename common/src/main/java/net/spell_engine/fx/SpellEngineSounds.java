@@ -117,6 +117,7 @@ public class SpellEngineSounds {
     // MARK: Spell binding sounds
 
     public static final Entry BIND_SPELL = add(new Entry("bind_spell"));
+    public static final Entry UNBIND_SPELL = add(new Entry("unbind_spell"));
 
     // MARK: Item sounds
 

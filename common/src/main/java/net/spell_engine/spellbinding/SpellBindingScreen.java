@@ -1,11 +1,12 @@
 package net.spell_engine.spellbinding;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.DialogScreen;
 import net.minecraft.client.gui.screen.ingame.CyclingSlotIcon;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -111,6 +112,11 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 
                     for (var icon : tierRow.spellIcons()) {
                         if (icon.mouseOver((int) mouseX, (int) mouseY)) {
+                            if (icon.binding().state == SpellBinding.State.ApplyState.ALREADY_APPLIED) {
+                                unbindDialog(icon);
+                                return true;
+                            }
+
                             client.interactionManager.clickButton(this.handler.syncId, icon.originalIndex());
                             return true;
                         }
@@ -122,6 +128,23 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
             e.printStackTrace();
         }
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    private void unbindDialog(SpellBindingWidgets.SpellIconViewModel icon) {
+        var title = Text.translatable("gui.spell_engine.spell_binding.unbind_dialog.title", icon.spell().name().getString());
+        client.setScreen(new UnbindDialog(title, ImmutableList.of(
+                new DialogScreen.ChoiceButton(Text.translatable("gui.spell_engine.spell_binding.unbind_dialog.confirm").formatted(Formatting.RED), button -> {
+            client.interactionManager.clickButton(this.handler.syncId, icon.originalIndex());
+            this.client.setScreen(this);
+        }), new DialogScreen.ChoiceButton(Text.translatable("gui.spell_engine.spell_binding.unbind_dialog.cancel"), button -> {
+            this.client.setScreen(this);
+        }))));
+    }
+
+    public static class UnbindDialog extends DialogScreen {
+        protected UnbindDialog(Text title, ImmutableList<ChoiceButton> choiceButtons) {
+            super(title, List.of(Text.translatable("gui.spell_engine.spell_binding.unbind_dialog.subtitle")), choiceButtons);
+        }
     }
 
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {

@@ -131,6 +131,22 @@ public class SpellContainerHelper {
         itemStack.set(SpellDataComponents.SPELL_CONTAINER, modifiedContainer);
     }
 
+    public static SpellContainer removeSpell(World world, Identifier spellId, SpellContainer container) {
+        var spellIds = new ArrayList<String>(container.spell_ids());
+        spellIds.remove(spellId.toString());
+        return container.copyWith(sortedSpells(world, spellIds));
+    }
+
+    public static void removeSpell(World world, Identifier spellId, ItemStack itemStack) {
+        var container = containerFromItemStack(itemStack);
+        if (container == null || !container.isValid()) {
+            System.err.println("Trying to remove spell: " + spellId + " from an ItemStack without valid spell container");
+            return;
+        }
+        var modifiedContainer = removeSpell(world, spellId, container);
+        itemStack.set(SpellDataComponents.SPELL_CONTAINER, modifiedContainer);
+    }
+
     public static final Comparator<Map.Entry<Identifier, Spell>> spellSorter = (spell1, spell2) -> {
         if (spell1.getValue().tier > spell2.getValue().tier) {
             return 1;

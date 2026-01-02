@@ -179,5 +179,10 @@
     "sounds": [
       "spell_engine:stun_generic"
     ]
+  },
+  "unbind_spell": {
+    "sounds": [
+      "spell_engine:unbind_spell"
+    ]
   }
 }

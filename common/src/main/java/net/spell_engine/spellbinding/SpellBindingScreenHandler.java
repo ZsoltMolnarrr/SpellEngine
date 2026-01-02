@@ -234,6 +234,17 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                     }
                     var spellId = spellEntry.get().getKey().get().getValue();
                     var binding = SpellBinding.State.of(playerWorld, spellId, mainStack, levelCost, requiredLevel, lapisCost);
+
+                    if (binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED) {
+                        this.context.run((world, pos) -> {
+                            SpellContainerHelper.removeSpell(world, spellId, mainStack);
+                            this.inventory.markDirty();
+                            this.onContentChanged(this.inventory);
+                            world.playSound(null, pos, SpellEngineSounds.UNBIND_SPELL.soundEvent(), SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
+                        });
+                        return true;
+                    }
+
                     if (binding.state == SpellBinding.State.ApplyState.INVALID) {
                         return false;
                     }
@@ -298,7 +309,6 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                             SpellBookCreationCriteria.INSTANCE.trigger(serverPlayer, poolId);
                         }
                     });
-
                 }
             }
             return true;

@@ -170,6 +170,10 @@
   "gui.spell_engine.spell_binding.create" : "Create",
   "gui.spell_engine.spell_binding.available" : "Bind spell",
   "gui.spell_engine.spell_binding.level_req_fail" : "Level Requirement: %s",
+  "gui.spell_engine.spell_binding.unbind_dialog.title" : "Unbind %s",
+  "gui.spell_engine.spell_binding.unbind_dialog.subtitle" : "Are you sure?",
+  "gui.spell_engine.spell_binding.unbind_dialog.confirm" : "Unbind",
+  "gui.spell_engine.spell_binding.unbind_dialog.cancel" : "Cancel",
 
   "equipment_set.logic.bonus.count" : "(%s) Set: ",
   "equipment_set.test.fire_power" : "Fiery Regalia",
