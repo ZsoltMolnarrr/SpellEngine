@@ -89,7 +89,7 @@ public class SpellBindingWidgets {
         boolean alreadyApplied = icon.binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
         float alpha = (icon.isEnabled || alreadyApplied) ? 1.0f : 0.5f;
 
-        // Draw subtle highlight on hover
+        // Draw hover highlight
         if (mouseOver && icon.isEnabled) {
             context.fill(icon.x - 1, icon.y - 1,
                     icon.x + icon.size + 1, icon.y + icon.size + 1,
@@ -129,11 +129,21 @@ public class SpellBindingWidgets {
         boolean isUnlocked = book.isEnabled;
 
         // Draw hover highlight
-        if (mouseOver && book.isEnabled) {
-            context.fill(book.x - 1, book.y - 1,
-                    book.x + book.width + 1, book.y + book.height + 1,
-                    0x40FFFFFF);
-        }
+//        if (mouseOver && book.isEnabled) {
+//            context.fill(book.x, book.y,
+//                    book.x + book.width, book.y + book.height,
+//                    0x40FFFFFF);
+//        }
+        var vOffset = book.isEnabled
+                ? (mouseOver ? SpellBindingWidgets.BUTTON_HEIGHT * 2 : 0)
+                : SpellBindingWidgets.BUTTON_HEIGHT;
+        context.drawTexture(Pl,
+                book.x,
+                book.y,
+                SpellBindingWidgets.BUTTON_TEXTURE_U,
+                SpellBindingWidgets.BUTTON_TEXTURE_V + vOffset,
+                SpellBindingWidgets.BUTTON_WIDTH,
+                SpellBindingWidgets.BUTTON_HEIGHT);
 
         // Draw book icon
         int iconX = book.x + SpellBindingWidgets.SPELL_ICON_INDENT;
