@@ -4,11 +4,14 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.item.Item;
+import net.minecraft.text.OrderedText;
+import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 
 import java.util.List;
+import java.util.Objects;
 
 public class SpellBindingWidgets {
     private static final Identifier Pl = Identifier.of(SpellEngineMod.ID, "textures/gui/" + SpellBinding.name + ".png");
@@ -156,10 +159,26 @@ public class SpellBindingWidgets {
         RenderSystem.disableBlend();
 
         // Draw book name
-        Text bookName = book.item.getName();
+         Text bookName = book.item.getName();
         int textX = iconX + SpellBindingWidgets.SPELL_ICON_SIZE + 4;  // 4px gap after icon
-        int textY = book.y + (SpellBindingWidgets.TIER_ROW_HEIGHT - textRenderer.fontHeight) / 2;  // Vertically centered
-        context.drawTextWithShadow(textRenderer, bookName, textX, textY,
-                isUnlocked ? 0xFFFFFF : 0x808080);
+        var textWidth = BUTTON_WIDTH - (SpellBindingWidgets.SPELL_ICON_SIZE + 4);
+        if (textWidth < textRenderer.getWidth(bookName)) {
+            int textY = book.y + 3;
+            drawTextWrapped(context, textRenderer, bookName, textX, textY, textWidth,
+                    isUnlocked ? 0xFFFFFF : 0x808080);
+        } else {
+            int textY = book.y + (SpellBindingWidgets.TIER_ROW_HEIGHT - textRenderer.fontHeight) / 2;  // Vertically centered
+            context.drawTextWithShadow(textRenderer, bookName, textX, textY,
+                    isUnlocked ? 0xFFFFFF : 0x808080);
+        }
+    }
+
+
+    public static void drawTextWrapped(DrawContext context, TextRenderer textRenderer, StringVisitable text, int x, int y, int width, int color) {
+        for(OrderedText orderedText : textRenderer.wrapLines(text, width)) {
+            context.drawText(textRenderer, orderedText, x, y, color, true);
+            Objects.requireNonNull(textRenderer);
+            y += 9;
+        }
     }
 }
