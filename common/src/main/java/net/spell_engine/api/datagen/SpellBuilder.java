@@ -171,6 +171,18 @@ public class SpellBuilder {
     }
 
     public static class Triggers {
+        public static Spell.Trigger withConditionMustWield(Spell.Trigger trigger) {
+            trigger.equipment_condition = EquipmentSlot.MAINHAND;
+            return trigger;
+        }
+
+        public static List<Spell.Trigger> withConditionMustWield(List<Spell.Trigger> triggers) {
+            for (var trigger : triggers) {
+                trigger.equipment_condition = EquipmentSlot.MAINHAND;
+            }
+            return triggers;
+        }
+
         public static Spell.Trigger activeSpellHit(float chance, @Nullable String schoolRegex) {
             var trigger = spellHit(chance, schoolRegex);
             trigger.spell.type = Spell.Type.ACTIVE;
@@ -261,6 +273,7 @@ public class SpellBuilder {
             return trigger;
         }
 
+        @Deprecated(forRemoval = true)
         public static Spell.Trigger meleeAttack(boolean mustWield) {
             var trigger = new Spell.Trigger();
             trigger.type = Spell.Trigger.Type.MELEE_IMPACT;
@@ -270,11 +283,48 @@ public class SpellBuilder {
             return trigger;
         }
 
+        @Deprecated(forRemoval = true)
+        public static Spell.Trigger meleeAttack() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.MELEE_IMPACT;
+            return trigger;
+        }
+
+        public static Spell.Trigger meleeAttackImpact() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.MELEE_IMPACT;
+            return trigger;
+        }
+
+        public static Spell.Trigger meleeSkillImpact() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+            trigger.spell = new Spell.Trigger.SpellCondition();
+            trigger.spell.archetype = SpellSchool.Archetype.MELEE;
+            trigger.spell.type = Spell.Type.ACTIVE;
+            return trigger;
+        }
+
+        public static List<Spell.Trigger> meleeImpact() {
+            return List.of(meleeAttackImpact(), meleeSkillImpact());
+        }
+
+        @Deprecated(forRemoval = true)
         public static Spell.Trigger meleeKill(boolean mustWield) {
             var deadCondition = TargetConditions.dead();
 
             var trigger = meleeAttack(mustWield);
             trigger.target_conditions = List.of(deadCondition);
+
+            return trigger;
+        }
+
+        @Deprecated(forRemoval = true)
+        public static List<Spell.Trigger> meleeKills(boolean mustWield) {
+            var deadCondition = TargetConditions.dead();
+
+            var attackTrigger = meleeAttack(mustWield);
+            attackTrigger.target_conditions = List.of(deadCondition);
 
             var skillTrigger = new Spell.Trigger();
             skillTrigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
@@ -282,7 +332,16 @@ public class SpellBuilder {
             skillTrigger.spell.school = ExternalSpellSchools.PHYSICAL_MELEE.id.toString();
             skillTrigger.target_conditions = List.of(deadCondition);
 
-            return trigger;
+            return List.of(attackTrigger, skillTrigger);
+        }
+
+        public static List<Spell.Trigger> meleeKills() {
+            var triggers = meleeImpact();
+            for (var trigger : triggers) {
+                var deadCondition = TargetConditions.dead();
+                trigger.target_conditions = List.of(deadCondition);
+            }
+            return triggers;
         }
 
         public static Spell.Trigger spellKill() {
@@ -295,10 +354,12 @@ public class SpellBuilder {
             return trigger;
         }
 
+        @Deprecated(forRemoval = true)
         public static Spell.Trigger rangedAttack() {
             return rangedAttack(false);
         }
 
+        @Deprecated(forRemoval = true)
         public static Spell.Trigger rangedAttack(boolean mustWield) {
             var arrowTrigger = new Spell.Trigger();
             arrowTrigger.type = Spell.Trigger.Type.ARROW_IMPACT;
@@ -308,10 +369,35 @@ public class SpellBuilder {
             return arrowTrigger;
         }
 
-        public static List<Spell.Trigger> rangedKill() {
-            return rangedKill(false);
+        public static Spell.Trigger rangedAttackImpact() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.ARROW_IMPACT;
+            return trigger;
         }
 
+        public static Spell.Trigger rangedSkillImpact() {
+            var trigger = new Spell.Trigger();
+            trigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
+            trigger.spell = new Spell.Trigger.SpellCondition();
+            trigger.spell.archetype = SpellSchool.Archetype.ARCHERY;
+            trigger.spell.type = Spell.Type.ACTIVE;
+            return trigger;
+        }
+
+        public static List<Spell.Trigger> rangedImpact() {
+            return List.of(rangedAttackImpact(), rangedSkillImpact());
+        }
+
+        public static List<Spell.Trigger> rangedKill() {
+            var triggers = rangedImpact();
+            for (var trigger : triggers) {
+                var deadCondition = TargetConditions.dead();
+                trigger.target_conditions = List.of(deadCondition);
+            }
+            return triggers;
+        }
+
+        @Deprecated(forRemoval = true)
         public static List<Spell.Trigger> rangedKill(boolean mustWield) {
             var deadCondition = TargetConditions.dead();
             var arrowTrigger = rangedAttack(mustWield);
@@ -320,7 +406,7 @@ public class SpellBuilder {
             var skillTrigger = new Spell.Trigger();
             skillTrigger.type = Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC;
             skillTrigger.spell = new Spell.Trigger.SpellCondition();
-            skillTrigger.spell.school = ExternalSpellSchools.PHYSICAL_RANGED.id.toString();
+            skillTrigger.spell.archetype = SpellSchool.Archetype.ARCHERY;
             skillTrigger.target_conditions = List.of(deadCondition);
 
             return List.of(arrowTrigger, skillTrigger);

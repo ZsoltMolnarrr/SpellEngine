@@ -3,6 +3,24 @@
 API Changes:
 - Add new `binding_mutex` field to Spell Containers, to enable spell choices per spell tiers
 
+# 1.8.19
+
+API Changes:
+- Update `SpellBuilder.Trigger` `meleeKills` and `rangedKill` methods to rely on spell school archetype
+- Reorganize `SpellBuilder.Trigger` methods melee and ranged impact trigger methods
+
+# 1.8.18
+
+API Changes:
+- Deprecated `SpellBuilder.Triggers.meleeKill`
+- Added  `SpellBuilder.Triggers.meleeKills` (to include attack and skill based kills too)
+
+# 1.8.17
+
+Functional changes:
+- Fix Accessories mod compatibility without class mods (Relics #16)
+- Update translations
+
 # 1.8.16
 
 Functional changes:
