@@ -1,6 +1,7 @@
 package net.spell_engine.api.spell;
 
 import net.minecraft.util.Identifier;
+import net.spell_engine.api.tags.SpellTags;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +14,12 @@ import java.util.Map;
 public class SpellTagsNumbered {
     public static final int NONE = 0;
     private static final Map<String, Integer> poolNumbers = new HashMap<>();
+
+
+    public static void register(String namespace, String path, int number) {
+        register(Identifier.of(namespace, path + SpellTags.SCROLL_TAG_SUFFIX), number);
+    }
+    
     public static void register(Identifier id, int number) {
         poolNumbers.put(id.toString(), number);
     }
@@ -31,30 +38,30 @@ public class SpellTagsNumbered {
 
     static {
         int number = 1; // RPG Series
-        register(Identifier.of("wizards:arcane"), number++);
-        register(Identifier.of("wizards:fire"), number++);
-        register(Identifier.of("wizards:frost"), number++);
-        register(Identifier.of("paladins:paladin"), number++);
-        register(Identifier.of("paladins:priest"), number++);
-        register(Identifier.of("archers:archer"), number++);
-        register(Identifier.of("rogues:rogue"), number++);
-        register(Identifier.of("rogues:warrior"), number++);
+        register("wizards", "arcane", number++);
+        register("wizards", "fire", number++);
+        register("wizards", "frost", number++);
+        register("paladins", "paladin", number++);
+        register("paladins", "priest", number++);
+        register("archers", "archer", number++);
+        register("rogues", "rogue", number++);
+        register("rogues", "warrior", number++);
 
         number = 100; // More RPG Series
-        register(Identifier.of("archers_expansion:deadeye"), number++);
-        register(Identifier.of("archers_expansion:tundra_hunter"), number++);
-        register(Identifier.of("archers_expansion:war_archer"), number++);
-        register(Identifier.of("berserker_rpg:berserker"), number++);
-        register(Identifier.of("elemental_wizards_rpg:aqua"), number++);
-        register(Identifier.of("elemental_wizards_rpg:terra"), number++);
-        register(Identifier.of("elemental_wizards_rpg:wind"), number++);
-        register(Identifier.of("forcemaster_rpg:forcemaster"), number++);
-        register(Identifier.of("witcher_rpg:base_signs"), number++);
-        register(Identifier.of("witcher_rpg:enhanced_signs"), number++);
-        register(Identifier.of("witcher_rpg:fencing"), number++);
-        register(Identifier.of("witcher_rpg:enhanced_fencing"), number++);
+        register("archers_expansion", "deadeye", number++);
+        register("archers_expansion", "tundra_hunter", number++);
+        register("archers_expansion", "war_archer", number++);
+        register("berserker_rpg", "berserker", number++);
+        register("elemental_wizards_rpg", "aqua", number++);
+        register("elemental_wizards_rpg", "terra", number++);
+        register("elemental_wizards_rpg", "wind", number++);
+        register("forcemaster_rpg", "forcemaster", number++);
+        register("witcher_rpg", "base_signs", number++);
+        register("witcher_rpg", "enhanced_signs", number++);
+        register("witcher_rpg", "fencing", number++);
+        register("witcher_rpg", "enhanced_fencing", number++);
 
         number = 200; // Wompwomp Addons
-        register(Identifier.of("druids:druid"), number++);
+        register("druids", "druid", number++);
     }
 }

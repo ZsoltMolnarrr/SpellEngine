@@ -62,7 +62,7 @@ public class ScrollItem extends Item {
 
             // Set custom name
             // - Example: "item.paladins.paladin.spell_scroll"
-            var key = "item." + pool.id().getNamespace() + "." + pool.id().getPath() + ".spell_scroll";
+            var key = "item." + pool.id().getNamespace() + "." + pool.id().getPath();
             if (Language.getInstance().hasTranslation(key)) {
                 itemStack.set(DataComponentTypes.ITEM_NAME, Text.translatable(key));
             }

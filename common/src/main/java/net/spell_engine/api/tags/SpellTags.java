@@ -11,6 +11,8 @@ public class SpellTags {
         return TagKey.of(SpellRegistry.KEY, Identifier.of(SpellEngineMod.ID, name));
     }
 
+    public static final String SCROLL_TAG_SUFFIX = "_spell_scroll";
+
     /**
      * Spells that can be found in loot chests applied onto spell scrolls.
      */

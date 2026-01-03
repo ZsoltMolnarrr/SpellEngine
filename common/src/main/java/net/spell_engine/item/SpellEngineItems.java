@@ -15,14 +15,12 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.api.item.trinket.SpellBookItem;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.compat.SlotModCompat;
 import net.spell_engine.spellbinding.SpellBinding;
 import net.spell_engine.spellbinding.SpellBindingBlock;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class SpellEngineItems {
     public static class Group {
@@ -57,14 +55,23 @@ public class SpellEngineItems {
             content.add(SpellBindingBlock.ITEM);
 
             var registryWrapper = content.getContext().lookup().getWrapperOrThrow(SpellRegistry.KEY);
-            registryWrapper.streamEntries()
-                    .sorted(Comparator.comparing(a -> a.getKey().get().getValue().getNamespace() + "_" + a.value().tier + "_" + a.getKey().get().getValue().getPath()))
-                    .forEach((entry) -> {
-                        var scroll = new ItemStack(SCROLL.get());
-                        if (ScrollItem.applySpell(scroll, entry, ScrollItem.resolveSpellPool(registryWrapper, entry))) {
-                            content.add(scroll);
-                        }
-                    });
+
+            var scrollTags = registryWrapper.streamTags()
+                    .filter(tag ->
+                            tag.getTagKey().isPresent() && tag.getTagKey().get().id().getPath().endsWith(SpellTags.SCROLL_TAG_SUFFIX)
+                    )
+                    .sorted(Comparator.comparing(tag -> tag.getTagKey().get().id().getNamespace() + "_" + tag.getTagKey().get().id().getPath()))
+                    .toList();
+            for (var scrollTag: scrollTags) {
+                scrollTag.stream()
+                        .sorted(Comparator.comparing(a -> a.getKey().get().getValue().getNamespace() + "_" + a.value().tier + "_" + a.getKey().get().getValue().getPath()))
+                        .forEach((entry) -> {
+                            var scroll = new ItemStack(SCROLL.get());
+                            if (ScrollItem.applySpell(scroll, entry, scrollTag.getTag())) {
+                                content.add(scroll);
+                            }
+                        });
+            }
         });
     }
 }
