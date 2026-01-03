@@ -17,6 +17,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.tags.SpellEngineItemTags;
@@ -58,8 +59,20 @@ public class SpellTooltip {
         int addSectionDivider = 0;
         var config = SpellEngineClient.config;
         var spellTextLines = new ArrayList<Text>();
+
+        var choices = itemStack.get(SpellDataComponents.SPELL_CONTAINER);
+        if (choices != null) {
+            var spellInfo = getSpellChoiceInfo(choices, player);
+            spellTextLines.addAll(spellInfo.content());
+            addSectionDivider += spellInfo.sectionDividersAdded();
+        }
+
         var container = SpellContainerHelper.containerFromItemStack(itemStack);
         if (container != null && container.isValid()) {
+            var spellInfo = getSpellInfoExpandedWithKey(itemStack, container, player, false, true);
+            spellTextLines.addAll(spellInfo.content());
+            addSectionDivider += spellInfo.sectionDividersAdded();
+
             if (container.is_proxy() && config.showSpellBookSuppportTooltip) {
                 switch (container.content()) {
                     case MAGIC -> {
@@ -72,19 +85,6 @@ public class SpellTooltip {
                     }
                 }
                 addSectionDivider += 1;
-            }
-
-            SpellInfo spellInfo = getSpellInfo(itemStack, container, player, false, true);
-            spellTextLines.addAll(spellInfo.content());
-            addSectionDivider += spellInfo.sectionDividersAdded();
-
-            if (!spellInfo.showDetails()) {
-                if (config.showSpellBindingTooltip
-                        && container.pool() != null && !container.pool().isEmpty()
-                        && container.spell_ids().isEmpty()) {
-                    spellTextLines.add(Text.translatable("spell.tooltip.spell_binding_tip")
-                            .formatted(Formatting.GRAY));
-                }
             }
         }
 
@@ -130,9 +130,41 @@ public class SpellTooltip {
         }
     }
 
-    public record SpellInfo(List<Text> content, int sectionDividersAdded, boolean showDetails) {  }
+    public static @NotNull SpellTooltip.SpellInfo getSpellInfoExpandedWithKey(
+            ItemStack itemStack, SpellContainer container, PlayerEntity player,
+            boolean forceHideHeader, boolean allowDetailsHint) {
+        var config = SpellEngineClient.config;
+        var keybinding = Keybindings.bypass_spell_hotbar;
+        var showDetails = config.alwaysShowFullTooltip
+                || (!keybinding.isUnbound() && isKeyPressed(keybinding)
+        );
+        var spellInfo = getSpellInfo(itemStack, container, player, forceHideHeader, showDetails);
+        if (!showDetails) {
+            if (config.showSpellBindingTooltip
+                    && container.pool() != null && !container.pool().isEmpty()
+                    && container.spell_ids().isEmpty()) {
+                spellInfo.content().add(Text.translatable("spell.tooltip.spell_binding_tip")
+                        .formatted(Formatting.GRAY));
+            }
+        }
+        if (allowDetailsHint && !showDetails) {
+            if (!keybinding.isUnbound() && container.spell_ids().size() > 0) {
+                spellInfo.content().add(Text.translatable("spell.tooltip.hold_for_details",
+                                keybinding.getBoundKeyLocalizedText())
+                        .formatted(Formatting.DARK_GRAY));
+            }
+        }
+        return spellInfo;
+    }
+
+    public record SpellInfo(List<Text> content, int sectionDividersAdded) {  }
+
+    public static @NotNull SpellInfo getSpellChoiceInfo(SpellContainer container, PlayerEntity player) {
+        return null; // FIXME
+    }
+
     public static @NotNull SpellTooltip.SpellInfo getSpellInfo(ItemStack itemStack, SpellContainer container, PlayerEntity player,
-                                                               boolean forceHideHeader, boolean allowDetailsHint) {
+                                                               boolean forceHideHeader, boolean showDetails) {
         var config = SpellEngineClient.config;
         List<RegistryEntry<Spell>> spells = List.of();
         final var world = MinecraftClient.getInstance().world;
@@ -185,10 +217,7 @@ public class SpellTooltip {
                     .formatted(Formatting.GRAY));
             addSectionDivider += 1;
         }
-        var keybinding = Keybindings.bypass_spell_hotbar;
-        var showDetails = config.alwaysShowFullTooltip
-                || (!keybinding.isUnbound() && isKeyPressed(keybinding)
-        );
+
         for (int i = 0; i < spells.size(); i++) {
             var spellEntry = spells.get(i);
             var info = spellEntry(spellEntry, player, itemStack, showDetails, indentLevel);
@@ -201,15 +230,7 @@ public class SpellTooltip {
 
         }
 
-        if (allowDetailsHint && !showDetails) {
-            if (!keybinding.isUnbound() && container.spell_ids().size() > 0) {
-                spellTextLines.add(Text.translatable("spell.tooltip.hold_for_details",
-                                keybinding.getBoundKeyLocalizedText())
-                        .formatted(Formatting.DARK_GRAY));
-            }
-        }
-
-        return new SpellInfo(spellTextLines, addSectionDivider, showDetails);
+        return new SpellInfo(spellTextLines, addSectionDivider);
     }
 
     private static boolean isKeyPressed(KeyBinding keybinding) {

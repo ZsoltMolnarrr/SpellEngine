@@ -13,6 +13,9 @@ public class SpellDataComponents {
     public static final ComponentType<SpellContainer> SPELL_CONTAINER = register(Identifier.of(SpellEngineMod.ID, "spell_container"),
             builder -> builder.codec(SpellContainer.CODEC)
     );
+    public static final ComponentType<SpellContainer> SPELL_CHOICE = register(Identifier.of(SpellEngineMod.ID, "spell_choice"),
+            builder -> builder.codec(SpellContainer.CODEC)
+    );
     public static final ComponentType<Identifier> EQUIPMENT_SET = register(Identifier.of(SpellEngineMod.ID, "equipment_set"),
             builder -> builder.codec(Identifier.CODEC)
     );
