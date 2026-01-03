@@ -18,6 +18,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellDataComponents;
+import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.tags.SpellEngineItemTags;
@@ -27,11 +28,13 @@ import net.spell_engine.internals.Ammo;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_power.api.SpellPower;
+import net.spell_power.api.SpellSchool;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class SpellTooltip {
     public static final String damageToken = "damage";
@@ -60,7 +63,7 @@ public class SpellTooltip {
         var config = SpellEngineClient.config;
         var spellTextLines = new ArrayList<Text>();
 
-        var choices = itemStack.get(SpellDataComponents.SPELL_CONTAINER);
+        var choices = itemStack.get(SpellDataComponents.SPELL_CHOICE);
         if (choices != null) {
             var spellInfo = getSpellChoiceInfo(choices, player);
             spellTextLines.addAll(spellInfo.content());
@@ -141,6 +144,7 @@ public class SpellTooltip {
         var spellInfo = getSpellInfo(itemStack, container, player, forceHideHeader, showDetails);
         if (!showDetails) {
             if (config.showSpellBindingTooltip
+                    && itemStack.get(SpellDataComponents.SPELL_CHOICE) == null
                     && container.pool() != null && !container.pool().isEmpty()
                     && container.spell_ids().isEmpty()) {
                 spellInfo.content().add(Text.translatable("spell.tooltip.spell_binding_tip")
@@ -159,8 +163,58 @@ public class SpellTooltip {
 
     public record SpellInfo(List<Text> content, int sectionDividersAdded) {  }
 
-    public static @NotNull SpellInfo getSpellChoiceInfo(SpellContainer container, PlayerEntity player) {
-        return null; // FIXME
+    public static @NotNull SpellInfo getSpellChoiceInfo(SpellChoice container, PlayerEntity player) {
+        // Get world reference
+        final var world = player.getWorld();
+        if (world == null) {
+            return new SpellInfo(List.of(), 0);
+        }
+
+        // Validate pool
+        var pool = container.pool();
+        if (pool == null || pool.isEmpty()) {
+            return new SpellInfo(List.of(), 0);
+        }
+
+        // Resolve all spells from the pool tag
+        List<RegistryEntry<Spell>> spells = SpellRegistry.entries(world, pool);
+        if (spells.isEmpty()) {
+            return new SpellInfo(List.of(), 0);
+        }
+        var archetype = spells.getFirst().value().school.archetype;
+
+        // Sort spells by tier then alphabetically
+        HashMap<Identifier, Spell> spellMap = new HashMap<>();
+        for (var entry : spells) {
+            var id = entry.getKey().get().getValue();
+            spellMap.put(id, entry.value());
+        }
+
+        List<Identifier> sortedSpellIds = spellMap.entrySet().stream()
+            .sorted(SpellContainerHelper.spellSorter)
+            .map(entry -> entry.getKey())
+            .collect(Collectors.toList());
+
+        // Build tooltip content
+        var spellTextLines = new ArrayList<Text>();
+
+        // Header: "Spell choice:" or "Skill choice:" based on content type
+        var key = archetype == SpellSchool.Archetype.MAGIC
+            ? "spell.tooltip.choice.list.spell"
+            : "spell.tooltip.choice.list.skill";
+        spellTextLines.add(Text.translatable(key).formatted(Formatting.GRAY));
+
+        // Spell names: "  Arcane Blast | Pyroblast | Frostbolt"
+        var spellNames = sortedSpellIds.stream()
+            .map(SpellTooltip::spellTranslationKey)
+            .map(I18n::translate)
+            .collect(Collectors.toList());
+
+        var joinedNames = String.join(" | ", spellNames);
+        spellTextLines.add(indentation(1).append(Text.literal(joinedNames)).formatted(Formatting.GRAY));
+
+        // Return with 1 section divider (for the header)
+        return new SpellInfo(spellTextLines, 1);
     }
 
     public static @NotNull SpellTooltip.SpellInfo getSpellInfo(ItemStack itemStack, SpellContainer container, PlayerEntity player,
