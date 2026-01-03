@@ -1406,19 +1406,19 @@ public class Defaults {
 
         // Hellish Trials (Nether Trials & Chambers)
 
-        items_regex.put("hellish_trials:chests/nether_trial/nether_trial_treasure", new LootConfig.Pool()
+        items.put("hellish_trials:chests/nether_trial/nether_trial_treasure", new LootConfig.Pool()
                 .rolls(0.5)
                 .add(A2).enchant()
                 .add(W2).enchant()
                 .add(X2)
         );
-        items_regex.put("hellish_trials:chests/nether_trial/nether_trial_vault_normal", new LootConfig.Pool()
+        items.put("hellish_trials:chests/nether_trial/nether_trial_vault_normal", new LootConfig.Pool()
                 .rolls(2)
                 .add(A2).enchant()
                 .add(W3).enchant()
                 .add(X3)
         );
-        items_regex.put("hellish_trials:chests/nether_trial/nether_trial_vault_ominous", new LootConfig.Pool()
+        items.put("hellish_trials:chests/nether_trial/nether_trial_vault_ominous", new LootConfig.Pool()
                 .rolls(2)
                 .add(W4).enchant()
                 .add(X4)
