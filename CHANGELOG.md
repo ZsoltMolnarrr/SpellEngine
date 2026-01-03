@@ -1,3 +1,8 @@
+# 1.8.20
+
+Functional changes:
+- Update loot injection defaults: Hellish Trials, Draugr Invasion
+
 # 1.8.19
 
 API Changes:

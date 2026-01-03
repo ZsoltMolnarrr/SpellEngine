@@ -916,6 +916,36 @@ public class Defaults {
                 .add(X2)
         );
 
+        // Mebahel's Creatures - Draugr Invasion
+
+        items.put("mebahelcreaturesdraugr:chests/draugr_crypt_common", new LootConfig.Pool()
+                .rolls(0.25)
+                .add(A1)
+                .add(W1)
+                .add(X1)
+        );
+        items.put("mebahelcreaturesdraugr:chests/draugr_crypt_rare", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(A1)
+                .add(W1)
+                .add(X2)
+        );
+        items.put("mebahelcreaturesdraugr:chests/draugr_crypt_epic", new LootConfig.Pool()
+                .rolls(2)
+                .add(A2)
+                .add(W2)
+                .add(X2)
+        );
+        items.put("mebahelcreaturesdraugr:entities/draugr_overlord", new LootConfig.Pool()
+                .rolls(1)
+                .add(W2)
+                .add(R1)
+        );
+        scrolls.put("mebahelcreaturesdraugr:chests/draugr_crypt_ice_lodge", new LootConfig.Pool()
+                .rolls(0.5)
+                .scroll(2, 3)
+        );
+
         // Illager Invasion mod
 
         items.put("illagerinvasion:chests/illager_fort_tower", new LootConfig.Pool()
@@ -1372,6 +1402,27 @@ public class Defaults {
                 .rolls(0.3)
                 .add(W4).enchant()
                 .add(A4)
+        );
+
+        // Hellish Trials (Nether Trials & Chambers)
+
+        items_regex.put("hellish_trials:chests/nether_trial/nether_trial_treasure", new LootConfig.Pool()
+                .rolls(0.5)
+                .add(A2).enchant()
+                .add(W2).enchant()
+                .add(X2)
+        );
+        items_regex.put("hellish_trials:chests/nether_trial/nether_trial_vault_normal", new LootConfig.Pool()
+                .rolls(2)
+                .add(A2).enchant()
+                .add(W3).enchant()
+                .add(X3)
+        );
+        items_regex.put("hellish_trials:chests/nether_trial/nether_trial_vault_ominous", new LootConfig.Pool()
+                .rolls(2)
+                .add(W4).enchant()
+                .add(X4)
+                .add(R3)
         );
 
         // Dungeons Arise mod
