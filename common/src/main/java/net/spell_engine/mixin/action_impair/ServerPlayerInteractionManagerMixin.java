@@ -10,8 +10,8 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import net.spell_engine.api.effect.EntityActionsAllowed;
-import net.spell_engine.api.spell.SpellDataComponents;
-import net.spell_engine.spellchoice.SpellChoiceScreenHandler;
+import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
+import net.spell_engine.spellbinding.spellchoice.SpellChoices;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -25,11 +25,11 @@ public class ServerPlayerInteractionManagerMixin {
             cir.setReturnValue(ActionResult.FAIL);
             cir.cancel();
         }
-        if (stack.contains(SpellDataComponents.SPELL_CHOICE)) {
+        if (SpellChoices.from(stack) != null) {
             player.openHandledScreen(new SimpleNamedScreenHandlerFactory(
                     (syncId, inventory, playerEntity) ->
                             new SpellChoiceScreenHandler(syncId, stack, inventory, ScreenHandlerContext.create(world, player.getBlockPos())),
-                    Text.literal("Spell Choice")
+                    Text.translatable("spell.tooltip.choice.list.spell")
             ));
             cir.setReturnValue(ActionResult.SUCCESS);
             cir.cancel();

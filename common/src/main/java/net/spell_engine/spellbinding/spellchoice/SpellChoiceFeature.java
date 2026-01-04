@@ -1,4 +1,4 @@
-package net.spell_engine.spellchoice;
+package net.spell_engine.spellbinding.spellchoice;
 
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;

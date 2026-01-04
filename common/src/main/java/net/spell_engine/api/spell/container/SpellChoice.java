@@ -9,4 +9,8 @@ public record SpellChoice(String pool) {
     ).apply(instance, SpellChoice::new));
 
     public static final SpellChoice EMPTY = new SpellChoice("");
+
+    public boolean isEmpty() {
+        return this.pool.isEmpty();
+    }
 }

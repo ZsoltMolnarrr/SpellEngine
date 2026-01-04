@@ -30,8 +30,8 @@ import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 import net.spell_engine.spellbinding.SpellBindingScreen;
 import net.spell_engine.spellbinding.SpellBindingScreenHandler;
-import net.spell_engine.spellchoice.SpellChoiceScreen;
-import net.spell_engine.spellchoice.SpellChoiceScreenHandler;
+import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreen;
+import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
 import net.tiny_config.ConfigManager;
 
 public class SpellEngineClient {

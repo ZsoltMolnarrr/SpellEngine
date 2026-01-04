@@ -17,7 +17,6 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
-import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.registry.SpellRegistry;
@@ -27,6 +26,7 @@ import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.Ammo;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
+import net.spell_engine.spellbinding.spellchoice.SpellChoices;
 import net.spell_power.api.SpellPower;
 import net.spell_power.api.SpellSchool;
 import org.jetbrains.annotations.NotNull;
@@ -63,7 +63,7 @@ public class SpellTooltip {
         var config = SpellEngineClient.config;
         var spellTextLines = new ArrayList<Text>();
 
-        var choices = itemStack.get(SpellDataComponents.SPELL_CHOICE);
+        var choices = SpellChoices.from(itemStack);
         var container = SpellContainerHelper.containerFromItemStack(itemStack);
         if (container != null && container.isValid()) {
             if (container.is_proxy() && config.showSpellBookSuppportTooltip) {
@@ -144,7 +144,7 @@ public class SpellTooltip {
         var spellInfo = getSpellInfo(itemStack, container, player, forceHideHeader, showDetails);
         if (!showDetails) {
             if (config.showSpellBindingTooltip
-                    && itemStack.get(SpellDataComponents.SPELL_CHOICE) == null
+                    && SpellChoices.from(itemStack) == null
                     && container.pool() != null && !container.pool().isEmpty()
                     && container.spell_ids().isEmpty()) {
                 spellInfo.content().add(Text.translatable("spell.tooltip.spell_binding_tip")

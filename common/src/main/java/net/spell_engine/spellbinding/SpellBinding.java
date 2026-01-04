@@ -8,13 +8,13 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.api.item.SpellBooks;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
+import net.spell_engine.spellbinding.spellchoice.SpellChoices;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -60,7 +60,7 @@ public class SpellBinding {
             return new OfferResult(Mode.BOOK, offers);
         }
 
-        var choices = itemStack.get(SpellDataComponents.SPELL_CHOICE);
+        var choices = SpellChoices.from(itemStack);
         if (choices != null) {
             return new OfferResult(Mode.SPELL, List.of());
         }

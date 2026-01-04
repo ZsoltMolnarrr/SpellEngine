@@ -1,4 +1,4 @@
-package net.spell_engine.spellchoice;
+package net.spell_engine.spellbinding.spellchoice;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;

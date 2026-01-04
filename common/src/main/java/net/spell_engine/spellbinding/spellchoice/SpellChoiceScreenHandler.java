@@ -1,4 +1,4 @@
-package net.spell_engine.spellchoice;
+package net.spell_engine.spellbinding.spellchoice;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -8,9 +8,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.resource.featuretoggle.FeatureFlags;
 import net.minecraft.screen.*;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.SpellDataComponents;
+import net.spell_engine.api.spell.container.SpellChoice;
+import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.fx.SpellEngineSounds;
 
 public class SpellChoiceScreenHandler extends ScreenHandler {
     public static final int MAXIMUM_SPELL_COUNT = 32;
@@ -86,7 +90,7 @@ public class SpellChoiceScreenHandler extends ScreenHandler {
         }
 
         // Get spell choice data
-        var spellChoice = itemStack.get(SpellDataComponents.SPELL_CHOICE);
+        var spellChoice = SpellChoices.from(itemStack);
         if (spellChoice == null || spellChoice.pool() == null || spellChoice.pool().isEmpty()) {
             return;
         }
@@ -118,9 +122,54 @@ public class SpellChoiceScreenHandler extends ScreenHandler {
 
     @Override
     public boolean onButtonClick(PlayerEntity player, int id) {
-        // TODO: Handle spell selection
-        // For now, just return true to acknowledge the click
-        return true;
+        try {
+            // Get synced spell ID
+            var rawId = spellId[id];
+            if (rawId < 0) {
+                return false;  // Invalid spell ID
+            }
+
+            // Get itemstack from slot
+            var itemStack = getChoiceItemStack();
+            if (itemStack.isEmpty()) {
+                return false;  // No item to bind to
+            }
+
+            // Perform spell binding in world context
+            this.context.run((world, pos) -> {
+                // Get spell entry from registry
+                var spellEntry = SpellRegistry.from(world).getEntry(rawId);
+                if (spellEntry.isEmpty()) {
+                    return;  // Invalid spell entry
+                }
+
+                // Extract spell identifier
+                var selectedSpellId = spellEntry.get().getKey().get().getValue();
+
+                // Bind spell to the item's spell container
+                SpellContainerHelper.addSpell(world, selectedSpellId, itemStack);
+
+                // Remove the spell choice component
+                itemStack.set(SpellDataComponents.SPELL_CHOICE, SpellChoice.EMPTY);
+
+                // Mark inventory dirty to trigger updates
+                this.input.markDirty();
+                this.onContentChanged(this.input);
+
+                // Play sound feedback
+                world.playSound(null, pos,
+                    SpellEngineSounds.BIND_SPELL.soundEvent(),
+                    SoundCategory.PLAYERS,
+                    1.0f,
+                    world.random.nextFloat() * 0.1f + 0.9f);
+            });
+
+            return true;  // Success
+        } catch (Exception e) {
+            System.err.println("Error in SpellChoiceScreenHandler.onButtonClick: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override

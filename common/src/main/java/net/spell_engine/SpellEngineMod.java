@@ -38,13 +38,11 @@ import net.spell_engine.internals.delivery.SpellStashHelper;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.rpg_series.RPGSeriesCore;
 import net.spell_engine.spellbinding.*;
-import net.spell_engine.spellchoice.SpellChoiceFeature;
-import net.spell_engine.spellchoice.SpellChoiceScreenHandler;
+import net.spell_engine.spellbinding.spellchoice.SpellChoiceFeature;
+import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
 import net.spell_engine.utils.StatusEffectUtil;
-import net.spell_power.api.SpellSchools;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class SpellEngineMod {
     public static final String ID = "spell_engine";

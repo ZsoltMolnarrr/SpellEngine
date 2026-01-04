@@ -5,18 +5,15 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
-import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.AutoSwapHelper;
 import net.spell_engine.client.input.MinecraftClientExtension;
 import net.spell_engine.client.input.SpellHotbar;
+import net.spell_engine.spellbinding.spellchoice.SpellChoices;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -32,7 +29,7 @@ public class ClientPlayerInteractionManagerMixin {
     public void interactItem_HEAD_LockHotbar(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (player instanceof ClientPlayerEntity clientPlayer) {
             ItemStack stack = player.getStackInHand(hand);
-            if (stack.contains(SpellDataComponents.SPELL_CHOICE)) {
+            if (SpellChoices.from(stack) != null) {
                 return;
             }
 
