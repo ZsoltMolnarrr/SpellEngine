@@ -19,7 +19,6 @@
   "spell.spell_engine.use_item.description": "Use one of the held items.",
   "spell.spell_engine.use_offhand_item.name": "Use Offhand Item",
   "spell.spell_engine.use_offhand_item.description": "Use offhand item when present.",
-  "spell.group.primary": "(Main Spell)",
   "spell.type.passive": "(Passive)",
   "spell.tooltip.choice.list.spell": "Spell choice:",
   "spell.tooltip.choice.list.skill": "Skill choice:",

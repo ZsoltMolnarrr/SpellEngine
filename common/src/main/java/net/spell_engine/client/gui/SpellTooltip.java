@@ -30,6 +30,7 @@ import net.spell_engine.spellbinding.spellchoice.SpellChoices;
 import net.spell_power.api.SpellPower;
 import net.spell_power.api.SpellSchool;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -249,7 +250,14 @@ public class SpellTooltip {
         }
         int indentLevel = showListHeader ? 1 : 0;
 
-        if (!spells.isEmpty() && showListHeader) {
+        if (spells.isEmpty()) {
+            return new SpellInfo(spellTextLines, addSectionDivider);
+        }
+
+        var activeSpells = spells.stream()
+                .filter(entry -> entry.value().type == Spell.Type.ACTIVE)
+                .toList();
+        if (!activeSpells.isEmpty()) {
             String limit = "";
             if (container.max_spell_count() > 0) {
                 limit = I18n.translate("spell.tooltip.host.limit")
@@ -266,25 +274,50 @@ public class SpellTooltip {
                     key = "spell.tooltip.host.list.archery";
                 }
             }
-            spellTextLines.add(Text.translatable(key)
+            var header = Text.translatable(key)
                     .append(Text.literal(" " + limit))
-                    .formatted(Formatting.GRAY));
+                    .formatted(Formatting.GRAY);
+            addSpellSection(spellTextLines, indentLevel, showListHeader ? header : null,
+                    activeSpells, player, itemStack, showDetails);
             addSectionDivider += 1;
         }
 
-        for (int i = 0; i < spells.size(); i++) {
-            var spellEntry = spells.get(i);
-            var info = spellEntry(spellEntry, player, itemStack, showDetails, indentLevel);
-            if (!info.isEmpty()) {
-                if (i > 0 && showDetails) {
-                    spellTextLines.add(Text.literal(" ")); // Separator: empty line
-                }
-                spellTextLines.addAll(info);
-            }
+        var passiveSpells = spells.stream()
+                .filter(entry -> entry.value().type == Spell.Type.PASSIVE)
+                .toList();
+        if (!passiveSpells.isEmpty()) {
+            var header = Text.literal("Passives:").formatted(Formatting.GRAY);
+            addSpellSection(spellTextLines, indentLevel, showListHeader ? header : null,
+                    passiveSpells, player, itemStack, showDetails);
+        }
 
+        var modifiers = spells.stream()
+                .filter(entry -> entry.value().type == Spell.Type.MODIFIER)
+                .toList();
+        if (!modifiers.isEmpty()) {
+            var header = Text.literal("Modifiers:").formatted(Formatting.GRAY);
+            addSpellSection(spellTextLines, indentLevel, showListHeader ? header : null,
+                    modifiers, player, itemStack, showDetails);
         }
 
         return new SpellInfo(spellTextLines, addSectionDivider);
+    }
+
+    private static void addSpellSection(ArrayList<Text> lines, int indentLevel, @Nullable Text header, List<RegistryEntry<Spell>> content,
+                                        PlayerEntity player, ItemStack itemStack, boolean showDetails) {
+        if (header != null) {
+            lines.add(header);
+        }
+        for (int i = 0; i < content.size(); i++) {
+            var spellEntry = content.get(i);
+            var info = spellEntry(spellEntry, player, itemStack, showDetails, indentLevel);
+            if (!info.isEmpty()) {
+                if (i > 0 && showDetails) {
+                    lines.add(Text.literal(" ")); // Separator: empty line
+                }
+                lines.addAll(info);
+            }
+        }
     }
 
     private static boolean isKeyPressed(KeyBinding keybinding) {
@@ -321,20 +354,20 @@ public class SpellTooltip {
             var name = Text.empty().formatted(Formatting.BOLD);
             name.append(Text.translatable(spellTranslationKey(spellId))
                     .formatted(Formatting.BOLD));
-            if (spell.type == Spell.Type.PASSIVE) {
-                name.append(Text.literal(" "))
-                        .formatted(Formatting.RESET);
-                name.append(Text.translatable("spell.type.passive"));
-            }
-            if (spell.group != null) {
-                var translatedGroup = spellGroup(spell.group);
-                if (!translatedGroup.isEmpty()) {
-                    name.append(Text.literal(" "))
-                            .formatted(Formatting.RESET);
-                    name.append(Text.literal(translatedGroup))
-                            .formatted(color);
-                }
-            }
+//            if (spell.type == Spell.Type.PASSIVE) {
+//                name.append(Text.literal(" "))
+//                        .formatted(Formatting.RESET);
+//                name.append(Text.translatable("spell.type.passive"));
+//            }
+//            if (spell.group != null) {
+//                var translatedGroup = spellGroup(spell.group);
+//                if (!translatedGroup.isEmpty()) {
+//                    name.append(Text.literal(" "))
+//                            .formatted(Formatting.RESET);
+//                    name.append(Text.literal(translatedGroup))
+//                            .formatted(color);
+//                }
+//            }
             name = name.formatted(color);
             lines.add(indentation(indentLevel)
                     .append(name));
