@@ -40,6 +40,11 @@ public class Weapons {
         static class Builder {
             private final Map<Equipment.Tier, Float> values = new EnumMap<>(Equipment.Tier.class);
 
+            Builder wooden(float damage) {
+                values.put(Equipment.Tier.WOODEN, damage);
+                return this;
+            }
+
             Builder t0(float damage) {
                 values.put(Equipment.Tier.TIER_0, damage);
                 return this;
@@ -108,6 +113,11 @@ public class Weapons {
         static class Builder {
             private final Map<Equipment.Tier, Float> values = new EnumMap<>(Equipment.Tier.class);
 
+            Builder wooden(float power) {
+                values.put(Equipment.Tier.WOODEN, power);
+                return this;
+            }
+
             Builder t0(float power) {
                 values.put(Equipment.Tier.TIER_0, power);
                 return this;
@@ -158,44 +168,44 @@ public class Weapons {
     static {
         // Initialize damage maps for all weapon types
         DAMAGE_MAPS.put(Equipment.WeaponType.CLAYMORE, DamageMap.builder()
-                .t0(6.8F).t1(8.3F).t2(9.9F).t3(11.5F).t4(13F).t5(13F).golden(5.2F).build());
+                .wooden(5.3F).t0(6.8F).t1(8.3F).t2(9.9F).t3(11.5F).t4(13F).t5(13F).golden(5.2F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.HAMMER, DamageMap.builder()
-                .t0(8.5F).t1(10.3F).t2(12.2F).t3(14.1F).t4(16F).t5(16F).golden(6.6F).build());
+                .wooden(6.6F).t0(8.5F).t1(10.3F).t2(12.2F).t3(14.1F).t4(16F).t5(16F).golden(6.6F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.MACE, DamageMap.builder()
                 .t1(7F).t2(8.3F).t3(9.6F).t4(11F).t5(11F).golden(4.3F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.SPEAR, DamageMap.builder()
-                .t0(4F).t1(5F).t2(6F).t3(7F).t4(8F).t5(8F).golden(3F).build());
+                .wooden(3.1F).t0(4F).t1(5F).t2(6F).t3(7F).t4(8F).t5(8F).golden(3F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.DAGGER, DamageMap.builder()
-                .t0(2.6F).t1(3.3F).t2(4F).t3(4.7F).t4(5.5F).t5(5.5F).golden(1.8F).build());
+                .wooden(2F).t0(2.6F).t1(3.3F).t2(4F).t3(4.7F).t4(5.5F).t5(5.5F).golden(1.8F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.SICKLE, DamageMap.builder()
                 .t1(4.1F).t2(5F).t3(5.9F).t4(6.8F).t5(6.8F).golden(2.4F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.DOUBLE_AXE, DamageMap.builder()
-                .t0(5.6F).t1(7F).t2(8.3F).t3(9.6F).t4(11F).t5(11F).golden(4.3F).build());
+                .wooden(4.4F).t0(5.6F).t1(7F).t2(8.3F).t3(9.6F).t4(11F).t5(11F).golden(4.3F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.GLAIVE, DamageMap.builder()
                 .t1(5.8F).t2(7F).t3(8.1F).t4(9.3F).t5(9.3F).golden(3.5F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.SWORD, DamageMap.builder()
-                .t4(8F).t5(8F).build());
+                .wooden(6.2F).t0(8F).t1(9.6F).t2(11.2F).t3(12.8F).t4(14.5F).t5(14.5F).golden(7.7F).build());
 
         // Wands and staves have constant damage regardless of tier
         DAMAGE_MAPS.put(Equipment.WeaponType.DAMAGE_WAND, DamageMap.builder()
-                .t0(2F).t1(2F).t2(2F).t3(2F).t4(2F).t5(2F).golden(2F).build());
+                .wooden(2F).t0(2F).t1(2F).t2(2F).t3(2F).t4(2F).t5(2F).golden(2F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.HEALING_WAND, DamageMap.builder()
-                .t0(2F).t1(2F).t2(2F).t3(2F).t4(2F).t5(2F).golden(2F).build());
+                .wooden(2F).t0(2F).t1(2F).t2(2F).t3(2F).t4(2F).t5(2F).golden(2F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.DAMAGE_STAFF, DamageMap.builder()
-                .t0(4F).t1(4F).t2(4F).t3(4F).t4(4F).t5(4F).golden(4F).build());
+                .wooden(4F).t0(4F).t1(4F).t2(4F).t3(4F).t4(4F).t5(4F).golden(4F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.HEALING_STAFF, DamageMap.builder()
-                .t0(4F).t1(4F).t2(4F).t3(4F).t4(4F).t5(4F).golden(4F).build());
+                .wooden(4F).t0(4F).t1(4F).t2(4F).t3(4F).t4(4F).t5(4F).golden(4F).build());
 
         // Initialize attack speeds
         ATTACK_SPEEDS.put(Equipment.WeaponType.DAGGER, -1.6F);
@@ -214,12 +224,12 @@ public class Weapons {
 
         // Initialize spell power maps for wands and staves
         var wandPower = SpellPowerMap.builder()
-                .t0(3F).t1(4F).t2(5F).t3(5.5F).t4(8F).t5(8F).golden(3F).build();
+                .wooden(2.5F).t0(3F).t1(4F).t2(5F).t3(5.5F).t4(8F).t5(8F).golden(3F).build();
         SPELL_POWER_MAPS.put(Equipment.WeaponType.DAMAGE_WAND, wandPower);
         SPELL_POWER_MAPS.put(Equipment.WeaponType.HEALING_WAND, wandPower);
 
         var staffPower = SpellPowerMap.builder()
-                .t1(5F).t2(6F).t3(7F).t4(8F).t5(8F).golden(5F).build();
+                .wooden(4F).t0(4.5F).t1(5F).t2(6F).t3(7F).t4(8F).t5(8F).golden(5F).build();
         SPELL_POWER_MAPS.put(Equipment.WeaponType.DAMAGE_STAFF, staffPower);
         SPELL_POWER_MAPS.put(Equipment.WeaponType.HEALING_STAFF, staffPower);
     }
@@ -366,7 +376,7 @@ public class Weapons {
      */
     public static int getTierNumber(Equipment.Tier tier) {
         return switch (tier) {
-            case TIER_0, GOLDEN -> 0;
+            case TIER_0, WOODEN, GOLDEN -> 0;
             case TIER_1 -> 1;
             case TIER_2 -> 2;
             case TIER_3 -> 3;

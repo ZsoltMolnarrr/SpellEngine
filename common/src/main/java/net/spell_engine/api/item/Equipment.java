@@ -28,7 +28,8 @@ public class Equipment {
     }
 
     public enum Tier {
-        TIER_0(ToolMaterials.WOOD, "T0"),
+        WOODEN(ToolMaterials.WOOD, "Wooden"),
+        TIER_0(ToolMaterials.STONE, "T0"),
         TIER_1(ToolMaterials.IRON, "T1"),
         TIER_2(ToolMaterials.DIAMOND, "T2"),
         TIER_3(ToolMaterials.NETHERITE, "T3"),
