@@ -9,6 +9,9 @@ public record SpellChoice(String pool) {
     ).apply(instance, SpellChoice::new));
 
     public static final SpellChoice EMPTY = new SpellChoice("");
+    public static SpellChoice of(String pool) {
+        return new SpellChoice(pool);
+    }
 
     public boolean isEmpty() {
         return this.pool.isEmpty();

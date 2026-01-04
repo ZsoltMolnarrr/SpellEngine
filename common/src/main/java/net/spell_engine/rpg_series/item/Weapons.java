@@ -389,7 +389,7 @@ public class Weapons {
     /**
      * Get the appropriate factory class for a weapon type.
      */
-    private static Weapon.Factory getFactory(Equipment.WeaponType weaponType) {
+    public static Weapon.Factory getFactory(Equipment.WeaponType weaponType) {
         return switch (weaponType) {
             case DAMAGE_STAFF, HEALING_STAFF, DAMAGE_WAND, HEALING_WAND -> StaffItem::new;
             case CLAYMORE, DAGGER, SICKLE, DOUBLE_AXE, GLAIVE, SWORD, SPELL_BLADE, SPELL_SCYTHE -> SpellSwordItem::new;
@@ -401,7 +401,7 @@ public class Weapons {
     /**
      * Convert Tier enum to integer for loot properties.
      */
-    private static int getTierNumber(Tier tier) {
+    public static int getTierNumber(Tier tier) {
         return switch (tier) {
             case TIER_0, GOLDEN -> 0;
             case TIER_1 -> 1;
