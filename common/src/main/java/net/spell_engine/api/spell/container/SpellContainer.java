@@ -27,8 +27,8 @@ public record SpellContainer(
         int max_spell_count,
         /// List of spells by ID, this container currently holds.
         List<String> spell_ids,
-        /// If true, prevents binding multiple spells of the same tier to this container.
-        boolean binding_mutex) {
+        /// Allow multiple spells from the same tier to be assigned to this container.
+        boolean same_tier_binding) {
     public enum ContentType {
         ANY, MAGIC, ARCHERY;
         public static Codec<ContentType> CODEC = Codec.STRING.xmap(ContentType::valueOf, ContentType::name);
@@ -41,32 +41,36 @@ public record SpellContainer(
             Codec.STRING.optionalFieldOf("slot", "").forGetter(x -> x.slot),
             Codec.INT.optionalFieldOf("max_spell_count", 0).forGetter(x -> x.max_spell_count),
             Codec.STRING.listOf().optionalFieldOf("spell_ids", List.of()).forGetter(x -> x.spell_ids),
-            Codec.BOOL.optionalFieldOf("binding_mutex", true).forGetter(x -> x.binding_mutex)
+            Codec.BOOL.optionalFieldOf("same_tier_binding", false).forGetter(x -> x.same_tier_binding)
     ).apply(instance, SpellContainer::new));
 
     public static final SpellContainer EMPTY = new SpellContainer(ContentType.MAGIC, false, "", "", 0, List.of(), true);
 
     // Canonical constructor with default values, to avoid null values
     public SpellContainer(ContentType content, boolean is_proxy, String pool, int max_spell_count, List<String> spell_ids) {
-        this(content, is_proxy, pool, "", max_spell_count, spell_ids, true);
+        this(content, is_proxy, pool, "", max_spell_count, spell_ids, false);
     }
 
     public SpellContainer(ContentType content, boolean is_proxy, String pool, String slot, int max_spell_count, List<String> spell_ids) {
-        this(content, is_proxy, pool, slot, max_spell_count, spell_ids, true);
+        this(content, is_proxy, pool, slot, max_spell_count, spell_ids, false);
     }
 
-    public SpellContainer(ContentType content, boolean is_proxy, String pool, String slot, int max_spell_count, List<String> spell_ids, boolean binding_mutex) {
+    public SpellContainer(ContentType content, boolean is_proxy, String pool, String slot, int max_spell_count, List<String> spell_ids, boolean same_tier_binding) {
         this.content = content != null ? content : ContentType.MAGIC;
         this.is_proxy = is_proxy;
         this.pool = pool != null ? pool : "";
         this.slot = slot != null ? slot : "";
         this.max_spell_count = max_spell_count;
         this.spell_ids = spell_ids != null ? spell_ids : List.of();
-        this.binding_mutex = binding_mutex;
+        this.same_tier_binding = same_tier_binding;
     }
 
 
     // MARK: Helpers
+
+    public boolean binding_mutex() {
+        return !same_tier_binding;
+    }
 
     public boolean isValid() {
         if (is_proxy) {
@@ -95,32 +99,28 @@ public record SpellContainer(
     }
 
     public SpellContainer copy() {
-        return new SpellContainer(content, is_proxy, pool, slot, max_spell_count, new ArrayList<>(spell_ids), binding_mutex);
+        return new SpellContainer(content, is_proxy, pool, slot, max_spell_count, new ArrayList<>(spell_ids), same_tier_binding);
     }
 
     public SpellContainer copyWith(List<String> spell_ids) {
-        return new SpellContainer(content, is_proxy, pool, slot, max_spell_count, spell_ids, binding_mutex);
+        return new SpellContainer(content, is_proxy, pool, slot, max_spell_count, spell_ids, same_tier_binding);
     }
 
     public SpellContainer withContentType(ContentType content) {
-        return new SpellContainer(content, is_proxy, pool, slot, max_spell_count, spell_ids, binding_mutex);
+        return new SpellContainer(content, is_proxy, pool, slot, max_spell_count, spell_ids, same_tier_binding);
     }
 
     public SpellContainer withBindingPool(Identifier poolId) {
-        return new SpellContainer(content, is_proxy, poolId.toString(), slot, max_spell_count, spell_ids, binding_mutex);
+        return new SpellContainer(content, is_proxy, poolId.toString(), slot, max_spell_count, spell_ids, same_tier_binding);
     }
 
     public SpellContainer withMaxSpellCount(int maxSpellCount) {
-        return new SpellContainer(content, is_proxy, pool, slot, maxSpellCount, spell_ids, binding_mutex);
+        return new SpellContainer(content, is_proxy, pool, slot, maxSpellCount, spell_ids, same_tier_binding);
     }
 
     public SpellContainer withAdditionalSpell(List<String> spellIds) {
         var newSpellIds = new ArrayList<>(spell_ids);
         newSpellIds.addAll(spellIds);
-        return new SpellContainer(content, is_proxy, pool, slot, max_spell_count, newSpellIds, binding_mutex);
-    }
-
-    public SpellContainer withBindingMutex(boolean bindingMutex) {
-        return new SpellContainer(content, is_proxy, pool, slot, max_spell_count, spell_ids, bindingMutex);
+        return new SpellContainer(content, is_proxy, pool, slot, max_spell_count, newSpellIds, same_tier_binding);
     }
 }

@@ -64,18 +64,8 @@ public class SpellTooltip {
         var spellTextLines = new ArrayList<Text>();
 
         var choices = itemStack.get(SpellDataComponents.SPELL_CHOICE);
-        if (choices != null) {
-            var spellInfo = getSpellChoiceInfo(choices, player);
-            spellTextLines.addAll(spellInfo.content());
-            addSectionDivider += spellInfo.sectionDividersAdded();
-        }
-
         var container = SpellContainerHelper.containerFromItemStack(itemStack);
         if (container != null && container.isValid()) {
-            var spellInfo = getSpellInfoExpandedWithKey(itemStack, container, player, false, true);
-            spellTextLines.addAll(spellInfo.content());
-            addSectionDivider += spellInfo.sectionDividersAdded();
-
             if (container.is_proxy() && config.showSpellBookSuppportTooltip) {
                 switch (container.content()) {
                     case MAGIC -> {
@@ -89,6 +79,16 @@ public class SpellTooltip {
                 }
                 addSectionDivider += 1;
             }
+        }
+        if (choices != null) {
+            var spellInfo = getSpellChoiceInfo(choices, player);
+            spellTextLines.addAll(spellInfo.content());
+            addSectionDivider += spellInfo.sectionDividersAdded();
+        }
+        if (container != null && container.isValid()) {
+            var spellInfo = getSpellInfoExpandedWithKey(itemStack, container, player, false, true);
+            spellTextLines.addAll(spellInfo.content());
+            addSectionDivider += spellInfo.sectionDividersAdded();
         }
 
         if (spellTextLines.isEmpty()) {
