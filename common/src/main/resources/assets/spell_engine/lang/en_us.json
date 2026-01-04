@@ -175,6 +175,7 @@
   "gui.spell_engine.spell_binding.unbind_dialog.subtitle" : "Are you sure?",
   "gui.spell_engine.spell_binding.unbind_dialog.confirm" : "Unbind",
   "gui.spell_engine.spell_binding.unbind_dialog.cancel" : "Cancel",
+  "gui.spell_engine.choose_for_item" : "Choose spell for %s",
 
   "equipment_set.logic.bonus.count" : "(%s) Set: ",
   "equipment_set.test.fire_power" : "Fiery Regalia",
