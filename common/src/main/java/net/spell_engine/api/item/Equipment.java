@@ -51,6 +51,17 @@ public class Equipment {
         public String getDisplayName() {
             return displayName;
         }
+
+        public int getNumber() {
+            return switch (this) {
+                case TIER_0, WOODEN, GOLDEN -> 0;
+                case TIER_1 -> 1;
+                case TIER_2 -> 2;
+                case TIER_3 -> 3;
+                case TIER_4 -> 4;
+                case TIER_5 -> 5;
+            };
+        }
     }
 
     public record LootProperties(int tier, @Nullable String theme) {

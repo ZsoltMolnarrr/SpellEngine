@@ -28,7 +28,6 @@ import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainers;
-import net.spell_engine.spellbinding.spellchoice.SpellChoices;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

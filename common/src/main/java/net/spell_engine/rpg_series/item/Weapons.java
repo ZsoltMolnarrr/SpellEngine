@@ -283,7 +283,7 @@ public class Weapons {
 
         // Apply loot properties with tier
         if (tier == Equipment.Tier.GOLDEN) {
-            entry.loot(Equipment.LootProperties.of(getTierNumber(tier)));
+            entry.loot(Equipment.LootProperties.of(tier.getNumber()));
         } else {
             entry.loot(Equipment.LootProperties.of("golden_weapon"));
         }
@@ -368,20 +368,6 @@ public class Weapons {
             case CLAYMORE, DAGGER, SICKLE, DOUBLE_AXE, GLAIVE, SWORD, SPELL_BLADE, SPELL_SCYTHE -> SpellSwordItem::new;
             case HAMMER, MACE, SPEAR -> SpellWeaponItem::new;
             case SHIELD, SHORT_BOW, LONG_BOW, RAPID_CROSSBOW, HEAVY_CROSSBOW -> throw new IllegalArgumentException("Type not supported for weapon creation");
-        };
-    }
-
-    /**
-     * Convert Tier enum to integer for loot properties.
-     */
-    public static int getTierNumber(Equipment.Tier tier) {
-        return switch (tier) {
-            case TIER_0, WOODEN, GOLDEN -> 0;
-            case TIER_1 -> 1;
-            case TIER_2 -> 2;
-            case TIER_3 -> 3;
-            case TIER_4 -> 4;
-            case TIER_5 -> 5;
         };
     }
 
