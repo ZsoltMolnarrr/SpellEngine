@@ -19,56 +19,56 @@ import java.util.stream.Collectors;
 public class SpellContainerHelper {
 
     // Construction helpers for common use cases
-
+    @Deprecated(forRemoval = true)
     public static SpellContainer createForRangedWeapon() {
         return createForWeapon(SpellContainer.ContentType.ARCHERY, List.of());
     }
-
+    @Deprecated(forRemoval = true)
     public static SpellContainer createForRangedWeapon(Identifier spellId) {
         return createForWeapon(SpellContainer.ContentType.ARCHERY, List.of(spellId));
     }
-
+    @Deprecated(forRemoval = true)
     public static SpellContainer createForRangedWeapon(List<Identifier> spellIds) {
         return createForWeapon(SpellContainer.ContentType.ARCHERY, spellIds);
     }
-
+    @Deprecated(forRemoval = true)
     public static SpellContainer createForMagicWeapon() {
         return createForWeapon(SpellContainer.ContentType.MAGIC, List.of());
     }
-
+    @Deprecated(forRemoval = true)
     public static SpellContainer createForMagicWeapon(Identifier spellId) {
         return createForWeapon(SpellContainer.ContentType.MAGIC, List.of(spellId));
     }
-
+    @Deprecated(forRemoval = true)
     public static SpellContainer createForMeleeWeapon() {
         return createForWeapon(SpellContainer.ContentType.MAGIC, List.of());
     }
-
+    @Deprecated(forRemoval = true)
     public static SpellContainer createForMeleeWeapon(Identifier spellId) {
         return createForWeapon(SpellContainer.ContentType.MAGIC, List.of(spellId));
     }
-
+    @Deprecated(forRemoval = true)
     public static SpellContainer createForWeapon(SpellContainer.ContentType contentType, List<Identifier> spellIds) {
         var spellIdStrings = spellIds.stream().map(Identifier::toString).toList();
         return new SpellContainer(contentType, true, "", 0, spellIdStrings);
     }
-
+    @Deprecated(forRemoval = true)
     public static SpellContainer createForShield(Identifier spellId) {
         return createForShield(List.of(spellId));
     }
-
+    @Deprecated(forRemoval = true)
     public static SpellContainer createForShield(List<Identifier> spellIds) {
         return new SpellContainer(SpellContainer.ContentType.MAGIC, false, "", "offhand", 0, spellIds.stream().map(Identifier::toString).toList());
     }
-
+    @Deprecated(forRemoval = true)
     public static SpellContainer createForRelic(Identifier spellId) {
         return new SpellContainer(SpellContainer.ContentType.ANY, false, "", 0, List.of(spellId.toString()));
     }
-
+    @Deprecated(forRemoval = true)
     public static SpellContainer createForSpellHost(Identifier spellId) {
         return new SpellContainer(SpellContainer.ContentType.MAGIC, false, "", 0, List.of(spellId.toString()));
     }
-
+    @Deprecated(forRemoval = true)
     public static SpellContainer createForModifier(Identifier spellId) {
         return new SpellContainer(SpellContainer.ContentType.ANY, false, "", 0, List.of(spellId.toString()));
     }

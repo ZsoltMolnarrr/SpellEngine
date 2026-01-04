@@ -25,8 +25,10 @@ import net.spell_engine.api.config.WeaponConfig;
 import net.spell_engine.api.item.Equipment;
 import net.spell_engine.api.item.Tiers;
 import net.spell_engine.api.spell.SpellDataComponents;
+import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
+import net.spell_engine.api.spell.container.SpellContainers;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -50,8 +52,12 @@ public class Weapon {
         public Rarity rarity = Rarity.COMMON;
         private String translatedName = ""; // Used for data gen
 
-        public String weaponAttributesPreset = ""; // Used for data gen
+        @Deprecated(forRemoval = true)
         public List<Identifier> spells = null;
+
+        public String weaponAttributesPreset = ""; // Used for data gen
+        @Nullable public SpellChoice spellChoice;
+        @Nullable public SpellContainer spellContainer;
 
         // Loot related classification
         public Equipment.WeaponType category = Equipment.WeaponType.SWORD;
@@ -109,22 +115,32 @@ public class Weapon {
             return defaults;
         }
 
-        @Deprecated
+        @Deprecated(forRemoval = true)
         public Entry tier(int tier) {
             return this;
         }
-        @Deprecated
+        @Deprecated(forRemoval = true)
         public int tier() {
             return 0;
         }
-
+        @Deprecated(forRemoval = true)
         public Entry castSpell() {
             spells = List.of();
             return this;
         }
-
+        @Deprecated(forRemoval = true)
         public Entry spell(Identifier spellId) {
             spells = List.of(spellId);
+            return this;
+        }
+
+        public Entry spellChoice(SpellChoice choice) {
+            this.spellChoice = choice;
+            return this;
+        }
+
+        public Entry spellContainer(SpellContainer container) {
+            this.spellContainer = container;
             return this;
         }
 
@@ -222,11 +238,17 @@ public class Weapon {
             if (entry.rarity != Rarity.COMMON) {
                 settings = settings.rarity(entry.rarity);
             }
-            if (entry.spells != null) {
+
+            if (entry.spellChoice != null) {
+                settings.component(SpellDataComponents.SPELL_CHOICE, entry.spellChoice);
+            }
+            if (entry.spellContainer != null) {
+                settings.component(SpellDataComponents.SPELL_CONTAINER, entry.spellContainer);
+            } else if (entry.spells != null) {
                 if (entry.spells.isEmpty()) {
-                    settings.component(SpellDataComponents.SPELL_CONTAINER, SpellContainerHelper.createForMagicWeapon());
+                    settings.component(SpellDataComponents.SPELL_CONTAINER, SpellContainers.forMagicWeapon());
                 } else {
-                    settings.component(SpellDataComponents.SPELL_CONTAINER, SpellContainerHelper.createForWeapon(SpellContainer.ContentType.MAGIC, entry.spells));
+                    settings.component(SpellDataComponents.SPELL_CONTAINER, SpellContainers.forMagicWeapon().withSpellIds(entry.spells));
                 }
             }
 

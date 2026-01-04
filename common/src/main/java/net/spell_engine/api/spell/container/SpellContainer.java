@@ -118,6 +118,19 @@ public record SpellContainer(
         return new SpellContainer(content, is_proxy, pool, slot, maxSpellCount, spell_ids, same_tier_binding);
     }
 
+    public SpellContainer withSpell(String spellId) {
+        return new SpellContainer(content, is_proxy, pool, slot, max_spell_count, List.of(spellId), same_tier_binding);
+    }
+
+    public SpellContainer withSpellId(Identifier spellId) {
+        return new SpellContainer(content, is_proxy, pool, slot, max_spell_count, List.of(spellId.toString()), same_tier_binding);
+    }
+
+    public SpellContainer withSpellIds(List<Identifier> spellIds) {
+        var spellIdStrings = spellIds.stream().map(Identifier::toString).toList();
+        return new SpellContainer(content, is_proxy, pool, slot, max_spell_count, spellIdStrings, same_tier_binding);
+    }
+
     public SpellContainer withAdditionalSpell(List<String> spellIds) {
         var newSpellIds = new ArrayList<>(spell_ids);
         newSpellIds.addAll(spellIds);

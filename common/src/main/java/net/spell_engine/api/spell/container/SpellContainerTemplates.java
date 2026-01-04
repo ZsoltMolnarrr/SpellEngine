@@ -12,7 +12,7 @@ public class SpellContainerTemplates {
 
     public static Config defaults() {
         Config config = new Config();
-        config.spell_book = new SpellContainer(null, false, null, "", 0, List.of(), true);
+        config.spell_book = new SpellContainer(null, false, null, "", 0, List.of());
         return config;
     }
 
