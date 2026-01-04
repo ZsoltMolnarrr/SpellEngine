@@ -26,6 +26,8 @@
   "spell.tooltip.host.proxy.archery": "Allows archery skill use",
   "spell.tooltip.host.list.spell": "Spells:",
   "spell.tooltip.host.list.archery": "Skills:",
+  "spell.tooltip.host.list.passives": "Passives:",
+  "spell.tooltip.host.list.modifiers": "Modifiers:",
   "spell.tooltip.host.limit": "({current}/{max})",
   "spell.tooltip.cast_instant": "Instant cast",
   "spell.tooltip.cast_time": "Cast Time: {duration} second",

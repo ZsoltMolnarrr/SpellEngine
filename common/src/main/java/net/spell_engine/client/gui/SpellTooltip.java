@@ -279,25 +279,33 @@ public class SpellTooltip {
                     .formatted(Formatting.GRAY);
             addSpellSection(spellTextLines, indentLevel, showListHeader ? header : null,
                     activeSpells, player, itemStack, showDetails);
-            addSectionDivider += 1;
+            if (showListHeader) {
+                addSectionDivider += 1;
+            }
         }
 
         var passiveSpells = spells.stream()
                 .filter(entry -> entry.value().type == Spell.Type.PASSIVE)
                 .toList();
         if (!passiveSpells.isEmpty()) {
-            var header = Text.literal("Passives:").formatted(Formatting.GRAY);
+            var header = Text.translatable("spell.tooltip.host.list.passives").formatted(Formatting.GRAY);
             addSpellSection(spellTextLines, indentLevel, showListHeader ? header : null,
                     passiveSpells, player, itemStack, showDetails);
+            if (showListHeader) {
+                addSectionDivider += 1;
+            }
         }
 
         var modifiers = spells.stream()
                 .filter(entry -> entry.value().type == Spell.Type.MODIFIER)
                 .toList();
         if (!modifiers.isEmpty()) {
-            var header = Text.literal("Modifiers:").formatted(Formatting.GRAY);
+            var header = Text.translatable("spell.tooltip.host.list.modifiers").formatted(Formatting.GRAY);
             addSpellSection(spellTextLines, indentLevel, showListHeader ? header : null,
                     modifiers, player, itemStack, showDetails);
+            if (showListHeader) {
+                addSectionDivider += 1;
+            }
         }
 
         return new SpellInfo(spellTextLines, addSectionDivider);
