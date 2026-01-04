@@ -7,8 +7,6 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.damage.DamageTypes;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.DamageTypeTags;
@@ -24,8 +22,6 @@ import net.spell_engine.rpg_series.datagen.RPGSeriesDataGen;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
-import net.spell_engine.fx.SpellEngineParticles.MagicParticleFamily.Shape;
-
 public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
     @Override
     public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
@@ -35,6 +31,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         pack.addProvider(DamageTypeTagGen::new);
         pack.addProvider(EntityTypeTagGen::new);
         pack.addProvider(RPGSeriesDataGen.BaselineTagGenerator::new);
+        pack.addProvider(RPGSeriesDataGen.WeaponSkillGenerator::new);
 
         // TestDataGen.addTo(pack);
     }

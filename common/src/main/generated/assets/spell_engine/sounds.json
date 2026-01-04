@@ -180,9 +180,19 @@
       "spell_engine:stun_generic"
     ]
   },
+  "throw_weapon": {
+    "sounds": [
+      "spell_engine:throw_weapon"
+    ]
+  },
   "unbind_spell": {
     "sounds": [
       "spell_engine:unbind_spell"
+    ]
+  },
+  "whirlwind": {
+    "sounds": [
+      "spell_engine:whirlwind"
     ]
   }
 }

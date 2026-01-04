@@ -7,6 +7,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.util.Identifier;
+import net.spell_engine.api.datagen.SpellGenerator;
 import net.spell_engine.api.item.Equipment;
 import net.spell_engine.api.item.armor.Armor;
 import net.spell_engine.api.item.weapon.Weapon;
@@ -279,6 +280,19 @@ public class RPGSeriesDataGen {
                     var themeTag = getOrCreateTagBuilder(RPGSeriesItemTags.LootThemes.get(lootTheme));
                     themeTag.addOptional(id);
                 }
+            }
+        }
+    }
+
+    public static class WeaponSkillGenerator extends SpellGenerator {
+        public WeaponSkillGenerator(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+            super(dataOutput, registryLookup);
+        }
+
+        @Override
+        public void generateSpells(Builder builder) {
+            for (var entry: WeaponSkills.entries) {
+                builder.add(entry.id(), entry.spell());
             }
         }
     }
