@@ -28,6 +28,7 @@ import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainers;
+import net.spell_engine.spellbinding.spellchoice.SpellChoices;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -140,6 +141,12 @@ public class Weapon {
 
         public Entry spellContainer(SpellContainer container) {
             this.spellContainer = container;
+            return this;
+        }
+
+        public Entry withSpellChoices(String pool) {
+            this.spellContainer = this.spellContainer.withBindingPool(Identifier.of(pool));
+            this.spellChoice = SpellChoice.of(pool);
             return this;
         }
 

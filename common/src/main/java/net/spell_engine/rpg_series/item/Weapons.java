@@ -1,6 +1,5 @@
 package net.spell_engine.rpg_series.item;
 
-import net.minecraft.item.ToolMaterials;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.config.AttributeModifier;
@@ -23,92 +22,56 @@ import java.util.function.Supplier;
  */
 public class Weapons {
 
-    // ===== TIER ENUM =====
-
-    /**
-     * Weapon tier system for material and damage classification.
-     */
-    public enum Tier {
-        TIER_0(ToolMaterials.WOOD, "T0"),
-        TIER_1(ToolMaterials.IRON, "T1"),
-        TIER_2(ToolMaterials.DIAMOND, "T2"),
-        TIER_3(ToolMaterials.NETHERITE, "T3"),
-        TIER_4(ToolMaterials.NETHERITE, "T4"),  // Modded materials (ruby, aeternium, etc.)
-        TIER_5(ToolMaterials.NETHERITE, "T5"),  // Higher-tier modded materials
-        GOLDEN(ToolMaterials.GOLD, "Golden");
-
-        private final ToolMaterials vanillaMaterial;
-        private final String displayName;
-
-        Tier(ToolMaterials material, String displayName) {
-            this.vanillaMaterial = material;
-            this.displayName = displayName;
-        }
-
-        public ToolMaterials getVanillaMaterial() {
-            return vanillaMaterial;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        public boolean isGolden() {
-            return this == GOLDEN;
-        }
-    }
-
     // ===== DAMAGE MAPPING =====
-
     /**
      * Helper class to store tier-to-damage mappings for a weapon type.
      */
     private static class DamageMap {
-        private final Map<Tier, Float> values = new EnumMap<>(Tier.class);
+        private final Map<Equipment.Tier, Float> values = new EnumMap<>(Equipment.Tier.class);
 
         static Builder builder() {
             return new Builder();
         }
 
-        Float get(Tier tier) {
+        Float get(Equipment.Tier tier) {
             return values.get(tier);
         }
 
         static class Builder {
-            private final Map<Tier, Float> values = new EnumMap<>(Tier.class);
+            private final Map<Equipment.Tier, Float> values = new EnumMap<>(Equipment.Tier.class);
 
             Builder t0(float damage) {
-                values.put(Tier.TIER_0, damage);
+                values.put(Equipment.Tier.TIER_0, damage);
                 return this;
             }
 
             Builder t1(float damage) {
-                values.put(Tier.TIER_1, damage);
+                values.put(Equipment.Tier.TIER_1, damage);
                 return this;
             }
 
             Builder t2(float damage) {
-                values.put(Tier.TIER_2, damage);
+                values.put(Equipment.Tier.TIER_2, damage);
                 return this;
             }
 
             Builder t3(float damage) {
-                values.put(Tier.TIER_3, damage);
+                values.put(Equipment.Tier.TIER_3, damage);
                 return this;
             }
 
             Builder t4(float damage) {
-                values.put(Tier.TIER_4, damage);
+                values.put(Equipment.Tier.TIER_4, damage);
                 return this;
             }
 
             Builder t5(float damage) {
-                values.put(Tier.TIER_5, damage);
+                values.put(Equipment.Tier.TIER_5, damage);
                 return this;
             }
 
             Builder golden(float damage) {
-                values.put(Tier.GOLDEN, damage);
+                values.put(Equipment.Tier.GOLDEN, damage);
                 return this;
             }
 
@@ -132,51 +95,51 @@ public class Weapons {
      * Helper class to store tier-to-spell-power mappings for magical weapons.
      */
     private static class SpellPowerMap {
-        private final Map<Tier, Float> values = new EnumMap<>(Tier.class);
+        private final Map<Equipment.Tier, Float> values = new EnumMap<>(Equipment.Tier.class);
 
         static Builder builder() {
             return new Builder();
         }
 
-        Float get(Tier tier) {
+        Float get(Equipment.Tier tier) {
             return values.get(tier);
         }
 
         static class Builder {
-            private final Map<Tier, Float> values = new EnumMap<>(Tier.class);
+            private final Map<Equipment.Tier, Float> values = new EnumMap<>(Equipment.Tier.class);
 
             Builder t0(float power) {
-                values.put(Tier.TIER_0, power);
+                values.put(Equipment.Tier.TIER_0, power);
                 return this;
             }
 
             Builder t1(float power) {
-                values.put(Tier.TIER_1, power);
+                values.put(Equipment.Tier.TIER_1, power);
                 return this;
             }
 
             Builder t2(float power) {
-                values.put(Tier.TIER_2, power);
+                values.put(Equipment.Tier.TIER_2, power);
                 return this;
             }
 
             Builder t3(float power) {
-                values.put(Tier.TIER_3, power);
+                values.put(Equipment.Tier.TIER_3, power);
                 return this;
             }
 
             Builder t4(float power) {
-                values.put(Tier.TIER_4, power);
+                values.put(Equipment.Tier.TIER_4, power);
                 return this;
             }
 
             Builder t5(float power) {
-                values.put(Tier.TIER_5, power);
+                values.put(Equipment.Tier.TIER_5, power);
                 return this;
             }
 
             Builder golden(float power) {
-                values.put(Tier.GOLDEN, power);
+                values.put(Equipment.Tier.GOLDEN, power);
                 return this;
             }
 
@@ -277,7 +240,7 @@ public class Weapons {
             String namespace,
             String name,
             Equipment.WeaponType weaponType,
-            Tier tier,
+            Equipment.Tier tier,
             Supplier<Ingredient> repairIngredient
     ) {
         // Get damage from damage map
@@ -309,7 +272,7 @@ public class Weapons {
         var entry = new Weapon.Entry(namespace, name, material, factory, config, weaponType);
 
         // Apply loot properties with tier
-        if (tier == Tier.GOLDEN) {
+        if (tier == Equipment.Tier.GOLDEN) {
             entry.loot(Equipment.LootProperties.of(getTierNumber(tier)));
         } else {
             entry.loot(Equipment.LootProperties.of("golden_weapon"));
@@ -322,63 +285,63 @@ public class Weapons {
 
     // Melee Weapons
 
-    public static Weapon.Entry claymore(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+    public static Weapon.Entry claymore(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
         return create(namespace, name, Equipment.WeaponType.CLAYMORE, tier, repairIngredient);
     }
 
-    public static Weapon.Entry hammer(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+    public static Weapon.Entry hammer(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
         return create(namespace, name, Equipment.WeaponType.HAMMER, tier, repairIngredient);
     }
 
-    public static Weapon.Entry mace(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+    public static Weapon.Entry mace(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
         return create(namespace, name, Equipment.WeaponType.MACE, tier, repairIngredient);
     }
 
-    public static Weapon.Entry spear(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+    public static Weapon.Entry spear(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
         return create(namespace, name, Equipment.WeaponType.SPEAR, tier, repairIngredient);
     }
 
-    public static Weapon.Entry dagger(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+    public static Weapon.Entry dagger(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
         return create(namespace, name, Equipment.WeaponType.DAGGER, tier, repairIngredient);
     }
 
-    public static Weapon.Entry sickle(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+    public static Weapon.Entry sickle(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
         return create(namespace, name, Equipment.WeaponType.SICKLE, tier, repairIngredient);
     }
 
-    public static Weapon.Entry doubleAxe(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+    public static Weapon.Entry doubleAxe(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
         return create(namespace, name, Equipment.WeaponType.DOUBLE_AXE, tier, repairIngredient);
     }
 
-    public static Weapon.Entry glaive(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+    public static Weapon.Entry glaive(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
         return create(namespace, name, Equipment.WeaponType.GLAIVE, tier, repairIngredient);
     }
 
-    public static Weapon.Entry sword(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+    public static Weapon.Entry sword(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
         return create(namespace, name, Equipment.WeaponType.SWORD, tier, repairIngredient);
     }
 
     // Magical Weapons
 
-    public static Weapon.Entry damageWand(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient, List<Identifier> spellSchools) {
+    public static Weapon.Entry damageWand(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient, List<Identifier> spellSchools) {
         var entry = create(namespace, name, Equipment.WeaponType.DAMAGE_WAND, tier, repairIngredient);
         applySpellPower(entry, Equipment.WeaponType.DAMAGE_WAND, tier, spellSchools);
         return entry;
     }
 
-    public static Weapon.Entry damageStaff(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient, List<Identifier> spellSchools) {
+    public static Weapon.Entry damageStaff(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient, List<Identifier> spellSchools) {
         var entry = create(namespace, name, Equipment.WeaponType.DAMAGE_STAFF, tier, repairIngredient);
         applySpellPower(entry, Equipment.WeaponType.DAMAGE_STAFF, tier, spellSchools);
         return entry;
     }
 
-    public static Weapon.Entry healingWand(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+    public static Weapon.Entry healingWand(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
         var entry = create(namespace, name, Equipment.WeaponType.HEALING_WAND, tier, repairIngredient);
         applySpellPower(entry, Equipment.WeaponType.HEALING_WAND, tier, List.of(SpellSchools.HEALING.id));
         return entry;
     }
 
-    public static Weapon.Entry healingStaff(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+    public static Weapon.Entry healingStaff(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
         var entry = create(namespace, name, Equipment.WeaponType.HEALING_STAFF, tier, repairIngredient);
         applySpellPower(entry, Equipment.WeaponType.HEALING_STAFF, tier, List.of(SpellSchools.HEALING.id));
         return entry;
@@ -401,7 +364,7 @@ public class Weapons {
     /**
      * Convert Tier enum to integer for loot properties.
      */
-    public static int getTierNumber(Tier tier) {
+    public static int getTierNumber(Equipment.Tier tier) {
         return switch (tier) {
             case TIER_0, GOLDEN -> 0;
             case TIER_1 -> 1;
@@ -419,7 +382,7 @@ public class Weapons {
     private static void applySpellPower(
             Weapon.Entry entry,
             Equipment.WeaponType weaponType,
-            Tier tier,
+            Equipment.Tier tier,
             List<Identifier> spellAttributes
     ) {
         var spellPowerMap = SPELL_POWER_MAPS.get(weaponType);
