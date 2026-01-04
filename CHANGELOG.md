@@ -1,7 +1,9 @@
-# 1.9
+# 1.9.0
 
 API Changes:
-- Add new `binding_mutex` field to Spell Containers, to enable spell choices per spell tiers
+- Add new `same_tier_binding` field to `SpellContainer`, to enable spell choices per spell tiers
+- Add new `spell_choices` component, to define multiple spell selection before first use
+- Add `Weapons` API (in `rpg_series` package), hosting a centralized weapon entry factory
 
 # 1.8.19
 

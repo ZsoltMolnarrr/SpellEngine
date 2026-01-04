@@ -3,7 +3,10 @@ package net.spell_engine.api.spell.container;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-public record SpellChoice(String pool) {
+public record SpellChoice(
+        /// Pool (spell tag) of spells the choice refers to.
+        /// For example: `#wizards:fire`
+        String pool) {
     public static final Codec<SpellChoice> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.optionalFieldOf("pool", "").forGetter(x -> x.pool)
     ).apply(instance, SpellChoice::new));
