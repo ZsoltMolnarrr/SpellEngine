@@ -27,7 +27,6 @@ import net.spell_engine.api.item.Tiers;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
-import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.container.SpellContainers;
 import org.jetbrains.annotations.Nullable;
 
@@ -159,6 +158,11 @@ public class Weapon {
 
         public Entry loot(Equipment.LootProperties properties) {
             lootProperties = properties;
+            return this;
+        }
+
+        public Entry lootTheme(String theme) {
+            lootProperties = Equipment.LootProperties.of(lootProperties.tier(), theme);
             return this;
         }
 

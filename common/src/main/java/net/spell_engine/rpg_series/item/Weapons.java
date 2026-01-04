@@ -1,0 +1,440 @@
+package net.spell_engine.rpg_series.item;
+
+import net.minecraft.item.ToolMaterials;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.util.Identifier;
+import net.spell_engine.api.config.AttributeModifier;
+import net.spell_engine.api.config.WeaponConfig;
+import net.spell_engine.api.item.Equipment;
+import net.spell_engine.api.item.weapon.SpellSwordItem;
+import net.spell_engine.api.item.weapon.SpellWeaponItem;
+import net.spell_engine.api.item.weapon.StaffItem;
+import net.spell_engine.api.item.weapon.Weapon;
+import net.spell_power.api.SpellSchools;
+
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+
+/**
+ * Centralized weapon factory for creating standardized weapons across RPG Series mods.
+ * Provides tier-based damage calculation, automatic attack speed assignment, and spell power bonuses.
+ */
+public class Weapons {
+
+    // ===== TIER ENUM =====
+
+    /**
+     * Weapon tier system for material and damage classification.
+     */
+    public enum Tier {
+        TIER_0(ToolMaterials.WOOD, "T0"),
+        TIER_1(ToolMaterials.IRON, "T1"),
+        TIER_2(ToolMaterials.DIAMOND, "T2"),
+        TIER_3(ToolMaterials.NETHERITE, "T3"),
+        TIER_4(ToolMaterials.NETHERITE, "T4"),  // Modded materials (ruby, aeternium, etc.)
+        TIER_5(ToolMaterials.NETHERITE, "T5"),  // Higher-tier modded materials
+        GOLDEN(ToolMaterials.GOLD, "Golden");
+
+        private final ToolMaterials vanillaMaterial;
+        private final String displayName;
+
+        Tier(ToolMaterials material, String displayName) {
+            this.vanillaMaterial = material;
+            this.displayName = displayName;
+        }
+
+        public ToolMaterials getVanillaMaterial() {
+            return vanillaMaterial;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public boolean isGolden() {
+            return this == GOLDEN;
+        }
+    }
+
+    // ===== DAMAGE MAPPING =====
+
+    /**
+     * Helper class to store tier-to-damage mappings for a weapon type.
+     */
+    private static class DamageMap {
+        private final Map<Tier, Float> values = new EnumMap<>(Tier.class);
+
+        static Builder builder() {
+            return new Builder();
+        }
+
+        Float get(Tier tier) {
+            return values.get(tier);
+        }
+
+        static class Builder {
+            private final Map<Tier, Float> values = new EnumMap<>(Tier.class);
+
+            Builder t0(float damage) {
+                values.put(Tier.TIER_0, damage);
+                return this;
+            }
+
+            Builder t1(float damage) {
+                values.put(Tier.TIER_1, damage);
+                return this;
+            }
+
+            Builder t2(float damage) {
+                values.put(Tier.TIER_2, damage);
+                return this;
+            }
+
+            Builder t3(float damage) {
+                values.put(Tier.TIER_3, damage);
+                return this;
+            }
+
+            Builder t4(float damage) {
+                values.put(Tier.TIER_4, damage);
+                return this;
+            }
+
+            Builder t5(float damage) {
+                values.put(Tier.TIER_5, damage);
+                return this;
+            }
+
+            Builder golden(float damage) {
+                values.put(Tier.GOLDEN, damage);
+                return this;
+            }
+
+            DamageMap build() {
+                var map = new DamageMap();
+                map.values.putAll(values);
+                return map;
+            }
+        }
+    }
+
+    private static final Map<Equipment.WeaponType, DamageMap> DAMAGE_MAPS = new EnumMap<>(Equipment.WeaponType.class);
+
+    // ===== ATTACK SPEED MAPPING =====
+
+    private static final Map<Equipment.WeaponType, Float> ATTACK_SPEEDS = new EnumMap<>(Equipment.WeaponType.class);
+
+    // ===== SPELL POWER MAPPING =====
+
+    /**
+     * Helper class to store tier-to-spell-power mappings for magical weapons.
+     */
+    private static class SpellPowerMap {
+        private final Map<Tier, Float> values = new EnumMap<>(Tier.class);
+
+        static Builder builder() {
+            return new Builder();
+        }
+
+        Float get(Tier tier) {
+            return values.get(tier);
+        }
+
+        static class Builder {
+            private final Map<Tier, Float> values = new EnumMap<>(Tier.class);
+
+            Builder t0(float power) {
+                values.put(Tier.TIER_0, power);
+                return this;
+            }
+
+            Builder t1(float power) {
+                values.put(Tier.TIER_1, power);
+                return this;
+            }
+
+            Builder t2(float power) {
+                values.put(Tier.TIER_2, power);
+                return this;
+            }
+
+            Builder t3(float power) {
+                values.put(Tier.TIER_3, power);
+                return this;
+            }
+
+            Builder t4(float power) {
+                values.put(Tier.TIER_4, power);
+                return this;
+            }
+
+            Builder t5(float power) {
+                values.put(Tier.TIER_5, power);
+                return this;
+            }
+
+            Builder golden(float power) {
+                values.put(Tier.GOLDEN, power);
+                return this;
+            }
+
+            SpellPowerMap build() {
+                var map = new SpellPowerMap();
+                map.values.putAll(values);
+                return map;
+            }
+        }
+    }
+
+    private static final Map<Equipment.WeaponType, SpellPowerMap> SPELL_POWER_MAPS = new EnumMap<>(Equipment.WeaponType.class);
+
+    // ===== STATIC INITIALIZATION =====
+
+    static {
+        // Initialize damage maps for all weapon types
+        DAMAGE_MAPS.put(Equipment.WeaponType.CLAYMORE, DamageMap.builder()
+                .t0(6.8F).t1(8.3F).t2(9.9F).t3(11.5F).t4(13F).t5(13F).golden(5.2F).build());
+
+        DAMAGE_MAPS.put(Equipment.WeaponType.HAMMER, DamageMap.builder()
+                .t0(8.5F).t1(10.3F).t2(12.2F).t3(14.1F).t4(16F).t5(16F).golden(6.6F).build());
+
+        DAMAGE_MAPS.put(Equipment.WeaponType.MACE, DamageMap.builder()
+                .t1(7F).t2(8.3F).t3(9.6F).t4(11F).t5(11F).golden(4.3F).build());
+
+        DAMAGE_MAPS.put(Equipment.WeaponType.SPEAR, DamageMap.builder()
+                .t0(4F).t1(5F).t2(6F).t3(7F).t4(8F).t5(8F).golden(3F).build());
+
+        DAMAGE_MAPS.put(Equipment.WeaponType.DAGGER, DamageMap.builder()
+                .t0(2.6F).t1(3.3F).t2(4F).t3(4.7F).t4(5.5F).t5(5.5F).golden(1.8F).build());
+
+        DAMAGE_MAPS.put(Equipment.WeaponType.SICKLE, DamageMap.builder()
+                .t1(4.1F).t2(5F).t3(5.9F).t4(6.8F).t5(6.8F).golden(2.4F).build());
+
+        DAMAGE_MAPS.put(Equipment.WeaponType.DOUBLE_AXE, DamageMap.builder()
+                .t0(5.6F).t1(7F).t2(8.3F).t3(9.6F).t4(11F).t5(11F).golden(4.3F).build());
+
+        DAMAGE_MAPS.put(Equipment.WeaponType.GLAIVE, DamageMap.builder()
+                .t1(5.8F).t2(7F).t3(8.1F).t4(9.3F).t5(9.3F).golden(3.5F).build());
+
+        DAMAGE_MAPS.put(Equipment.WeaponType.SWORD, DamageMap.builder()
+                .t4(8F).t5(8F).build());
+
+        // Wands and staves have constant damage regardless of tier
+        DAMAGE_MAPS.put(Equipment.WeaponType.DAMAGE_WAND, DamageMap.builder()
+                .t0(2F).t1(2F).t2(2F).t3(2F).t4(2F).t5(2F).golden(2F).build());
+
+        DAMAGE_MAPS.put(Equipment.WeaponType.HEALING_WAND, DamageMap.builder()
+                .t0(2F).t1(2F).t2(2F).t3(2F).t4(2F).t5(2F).golden(2F).build());
+
+        DAMAGE_MAPS.put(Equipment.WeaponType.DAMAGE_STAFF, DamageMap.builder()
+                .t0(4F).t1(4F).t2(4F).t3(4F).t4(4F).t5(4F).golden(4F).build());
+
+        DAMAGE_MAPS.put(Equipment.WeaponType.HEALING_STAFF, DamageMap.builder()
+                .t0(4F).t1(4F).t2(4F).t3(4F).t4(4F).t5(4F).golden(4F).build());
+
+        // Initialize attack speeds
+        ATTACK_SPEEDS.put(Equipment.WeaponType.DAGGER, -1.6F);
+        ATTACK_SPEEDS.put(Equipment.WeaponType.SICKLE, -2.0F);
+        ATTACK_SPEEDS.put(Equipment.WeaponType.DAMAGE_WAND, -2.4F);
+        ATTACK_SPEEDS.put(Equipment.WeaponType.HEALING_WAND, -2.4F);
+        ATTACK_SPEEDS.put(Equipment.WeaponType.SWORD, -2.4F);
+        ATTACK_SPEEDS.put(Equipment.WeaponType.SPEAR, -2.6F);
+        ATTACK_SPEEDS.put(Equipment.WeaponType.GLAIVE, -2.6F);
+        ATTACK_SPEEDS.put(Equipment.WeaponType.MACE, -2.8F);
+        ATTACK_SPEEDS.put(Equipment.WeaponType.DOUBLE_AXE, -2.8F);
+        ATTACK_SPEEDS.put(Equipment.WeaponType.CLAYMORE, -3.0F);
+        ATTACK_SPEEDS.put(Equipment.WeaponType.DAMAGE_STAFF, -3.0F);
+        ATTACK_SPEEDS.put(Equipment.WeaponType.HEALING_STAFF, -3.0F);
+        ATTACK_SPEEDS.put(Equipment.WeaponType.HAMMER, -3.2F);
+
+        // Initialize spell power maps for wands and staves
+        var wandPower = SpellPowerMap.builder()
+                .t0(3F).t1(4F).t2(5F).t3(5.5F).t4(8F).t5(8F).golden(3F).build();
+        SPELL_POWER_MAPS.put(Equipment.WeaponType.DAMAGE_WAND, wandPower);
+        SPELL_POWER_MAPS.put(Equipment.WeaponType.HEALING_WAND, wandPower);
+
+        var staffPower = SpellPowerMap.builder()
+                .t1(5F).t2(6F).t3(7F).t4(8F).t5(8F).golden(5F).build();
+        SPELL_POWER_MAPS.put(Equipment.WeaponType.DAMAGE_STAFF, staffPower);
+        SPELL_POWER_MAPS.put(Equipment.WeaponType.HEALING_STAFF, staffPower);
+    }
+
+    // ===== PUBLIC FACTORY METHODS =====
+
+    /**
+     * Create a weapon entry with automatic damage calculation from tier.
+     *
+     * @param namespace        The mod namespace (e.g., "paladins")
+     * @param name             The weapon name (e.g., "iron_claymore")
+     * @param weaponType       The weapon type from Equipment.WeaponType enum
+     * @param tier             The weapon tier (TIER_0 through TIER_4, or GOLDEN)
+     * @param repairIngredient Supplier for the repair ingredient
+     * @return Weapon.Entry for method chaining
+     */
+    public static Weapon.Entry create(
+            String namespace,
+            String name,
+            Equipment.WeaponType weaponType,
+            Tier tier,
+            Supplier<Ingredient> repairIngredient
+    ) {
+        // Get damage from damage map
+        var damageMap = DAMAGE_MAPS.get(weaponType);
+        if (damageMap == null) {
+            throw new IllegalArgumentException("No damage map configured for weapon type: " + weaponType);
+        }
+        var damage = damageMap.get(tier);
+        if (damage == null) {
+            throw new IllegalArgumentException("Tier " + tier + " not available for weapon type: " + weaponType);
+        }
+
+        // Get attack speed
+        var attackSpeed = ATTACK_SPEEDS.get(weaponType);
+        if (attackSpeed == null) {
+            throw new IllegalArgumentException("No attack speed configured for weapon type: " + weaponType);
+        }
+
+        // Create material
+        var material = Weapon.CustomMaterial.matching(tier.getVanillaMaterial(), repairIngredient);
+
+        // Create weapon config
+        var config = new WeaponConfig(damage, attackSpeed);
+
+        // Select appropriate factory
+        var factory = getFactory(weaponType);
+
+        // Create entry
+        var entry = new Weapon.Entry(namespace, name, material, factory, config, weaponType);
+
+        // Apply loot properties with tier
+        if (tier == Tier.GOLDEN) {
+            entry.loot(Equipment.LootProperties.of(getTierNumber(tier)));
+        } else {
+            entry.loot(Equipment.LootProperties.of("golden_weapon"));
+        }
+
+        return entry;
+    }
+
+    // ===== WEAPON-TYPE-SPECIFIC HELPER METHODS =====
+
+    // Melee Weapons
+
+    public static Weapon.Entry claymore(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.CLAYMORE, tier, repairIngredient);
+    }
+
+    public static Weapon.Entry hammer(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.HAMMER, tier, repairIngredient);
+    }
+
+    public static Weapon.Entry mace(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.MACE, tier, repairIngredient);
+    }
+
+    public static Weapon.Entry spear(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.SPEAR, tier, repairIngredient);
+    }
+
+    public static Weapon.Entry dagger(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.DAGGER, tier, repairIngredient);
+    }
+
+    public static Weapon.Entry sickle(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.SICKLE, tier, repairIngredient);
+    }
+
+    public static Weapon.Entry doubleAxe(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.DOUBLE_AXE, tier, repairIngredient);
+    }
+
+    public static Weapon.Entry glaive(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.GLAIVE, tier, repairIngredient);
+    }
+
+    public static Weapon.Entry sword(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.SWORD, tier, repairIngredient);
+    }
+
+    // Magical Weapons
+
+    public static Weapon.Entry damageWand(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient, List<Identifier> spellSchools) {
+        var entry = create(namespace, name, Equipment.WeaponType.DAMAGE_WAND, tier, repairIngredient);
+        applySpellPower(entry, Equipment.WeaponType.DAMAGE_WAND, tier, spellSchools);
+        return entry;
+    }
+
+    public static Weapon.Entry damageStaff(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient, List<Identifier> spellSchools) {
+        var entry = create(namespace, name, Equipment.WeaponType.DAMAGE_STAFF, tier, repairIngredient);
+        applySpellPower(entry, Equipment.WeaponType.DAMAGE_STAFF, tier, spellSchools);
+        return entry;
+    }
+
+    public static Weapon.Entry healingWand(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+        var entry = create(namespace, name, Equipment.WeaponType.HEALING_WAND, tier, repairIngredient);
+        applySpellPower(entry, Equipment.WeaponType.HEALING_WAND, tier, List.of(SpellSchools.HEALING.id));
+        return entry;
+    }
+
+    public static Weapon.Entry healingStaff(String namespace, String name, Tier tier, Supplier<Ingredient> repairIngredient) {
+        var entry = create(namespace, name, Equipment.WeaponType.HEALING_STAFF, tier, repairIngredient);
+        applySpellPower(entry, Equipment.WeaponType.HEALING_STAFF, tier, List.of(SpellSchools.HEALING.id));
+        return entry;
+    }
+
+    // ===== PRIVATE HELPER METHODS =====
+
+    /**
+     * Get the appropriate factory class for a weapon type.
+     */
+    private static Weapon.Factory getFactory(Equipment.WeaponType weaponType) {
+        return switch (weaponType) {
+            case DAMAGE_STAFF, HEALING_STAFF, DAMAGE_WAND, HEALING_WAND -> StaffItem::new;
+            case CLAYMORE, DAGGER, SICKLE, DOUBLE_AXE, GLAIVE, SWORD, SPELL_BLADE, SPELL_SCYTHE -> SpellSwordItem::new;
+            case HAMMER, MACE, SPEAR -> SpellWeaponItem::new;
+            case SHIELD, SHORT_BOW, LONG_BOW, RAPID_CROSSBOW, HEAVY_CROSSBOW -> throw new IllegalArgumentException("Type not supported for weapon creation");
+        };
+    }
+
+    /**
+     * Convert Tier enum to integer for loot properties.
+     */
+    private static int getTierNumber(Tier tier) {
+        return switch (tier) {
+            case TIER_0, GOLDEN -> 0;
+            case TIER_1 -> 1;
+            case TIER_2 -> 2;
+            case TIER_3 -> 3;
+            case TIER_4 -> 4;
+            case TIER_5 -> 5;
+        };
+    }
+
+    /**
+     * Apply spell power bonuses to custom spell schools.
+     * Used for damage wands/staves with specific spell school configurations.
+     */
+    private static void applySpellPower(
+            Weapon.Entry entry,
+            Equipment.WeaponType weaponType,
+            Tier tier,
+            List<Identifier> spellAttributes
+    ) {
+        var spellPowerMap = SPELL_POWER_MAPS.get(weaponType);
+        if (spellPowerMap == null) {
+            return; // Not a magical weapon
+        }
+
+        var spellPower = spellPowerMap.get(tier);
+        if (spellPower == null) {
+            return; // Tier not configured for spell power
+        }
+
+        // Apply spell power to each specified school
+        for (var attributeId : spellAttributes) {
+            entry.attribute(AttributeModifier.bonus(attributeId, spellPower));
+        }
+    }
+}
