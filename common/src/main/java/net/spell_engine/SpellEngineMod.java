@@ -38,6 +38,8 @@ import net.spell_engine.internals.delivery.SpellStashHelper;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.rpg_series.RPGSeriesCore;
 import net.spell_engine.spellbinding.*;
+import net.spell_engine.spellchoice.SpellChoiceFeature;
+import net.spell_engine.spellchoice.SpellChoiceScreenHandler;
 import net.spell_engine.utils.StatusEffectUtil;
 import net.spell_power.api.SpellSchools;
 
@@ -109,6 +111,7 @@ public class SpellEngineMod {
         Registry.register(Registries.BLOCK_ENTITY_TYPE, SpellBinding.ID, SpellBindingBlockEntity.ENTITY_TYPE);
         Registry.register(Registries.SCREEN_HANDLER, SpellBinding.ID, SpellBindingScreenHandler.HANDLER_TYPE);
         Registry.register(Registries.LOOT_FUNCTION_TYPE, SpellBindRandomlyLootFunction.ID, SpellBindRandomlyLootFunction.TYPE);
+        Registry.register(Registries.SCREEN_HANDLER, SpellChoiceFeature.ID, SpellChoiceScreenHandler.HANDLER_TYPE);
     }
 
     public static void registerEntityTypes() {

@@ -30,6 +30,8 @@ import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 import net.spell_engine.spellbinding.SpellBindingScreen;
 import net.spell_engine.spellbinding.SpellBindingScreenHandler;
+import net.spell_engine.spellchoice.SpellChoiceScreen;
+import net.spell_engine.spellchoice.SpellChoiceScreenHandler;
 import net.tiny_config.ConfigManager;
 
 public class SpellEngineClient {
@@ -55,6 +57,7 @@ public class SpellEngineClient {
         });
 
         HandledScreens.register(SpellBindingScreenHandler.HANDLER_TYPE, SpellBindingScreen::new);
+        HandledScreens.register(SpellChoiceScreenHandler.HANDLER_TYPE, SpellChoiceScreen::new);
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
         CompatFeatures.initialize();
         BeamRenderer.setup();
