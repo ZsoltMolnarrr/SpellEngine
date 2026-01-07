@@ -258,32 +258,7 @@ public class SpellContainerSource {
                 }
             }
         }
-
-        // Remove spells with the same group, and lower tier
-        var toRemove = new HashSet<RegistryEntry<Spell>>();
-        for (var spellEntry : spells) {
-            var spell = spellEntry.value();
-            var tag = spell.group;
-            if (tag != null) {
-                for (var other : spells) {
-                    var spellId = spellEntry.getKey().get().getValue();
-                    var otherId = other.getKey().get().getValue();
-                    if (spellId.equals(otherId)) continue;
-                    if (tag.equals(other.value().group)) {
-                        if (spellEntry.value().tier == other.value().tier) {
-                            if (spellEntry.value().sub_tier > other.value().sub_tier) {
-                                toRemove.add(other);
-                            }
-                        }
-                        if (spellEntry.value().tier > other.value().tier) {
-                            toRemove.add(other);
-                        }
-                    }
-                }
-            }
-        }
-        spells.removeAll(toRemove);
-
+        
         return spells;
     }
 
