@@ -1,4 +1,4 @@
-package net.spell_engine.api.item.ranged;
+package net.spell_engine.rpg_series.item;
 
 import net.fabric_extras.ranged_weapon.api.RangedConfig;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
