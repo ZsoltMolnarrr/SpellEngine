@@ -15,6 +15,7 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Language;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellChoice;
@@ -69,6 +70,10 @@ public class SpellTooltip {
         if (container != null && container.isValid()) {
             if (container.isResolver() && config.showSpellBookSuppportTooltip) {
                 switch (container.access()) {
+                    case ANY -> {
+                        spellTextLines.add(Text.translatable("spell.tooltip.container.access.any")
+                                .formatted(Formatting.GRAY));
+                    }
                     case MAGIC -> {
                         spellTextLines.add(Text.translatable("spell.tooltip.container.access.spell")
                                 .formatted(Formatting.GRAY));
@@ -76,6 +81,18 @@ public class SpellTooltip {
                     case ARCHERY -> {
                         spellTextLines.add(Text.translatable("spell.tooltip.container.access.archery")
                                 .formatted(Formatting.GRAY));
+                    }
+                    case TAG -> {
+                        if (!container.access_param().isBlank()) {
+                            var id = Identifier.tryParse(container.access_param());
+                            if (id != null) {
+                                var key = "spell.tooltip.container.access.tag." + id.getNamespace() + "." + id.getPath();
+                                if (Language.getInstance().hasTranslation(key)) {
+                                    spellTextLines.add(Text.translatable(key)
+                                            .formatted(Formatting.GRAY));
+                                }
+                            }
+                        }
                     }
                 }
                 addSectionDivider += 1;

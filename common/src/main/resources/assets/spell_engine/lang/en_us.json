@@ -22,6 +22,7 @@
   "spell.type.passive": "(Passive)",
   "spell.tooltip.choice.list.spell": "Spell choice:",
   "spell.tooltip.choice.list.skill": "Skill choice:",
+  "spell.tooltip.container.access.any": "Allows skill use",
   "spell.tooltip.container.access.spell": "Allows spell casting",
   "spell.tooltip.container.access.archery": "Allows archery skill use",
   "spell.tooltip.container.list.spell": "Spells:",

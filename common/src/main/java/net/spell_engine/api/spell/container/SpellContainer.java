@@ -76,10 +76,13 @@ public record SpellContainer(
     }
 
     public boolean isResolver() {
-        if(access == ContentType.TAG) {
-            return !access_param.isEmpty();
-        } else {
-            return true;
+        if (access == null) {
+            return false;
+        }
+        switch (access) {
+            case NONE -> { return false; }
+            case TAG -> { return !access_param.isEmpty(); }
+            default -> { return true; }
         }
     }
 
