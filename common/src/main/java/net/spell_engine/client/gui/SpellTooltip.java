@@ -67,14 +67,14 @@ public class SpellTooltip {
         var choices = SpellChoices.from(itemStack);
         var container = SpellContainerHelper.containerFromItemStack(itemStack);
         if (container != null && container.isValid()) {
-            if (container.is_proxy() && config.showSpellBookSuppportTooltip) {
-                switch (container.content()) {
+            if (container.isResolver() && config.showSpellBookSuppportTooltip) {
+                switch (container.access()) {
                     case MAGIC -> {
-                        spellTextLines.add(Text.translatable("spell.tooltip.host.proxy.spell")
+                        spellTextLines.add(Text.translatable("spell.tooltip.container.access.spell")
                                 .formatted(Formatting.GRAY));
                     }
                     case ARCHERY -> {
-                        spellTextLines.add(Text.translatable("spell.tooltip.host.proxy.archery")
+                        spellTextLines.add(Text.translatable("spell.tooltip.container.access.archery")
                                 .formatted(Formatting.GRAY));
                     }
                 }
@@ -196,10 +196,10 @@ public class SpellTooltip {
             .map(entry -> entry.getKey())
             .collect(Collectors.toList());
 
-        // Build tooltip content
+        // Build tooltip access
         var spellTextLines = new ArrayList<Text>();
 
-        // Header: "Spell choice:" or "Skill choice:" based on content type
+        // Header: "Spell choice:" or "Skill choice:" based on access type
         var key = archetype == SpellSchool.Archetype.MAGIC
             ? "spell.tooltip.choice.list.spell"
             : "spell.tooltip.choice.list.skill";
@@ -260,18 +260,18 @@ public class SpellTooltip {
         if (!activeSpells.isEmpty()) {
             String limit = "";
             if (container.max_spell_count() > 0) {
-                limit = I18n.translate("spell.tooltip.host.limit")
+                limit = I18n.translate("spell.tooltip.container.limit")
                         .replace(placeholder("current"), "" + container.spell_ids().size())
                         .replace(placeholder("max"), "" + container.max_spell_count());
             }
 
-            var key = "spell.tooltip.host.list.spell";
-            switch (container.content()) {
+            var key = "spell.tooltip.container.list.spell";
+            switch (container.access()) {
                 case MAGIC -> {
-                    key = "spell.tooltip.host.list.spell";
+                    key = "spell.tooltip.container.list.spell";
                 }
                 case ARCHERY -> {
-                    key = "spell.tooltip.host.list.archery";
+                    key = "spell.tooltip.container.list.archery";
                 }
             }
             var header = Text.translatable(key)
@@ -288,7 +288,7 @@ public class SpellTooltip {
                 .filter(entry -> entry.value().type == Spell.Type.PASSIVE)
                 .toList();
         if (!passiveSpells.isEmpty()) {
-            var header = Text.translatable("spell.tooltip.host.list.passives").formatted(Formatting.GRAY);
+            var header = Text.translatable("spell.tooltip.container.list.passives").formatted(Formatting.GRAY);
             addSpellSection(spellTextLines, indentLevel, showListHeader ? header : null,
                     passiveSpells, player, itemStack, showDetails);
             if (showListHeader) {
@@ -300,7 +300,7 @@ public class SpellTooltip {
                 .filter(entry -> entry.value().type == Spell.Type.MODIFIER)
                 .toList();
         if (!modifiers.isEmpty()) {
-            var header = Text.translatable("spell.tooltip.host.list.modifiers").formatted(Formatting.GRAY);
+            var header = Text.translatable("spell.tooltip.container.list.modifiers").formatted(Formatting.GRAY);
             addSpellSection(spellTextLines, indentLevel, showListHeader ? header : null,
                     modifiers, player, itemStack, showDetails);
             if (showListHeader) {

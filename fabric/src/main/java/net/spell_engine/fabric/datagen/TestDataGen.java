@@ -20,6 +20,7 @@ import net.spell_engine.api.item.set.EquipmentSetRegistry;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
+import net.spell_engine.api.spell.container.SpellContainers;
 import net.spell_power.api.SpellSchools;
 
 import java.util.List;
@@ -67,17 +68,20 @@ public class TestDataGen {
             var fireball = new EquipmentSet.Bonus(
                     2,
                     null,
-                    SpellContainerHelper.createForSpellHost(Identifier.of("wizards", "fireball"))
+                    SpellContainers.forMagicWeapon()
+                            .withSpellId(Identifier.of("wizards", "fireball"))
             );
             var fireProc = new EquipmentSet.Bonus(
                     3,
                     null,
-                    SpellContainerHelper.createForSpellHost(Identifier.of("relics_rpgs", "lesser_proc_arcane_fire"))
+                    SpellContainers.forMagicWeapon()
+                            .withSpellId(Identifier.of("relics_rpgs", "lesser_proc_arcane_fire"))
             );
             var explodingProc = new EquipmentSet.Bonus(
                     4,
                     null,
-                    SpellContainerHelper.createForSpellHost(Identifier.of("arsenal", "exploding_melee"))
+                    SpellContainers.forMagicWeapon()
+                            .withSpellId(Identifier.of("arsenal", "exploding_melee"))
             );
 
             var items = RegistryEntryList.of(

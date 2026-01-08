@@ -1,17 +1,11 @@
 package net.spell_engine.api.spell.container;
 
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.RangedWeaponItem;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
-import net.spell_engine.api.tags.SpellEngineItemTags;
-import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.api.spell.*;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.container.SpellAssignments;
-import net.spell_power.api.SpellSchool;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,7 +44,7 @@ public class SpellContainerHelper {
     @Deprecated(forRemoval = true)
     public static SpellContainer createForWeapon(SpellContainer.ContentType contentType, List<Identifier> spellIds) {
         var spellIdStrings = spellIds.stream().map(Identifier::toString).toList();
-        return new SpellContainer(contentType, true, "", 0, spellIdStrings);
+        return new SpellContainer(contentType, "", "", 0, spellIdStrings);
     }
     @Deprecated(forRemoval = true)
     public static SpellContainer createForShield(Identifier spellId) {
@@ -58,19 +52,19 @@ public class SpellContainerHelper {
     }
     @Deprecated(forRemoval = true)
     public static SpellContainer createForShield(List<Identifier> spellIds) {
-        return new SpellContainer(SpellContainer.ContentType.MAGIC, false, "", "offhand", 0, spellIds.stream().map(Identifier::toString).toList());
+        return new SpellContainer(SpellContainer.ContentType.MAGIC, "", "", "offhand", 0, spellIds.stream().map(Identifier::toString).toList());
     }
     @Deprecated(forRemoval = true)
     public static SpellContainer createForRelic(Identifier spellId) {
-        return new SpellContainer(SpellContainer.ContentType.ANY, false, "", 0, List.of(spellId.toString()));
+        return new SpellContainer(SpellContainer.ContentType.ANY, "", "", 0, List.of(spellId.toString()));
     }
     @Deprecated(forRemoval = true)
     public static SpellContainer createForSpellHost(Identifier spellId) {
-        return new SpellContainer(SpellContainer.ContentType.MAGIC, false, "", 0, List.of(spellId.toString()));
+        return new SpellContainer(SpellContainer.ContentType.MAGIC, "", "", 0, List.of(spellId.toString()));
     }
     @Deprecated(forRemoval = true)
     public static SpellContainer createForModifier(Identifier spellId) {
-        return new SpellContainer(SpellContainer.ContentType.ANY, false, "", 0, List.of(spellId.toString()));
+        return new SpellContainer(SpellContainer.ContentType.ANY, "", "", 0, List.of(spellId.toString()));
     }
 
     // Read helpers
@@ -168,43 +162,20 @@ public class SpellContainerHelper {
 
     public static boolean hasUsableContainer(ItemStack itemStack) {
         var container = containerFromItemStack(itemStack);
-        return container != null && (container.isUsable() || container.is_proxy());
+        return container != null && (container.isUsable() || container.isResolver());
     }
 
-    // Misc helpers (Scrolls)
-
-    public static boolean isSpellValidForItem(Item item, RegistryEntry<Spell> spell) {
-        var spellType = spell.value().school.archetype == SpellSchool.Archetype.ARCHERY
-                ? SpellContainer.ContentType.ARCHERY : SpellContainer.ContentType.MAGIC;
-        var expectedContentType = (item instanceof RangedWeaponItem) ? SpellContainer.ContentType.ARCHERY : SpellContainer.ContentType.MAGIC;
-        return spellType == expectedContentType;
-    }
-
-    public static SpellContainer.ContentType contentTypeForItem(ItemStack itemStack) {
-        var container = containerFromItemStack(itemStack);
-        if (container != null) {
-            return container.content();
-        }
-        var item = itemStack.getItem();
-        return (item instanceof RangedWeaponItem) ? SpellContainer.ContentType.ARCHERY : SpellContainer.ContentType.MAGIC;
-    }
-
-    public static SpellContainer.ContentType contentTypeForSpell(Spell spell) {
-        return spell.school.archetype == SpellSchool.Archetype.ARCHERY
-                ? SpellContainer.ContentType.ARCHERY : SpellContainer.ContentType.MAGIC;
-    }
-
-    public static SpellContainer create(RegistryEntry<Spell> spell, Item item) {
-        return create(List.of(spell), item);
-    }
-
-    public static SpellContainer create(List<RegistryEntry<Spell>> spells, Item item) {
-        final var contentType = contentTypeForSpell(spells.get(0).value());
-        var isProxy = !(ISpellBookItem.isSpellBook(item) || item.getRegistryEntry().isIn(SpellEngineItemTags.SPELL_BOOK_MERGEABLE));
-        var spellIds = spells.stream()
-                .filter(entry -> contentTypeForSpell(entry.value()) == contentType)
-                .map(entry -> entry.getKey().get().getValue().toString())
-                .toList();
-        return new SpellContainer(contentType, isProxy, "", spellIds.size(), spellIds);
-    }
+//    public static SpellContainer create(RegistryEntry<Spell> spell, Item item) {
+//        return create(List.of(spell), item);
+//    }
+//
+//    public static SpellContainer create(List<RegistryEntry<Spell>> spells, Item item) {
+//        final var contentType = contentTypeForSpell(spells.get(0).value());
+//        var isProxy = !(ISpellBookItem.isSpellBook(item) || item.getRegistryEntry().isIn(SpellEngineItemTags.SPELL_BOOK_MERGEABLE));
+//        var spellIds = spells.stream()
+//                .filter(entry -> contentTypeForSpell(entry.value()) == contentType)
+//                .map(entry -> entry.getKey().get().getValue().toString())
+//                .toList();
+//        return new SpellContainer(contentType, isProxy, "", spellIds.size(), spellIds);
+//    }
 }
