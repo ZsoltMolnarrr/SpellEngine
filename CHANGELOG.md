@@ -1,9 +1,25 @@
 # 1.9.0
 
-API Changes:
-- Add new `same_tier_binding` field to `SpellContainer`, to enable spell choices per spell tiers
-- Add new `spell_choices` component, to define multiple spell selection before first use
-- Add `Weapons` API (in `rpg_series` package), hosting a centralized weapon entry factory
+API Breaking Changes:
+- Reworked `SpellContainer` structure
+  - Removed `content` field, replace by `access` field
+  - Removed `is_proxy` fields, replace by `access` field
+  - Add new `access` field, controlling the spell resolution behavior (`ANY, NONE, MAGIC, ARCHERY, CONTAINED, TAG`)
+  - Add new `access_param` field, providing additional parameter for certain access types (such as tag name for `TAG` access type)
+  - Add new `same_tier_binding` field to `SpellContainer`, to enable spell choices per spell tiers
+- Reworked spell tag conventions
+  - `<NAMESPACE>:spell_books/<TAG_NAME>` for spell collections meant for spell books
+  - `<NAMESPACE>:spell_scrolls/<TAG_NAME>` spell listed under these, are explicitly marked for generating scrolls
+  - `<NAMESPACE>:weapon/<WEAPON_NAME>` for spell collections meant for weapons (such as Wizard Staff)
+
+API Additions:
+- Added new `spell_choices` data component, to define multiple spell selection before first use
+  - Designed for weapons meant for multiple classes (such as Wizard Staff)
+- Add new centralized weapon factory APIs (in `rpg_series` package)
+  - Add `Weapons.java` API, creating melee and magic weapons
+  - Add `Shields.java` API, creating shields
+  - Add `RangedWeapons.java` API, creating bows and crossbows
+
 
 # 1.8.19
 
