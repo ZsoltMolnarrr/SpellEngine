@@ -17,7 +17,7 @@ public class SpellTagsNumbered {
 
 
     public static void register(String namespace, String path, int number) {
-        register(Identifier.of(namespace, path + SpellTags.SCROLL_TAG_SUFFIX), number);
+        register(Identifier.of(namespace, SpellTags.SPELL_SCROLL_PREFIX + path), number);
     }
     
     public static void register(Identifier id, int number) {

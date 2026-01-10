@@ -58,7 +58,7 @@ public class SpellEngineItems {
 
             var scrollTags = registryWrapper.streamTags()
                     .filter(tag ->
-                            tag.getTagKey().isPresent() && tag.getTagKey().get().id().getPath().endsWith(SpellTags.SCROLL_TAG_SUFFIX)
+                            tag.getTagKey().isPresent() && tag.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_SCROLL_PREFIX)
                     )
                     .sorted(Comparator.comparing(tag -> tag.getTagKey().get().id().getNamespace() + "_" + tag.getTagKey().get().id().getPath()))
                     .toList();

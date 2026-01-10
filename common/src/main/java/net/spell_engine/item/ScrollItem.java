@@ -47,6 +47,14 @@ public class ScrollItem extends Item {
         }
     }
 
+    public static String translationKeyForPool(Identifier poolId) {
+        var itemName = poolId.getPath();
+        if (poolId.getPath().startsWith(SpellTags.SPELL_SCROLL_PREFIX)) {
+            itemName = poolId.getPath().substring(SpellTags.SPELL_SCROLL_PREFIX.length()) + "_spell_scroll";
+        }
+        return "item." + poolId.getNamespace() + "." + itemName;
+    }
+
     public static void onSpellAdded(ItemStack itemStack, RegistryEntry<Spell> spellEntry, @Nullable TagKey<Spell> pool) {
         // Set rarity
         var spell = spellEntry.value();
@@ -62,8 +70,8 @@ public class ScrollItem extends Item {
             }
 
             // Set custom name
-            // - Example: "item.paladins.paladin.spell_scroll"
-            var key = "item." + pool.id().getNamespace() + "." + pool.id().getPath();
+            // - Example: "paladins:spell_scroll/paladin" -> "item.paladins.paladin_spell_scroll"
+            var key = translationKeyForPool(pool.id());
             if (Language.getInstance().hasTranslation(key)) {
                 itemStack.set(DataComponentTypes.ITEM_NAME, Text.translatable(key));
             }

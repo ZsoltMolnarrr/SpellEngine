@@ -13,6 +13,7 @@ import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainerTemplates;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.internals.container.SpellAssignments;
 import net.spell_engine.item.SpellEngineItems;
 
@@ -36,17 +37,19 @@ public class SpellBooks {
     }
 
     public static ISpellBookItem create(Identifier poolId) {
-        return create(poolId, SpellContainer.ContentType.MAGIC);
+        return create(poolId, 0);
     }
 
+    @Deprecated(forRemoval = true)
     public static ISpellBookItem create(Identifier poolId, SpellContainer.ContentType contentType) {
         return create(poolId, contentType, 0);
     }
 
+    @Deprecated(forRemoval = true)
     public static ISpellBookItem create(Identifier poolId, SpellContainer.ContentType contentType, int maxSpellCount) {
         var config = SpellContainerTemplates.config.safeValue();
         var baseContainer = config.spell_book != null ? config.spell_book : SpellContainerTemplates.defaults().spell_book;
-        var container = baseContainer.withContentType(contentType).withBindingPool(poolId).withMaxSpellCount(maxSpellCount);
+        var container = baseContainer.withBindingPool(poolId).withMaxSpellCount(maxSpellCount);
         SpellAssignments.book_containers.put(itemIdFor(poolId), container);
         Platform.util().awakeSlotModCompat();
         ISpellBookItem book = SpellEngineItems.createBook(poolId);
@@ -54,14 +57,31 @@ public class SpellBooks {
         return book;
     }
 
-    public static Identifier itemIdFor(Identifier poolId) {
+    public static ISpellBookItem create(Identifier id, int maxSpellCount) {
+        var config = SpellContainerTemplates.config.safeValue();
+        var baseContainer = config.spell_book != null ? config.spell_book : SpellContainerTemplates.defaults().spell_book;
+        var spellPoolId = spellPoolFor(id);
+        var container = baseContainer.withBindingPool(spellPoolId).withMaxSpellCount(maxSpellCount);
+        SpellAssignments.book_containers.put(itemIdFor(id), container);
+        Platform.util().awakeSlotModCompat();
+        ISpellBookItem book = SpellEngineItems.createBook(spellPoolId);
+        all.add(book);
+        return book;
+    }
+
+    public static Identifier spellPoolFor(Identifier id) {
+        return Identifier.of(id.getNamespace(), SpellTags.SPELL_BOOK_PREFIX + id.getPath());
+    }
+
+    public static Identifier itemIdFor(Identifier id) {
         // DO NOT REFACTOR THIS!
         // Spell Book items must remain under different IDs
         // so when setting cooldown on them, they don't get all the same cooldown
         // (This is a restriction of vanilla `ItemCooldownManager`)
-        return Identifier.of(poolId.getNamespace(), poolId.getPath() + "_spell_book");
+        return Identifier.of(id.getNamespace(), id.getPath() + "_spell_book");
     }
 
+    @Deprecated(forRemoval = true)
     public static void register(ISpellBookItem spellBook) {
         if (spellBook instanceof Item) {
             Registry.register(Registries.ITEM, itemIdFor(spellBook.getPoolId()), (Item) spellBook);
@@ -70,13 +90,24 @@ public class SpellBooks {
         }
     }
 
-    public static void createAndRegister(Identifier poolId, RegistryKey<ItemGroup> itemGroupKey) {
-        createAndRegister(poolId, SpellContainer.ContentType.MAGIC, itemGroupKey);
+    public static void register(Identifier itemId, ISpellBookItem spellBook) {
+        if (spellBook instanceof Item) {
+            Registry.register(Registries.ITEM, itemId, (Item) spellBook);
+        } else {
+            throw new IllegalArgumentException("SpellBookItem must be an Item");
+        }
     }
 
-    public static void createAndRegister(Identifier poolId, SpellContainer.ContentType contentType, RegistryKey<ItemGroup> itemGroupKey) {
-        var item = create(poolId, contentType);
+    public static void createAndRegister(Identifier id, RegistryKey<ItemGroup> itemGroupKey) {
+        var item = create(id);
         ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register(content -> content.add(item));
-        register(item);
+        register(itemIdFor(id), item);
+    }
+
+    @Deprecated(forRemoval = true)
+    public static void createAndRegister(Identifier id, SpellContainer.ContentType contentType, RegistryKey<ItemGroup> itemGroupKey) {
+        var item = create(id);
+        ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register(content -> content.add(item));
+        register(itemIdFor(id), item);
     }
 }
