@@ -73,7 +73,7 @@ public class SpellHelper {
             return SpellCast.Attempt.none();
         }
         var spell = spellEntry.value();
-        if (caster.getCooldownManager().isCoolingDown(spellId)) {
+        if (caster.getCooldownManager().isCoolingDown(spellEntry)) {
             return SpellCast.Attempt.failOnCooldown(new SpellCast.Attempt.OnCooldownInfo());
         }
         if (checkAmmo) {
@@ -1485,10 +1485,10 @@ public class SpellHelper {
         for (var spell: spells) {
             var id = spell.getKey().get().getValue();
             if (PatternMatching.matches(spell, SpellRegistry.KEY, modifier.id)) {
-                var duration = cooldownManager.getCooldownDuration(id);
+                var duration = cooldownManager.getCooldownDuration(spell);
                 int updatedDuration = (int) ((duration + modifier.duration_add) * modifier.duration_multiplier);
                 if (updatedDuration != duration) {
-                    cooldownManager.setDurationLeft(id, updatedDuration);
+                    cooldownManager.setDurationLeft(spell, updatedDuration);
                     modifiedAny = true;
                 }
             }

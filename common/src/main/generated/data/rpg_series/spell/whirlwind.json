@@ -80,6 +80,7 @@
   "cost": {
     "exhaust": 0.5,
     "cooldown": {
+      "group": "weapon",
       "duration": 30.0,
       "proportional": true
     }

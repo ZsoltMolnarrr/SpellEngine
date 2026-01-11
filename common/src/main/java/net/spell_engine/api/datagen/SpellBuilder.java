@@ -687,6 +687,20 @@ public class SpellBuilder {
             spell.cost.cooldown.duration = duration;
         }
 
+        public static void cooldownGroup(Spell spell, String group) {
+            if (spell.cost == null) {
+                spell.cost = new Spell.Cost();
+            }
+            if (spell.cost.cooldown == null) {
+                spell.cost.cooldown = new Spell.Cost.Cooldown();
+            }
+            spell.cost.cooldown.group = group;
+        }
+
+        public static void cooldownGroupWeapon(Spell spell) {
+            cooldownGroup(spell, "weapon");
+        }
+
         public static void item(Spell spell, String itemId) {
             item(spell, itemId, 1);
         }

@@ -4,9 +4,11 @@ import com.google.common.collect.Maps;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
+import net.spell_engine.api.spell.Spell;
 import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,11 +31,44 @@ public class SpellCooldownManager {
         this.owner = owner;
     }
 
-    public boolean isCoolingDown(Identifier spell) {
+    public void tickUpdate() {
+        ++this.tick;
+        this.update(true);
+    }
+
+    @Nullable private static Identifier groupId(Spell spell) {
+        if (spell.cost.cooldown != null) {
+            var group = spell.cost.cooldown.group;
+            if (group != null) {
+                return Identifier.of("group", group);
+            }
+        }
+        return null;
+    }
+
+    public boolean isCoolingDown(RegistryEntry<Spell> spell) {
         return this.getCooldownProgress(spell, 0.0f) > 0.0f;
     }
 
-    public float getCooldownProgress(Identifier spell, float tickDelta) {
+    @Deprecated
+    protected boolean isCoolingDown(Identifier spell) {
+        return this.getCooldownProgress(spell, 0.0f) > 0.0f;
+    }
+
+    public float getCooldownProgress(RegistryEntry<Spell> spell, float tickDelta) {
+        var id = spell.getKey().get().getValue();
+        var groupId = groupId(spell.value());
+        if (groupId == null) {
+            return this.getCooldownProgress(id, tickDelta);
+        } else {
+            return Math.max(
+                    this.getCooldownProgress(id, tickDelta),
+                    this.getCooldownProgress(groupId, tickDelta)
+            );
+        }
+    }
+
+    protected float getCooldownProgress(Identifier spell, float tickDelta) {
         SpellCooldownManager.Entry entry = this.entries.get(spell);
         if (entry != null) {
             float f = entry.endTick - entry.startTick;
@@ -43,7 +78,20 @@ public class SpellCooldownManager {
         return 0.0f;
     }
 
-    public int getCooldownDuration(Identifier spell) {
+    public int getCooldownDuration(RegistryEntry<Spell> spell) {
+        var id = spell.getKey().get().getValue();
+        var groupId = groupId(spell.value());
+        if (groupId == null) {
+            return this.getCooldownDuration(id);
+        } else {
+            return Math.max(
+                    this.getCooldownDuration(id),
+                    this.getCooldownDuration(groupId)
+            );
+        }
+    }
+
+    protected int getCooldownDuration(Identifier spell) {
         SpellCooldownManager.Entry entry = this.entries.get(spell);
         if (entry != null) {
             return entry.timeLeft(this.tick);
@@ -51,18 +99,22 @@ public class SpellCooldownManager {
         return 0;
     }
 
-    public void setDurationLeft(Identifier spell, int duration) {
+    public void setDurationLeft(RegistryEntry<Spell> spell, int duration) {
+        var spellId = spell.getKey().get().getValue();
+        this.setDurationLeft(spellId, duration);
+        var groupId = groupId(spell.value());
+        if (groupId != null) {
+            this.setDurationLeft(groupId, duration);
+        }
+    }
+
+    protected void setDurationLeft(Identifier spell, int duration) {
         var existingEntry = this.entries.get(spell);
         if (existingEntry != null) {
             this.entries.put(spell, new Entry(this.tick, this.tick + duration));
         } else if (duration > 0) {
             this.entries.put(spell, new Entry(this.tick, this.tick + duration));
         }
-    }
-
-    public void tickUpdate() {
-        ++this.tick;
-        this.update(true);
     }
 
     public void update(boolean sync) {

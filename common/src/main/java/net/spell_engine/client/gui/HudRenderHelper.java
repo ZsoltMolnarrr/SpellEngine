@@ -72,9 +72,12 @@ public class HudRenderHelper {
                     var id = spellEntry != null ? spellEntry.getKey().get().getValue() : null;
                     var itemStack = slot.itemStack();
                     var useItem = itemStack != null;
-                    var cooldownProgress = useItem
-                            ? player.getItemCooldownManager().getCooldownProgress(itemStack.getItem(), tickDelta)
-                            : cooldownManager.getCooldownProgress(id, tickDelta);
+                    var cooldownProgress = 0F;
+                    if (useItem) {
+                        cooldownProgress = player.getItemCooldownManager().getCooldownProgress(itemStack.getItem(), tickDelta);
+                    } else if (spellEntry != null) {
+                        cooldownProgress = cooldownManager.getCooldownProgress(spellEntry, tickDelta);
+                    }
                     return new SpellHotBarWidget.SpellViewModel(
                             useItem ? null : SpellRender.iconTexture(id),
                             useItem ? itemStack : null,

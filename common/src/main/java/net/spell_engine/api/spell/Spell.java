@@ -520,6 +520,8 @@ public class Spell {
 
         public Cooldown cooldown = new Cooldown();
         public static class Cooldown {
+            /// Arbitrary group code, used to share cooldowns between multiple spells
+            @Nullable public String group;
             /// Duration of the cooldown in seconds
             public float duration = 0;
             /// Whether the duration to be multiplied by channeling duration

@@ -78,6 +78,8 @@ public class WeaponSkills {
         spell.cost.cooldown.proportional = true;
         spell.cost.exhaust = 0.5F;
 
+        SpellBuilder.Cost.cooldownGroupWeapon(spell);
+
         return new Entry(id, spell, title, description, null);
     }
 }

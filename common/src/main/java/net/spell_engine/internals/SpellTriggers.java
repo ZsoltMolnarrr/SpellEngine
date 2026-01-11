@@ -254,7 +254,7 @@ public class SpellTriggers {
         for(var spellEntry: SpellContainerSource.passiveSpellsOf(event.player)) {
             var spell = spellEntry.value();
             var spellId = spellEntry.getKey().get().getValue();
-            if (spell.passive != null && !caster.getCooldownManager().isCoolingDown(spellId)) {
+            if (spell.passive != null && !caster.getCooldownManager().isCoolingDown(spellEntry)) {
                 for (var trigger : spell.passive.triggers) {
                     if (evaluateTrigger(spellEntry, trigger, event)) {
                         SpellTarget.SearchResult targetResult;
