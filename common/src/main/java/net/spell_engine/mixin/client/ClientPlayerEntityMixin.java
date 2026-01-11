@@ -133,7 +133,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 var spellEntry = slot.spell();
                 var spell = spellEntry.value();
                 if (spell.active != null && spell.active.cast != null && spell.active.cast.duration <= 0) {
-                    getCooldownManager().set(spellEntry.getKey().get().getValue(), duration, false);
+                    getCooldownManager().set(spellEntry, duration, false);
                 }
             }
         }

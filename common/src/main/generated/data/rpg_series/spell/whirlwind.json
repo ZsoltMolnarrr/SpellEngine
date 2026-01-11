@@ -1,4 +1,5 @@
 {
+  "school": "spell_power:physical_melee",
   "range": 0.0,
   "range_mechanic": "MELEE",
   "tier": 4,
@@ -9,6 +10,7 @@
       "channel_ticks": 8,
       "animation": "spell_engine:two_handed_spin_static",
       "animation_pitch": false,
+      "animation_spin": -18.0,
       "movement_speed": 1.1,
       "sound": {
         "id": "spell_engine:whirlwind",

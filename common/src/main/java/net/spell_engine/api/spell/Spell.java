@@ -71,6 +71,7 @@ public class Spell {
             public String animation;
             public boolean animation_pitch = true;
             public boolean animates_ranged_weapon = false;
+            public float animation_spin = 0F;
             /// Default `0.2` matches the same as movement speed during vanilla item usage (such as bow)"
             public float movement_speed = 0.2F;
             public Sound start_sound;

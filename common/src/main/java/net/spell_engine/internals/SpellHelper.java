@@ -562,7 +562,7 @@ public class SpellHelper {
         var duration = cooldownToSet(player, spellEntry, progress);
         var durationTicks = Math.round(duration * 20F);
         if (duration > 0) {
-            ((SpellCasterEntity) player).getCooldownManager().set(spellId, durationTicks);
+            ((SpellCasterEntity) player).getCooldownManager().set(spellEntry, durationTicks);
         }
         if (SpellEngineMod.config.spell_item_cooldown_lock && spell.cost.cooldown.hosting_item && source.itemStack() != null) {
             var hostingItem = source.itemStack().getItem();

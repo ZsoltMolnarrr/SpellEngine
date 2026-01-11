@@ -131,7 +131,20 @@ public class SpellCooldownManager {
         }
     }
 
-    public void set(Identifier spell, int duration, boolean force) {
+    public void set(RegistryEntry<Spell> spell, int duration) {
+        this.set(spell, duration, true);
+    }
+
+    public void set(RegistryEntry<Spell> spell, int duration, boolean force) {
+        var spellId = spell.getKey().get().getValue();
+        this.set(spellId, duration, force);
+        var groupId = groupId(spell.value());
+        if (groupId != null) {
+            this.set(groupId, duration, force);
+        }
+    }
+
+    protected void set(Identifier spell, int duration, boolean force) {
         if (force
                 || !this.entries.containsKey(spell)
                 || (this.entries.get(spell).timeLeft(tick) < duration)
@@ -141,7 +154,8 @@ public class SpellCooldownManager {
         }
     }
 
-    public void set(Identifier spell, int duration) {
+    @Deprecated
+    private void set(Identifier spell, int duration) {
         this.set(spell, duration, true);
     }
 

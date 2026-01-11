@@ -30,6 +30,12 @@ public class SpellBuilder {
         return spell;
     }
 
+    public static Spell createWeaponSpell() {
+        var spell = createSpellActive();
+        Cost.cooldownGroupWeapon(spell);
+        return spell;
+    }
+
     public static Spell createSpellPassive() {
         var spell = new Spell();
         spell.type = Spell.Type.PASSIVE;

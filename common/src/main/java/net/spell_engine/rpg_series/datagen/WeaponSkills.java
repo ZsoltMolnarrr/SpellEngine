@@ -2,6 +2,7 @@ package net.spell_engine.rpg_series.datagen;
 
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.datagen.SpellBuilder;
+import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
@@ -29,7 +30,8 @@ public class WeaponSkills {
         var id = Identifier.of(NAMESPACE, "whirlwind");
         var title = "Whirlwind";
         var description = "";
-        var spell = SpellBuilder.createSpellActive();
+        var spell = SpellBuilder.createWeaponSpell();
+        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
         spell.tier = 4;
         spell.range = 0;
         spell.range_mechanic = Spell.RangeMechanic.MELEE;
@@ -38,6 +40,7 @@ public class WeaponSkills {
         spell.active.cast.movement_speed = 1.1F;
         spell.active.cast.animation = "spell_engine:two_handed_spin_static";
         spell.active.cast.animation_pitch = false;
+        spell.active.cast.animation_spin = -18F;
         spell.active.cast.channel_ticks = 8;
         spell.active.cast.sound = Sound.withRandomness(SpellEngineSounds.WHIRLWIND.id(), 0F);
         spell.active.cast.particles = new ParticleBatch[]{
@@ -77,8 +80,6 @@ public class WeaponSkills {
         SpellBuilder.Cost.cooldown(spell, 30);
         spell.cost.cooldown.proportional = true;
         spell.cost.exhaust = 0.5F;
-
-        SpellBuilder.Cost.cooldownGroupWeapon(spell);
 
         return new Entry(id, spell, title, description, null);
     }
