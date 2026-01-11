@@ -29,7 +29,7 @@ public class WeaponSkills {
     private static Entry whirlwind() {
         var id = Identifier.of(NAMESPACE, "whirlwind");
         var title = "Whirlwind";
-        var description = "";
+        var description = "Hold to spin around, dealing {damage} damage per second, to nearby enemies.";
         var spell = SpellBuilder.createWeaponSpell();
         spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
         spell.tier = 4;

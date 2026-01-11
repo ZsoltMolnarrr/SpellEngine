@@ -1,6 +1,7 @@
 package net.spell_engine.rpg_series.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
@@ -294,6 +295,21 @@ public class RPGSeriesDataGen {
             for (var entry: WeaponSkills.entries) {
                 builder.add(entry.id(), entry.spell());
             }
+        }
+    }
+
+    public static class LangGenerator extends FabricLanguageProvider {
+        public LangGenerator(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+            super(dataOutput, "en_us", registryLookup);
+        }
+
+        @Override
+        public void generateTranslations(RegistryWrapper.WrapperLookup wrapperLookup, TranslationBuilder translationBuilder) {
+            WeaponSkills.entries.forEach(entry -> {
+                var id = entry.id();
+                translationBuilder.add("spell." + id.getNamespace() + "." + id.getPath() + ".name" , entry.title());
+                translationBuilder.add("spell." + id.getNamespace() + "." + id.getPath() + ".description" , entry.description());
+            });
         }
     }
 

@@ -32,7 +32,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         pack.addProvider(EntityTypeTagGen::new);
         pack.addProvider(RPGSeriesDataGen.BaselineTagGenerator::new);
         pack.addProvider(RPGSeriesDataGen.WeaponSkillGenerator::new);
-
+        pack.addProvider(RPGSeriesDataGen.LangGenerator::new);
         // TestDataGen.addTo(pack);
     }
 
