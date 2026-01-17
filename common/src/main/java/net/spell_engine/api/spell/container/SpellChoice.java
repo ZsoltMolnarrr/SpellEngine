@@ -7,6 +7,7 @@ public record SpellChoice(
         /// Pool (spell tag) of spells the choice refers to.
         /// For example: `#wizards:fire`
         String pool) {
+
     public static final Codec<SpellChoice> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.STRING.optionalFieldOf("pool", "").forGetter(x -> x.pool)
     ).apply(instance, SpellChoice::new));

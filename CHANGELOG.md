@@ -20,7 +20,6 @@ API Additions:
   - Add `Shields.java` API, creating shields
   - Add `RangedWeapons.java` API, creating bows and crossbows
 
-
 # 1.8.19
 
 API Changes:

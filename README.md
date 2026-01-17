@@ -71,7 +71,35 @@ Primary types:
 
 Fully data driven, (stored in a DynamicRegistry).
 - Data file example path: `resources/data/MOD_ID/spells/SPELL_ID.json`
-- Assigned to items susing Spell Assignments type (see below)
+- Assigned to items using Spell Assignments type (see below)
+
+Data type: `Spell` object (see [Spell](common/src/main/java/net/spell_engine/api/spell/Spell.java) for details)
+
+### Item Components
+
+#### Spell Container
+
+Defines spell casting capability for the item. Including:
+- spell book access
+- contained spells
+- binding pool (spell tag), the set of spells that can be bound to the item
+- maximum number of spells it can hold
+
+Data type: `SpellContainer` object (see [Spell Container](common/src/main/java/net/spell_engine/api/spell/container/SpellContainer.java) for details)
+
+#### Spell Choice
+
+Defines a set of spells available for the item. Upon first use, player can choose one of the spells from the set to be bound to the item.
+
+Data type: `SpellChoice` object (see [Spell Choice](common/src/main/java/net/spell_engine/api/spell/container/SpellChoice.java) for details)
+
+#### Equipment Set
+
+Defines equipment set assigned to the item.
+
+See [Equipment sets](#equipment-sets) section below for details.
+
+Data type: `Identifier` (points to equipment set id)
 
 ### Spell assignments
 
@@ -92,7 +120,7 @@ Spell Container to item assignment methods (listed in priority of use):
 
 Assigning a spell container to an item, using a game command:
 ```
-/give @p wizards:staff_wizard[spell_engine:spell_container={is_proxy:true, spell_ids: ["wizards:fireball"] }]
+/give @p wizards:staff_wizard[spell_engine:spell_container={access:MAGIC, spell_ids: ["wizards:fireball"] }]
 ```
 
 #### Assignment with Data File
@@ -102,7 +130,7 @@ Assigning a spell container to an item, using a data file.
 Example data file, located at `data/NAMESPACE/spell_assignments/ITEM_NAME.json`
 ```json
 {
-  "is_proxy": true,
+  "access": "MAGIC",
   "spell_ids": [ "wizards:fireball" ]
 }
 ```
@@ -120,7 +148,8 @@ Primary features:
 Fully data driven, (stored in a DynamicRegistry).
 
 Equipment sets require a two-way association:
-- Define the set in a data file
+- Define the set with a data file
+  - Referring all items part of the set (alongside the bonuses)
   - Example path: `resources/data/NAMESPACE/equipment_set/SET_NAME.json`
 - Assign the set to items, using an item component
   - Example item with an equipment set: `/give @p minecraft:iron_boots[spell_engine:equipment_set="NAMESPACE:SET_NAME"]`
@@ -223,25 +252,24 @@ This feature is turned on by default, it can be disabled in `config/spell_engine
 
 Spell Engine is primarily data-driven, to specify what spells an item can cast, create a JSON file at: `data/MOD_ID/spell_assignments/ITEM_NAME.json`. (For example: `data/minecraft/spell_assignments/golden_axe.json`)
 
-Example: enable "Casts spells from equipped Spell Book" for a specific item 
+Example: enable "Allows spell casting" for a specific item 
 ```
 {
-  "is_proxy": true
+  "access": "MAGIC"
 }
 ```
 
 For ranged weapons (bows and crossbows):
 ```
 {
-  "is_proxy": true,
-  "content": "ARCHERY"
+  "access": "ARCHERY"
 }
 ```
 
 Example: pre-bind spells to a specific item
 ```
 {
-  "is_proxy": true
+  "access": "MAGIC"
   "spell_ids": [ "wizards:fireball" ]
 }
 ```
@@ -258,7 +286,7 @@ Any combination of these features above can be made.
 For example: an item that allows casting from the equipped Spell Book, has Frostbolt and Frost Nova spell pre-bound, and arcane spells can be bound to it 
 ```
 {
-  "is_proxy": true
+  "access": "MAGIC",
   "spell_ids": [ "wizards:frostbolt", "wizards:frost_nova" ],
   "pool": "wizards:arcane"
 }
