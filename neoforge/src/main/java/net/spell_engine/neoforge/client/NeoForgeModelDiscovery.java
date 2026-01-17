@@ -22,7 +22,7 @@ public class NeoForgeModelDiscovery {
      *
      * @param event The model registration event
      */
-    public static void registerScrollModels(ModelEvent.RegisterAdditional event) {
+    public static void registerCustomModels(ModelEvent.RegisterAdditional event) {
         try {
             var resourceManager = MinecraftClient.getInstance().getResourceManager();
             var discoveredModels = CustomModelDiscovery.discoverScrollModels(resourceManager);

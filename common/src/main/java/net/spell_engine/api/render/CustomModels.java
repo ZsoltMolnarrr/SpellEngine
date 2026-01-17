@@ -18,6 +18,7 @@ import net.spell_engine.mixin.client.render.ItemRendererAccessor;
 import java.util.List;
 
 public class CustomModels {
+    @Deprecated(forRemoval = true)
     public static void registerModelIds(List<Identifier> ids) {
         CustomModelRegistry.modelIds.addAll(ids);
     }

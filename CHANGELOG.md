@@ -19,6 +19,11 @@ API Additions:
   - Add `Weapons.java` API, creating melee and magic weapons
   - Add `Shields.java` API, creating shields
   - Add `RangedWeapons.java` API, creating bows and crossbows
+- Add automatic item model registration for assets in the following folders:
+  - `models/item/spell_book/`
+  - `models/item/spell_scroll/`
+  - `models/spell_projectile/`
+  - `models/spell_effect/`
 
 # 1.8.19
 

@@ -63,15 +63,9 @@ public class CustomModelDiscovery {
                     pathCount++;
                 }
             }
-
-            if (pathCount > 0) {
-                LOGGER.info("Discovered {} models in {}", pathCount);
-            }
         } catch (Exception e) {
             LOGGER.error("Error scanning for spell models in {}", e);
         }
-
-        LOGGER.info("Discovered {} spell models total", discoveredModels.size());
         return discoveredModels;
     }
 
