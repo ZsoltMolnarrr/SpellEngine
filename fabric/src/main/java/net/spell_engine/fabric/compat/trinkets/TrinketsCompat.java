@@ -31,12 +31,6 @@ public class TrinketsCompat {
             return enabled;
         }
 
-        TrinketsApi.registerTrinketPredicate(Identifier.of(SpellEngineMod.ID, "spell_book"), (itemStack, slotReference, livingEntity) -> {
-            if (ISpellBookItem.isSpellBook(itemStack.getItem())) {
-                return TriState.TRUE;
-            }
-            return TriState.DEFAULT;
-        });
         ContainerCompat.addProvider(TrinketsCompat::getAll);
 
         final var spellSourceName = "trinkets";

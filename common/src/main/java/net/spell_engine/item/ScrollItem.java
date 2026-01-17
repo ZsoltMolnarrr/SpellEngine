@@ -13,6 +13,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Language;
 import net.minecraft.util.Rarity;
 import net.minecraft.world.World;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.*;
 import net.spell_engine.api.spell.container.SpellContainers;
 import net.spell_engine.api.spell.registry.SpellRegistry;
@@ -23,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class ScrollItem extends Item {
-    public static final Identifier ID = Identifier.of("spell_engine", "scroll");
+    public static final Identifier ID = Identifier.of(SpellEngineMod.ID, "scroll");
 
     public ScrollItem(Settings settings) {
         super(settings);
@@ -44,12 +45,11 @@ public class ScrollItem extends Item {
         }
     }
 
-    private static String translationPrefix = SpellTags.SPELL_SCROLL_PREFIX.replace("/", "_");
     public static String translationKeyForPool(Identifier poolId) {
         return "item." + poolId.getNamespace() + "." + poolId.getPath();
     }
 
-    public static Identifier scrollModelIdForPool(Identifier poolId) {
+    public static Identifier modelIdForPool(Identifier poolId) {
         return Identifier.of(poolId.getNamespace(), "item/" + poolId.getPath());
     }
 
@@ -62,7 +62,7 @@ public class ScrollItem extends Item {
 
         if (pool != null) {
             // Set custom model override
-            var modelId = scrollModelIdForPool(pool.id());
+            var modelId = modelIdForPool(pool.id());
             itemStack.set(SpellDataComponents.ITEM_MODEL, modelId);
 
             // Set custom name

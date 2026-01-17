@@ -29,4 +29,11 @@ public class SlotModCompat {
         if (spellScrollFactory != null) { return; }
         spellScrollFactory = factory;
     }
+
+    public record UniversalSpellBookArgs(Item.Settings settings) { }
+    @Nullable public static Function<UniversalSpellBookArgs, Item> universalSpellBookFactory = null;
+    public static void setUniversalSpellBookFactory(Function<UniversalSpellBookArgs, Item> factory) {
+        if (universalSpellBookFactory != null) { return; }
+        universalSpellBookFactory = factory;
+    }
 }

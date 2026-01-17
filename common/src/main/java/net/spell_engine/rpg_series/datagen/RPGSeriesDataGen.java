@@ -7,12 +7,16 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.datagen.SpellGenerator;
 import net.spell_engine.api.item.Equipment;
 import net.spell_engine.api.item.armor.Armor;
 import net.spell_engine.api.item.weapon.Weapon;
+import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.tags.SpellEngineItemTags;
+import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.rpg_series.tags.RPGSeriesItemTags;
 import net.spell_power.api.SpellPowerTags;
 
@@ -282,6 +286,12 @@ public class RPGSeriesDataGen {
                     themeTag.addOptional(id);
                 }
             }
+        }
+    }
+
+    public static abstract class SpellTagGenerator extends FabricTagProvider<Spell> {
+        public SpellTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+            super(output, SpellRegistry.KEY, registriesFuture);
         }
     }
 
