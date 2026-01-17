@@ -207,14 +207,31 @@ This mod is primarily a batch of tools (APIs) for developers, but it comes with 
 
 ### Items
 
+#### Spell Book
+
+ID: `spell_engine:book`
+
+Spell books are items that can hold multiple spells. They are the primary source of spells for players.
+
+Fully data driven Spell Books
+- Automatically generated for all spell books listed under tags located in `spell_books/` folder (`<NAMESPACE>:spell_books/<TAG_NAME>`)
+- Automatically assigned item model based on tag id: `<NAMESPACE>:models/item/spell_book/<TAG_NAME>.json`
+- Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_book/<TAG_NAME>
+
 #### Spell Scroll
 
-- ID: `spell_engine:scroll`
-- Functions analogously to vanilla Enchanted Books. 
-  - Spell scroll is generated in creative mode tab, for all spells
-  - Spell scrolls with randomly bound spells can be found in dungeons loot chests
-- Can be placed into Spell Books, using the Spell Binding Table
-- Can be equipped into Spell Book slot (and Spell Scroll slot if enabled), to use without a spell book
+ID: `spell_engine:scroll`
+
+Spell scrolls are items with one spell bound to them
+- can be attached Spell Books, using the Spell Binding Table
+- can be equipped into Spell Book slot (and Spell Scroll slot if enabled), to use standalone
+
+Their purpose is to allow players to collect spells from loot, instead of crafting them, similar to how enchanted books work compared to regular enchantments.
+
+Fully data driven Spell Scrolls
+- Automatically generated for all spells listed under tags located in `spell_scrolls/` folder (`<NAMESPACE>:spell_scrolls/<TAG_NAME>`)
+- Automatically assigned item model based on tag id: `<NAMESPACE>:models/item/spell_scroll/<TAG_NAME>.json`
+- Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_scroll/<TAG_NAME>`
 
 ### Blocks
 
