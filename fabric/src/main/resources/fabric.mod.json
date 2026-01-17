@@ -24,6 +24,9 @@
     "fabric-datagen": [
       "net.spell_engine.fabric.datagen.SpellEngineDataGenerator"
     ],
+    "fabric-model-loading-plugin": [
+      "net.spell_engine.fabric.client.FabricModelDiscovery"
+    ],
     "modmenu": [
       "net.spell_engine.fabric.client.compat.ModMenuCompatibility"
     ],

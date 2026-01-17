@@ -9,6 +9,8 @@ import net.spell_engine.api.item.weapon.SpellSwordItem;
 import net.spell_engine.api.item.weapon.SpellWeaponItem;
 import net.spell_engine.api.item.weapon.StaffItem;
 import net.spell_engine.api.item.weapon.Weapon;
+import net.spell_engine.api.spell.container.SpellContainers;
+import net.spell_engine.rpg_series.datagen.WeaponSkills;
 import net.spell_power.api.SpellSchools;
 
 import java.util.EnumMap;
@@ -320,7 +322,8 @@ public class Weapons {
     }
 
     public static Weapon.Entry doubleAxe(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.DOUBLE_AXE, tier, repairIngredient);
+        var entry = create(namespace, name, Equipment.WeaponType.DOUBLE_AXE, tier, repairIngredient);
+        return entry.spellContainer(SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.WHIRLWIND.id()));
     }
 
     public static Weapon.Entry glaive(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {

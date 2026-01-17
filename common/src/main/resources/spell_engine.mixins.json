@@ -55,6 +55,7 @@
     "client.ClientPlayerEntityMixin",
     "client.ClientWorldMixin",
     "client.EntityRenderMixin",
+    "client.ItemRendererMixin",
     "client.LivingEntityVisualMixin",
     "client.action_impair.ClientPlayerActionImpairing",
     "client.action_impair.MinecraftClientActionImpairing",
