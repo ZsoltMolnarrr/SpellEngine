@@ -9,16 +9,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Platform-agnostic utility for discovering spell scroll models across all loaded mods.
- * Scans for JSON files in: assets/{namespace}/models/item/spell_scroll/
+ * Platform-agnostic utility for discovering spell-related models across all loaded mods.
+ * Scans for JSON files in multiple model directories including scrolls, books, projectiles, and effects.
  */
-public class ScrollModelDiscovery {
-    private static final Logger LOGGER = LoggerFactory.getLogger("SpellEngine/ScrollModelDiscovery");
-    private static final String SCROLL_MODEL_PATH = "models/item/spell_scroll";
+public class CustomModelDiscovery {
+    private static final Logger LOGGER = LoggerFactory.getLogger("SpellEngine/ModelDiscovery");
+
+    private static final String MODEL_FOLDER = "models";
+    // Model paths to scan for automatic discovery
+    private static final String[] MODEL_PATHS = {
+        "/item/spell_book",
+        "/item/spell_scroll",
+        "/spell_projectile",
+        "/spell_effect"
+    };
 
     /**
-     * Discovers spell scroll models across all loaded mods.
-     * Scans for files in: assets/{namespace}/models/item/spell_scrolls/
+     * Discovers spell-related models across all loaded mods.
+     * Scans for files in multiple model directories.
      *
      * @param resourceManager The resource manager to scan
      * @return List of discovered model Identifiers (without platform-specific wrapping)
@@ -27,12 +35,22 @@ public class ScrollModelDiscovery {
         List<Identifier> discoveredModels = new ArrayList<>();
 
         try {
-            // Find all resources matching the spell_scrolls pattern
+            // Find all resources matching the pattern
             var resources = resourceManager.findResources(
-                SCROLL_MODEL_PATH,
-                path -> path.getPath().endsWith(".json")
+                    MODEL_FOLDER,
+                    id -> {
+                        var path = id.getPath();
+                        String subPath = path.substring(MODEL_FOLDER.length());
+                        for (String modelPath : MODEL_PATHS) {
+                            if (subPath.startsWith(modelPath) && subPath.endsWith(".json")) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
             );
 
+            int pathCount = 0;
             for (var entry : resources.entrySet()) {
                 Identifier resourceId = entry.getKey();
 
@@ -41,22 +59,30 @@ public class ScrollModelDiscovery {
 
                 if (modelId != null) {
                     discoveredModels.add(modelId);
-                    LOGGER.debug("Discovered spell scroll model: {}", modelId);
+                    LOGGER.debug("Discovered spell model: {}", modelId);
+                    pathCount++;
                 }
             }
 
-            LOGGER.info("Discovered {} spell scroll models", discoveredModels.size());
+            if (pathCount > 0) {
+                LOGGER.info("Discovered {} models in {}", pathCount);
+            }
         } catch (Exception e) {
-            LOGGER.error("Error scanning for spell scroll models", e);
+            LOGGER.error("Error scanning for spell models in {}", e);
         }
 
+        LOGGER.info("Discovered {} spell models total", discoveredModels.size());
         return discoveredModels;
     }
 
     /**
      * Converts a resource Identifier to a model Identifier.
-     * Input: "wizards:models/item/spell_scrolls/arcane_scroll.json"
-     * Output: "wizards:item/spell_scrolls/arcane_scroll"
+     * Examples:
+     *   Input: "wizards:models/item/spell_scroll/arcane_scroll.json"
+     *   Output: "wizards:item/spell_scroll/arcane_scroll"
+     *
+     *   Input: "spell_engine:models/spell_projectile/fireball.json"
+     *   Output: "spell_engine:spell_projectile/fireball"
      *
      * @param resourceId The resource identifier
      * @return The model identifier, or null if the resource path is invalid

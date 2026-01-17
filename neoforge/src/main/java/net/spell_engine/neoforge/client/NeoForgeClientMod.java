@@ -61,7 +61,7 @@ public class NeoForgeClientMod {
             event.register(modelId);
         }
 
-        // Register dynamically discovered spell scroll models
+        // Register dynamically discovered spell models (scrolls, books, projectiles, effects)
         NeoForgeModelDiscovery.registerScrollModels(event);
     }
 }
