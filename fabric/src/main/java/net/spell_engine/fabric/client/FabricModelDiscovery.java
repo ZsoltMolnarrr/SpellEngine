@@ -23,12 +23,6 @@ public class FabricModelDiscovery implements ModelLoadingPlugin {
         var resourceManager = MinecraftClient.getInstance().getResourceManager();
         var models = discoverScrollModels(resourceManager);
         pluginContext.addModels(models);
-        pluginContext.modifyModelAfterBake().register((model, context) -> {
-            if (context.resourceId() != null && context.resourceId().getPath().contains("spell_scroll")) {
-                System.out.println("After bake modification for model: " + context.resourceId() + ", resource: " + context.topLevelId());
-            }
-            return model;
-        });
     }
 
     /**

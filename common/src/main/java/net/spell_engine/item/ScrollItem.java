@@ -55,6 +55,10 @@ public class ScrollItem extends Item {
         return "item." + poolId.getNamespace() + "." + itemName;
     }
 
+    public static Identifier scrollModelIdForPool(Identifier poolId) {
+        return Identifier.of(poolId.getNamespace(), "item/" + poolId.getPath());
+    }
+
     public static void onSpellAdded(ItemStack itemStack, RegistryEntry<Spell> spellEntry, @Nullable TagKey<Spell> pool) {
         // Set rarity
         var spell = spellEntry.value();
@@ -63,11 +67,9 @@ public class ScrollItem extends Item {
         itemStack.set(DataComponentTypes.RARITY, rarity);
 
         if (pool != null) {
-            // Set custom model data
-            var number = SpellTagsNumbered.get(pool.id());
-            if (number != SpellTagsNumbered.NONE) {
-                itemStack.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(number));
-            }
+            // Set custom model override
+            var modelId = scrollModelIdForPool(pool.id());
+            itemStack.set(SpellDataComponents.ITEM_MODEL, modelId);
 
             // Set custom name
             // - Example: "paladins:spell_scroll/paladin" -> "item.paladins.paladin_spell_scroll"

@@ -20,6 +20,9 @@ public class SpellDataComponents {
     public static final ComponentType<Identifier> EQUIPMENT_SET = register(Identifier.of(SpellEngineMod.ID, "equipment_set"),
             builder -> builder.codec(Identifier.CODEC)
     );
+    public static final ComponentType<Identifier> ITEM_MODEL = register(Identifier.of(SpellEngineMod.ID, "item_model"),
+            builder -> builder.codec(Identifier.CODEC)
+    );
 
     private static <T> ComponentType<T> register(Identifier id, UnaryOperator<ComponentType.Builder<T>> builderOperator) {
         return Registry.register(Registries.DATA_COMPONENT_TYPE, id, ((ComponentType.Builder)builderOperator.apply(ComponentType.builder())).build());
