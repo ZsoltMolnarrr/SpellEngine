@@ -43,7 +43,7 @@ public class ItemRendererMixin {
             } else {
                 model = models.getModelManager().getModel(new ModelIdentifier(modelId, "standalone"));
             }
-            if (model != models.getModelManager().getMissingModel()) {
+            if (model != null && model != models.getModelManager().getMissingModel()) {
                 cir.setReturnValue(model);
                 cir.cancel();
             }
