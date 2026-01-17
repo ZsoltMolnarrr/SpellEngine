@@ -35,12 +35,6 @@ public class AccessoriesCompat {
             return enabled;
         }
 
-        AccessoriesAPI.registerPredicate(Identifier.of(SpellEngineMod.ID, SLOT_SPELL_BOOK), (world, slotType, i, itemStack) -> {
-            if (ISpellBookItem.isSpellBook(itemStack.getItem())) {
-                return TriState.TRUE;
-            }
-            return TriState.DEFAULT;
-        });
         ContainerCompat.addProvider(AccessoriesCompat::getAll);
 
         final var spellSourceName = "accessories";
