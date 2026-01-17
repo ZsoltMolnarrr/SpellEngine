@@ -1,6 +1,5 @@
 package net.spell_engine.api.spell;
 
-import net.critical_strike.api.CriticalStrikeAttributes;
 import net.fabric_extras.ranged_weapon.api.EntityAttributes_RangedWeapon;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.attribute.EntityAttribute;

@@ -8,9 +8,13 @@ API Breaking Changes:
   - Add new `access_param` field, providing additional parameter for certain access types (such as tag name for `TAG` access type)
   - Add new `same_tier_binding` field to `SpellContainer`, to enable spell choices per spell tiers
 - Reworked spell tag conventions
-  - `<NAMESPACE>:spell_books/<TAG_NAME>` for spell collections meant for spell books
-  - `<NAMESPACE>:spell_scrolls/<TAG_NAME>` spell listed under these, are explicitly marked for generating scrolls
-  - `<NAMESPACE>:weapon/<WEAPON_NAME>` for spell collections meant for weapons (such as Wizard Staff)
+  - `<NAMESPACE>:spell_books/<TAG_NAME>` - spell collections in this folder, are explicitly marked for generating spell books
+  - `<NAMESPACE>:spell_scrolls/<TAG_NAME>` - spell collections in this folder, are explicitly marked for generating scrolls
+  - `<NAMESPACE>:weapon/<WEAPON_NAME>` - spell collections meant for weapons (such as Wizard Staff)
+- Fully data driven Spell Scrolls
+  - Now automatically generated for all spells listed under tags located in `spell_scrolls/` folder
+  - Automatically assigned item model based on tag id: `<NAMESPACE>:models/item/spell_scroll/<TAG_NAME>.json`
+  - Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_scroll/<TAG_NAME>`
 
 API Additions:
 - Added new `spell_choices` data component, to define multiple spell selection before first use

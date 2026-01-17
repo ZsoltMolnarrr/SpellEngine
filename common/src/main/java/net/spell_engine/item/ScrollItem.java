@@ -1,7 +1,6 @@
 package net.spell_engine.item;
 
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
@@ -14,13 +13,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Language;
 import net.minecraft.util.Rarity;
 import net.minecraft.world.World;
-import net.spell_engine.api.spell.SpellTagsNumbered;
 import net.spell_engine.api.spell.*;
 import net.spell_engine.api.spell.container.SpellContainers;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.client.SpellEngineClient;
-import net.spell_engine.api.spell.container.SpellContainerHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -47,12 +44,9 @@ public class ScrollItem extends Item {
         }
     }
 
+    private static String translationPrefix = SpellTags.SPELL_SCROLL_PREFIX.replace("/", "_");
     public static String translationKeyForPool(Identifier poolId) {
-        var itemName = poolId.getPath();
-        if (poolId.getPath().startsWith(SpellTags.SPELL_SCROLL_PREFIX)) {
-            itemName = poolId.getPath().substring(SpellTags.SPELL_SCROLL_PREFIX.length()) + "_spell_scroll";
-        }
-        return "item." + poolId.getNamespace() + "." + itemName;
+        return "item." + poolId.getNamespace() + "." + poolId.getPath();
     }
 
     public static Identifier scrollModelIdForPool(Identifier poolId) {
@@ -92,7 +86,10 @@ public class ScrollItem extends Item {
     @Nullable public static TagKey<Spell> resolveSpellPool(RegistryWrapper<Spell> wrapper, RegistryEntry<Spell> spellEntry) {
         // Find the first tag in which spellEntry is contained
         var tag = wrapper.streamTags()
-                .filter(t -> SpellTagsNumbered.isRegistered(t.getTagKey().get().id()) && t.contains(spellEntry))
+                .filter(t ->
+                        t.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_SCROLL_PREFIX)
+                                && t.contains(spellEntry)
+                )
                 .findFirst();
         if (tag.isPresent()) {
             return tag.get().getTagKey().get();
