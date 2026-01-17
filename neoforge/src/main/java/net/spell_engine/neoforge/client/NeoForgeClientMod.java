@@ -54,9 +54,14 @@ public class NeoForgeClientMod {
     @SubscribeEvent
     public static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
         // WARNING! Models registered like this, need to be retrieved with `ModelIdentifier.standalone(id)` !!
+
+        // Register custom models from registry
         for (var id: CustomModelRegistry.getModelIds()) {
             var modelId = ModelIdentifier.standalone(id);
             event.register(modelId);
         }
+
+        // Register dynamically discovered spell scroll models
+        NeoForgeModelDiscovery.registerScrollModels(event);
     }
 }
