@@ -37,7 +37,8 @@ public class SpellBinding {
         }
         return wrapper.get().streamTags()
                 .filter(tag -> tag.getTagKey().isPresent()
-                        && tag.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_BOOK_PREFIX))
+                        && tag.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_BOOK_PREFIX)
+                        && tag.size() > 0)  // Filter out empty tags
                 .map(tag -> tag.getTagKey().get())
                 .sorted(Comparator.comparing(tag -> tag.id().getNamespace() + "_" + tag.id().getPath()))
                 .toList();
