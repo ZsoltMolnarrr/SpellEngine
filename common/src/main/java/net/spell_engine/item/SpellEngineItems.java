@@ -64,6 +64,23 @@ public class SpellEngineItems {
 
             var registryWrapper = content.getContext().lookup().getWrapperOrThrow(SpellRegistry.KEY);
 
+            // Spell book variants from tags
+            var spellBookTags = registryWrapper.streamTags()
+                    .filter(tag ->
+                            tag.getTagKey().isPresent()
+                                    && tag.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_BOOK_PREFIX)
+                    )
+                    .sorted(Comparator.comparing(tag ->
+                            tag.getTagKey().get().id().getNamespace() + "_" + tag.getTagKey().get().id().getPath()))
+                    .toList();
+            for (var spellBookTag : spellBookTags) {
+                var tagKey = spellBookTag.getTagKey().get();
+                var spellBook = new ItemStack(SPELL_BOOK.get());
+                if (UniversalSpellBookItem.applyFromTag(spellBook, tagKey)) {
+                    content.add(spellBook);
+                }
+            }
+
             var scrollTags = registryWrapper.streamTags()
                     .filter(tag ->
                             tag.getTagKey().isPresent() && tag.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_SCROLL_PREFIX)
@@ -79,23 +96,6 @@ public class SpellEngineItems {
                                 content.add(scroll);
                             }
                         });
-            }
-
-            // Spell book variants from tags
-            var spellBookTags = registryWrapper.streamTags()
-                    .filter(tag ->
-                            tag.getTagKey().isPresent()
-                            && tag.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_BOOK_PREFIX)
-                    )
-                    .sorted(Comparator.comparing(tag ->
-                            tag.getTagKey().get().id().getNamespace() + "_" + tag.getTagKey().get().id().getPath()))
-                    .toList();
-            for (var spellBookTag : spellBookTags) {
-                var tagKey = spellBookTag.getTagKey().get();
-                var spellBook = new ItemStack(SPELL_BOOK.get());
-                if (UniversalSpellBookItem.applyFromTag(spellBook, tagKey)) {
-                    content.add(spellBook);
-                }
             }
         });
     }

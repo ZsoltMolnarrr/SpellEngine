@@ -3,7 +3,7 @@ package net.spell_engine.spellbinding;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
@@ -71,7 +71,7 @@ public class SpellBindingWidgets {
         boolean shown,
         int x, int y, int width, int height,
         boolean isEnabled,
-        Item item,
+        ItemStack itemStack,
         SpellBinding.State binding
     ) {
         public boolean mouseOver(int mouseX, int mouseY) {
@@ -154,12 +154,12 @@ public class SpellBindingWidgets {
 
         context.setShaderColor(1.0f, 1.0f, 1.0f, isUnlocked ? 1.0f : 0.5f);
         RenderSystem.enableBlend();
-        context.drawItem(book.item.getDefaultStack(), iconX, iconY);
+        context.drawItem(book.itemStack, iconX, iconY);
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         RenderSystem.disableBlend();
 
         // Draw book name
-         Text bookName = book.item.getName();
+        Text bookName = book.itemStack.getName();
         int textX = iconX + SpellBindingWidgets.SPELL_ICON_SIZE + 4;  // 4px gap after icon
         var textWidth = BUTTON_WIDTH - (SpellBindingWidgets.SPELL_ICON_SIZE + 4);
         if (textWidth < textRenderer.getWidth(bookName)) {

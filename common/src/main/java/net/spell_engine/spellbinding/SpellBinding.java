@@ -3,17 +3,16 @@ package net.spell_engine.spellbinding;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.tags.SpellEngineItemTags;
-import net.spell_engine.api.item.trinket.ISpellBookItem;
-import net.spell_engine.api.item.SpellBooks;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
+import net.spell_engine.api.tags.SpellEngineItemTags;
+import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.spellbinding.spellchoice.SpellChoices;
 
 import java.util.*;
@@ -31,24 +30,25 @@ public class SpellBinding {
     public record Offer(int id, int levelCost, int levelRequirement, int lapisCost, boolean isPowered) {  }
     public record OfferResult(Mode mode, List<Offer> offers) { }
 
-    public static List<ISpellBookItem> availableSpellBooks(World world) {
-        return SpellBooks
-                .sorted(world)
-                .stream()
-                .filter(spellBookItem -> {
-                    var item = spellBookItem.asItem();
-                    var entry = Registries.ITEM.getEntry(item);
-                    return !entry.isIn(SpellEngineItemTags.NON_CRAFTABLE_SPELL_BOOK);
-                })
+    public static List<TagKey<Spell>> availableSpellBookTags(World world) {
+        var wrapper = world.getRegistryManager().getOptionalWrapper(SpellRegistry.KEY);
+        if (wrapper.isEmpty()) {
+            return List.of();
+        }
+        return wrapper.get().streamTags()
+                .filter(tag -> tag.getTagKey().isPresent()
+                        && tag.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_BOOK_PREFIX))
+                .map(tag -> tag.getTagKey().get())
+                .sorted(Comparator.comparing(tag -> tag.id().getNamespace() + "_" + tag.id().getPath()))
                 .toList();
     }
 
     public static OfferResult offersFor(World world, boolean creative, ItemStack itemStack, ItemStack consumableStack, int libraryPower) {
         if (itemStack.getItem() == Items.BOOK) {
-            var books = availableSpellBooks(world);
+            var tags = availableSpellBookTags(world);
             var offers = new ArrayList<Offer>();
             if (SpellEngineMod.config.spell_book_creation_enabled) {
-                for (int i = 0; i < books.size(); ++i) {
+                for (int i = 0; i < tags.size(); ++i) {
                     offers.add(new Offer(
                             i + BOOK_OFFSET,
                             SpellEngineMod.config.spell_book_creation_cost,

@@ -25,6 +25,8 @@ import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.gui.CustomButton;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.util.SpellRender;
+import net.spell_engine.item.SpellEngineItems;
+import net.spell_engine.item.UniversalSpellBookItem;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -206,8 +208,8 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 
                 // Add book description if available
                 if (book.isMouseOverIcon(mouseX, mouseY)) {
-                    var key = book.item().getTranslationKey() + ".spell_binding.description";
-                    if (Language.getInstance().hasTranslation(key)) {
+                    var key = UniversalSpellBookItem.descriptionKeyFromStack(book.itemStack());
+                    if (key != null && Language.getInstance().hasTranslation(key)) {
                         if (!tooltip.isEmpty()) {
                             tooltip.add(Text.literal(" "));
                         }
@@ -382,7 +384,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         boolean isEnabled,
         boolean isDetailsPublic,
         SpellBinding.State binding,
-        @Nullable Item item
+        @Nullable ItemStack itemStack
     ) {
         public SpellData(int originalIndex, SpellBindingWidgets.SpellViewModel spell, boolean isEnabled, boolean isDetailsPublic, SpellBinding.State binding) {
             this(originalIndex, spell, isEnabled, isDetailsPublic, binding, null);
@@ -437,14 +439,22 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                     }
                     case BOOK -> {
                         if (rawId < SpellBinding.BOOK_OFFSET) continue;
-                        var item = SpellBinding.availableSpellBooks(player.getWorld()).get(rawId - SpellBinding.BOOK_OFFSET);
+                        var tags = SpellBinding.availableSpellBookTags(world);
+                        var tagIndex = rawId - SpellBinding.BOOK_OFFSET;
+                        if (tagIndex >= tags.size()) continue;
+                        var tag = tags.get(tagIndex);
+
+                        // Create display stack
+                        var displayStack = new ItemStack(SpellEngineItems.SPELL_BOOK.get());
+                        UniversalSpellBookItem.applyFromTag(displayStack, tag);
+
                         SpellBinding.State bindingState = SpellBinding.State.forBook(levelCost, requirement);
                         boolean isEnabled = bindingState.readyToApply(player, lapisCount);
 
-                        var spellViewModel = new SpellBindingWidgets.SpellViewModel(null, null, item.asItem().getName());
+                        var spellViewModel = new SpellBindingWidgets.SpellViewModel(null, null, displayStack.getName());
 
                         spellsByTier.computeIfAbsent(0, k -> new ArrayList<>())
-                            .add(new SpellData(i, spellViewModel, isEnabled, true, bindingState, item.asItem()));
+                            .add(new SpellData(i, spellViewModel, isEnabled, true, bindingState, displayStack));
                     }
                 }
             }
@@ -470,7 +480,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                             SpellBindingWidgets.TIER_ROW_WIDTH,
                             SpellBindingWidgets.TIER_ROW_HEIGHT,
                             bookData.isEnabled,
-                            bookData.item,
+                            bookData.itemStack,
                             bookData.binding
                         );
 

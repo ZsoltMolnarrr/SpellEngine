@@ -86,9 +86,24 @@ public class UniversalSpellBookItem extends Item {
 
     /**
      * Generate translation key for this spell book variant.
-     * Tag: wizards:spell_book/fire -> Key: item.wizards.fire_spell_book
+     * Tag: wizards:spell_book/fire -> Key: item.wizards.spell_book/fire
      */
     public static String translationKeyForPool(Identifier poolId) {
         return "item." + poolId.getNamespace() + "." + poolId.getPath();
+    }
+
+    /**
+     * Get the description translation key from an ItemStack's spell container pool.
+     * Returns the translation key with ".spell_binding.description" suffix.
+     * @param itemStack The spell book ItemStack
+     * @return The description translation key, or null if no pool is set
+     */
+    public static String descriptionKeyFromStack(ItemStack itemStack) {
+        var container = itemStack.get(SpellDataComponents.SPELL_CONTAINER);
+        if (container == null || container.pool() == null || container.pool().isEmpty()) {
+            return null;
+        }
+        var poolId = Identifier.of(container.pool());
+        return translationKeyForPool(poolId) + ".spell_binding.description";
     }
 }

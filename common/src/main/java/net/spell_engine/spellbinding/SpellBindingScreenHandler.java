@@ -20,6 +20,8 @@ import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.fx.SpellEngineSounds;
+import net.spell_engine.item.SpellEngineItems;
+import net.spell_engine.item.UniversalSpellBookItem;
 
 import java.util.Arrays;
 
@@ -283,8 +285,19 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                     if (poweredByLib == 0) {
                         return false;
                     }
-                    var item = SpellBinding.availableSpellBooks(player.getWorld()).get(rawId - SpellBinding.BOOK_OFFSET);
-                    var itemStack = ((Item)item).getDefaultStack(); // Upcast to `Item` to make sure this line is remapped for other devs
+                    var tags = SpellBinding.availableSpellBookTags(player.getWorld());
+                    var tagIndex = rawId - SpellBinding.BOOK_OFFSET;
+                    if (tagIndex < 0 || tagIndex >= tags.size()) {
+                        return false;
+                    }
+                    var tag = tags.get(tagIndex);
+
+                    // Create UniversalSpellBookItem stack
+                    var itemStack = new ItemStack(SpellEngineItems.SPELL_BOOK.get());
+                    if (!UniversalSpellBookItem.applyFromTag(itemStack, tag)) {
+                        return false;
+                    }
+
                     var container = SpellContainerHelper.containerFromItemStack(itemStack);
                     if (container == null || !container.isValid() || container.pool() == null) {
                         return false;
