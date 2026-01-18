@@ -32,7 +32,6 @@ public class SpellEngineItems {
                 .build();
     }
 
-
     public static final Lazy<Item> SCROLL = new Lazy<>(() -> {
         var settings = new Item.Settings().maxCount(1);
         var args = new SlotModCompat.SpellScrollArs(settings);
@@ -42,15 +41,15 @@ public class SpellEngineItems {
 
     public static final Lazy<Item> SPELL_BOOK = new Lazy<>(() -> {
         var settings = new Item.Settings().maxCount(1);
-        var args = new SlotModCompat.UniversalSpellBookArgs(settings);
-        var factory = SlotModCompat.universalSpellBookFactory;
+        var args = new SlotModCompat.SpellBookArgs(settings);
+        var factory = SlotModCompat.spellBookFactory;
         return factory != null ? factory.apply(args) : new UniversalSpellBookItem(args.settings());
     });
 
     public static ISpellBookItem createBook(Identifier poolId) {
         var settings = new Item.Settings().maxCount(1);
-        var args = new SlotModCompat.SpellBookArs(poolId, settings);
-        var factory = SlotModCompat.spellBookFactory;
+        var args = new SlotModCompat.LegacySpellBookArs(poolId, settings);
+        var factory = SlotModCompat.legacySpellBookFactory;
         return factory != null ? factory.apply(args) : new SpellBookItem(args.poolId(), args.settings());
     }
 

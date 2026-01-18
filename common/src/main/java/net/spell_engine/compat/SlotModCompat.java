@@ -16,11 +16,14 @@ public class SlotModCompat {
         return spellBookResolver.apply(player);
     }
 
-    public record SpellBookArs(Identifier poolId, Item.Settings settings) { }
-    @Nullable public static Function<SpellBookArs, ISpellBookItem> spellBookFactory = null;
-    public static void setSpellBookFactory(Function<SpellBookArs, ISpellBookItem> factory) {
-        if (spellBookFactory != null) { return; }
-        spellBookFactory = factory;
+    @Deprecated(forRemoval = true)
+    public record LegacySpellBookArs(Identifier poolId, Item.Settings settings) { }
+    @Deprecated(forRemoval = true)
+    @Nullable public static Function<LegacySpellBookArs, ISpellBookItem> legacySpellBookFactory = null;
+    @Deprecated(forRemoval = true)
+    public static void setLegacySpellBookFactory(Function<LegacySpellBookArs, ISpellBookItem> factory) {
+        if (legacySpellBookFactory != null) { return; }
+        legacySpellBookFactory = factory;
     }
 
     public record SpellScrollArs(Item.Settings settings) { }
@@ -30,10 +33,10 @@ public class SlotModCompat {
         spellScrollFactory = factory;
     }
 
-    public record UniversalSpellBookArgs(Item.Settings settings) { }
-    @Nullable public static Function<UniversalSpellBookArgs, Item> universalSpellBookFactory = null;
-    public static void setUniversalSpellBookFactory(Function<UniversalSpellBookArgs, Item> factory) {
-        if (universalSpellBookFactory != null) { return; }
-        universalSpellBookFactory = factory;
+    public record SpellBookArgs(Item.Settings settings) { }
+    @Nullable public static Function<SpellBookArgs, Item> spellBookFactory = null;
+    public static void setSpellBookFactory(Function<SpellBookArgs, Item> factory) {
+        if (spellBookFactory != null) { return; }
+        spellBookFactory = factory;
     }
 }

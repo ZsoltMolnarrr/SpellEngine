@@ -18,12 +18,6 @@ public class SpellEngineItemTags {
     public static final TagKey<Item> SPELL_BOOK = TagKey.of(Registries.ITEM.getKey(), Identifier.of(SpellEngineMod.ID, "spell_books"));
 
     /**
-     * Items those are considered non-craftable spell books.
-     * Spell Binding Table will not offer these for creation.
-     */
-    public static final TagKey<Item> NON_CRAFTABLE_SPELL_BOOK = TagKey.of(Registries.ITEM.getKey(), Identifier.of(SpellEngineMod.ID, "non_craftable_spell_books"));
-
-    /**
      * Items that can be merged (placed) into spell books, to add new spells.
      * (Example: Spell Scroll)
      */

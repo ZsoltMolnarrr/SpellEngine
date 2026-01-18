@@ -13,8 +13,11 @@ public class AccessoriesItemHelper {
         SlotModCompat.setSpellScrollFactory(
                 (args) -> new SpellScrollAccessoryItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP::entry)
         );
-        SlotModCompat.setSpellBookFactory(
+        SlotModCompat.setLegacySpellBookFactory(
                 (args) -> new LegacySpellBookAccessoryItem(args.settings(), args.poolId(), SpellEngineSounds.SPELLBOOK_EQUIP::entry)
+        );
+        SlotModCompat.setSpellBookFactory(
+                (args) -> new SpellBookAccessoryItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP::entry)
         );
         SlotModCompat.spellBookResolver = AccessoriesCompat::getSpellBookStack;
     }
