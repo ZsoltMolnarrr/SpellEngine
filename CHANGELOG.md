@@ -1,5 +1,7 @@
 # 1.9.0
 
+DISCLAIMER: All spell books and spell scrolls will be reset, due to major API changes. Some (looted) weapons with custom spell containers become non-functional, and need to be re-obtained. Apologies for the inconvenience.
+
 API Breaking Changes:
 - Reworked `SpellContainer` structure
   - Removed `content` field, replace by `access` field

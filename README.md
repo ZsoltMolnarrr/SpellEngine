@@ -91,6 +91,8 @@ Data type: `SpellContainer` object (see [Spell Container](common/src/main/java/n
 
 Defines a set of spells available for the item. Upon first use, player can choose one of the spells from the set to be bound to the item.
 
+Designed for weapons, meant to be used by multiple classes. For example: Wizard Staff that can be used by any of the Wizard specializations.
+
 Data type: `SpellChoice` object (see [Spell Choice](common/src/main/java/net/spell_engine/api/spell/container/SpellChoice.java) for details)
 
 #### Equipment Set
@@ -103,27 +105,39 @@ Data type: `Identifier` (points to equipment set id)
 
 ### Spell assignments
 
-Spells can be assigned to items, by pairing a `SpellContainer` to the item.
+Spell containers can be assigned to an item in multiple ways. These methods have a priority order, Spell Engine will resolve the spell container from the highest priority method available.
+1. ItemStack (meta data) component
+2. Item default component
+3. Spell Assignment data file
+4. Automatic (fallback) container assignment done by Spell Engine
 
-A [Spell Container](src/main/java/net/spell_engine/api/spell/container/SpellContainer.java) can be assigned to an item, or hosted by a skill tree node. Contains information about:
-- List of spells it holds
-- Maximum number of spells it can hold
-- Whether it is a proxy (allows casting all currently owned spells)
-
-Spell Container to item assignment methods (listed in priority of use):
-- Item data component from meta data (for example: spawning item with command)
-- Item data component from default components 
-- Spell Assignment data file (this is a legacy feature)
-- Automatic (fallback) container assignment done by Spell Engine   
-
-#### Assignment with Item Component
+#### Assignment with ItemStack (meta data) component
 
 Assigning a spell container to an item, using a game command:
 ```
-/give @p wizards:staff_wizard[spell_engine:spell_container={access:MAGIC, spell_ids: ["wizards:fireball"] }]
+/give @p minecraft:wooden_sword[spell_engine:spell_container={access:MAGIC, spell_ids: ["wizards:fireball"] }]
 ```
 
-#### Assignment with Data File
+#### Assignment with Item default component
+
+Most items are assigned their default spell container using this method.
+
+This method is primarily meant for mod developers, to hard-code the default spell container to their custom items.
+
+Example item definition with hard-coded default component (java code):
+```java
+public static final Weapon.Entry noviceWand = add(Weapons.damageWand(
+                NAMESPACE, "wand_novice",
+                Equipment.Tier.TIER_0, () -> Ingredient.ofItems(Items.STICK),
+                List.of(SpellSchools.FIRE.id))
+        .spellContainer(SpellContainers.forMagicWeapon().withSpell("wizards:scorch"))
+);
+```
+
+Some third party tools offer ways to override this, in a data driven way.
+- [Default Components mod](https://modrinth.com/mod/default-components) (Fabric)
+
+#### Assignment with Spell Assignment Data File (Legacy)
 
 Assigning a spell container to an item, using a data file.
 
@@ -134,6 +148,12 @@ Example data file, located at `data/NAMESPACE/spell_assignments/ITEM_NAME.json`
   "spell_ids": [ "wizards:fireball" ]
 }
 ```
+
+#### Fallback assignment
+
+This is a configurable feature of Spell Engine. Tries to automatically assign spell containers to items, based on their type (sword, axe, bow, etc.)
+
+Config file: TODO
 
 ### Equipment sets
 
@@ -181,7 +201,7 @@ The following slots are implemented, using Accessories mod:
 
 ### Tags for customization
 
-Check out the various tags (for items, entities, spells) [here](src/main/java/net/spell_engine/api/tags).
+Check out the various tags (for items, entities, spells) [here](common/src/main/java/net/spell_engine/api/tags).
 
 ### Commands
 
@@ -213,12 +233,25 @@ ID: `spell_engine:book`
 
 Spell books are items that can hold multiple spells. They are the primary source of spells for players.
 
+Spell book variants are automatically generated (use the same underlying item), offered by
+- the Spell Binding Table
+- the Spell Engine Creative Tab
+
 Fully data driven Spell Books
-- Automatically generated for all spell books listed under tags located in `spell_books/` folder (`<NAMESPACE>:spell_books/<TAG_NAME>`)
+- Automatically generated for all spell books listed under tags located in `spell_book/` folder (`<NAMESPACE>:spell_book/<TAG_NAME>`)
 - Automatically assigned item model based on tag id: `<NAMESPACE>:models/item/spell_book/<TAG_NAME>.json`
 - Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_book/<TAG_NAME>
 
+**Creating spell books**
+1. Create your spell book tag, by creating a JSON file at: `data/NAMESPACE/tags/spell_book/BOOK_NAME.json`.
+2. Add language resources the spell book:
+  - `item.NAMESPACE.spell_book/BOOK_NAME`: "My Spell Book"
+  - `item.NAMESPACE.spell_book/BOOK_NAME.description`: "A powerful spell book containing many spells."
+3. Add custom item model for the spell book:
+  - `assets/NAMESPACE/models/item/spell_book/BOOK_NAME.json`
 
+**Disabling spell books**
+1. Create a datapack, with an empty spell book tag for the spell book you want to disable.
 
 #### Spell Scroll
 
@@ -231,7 +264,7 @@ Spell scrolls are items with one spell bound to them
 Their purpose is to allow players to collect spells from loot, instead of crafting them, similar to how enchanted books work compared to regular enchantments.
 
 Fully data driven Spell Scrolls
-- Automatically generated for all spells listed under tags located in `spell_scrolls/` folder (`<NAMESPACE>:spell_scrolls/<TAG_NAME>`)
+- Automatically generated for all spells listed under tags located in `spell_scroll/` folder (`<NAMESPACE>:spell_scroll/<TAG_NAME>`)
 - Automatically assigned item model based on tag id: `<NAMESPACE>:models/item/spell_scroll/<TAG_NAME>.json`
 - Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_scroll/<TAG_NAME>`
 
