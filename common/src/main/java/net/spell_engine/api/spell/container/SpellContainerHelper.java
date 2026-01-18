@@ -1,6 +1,7 @@
 package net.spell_engine.api.spell.container;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.*;
@@ -163,6 +164,15 @@ public class SpellContainerHelper {
     public static boolean hasUsableContainer(ItemStack itemStack) {
         var container = containerFromItemStack(itemStack);
         return container != null && (container.isUsable() || container.isResolver());
+    }
+
+    public static int poolTierSize(List<RegistryEntry<Spell>> spells) {
+        var tiers = new HashSet<Integer>();
+        for (var spellEntry : spells) {
+            var spell = spellEntry.value();
+            tiers.add(spell.tier);
+        }
+        return tiers.size();
     }
 
 //    public static SpellContainer create(RegistryEntry<Spell> spell, Item item) {

@@ -272,7 +272,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                             var poolId = SpellContainerHelper.getPoolId(container);
                             if (poolId != null) {
                                 var pool = SpellRegistry.entries(world, container.pool());
-                                var isComplete = container.spell_ids().size() == pool.size();
+                                var isComplete = container.spell_ids().size() == SpellContainerHelper.poolTierSize(pool);
                                 SpellBindingCriteria.INSTANCE.trigger(serverPlayer, poolId, isComplete);
                                 // System.out.println("Triggering advancement SpellBindingCriteria.INSTANCE spell_pool: " + poolId + " isComplete: " + isComplete);
                             } else {
