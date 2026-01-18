@@ -17,7 +17,7 @@ import net.spell_engine.api.tags.SpellEngineDamageTypeTags;
 import net.spell_engine.api.tags.SpellEngineEntityTags;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.fx.SpellEngineSounds;
-import net.spell_engine.rpg_series.datagen.RPGSeriesDataGen;
+import net.spell_engine.rpg_series.datagen.RPGSeriesContent;
 
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
@@ -30,9 +30,9 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         pack.addProvider(SoundGen::new);
         pack.addProvider(DamageTypeTagGen::new);
         pack.addProvider(EntityTypeTagGen::new);
-        pack.addProvider(RPGSeriesDataGen.BaselineTagGenerator::new);
-        pack.addProvider(RPGSeriesDataGen.WeaponSkillGenerator::new);
-        pack.addProvider(RPGSeriesDataGen.LangGenerator::new);
+        pack.addProvider(RPGSeriesContent.EquipmentTagGen::new);
+        pack.addProvider(RPGSeriesContent.WeaponSkillGen::new);
+        pack.addProvider(RPGSeriesContent.LangGenerator::new);
         // TestDataGen.addTo(pack);
     }
 
