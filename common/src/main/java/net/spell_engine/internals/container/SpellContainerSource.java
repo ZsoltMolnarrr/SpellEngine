@@ -329,7 +329,7 @@ public class SpellContainerSource {
         // System.out.println("Updated for " + type + ", Spell IDs: " + spellIds);
 
         var finalContentType = contentType != null ? contentType : SpellContainer.ContentType.NONE;
-        var container = new SpellContainer(finalContentType, "", null, "", 0, new ArrayList<>(spellIds), false);
+        var container = new SpellContainer(finalContentType, "", null, "", 0, new ArrayList<>(spellIds), 0);
         return new MergeResult(container, spells);
     }
 

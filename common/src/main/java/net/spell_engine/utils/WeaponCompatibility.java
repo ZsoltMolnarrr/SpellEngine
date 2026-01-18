@@ -16,8 +16,8 @@ import java.util.regex.Pattern;
 public class WeaponCompatibility {
     public static void initialize() {
         var config = SpellEngineMod.config;
-        var spellProxyContainer = new SpellContainer(SpellContainer.ContentType.MAGIC, "", null, "", 0, List.of(), false);
-        var arrowProxyContainer = new SpellContainer(SpellContainer.ContentType.ARCHERY, "", null, "", 0, List.of(), false);
+        var arrowProxyContainer = new SpellContainer(SpellContainer.ContentType.ARCHERY, "", null, "", 0, List.of(), 0);
+        var spellProxyContainer = new SpellContainer(SpellContainer.ContentType.MAGIC, "", null, "", 0, List.of(), 0);
         for(var itemId: Registries.ITEM.getIds()) {
             var itemIdString = itemId.toString();
             if (matches(itemIdString, config.blacklist_spell_casting_regex)) {

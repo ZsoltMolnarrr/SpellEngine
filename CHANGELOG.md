@@ -8,7 +8,7 @@ API Breaking Changes:
   - Removed `is_proxy` fields, replace by `access` field
   - Add new `access` field, controlling the spell resolution behavior (`ANY, NONE, MAGIC, ARCHERY, CONTAINED, TAG`)
   - Add new `access_param` field, providing additional parameter for certain access types (such as tag name for `TAG` access type)
-  - Add new `same_tier_binding` field to `SpellContainer`, to enable spell choices per spell tiers
+  - Add new `extra_tier_binding` field to `SpellContainer`, to specify spell choice limit per spell tiers
 - Reworked spell tag conventions
   - `<NAMESPACE>:spell_books/<TAG_NAME>` - spell collections in this folder, are explicitly marked for generating spell books
   - `<NAMESPACE>:spell_scrolls/<TAG_NAME>` - spell collections in this folder, are explicitly marked for generating scrolls

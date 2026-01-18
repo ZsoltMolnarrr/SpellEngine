@@ -203,21 +203,22 @@ public class SpellBinding {
                 return new State(ApplyState.NO_MORE_SLOT, requirements);
             }
 
-            // Check for tier conflict if binding_mutex is enabled
-            if (container.binding_mutex()) {
-                var registry = SpellRegistry.from(world);
-                var spellEntry = registry.getEntry(spellId);
-                if (spellEntry.isPresent()) {
-                    var newSpellTier = spellEntry.get().value().tier;
-
-                    // Check if any existing spell has the same tier
-                    for (var existingSpellIdString : container.spell_ids()) {
-                        var existingSpellId = Identifier.of(existingSpellIdString);
-                        var existingSpellEntry = registry.getEntry(existingSpellId);
-                        if (existingSpellEntry.isPresent() && existingSpellEntry.get().value().tier == newSpellTier) {
-                            return new State(ApplyState.TIER_CONFLICT, requirements);
-                        }
+            // Check for tier conflicts
+            var registry = SpellRegistry.from(world);
+            var spellEntry = registry.getEntry(spellId);
+            if (spellEntry.isPresent()) {
+                var newSpellTier = spellEntry.get().value().tier;
+                var otherSpellsInTier = 0;
+                // Check existing spell with the same tier
+                for (var existingSpellIdString : container.spell_ids()) {
+                    var existingSpellId = Identifier.of(existingSpellIdString);
+                    var existingSpellEntry = registry.getEntry(existingSpellId);
+                    if (existingSpellEntry.isPresent() && existingSpellEntry.get().value().tier == newSpellTier) {
+                        otherSpellsInTier += 1;
                     }
+                }
+                if (otherSpellsInTier >= container.binding_mutex_count()) {
+                    return new State(ApplyState.TIER_CONFLICT, requirements);
                 }
             }
 
