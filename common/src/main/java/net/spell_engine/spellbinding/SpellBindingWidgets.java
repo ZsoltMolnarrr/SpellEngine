@@ -53,7 +53,7 @@ public class SpellBindingWidgets {
         }
     }
 
-    record SpellIconViewModel(
+    public record SpellIconViewModel(
         int originalIndex,
         int x, int y, int size,
         boolean isEnabled,
@@ -66,7 +66,7 @@ public class SpellBindingWidgets {
         }
     }
 
-    record SpellBookViewModel(
+    public record SpellBookViewModel(
         int originalIndex,
         boolean shown,
         int x, int y, int width, int height,
@@ -87,7 +87,7 @@ public class SpellBindingWidgets {
         }
     }
 
-    public static void drawSpellIcon(DrawContext context, SpellBindingWidgets.SpellIconViewModel icon, int mouseX, int mouseY) {
+    public static void drawSpellIcon(DrawContext context, SpellIconViewModel icon, int mouseX, int mouseY) {
         boolean mouseOver = icon.mouseOver(mouseX, mouseY);
         boolean alreadyApplied = icon.binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
         float alpha = (icon.isEnabled || alreadyApplied) ? 1.0f : 0.5f;
@@ -101,7 +101,7 @@ public class SpellBindingWidgets {
 
         // Draw spell icon or item icon
         context.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
-        RenderSystem.enableBlend();
+        RenderSystem.enableBlend(); 
 
         if (icon.spell != null && icon.spell.icon != null) {
             context.drawTexture(icon.spell.icon, icon.x, icon.y,
@@ -110,8 +110,10 @@ public class SpellBindingWidgets {
 
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         RenderSystem.disableBlend();
+    }
 
-        // Draw selection indicator for already-bound spells
+    public static void drawSpellIconIndicator(DrawContext context, SpellIconViewModel icon) {
+        boolean alreadyApplied = icon.binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
         if (alreadyApplied) {
             RenderSystem.enableBlend();
             int indicatorOffset = (SpellBindingWidgets.SELECTION_INDICATOR_SIZE - SpellBindingWidgets.SPELL_ICON_SIZE) / 2;
@@ -126,7 +128,7 @@ public class SpellBindingWidgets {
         }
     }
 
-    public static void drawSpellBook(DrawContext context, TextRenderer textRenderer, SpellBindingWidgets.SpellBookViewModel book, int mouseX, int mouseY) {
+    public static void drawSpellBook(DrawContext context, TextRenderer textRenderer, SpellBookViewModel book, int mouseX, int mouseY) {
         if (!book.shown) { return; }  // Skip if not shown
         boolean mouseOver = book.mouseOver(mouseX, mouseY);
         boolean isUnlocked = book.isEnabled;

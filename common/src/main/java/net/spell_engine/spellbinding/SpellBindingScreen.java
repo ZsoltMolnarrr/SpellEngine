@@ -12,7 +12,6 @@ import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
@@ -514,13 +513,14 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                     int gapCount = iconCount + 1; // edge + between icons + edge
                     int spacing = remainingSpace / gapCount;
 
-                    int tierRowX = originX + BUTTONS_ORIGIN_X;
+                    int tierRowX = originX + BUTTONS_ORIGIN_X + 2;
                     int iconX = tierRowX + spacing;
 
                     for (SpellData spellData : spells) {
                         var icon = new SpellBindingWidgets.SpellIconViewModel(
                             spellData.originalIndex,
-                            iconX, rowY + SpellBindingWidgets.TIER_ROW_ICON_Y_OFFSET,
+                            iconX,
+                            rowY + SpellBindingWidgets.TIER_ROW_ICON_Y_OFFSET,
                             SpellBindingWidgets.SPELL_ICON_SIZE,
                             spellData.isEnabled,
                             spellData.isDetailsPublic,
@@ -529,7 +529,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
                         );
                         icons.add(icon);
 
-                        iconX += SpellBindingWidgets.SPELL_ICON_SIZE + spacing;
+                        iconX += spacing + SpellBindingWidgets.SPELL_ICON_SIZE;
                     }
 
                     var tierRow = new SpellBindingWidgets.TierRowViewModel(
@@ -578,6 +578,9 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 
                 for (var icon : tierRow.spellIcons()) {
                     SpellBindingWidgets.drawSpellIcon(context, icon, mouseX, mouseY);
+                }
+                for (var icon : tierRow.spellIcons()) {
+                    SpellBindingWidgets.drawSpellIconIndicator(context, icon);
                 }
             }
         }
