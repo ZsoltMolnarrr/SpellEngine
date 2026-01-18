@@ -26,7 +26,7 @@ public class RPGSeriesCore {
             .build();
 
     public static ConfigManager<LootConfig> lootScrollsConfig = new ConfigManager<>
-            ("loot_scrolls_v1", Defaults.scrollLootConfig)
+            ("loot_scrolls_v2", Defaults.scrollLootConfig)
             .builder()
             .setDirectory(NAMESPACE)
             .sanitize(true)

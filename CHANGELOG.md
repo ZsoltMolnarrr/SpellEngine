@@ -12,9 +12,16 @@ API Breaking Changes:
   - `<NAMESPACE>:spell_scrolls/<TAG_NAME>` - spell collections in this folder, are explicitly marked for generating scrolls
   - `<NAMESPACE>:weapon/<WEAPON_NAME>` - spell collections meant for weapons (such as Wizard Staff)
 - Fully data driven Spell Scrolls
-  - Now automatically generated for all spells listed under tags located in `spell_scrolls/` folder
+  - New item id: `spell_engine:spell_scroll`
+  - Generated for all spells listed under tags located in `spell_scroll/` folder  (such as: `#wizards:spell_scroll/fire`)
   - Automatically assigned item model based on tag id: `<NAMESPACE>:models/item/spell_scroll/<TAG_NAME>.json`
   - Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_scroll/<TAG_NAME>`
+- Fully data driven Spell Books
+  - All spell books now use the same item id: `spell_engine:spell_book`
+  - Generated for all spells listed under tags located in `spell_books/` folder (such as: `#wizards:spell_book/fire`)
+  - Automatically assigned item model based on tag id: `<NAMESPACE>:models/item/spell_book/<TAG_NAME>.json`
+  - Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_book/<TAG_NAME>`
+  - Custom spell books can be made with datapacks, for any combination of spells, just with a spell tag (and some additional assets)
 
 API Additions:
 - Added new `spell_choices` data component, to define multiple spell selection before first use

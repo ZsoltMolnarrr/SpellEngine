@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class ScrollItem extends Item {
-    public static final Identifier ID = Identifier.of(SpellEngineMod.ID, "scroll");
+    public static final Identifier ID = Identifier.of(SpellEngineMod.ID, "spell_scroll");
 
     public ScrollItem(Settings settings) {
         super(settings);

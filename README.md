@@ -222,7 +222,7 @@ Fully data driven Spell Books
 
 #### Spell Scroll
 
-ID: `spell_engine:scroll`
+ID: `spell_engine:spell_scroll`
 
 Spell scrolls are items with one spell bound to them
 - can be attached Spell Books, using the Spell Binding Table
