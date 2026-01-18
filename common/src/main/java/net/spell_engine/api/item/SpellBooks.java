@@ -22,9 +22,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Deprecated(forRemoval = true)
 public class SpellBooks {
+    @Deprecated(forRemoval = true)
     public static final ArrayList<ISpellBookItem> all = new ArrayList<>();
 
+    @Deprecated(forRemoval = true)
     public static List<ISpellBookItem> sorted(World world) {
         return SpellBooks.all
                 .stream()
@@ -36,6 +39,7 @@ public class SpellBooks {
                 .collect(Collectors.toList());
     }
 
+    @Deprecated(forRemoval = true)
     public static ISpellBookItem create(Identifier poolId) {
         return create(poolId, 0);
     }
@@ -57,6 +61,7 @@ public class SpellBooks {
         return book;
     }
 
+    @Deprecated(forRemoval = true)
     public static ISpellBookItem create(Identifier id, int maxSpellCount) {
         var config = SpellContainerTemplates.config.safeValue();
         var baseContainer = config.spell_book != null ? config.spell_book : SpellContainerTemplates.defaults().spell_book;
@@ -69,10 +74,12 @@ public class SpellBooks {
         return book;
     }
 
+    @Deprecated(forRemoval = true)
     public static Identifier spellPoolFor(Identifier id) {
         return Identifier.of(id.getNamespace(), SpellTags.SPELL_BOOK_PREFIX + id.getPath());
     }
 
+    @Deprecated(forRemoval = true)
     public static Identifier itemIdFor(Identifier id) {
         // DO NOT REFACTOR THIS!
         // Spell Book items must remain under different IDs
@@ -90,6 +97,7 @@ public class SpellBooks {
         }
     }
 
+    @Deprecated(forRemoval = true)
     public static void register(Identifier itemId, ISpellBookItem spellBook) {
         if (spellBook instanceof Item) {
             Registry.register(Registries.ITEM, itemId, (Item) spellBook);
@@ -98,6 +106,7 @@ public class SpellBooks {
         }
     }
 
+    @Deprecated(forRemoval = true)
     public static void createAndRegister(Identifier id, RegistryKey<ItemGroup> itemGroupKey) {
         var item = create(id);
         ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register(content -> content.add(item));

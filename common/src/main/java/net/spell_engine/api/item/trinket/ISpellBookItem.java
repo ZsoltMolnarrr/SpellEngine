@@ -5,6 +5,7 @@ import net.minecraft.item.ItemConvertible;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.tags.SpellEngineItemTags;
 
+@Deprecated(forRemoval = true)
 public interface ISpellBookItem extends ItemConvertible {
     Identifier getPoolId();
 

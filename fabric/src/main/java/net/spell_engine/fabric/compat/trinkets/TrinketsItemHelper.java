@@ -12,7 +12,7 @@ public class TrinketsItemHelper {
                 (args) -> new SpellScrollTrinketItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
         );
         SlotModCompat.setSpellBookFactory(
-                (args) -> new SpellBookTrinketItem(args.settings(), args.poolId(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
+                (args) -> new LegacySpellBookTrinketItem(args.settings(), args.poolId(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
         );
         SlotModCompat.spellBookResolver = TrinketsCompat::getSpellBookStack;
     }

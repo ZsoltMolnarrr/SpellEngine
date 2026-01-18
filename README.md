@@ -218,6 +218,8 @@ Fully data driven Spell Books
 - Automatically assigned item model based on tag id: `<NAMESPACE>:models/item/spell_book/<TAG_NAME>.json`
 - Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_book/<TAG_NAME>
 
+
+
 #### Spell Scroll
 
 ID: `spell_engine:scroll`
