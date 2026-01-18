@@ -26,17 +26,26 @@ API Breaking Changes:
   - Custom spell books can be made with datapacks, for any combination of spells, just with a spell tag (and some additional assets)
 
 API Additions:
-- Added new `spell_choices` data component, to define multiple spell selection before first use
+- Added new `spell_choices` data component
+  - Defines a one-time single spell selection, from a given spell tag, before first use
   - Designed for weapons meant for multiple classes (such as Wizard Staff)
-- Add new centralized weapon factory APIs (in `rpg_series` package)
+- Add choices in Spell Books (Spell Binding Screen)
+  - Spells in the same tier are presented as choices
+  - Spell tags of spell books can be expanded with choices by third party content
+  - Behavior controlled by new `extra_tier_binding` field of spell container
+- Added new centralized weapon factory APIs (in `rpg_series` package)
   - Add `Weapons.java` API, creating melee and magic weapons
   - Add `Shields.java` API, creating shields
   - Add `RangedWeapons.java` API, creating bows and crossbows
-- Add automatic item model registration for assets in the following folders:
+- Added automatic item model registration for assets in the following folders:
   - `models/item/spell_book/`
   - `models/item/spell_scroll/`
   - `models/spell_projectile/`
   - `models/spell_effect/`
+- Added shared spell cooldowns
+  - Spells with the same coodown group set each other on cooldown
+  - `spell.cost.cooldown.group` field specifies the cooldown group
+  - To be used for weapon specific spells 
 
 # 1.8.19
 
