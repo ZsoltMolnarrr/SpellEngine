@@ -47,6 +47,12 @@ API Additions:
   - `spell.cost.cooldown.group` field specifies the cooldown group
   - To be used for weapon specific spells 
 
+Other changes:
+- Added fallback config for automatic spell container assignment to weapons without spell container
+  - Supports various pattern matching methods (item id, item tag, regex, inversion)
+  - Config file: `config/spell_engine/weapon_fallbacks.json`
+  - Removed related old config options from `server.json5`
+
 # 1.8.19
 
 API Changes:

@@ -30,4 +30,6 @@ public class SpellEngineItemTags {
     public static final TagKey<Item> GRINDABLE = TagKey.of(Registries.ITEM.getKey(), Identifier.of(SpellEngineMod.ID, "grindable"));
 
     public static final TagKey<Item> HANDHELD = TagKey.of(Registries.ITEM.getKey(), Identifier.of(SpellEngineMod.ID, "handheld"));
+
+    public static final TagKey<Item> NON_COMBAT_TOOLS = TagKey.of(Registries.ITEM.getKey(), Identifier.of(SpellEngineMod.ID, "non_combat_tools"));
 }

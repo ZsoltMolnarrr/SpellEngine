@@ -153,7 +153,7 @@ Example data file, located at `data/NAMESPACE/spell_assignments/ITEM_NAME.json`
 
 This is a configurable feature of Spell Engine. Tries to automatically assign spell containers to items, based on their type (sword, axe, bow, etc.)
 
-Config file: TODO
+Config file: `config/spell_engine/weapon_fallback.json`
 
 ### Equipment sets
 

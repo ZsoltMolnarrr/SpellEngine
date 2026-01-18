@@ -22,6 +22,7 @@ import net.spell_engine.api.spell.weakness.SpellSchoolWeakness;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.compat.CompatFeatures;
+import net.spell_engine.config.FallbackConfig;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
 import net.spell_engine.config.WeaknessConfig;
@@ -60,10 +61,19 @@ public class SpellEngineMod {
             .validate(WeaknessConfig::isValid)
             .build();
 
+    public static ConfigManager<FallbackConfig> fallbackConfig = new ConfigManager<>
+            ("weapon_fallback", FallbackConfig.defaults())
+            .builder()
+            .setDirectory(ID)
+            .sanitize(true)
+            .validate(FallbackConfig::isValid)
+            .build();
+
     public static void init() {
         AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
         weaknessConfig.refresh();
+        fallbackConfig.refresh();
 
         DynamicRegistries.registerSynced(SpellRegistry.KEY, SpellRegistry.LOCAL_CODEC, SpellRegistry.NETWORK_CODEC_V2);
 

@@ -49,14 +49,6 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     public boolean projectiles_pass_thru_irrelevant_targets = true;
     @Comment("Auto swap Bow & Spear cooldown ticks to apply for attack and itemUse")
     public int auto_swap_cooldown = 5;
-    @Comment("Apply `Spell Casting from Spell Book` capability to Swords, Tridents, Maces")
-    public boolean add_spell_casting_to_melee_weapons = true;
-    @Comment("Apply `Spell Casting from Spell Book` capability to Bows, Crossbows")
-    public boolean add_spell_casting_to_ranged_weapons = true;
-    @Comment("Apply `Spell Casting from Spell Book` capability to any item matching this regex. (Not applied of empty)")
-    public String add_spell_casting_regex = "";
-    @Comment("Do not apply `Spell Casting from Spell Book` capability to any item matching this regex. (Not applied of empty)")
-    public String blacklist_spell_casting_regex = "";
 
     @Comment("""
             Evasion to work within certain angle of attack
