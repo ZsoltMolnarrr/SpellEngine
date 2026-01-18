@@ -293,6 +293,30 @@ public class RPGSeriesDataGen {
         public SpellTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
             super(output, SpellRegistry.KEY, registriesFuture);
         }
+
+        public void generateScrollTag(String namespace, String scroll, List<Identifier> spellIds) {
+            TagKey<Spell> tagKey = SpellTags.spellScroll(namespace, scroll);
+            var scrollTag = getOrCreateTagBuilder(tagKey);
+            for (var id: spellIds) {
+                scrollTag.add(id);
+            }
+        }
+
+        public void generateBookTag(String namespace, String book, List<Identifier> spellIds) {
+            TagKey<Spell> tagKey = SpellTags.spellBook(namespace, book);
+            var bookTag = getOrCreateTagBuilder(tagKey);
+            for (var id: spellIds) {
+                bookTag.add(id);
+            }
+        }
+
+        public void generateWeaponTag(String namespace, String weapon, List<Identifier> spellIds) {
+            TagKey<Spell> tagKey = SpellTags.weapon(namespace, weapon);
+            var weaponTag = getOrCreateTagBuilder(tagKey);
+            for (var id: spellIds) {
+                weaponTag.add(id);
+            }
+        }
     }
 
     public static class WeaponSkillGenerator extends SpellGenerator {
