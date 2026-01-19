@@ -8,7 +8,9 @@
     "cast": {
       "duration": 8.0,
       "channel_ticks": 8,
-      "animation": "spell_engine:two_handed_spin_static",
+      "animation": {
+        "id": "spell_engine:two_handed_spin_static"
+      },
       "animation_pitch": false,
       "animation_spin": -18.0,
       "movement_speed": 1.1,
