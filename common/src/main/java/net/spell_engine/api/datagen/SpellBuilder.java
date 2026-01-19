@@ -7,6 +7,7 @@ import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.api.entity.SpellEntityPredicates;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.fx.Animation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.client.util.Color;
@@ -80,7 +81,7 @@ public class SpellBuilder {
                 spell.active.cast = new Spell.Active.Cast();
             }
             if (playerAnimation != null) {
-                spell.active.cast.animation = playerAnimation;
+                spell.active.cast.animation = Animation.of(playerAnimation);
             }
             if (particles != null) {
                 spell.active.cast.particles = particles;
@@ -93,7 +94,7 @@ public class SpellBuilder {
                                    @Nullable String playerAnimation, @Nullable ParticleBatch[] particles, @Nullable Sound sound) {
             spell.release = new Spell.Release();
             if (playerAnimation != null) {
-                spell.release.animation = playerAnimation;
+                spell.release.animation = Animation.of(playerAnimation);
             }
             if (particles != null) {
                 spell.release.particles = particles;

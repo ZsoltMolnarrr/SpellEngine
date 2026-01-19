@@ -24,6 +24,8 @@ API Breaking Changes:
   - Automatically assigned item model based on tag id: `<NAMESPACE>:models/item/spell_book/<TAG_NAME>.json`
   - Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_book/<TAG_NAME>`
   - Custom spell books can be made with datapacks, for any combination of spells, just with a spell tag (and some additional assets)
+- Spell Data structure changes
+  - Casting and release animations are now wrapped into an `Animation` object, instead of a plain String
 
 API Additions:
 - Added new `spell_choices` data component

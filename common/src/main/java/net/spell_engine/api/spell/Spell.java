@@ -2,6 +2,7 @@ package net.spell_engine.api.spell;
 
 import net.minecraft.entity.EquipmentSlot;
 import net.spell_engine.api.render.LightEmission;
+import net.spell_engine.api.spell.fx.Animation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.util.AlwaysGenerate;
@@ -68,11 +69,13 @@ public class Spell {
             public boolean haste_affected = true;
             public float duration = 0;
             public int channel_ticks = 0;
-            public String animation;
+
+            public Animation animation;
             public boolean animation_pitch = true;
-            public boolean animates_ranged_weapon = false;
             public float animation_spin = 0F;
-            /// Default `0.2` matches the same as movement speed during vanilla item usage (such as bow)"
+            public boolean animates_ranged_weapon = false;
+
+            /// Default `0.2` matches the same as movement speed during vanilla item usage (such as bow)
             public float movement_speed = 0.2F;
             public Sound start_sound;
             public Sound sound;
@@ -122,7 +125,7 @@ public class Spell {
 
     public Release release = new Release();
     public static class Release { public Release() { }
-        public String animation;
+        public Animation animation;
         public ParticleBatch[] particles;
         public ParticleBatch[] particles_scaled_with_ranged;
         public Sound sound;

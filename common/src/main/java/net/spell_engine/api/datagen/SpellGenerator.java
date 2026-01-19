@@ -14,6 +14,7 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.fx.Animation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.util.AlwaysGenerate;
@@ -81,7 +82,8 @@ public abstract class SpellGenerator implements DataProvider {
                 .setPrettyPrinting()
                 .registerTypeAdapter(Spell.class, new DefaultValueSkippingSerializer<>(Spell.class))
                 .registerTypeAdapter(ParticleBatch.class, new DefaultValueSkippingSerializer<>(ParticleBatch.class))
-                .registerTypeAdapter(Sound.class, new DefaultValueSkippingSerializer<>(Sound.class));
+                .registerTypeAdapter(Sound.class, new DefaultValueSkippingSerializer<>(Sound.class))
+                .registerTypeAdapter(Animation.class, new DefaultValueSkippingSerializer<>(Animation.class));
         for (var nestedClass : getAllNestedClasses(Spell.class)) {
             gson = gson.registerTypeAdapter(nestedClass, new DefaultValueSkippingSerializer<>(nestedClass));
         }

@@ -4,6 +4,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.datagen.SpellBuilder;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.fx.Animation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.client.gui.SpellTooltip;
@@ -38,7 +39,7 @@ public class WeaponSkills {
 
         spell.active.cast.duration = 8F;
         spell.active.cast.movement_speed = 1.1F;
-        spell.active.cast.animation = "spell_engine:two_handed_spin_static";
+        spell.active.cast.animation = Animation.of("spell_engine:two_handed_spin_static");
         spell.active.cast.animation_pitch = false;
         spell.active.cast.animation_spin = -18F;
         spell.active.cast.channel_ticks = 8;

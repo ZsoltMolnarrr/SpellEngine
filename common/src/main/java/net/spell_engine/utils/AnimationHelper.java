@@ -1,19 +1,22 @@
 package net.spell_engine.utils;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.spell_engine.api.spell.fx.Animation;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.network.Packets;
 
 import java.util.Collection;
 
 public class AnimationHelper {
-    public static void sendAnimation(PlayerEntity animatedPlayer, Collection<ServerPlayerEntity> trackingPlayers, SpellCast.Animation type, String name, float speed) {
-        if (name == null || name.isEmpty()) {
+    public static void sendAnimation(PlayerEntity animatedPlayer, Collection<ServerPlayerEntity> trackingPlayers, SpellCast.Animation type, Animation animation, float speed) {
+        var id = getAnimationId(animatedPlayer, animation);
+        if (id == null || id.isEmpty()) {
             return;
         }
-        var packet = new Packets.SpellAnimation(animatedPlayer.getId(), type, name, speed);
+        var packet = new Packets.SpellAnimation(animatedPlayer.getId(), type, id, speed);
         if (animatedPlayer instanceof ServerPlayerEntity serverPlayer) {
             sendPacketToPlayer(serverPlayer, packet);
         }
@@ -30,5 +33,12 @@ public class AnimationHelper {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static String getAnimationId(LivingEntity entity, Animation animation) {
+        if (animation == null) {
+            return null;
+        }
+        return animation.resolve(entity);
     }
 }

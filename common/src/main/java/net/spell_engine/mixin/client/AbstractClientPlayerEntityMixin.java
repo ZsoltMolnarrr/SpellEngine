@@ -26,6 +26,7 @@ import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.mixin.entity.LivingEntityAccessor;
 import net.spell_engine.fx.ParticleHelper;
+import net.spell_engine.utils.AnimationHelper;
 import net.spell_engine.utils.StringUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -64,7 +65,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         var spell = ((SpellCasterEntity)player).getCurrentSpell();
         if (spell != null && spell.active != null) {
             var cast = spell.active.cast;
-            castAnimationName = cast.animation;
+            castAnimationName = AnimationHelper.getAnimationId(player, cast.animation);
             castSound = cast.sound;
             // Rotate body towards look vector
             ((LivingEntityAccessor)player).spellEngine_invoke_TurnHead(player.getHeadYaw(), 0);
