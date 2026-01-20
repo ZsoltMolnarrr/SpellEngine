@@ -2,14 +2,10 @@ package net.spell_engine.fabric.compat.trinkets;
 
 import dev.emi.trinkets.api.TrinketsApi;
 import dev.emi.trinkets.api.event.TrinketEquipCallback;
-import net.fabricmc.fabric.api.util.TriState;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
-import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.compat.container.ContainerCompat;
 import net.spell_engine.internals.container.SpellContainerSource;
 

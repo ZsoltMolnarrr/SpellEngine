@@ -11,9 +11,6 @@ public class TrinketsItemHelper {
         SlotModCompat.setSpellScrollFactory(
                 (args) -> new SpellScrollTrinketItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
         );
-        SlotModCompat.setLegacySpellBookFactory(
-                (args) -> new LegacySpellBookTrinketItem(args.settings(), args.poolId(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
-        );
         SlotModCompat.setSpellBookFactory(
                 (args) -> new SpellBookTrinketItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
         );

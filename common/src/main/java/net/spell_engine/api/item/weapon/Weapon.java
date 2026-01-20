@@ -23,7 +23,6 @@ import net.minecraft.util.Rarity;
 import net.spell_engine.api.config.AttributeModifier;
 import net.spell_engine.api.config.WeaponConfig;
 import net.spell_engine.api.item.Equipment;
-import net.spell_engine.api.item.Tiers;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
@@ -262,7 +261,7 @@ public class Weapon {
                 }
             }
 
-            var tier = Tiers.unsafe(entry.id());
+            var tier = entry.lootProperties().tier();
             if (tier >= 3) {
                 settings.fireproof();
             }

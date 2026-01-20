@@ -12,8 +12,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.item.trinket.ISpellBookItem;
-import net.spell_engine.api.item.trinket.SpellBookItem;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.compat.SlotModCompat;
@@ -45,13 +43,6 @@ public class SpellEngineItems {
         var factory = SlotModCompat.spellBookFactory;
         return factory != null ? factory.apply(args) : new UniversalSpellBookItem(args.settings());
     });
-
-    public static ISpellBookItem createBook(Identifier poolId) {
-        var settings = new Item.Settings().maxCount(1);
-        var args = new SlotModCompat.LegacySpellBookArs(poolId, settings);
-        var factory = SlotModCompat.legacySpellBookFactory;
-        return factory != null ? factory.apply(args) : new SpellBookItem(args.poolId(), args.settings());
-    }
 
     public static void register() {
         Registry.register(Registries.ITEM_GROUP, Group.KEY, Group.SPELLS);
