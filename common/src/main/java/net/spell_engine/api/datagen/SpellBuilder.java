@@ -41,6 +41,7 @@ public class SpellBuilder {
         var spell = new Spell();
         spell.type = Spell.Type.PASSIVE;
         spell.passive = new Spell.Passive();
+        spell.cost.durability = 0;
         return spell;
     }
 
