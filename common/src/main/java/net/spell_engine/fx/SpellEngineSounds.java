@@ -111,11 +111,13 @@ public class SpellEngineSounds {
     public static final Entry POISON_CLOUD_SPAWN = add(new Entry("poison_cloud_spawn"));
     public static final Entry POISON_CLOUD_TICK = add(new Entry("poison_cloud_tick"));
 
-    public static final Entry WHIRLWIND = add(new Entry("whirlwind"));
-    public static final Entry THROW_WEAPON = add(new Entry("throw_weapon"));
-
     public static final Entry DODGE = add(new Entry("dodge").variants(2));
 
+    // MARK: Weapon skill sounds
+
+    public static final Entry WHIRLWIND = add(new Entry("whirlwind"));
+    public static final Entry CLEAVE = add(new Entry("cleave"));
+    public static final Entry THROW_WEAPON = add(new Entry("throw_weapon"));
 
     // MARK: Spell binding sounds
 

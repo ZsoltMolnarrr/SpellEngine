@@ -33,6 +33,7 @@ public class SpellBuilder {
 
     public static Spell createWeaponSpell() {
         var spell = createSpellActive();
+        spell.tier = 1;
         Cost.cooldownGroupWeapon(spell);
         return spell;
     }

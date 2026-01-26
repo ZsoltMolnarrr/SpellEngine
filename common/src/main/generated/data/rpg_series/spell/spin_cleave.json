@@ -1,0 +1,54 @@
+{
+  "school": "spell_power:physical_melee",
+  "range": 0.0,
+  "range_mechanic": "MELEE",
+  "tier": 1,
+  "learn": {},
+  "active": {
+    "cast": {
+      "animation_pitch": false
+    }
+  },
+  "release": {
+    "animation": {
+      "id": "spell_engine:cleave"
+    },
+    "particles_scaled_with_ranged": [
+      {
+        "particle_id": "spell_engine:area_swirl",
+        "origin": "CENTER",
+        "shape": "SPHERE",
+        "count": 1.0,
+        "max_speed": 0.0,
+        "scale": 0.8,
+        "follow_entity": true
+      }
+    ],
+    "sound": {
+      "id": "spell_engine:cleave"
+    }
+  },
+  "target": {
+    "type": "AREA",
+    "area": {
+      "vertical_range_multiplier": 0.5
+    }
+  },
+  "deliver": {
+    "delay": 2
+  },
+  "impacts": [
+    {
+      "action": {
+        "type": "DAMAGE",
+        "damage": {}
+      }
+    }
+  ],
+  "cost": {
+    "cooldown": {
+      "group": "weapon",
+      "duration": 6.0
+    }
+  }
+}

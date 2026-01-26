@@ -33,7 +33,6 @@ public class WeaponSkills {
         var description = "Hold to spin around, dealing {damage} damage per second, to nearby enemies.";
         var spell = SpellBuilder.createWeaponSpell();
         spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
-        spell.tier = 4;
         spell.range = 0;
         spell.range_mechanic = Spell.RangeMechanic.MELEE;
 
@@ -81,6 +80,45 @@ public class WeaponSkills {
         SpellBuilder.Cost.cooldown(spell, 30);
         spell.cost.cooldown.proportional = true;
         spell.cost.exhaust = 0.5F;
+
+        return new Entry(id, spell, title, description, null);
+    }
+
+    public static Entry BLADE_SPIN = add(BLADE_SPIN());
+    private static Entry BLADE_SPIN() {
+        var id = Identifier.of(NAMESPACE, "spin_cleave");
+        var title = "Spin Cleave";
+        var description = "Performs a spin attack, dealing {damage} damage to nearby enemies.";
+        var spell = SpellBuilder.createWeaponSpell();
+        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
+        spell.range = 0;
+        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+
+        SpellBuilder.Casting.instant(spell);
+
+        spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
+        spell.release.animation = Animation.of("spell_engine:cleave");
+        spell.active.cast.animation_pitch = false;
+
+        spell.target.type = Spell.Target.Type.AREA;
+        spell.target.area = new Spell.Target.Area();
+        spell.target.area.distance_dropoff = Spell.Target.Area.DropoffCurve.NONE;
+        spell.target.area.vertical_range_multiplier = 0.5F;
+
+        spell.release.particles_scaled_with_ranged = new ParticleBatch[]{
+                new ParticleBatch(SpellEngineParticles.area_swirl.id().toString(),
+                        ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER,
+                        1, 0.0F, 0.F)
+                        .scale(0.8F)
+                        .followEntity(true)
+        };
+
+        spell.deliver.delay = 2;
+
+        var damage = SpellBuilder.Impacts.damage(1F);
+        spell.impacts = List.of(damage);
+
+        SpellBuilder.Cost.cooldown(spell, 6);
 
         return new Entry(id, spell, title, description, null);
     }
