@@ -22,6 +22,15 @@
         "max_speed": 0.0,
         "scale": 0.8,
         "follow_entity": true
+      },
+      {
+        "particle_id": "spell_engine:smoke_medium",
+        "origin": "FEET",
+        "shape": "CIRCLE",
+        "count": 25.0,
+        "min_speed": 0.15,
+        "max_speed": 0.15,
+        "pre_spawn_travel": 1.0
       }
     ],
     "sound": {
@@ -48,6 +57,7 @@
   "cost": {
     "cooldown": {
       "group": "weapon",
+      "attempt_duration": 0.5,
       "duration": 6.0
     }
   }

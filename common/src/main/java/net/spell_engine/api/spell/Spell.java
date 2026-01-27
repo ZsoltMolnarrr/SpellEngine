@@ -526,6 +526,8 @@ public class Spell {
         public static class Cooldown {
             /// Arbitrary group code, used to share cooldowns between multiple spells
             @Nullable public String group;
+            /// Duration of the cooldown applied on spell cast attempt in seconds (useful for delayed deliveries)
+            public float attempt_duration = 0;
             /// Duration of the cooldown in seconds
             public float duration = 0;
             /// Whether the duration to be multiplied by channeling duration

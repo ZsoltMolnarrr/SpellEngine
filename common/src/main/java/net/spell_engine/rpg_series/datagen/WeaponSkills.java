@@ -110,7 +110,11 @@ public class WeaponSkills {
                         ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER,
                         1, 0.0F, 0.F)
                         .scale(0.8F)
-                        .followEntity(true)
+                        .followEntity(true),
+                new ParticleBatch(SpellEngineParticles.smoke_medium.id().toString(),
+                        ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET,
+                        25, 0.15F, 0.15F)
+                        .preSpawnTravel(1)
         };
 
         spell.deliver.delay = 2;
@@ -119,6 +123,7 @@ public class WeaponSkills {
         spell.impacts = List.of(damage);
 
         SpellBuilder.Cost.cooldown(spell, 6);
+        spell.cost.cooldown.attempt_duration = 0.5F;
 
         return new Entry(id, spell, title, description, null);
     }

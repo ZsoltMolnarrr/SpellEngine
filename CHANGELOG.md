@@ -26,6 +26,7 @@ API Breaking Changes:
   - Custom spell books can be made with datapacks, for any combination of spells, just with a spell tag (and some additional assets)
 - Spell Data structure changes
   - Casting and release animations are now wrapped into an `Animation` object, instead of a plain String
+  - Add `spell.cost.cooldown.attempt_duration` to prevent multiple performs of delayed deliveries
 
 API Additions:
 - Added new `spell_choices` data component
@@ -54,6 +55,7 @@ Other changes:
   - Supports various pattern matching methods (item id, item tag, regex, inversion)
   - Config file: `config/spell_engine/weapon_fallbacks.json`
   - Removed related old config options from `server.json5`
+- Global cooldown is now enabled by default for instant spells (0.5 seconds), adjustable in server config
 
 # 1.8.19
 

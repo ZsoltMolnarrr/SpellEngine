@@ -127,7 +127,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     }
 
     private void applyInstantGlobalCooldown() {
-        var duration = SpellEngineMod.config.spell_instant_cast_gcd;
+        var duration = SpellEngineMod.config.spell_instant_cast_global_cooldown;
         if (duration > 0) {
             for (var slot: SpellHotbar.INSTANCE.slots) {
                 var spellEntry = slot.spell();

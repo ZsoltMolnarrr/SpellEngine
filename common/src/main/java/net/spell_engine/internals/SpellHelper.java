@@ -289,8 +289,8 @@ public class SpellHelper {
             }
 
             if (shouldPerformImpact) {
+                consumeAttemptCost(player, spellEntry);
                 // Channel tick or charge release
-
                 success = false;
                 var context = new ImpactContext(channelMultiplier,
                         1F,
@@ -376,6 +376,18 @@ public class SpellHelper {
         }
     }
 
+
+    private static void consumeAttemptCost(PlayerEntity player, RegistryEntry<Spell> spellEntry) {
+        var spell = spellEntry.value();
+        if (spell.cost.cooldown != null) {
+            var attemptCooldown = spell.cost.cooldown.attempt_duration;
+            if (attemptCooldown > 0) {
+                var durationTicks = Math.round(attemptCooldown * 20F);
+                ((SpellCasterEntity) player).getCooldownManager().set(spellEntry, durationTicks);
+            }
+        }
+    }
+
     private static void consumeSpellCost(PlayerEntity player, float progress, SpellContainerSource.SourcedContainer spellSource, Identifier spellId, RegistryEntry<Spell> spellEntry, ItemStack heldItemStack, Ammo.Result ammoResult, boolean scheduled) {
         var spell = spellEntry.value();
         var batching = spell.cost.batching;
@@ -390,7 +402,7 @@ public class SpellHelper {
 
         // Consume things
         // Cooldown
-        imposeCooldown(player, spellSource, spellId, spellEntry, progress);
+        imposeCooldown(player, spellSource, spellEntry, progress);
         // Exhaust
         player.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
         // Durability
@@ -557,7 +569,7 @@ public class SpellHelper {
         return delivered;
     }
 
-    public static void imposeCooldown(PlayerEntity player, SpellContainerSource.SourcedContainer source, Identifier spellId, RegistryEntry<Spell> spellEntry, float progress) {
+    public static void imposeCooldown(PlayerEntity player, SpellContainerSource.SourcedContainer source, RegistryEntry<Spell> spellEntry, float progress) {
         var spell = spellEntry.value();
         var duration = cooldownToSet(player, spellEntry, progress);
         var durationTicks = Math.round(duration * 20F);
