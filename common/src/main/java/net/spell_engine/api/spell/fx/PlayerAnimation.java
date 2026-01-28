@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Animation {
+public class PlayerAnimation {
     public static class Override { public Override() { }
         public static class Equipment { public Equipment() { }
             /// Specific equipment slot to check
@@ -26,18 +26,18 @@ public class Animation {
     }
     public String id = "";
     public List<Override> overrides = List.of();
-    public Animation() { }
-    public Animation(String id) {
+    public PlayerAnimation() { }
+    public PlayerAnimation(String id) {
         this.id = id;
     }
 
     // Builders
 
-    public static Animation of(String id) {
-        return new Animation(id);
+    public static PlayerAnimation of(String id) {
+        return new PlayerAnimation(id);
     }
 
-    public Animation withEquipmentOverride(EquipmentSlot slot, String itemMatcher, String animationId) {
+    public PlayerAnimation withEquipmentOverride(EquipmentSlot slot, String itemMatcher, String animationId) {
         var override = new Override();
         override.equipment = new Override.Equipment(slot, itemMatcher);
         override.id = animationId;

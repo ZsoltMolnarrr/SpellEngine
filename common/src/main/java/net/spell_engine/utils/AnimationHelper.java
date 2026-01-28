@@ -4,14 +4,14 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.spell_engine.api.spell.fx.Animation;
+import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.network.Packets;
 
 import java.util.Collection;
 
 public class AnimationHelper {
-    public static void sendAnimation(PlayerEntity animatedPlayer, Collection<ServerPlayerEntity> trackingPlayers, SpellCast.Animation type, Animation animation, float speed) {
+    public static void sendAnimation(PlayerEntity animatedPlayer, Collection<ServerPlayerEntity> trackingPlayers, SpellCast.Animation type, PlayerAnimation animation, float speed) {
         var id = getAnimationId(animatedPlayer, animation);
         if (id == null || id.isEmpty()) {
             return;
@@ -35,7 +35,7 @@ public class AnimationHelper {
         }
     }
 
-    public static String getAnimationId(LivingEntity entity, Animation animation) {
+    public static String getAnimationId(LivingEntity entity, PlayerAnimation animation) {
         if (animation == null) {
             return null;
         }

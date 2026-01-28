@@ -4,7 +4,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.datagen.SpellBuilder;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
-import net.spell_engine.api.spell.fx.Animation;
+import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.client.gui.SpellTooltip;
@@ -38,7 +38,7 @@ public class WeaponSkills {
 
         spell.active.cast.duration = 8F;
         spell.active.cast.movement_speed = 1.1F;
-        spell.active.cast.animation = Animation.of("spell_engine:two_handed_spin_static");
+        spell.active.cast.animation = PlayerAnimation.of("spell_engine:two_handed_spin_static");
         spell.active.cast.animation_pitch = false;
         spell.active.cast.animation_spin = -18F;
         spell.active.cast.channel_ticks = 8;
@@ -84,8 +84,8 @@ public class WeaponSkills {
         return new Entry(id, spell, title, description, null);
     }
 
-    public static Entry BLADE_SPIN = add(BLADE_SPIN());
-    private static Entry BLADE_SPIN() {
+    public static Entry SPIN_CLEAVE = add(SPIN_CLEAVE());
+    private static Entry SPIN_CLEAVE() {
         var id = Identifier.of(NAMESPACE, "spin_cleave");
         var title = "Spin Cleave";
         var description = "Performs a spin attack, dealing {damage} damage to nearby enemies.";
@@ -97,7 +97,7 @@ public class WeaponSkills {
         SpellBuilder.Casting.instant(spell);
 
         spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
-        spell.release.animation = Animation.of("spell_engine:cleave");
+        spell.release.animation = PlayerAnimation.of("spell_engine:cleave");
         spell.active.cast.animation_pitch = false;
 
         spell.target.type = Spell.Target.Type.AREA;

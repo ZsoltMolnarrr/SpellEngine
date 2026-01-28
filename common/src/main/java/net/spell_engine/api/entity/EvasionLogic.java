@@ -4,11 +4,10 @@ import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.event.CombatEvents;
-import net.spell_engine.api.spell.fx.Animation;
+import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.tags.SpellEngineDamageTypeTags;
 import net.spell_engine.fx.SpellEngineSounds;
@@ -57,7 +56,7 @@ public class EvasionLogic {
     }
 
     private static final Sound evadeSound = new Sound("spell_engine:dodge", 1.0F, 1.0F, 0.1F);
-    private static final Animation evadeAnimation = new Animation("spell_engine:dodge");
+    private static final PlayerAnimation evadeAnimation = new PlayerAnimation("spell_engine:dodge");
     public static void onEvade(LivingEntity entity, float damage, DamageSource source) {
         // System.out.println("SpellEngine: " + entity.getName().getString() + " evaded damage from " + source.getName() + "!");
         if (entity instanceof ServerPlayerEntity player) {

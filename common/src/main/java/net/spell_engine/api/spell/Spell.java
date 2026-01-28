@@ -2,7 +2,7 @@ package net.spell_engine.api.spell;
 
 import net.minecraft.entity.EquipmentSlot;
 import net.spell_engine.api.render.LightEmission;
-import net.spell_engine.api.spell.fx.Animation;
+import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.util.AlwaysGenerate;
@@ -70,7 +70,7 @@ public class Spell {
             public float duration = 0;
             public int channel_ticks = 0;
 
-            public Animation animation;
+            public PlayerAnimation animation;
             public boolean animation_pitch = true;
             public float animation_spin = 0F;
             public boolean animates_ranged_weapon = false;
@@ -125,7 +125,7 @@ public class Spell {
 
     public Release release = new Release();
     public static class Release { public Release() { }
-        public Animation animation;
+        public PlayerAnimation animation;
         public ParticleBatch[] particles;
         public ParticleBatch[] particles_scaled_with_ranged;
         public Sound sound;
