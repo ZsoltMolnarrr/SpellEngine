@@ -56,6 +56,7 @@ Other changes:
   - Config file: `config/spell_engine/weapon_fallbacks.json`
   - Removed related old config options from `server.json5`
 - Global cooldown is now enabled by default for instant spells (0.5 seconds), adjustable in server config
+- Fixed operation of spell variant, target:`AIM`+ deliver:`DIRECT` + area impact
 
 # 1.8.19
 

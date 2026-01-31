@@ -453,7 +453,7 @@ public class SpellHelper {
                         && spell.area_impact != null) { // Special check to allow area impacts only, in the absence of targets
                     var position = targetLocation.lerp(casterPos, 0.001F);
                     var targetSpecificContext = context.position(position);
-                    performImpacts(world, caster, caster, caster, spellEntry, spell.impacts, targetSpecificContext);
+                    performImpacts(world, caster, caster, null, spellEntry, spell.impacts, targetSpecificContext);
                     anySuccess = true; // The area impact will be executed, hence always true
                 } else {
                     for(var targeted: targets) {
@@ -826,14 +826,21 @@ public class SpellHelper {
                                                   List<Spell.Impact> impacts, ImpactContext context, boolean additionalTargetLookup) {
         var center = context.position();
         var radius = area_impact.combinedRadius(context.power().baseValue());
-        var targets = TargetHelper.targetsFromArea(aoeSource, center, radius, area_impact.area, null);
+
+        var contextEntity = aoeSource != null ? aoeSource : caster;
+        var targets = TargetHelper.targetsFromArea(contextEntity.getWorld(), aoeSource, center, contextEntity.getRotationVector(), radius, area_impact.area, null);
         if (exclude != null) {
             targets.remove(exclude);
         }
-        var result = applyAreaImpact(aoeSource.getWorld(), caster, targets, radius, area_impact.area, spellEntry, impacts,
+        var result = applyAreaImpact(contextEntity.getWorld(), caster, targets, radius, area_impact.area, spellEntry, impacts,
                 context.target(SpellTarget.FocusMode.AREA), additionalTargetLookup, area_impact.execute_action_type);
-        ParticleHelper.sendBatches(aoeSource, area_impact.particles);
-        SoundHelper.playSound(aoeSource.getWorld(), aoeSource, area_impact.sound);
+        if (aoeSource != null) {
+            ParticleHelper.sendBatches(aoeSource, area_impact.particles);
+        } else {
+            ParticleHelper.sendBatches(center, caster, area_impact.particles);
+        }
+
+        SoundHelper.playSound(contextEntity.getWorld(), contextEntity, area_impact.sound);
         return result;
     }
 
