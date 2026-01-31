@@ -1,12 +1,12 @@
 {
+  "spell.rpg_series.cleave.description": "Performs a spin attack, dealing {damage} damage to nearby enemies.",
+  "spell.rpg_series.cleave.name": "Cleave",
   "spell.rpg_series.crushing_blow.description": "Delivers a powerful overhead strike, dealing {damage} damage and slowing the target for {duration} seconds.",
   "spell.rpg_series.crushing_blow.name": "Crushing Blow",
   "spell.rpg_series.ground_slam.description": "Leaps into the air and slams into the ground, dealing {damage} damage to nearby enemies.",
   "spell.rpg_series.ground_slam.name": "Ground Slam",
   "spell.rpg_series.slam.description": "Delivers a powerful overhead strike, dealing {damage} damage and slowing the target for {duration} seconds.",
   "spell.rpg_series.slam.name": "Slam",
-  "spell.rpg_series.spin_cleave.description": "Performs a spin attack, dealing {damage} damage to nearby enemies.",
-  "spell.rpg_series.spin_cleave.name": "Spin Cleave",
   "spell.rpg_series.whirlwind.description": "Hold to spin around, dealing {damage} damage per second, to nearby enemies.",
   "spell.rpg_series.whirlwind.name": "Whirlwind"
 }

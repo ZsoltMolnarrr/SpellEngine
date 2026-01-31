@@ -84,10 +84,10 @@ public class WeaponSkills {
         return new Entry(id, spell, title, description, null);
     }
 
-    public static Entry SPIN_CLEAVE = add(SPIN_CLEAVE());
-    private static Entry SPIN_CLEAVE() {
-        var id = Identifier.of(NAMESPACE, "spin_cleave");
-        var title = "Spin Cleave";
+    public static Entry CLEAVE = add(CLEAVE());
+    private static Entry CLEAVE() {
+        var id = Identifier.of(NAMESPACE, "cleave");
+        var title = "Cleave";
         var description = "Performs a spin attack, dealing {damage} damage to nearby enemies.";
         var spell = SpellBuilder.createWeaponSpell();
         spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
@@ -120,42 +120,6 @@ public class WeaponSkills {
         spell.deliver.delay = 2;
 
         var damage = SpellBuilder.Impacts.damage(1F);
-        spell.impacts = List.of(damage);
-
-        SpellBuilder.Cost.cooldown(spell, 6);
-        spell.cost.cooldown.attempt_duration = 0.5F;
-
-        return new Entry(id, spell, title, description, null);
-    }
-
-    public static Entry CRUSHING_BLOW = add(CRUSHING_BLOW());
-    private static Entry CRUSHING_BLOW() {
-        var id = Identifier.of(NAMESPACE, "crushing_blow");
-        var title = "Crushing Blow";
-        var description = "Delivers a powerful overhead strike, dealing {damage} damage and slowing the target for {duration} seconds.";
-        var spell = SpellBuilder.createWeaponSpell();
-        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
-        spell.range = 0;
-        spell.range_mechanic = Spell.RangeMechanic.MELEE;
-
-        SpellBuilder.Casting.instant(spell);
-
-        spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
-        spell.release.animation = PlayerAnimation.of("bettercombat:one_handed_uppercut_right");
-        spell.active.cast.animation_pitch = false;
-
-        spell.target.type = Spell.Target.Type.AREA;
-        spell.target.area = new Spell.Target.Area();
-        spell.target.area.angle_degrees = 90F;
-        spell.target.area.distance_dropoff = Spell.Target.Area.DropoffCurve.NONE;
-        spell.target.area.vertical_range_multiplier = 0.5F;
-
-        spell.release.particles_scaled_with_ranged = new ParticleBatch[]{
-        };
-
-        spell.deliver.delay = 2;
-
-        var damage = SpellBuilder.Impacts.damage(1F, 2F);
         spell.impacts = List.of(damage);
 
         SpellBuilder.Cost.cooldown(spell, 6);
@@ -239,6 +203,46 @@ public class WeaponSkills {
         spell.area_impact.sound = new Sound(SpellEngineSounds.GROUND_SLAM.id());
 
         SpellBuilder.Cost.cooldown(spell, 12);
+        spell.cost.cooldown.attempt_duration = 0.5F;
+
+        return new Entry(id, spell, title, description, null);
+    }
+
+
+
+
+
+    public static Entry CRUSHING_BLOW = add(CRUSHING_BLOW());
+    private static Entry CRUSHING_BLOW() {
+        var id = Identifier.of(NAMESPACE, "crushing_blow");
+        var title = "Crushing Blow";
+        var description = "Delivers a powerful overhead strike, dealing {damage} damage and slowing the target for {duration} seconds.";
+        var spell = SpellBuilder.createWeaponSpell();
+        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
+        spell.range = 0;
+        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+
+        SpellBuilder.Casting.instant(spell);
+
+        spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
+        spell.release.animation = PlayerAnimation.of("bettercombat:one_handed_uppercut_right");
+        spell.active.cast.animation_pitch = false;
+
+        spell.target.type = Spell.Target.Type.AREA;
+        spell.target.area = new Spell.Target.Area();
+        spell.target.area.angle_degrees = 90F;
+        spell.target.area.distance_dropoff = Spell.Target.Area.DropoffCurve.NONE;
+        spell.target.area.vertical_range_multiplier = 0.5F;
+
+        spell.release.particles_scaled_with_ranged = new ParticleBatch[]{
+        };
+
+        spell.deliver.delay = 2;
+
+        var damage = SpellBuilder.Impacts.damage(1F, 2F);
+        spell.impacts = List.of(damage);
+
+        SpellBuilder.Cost.cooldown(spell, 6);
         spell.cost.cooldown.attempt_duration = 0.5F;
 
         return new Entry(id, spell, title, description, null);
