@@ -127,4 +127,120 @@ public class WeaponSkills {
 
         return new Entry(id, spell, title, description, null);
     }
+
+    public static Entry CRUSHING_BLOW = add(CRUSHING_BLOW());
+    private static Entry CRUSHING_BLOW() {
+        var id = Identifier.of(NAMESPACE, "crushing_blow");
+        var title = "Crushing Blow";
+        var description = "Delivers a powerful overhead strike, dealing {damage} damage and slowing the target for {duration} seconds.";
+        var spell = SpellBuilder.createWeaponSpell();
+        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
+        spell.range = 0;
+        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+
+        SpellBuilder.Casting.instant(spell);
+
+        spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
+        spell.release.animation = PlayerAnimation.of("bettercombat:one_handed_uppercut_right");
+        spell.active.cast.animation_pitch = false;
+
+        spell.target.type = Spell.Target.Type.AREA;
+        spell.target.area = new Spell.Target.Area();
+        spell.target.area.angle_degrees = 90F;
+        spell.target.area.distance_dropoff = Spell.Target.Area.DropoffCurve.NONE;
+        spell.target.area.vertical_range_multiplier = 0.5F;
+
+        spell.release.particles_scaled_with_ranged = new ParticleBatch[]{
+        };
+
+        spell.deliver.delay = 2;
+
+        var damage = SpellBuilder.Impacts.damage(1F, 2F);
+        spell.impacts = List.of(damage);
+
+        SpellBuilder.Cost.cooldown(spell, 6);
+        spell.cost.cooldown.attempt_duration = 0.5F;
+
+        return new Entry(id, spell, title, description, null);
+    }
+
+    public static Entry SLAM = add(SLAM());
+    private static Entry SLAM() {
+        var id = Identifier.of(NAMESPACE, "slam");
+        var title = "Slam";
+        var description = "Delivers a powerful overhead strike, dealing {damage} damage and slowing the target for {duration} seconds.";
+        var spell = SpellBuilder.createWeaponSpell();
+        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
+        spell.range = 0;
+        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+
+        SpellBuilder.Casting.cast(spell, 0.8F);
+        spell.active.cast.animation = PlayerAnimation.of("spell_engine:one_handed_charge_weapon_spin_v2");
+
+        spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
+        spell.release.animation = PlayerAnimation.of("bettercombat:one_handed_uppercut_right");
+
+        spell.target.type = Spell.Target.Type.AIM;
+        spell.target.aim = new Spell.Target.Aim();
+        spell.target.aim.sticky = true;
+        spell.target.aim.required = true;
+
+        var damage = SpellBuilder.Impacts.damage(1F);
+        spell.impacts = List.of(damage);
+
+        SpellBuilder.Cost.cooldown(spell, 6);
+        spell.cost.cooldown.attempt_duration = 0.5F;
+
+        return new Entry(id, spell, title, description, null);
+    }
+
+    public static Entry GROUND_SLAM = add(GROUND_SLAM());
+    private static Entry GROUND_SLAM() {
+        var id = Identifier.of(NAMESPACE, "ground_slam");
+        var title = "Ground Slam";
+        var description = "Leaps into the air and slams into the ground, dealing {damage} damage to nearby enemies.";
+        var spell = SpellBuilder.createWeaponSpell();
+        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
+        spell.range = 0;
+        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+
+        SpellBuilder.Casting.cast(spell, 1.0F);
+        spell.active.cast.animation = PlayerAnimation.of("spell_engine:slam_jump");
+        spell.active.cast.start_sound = new Sound(SpellEngineSounds.HAMMER_SWING.id());
+
+        spell.release.animation = PlayerAnimation.of("spell_engine:slam_end");
+        spell.active.cast.animation_pitch = false;
+
+        spell.target.type = Spell.Target.Type.AIM;
+        spell.target.aim = new Spell.Target.Aim();
+        spell.target.aim.required = false;
+
+        spell.deliver.delay = 2;
+
+        var damage = SpellBuilder.Impacts.damage(1F);
+        spell.impacts = List.of(damage);
+
+        spell.area_impact = new Spell.AreaImpact();
+        spell.area_impact.radius = 3F;
+        spell.area_impact.particles = new ParticleBatch[]{
+                new ParticleBatch(SpellEngineParticles.smoke_medium.id().toString(),
+                        ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET,
+                        25, 0.2F, 0.2F)
+                        .preSpawnTravel(1),
+                new ParticleBatch(SpellEngineParticles.smoke_medium.id().toString(),
+                        ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET,
+                        25, 0.3F, 0.3F)
+                        .preSpawnTravel(2),
+                new ParticleBatch(SpellEngineParticles.smoke_medium.id().toString(),
+                        ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET,
+                        25, 0.4F, 0.4F)
+                        .preSpawnTravel(4)
+        };
+        spell.area_impact.sound = new Sound(SpellEngineSounds.GROUND_SLAM.id());
+
+        SpellBuilder.Cost.cooldown(spell, 12);
+        spell.cost.cooldown.attempt_duration = 0.5F;
+
+        return new Entry(id, spell, title, description, null);
+    }
 }

@@ -135,6 +135,16 @@
       "spell_engine:generic_wind_charging"
     ]
   },
+  "ground_slam": {
+    "sounds": [
+      "spell_engine:ground_slam"
+    ]
+  },
+  "hammer_swing": {
+    "sounds": [
+      "spell_engine:hammer_swing"
+    ]
+  },
   "leeching_impact": {
     "sounds": [
       "spell_engine:leeching_impact"

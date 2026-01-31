@@ -822,7 +822,7 @@ public class SpellHelper {
         return false;
     }
 
-    public static boolean lookupAndPerformAreaImpact(Spell.AreaImpact area_impact, RegistryEntry<Spell> spellEntry, LivingEntity caster, Entity exclude, Entity aoeSource,
+    public static boolean lookupAndPerformAreaImpact(Spell.AreaImpact area_impact, RegistryEntry<Spell> spellEntry, LivingEntity caster, Entity exclude, @Nullable Entity aoeSource,
                                                   List<Spell.Impact> impacts, ImpactContext context, boolean additionalTargetLookup) {
         var center = context.position();
         var radius = area_impact.combinedRadius(context.power().baseValue());

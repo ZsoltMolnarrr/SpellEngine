@@ -117,6 +117,8 @@ public class SpellEngineSounds {
 
     public static final Entry WHIRLWIND = add(new Entry("whirlwind"));
     public static final Entry CLEAVE = add(new Entry("cleave"));
+    public static final Entry HAMMER_SWING = add(new Entry("hammer_swing"));
+    public static final Entry GROUND_SLAM = add(new Entry("ground_slam"));
     public static final Entry THROW_WEAPON = add(new Entry("throw_weapon"));
 
     // MARK: Spell binding sounds

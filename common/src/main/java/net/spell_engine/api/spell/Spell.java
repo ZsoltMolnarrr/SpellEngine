@@ -15,6 +15,10 @@ import java.util.List;
 
 public class Spell {
     public SpellSchool school;
+
+    public void targ() {
+    }
+
     public enum ExtendedArchetype { ARCHERY, MAGIC, MELEE, ANY }
     @Nullable public ExtendedArchetype secondary_archetype = null;
     public float range = 50;
@@ -151,7 +155,10 @@ public class Spell {
         }
 
         public Beam beam;
-        public static class Beam { public Beam() { }
+        public static class Beam {
+            public Beam() {
+
+            }
             public enum Luminance { LOW, MEDIUM, HIGH }
             public Beam.Luminance luminance = Beam.Luminance.HIGH;
             public String texture_id = "textures/entity/beacon_beam.png";

@@ -1,0 +1,45 @@
+{
+  "school": "spell_power:physical_melee",
+  "range": 0.0,
+  "range_mechanic": "MELEE",
+  "tier": 1,
+  "learn": {},
+  "active": {
+    "cast": {
+      "duration": 0.8,
+      "animation": {
+        "id": "spell_engine:one_handed_charge_weapon_spin_v2"
+      }
+    }
+  },
+  "release": {
+    "animation": {
+      "id": "bettercombat:one_handed_uppercut_right"
+    },
+    "sound": {
+      "id": "spell_engine:cleave"
+    }
+  },
+  "target": {
+    "type": "AIM",
+    "aim": {
+      "required": true,
+      "sticky": true
+    }
+  },
+  "impacts": [
+    {
+      "action": {
+        "type": "DAMAGE",
+        "damage": {}
+      }
+    }
+  ],
+  "cost": {
+    "cooldown": {
+      "group": "weapon",
+      "attempt_duration": 0.5,
+      "duration": 6.0
+    }
+  }
+}
