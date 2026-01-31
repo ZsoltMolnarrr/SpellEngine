@@ -152,6 +152,9 @@ public class Spell {
             public boolean sticky = false;
             /// Whether the spell casting process uses the caster as a fallback target
             public boolean use_caster_as_fallback = false;
+            /// Vertical repositioning of the aimed position (from cursor),
+            /// ignored if an entity is targeted, respects ground
+            public float reposition_vertically = 0F;
         }
 
         public Beam beam;

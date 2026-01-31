@@ -316,7 +316,14 @@ public class SpellHelper {
                             targetsWithContext = List.of(new DeliveryTarget(target, targetSpecificContext));
                         }
                         if (!aim.required || firstTarget.isPresent()) {
-                            success = deliver(world, spellEntry, player, targetsWithContext, context, targetResult.location(), completion);
+                            var location = targetResult.location();
+                            if (location != null && firstTarget.isEmpty() && aim.reposition_vertically != 0) {
+                                var collidedLocation = TargetHelper.findSolidBelow(player, location, world, aim.reposition_vertically);
+                                if (collidedLocation != null) {
+                                    location = collidedLocation;
+                                }
+                            }
+                            success = deliver(world, spellEntry, player, targetsWithContext, context, location, completion);
                         }
                         // Very specific attempt failure display, generic solution would be very difficult
                         if (!success && aim.required && firstTarget.isEmpty()) {

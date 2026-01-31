@@ -178,6 +178,7 @@ public class WeaponSkills {
         spell.target.type = Spell.Target.Type.AIM;
         spell.target.aim = new Spell.Target.Aim();
         spell.target.aim.required = false;
+        spell.target.aim.reposition_vertically = -1.5F;
 
         spell.deliver.delay = 2;
 

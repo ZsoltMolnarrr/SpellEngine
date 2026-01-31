@@ -23,7 +23,9 @@
   },
   "target": {
     "type": "AIM",
-    "aim": {}
+    "aim": {
+      "reposition_vertically": -1.5
+    }
   },
   "deliver": {
     "delay": 2
