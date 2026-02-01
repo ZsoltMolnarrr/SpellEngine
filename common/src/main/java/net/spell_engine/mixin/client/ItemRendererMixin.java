@@ -6,6 +6,7 @@ import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.world.World;
 import net.spell_engine.Platform;
 import net.spell_engine.api.spell.SpellDataComponents;
@@ -42,6 +43,12 @@ public class ItemRendererMixin {
                 model = models.getModelManager().getModel(modelId);
             } else {
                 model = models.getModelManager().getModel(new ModelIdentifier(modelId, "standalone"));
+            }
+            if (model == null) {
+                var item = Registries.ITEM.getEntry(modelId);
+                if (item.isPresent()) {
+                    model = models.getModel(item.get().value());
+                }
             }
             if (model != null && model != models.getModelManager().getMissingModel()) {
                 cir.setReturnValue(model);
