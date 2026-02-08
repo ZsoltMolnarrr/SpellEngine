@@ -361,6 +361,7 @@ public class Spell {
                 TELEPORT,
                 COOLDOWN,
                 AGGRO,
+                MELEE,
                 CUSTOM
             }
             public Damage damage;
@@ -487,6 +488,27 @@ public class Spell {
                     CLEAR
                 }
                 public Mode mode = Mode.SET;
+            }
+
+            public Melee melee;
+            public static class Melee { public Melee() { }
+                public boolean haste_affected = true;
+                public List<Attack> attacks = List.of();
+                public static class Attack { public Attack() { }
+                    /// Duration of the melee attack (in ticks)
+                    public int duration = 10;
+                    /// Delay before the attack is executed (in ticks)
+                    public int delay = 0;
+                    public float arc_degrees = 0F;
+                    public PlayerAnimation animation;
+                    public Sound sound;
+                    public HitBox hitBox = new HitBox();
+                }
+                public static class HitBox {
+                    public float width = 1F;
+                    public float height = 1F;
+                    public float rotation_degrees = 0F;
+                }
             }
 
             public Custom custom;

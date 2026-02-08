@@ -467,7 +467,7 @@ public class SpellHelper {
                         var target = targeted.entity;
                         var position = target == caster
                                 ? casterPos
-                                : target.getPos().add(0, target.getHeight() / 2F, 0).lerp(casterPos, 0.001F);
+                                : target.getPos().add(0, target.getHeight() / 2F, 0).lerp(casterPos, 0.01F);
                         var targetSpecificContext = targeted.context.position(position);
                         var result = performImpacts(world, caster, target, target, spellEntry, spell.impacts, targetSpecificContext);
                         anySuccess = anySuccess || result;
@@ -1463,6 +1463,9 @@ public class SpellHelper {
                         success = true;
                     }
                 }
+                case MELEE -> {
+
+                }
                 case CUSTOM -> {
                     if (impact.action.custom != null) {
                         var handler = SpellHandlers.customImpact.get(impact.action.custom.handler);
@@ -1714,7 +1717,7 @@ public class SpellHelper {
 
     public static SpellTarget.Intent impactIntent(Spell.Impact.Action action) {
         switch (action.type) {
-            case DAMAGE, FIRE, AGGRO -> {
+            case DAMAGE, FIRE, AGGRO, MELEE -> {
                 return SpellTarget.Intent.HARMFUL;
             }
             case HEAL, SPAWN -> {

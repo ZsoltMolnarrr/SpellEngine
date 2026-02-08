@@ -128,36 +128,6 @@ public class WeaponSkills {
         return new Entry(id, spell, title, description, null);
     }
 
-    public static Entry SLAM = add(SLAM());
-    private static Entry SLAM() {
-        var id = Identifier.of(NAMESPACE, "slam");
-        var title = "Slam";
-        var description = "Delivers a powerful overhead strike, dealing {damage} damage and slowing the target for {duration} seconds.";
-        var spell = SpellBuilder.createWeaponSpell();
-        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
-        spell.range = 0;
-        spell.range_mechanic = Spell.RangeMechanic.MELEE;
-
-        SpellBuilder.Casting.cast(spell, 0.8F);
-        spell.active.cast.animation = PlayerAnimation.of("spell_engine:one_handed_charge_weapon_spin_v2");
-
-        spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
-        spell.release.animation = PlayerAnimation.of("bettercombat:one_handed_uppercut_right");
-
-        spell.target.type = Spell.Target.Type.AIM;
-        spell.target.aim = new Spell.Target.Aim();
-        spell.target.aim.sticky = true;
-        spell.target.aim.required = true;
-
-        var damage = SpellBuilder.Impacts.damage(1F);
-        spell.impacts = List.of(damage);
-
-        SpellBuilder.Cost.cooldown(spell, 6);
-        spell.cost.cooldown.attempt_duration = 0.5F;
-
-        return new Entry(id, spell, title, description, null);
-    }
-
     public static Entry GROUND_SLAM = add(GROUND_SLAM());
     private static Entry GROUND_SLAM() {
         var id = Identifier.of(NAMESPACE, "ground_slam");
@@ -209,9 +179,35 @@ public class WeaponSkills {
         return new Entry(id, spell, title, description, null);
     }
 
+    public static Entry SLAM = add(SLAM());
+    private static Entry SLAM() {
+        var id = Identifier.of(NAMESPACE, "slam");
+        var title = "Slam";
+        var description = "Delivers a powerful overhead strike, dealing {damage} damage and slowing the target for {duration} seconds.";
+        var spell = SpellBuilder.createWeaponSpell();
+        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
+        spell.range = 0;
+        spell.range_mechanic = Spell.RangeMechanic.MELEE;
 
+        SpellBuilder.Casting.cast(spell, 0.8F);
+        spell.active.cast.animation = PlayerAnimation.of("spell_engine:one_handed_charge_weapon_spin_v2");
 
+        spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
+        spell.release.animation = PlayerAnimation.of("bettercombat:one_handed_uppercut_right");
 
+        spell.target.type = Spell.Target.Type.AIM;
+        spell.target.aim = new Spell.Target.Aim();
+        spell.target.aim.sticky = true;
+        spell.target.aim.required = true;
+
+        var damage = SpellBuilder.Impacts.damage(1F);
+        spell.impacts = List.of(damage);
+
+        SpellBuilder.Cost.cooldown(spell, 6);
+        spell.cost.cooldown.attempt_duration = 0.5F;
+
+        return new Entry(id, spell, title, description, null);
+    }
 
     public static Entry CRUSHING_BLOW = add(CRUSHING_BLOW());
     private static Entry CRUSHING_BLOW() {
