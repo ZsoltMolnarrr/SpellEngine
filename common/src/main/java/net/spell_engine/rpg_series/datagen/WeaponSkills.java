@@ -244,4 +244,44 @@ public class WeaponSkills {
 
         return new Entry(id, spell, title, description, null);
     }
+
+    public static Entry FLURRY = add(FLURRY());
+    private static Entry FLURRY() {
+        var id = Identifier.of(NAMESPACE, "flurry");
+        var title = "Flurry";
+        var description = "Unleash a rapid series of strikes.";
+        var spell = SpellBuilder.createWeaponSpell();
+        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
+        spell.range = 0;
+        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+
+        SpellBuilder.Casting.instant(spell);
+        spell.target = new Spell.Target();
+        spell.target.type = Spell.Target.Type.CASTER;
+
+        var cut_1 = new Spell.Impact.Action.Melee.Attack();
+        cut_1.attack_speed_multiplier = 2F;
+        cut_1.delay = 0.3F;
+        cut_1.hitbox_arc = 90;
+        cut_1.hitbox = new Spell.Impact.Action.Melee.HitBox();
+        cut_1.hitbox.height = 0.2F;
+        cut_1.animation = PlayerAnimation.of("bettercombat:two_handed_slash_horizontal_right");
+
+        var cut_2 = new Spell.Impact.Action.Melee.Attack();
+        cut_2.attack_speed_multiplier = 2F;
+        cut_2.delay = 0.3F;
+        cut_2.hitbox_arc = 90;
+        cut_2.hitbox = new Spell.Impact.Action.Melee.HitBox();
+        cut_2.hitbox.height = 0.2F;
+        cut_2.animation = PlayerAnimation.of("bettercombat:two_handed_slash_horizontal_left");
+
+        spell.impacts = List.of(
+                SpellBuilder.Impacts.melee(List.of(cut_1, cut_2))
+        );
+
+        // SpellBuilder.Cost.cooldown(spell, 10);
+        spell.cost.cooldown.attempt_duration = 1F;
+
+        return new Entry(id, spell, title, description, null);
+    }
 }

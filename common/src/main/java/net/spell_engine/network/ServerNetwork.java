@@ -16,6 +16,7 @@ import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.container.SpellAssignments;
 import net.spell_engine.internals.container.SpellContainerSource;
+import net.spell_engine.internals.melee.Melee;
 import net.spell_engine.internals.target.SpellTarget;
 
 import java.util.ArrayList;
@@ -135,7 +136,7 @@ public class ServerNetwork {
             }
 
             world.getServer().executeSync(() -> {
-                net.spell_engine.internals.melee.MeleeHelper.handleAttackPerform(packet, player, world);
+                Melee.performAttackAgainstTargets(player, packet.targetIds());
             });
         });
 

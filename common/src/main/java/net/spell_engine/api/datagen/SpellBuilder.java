@@ -650,6 +650,15 @@ public class SpellBuilder {
 
             return impact;
         }
+
+        public static Spell.Impact melee(List<Spell.Impact.Action.Melee.Attack> attacks) {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.MELEE;
+            impact.action.melee = new Spell.Impact.Action.Melee();
+            impact.action.melee.attacks = attacks;
+            return impact;
+        }
     }
 
     public static class ImpactModifiers {

@@ -4,6 +4,8 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -13,20 +15,25 @@ import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.PlatformClient;
 import net.spell_engine.client.SpellEngineClient;
+import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterClient;
+import net.spell_engine.internals.melee.Melee;
+import net.spell_engine.internals.melee.OrientedBoundingBox;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -243,6 +250,30 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return firstTarget();
     }
 
+
+    private Melee.ActiveAttack currentAttack = null;
+    private List<Melee.Attack> scheduledAttacks = new ArrayList<>();
+    public void onAttacksAvailable(List<Melee.Attack> attacks) {
+        scheduledAttacks.addAll(attacks);
+    }
+    @Unique
+    private void onAttackActivated(Melee.Attack attack) {
+        // On attack started
+        // TODO: animation, sound, momentum
+
+        ((AnimatablePlayer)this).playSpellAnimation(SpellCast.Animation.RELEASE, attack.animation().id, attack.speed());
+    }
+    @Unique
+    private void onAttackHit(Melee.Attack attack) {
+        var player = player();
+        var targets = Melee.detectTargets(player, attack);
+        if (!targets.isEmpty()) {
+            var targetIds = targets.stream().mapToInt(Integer::intValue).toArray();
+            var packet = new Packets.AttackPerform(targetIds);
+            ClientPlayNetworking.send(packet);
+        }
+    }
+
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick_TAIL_SpellEngine(CallbackInfo ci) {
         updateSpellCast();
@@ -253,6 +284,22 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                     player.getYaw(), player.getPitch(),
                     player.isOnGround())
             );
+        }
+        var time = player.age;
+        if (currentAttack == null) {
+            if (!scheduledAttacks.isEmpty()) {
+                var attack = scheduledAttacks.remove(0);
+                currentAttack = new Melee.ActiveAttack(attack, time);
+                onAttackActivated(attack);
+            }
+        }
+        if (currentAttack != null) {
+            if (currentAttack.isDue(time)) {
+                onAttackHit(currentAttack.attack);
+            }
+            if (currentAttack.isFinished(time)) {
+                currentAttack = null;
+            }
         }
     }
 }

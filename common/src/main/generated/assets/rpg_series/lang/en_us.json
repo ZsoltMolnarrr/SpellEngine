@@ -3,6 +3,8 @@
   "spell.rpg_series.cleave.name": "Cleave",
   "spell.rpg_series.crushing_blow.description": "Delivers a powerful overhead strike, dealing {damage} damage and slowing the target for {duration} seconds.",
   "spell.rpg_series.crushing_blow.name": "Crushing Blow",
+  "spell.rpg_series.flurry.description": "Unleash a rapid series of strikes.",
+  "spell.rpg_series.flurry.name": "Flurry",
   "spell.rpg_series.ground_slam.description": "Leaps into the air and slams into the ground, dealing {damage} damage to nearby enemies.",
   "spell.rpg_series.ground_slam.name": "Ground Slam",
   "spell.rpg_series.slam.description": "Delivers a powerful overhead strike, dealing {damage} damage and slowing the target for {duration} seconds.",

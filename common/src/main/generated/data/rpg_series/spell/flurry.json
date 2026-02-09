@@ -1,0 +1,47 @@
+{
+  "school": "spell_power:physical_melee",
+  "range": 0.0,
+  "range_mechanic": "MELEE",
+  "tier": 1,
+  "learn": {},
+  "active": {},
+  "impacts": [
+    {
+      "action": {
+        "type": "MELEE",
+        "melee": {
+          "attacks": [
+            {
+              "attack_speed_multiplier": 2.0,
+              "delay": 0.3,
+              "hitbox_arc": 90.0,
+              "hitbox": {
+                "height": 0.2
+              },
+              "animation": {
+                "id": "bettercombat:two_handed_slash_horizontal_right"
+              }
+            },
+            {
+              "attack_speed_multiplier": 2.0,
+              "delay": 0.3,
+              "hitbox_arc": 90.0,
+              "hitbox": {
+                "height": 0.2
+              },
+              "animation": {
+                "id": "bettercombat:two_handed_slash_horizontal_left"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "cost": {
+    "cooldown": {
+      "group": "weapon",
+      "attempt_duration": 1.0
+    }
+  }
+}

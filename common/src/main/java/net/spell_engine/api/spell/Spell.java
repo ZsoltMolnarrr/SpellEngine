@@ -497,9 +497,9 @@ public class Spell {
                     /// Whether the duration of the attack is based on the attack cooldown (attack speed attribute)
                     public boolean duration_attack_speed_based = true;
                     /// Duration of the melee attack (in ticks)
-                    public int duration_static = 10;
+                    public int duration_static = 0;
                     /// A multiplier applied to the non-static duration
-                    public float duration_multiplier = 1F;
+                    public float attack_speed_multiplier = 1F;
                     /// Duration multiplier, producing impact delay. Will be rounded to whole ticks.
                     public float delay = 0;
 

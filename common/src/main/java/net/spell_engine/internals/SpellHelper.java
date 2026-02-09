@@ -47,7 +47,6 @@ import net.spell_engine.internals.casting.SpellCastSyncHelper;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.melee.Melee;
-import net.spell_engine.internals.melee.MeleeHelper;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.fx.ParticleHelper;
@@ -1738,10 +1737,10 @@ public class SpellHelper {
 
     public static SpellTarget.Intent impactIntent(Spell.Impact.Action action) {
         switch (action.type) {
-            case DAMAGE, FIRE, AGGRO, MELEE -> {
+            case DAMAGE, FIRE, AGGRO -> {
                 return SpellTarget.Intent.HARMFUL;
             }
-            case HEAL, SPAWN -> {
+            case HEAL, MELEE, SPAWN -> {
                 return SpellTarget.Intent.HELPFUL;
             }
             case STATUS_EFFECT -> {
