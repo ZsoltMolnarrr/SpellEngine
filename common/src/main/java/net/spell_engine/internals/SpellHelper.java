@@ -46,6 +46,8 @@ import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCastSyncHelper;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.container.SpellContainerSource;
+import net.spell_engine.internals.melee.Melee;
+import net.spell_engine.internals.melee.MeleeHelper;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.fx.ParticleHelper;
@@ -1464,7 +1466,26 @@ public class SpellHelper {
                     }
                 }
                 case MELEE -> {
+                    if (impact.action.melee != null
+                            && !impact.action.melee.attacks.isEmpty()
+                            && caster instanceof ServerPlayerEntity serverPlayer) {
+                        var meleeData = impact.action.melee;
 
+                        // Find the impact index in the spell's impacts list
+                        var impactIndex = spell.impacts.indexOf(impact);
+
+                        // Map to resolved MeleeAttack structures
+                        var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, meleeData);
+
+                        // Send AttackAvailable packet to client
+                        var packet = new Packets.AttackAvailable(
+                            spellEntry.getKey().get().getValue(),
+                            impactIndex,
+                            meleeAttacks
+                        );
+                        ServerPlayNetworking.send(serverPlayer, packet);
+                        success = true;
+                    }
                 }
                 case CUSTOM -> {
                     if (impact.action.custom != null) {

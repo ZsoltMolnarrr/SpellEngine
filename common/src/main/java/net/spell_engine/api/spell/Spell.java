@@ -492,17 +492,25 @@ public class Spell {
 
             public Melee melee;
             public static class Melee { public Melee() { }
-                public boolean haste_affected = true;
                 public List<Attack> attacks = List.of();
                 public static class Attack { public Attack() { }
+                    /// Whether the duration of the attack is based on the attack cooldown (attack speed attribute)
+                    public boolean duration_attack_speed_based = true;
                     /// Duration of the melee attack (in ticks)
-                    public int duration = 10;
-                    /// Delay before the attack is executed (in ticks)
-                    public int delay = 0;
-                    public float arc_degrees = 0F;
+                    public int duration_static = 10;
+                    /// A multiplier applied to the non-static duration
+                    public float duration_multiplier = 1F;
+                    /// Duration multiplier, producing impact delay. Will be rounded to whole ticks.
+                    public float delay = 0;
+
+                    public float forward_momentum = 0F;
+
+                    public float hitbox_arc = 0F;
+                    /// Arc of the melee attack hitbox, in degrees. 0 means a rectangle, greater than 0 means a sector shape with the given arc.
+                    public HitBox hitbox = new HitBox();
+
                     public PlayerAnimation animation;
                     public Sound sound;
-                    public HitBox hitBox = new HitBox();
                 }
                 public static class HitBox {
                     public float width = 1F;

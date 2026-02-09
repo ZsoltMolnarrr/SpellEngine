@@ -66,12 +66,14 @@ public class ServerNetwork {
 
         PayloadTypeRegistry.playC2S().register(Packets.SpellCastSync.PACKET_ID, Packets.SpellCastSync.CODEC);
         PayloadTypeRegistry.playC2S().register(Packets.SpellRequest.PACKET_ID, Packets.SpellRequest.CODEC);
+        PayloadTypeRegistry.playC2S().register(Packets.AttackPerform.PACKET_ID, Packets.AttackPerform.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.SpellCooldown.PACKET_ID, Packets.SpellCooldown.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.SpellCooldownSync.PACKET_ID, Packets.SpellCooldownSync.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.SpellMessage.PACKET_ID, Packets.SpellMessage.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.ParticleBatches.PACKET_ID, Packets.ParticleBatches.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.SpellAnimation.PACKET_ID, Packets.SpellAnimation.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.SpellContainerSync.PACKET_ID, Packets.SpellContainerSync.CODEC);
+        PayloadTypeRegistry.playS2C().register(Packets.AttackAvailable.PACKET_ID, Packets.AttackAvailable.CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(Packets.SpellCastSync.PACKET_ID, (packet, context) -> {
             var server = context.server();
@@ -119,6 +121,21 @@ public class ServerNetwork {
                 }
                 var target = new SpellTarget.SearchResult(targets, packet.location());
                 SpellHelper.performSpell(world, player, spellEntry.get(), target, packet.action(), packet.progress());
+            });
+        });
+
+        ServerPlayNetworking.registerGlobalReceiver(Packets.AttackPerform.PACKET_ID, (packet, context) -> {
+            var server = context.server();
+            var player = context.player();
+
+            ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
+                    .orNull();
+            if (world == null || world.isClient) {
+                return;
+            }
+
+            world.getServer().executeSync(() -> {
+                net.spell_engine.internals.melee.MeleeHelper.handleAttackPerform(packet, player, world);
             });
         });
 

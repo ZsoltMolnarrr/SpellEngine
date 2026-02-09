@@ -8,6 +8,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.client.gui.HudMessages;
+import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.container.SpellAssignments;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -87,6 +88,16 @@ public class ClientNetwork {
                     containers.putAll(packet.containers());
                 }
                 SpellContainerSource.setDirty(client.player, SpellContainerSource.MAIN_HAND);
+            });
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(Packets.AttackAvailable.PACKET_ID, (packet, context) -> {
+            var client = context.client();
+            client.execute(() -> {
+                var player = client.player;
+                if (player instanceof SpellCasterClient caster) {
+                    caster.onAttacksAvailable(packet.attacks());
+                }
             });
         });
     }
