@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.Spell;
@@ -257,10 +258,37 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         scheduledAttacks.addAll(attacks);
     }
     @Unique
+    private void onTick_ScheduledAttacks(ClientPlayerEntity player) {
+        var time = player.age;
+        if (currentAttack == null) {
+            if (!scheduledAttacks.isEmpty()) {
+                var attack = scheduledAttacks.remove(0);
+                currentAttack = new Melee.ActiveAttack(attack, time);
+                onAttackActivated(attack);
+            }
+        }
+        if (currentAttack != null) {
+            if (currentAttack.isDue(time)) {
+                onAttackHit(currentAttack.attack);
+            }
+            if (currentAttack.isFinished(time)) {
+                currentAttack = null;
+            }
+        }
+    }
+    @Unique
     private void onAttackActivated(Melee.Attack attack) {
         // On attack started
-        // TODO: animation, sound, momentum
+        // TODO: animation, sound
 
+        var player = player();
+        var momentum = attack.forward_momentum();
+        if (momentum > 0) {
+            var direction = new Vec3d(0, 0, 1)
+                    .rotateY((float) Math.toRadians((-1.0) * player.getYaw()))
+                    .multiply(attack.forward_momentum());
+            player.addVelocity(direction.x, direction.y, direction.z);
+        }
         ((AnimatablePlayer)this).playSpellAnimation(SpellCast.Animation.RELEASE, attack.animation().id, attack.speed());
     }
     @Unique
@@ -285,21 +313,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                     player.isOnGround())
             );
         }
-        var time = player.age;
-        if (currentAttack == null) {
-            if (!scheduledAttacks.isEmpty()) {
-                var attack = scheduledAttacks.remove(0);
-                currentAttack = new Melee.ActiveAttack(attack, time);
-                onAttackActivated(attack);
-            }
-        }
-        if (currentAttack != null) {
-            if (currentAttack.isDue(time)) {
-                onAttackHit(currentAttack.attack);
-            }
-            if (currentAttack.isFinished(time)) {
-                currentAttack = null;
-            }
-        }
+        onTick_ScheduledAttacks(player);
     }
 }
