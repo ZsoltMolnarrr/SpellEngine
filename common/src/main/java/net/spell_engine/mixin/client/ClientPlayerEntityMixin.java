@@ -290,10 +290,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
 
         if (attack.context() != null) {
-            var attackData = Melee.resolveAttackData(player.getWorld(), player, attack.context());
-            if (attackData != null) {
-                ((AnimatablePlayer)this).playSpellAnimation(SpellCast.Animation.RELEASE, attackData.animation.id, attack.speed());
-            }
+            ((AnimatablePlayer)this).playSpellAnimation(SpellCast.Animation.RELEASE, attack.animation().id, attack.speed());
             var packet = new Packets.AttackFxBroadcast(attack.context());
             ClientPlayNetworking.send(packet);
         }

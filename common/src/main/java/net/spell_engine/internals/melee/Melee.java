@@ -9,6 +9,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellModifiers;
@@ -63,6 +64,7 @@ public class Melee {
                     attack.forward_momentum,
                     attack.hitbox_arc,
                     attack.hitbox,
+                    attack.animation,
                     new AttackContext(spellId, attack.id)
             );
             attacks.add(meleeAttack);
@@ -108,6 +110,7 @@ public class Melee {
             float forward_momentum,
             float hitbox_arc,
             Spell.Impact.Action.Melee.HitBox hitbox,
+            PlayerAnimation animation,
             @Nullable AttackContext context
     ) {
     }
