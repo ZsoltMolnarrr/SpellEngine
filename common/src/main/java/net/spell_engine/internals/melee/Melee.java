@@ -1,25 +1,50 @@
 package net.spell_engine.internals.melee;
 
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.Box;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import net.spell_engine.api.spell.Spell;
-import net.spell_engine.api.spell.fx.PlayerAnimation;
-import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.fx.ParticleHelper;
+import net.spell_engine.internals.SpellModifiers;
+import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.mixin.entity.LivingEntityAccessor;
+import net.spell_engine.utils.AnimationHelper;
+import net.spell_engine.utils.SoundHelper;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Melee {
+
+    /**
+     * Context object that tracks the origin of a Melee.Attack
+     * Allows mapping back from execution model to data model
+     */
+    public record AttackContext(
+        Identifier spellId,
+        String attackId
+    ) {
+        /**
+         * Create context for a specific attack
+         */
+        public static AttackContext of(Identifier spellId, String attackId) {
+            return new AttackContext(spellId, attackId);
+        }
+    }
+
     /**
      * Server-side: Map spell melee configuration to resolved MeleeAttack list
      * This flattens and resolves all server-side calculations (haste, etc.)
      */
-    public static List<Attack> createMeleeAttacks(ServerPlayerEntity caster, Spell.Impact.Action.Melee meleeData) {
+    public static List<Attack> createMeleeAttacks(ServerPlayerEntity caster, Spell.Impact.Action.Melee meleeData,
+                                                  Identifier spellId) {
         var attacks = new ArrayList<Attack>();
 
         for (var attack : meleeData.attacks) {
@@ -38,12 +63,42 @@ public class Melee {
                     attack.forward_momentum,
                     attack.hitbox_arc,
                     attack.hitbox,
-                    attack.animation
+                    new AttackContext(spellId, attack.id)
             );
             attacks.add(meleeAttack);
         }
 
         return attacks;
+    }
+
+    @Nullable public static Spell.Impact.Action.Melee.Attack resolveAttackData(World world, @Nullable LivingEntity caster, @Nullable AttackContext context) {
+        if (context == null) {
+            return null;
+        }
+        return resolveAttackData(world, caster, context.spellId(), context.attackId());
+    }
+
+    @Nullable public static Spell.Impact.Action.Melee.Attack resolveAttackData(World world, @Nullable LivingEntity caster, Identifier spellId, String attackId) {
+        var spellEntry = SpellRegistry.from(world).getEntry(spellId).orElse(null);
+        if (spellEntry == null) {
+            return null;
+        }
+
+        var impacts = caster != null
+                ? SpellModifiers.extendedImpactsOf(caster, spellEntry).impacts()
+                : spellEntry.value().impacts;
+
+        for (var impact : impacts) {
+            if (impact.action.type == Spell.Impact.Action.Type.MELEE && impact.action.melee != null) {
+                for (var attack : impact.action.melee.attacks) {
+                    if (attack.id.equals(attackId)) {
+                        return attack;
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 
     public record Attack(
@@ -53,7 +108,7 @@ public class Melee {
             float forward_momentum,
             float hitbox_arc,
             Spell.Impact.Action.Melee.HitBox hitbox,
-            PlayerAnimation animation
+            @Nullable AttackContext context
     ) {
     }
 
@@ -88,6 +143,17 @@ public class Melee {
         var result = TargetFinder.findAttackTargetResult(player, null, hitboxSize, attack.hitbox_arc, range);
 
         return result.entities.stream().map(Entity::getId).toList();
+    }
+
+    public static void broadcastAttackFx(ServerPlayerEntity player, AttackContext attackContext) {
+        var world = player.getWorld();
+        var attackData = resolveAttackData(world, player, attackContext);
+        if (attackData != null) {
+            var trackers = PlayerLookup.tracking(player);
+            AnimationHelper.sendAnimationExcluding(player, trackers, SpellCast.Animation.RELEASE, attackData.animation, attackData.attack_speed_multiplier);
+            SoundHelper.playSound(player.getWorld(), player, attackData.sound);
+            ParticleHelper.sendBatches(player, attackData.particles, 1, trackers);
+        }
     }
 
     public static void performAttackAgainstTargets(ServerPlayerEntity player, int[] targetIds) {

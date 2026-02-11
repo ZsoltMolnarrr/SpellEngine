@@ -11,13 +11,19 @@ import net.spell_engine.network.Packets;
 import java.util.Collection;
 
 public class AnimationHelper {
+    public static void sendAnimationExcluding(PlayerEntity animatedPlayer, Collection<ServerPlayerEntity> trackingPlayers, SpellCast.Animation type, PlayerAnimation animation, float speed) {
+        sendAnimation(animatedPlayer, false, trackingPlayers, type, animation, speed);
+    }
     public static void sendAnimation(PlayerEntity animatedPlayer, Collection<ServerPlayerEntity> trackingPlayers, SpellCast.Animation type, PlayerAnimation animation, float speed) {
+        sendAnimation(animatedPlayer, true, trackingPlayers, type, animation, speed);
+    }
+    public static void sendAnimation(PlayerEntity animatedPlayer, boolean includeAnimated, Collection<ServerPlayerEntity> trackingPlayers, SpellCast.Animation type, PlayerAnimation animation, float speed) {
         var id = getAnimationId(animatedPlayer, animation);
         if (id == null || id.isEmpty()) {
             return;
         }
         var packet = new Packets.SpellAnimation(animatedPlayer.getId(), type, id, speed);
-        if (animatedPlayer instanceof ServerPlayerEntity serverPlayer) {
+        if (includeAnimated && animatedPlayer instanceof ServerPlayerEntity serverPlayer) {
             sendPacketToPlayer(serverPlayer, packet);
         }
         trackingPlayers.forEach(serverPlayer -> {

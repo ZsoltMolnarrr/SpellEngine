@@ -6,18 +6,17 @@ import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.util.AlwaysGenerate;
+import net.spell_engine.api.util.NeverGenerate;
 import net.spell_engine.api.util.TriState;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_power.api.SpellSchool;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.UUID;
 
 public class Spell {
     public SpellSchool school;
-
-    public void targ() {
-    }
 
     public enum ExtendedArchetype { ARCHERY, MAGIC, MELEE, ANY }
     @Nullable public ExtendedArchetype secondary_archetype = null;
@@ -494,11 +493,14 @@ public class Spell {
             public static class Melee { public Melee() { }
                 public List<Attack> attacks = List.of();
                 public static class Attack { public Attack() { }
+                    /// Only for internal use, do not touch this :)
+                    @NeverGenerate
+                    public String id = UUID.randomUUID().toString();
                     /// Whether the duration of the attack is based on the attack cooldown (attack speed attribute)
                     public boolean duration_attack_speed_based = true;
                     /// Duration of the melee attack (in ticks)
                     public int duration_static = 0;
-                    /// A multiplier applied to the non-static duration
+                    /// A multiplier applied to animation, and non-static duration
                     public float attack_speed_multiplier = 1F;
                     /// Duration multiplier, producing impact delay. Will be rounded to whole ticks.
                     public float delay = 0;
@@ -511,6 +513,7 @@ public class Spell {
 
                     public PlayerAnimation animation;
                     public Sound sound;
+                    public ParticleBatch[] particles = new ParticleBatch[]{};
                 }
                 public static class HitBox {
                     public float width = 1F;

@@ -260,20 +260,22 @@ public class WeaponSkills {
         spell.target.type = Spell.Target.Type.CASTER;
 
         var cut_1 = new Spell.Impact.Action.Melee.Attack();
-        cut_1.attack_speed_multiplier = 2F;
+        cut_1.attack_speed_multiplier = 1.5F;
         cut_1.delay = 0.3F;
         cut_1.hitbox_arc = 90;
         cut_1.hitbox = new Spell.Impact.Action.Melee.HitBox();
         cut_1.hitbox.height = 0.2F;
-        cut_1.animation = PlayerAnimation.of("bettercombat:two_handed_slash_horizontal_right");
+        cut_1.forward_momentum = 1F;
+        cut_1.animation = PlayerAnimation.of("spell_engine:flurry_2h_slash1");
 
         var cut_2 = new Spell.Impact.Action.Melee.Attack();
-        cut_2.attack_speed_multiplier = 2F;
+        cut_2.attack_speed_multiplier = 1.5F;
         cut_2.delay = 0.3F;
         cut_2.hitbox_arc = 90;
         cut_2.hitbox = new Spell.Impact.Action.Melee.HitBox();
         cut_2.hitbox.height = 0.2F;
-        cut_2.animation = PlayerAnimation.of("bettercombat:two_handed_slash_horizontal_left");
+        cut_2.forward_momentum = 2F;
+        cut_2.animation = PlayerAnimation.of("spell_engine:flurry_2h_slash2");
 
         spell.impacts = List.of(
                 SpellBuilder.Impacts.melee(List.of(cut_1, cut_2))

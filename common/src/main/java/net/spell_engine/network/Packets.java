@@ -386,7 +386,7 @@ public class Packets {
         }
     }
 
-    public record AttackAvailable(Identifier spellId, int impactIndex, List<Melee.Attack> attacks) implements CustomPayload {
+    public record AttackAvailable(Identifier spellId, List<Melee.Attack> attacks) implements CustomPayload {
         public static Identifier ID = Identifier.of(SpellEngineMod.ID, "attack_available");
         public static final CustomPayload.Id<AttackAvailable> PACKET_ID = new CustomPayload.Id<>(ID);
         public static final PacketCodec<PacketByteBuf, AttackAvailable> CODEC = PacketCodec.of(AttackAvailable::write, AttackAvailable::read);
@@ -400,7 +400,6 @@ public class Packets {
 
         public void write(PacketByteBuf buffer) {
             buffer.writeString(spellId.toString());
-            buffer.writeInt(impactIndex);
 
             // Serialize MeleeAttack list to JSON
             buffer.writeInt(attacks.size());
@@ -412,7 +411,6 @@ public class Packets {
 
         public static AttackAvailable read(PacketByteBuf buffer) {
             var spellId = Identifier.of(buffer.readString());
-            var impactIndex = buffer.readInt();
 
             // Deserialize MeleeAttack list from JSON
             var attackCount = buffer.readInt();
@@ -423,7 +421,7 @@ public class Packets {
                 attacks.add(attack);
             }
 
-            return new AttackAvailable(spellId, impactIndex, attacks);
+            return new AttackAvailable(spellId, attacks);
         }
     }
 
@@ -444,6 +442,28 @@ public class Packets {
         public static AttackPerform read(PacketByteBuf buffer) {
             var targetIds = buffer.readIntArray();
             return new AttackPerform(targetIds);
+        }
+    }
+
+    public record AttackFxBroadcast(Melee.AttackContext attackContext) implements CustomPayload {
+        public static Identifier ID = Identifier.of(SpellEngineMod.ID, "attack_fx_broadcast");
+        public static final CustomPayload.Id<AttackFxBroadcast> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<PacketByteBuf, AttackFxBroadcast> CODEC = PacketCodec.of(AttackFxBroadcast::write, AttackFxBroadcast::read);
+
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
+        }
+
+        public void write(PacketByteBuf buffer) {
+            buffer.writeString(attackContext.spellId().toString());
+            buffer.writeString(attackContext.attackId());
+        }
+
+        public static AttackFxBroadcast read(PacketByteBuf buffer) {
+            var spellId = Identifier.of(buffer.readString());
+            var attackId = buffer.readString();
+            return new AttackFxBroadcast(new Melee.AttackContext(spellId, attackId));
         }
     }
 }

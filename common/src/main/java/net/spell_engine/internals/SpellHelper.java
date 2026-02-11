@@ -926,30 +926,11 @@ public class SpellHelper {
                                          RegistryEntry<Spell> spellEntry, List<Spell.Impact> impacts, ImpactContext context,
                                          boolean additionalTargetLookup, @Nullable Spell.Impact.Action.Type filteredAction) {
         var trackers = target != null ? PlayerLookup.tracking(target) : null;
-        var spell = spellEntry.value();
         SpellTarget.Intent selectedIntent = null;
 
-        var area_impact = spell.area_impact;
-        var mutableImpacts = new ArrayList<>(impacts);
-
-        if (caster instanceof PlayerEntity player) {
-            var modifiers = SpellModifiers.of(player, spellEntry);
-            for (var modifier: modifiers) {
-                if (modifier.mutate_impacts != null) {
-                    switch (modifier.mutate_impacts) {
-                        case PREPEND -> {
-                            mutableImpacts.addAll(0, modifier.impacts);
-                        }
-                        case APPEND -> {
-                            mutableImpacts.addAll(modifier.impacts);
-                        }
-                    }
-                }
-                if (modifier.replacing_area_impact != null) {
-                    area_impact = modifier.replacing_area_impact;
-                }
-            }
-        }
+        var extendedImpacts = SpellModifiers.extendedImpactsOf(caster, spellEntry);
+        var area_impact = extendedImpacts.areaImpact();
+        var mutableImpacts = extendedImpacts.impacts();
 
         var perform = true;
         if (additionalTargetLookup && area_impact != null && area_impact.force_indirect) {
@@ -1473,15 +1454,12 @@ public class SpellHelper {
                         // Find the impact index in the spell's impacts list
                         var impactIndex = spell.impacts.indexOf(impact);
 
+                        var spellId = spellEntry.getKey().get().getValue();
                         // Map to resolved MeleeAttack structures
-                        var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, meleeData);
+                        var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, meleeData, spellId);
 
                         // Send AttackAvailable packet to client
-                        var packet = new Packets.AttackAvailable(
-                            spellEntry.getKey().get().getValue(),
-                            impactIndex,
-                            meleeAttacks
-                        );
+                        var packet = new Packets.AttackAvailable(spellId, meleeAttacks);
                         ServerPlayNetworking.send(serverPlayer, packet);
                         success = true;
                     }
