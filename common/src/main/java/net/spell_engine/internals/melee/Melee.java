@@ -1,10 +1,14 @@
 package net.spell_engine.internals.melee;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
+import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.mixin.entity.LivingEntityAccessor;
 
 import java.util.ArrayList;
@@ -78,68 +82,12 @@ public class Melee {
     }
 
     public static List<Integer> detectTargets(PlayerEntity player, Attack attack) {
-        var world = player.getWorld();
         var hitbox = attack.hitbox();
-        var arc = attack.hitbox_arc();
+        var range = player.getEntityInteractionRange();
+        var hitboxSize = new Vec3d(hitbox.width * range, hitbox.height * range, hitbox.width * range);
+        var result = TargetFinder.findAttackTargetResult(player, null, hitboxSize, attack.hitbox_arc, range);
 
-        // Get player orientation
-        var playerPos = player.getEyePos();
-        var yaw = player.getYaw();
-        var pitch = player.getPitch();
-        var lookVec = player.getRotationVector().normalize();
-
-        // Create oriented bounding box for the attack hitbox
-        // The hitbox is centered in front of the player based on its depth
-        var hitboxCenter = playerPos.add(lookVec.multiply(hitbox.width / 2.0));
-
-        // Create OBB with rotation from hitbox configuration
-        // TODO: Handle hitbox.rotation_degrees
-        var obb = new OrientedBoundingBox(
-                hitboxCenter,
-                hitbox.width,
-                hitbox.height,
-                hitbox.width, // depth = width for square hitbox
-                yaw,
-                pitch
-        );
-        obb.updateVertex();
-
-        // Find all potential targets in a larger search area
-        var searchRadius = Math.max(hitbox.width, hitbox.height) + 2.0;
-        var searchBox = net.minecraft.util.math.Box.of(playerPos, searchRadius * 2, searchRadius * 2, searchRadius * 2);
-
-        var targets = new ArrayList<Integer>();
-
-        for (var entity : world.getOtherEntities(player, searchBox)) {
-            // Skip non-living entities
-            if (!(entity instanceof LivingEntity)) {
-                continue;
-            }
-
-            // Skip non-attackable entities
-            if (!entity.isAttackable()) {
-                continue;
-            }
-
-            // Check if entity's bounding box intersects with attack hitbox
-            if (!obb.intersects(entity.getBoundingBox())) {
-                continue;
-            }
-
-//            // Check arc angle if specified (0 means 360 degrees, no arc restriction)
-//            if (arc > 0 && arc < 360) {
-//                var toEntity = entity.getPos().subtract(playerPos).normalize();
-//                var angle = Math.acos(lookVec.dotProduct(toEntity));
-//                var angleDegrees = Math.toDegrees(angle);
-//
-//                // Check if entity is within the arc cone (half angle on each side)
-//                if (angleDegrees > arc / 2.0) {
-//                    continue;
-//                }
-//            }
-            targets.add(entity.getId());
-        }
-        return targets;
+        return result.entities.stream().map(Entity::getId).toList();
     }
 
     public static void performAttackAgainstTargets(ServerPlayerEntity player, int[] targetIds) {
@@ -149,8 +97,11 @@ public class Melee {
         for (int targetId : targetIds) {
             var target = world.getEntityById(targetId);
             if (target != null && target.isAttackable()) {
-                ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(lastAttackTime - 100);
+                var timeUntilRegen = target.timeUntilRegen;
+                target.timeUntilRegen = 0;
+                ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(100);
                 player.attack(target);
+                target.timeUntilRegen = timeUntilRegen;
             }
         }
         ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(lastAttackTime);
