@@ -48,7 +48,13 @@ API Additions:
 - Added shared spell cooldowns
   - Spells with the same coodown group set each other on cooldown
   - `spell.cost.cooldown.group` field specifies the cooldown group
-  - To be used for weapon specific spells 
+  - To be used for weapon specific spells
+- Added new impact type: `MELEE`, for performing better combat alike weapon swings
+  - Upon performing this impact type, the caster gains melee attacks, to be automatically executed
+  - Attack duration may be static, or attack speed based
+  - Custom hitbox definition, using OBB collision detection, ran on the client side
+  - Supports fx: animation, sound, particles
+  - Includes optional momentum to be gained with the attack
 
 Other changes:
 - Added fallback config for automatic spell container assignment to weapons without spell container
