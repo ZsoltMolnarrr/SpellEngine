@@ -263,11 +263,16 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         if (currentAttack == null) {
             if (!scheduledAttacks.isEmpty()) {
                 var attack = scheduledAttacks.remove(0);
-                currentAttack = new Melee.ActiveAttack(attack, time);
+                currentAttack = new Melee.ActiveAttack(attack, time, player.getMainHandStack().getItem());
                 onAttackActivated(attack);
             }
         }
         if (currentAttack != null) {
+            if (currentAttack.weapon != player.getMainHandStack().getItem()) {
+                // Weapon changed, cancel attack
+                currentAttack = null;
+                return;
+            }
             if (currentAttack.isDue(time)) {
                 onAttackHit(currentAttack.attack);
             }

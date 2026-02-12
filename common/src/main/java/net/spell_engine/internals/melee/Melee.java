@@ -3,7 +3,9 @@ package net.spell_engine.internals.melee;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
@@ -16,6 +18,7 @@ import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.mixin.entity.LivingEntityAccessor;
 import net.spell_engine.utils.AnimationHelper;
+import net.spell_engine.utils.AttributeModifierUtil;
 import net.spell_engine.utils.SoundHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,10 +50,10 @@ public class Melee {
     public static List<Attack> createMeleeAttacks(ServerPlayerEntity caster, Spell.Impact.Action.Melee meleeData,
                                                   Identifier spellId) {
         var attacks = new ArrayList<Attack>();
-
+        var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, caster);
         for (var attack : meleeData.attacks) {
             // Calculate haste-affected duration
-            var speed = attack.attack_speed_multiplier;
+            var speed = (float) (attack.attack_speed_multiplier * attackSpeedMultiplier);
             float duration = attack.duration_attack_speed_based
                     // `getAttackCooldownProgressPerTick` is poorly named, it actually returns the attack cooldown in ticks
                     ? Math.max(caster.getAttackCooldownProgressPerTick() * (1F / speed), 1)
@@ -112,17 +115,23 @@ public class Melee {
             Spell.Impact.Action.Melee.HitBox hitbox,
             PlayerAnimation animation,
             @Nullable AttackContext context
+
+
+
+
     ) {
     }
 
     public static class ActiveAttack {
         public final Attack attack;
         public final int createdAt;
+        public final Item weapon;
         private boolean signaled = false;
 
-        public ActiveAttack(Attack attack, int createdAt) {
+        public ActiveAttack(Attack attack, int createdAt, Item weapon) {
             this.attack = attack;
             this.createdAt = createdAt;
+            this.weapon = weapon;
         }
 
         public boolean isFinished(int currentTick) {
@@ -153,7 +162,8 @@ public class Melee {
         var attackData = resolveAttackData(world, player, attackContext);
         if (attackData != null) {
             var trackers = PlayerLookup.tracking(player);
-            AnimationHelper.sendAnimationExcluding(player, trackers, SpellCast.Animation.RELEASE, attackData.animation, attackData.attack_speed_multiplier);
+            float speed = (float) (attackData.attack_speed_multiplier * AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player));
+            AnimationHelper.sendAnimationExcluding(player, trackers, SpellCast.Animation.RELEASE, attackData.animation, speed);
             SoundHelper.playSound(player.getWorld(), player, attackData.sound);
             ParticleHelper.sendBatches(player, attackData.particles, 1, trackers);
         }

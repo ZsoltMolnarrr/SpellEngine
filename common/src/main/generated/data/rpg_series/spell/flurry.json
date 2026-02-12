@@ -12,25 +12,27 @@
         "melee": {
           "attacks": [
             {
-              "attack_speed_multiplier": 2.0,
+              "attack_speed_multiplier": 1.5,
               "delay": 0.3,
-              "hitbox_arc": 90.0,
+              "forward_momentum": 1.0,
               "hitbox": {
                 "height": 0.2
               },
+              "hitbox_arc": 90.0,
               "animation": {
-                "id": "bettercombat:two_handed_slash_horizontal_right"
+                "id": "spell_engine:flurry_2h_slash1"
               }
             },
             {
-              "attack_speed_multiplier": 2.0,
+              "attack_speed_multiplier": 1.5,
               "delay": 0.3,
-              "hitbox_arc": 90.0,
+              "forward_momentum": 2.0,
               "hitbox": {
                 "height": 0.2
               },
+              "hitbox_arc": 90.0,
               "animation": {
-                "id": "bettercombat:two_handed_slash_horizontal_left"
+                "id": "spell_engine:flurry_2h_slash2"
               }
             }
           ]
