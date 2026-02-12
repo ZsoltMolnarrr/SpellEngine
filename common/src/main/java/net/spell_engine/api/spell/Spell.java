@@ -186,7 +186,7 @@ public class Spell {
     public static class Delivery {
         public Type type = Type.DIRECT;
         public enum Type {
-            DIRECT, PROJECTILE, METEOR, CLOUD, SHOOT_ARROW, STASH_EFFECT, CUSTOM
+            DIRECT, PROJECTILE, METEOR, CLOUD, SHOOT_ARROW, MELEE, STASH_EFFECT, CUSTOM
         }
         public int delay = 0;
 
@@ -232,6 +232,42 @@ public class Spell {
             /// Launch properties of the arrow
             /// (vanilla default velocity for crossbows is 3.15)
             public LaunchProperties launch_properties = new LaunchProperties().velocity(3.15F);
+        }
+
+        public Melee melee;
+        public static class Melee { public Melee() { }
+            public List<Attack> attacks = List.of();
+            public static class Attack { public Attack() { }
+                /// Only for internal use, do not touch this :)
+                @NeverGenerate
+                public String id = UUID.randomUUID().toString();
+                /// Whether the duration of the attack is based on the attack cooldown (attack speed attribute)
+                public boolean duration_attack_speed_based = true;
+                /// Duration of the melee attack (in ticks)
+                public int duration_static = 0;
+                /// A multiplier applied to animation, and non-static duration
+                public float attack_speed_multiplier = 1F;
+                /// Duration multiplier, producing impact delay. Will be rounded to whole ticks.
+                public float delay = 0.25F;
+                /// Forward momentum applied to the caster when performing this melee attack
+                public float forward_momentum = 0F;
+                /// Collision detection shape of this attack.
+                public HitBox hitbox = new HitBox();
+
+                public PlayerAnimation animation;
+                public Sound sound;
+                public ParticleBatch[] particles = new ParticleBatch[]{};
+            }
+            public static class HitBox {
+                /// Relative width of the hitbox, will be scaled up by attack range.
+                public float width = 1F;
+                /// Relative height of the hitbox, will be scaled up by attack range.
+                public float height = 1F;
+                /// Rotation along the forward axis, in degrees.
+                public float rotation_roll = 0F;
+                /// Arc of the melee attack hitbox, in degrees. 0 means no angular checks.
+                public float arc = 0F;
+            }
         }
 
         public List<Cloud> clouds;
@@ -360,7 +396,6 @@ public class Spell {
                 TELEPORT,
                 COOLDOWN,
                 AGGRO,
-                MELEE,
                 CUSTOM
             }
             public Damage damage;
@@ -487,42 +522,6 @@ public class Spell {
                     CLEAR
                 }
                 public Mode mode = Mode.SET;
-            }
-
-            public Melee melee;
-            public static class Melee { public Melee() { }
-                public List<Attack> attacks = List.of();
-                public static class Attack { public Attack() { }
-                    /// Only for internal use, do not touch this :)
-                    @NeverGenerate
-                    public String id = UUID.randomUUID().toString();
-                    /// Whether the duration of the attack is based on the attack cooldown (attack speed attribute)
-                    public boolean duration_attack_speed_based = true;
-                    /// Duration of the melee attack (in ticks)
-                    public int duration_static = 0;
-                    /// A multiplier applied to animation, and non-static duration
-                    public float attack_speed_multiplier = 1F;
-                    /// Duration multiplier, producing impact delay. Will be rounded to whole ticks.
-                    public float delay = 0.25F;
-                    /// Forward momentum applied to the caster when performing this melee attack
-                    public float forward_momentum = 0F;
-                    /// Collision detection shape of this attack.
-                    public HitBox hitbox = new HitBox();
-
-                    public PlayerAnimation animation;
-                    public Sound sound;
-                    public ParticleBatch[] particles = new ParticleBatch[]{};
-                }
-                public static class HitBox {
-                    /// Relative width of the hitbox, will be scaled up by attack range.
-                    public float width = 1F;
-                    /// Relative height of the hitbox, will be scaled up by attack range.
-                    public float height = 1F;
-                    /// Rotation along the forward axis, in degrees.
-                    public float rotation_roll = 0F;
-                    /// Arc of the melee attack hitbox, in degrees. 0 means no angular checks.
-                    public float arc = 0F;
-                }
             }
 
             public Custom custom;

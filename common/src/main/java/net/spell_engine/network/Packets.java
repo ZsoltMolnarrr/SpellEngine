@@ -425,7 +425,7 @@ public class Packets {
         }
     }
 
-    public record AttackPerform(int[] targetIds) implements CustomPayload {
+    public record AttackPerform(Melee.AttackContext attackContext, int[] targetIds) implements CustomPayload {
         public static Identifier ID = Identifier.of(SpellEngineMod.ID, "attack_perform");
         public static final CustomPayload.Id<AttackPerform> PACKET_ID = new CustomPayload.Id<>(ID);
         public static final PacketCodec<PacketByteBuf, AttackPerform> CODEC = PacketCodec.of(AttackPerform::write, AttackPerform::read);
@@ -436,12 +436,17 @@ public class Packets {
         }
 
         public void write(PacketByteBuf buffer) {
+            buffer.writeString(attackContext.spellId().toString());
+            buffer.writeString(attackContext.attackId());
             buffer.writeIntArray(targetIds);
         }
 
         public static AttackPerform read(PacketByteBuf buffer) {
+            var spellId = Identifier.of(buffer.readString());
+            var attackId = buffer.readString();
+            var context = new Melee.AttackContext(spellId, attackId);
             var targetIds = buffer.readIntArray();
-            return new AttackPerform(targetIds);
+            return new AttackPerform(context, targetIds);
         }
     }
 

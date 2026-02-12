@@ -522,6 +522,21 @@ public class SpellHelper {
                 ArrowHelper.shootArrow(world, caster, spellEntry, context);
                 delivered = true;
             }
+            case MELEE -> {
+                if (spell.deliver.melee != null
+                        && !spell.deliver.melee.attacks.isEmpty()
+                        && caster instanceof ServerPlayerEntity serverPlayer) {
+                    var meleeData = spell.deliver.melee;
+
+                    var spellId = spellEntry.getKey().get().getValue();
+                    // Map to resolved MeleeAttack structures
+                    var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, meleeData, spellId);
+
+                    // Send AttackAvailable packet to client
+                    var packet = new Packets.AttackAvailable(spellId, meleeAttacks);
+                    ServerPlayNetworking.send(serverPlayer, packet);
+                }
+            }
             case STASH_EFFECT -> {
                 var anyAdded = false;
                 var stash = spell.deliver.stash_effect;
@@ -828,6 +843,29 @@ public class SpellHelper {
             return performImpacts(projectile.getWorld(), caster, target, projectile, spellEntry, spell.impacts, context);
         }
         return false;
+    }
+
+    public static boolean meleeImpact(LivingEntity caster, List<Entity> targets, RegistryEntry<Spell> spellEntry, @Nullable ImpactContext context) {
+        var spell = spellEntry.value();
+        var anySuccess = false;
+        if (spell.impacts != null) {
+            if (context.power() == null) {
+                context = context.power(SpellPower.getSpellPower(spell.school, caster));
+            }
+
+            var world = caster.getWorld();
+            var casterPos = caster.getPos().add(0, caster.getHeight() / 2F, 0);
+
+            for(var target: targets) {
+                var position = target == caster
+                        ? casterPos
+                        : target.getPos().add(0, target.getHeight() / 2F, 0).lerp(casterPos, 0.01F);
+                var targetSpecificContext = context.position(position);
+                var result = performImpacts(world, caster, target, target, spellEntry, spell.impacts, targetSpecificContext);
+                anySuccess = anySuccess || result;
+            }
+        }
+        return anySuccess;
     }
 
     public static boolean lookupAndPerformAreaImpact(Spell.AreaImpact area_impact, RegistryEntry<Spell> spellEntry, LivingEntity caster, Entity exclude, @Nullable Entity aoeSource,
@@ -1445,25 +1483,6 @@ public class SpellHelper {
                         success = true;
                     }
                 }
-                case MELEE -> {
-                    if (impact.action.melee != null
-                            && !impact.action.melee.attacks.isEmpty()
-                            && caster instanceof ServerPlayerEntity serverPlayer) {
-                        var meleeData = impact.action.melee;
-
-                        // Find the impact index in the spell's impacts list
-                        var impactIndex = spell.impacts.indexOf(impact);
-
-                        var spellId = spellEntry.getKey().get().getValue();
-                        // Map to resolved MeleeAttack structures
-                        var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, meleeData, spellId);
-
-                        // Send AttackAvailable packet to client
-                        var packet = new Packets.AttackAvailable(spellId, meleeAttacks);
-                        ServerPlayNetworking.send(serverPlayer, packet);
-                        success = true;
-                    }
-                }
                 case CUSTOM -> {
                     if (impact.action.custom != null) {
                         var handler = SpellHandlers.customImpact.get(impact.action.custom.handler);
@@ -1718,7 +1737,7 @@ public class SpellHelper {
             case DAMAGE, FIRE, AGGRO -> {
                 return SpellTarget.Intent.HARMFUL;
             }
-            case HEAL, MELEE, SPAWN -> {
+            case HEAL, SPAWN -> {
                 return SpellTarget.Intent.HELPFUL;
             }
             case STATUS_EFFECT -> {

@@ -177,6 +177,12 @@ public class SpellBuilder {
 
             return cloud;
         }
+
+        public static void melee(Spell spell, List<Spell.Delivery.Melee.Attack> attacks) {
+            spell.deliver.type = Spell.Delivery.Type.MELEE;
+            spell.deliver.melee = new Spell.Delivery.Melee();
+            spell.deliver.melee.attacks = attacks;
+        }
     }
 
     public static class Triggers {
@@ -648,15 +654,6 @@ public class SpellBuilder {
             impact.action.cooldown.actives.id = "*"; // reset cooldown for all active spells
             impact.action.cooldown.actives.duration_multiplier = 0F; // reset cooldown
 
-            return impact;
-        }
-
-        public static Spell.Impact melee(List<Spell.Impact.Action.Melee.Attack> attacks) {
-            var impact = new Spell.Impact();
-            impact.action = new Spell.Impact.Action();
-            impact.action.type = Spell.Impact.Action.Type.MELEE;
-            impact.action.melee = new Spell.Impact.Action.Melee();
-            impact.action.melee.attacks = attacks;
             return impact;
         }
     }

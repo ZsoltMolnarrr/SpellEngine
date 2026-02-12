@@ -14,7 +14,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.fx.ParticleHelper;
-import net.spell_engine.internals.SpellModifiers;
+import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.internals.target.SpellTarget;
@@ -22,7 +22,6 @@ import net.spell_engine.mixin.entity.LivingEntityAccessor;
 import net.spell_engine.utils.AnimationHelper;
 import net.spell_engine.utils.AttributeModifierUtil;
 import net.spell_engine.utils.SoundHelper;
-import net.spell_engine.utils.TargetHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -35,7 +34,7 @@ public class Melee {
             int delay,
             float speed,
             float forward_momentum,
-            Spell.Impact.Action.Melee.HitBox hitbox,
+            Spell.Delivery.Melee.HitBox hitbox,
             PlayerAnimation animation,
             @Nullable AttackContext context
     ) {
@@ -48,6 +47,7 @@ public class Melee {
         Identifier spellId,
         String attackId
     ) {
+        public static final AttackContext EMPTY = new AttackContext(Identifier.of("spell_engine", "empty"), "empty");
         /**
          * Create context for a specific attack
          */
@@ -86,7 +86,7 @@ public class Melee {
      * Server-side: Map spell melee configuration to resolved MeleeAttack list
      * This flattens and resolves all server-side calculations (haste, etc.)
      */
-    public static List<Attack> createMeleeAttacks(ServerPlayerEntity caster, Spell.Impact.Action.Melee meleeData,
+    public static List<Attack> createMeleeAttacks(ServerPlayerEntity caster, Spell.Delivery.Melee meleeData,
                                                   Identifier spellId) {
         var attacks = new ArrayList<Attack>();
         var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, caster);
@@ -114,30 +114,24 @@ public class Melee {
         return attacks;
     }
 
-    @Nullable public static Spell.Impact.Action.Melee.Attack resolveAttackData(World world, @Nullable LivingEntity caster, @Nullable AttackContext context) {
+    @Nullable public static Spell.Delivery.Melee.Attack resolveAttackData(World world, @Nullable LivingEntity caster, @Nullable AttackContext context) {
         if (context == null) {
             return null;
         }
         return resolveAttackData(world, caster, context.spellId(), context.attackId());
     }
 
-    @Nullable public static Spell.Impact.Action.Melee.Attack resolveAttackData(World world, @Nullable LivingEntity caster, Identifier spellId, String attackId) {
+    @Nullable public static Spell.Delivery.Melee.Attack resolveAttackData(World world, @Nullable LivingEntity caster, Identifier spellId, String attackId) {
         var spellEntry = SpellRegistry.from(world).getEntry(spellId).orElse(null);
         if (spellEntry == null) {
             return null;
         }
 
-        var impacts = caster != null
-                ? SpellModifiers.extendedImpactsOf(caster, spellEntry).impacts()
-                : spellEntry.value().impacts;
-
-        for (var impact : impacts) {
-            if (impact.action.type == Spell.Impact.Action.Type.MELEE && impact.action.melee != null) {
-                for (var attack : impact.action.melee.attacks) {
-                    if (attack.id.equals(attackId)) {
-                        return attack;
-                    }
-                }
+        var spell = spellEntry.value();
+        if (spell.deliver.type == Spell.Delivery.Type.MELEE && spell.deliver.melee != null) {
+            for (var attack : spell.deliver.melee.attacks) {
+                if (attack.id.equals(attackId)) {
+                    return attack; }
             }
         }
 
@@ -165,10 +159,11 @@ public class Melee {
         }
     }
 
-    public static void performAttackAgainstTargets(ServerPlayerEntity player, int[] targetIds) {
+    public static void performAttackAgainstTargets(ServerPlayerEntity player, AttackContext context, int[] targetIds) {
         var world = player.getWorld();
 
         var lastAttackTime = ((LivingEntityAccessor)player).spellEngine_getLastAttackedTicks();
+        var targets = new ArrayList<Entity>();
         for (int targetId : targetIds) {
             var target = world.getEntityById(targetId);
             if (target != null && target.isAttackable()) {
@@ -181,8 +176,13 @@ public class Melee {
                 target.timeUntilRegen = 0;
                 ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(100);
                 player.attack(target);
+                targets.add(target);
                 target.timeUntilRegen = timeUntilRegen;
             }
+        }
+        var spellEntry = SpellRegistry.from(world).getEntry(context.spellId());
+        if (!targets.isEmpty() && spellEntry.isPresent()) {
+            SpellHelper.meleeImpact(player, targets, spellEntry.get(), null);
         }
         ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(lastAttackTime);
     }

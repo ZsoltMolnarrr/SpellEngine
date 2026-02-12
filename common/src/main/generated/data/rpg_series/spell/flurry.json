@@ -5,41 +5,37 @@
   "tier": 1,
   "learn": {},
   "active": {},
-  "impacts": [
-    {
-      "action": {
-        "type": "MELEE",
-        "melee": {
-          "attacks": [
-            {
-              "attack_speed_multiplier": 1.5,
-              "delay": 0.3,
-              "forward_momentum": 1.0,
-              "hitbox": {
-                "height": 0.2
-              },
-              "hitbox_arc": 90.0,
-              "animation": {
-                "id": "spell_engine:flurry_2h_slash1"
-              }
-            },
-            {
-              "attack_speed_multiplier": 1.5,
-              "delay": 0.3,
-              "forward_momentum": 2.0,
-              "hitbox": {
-                "height": 0.2
-              },
-              "hitbox_arc": 90.0,
-              "animation": {
-                "id": "spell_engine:flurry_2h_slash2"
-              }
-            }
-          ]
+  "deliver": {
+    "type": "MELEE",
+    "melee": {
+      "attacks": [
+        {
+          "attack_speed_multiplier": 1.5,
+          "delay": 0.3,
+          "hitbox": {
+            "height": 0.2,
+            "rotation_roll": 45.0,
+            "arc": 90.0
+          },
+          "animation": {
+            "id": "spell_engine:flurry_2h_slash1"
+          }
+        },
+        {
+          "attack_speed_multiplier": 1.5,
+          "delay": 0.3,
+          "hitbox": {
+            "height": 0.2,
+            "rotation_roll": -45.0,
+            "arc": 90.0
+          },
+          "animation": {
+            "id": "spell_engine:flurry_2h_slash2"
+          }
         }
-      }
+      ]
     }
-  ],
+  },
   "cost": {
     "cooldown": {
       "group": "weapon",

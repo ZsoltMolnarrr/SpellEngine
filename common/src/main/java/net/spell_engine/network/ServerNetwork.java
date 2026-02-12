@@ -152,7 +152,7 @@ public class ServerNetwork {
             }
 
             world.getServer().executeSync(() -> {
-                Melee.performAttackAgainstTargets(player, packet.targetIds());
+                Melee.performAttackAgainstTargets(player, packet.attackContext(), packet.targetIds());
             });
         });
 

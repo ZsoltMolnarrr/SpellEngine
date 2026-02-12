@@ -306,7 +306,8 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         var targets = Melee.detectTargets(player, attack);
         if (!targets.isEmpty()) {
             var targetIds = targets.stream().mapToInt(Integer::intValue).toArray();
-            var packet = new Packets.AttackPerform(targetIds);
+            var context = attack.context() != null ? attack.context() : Melee.AttackContext.EMPTY;
+            var packet = new Packets.AttackPerform(context, targetIds);
             ClientPlayNetworking.send(packet);
         }
     }
