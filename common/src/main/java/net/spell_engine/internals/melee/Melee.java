@@ -27,6 +27,17 @@ import java.util.List;
 
 public class Melee {
 
+    public record Attack(
+            int duration,
+            int delay,
+            float speed,
+            float forward_momentum,
+            float hitbox_arc,
+            Spell.Impact.Action.Melee.HitBox hitbox,
+            PlayerAnimation animation,
+            @Nullable AttackContext context
+    ) {
+    }
     /**
      * Context object that tracks the origin of a Melee.Attack
      * Allows mapping back from execution model to data model
@@ -40,6 +51,32 @@ public class Melee {
          */
         public static AttackContext of(Identifier spellId, String attackId) {
             return new AttackContext(spellId, attackId);
+        }
+    }
+
+    public static class ActiveAttack {
+        public final Attack attack;
+        public final int createdAt;
+        public final Item weapon;
+        private boolean signaled = false;
+
+        public ActiveAttack(Attack attack, int createdAt, Item weapon) {
+            this.attack = attack;
+            this.createdAt = createdAt;
+            this.weapon = weapon;
+        }
+
+        public boolean isFinished(int currentTick) {
+            return currentTick >= (createdAt + attack.duration);
+        }
+
+        public boolean isDue(int currentTick) {
+            if (signaled) {
+                return false;
+            }
+            var result = currentTick >= (createdAt + attack.delay);
+            signaled = result;
+            return result;
         }
     }
 
@@ -104,48 +141,6 @@ public class Melee {
         }
 
         return null;
-    }
-
-    public record Attack(
-            int duration,
-            int delay,
-            float speed,
-            float forward_momentum,
-            float hitbox_arc,
-            Spell.Impact.Action.Melee.HitBox hitbox,
-            PlayerAnimation animation,
-            @Nullable AttackContext context
-
-
-
-
-    ) {
-    }
-
-    public static class ActiveAttack {
-        public final Attack attack;
-        public final int createdAt;
-        public final Item weapon;
-        private boolean signaled = false;
-
-        public ActiveAttack(Attack attack, int createdAt, Item weapon) {
-            this.attack = attack;
-            this.createdAt = createdAt;
-            this.weapon = weapon;
-        }
-
-        public boolean isFinished(int currentTick) {
-            return currentTick >= (createdAt + attack.duration);
-        }
-
-        public boolean isDue(int currentTick) {
-            if (signaled) {
-                return false;
-            }
-            var result = currentTick >= (createdAt + attack.delay);
-            signaled = result;
-            return result;
-        }
     }
 
     public static List<Integer> detectTargets(PlayerEntity player, Attack attack) {
