@@ -27,14 +27,14 @@ public class TargetFinder {
         }
     }
 
-    public static TargetResult findAttackTargetResult(PlayerEntity player, @Nullable Entity cursorTarget, Vec3d hitboxSize, double arc, double attackRange) {
+    public static TargetResult findAttackTargetResult(PlayerEntity player, @Nullable Entity cursorTarget, Vec3d hitboxSize, double arc, double attackRange, float roll) {
 //        long startTime = System.nanoTime();
         Vec3d origin = getInitialTracingPoint(player);
         List<Entity> entities = getInitialTargets(player, cursorTarget, attackRange);
 
         boolean isSpinAttack = arc > 180;
         Vec3d size = hitboxSize;
-        var obb = new OrientedBoundingBox(origin, size, player.getPitch(), player.getYaw());
+        var obb = new OrientedBoundingBox(origin, size, player.getPitch(), player.getYaw(), roll);
         if (!isSpinAttack) {
             obb = obb.offsetAlongAxisZ(size.z / 2F);
         }

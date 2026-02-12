@@ -2,6 +2,7 @@ package net.spell_engine.internals.melee;
 
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.spell_engine.utils.VectorHelper;
 import org.joml.Matrix3f;
 
 public class OrientedBoundingBox {
@@ -56,8 +57,26 @@ public class OrientedBoundingBox {
         this.axisX = axisZ.crossProduct(axisY);
     }
 
+    public OrientedBoundingBox(Vec3d center, double width, double height, double depth, float yaw, float pitch, float roll) {
+        this.center = center;
+        this.extent = new Vec3d(width/2.0, height/2.0, depth/2.0);
+        this.axisZ = Vec3d.fromPolar(yaw, pitch).normalize();
+        this.axisY = Vec3d.fromPolar(yaw + 90, pitch).negate().normalize();
+        this.axisX = axisZ.crossProduct(axisY);
+
+        // Apply roll rotation around the forward axis (axisZ)
+        if (roll != 0) {
+            this.axisX = VectorHelper.rotateAround(axisX, axisZ, roll);
+            this.axisY = VectorHelper.rotateAround(axisY, axisZ, roll);
+        }
+    }
+
     public OrientedBoundingBox(Vec3d center, Vec3d size, float yaw, float pitch) {
         this(center,size.x, size.y, size.z, yaw, pitch);
+    }
+
+    public OrientedBoundingBox(Vec3d center, Vec3d size, float yaw, float pitch, float roll) {
+        this(center, size.x, size.y, size.z, yaw, pitch, roll);
     }
 
     public OrientedBoundingBox(Box box) {

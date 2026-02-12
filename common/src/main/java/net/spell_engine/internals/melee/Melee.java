@@ -32,7 +32,6 @@ public class Melee {
             int delay,
             float speed,
             float forward_momentum,
-            float hitbox_arc,
             Spell.Impact.Action.Melee.HitBox hitbox,
             PlayerAnimation animation,
             @Nullable AttackContext context
@@ -102,7 +101,6 @@ public class Melee {
                     Math.round(delay),
                     speed,
                     attack.forward_momentum,
-                    attack.hitbox_arc,
                     attack.hitbox,
                     attack.animation,
                     new AttackContext(spellId, attack.id)
@@ -147,7 +145,7 @@ public class Melee {
         var hitbox = attack.hitbox();
         var range = player.getEntityInteractionRange();
         var hitboxSize = new Vec3d(hitbox.width * range, hitbox.height * range, hitbox.width * range);
-        var result = TargetFinder.findAttackTargetResult(player, null, hitboxSize, attack.hitbox_arc, range);
+        var result = TargetFinder.findAttackTargetResult(player, null, hitboxSize, hitbox.arc, range, hitbox.rotation_roll);
 
         return result.entities.stream().map(Entity::getId).toList();
     }

@@ -504,24 +504,24 @@ public class Spell {
                     public float attack_speed_multiplier = 1F;
                     /// Duration multiplier, producing impact delay. Will be rounded to whole ticks.
                     public float delay = 0.25F;
-
                     /// Forward momentum applied to the caster when performing this melee attack
                     public float forward_momentum = 0F;
-
                     /// Collision detection shape of this attack.
                     public HitBox hitbox = new HitBox();
-                    /// Arc of the melee attack hitbox, in degrees. 0 means a rectangle, greater than 0 means a sector shape with the given arc.
-                    public float hitbox_arc = 0F;
 
                     public PlayerAnimation animation;
                     public Sound sound;
                     public ParticleBatch[] particles = new ParticleBatch[]{};
                 }
                 public static class HitBox {
+                    /// Relative width of the hitbox, will be scaled up by attack range.
                     public float width = 1F;
+                    /// Relative height of the hitbox, will be scaled up by attack range.
                     public float height = 1F;
-                    public float rotation_degrees = 0F;
-                    // TODO: Maybe add arc here?
+                    /// Rotation along the forward axis, in degrees.
+                    public float rotation_roll = 0F;
+                    /// Arc of the melee attack hitbox, in degrees. 0 means no angular checks.
+                    public float arc = 0F;
                 }
             }
 
