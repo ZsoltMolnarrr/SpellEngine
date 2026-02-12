@@ -16,10 +16,13 @@ import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.internals.casting.SpellCast;
+import net.spell_engine.internals.target.EntityRelations;
+import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.mixin.entity.LivingEntityAccessor;
 import net.spell_engine.utils.AnimationHelper;
 import net.spell_engine.utils.AttributeModifierUtil;
 import net.spell_engine.utils.SoundHelper;
+import net.spell_engine.utils.TargetHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -169,6 +172,11 @@ public class Melee {
         for (int targetId : targetIds) {
             var target = world.getEntityById(targetId);
             if (target != null && target.isAttackable()) {
+                if (!EntityRelations.actionAllowed(
+                        SpellTarget.FocusMode.AREA, SpellTarget.Intent.HARMFUL,
+                        player, target)) {
+                    continue;
+                }
                 var timeUntilRegen = target.timeUntilRegen;
                 target.timeUntilRegen = 0;
                 ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(100);
