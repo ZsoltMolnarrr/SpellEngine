@@ -274,7 +274,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 return;
             }
             if (currentAttack.isDue(time)) {
-                onAttackHit(currentAttack.attack);
+                onAttackHit(currentAttack);
             }
             if (currentAttack.isFinished(time)) {
                 currentAttack = null;
@@ -301,9 +301,14 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
     }
     @Unique
-    private void onAttackHit(Melee.Attack attack) {
+    private void onAttackHit(Melee.ActiveAttack activeAttack) {
         var player = player();
+        var attack = activeAttack.attack;
         var targets = Melee.detectTargets(player, attack);
+        if (!attack.additional_hits_on_same_target()) {
+            targets = targets.stream().filter(id -> !activeAttack.hitEntityIds.contains(id)).toList();
+        }
+        activeAttack.hitEntityIds.addAll(targets);
         if (!targets.isEmpty()) {
             var targetIds = targets.stream().mapToInt(Integer::intValue).toArray();
             var context = attack.context() != null ? attack.context() : Melee.AttackContext.EMPTY;

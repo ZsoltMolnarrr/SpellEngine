@@ -25,7 +25,9 @@ import net.spell_engine.utils.SoundHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Melee {
 
@@ -63,29 +65,28 @@ public class Melee {
         public final Attack attack;
         public final int createdAt;
         public final Item weapon;
+        public final Set<Integer> hitEntityIds = new HashSet<>();
+        private final ArrayList<Integer> hitTicks;
 
         public ActiveAttack(Attack attack, int createdAt, Item weapon) {
             this.attack = attack;
             this.createdAt = createdAt;
             this.weapon = weapon;
+            var ticks = new ArrayList<Integer>();
+            var firstHit = createdAt + attack.delay;
+            ticks.add(firstHit);
+            for (int i = 1; i <= attack.additional_strikes; i++) {
+                ticks.add(firstHit + (i * attack.additional_strike_delay));
+            }
+            this.hitTicks = ticks;
         }
 
         public boolean isFinished(int currentTick) {
-            return currentTick >= (createdAt + attack.duration);
+            return currentTick >= (createdAt + attack.duration) && currentTick >= hitTicks.getLast();
         }
 
         public boolean isDue(int currentTick) {
-            var firstHit = createdAt + attack.delay;
-            if (currentTick == firstHit) {
-                return true;
-            }
-            for (int i = 1; i <= attack.additional_strikes; i++) {
-                var nextHit = firstHit + (i * attack.additional_strike_delay);
-                if (currentTick == nextHit) {
-                    return true;
-                }
-            }
-            return false;
+            return hitTicks.contains(currentTick);
         }
     }
 
