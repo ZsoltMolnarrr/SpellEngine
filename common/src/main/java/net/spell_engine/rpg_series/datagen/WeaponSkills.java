@@ -271,11 +271,13 @@ public class WeaponSkills {
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
         cut_2.attack_speed_multiplier = 1.5F;
-        cut_2.delay = 0.3F;
+        cut_2.delay = 0.6F;
         cut_2.hitbox = new Spell.Delivery.Melee.HitBox();
         cut_2.hitbox.arc = 90;
         cut_2.hitbox.height = 0.2F;
         cut_2.hitbox.rotation_roll = -45;
+        cut_2.additional_strikes = 2;
+        cut_2.additional_strike_delay = 0.2F;
         // cut_2.forward_momentum = 2F;
         cut_2.animation = PlayerAnimation.of("spell_engine:flurry_2h_slash2");
 

@@ -23,7 +23,9 @@
         },
         {
           "attack_speed_multiplier": 1.5,
-          "delay": 0.3,
+          "delay": 0.6,
+          "additional_strikes": 2,
+          "additional_strike_delay": 0.2,
           "hitbox": {
             "height": 0.2,
             "rotation_roll": -45.0,

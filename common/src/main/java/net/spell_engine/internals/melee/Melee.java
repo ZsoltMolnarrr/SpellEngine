@@ -32,6 +32,9 @@ public class Melee {
     public record Attack(
             int duration,
             int delay,
+            int additional_strikes,
+            int additional_strike_delay,
+            boolean additional_hits_on_same_target,
             float speed,
             float forward_momentum,
             Spell.Delivery.Melee.HitBox hitbox,
@@ -60,7 +63,6 @@ public class Melee {
         public final Attack attack;
         public final int createdAt;
         public final Item weapon;
-        private boolean signaled = false;
 
         public ActiveAttack(Attack attack, int createdAt, Item weapon) {
             this.attack = attack;
@@ -73,12 +75,17 @@ public class Melee {
         }
 
         public boolean isDue(int currentTick) {
-            if (signaled) {
-                return false;
+            var firstHit = createdAt + attack.delay;
+            if (currentTick == firstHit) {
+                return true;
             }
-            var result = currentTick >= (createdAt + attack.delay);
-            signaled = result;
-            return result;
+            for (int i = 1; i <= attack.additional_strikes; i++) {
+                var nextHit = firstHit + (i * attack.additional_strike_delay);
+                if (currentTick == nextHit) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -102,6 +109,9 @@ public class Melee {
             var meleeAttack = new Melee.Attack(
                     Math.round(duration),
                     Math.round(delay),
+                    attack.additional_strikes,
+                    Math.max(Math.round(duration * attack.additional_strike_delay), 1),
+                    attack.additional_hits_on_same_target,
                     speed,
                     attack.forward_momentum,
                     attack.hitbox,
@@ -182,7 +192,9 @@ public class Melee {
         }
         var spellEntry = SpellRegistry.from(world).getEntry(context.spellId());
         if (!targets.isEmpty() && spellEntry.isPresent()) {
-            SpellHelper.meleeImpact(player, targets, spellEntry.get(), null);
+            var impactContext = new SpellHelper.ImpactContext()
+                    .position(player.getPos());
+            SpellHelper.meleeImpact(player, targets, spellEntry.get(), impactContext);
         }
         ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(lastAttackTime);
     }

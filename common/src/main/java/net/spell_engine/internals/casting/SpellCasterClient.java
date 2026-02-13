@@ -13,7 +13,6 @@ public interface SpellCasterClient extends SpellCasterEntity {
     List<Entity> getCurrentTargets();
     Entity getCurrentFirstTarget();
 
-
     SpellCast.Attempt startSpellCast(ItemStack itemStack, RegistryEntry<Spell> spellEntry);
     @Nullable SpellCast.Progress getSpellCastProgress();
     boolean isCastingSpell();

@@ -249,6 +249,13 @@ public class Spell {
                 public float attack_speed_multiplier = 1F;
                 /// Duration multiplier, producing impact delay. Will be rounded to whole ticks.
                 public float delay = 0.25F;
+                /// Whether the melee attack should be performed multiple times in a row, with `additional_strike_delay` delay between them
+                public int additional_strikes = 0;
+                /// Delay between additional strikes, duration multiplier.
+                public float additional_strike_delay = 0.25F;
+                /// If true additional hits on the same target are allowed.
+                public boolean additional_hits_on_same_target = false;
+
                 /// Forward momentum applied to the caster when performing this melee attack
                 public float forward_momentum = 0F;
                 /// Collision detection shape of this attack.
