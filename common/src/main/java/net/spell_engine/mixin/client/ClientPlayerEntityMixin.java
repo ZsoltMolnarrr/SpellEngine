@@ -295,7 +295,8 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         }
 
         if (attack.context() != null) {
-            ((AnimatablePlayer)this).playSpellAnimation(SpellCast.Animation.RELEASE, attack.animation().id, attack.speed());
+            var animationSpeed = attack.speed() * attack.animation().speed;
+            ((AnimatablePlayer)this).playSpellAnimation(SpellCast.Animation.RELEASE, attack.animation().id, animationSpeed);
             var packet = new Packets.AttackFxBroadcast(attack.context());
             ClientPlayNetworking.send(packet);
         }

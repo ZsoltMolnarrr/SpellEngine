@@ -22,7 +22,7 @@ public class AnimationHelper {
         if (id == null || id.isEmpty()) {
             return;
         }
-        var packet = new Packets.SpellAnimation(animatedPlayer.getId(), type, id, speed);
+        var packet = new Packets.SpellAnimation(animatedPlayer.getId(), type, id, speed * animation.speed);
         if (includeAnimated && animatedPlayer instanceof ServerPlayerEntity serverPlayer) {
             sendPacketToPlayer(serverPlayer, packet);
         }

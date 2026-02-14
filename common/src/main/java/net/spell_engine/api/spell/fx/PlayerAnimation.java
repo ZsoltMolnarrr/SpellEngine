@@ -25,10 +25,15 @@ public class PlayerAnimation {
         public String id = "";
     }
     public String id = "";
+    public float speed = 1F;
     public List<Override> overrides = List.of();
     public PlayerAnimation() { }
     public PlayerAnimation(String id) {
         this.id = id;
+    }
+    public PlayerAnimation(String id, float speed) {
+        this.id = id;
+        this.speed = speed;
     }
 
     // Builders

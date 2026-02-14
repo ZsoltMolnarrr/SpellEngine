@@ -25,7 +25,8 @@ API Breaking Changes:
   - Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_book/<TAG_NAME>`
   - Custom spell books can be made with datapacks, for any combination of spells, just with a spell tag (and some additional assets)
 - Spell Data structure changes
-  - Casting and release animations are now wrapped into an `Animation` object, instead of a plain String
+  - Casting and release animations are now wrapped into a `PlayerAnimation` object, instead of a plain String
+  - `PlayerAnimation` supports: `overrides`, `speed`
   - Add `spell.cost.cooldown.attempt_duration` to prevent multiple performs of delayed deliveries
 
 API Additions:
