@@ -11,7 +11,7 @@
   },
   "release": {
     "animation": {
-      "id": "spell_engine:cleave"
+      "id": "spell_engine:weapon_cleave"
     },
     "particles_scaled_with_ranged": [
       {

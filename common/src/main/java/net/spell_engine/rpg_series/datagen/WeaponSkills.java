@@ -97,7 +97,7 @@ public class WeaponSkills {
         SpellBuilder.Casting.instant(spell);
 
         spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
-        spell.release.animation = PlayerAnimation.of("spell_engine:cleave");
+        spell.release.animation = PlayerAnimation.of("spell_engine:weapon_cleave");
         spell.active.cast.animation_pitch = false;
 
         spell.target.type = Spell.Target.Type.AREA;
@@ -139,10 +139,10 @@ public class WeaponSkills {
         spell.range_mechanic = Spell.RangeMechanic.MELEE;
 
         SpellBuilder.Casting.cast(spell, 1.0F);
-        spell.active.cast.animation = PlayerAnimation.of("spell_engine:slam_jump");
+        spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_slam_jump");
         spell.active.cast.start_sound = new Sound(SpellEngineSounds.HAMMER_SWING.id());
 
-        spell.release.animation = PlayerAnimation.of("spell_engine:slam_end");
+        spell.release.animation = PlayerAnimation.of("spell_engine:weapon_slam_end");
         spell.active.cast.animation_pitch = false;
 
         spell.target.type = Spell.Target.Type.AIM;
@@ -189,58 +189,30 @@ public class WeaponSkills {
         spell.range = 0;
         spell.range_mechanic = Spell.RangeMechanic.MELEE;
 
-        SpellBuilder.Casting.cast(spell, 0.8F);
-        spell.active.cast.animation = PlayerAnimation.of("spell_engine:one_handed_charge_weapon_spin_v2");
-
-        spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
-        spell.release.animation = PlayerAnimation.of("bettercombat:one_handed_uppercut_right");
-
-        spell.target.type = Spell.Target.Type.AIM;
-        spell.target.aim = new Spell.Target.Aim();
-        spell.target.aim.sticky = true;
-        spell.target.aim.required = true;
-
-        var damage = SpellBuilder.Impacts.damage(1F);
-        spell.impacts = List.of(damage);
-
-        SpellBuilder.Cost.cooldown(spell, 6);
-        spell.cost.cooldown.attempt_duration = 0.5F;
-
-        return new Entry(id, spell, title, description, null);
-    }
-
-    public static Entry CRUSHING_BLOW = add(CRUSHING_BLOW());
-    private static Entry CRUSHING_BLOW() {
-        var id = Identifier.of(NAMESPACE, "crushing_blow");
-        var title = "Crushing Blow";
-        var description = "Delivers a powerful overhead strike, dealing {damage} damage and slowing the target for {duration} seconds.";
-        var spell = SpellBuilder.createWeaponSpell();
-        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
-        spell.range = 0;
-        spell.range_mechanic = Spell.RangeMechanic.MELEE;
-
-        SpellBuilder.Casting.instant(spell);
-
-        spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
-        spell.release.animation = PlayerAnimation.of("bettercombat:one_handed_uppercut_right");
+        // SpellBuilder.Casting.instant(spell);
+        SpellBuilder.Casting.cast(spell, 0.5F);
+        spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_mace_uppercut_start");
         spell.active.cast.animation_pitch = false;
+        spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
 
-        spell.target.type = Spell.Target.Type.AREA;
-        spell.target.area = new Spell.Target.Area();
-        spell.target.area.angle_degrees = 90F;
-        spell.target.area.distance_dropoff = Spell.Target.Area.DropoffCurve.NONE;
-        spell.target.area.vertical_range_multiplier = 0.5F;
+        spell.target = new Spell.Target();
+        spell.target.type = Spell.Target.Type.NONE;
 
-        spell.release.particles_scaled_with_ranged = new ParticleBatch[]{
-        };
+        var cut_1 = new Spell.Delivery.Melee.Attack();
+        cut_1.attack_speed_multiplier = 1.5F;
+        cut_1.delay = 0.3F;
+        cut_1.hitbox = new Spell.Delivery.Melee.HitBox();
+        cut_1.hitbox.arc = 90;
+        cut_1.hitbox.height = 0.2F;
+        cut_1.hitbox.rotation_roll = 45F;
+        cut_1.animation = PlayerAnimation.of("spell_engine:weapon_mace_uppercut_end");
 
-        spell.deliver.delay = 2;
+        SpellBuilder.Deliver.melee(spell, List.of(cut_1));
 
-        var damage = SpellBuilder.Impacts.damage(1F, 2F);
-        spell.impacts = List.of(damage);
+        spell.impacts = List.of();
 
-        SpellBuilder.Cost.cooldown(spell, 6);
-        spell.cost.cooldown.attempt_duration = 0.5F;
+        SpellBuilder.Cost.cooldown(spell, 1);
+        spell.cost.cooldown.attempt_duration = 1F;
 
         return new Entry(id, spell, title, description, null);
     }
@@ -255,9 +227,13 @@ public class WeaponSkills {
         spell.range = 0;
         spell.range_mechanic = Spell.RangeMechanic.MELEE;
 
-        SpellBuilder.Casting.instant(spell);
+        // SpellBuilder.Casting.instant(spell);
+        SpellBuilder.Casting.cast(spell, 0.5F);
+        spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_charge");
+        spell.active.cast.animation_pitch = false;
+
         spell.target = new Spell.Target();
-        spell.target.type = Spell.Target.Type.CASTER;
+        spell.target.type = Spell.Target.Type.NONE;
 
         var cut_1 = new Spell.Delivery.Melee.Attack();
         cut_1.attack_speed_multiplier = 1.5F;
@@ -266,8 +242,8 @@ public class WeaponSkills {
         cut_1.hitbox.arc = 90;
         cut_1.hitbox.height = 0.2F;
         cut_1.hitbox.rotation_roll = 45F;
-        // cut_1.forward_momentum = 1F;
-        cut_1.animation = PlayerAnimation.of("spell_engine:flurry_2h_slash1");
+        cut_1.forward_momentum = 1F;
+        cut_1.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash1");
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
         cut_2.attack_speed_multiplier = 1.5F;
@@ -278,8 +254,8 @@ public class WeaponSkills {
         cut_2.hitbox.rotation_roll = -45;
         cut_2.additional_strikes = 2;
         cut_2.additional_strike_delay = 0.2F;
-        // cut_2.forward_momentum = 2F;
-        cut_2.animation = PlayerAnimation.of("spell_engine:flurry_2h_slash2");
+        cut_2.forward_momentum = 1F;
+        cut_2.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash2");
 
         SpellBuilder.Deliver.melee(spell, List.of(cut_1, cut_2));
 
@@ -287,6 +263,70 @@ public class WeaponSkills {
 
         // SpellBuilder.Cost.cooldown(spell, 10);
         spell.cost.cooldown.attempt_duration = 1F;
+
+        return new Entry(id, spell, title, description, null);
+    }
+
+    public static Entry SWIFT_STRIKES = add(SWIFT_STRIKES());
+    private static Entry SWIFT_STRIKES() {
+        var id = Identifier.of(NAMESPACE, "swift_strikes");
+        var title = "Swift Strikes";
+        var description = "Unleash a rapid series of strikes.";
+        var spell = SpellBuilder.createWeaponSpell();
+        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
+        spell.range = 0;
+        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+
+        // SpellBuilder.Casting.instant(spell);
+        SpellBuilder.Casting.cast(spell, 0.5F);
+        spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_flurry_1h_charge");
+        spell.active.cast.animation_pitch = false;
+
+        spell.target = new Spell.Target();
+        spell.target.type = Spell.Target.Type.NONE;
+
+        var cut_1 = new Spell.Delivery.Melee.Attack();
+        cut_1.attack_speed_multiplier = 1.5F;
+        cut_1.delay = 0.3F;
+        cut_1.hitbox = new Spell.Delivery.Melee.HitBox();
+        cut_1.hitbox.arc = 90;
+        cut_1.hitbox.height = 0.2F;
+        cut_1.hitbox.rotation_roll = 45F;
+        cut_1.animation = PlayerAnimation.of("spell_engine:weapon_flurry_1h_slash1");
+
+        var cut_2 = new Spell.Delivery.Melee.Attack();
+        cut_2.attack_speed_multiplier = 1.5F;
+        cut_2.delay = 0.6F;
+        cut_2.hitbox = new Spell.Delivery.Melee.HitBox();
+        cut_2.hitbox.arc = 90;
+        cut_2.hitbox.height = 0.2F;
+        cut_2.hitbox.rotation_roll = -45;
+        cut_2.additional_strike_delay = 0.2F;
+        cut_2.animation = PlayerAnimation.of("spell_engine:weapon_flurry_1h_slash2");
+
+        SpellBuilder.Deliver.melee(spell, List.of(cut_1, cut_2));
+
+        spell.impacts = List.of();
+
+        // SpellBuilder.Cost.cooldown(spell, 10);
+        spell.cost.cooldown.attempt_duration = 1F;
+
+        return new Entry(id, spell, title, description, null);
+    }
+
+    public static Entry THRUST = add(THRUST());
+    private static Entry THRUST() {
+        var id = Identifier.of(NAMESPACE, "thrust");
+        var title = "Thrust";
+        var description = "Lunge forward with your weapon, dealing {damage} damage to the first enemy hit.";
+        var spell = SpellBuilder.createWeaponSpell();
+        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
+        spell.range = 0;
+        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+
+
+        SpellBuilder.Cost.cooldown(spell, 4);
+        spell.cost.cooldown.attempt_duration = 0.5F;
 
         return new Entry(id, spell, title, description, null);
     }

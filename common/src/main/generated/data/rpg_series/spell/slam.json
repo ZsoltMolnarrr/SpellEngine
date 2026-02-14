@@ -6,40 +6,45 @@
   "learn": {},
   "active": {
     "cast": {
-      "duration": 0.8,
+      "duration": 0.5,
       "animation": {
-        "id": "spell_engine:one_handed_charge_weapon_spin_v2"
-      }
+        "id": "spell_engine:weapon_mace_uppercut_start"
+      },
+      "animation_pitch": false
     }
   },
   "release": {
-    "animation": {
-      "id": "bettercombat:one_handed_uppercut_right"
-    },
     "sound": {
       "id": "spell_engine:cleave"
     }
   },
   "target": {
-    "type": "AIM",
-    "aim": {
-      "required": true,
-      "sticky": true
+    "type": "NONE"
+  },
+  "deliver": {
+    "type": "MELEE",
+    "melee": {
+      "attacks": [
+        {
+          "attack_speed_multiplier": 1.5,
+          "delay": 0.3,
+          "hitbox": {
+            "height": 0.2,
+            "rotation_roll": 45.0,
+            "arc": 90.0
+          },
+          "animation": {
+            "id": "spell_engine:weapon_mace_uppercut_end"
+          }
+        }
+      ]
     }
   },
-  "impacts": [
-    {
-      "action": {
-        "type": "DAMAGE",
-        "damage": {}
-      }
-    }
-  ],
   "cost": {
     "cooldown": {
       "group": "weapon",
-      "attempt_duration": 0.5,
-      "duration": 6.0
+      "attempt_duration": 1.0,
+      "duration": 1.0
     }
   }
 }

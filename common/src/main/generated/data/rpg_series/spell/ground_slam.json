@@ -8,7 +8,7 @@
     "cast": {
       "duration": 1.0,
       "animation": {
-        "id": "spell_engine:slam_jump"
+        "id": "spell_engine:weapon_slam_jump"
       },
       "animation_pitch": false,
       "start_sound": {
@@ -18,7 +18,7 @@
   },
   "release": {
     "animation": {
-      "id": "spell_engine:slam_end"
+      "id": "spell_engine:weapon_slam_end"
     }
   },
   "target": {
