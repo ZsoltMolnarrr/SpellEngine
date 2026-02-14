@@ -7,6 +7,10 @@
   "spell.rpg_series.ground_slam.name": "Ground Slam",
   "spell.rpg_series.slam.description": "Delivers a powerful overhead strike, dealing {damage} damage and slowing the target for {duration} seconds.",
   "spell.rpg_series.slam.name": "Slam",
+  "spell.rpg_series.swift_strikes.description": "Unleash a rapid series of strikes.",
+  "spell.rpg_series.swift_strikes.name": "Swift Strikes",
+  "spell.rpg_series.thrust.description": "Lunge forward with your weapon, dealing {damage} damage to the first enemy hit.",
+  "spell.rpg_series.thrust.name": "Thrust",
   "spell.rpg_series.whirlwind.description": "Hold to spin around, dealing {damage} damage per second, to nearby enemies.",
   "spell.rpg_series.whirlwind.name": "Whirlwind"
 }

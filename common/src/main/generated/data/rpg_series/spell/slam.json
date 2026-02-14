@@ -8,7 +8,8 @@
     "cast": {
       "duration": 0.5,
       "animation": {
-        "id": "spell_engine:weapon_mace_uppercut_start"
+        "id": "spell_engine:weapon_mace_uppercut_start",
+        "speed": 2.0
       },
       "animation_pitch": false
     }

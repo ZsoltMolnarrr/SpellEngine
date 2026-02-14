@@ -1,0 +1,15 @@
+{
+  "school": "spell_power:physical_melee",
+  "range": 0.0,
+  "range_mechanic": "MELEE",
+  "tier": 1,
+  "learn": {},
+  "active": {},
+  "cost": {
+    "cooldown": {
+      "group": "weapon",
+      "attempt_duration": 0.5,
+      "duration": 4.0
+    }
+  }
+}

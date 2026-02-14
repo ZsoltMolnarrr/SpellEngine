@@ -72,7 +72,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             for (var batch: cast.particles) {
                 ParticleHelper.play(player.getWorld(), player, player.getYaw(), getPitch(), batch);
             }
-            speed = ((SpellCasterEntity)player).getCurrentCastingSpeed();
+            speed = ((SpellCasterEntity)player).getCurrentCastingSpeed() * cast.animation.speed;
             castingAnimationPitching = cast.animation_pitch;
         } else {
             castingAnimationPitching = true;

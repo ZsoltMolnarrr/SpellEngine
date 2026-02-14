@@ -4,16 +4,7 @@
   "range_mechanic": "MELEE",
   "tier": 1,
   "learn": {},
-  "active": {
-    "cast": {
-      "duration": 1.0,
-      "animation": {
-        "id": "spell_engine:weapon_flurry_2h_charge",
-        "speed": 2.0
-      },
-      "animation_pitch": false
-    }
-  },
+  "active": {},
   "target": {
     "type": "NONE"
   },
@@ -22,31 +13,28 @@
     "melee": {
       "attacks": [
         {
-          "attack_speed_multiplier": 1.5,
+          "attack_speed_multiplier": 2.0,
           "delay": 0.3,
-          "forward_momentum": 1.0,
           "hitbox": {
             "height": 0.2,
             "rotation_roll": 45.0,
             "arc": 90.0
           },
           "animation": {
-            "id": "spell_engine:weapon_flurry_2h_slash1"
+            "id": "spell_engine:weapon_twinstrike_slash_1"
           }
         },
         {
-          "attack_speed_multiplier": 1.5,
+          "attack_speed_multiplier": 2.0,
           "delay": 0.6,
-          "additional_strikes": 2,
           "additional_strike_delay": 0.2,
-          "forward_momentum": 1.0,
           "hitbox": {
             "height": 0.2,
             "rotation_roll": -45.0,
             "arc": 90.0
           },
           "animation": {
-            "id": "spell_engine:weapon_flurry_2h_slash2"
+            "id": "spell_engine:weapon_twinstrike_slash_2"
           }
         }
       ]

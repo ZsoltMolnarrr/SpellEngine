@@ -192,6 +192,7 @@ public class WeaponSkills {
         // SpellBuilder.Casting.instant(spell);
         SpellBuilder.Casting.cast(spell, 0.5F);
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_mace_uppercut_start");
+        spell.active.cast.animation.speed = 2F;
         spell.active.cast.animation_pitch = false;
         spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
 
@@ -228,8 +229,9 @@ public class WeaponSkills {
         spell.range_mechanic = Spell.RangeMechanic.MELEE;
 
         // SpellBuilder.Casting.instant(spell);
-        SpellBuilder.Casting.cast(spell, 0.5F);
+        SpellBuilder.Casting.cast(spell, 1F);
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_charge");
+        spell.active.cast.animation.speed = 2F;
         spell.active.cast.animation_pitch = false;
 
         spell.target = new Spell.Target();
@@ -277,32 +279,32 @@ public class WeaponSkills {
         spell.range = 0;
         spell.range_mechanic = Spell.RangeMechanic.MELEE;
 
-        // SpellBuilder.Casting.instant(spell);
-        SpellBuilder.Casting.cast(spell, 0.5F);
-        spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_flurry_1h_charge");
-        spell.active.cast.animation_pitch = false;
+        SpellBuilder.Casting.instant(spell);
+//        SpellBuilder.Casting.cast(spell, 0.5F);
+//        spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_twinstrike_start");
+//        spell.active.cast.animation_pitch = false;
 
         spell.target = new Spell.Target();
         spell.target.type = Spell.Target.Type.NONE;
 
         var cut_1 = new Spell.Delivery.Melee.Attack();
-        cut_1.attack_speed_multiplier = 1.5F;
+        cut_1.attack_speed_multiplier = 2F;
         cut_1.delay = 0.3F;
         cut_1.hitbox = new Spell.Delivery.Melee.HitBox();
         cut_1.hitbox.arc = 90;
         cut_1.hitbox.height = 0.2F;
         cut_1.hitbox.rotation_roll = 45F;
-        cut_1.animation = PlayerAnimation.of("spell_engine:weapon_flurry_1h_slash1");
+        cut_1.animation = PlayerAnimation.of("spell_engine:weapon_twinstrike_slash_1");
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
-        cut_2.attack_speed_multiplier = 1.5F;
+        cut_2.attack_speed_multiplier = 2F;
         cut_2.delay = 0.6F;
         cut_2.hitbox = new Spell.Delivery.Melee.HitBox();
         cut_2.hitbox.arc = 90;
         cut_2.hitbox.height = 0.2F;
         cut_2.hitbox.rotation_roll = -45;
         cut_2.additional_strike_delay = 0.2F;
-        cut_2.animation = PlayerAnimation.of("spell_engine:weapon_flurry_1h_slash2");
+        cut_2.animation = PlayerAnimation.of("spell_engine:weapon_twinstrike_slash_2");
 
         SpellBuilder.Deliver.melee(spell, List.of(cut_1, cut_2));
 
