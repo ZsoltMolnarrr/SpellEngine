@@ -19,4 +19,5 @@ public interface SpellCasterClient extends SpellCasterEntity {
     void cancelSpellCast();
 
     void onAttacksAvailable(List<Melee.Attack> attacks);
+    Melee.ActiveAttack getCurrentSkillAttack();
 }

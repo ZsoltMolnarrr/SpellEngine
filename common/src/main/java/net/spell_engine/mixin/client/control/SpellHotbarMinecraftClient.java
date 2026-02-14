@@ -52,6 +52,12 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
         if (player.isUsingItem()) {
             return;
         }
+        var caster = (SpellCasterClient) player;
+        if (caster.getCurrentSkillAttack() != null) {
+            itemUseCooldown = Math.max(itemUseCooldown, 1); // Blocking item use
+            attackCooldown = 1; // Blocking attacks
+            return; // Blocking spell cast
+        }
         SpellHotbar.Handle handled;
         if (useKeySpellCastingLock || SpellEngineClient.config.useKeyHighPriority) {
             handled = SpellHotbar.INSTANCE.handleAll(player, options);

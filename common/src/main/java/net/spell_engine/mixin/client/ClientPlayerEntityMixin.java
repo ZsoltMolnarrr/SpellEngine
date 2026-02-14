@@ -257,16 +257,17 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     public void onAttacksAvailable(List<Melee.Attack> attacks) {
         scheduledAttacks.addAll(attacks);
     }
+    public Melee.ActiveAttack getCurrentSkillAttack() {
+        return currentAttack;
+    }
     @Unique
     private void onTick_ScheduledAttacks(ClientPlayerEntity player) {
         var time = player.age;
-        if (currentAttack == null) {
-            if (!scheduledAttacks.isEmpty()) {
-                var attack = scheduledAttacks.remove(0);
-                currentAttack = new Melee.ActiveAttack(attack, time, player.getMainHandStack().getItem());
-                onAttackActivated(attack);
-            }
+        if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ATTACK)) {
+            currentAttack = null;
+            return;
         }
+        checkForNextAttack(player, time);
         if (currentAttack != null) {
             if (currentAttack.weapon != player.getMainHandStack().getItem()) {
                 // Weapon changed, cancel attack
@@ -278,9 +279,20 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             }
             if (currentAttack.isFinished(time)) {
                 currentAttack = null;
+                checkForNextAttack(player, time);
             }
         }
     }
+    private void checkForNextAttack(ClientPlayerEntity player, int time) {
+        if (currentAttack == null) {
+            if (!scheduledAttacks.isEmpty()) {
+                var attack = scheduledAttacks.remove(0);
+                currentAttack = new Melee.ActiveAttack(attack, time, player.getMainHandStack().getItem());
+                onAttackActivated(attack);
+            }
+        }
+    }
+
     @Unique
     private void onAttackActivated(Melee.Attack attack) {
         // On attack started
