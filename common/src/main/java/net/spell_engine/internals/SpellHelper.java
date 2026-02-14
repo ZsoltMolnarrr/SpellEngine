@@ -528,14 +528,17 @@ public class SpellHelper {
                     var attackers = !targets.isEmpty()
                             ? targets.stream().map(e -> e.entity).toList()
                             : List.of(caster);
+                    var meleeData = spell.deliver.melee;
+                    var spellId = spellEntry.getKey().get().getValue();
+                    var attacks = meleeData.attacks;
+                    if (context.isChanneled()) {
+                        var index = context.channelTickIndex() % attacks.size();
+                        attacks = List.of(attacks.get(index));
+                    }
                     for (var attacker: attackers) {
                         if (attacker instanceof ServerPlayerEntity serverPlayer) {
-                            var meleeData = spell.deliver.melee;
-
-                            var spellId = spellEntry.getKey().get().getValue();
                             // Map to resolved MeleeAttack structures
-                            var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, meleeData, spellId);
-
+                            var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, attacks, spellId);
                             // Send AttackAvailable packet to client
                             var packet = new Packets.AttackAvailable(spellId, meleeAttacks);
                             ServerPlayNetworking.send(serverPlayer, packet);

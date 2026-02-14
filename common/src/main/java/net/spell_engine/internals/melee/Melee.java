@@ -94,11 +94,11 @@ public class Melee {
      * Server-side: Map spell melee configuration to resolved MeleeAttack list
      * This flattens and resolves all server-side calculations (haste, etc.)
      */
-    public static List<Attack> createMeleeAttacks(ServerPlayerEntity caster, Spell.Delivery.Melee meleeData,
+    public static List<Attack> createMeleeAttacks(ServerPlayerEntity caster, List<Spell.Delivery.Melee.Attack> meleeDataAttacks,
                                                   Identifier spellId) {
         var attacks = new ArrayList<Attack>();
         var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, caster);
-        for (var attack : meleeData.attacks) {
+        for (var attack : meleeDataAttacks) {
             // Calculate haste-affected duration
             var speed = (float) (attack.attack_speed_multiplier * attackSpeedMultiplier);
             float duration = attack.duration_attack_speed_based
