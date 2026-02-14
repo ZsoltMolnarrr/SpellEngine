@@ -524,17 +524,24 @@ public class SpellHelper {
             }
             case MELEE -> {
                 if (spell.deliver.melee != null
-                        && !spell.deliver.melee.attacks.isEmpty()
-                        && caster instanceof ServerPlayerEntity serverPlayer) {
-                    var meleeData = spell.deliver.melee;
+                        && !spell.deliver.melee.attacks.isEmpty()) {
+                    var attackers = !targets.isEmpty()
+                            ? targets.stream().map(e -> e.entity).toList()
+                            : List.of(caster);
+                    for (var attacker: attackers) {
+                        if (attacker instanceof ServerPlayerEntity serverPlayer) {
+                            var meleeData = spell.deliver.melee;
 
-                    var spellId = spellEntry.getKey().get().getValue();
-                    // Map to resolved MeleeAttack structures
-                    var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, meleeData, spellId);
+                            var spellId = spellEntry.getKey().get().getValue();
+                            // Map to resolved MeleeAttack structures
+                            var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, meleeData, spellId);
 
-                    // Send AttackAvailable packet to client
-                    var packet = new Packets.AttackAvailable(spellId, meleeAttacks);
-                    ServerPlayNetworking.send(serverPlayer, packet);
+                            // Send AttackAvailable packet to client
+                            var packet = new Packets.AttackAvailable(spellId, meleeAttacks);
+                            ServerPlayNetworking.send(serverPlayer, packet);
+                            delivered = true;
+                        }
+                    }
                 }
             }
             case STASH_EFFECT -> {
