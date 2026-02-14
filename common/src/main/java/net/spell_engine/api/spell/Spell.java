@@ -241,17 +241,17 @@ public class Spell {
                 /// Only for internal use, do not touch this :)
                 @NeverGenerate
                 public String id = UUID.randomUUID().toString();
-                /// Whether the duration of the attack is based on the attack cooldown (attack speed attribute)
-                public boolean duration_attack_speed_based = true;
-                /// Duration of the melee attack (in ticks)
-                public int duration_static = 0;
+                /// Total damage additive multiplier. Example value: 0.5F for +50% of the total damage.
+                public float damage_bonus = 0F;
+                /// Duration of the melee attack (in ticks), if zero deferring to use attack cooldown duration (vanilla attack speed).
+                public int duration = 0;
                 /// A multiplier applied to animation, and non-static duration
                 public float attack_speed_multiplier = 1F;
-                /// Duration multiplier, producing impact delay. Will be rounded to whole ticks.
+                /// Delay before strike (aka windup), actual value: multiplied by duration, rounded to whole ticks.
                 public float delay = 0.25F;
-                /// Whether the melee attack should be performed multiple times in a row, with `additional_strike_delay` delay between them
+                /// Whether additional melee attack should be performed in a row, with `additional_strike_delay` delay between them
                 public int additional_strikes = 0;
-                /// Delay between additional strikes, duration multiplier.
+                /// Delay between additional strikes, actual value: multiplied by duration, rounded to whole ticks.
                 public float additional_strike_delay = 0.25F;
                 /// If true additional hits on the same target are allowed.
                 public boolean additional_hits_on_same_target = true;
@@ -271,7 +271,7 @@ public class Spell {
                 /// Relative height of the hitbox, will be scaled up by attack range.
                 public float height = 1F;
                 /// Rotation along the forward axis, in degrees.
-                public float rotation_roll = 0F;
+                public float roll = 0F;
                 /// Arc of the melee attack hitbox, in degrees. 0 means no angular checks.
                 public float arc = 0F;
             }

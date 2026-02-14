@@ -27,7 +27,7 @@
           "forward_momentum": 1.0,
           "hitbox": {
             "height": 0.2,
-            "rotation_roll": 45.0,
+            "roll": 45.0,
             "arc": 90.0
           },
           "animation": {
@@ -35,14 +35,13 @@
           }
         },
         {
+          "damage_bonus": 0.5,
           "attack_speed_multiplier": 1.5,
           "delay": 0.6,
-          "additional_strikes": 2,
-          "additional_strike_delay": 0.2,
           "forward_momentum": 1.0,
           "hitbox": {
             "height": 0.2,
-            "rotation_roll": -45.0,
+            "roll": -45.0,
             "arc": 90.0
           },
           "animation": {

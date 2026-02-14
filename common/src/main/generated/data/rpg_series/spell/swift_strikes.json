@@ -17,7 +17,7 @@
           "delay": 0.3,
           "hitbox": {
             "height": 0.2,
-            "rotation_roll": 45.0,
+            "roll": 45.0,
             "arc": 90.0
           },
           "animation": {
@@ -30,7 +30,7 @@
           "additional_strike_delay": 0.2,
           "hitbox": {
             "height": 0.2,
-            "rotation_roll": -45.0,
+            "roll": -45.0,
             "arc": 90.0
           },
           "animation": {

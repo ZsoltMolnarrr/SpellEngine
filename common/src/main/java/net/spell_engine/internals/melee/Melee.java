@@ -3,6 +3,7 @@ package net.spell_engine.internals.melee;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -10,6 +11,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.registry.SpellRegistry;
@@ -101,10 +103,10 @@ public class Melee {
         for (var attack : meleeDataAttacks) {
             // Calculate haste-affected duration
             var speed = (float) (attack.attack_speed_multiplier * attackSpeedMultiplier);
-            float duration = attack.duration_attack_speed_based
+            float duration = attack.duration > 0
                     // `getAttackCooldownProgressPerTick` is poorly named, it actually returns the attack cooldown in ticks
-                    ? Math.max(caster.getAttackCooldownProgressPerTick() * (1F / speed), 1)
-                    : attack.duration_static;
+                    ? attack.duration
+                    : Math.max(caster.getAttackCooldownProgressPerTick() * (1F / speed), 1);
             float delay = duration * attack.delay;
             // Create resolved MeleeAttack with all calculations done
             var meleeAttack = new Melee.Attack(
@@ -153,7 +155,7 @@ public class Melee {
         var hitbox = attack.hitbox();
         var range = player.getEntityInteractionRange();
         var hitboxSize = new Vec3d(hitbox.width * range, hitbox.height * range, hitbox.width * range);
-        var result = TargetFinder.findAttackTargetResult(player, null, hitboxSize, hitbox.arc, range, hitbox.rotation_roll);
+        var result = TargetFinder.findAttackTargetResult(player, null, hitboxSize, hitbox.arc, range, hitbox.roll);
 
         return result.entities.stream().map(Entity::getId).toList();
     }
@@ -170,33 +172,54 @@ public class Melee {
         }
     }
 
+    private static final Identifier DAMAGE_MODIFIER_ID = Identifier.of(SpellEngineMod.ID, "melee_attack");
     public static void performAttackAgainstTargets(ServerPlayerEntity player, AttackContext context, int[] targetIds) {
         var world = player.getWorld();
 
-        var lastAttackTime = ((LivingEntityAccessor)player).spellEngine_getLastAttackedTicks();
-        var targets = new ArrayList<Entity>();
-        for (int targetId : targetIds) {
-            var target = world.getEntityById(targetId);
-            if (target != null && target.isAttackable()) {
-                if (!EntityRelations.actionAllowed(
-                        SpellTarget.FocusMode.AREA, SpellTarget.Intent.HARMFUL,
-                        player, target)) {
-                    continue;
+        var attributeInstance = player.getAttributes().getCustomInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE);
+        EntityAttributeModifier appliedDamageModifier = null;
+        try {
+            var lastAttackTime = ((LivingEntityAccessor)player).spellEngine_getLastAttackedTicks();
+            var targets = new ArrayList<Entity>();
+            var spellEntry = SpellRegistry.from(world).getEntry(context.spellId());
+            var attack = resolveAttackData(player.getWorld(), player, context);
+            if (attack != null && attributeInstance != null) {
+                var damageModifierAmount = attack.damage_bonus;
+                if (damageModifierAmount != 0) {
+                    appliedDamageModifier = new EntityAttributeModifier(DAMAGE_MODIFIER_ID, damageModifierAmount, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+                    attributeInstance.addTemporaryModifier(appliedDamageModifier);
                 }
-                var timeUntilRegen = target.timeUntilRegen;
-                target.timeUntilRegen = 0;
-                ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(100);
-                player.attack(target);
-                targets.add(target);
-                target.timeUntilRegen = timeUntilRegen;
             }
+
+            for (int targetId : targetIds) {
+                var target = world.getEntityById(targetId);
+                if (target != null && target.isAttackable()) {
+                    if (!EntityRelations.actionAllowed(
+                            SpellTarget.FocusMode.DIRECT, SpellTarget.Intent.HARMFUL,
+                            player, target)) {
+                        continue;
+                    }
+                    var timeUntilRegen = target.timeUntilRegen;
+                    target.timeUntilRegen = 0;
+                    ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(100);
+                    player.attack(target);
+                    targets.add(target);
+                    target.timeUntilRegen = timeUntilRegen;
+                }
+            }
+
+            if (!targets.isEmpty() && spellEntry.isPresent()) {
+                var impactContext = new SpellHelper.ImpactContext()
+                        .position(player.getPos());
+                SpellHelper.meleeImpact(player, targets, spellEntry.get(), impactContext);
+            }
+            ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(lastAttackTime);
+        } catch (Exception e) {
+            // Just in case something goes wrong with cooldowns, we don't want to break the attack
+            e.printStackTrace();
         }
-        var spellEntry = SpellRegistry.from(world).getEntry(context.spellId());
-        if (!targets.isEmpty() && spellEntry.isPresent()) {
-            var impactContext = new SpellHelper.ImpactContext()
-                    .position(player.getPos());
-            SpellHelper.meleeImpact(player, targets, spellEntry.get(), impactContext);
+        if (appliedDamageModifier != null) {
+            attributeInstance.removeModifier(appliedDamageModifier);
         }
-        ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(lastAttackTime);
     }
 }
