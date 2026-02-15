@@ -25,6 +25,8 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     public int spell_instant_cast_global_cooldown = 10;
     @Comment("Players cannot unequip a spell book, if one of the spells in it is on cooldown.")
     public boolean spell_item_cooldown_lock = true;
+    @Comment("Additional cooldown in seconds applied to equipped spell book item, after casting a spell from them, to prevent quick swapping and casting.")
+    public float spell_book_additional_cooldown = 10F;
     @Comment("Players can use the Spell Binding Table to create spell books.")
     public boolean spell_book_creation_enabled = true;
     @Comment("Spell book creation level levelCost")
@@ -61,6 +63,8 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     public boolean attribute_evasion_allowed_while_spell_casting = false;
     @Comment("Allow evasion to work while the player is using an item (e.g. eating, drawing a bow)")
     public boolean attribute_evasion_allowed_while_item_usage = false;
+    @Comment("Determines the focus mode (AREA vs DIRECT) for melee skills.")
+    public boolean melee_skills_area_focus_mode = true;
 
     @Comment("""
             Relations determine which cases the effect of a player casted spell can effect a target.

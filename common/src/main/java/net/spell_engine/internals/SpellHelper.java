@@ -10,9 +10,7 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -37,6 +35,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.event.SpellHandlers;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.compat.CriticalStrikeCompat;
 import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.DamageSourceExtension;
@@ -614,6 +613,9 @@ public class SpellHelper {
         if (SpellEngineMod.config.spell_item_cooldown_lock && spell.cost.cooldown.hosting_item && source.itemStack() != null) {
             var hostingItem = source.itemStack().getItem();
             var itemCooldowns = player.getItemCooldownManager();
+            if (source.itemStack().isIn(SpellEngineItemTags.SPELL_BOOK)) {
+                durationTicks += (int) (SpellEngineMod.config.spell_book_additional_cooldown * 20F);
+            }
             var durationLeft = ((ItemCooldownManagerExtension)itemCooldowns).SE_getLastCooldownDuration(hostingItem)
                     * itemCooldowns.getCooldownProgress(hostingItem, 0);
             if (durationTicks > durationLeft) {

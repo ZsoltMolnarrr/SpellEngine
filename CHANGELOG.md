@@ -65,6 +65,9 @@ Other changes:
   - Supports various pattern matching methods (item id, item tag, regex, inversion)
   - Config file: `config/spell_engine/weapon_fallbacks.json`
   - Removed related old config options from `server.json5`
+- Added new server config options:
+  - `melee_skills_area_focus_mode` - Determines the focus mode (AREA vs DIRECT) for melee skills.
+  - `spell_book_additional_cooldown` - Additional cooldown in seconds applied to spell book items, to prevent quick swapping and casting."
 - Global cooldown is now enabled by default for instant spells (0.5 seconds), adjustable in server config
 - Fixed operation of spell variant, target:`AIM`+ deliver:`DIRECT` + area impact
 

@@ -184,7 +184,7 @@ public class Melee {
     private static final Identifier DAMAGE_MODIFIER_ID = Identifier.of(SpellEngineMod.ID, "melee_attack");
     public static void performAttackAgainstTargets(ServerPlayerEntity player, AttackContext context, int[] targetIds) {
         var world = player.getWorld();
-
+        var focusMode = focusMode();
         var attributeInstance = player.getAttributes().getCustomInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE);
         EntityAttributeModifier appliedDamageModifier = null;
         try {
@@ -205,7 +205,7 @@ public class Melee {
                 var target = world.getEntityById(targetId);
                 if (target != null && target.isAttackable()) {
                     if (!EntityRelations.actionAllowed(
-                            SpellTarget.FocusMode.AREA, SpellTarget.Intent.HARMFUL,
+                            focusMode, SpellTarget.Intent.HARMFUL,
                             player, target)) {
                         continue;
                     }
@@ -230,5 +230,9 @@ public class Melee {
         if (appliedDamageModifier != null) {
             attributeInstance.removeModifier(appliedDamageModifier);
         }
+    }
+
+    private static SpellTarget.FocusMode focusMode() {
+        return SpellEngineMod.config.melee_skills_area_focus_mode ? SpellTarget.FocusMode.AREA : SpellTarget.FocusMode.DIRECT;
     }
 }
