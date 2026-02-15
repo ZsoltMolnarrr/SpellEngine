@@ -151,7 +151,7 @@ Example data file, located at `data/NAMESPACE/spell_assignments/ITEM_NAME.json`
 
 #### Fallback assignment
 
-This is a configurable feature of Spell Engine. Tries to automatically assign spell containers to items, based on their type (sword, axe, bow, etc.)
+This is a configurable feature of Spell Engine. Tries to detect weapon type of items (such as: sword, axe, bow, etc.) using tags or regex, in order to automatically assign a relevant spell container. 
 
 Config file: `config/spell_engine/weapon_fallback.json`
 
