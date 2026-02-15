@@ -223,7 +223,7 @@ Check out the various tags (for items, entities, spells) [here](common/src/main/
 
 ## 📦️ Game Content
 
-This mod is primarily a batch of tools (APIs) for developers, but it comes with few generic content, primarily to allow spell book creation and spell binding.
+This mod is primarily a library for developers, but it comes with few generic content, primarily to allow spell book creation and spell binding.
 
 ### Items
 
@@ -258,10 +258,10 @@ Fully data driven Spell Books
 ID: `spell_engine:spell_scroll`
 
 Spell scrolls are items with one spell bound to them
-- can be attached Spell Books, using the Spell Binding Table
+- can be attached Spell Books those binding pool contains the spell of the scroll (using the Spell Binding Table)
 - can be equipped into Spell Book slot (and Spell Scroll slot if enabled), to use standalone
 
-Their purpose is to allow players to collect spells from loot, instead of crafting them, similar to how enchanted books work compared to regular enchantments.
+The purpose of spell scrolls, is to allow players to collect spells from loot, instead of crafting them, similar to how enchanted books work compared to regular enchantments.
 
 Fully data driven Spell Scrolls
 - Automatically generated for all spells listed under tags located in `spell_scroll/` folder (`<NAMESPACE>:spell_scroll/<TAG_NAME>`)
@@ -285,20 +285,31 @@ Fully data driven Spell Scrolls
 
 ## 🔧 Configuration
 
-### Fabric
+Client side:
+- Generic client settings 
+  - Accessible via the in-game mod menu (or by editing `config/spell_engine/client.json5`)
+  - Manual editing is not recommended
+- Spell HUD settings
+  - Accessible via the in-game mod menu (or by editing `config/spell_engine/hud_config.json`)
+  - Manual editing is not recommended
 
-Client side settings can be accessed via the [Mod Menu](https://github.com/TerraformersMC/ModMenu).
-
-### Server
-
-**Server side** configuration can be found in the `config` directory, after running the game with the mod installed.
+Server side:
+- Generic server settings - Settings for spell mechanics and friend or foe logic
+  - Accessible by editing `config/spell_engine/server.json5`
+  - Synced to clients upon connection
+- Elemental weaknesses config - Defines the weaknesses of entity types to different magic schools.
+  - Accessible by editing `config/spell_engine/elemental_weaknesses.json`
+- Weapon fallback config - Defines the rules for automatic spell container assignment to items.
+  - Accessible by editing `config/spell_engine/weapon_fallback.json`
+- Spell container templates config - Defines the templates for automatic spell container assignment to items.
+  - Accessible by editing `config/spell_engine/spell_container_templates.json`
 
 ## 🤝 Compatibility for third party content
 
 ### 🤖 Automatic compatibility
 
-Sword like weapons are automatically picked up, and assigned _spell casting from spell book_ capability.
-This feature is turned on by default, it can be disabled in `config/spell_engine/server.json5`, black listing and white listing are also supported in form of regex. 
+Some weapon types automatically get spell casting capability.
+Visit the Fallback Assignment section above for details.
 
 ### 🗡️ Adding spell casting capability for weapons
 
@@ -416,7 +427,7 @@ Install dependencies:
 
 Create a new file at `resources/data/MOD_ID/spells/SPELL_ID.json`.
 
-Write the content of the JSON file to match the structure of the [Spell](src/main/java/net/spell_engine/api/spell/Spell.java) class. Your JSON will be parsed into a Spell instance.
+Write the content of the JSON file to match the structure of the [Spell](common/src/main/java/net/spell_engine/api/spell/Spell.java) class. Your JSON will be parsed into a Spell instance.
 
 Spells are automatically registered. 
 
@@ -510,7 +521,7 @@ The two solutions can be combined.
 
 Assign zero, one or more spells to an item, by creating a JSON file at: `resources/data/MOD_ID/spell_assignments/ITEM_ID.json`.
 
-Your JSON file will be parsed into a [Spell Container](src/main/java/net/spell_engine/api/spell/container/SpellContainer.java).
+Your JSON file will be parsed into a [Spell Container](common/src/main/java/net/spell_engine/api/spell/container/SpellContainer.java).
 
 Example wand (one spell assigned, no more can be added)
 ```
@@ -533,8 +544,8 @@ When an item has an assigned Spell Container, it will be eligible for Spell Powe
 ## ✨ Audio and visuals
 
 Spell Engine has multiple kind of assets built in: 
-- Sound effects (you can find the available sounds [here](src/main/java/net/spell_engine/fx/SpellEngineSounds.java))
-- Particle effects (you can find the available effects [here](src/main/java/net/spell_engine/fx/Particles.java))
-- Player Animations (you can find the available animations [here](src/main/resources/assets/spell_engine/player_animations))
+- Sound effects (you can find the available sounds [here](common/src/main/java/net/spell_engine/fx/SpellEngineSounds.java))
+- Particle effects (you can find the available effects [here](common/src/main/java/net/spell_engine/fx/Particles.java))
+- Player Animations (you can find the available animations [here](common/src/main/resources/assets/spell_engine/player_animations))
 
 These assets are referenced in spell json files, by using their Identifier.
