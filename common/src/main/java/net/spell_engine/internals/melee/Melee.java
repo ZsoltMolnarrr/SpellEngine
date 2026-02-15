@@ -19,6 +19,7 @@ import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.casting.SpellCast;
+import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.mixin.entity.LivingEntityAccessor;
@@ -43,6 +44,7 @@ public class Melee {
             float speed,
             float forward_momentum,
             float movement_speed,
+            float movement_slip,
             Spell.Delivery.Melee.HitBox hitbox,
             PlayerAnimation animation,
             @Nullable AttackContext context
@@ -104,30 +106,35 @@ public class Melee {
         var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, caster);
         for (var attack : meleeDataAttacks) {
             // Calculate haste-affected duration
-            var speed = (float) (attack.attack_speed_multiplier * attackSpeedMultiplier);
-            float duration = attack.duration > 0
-                    // `getAttackCooldownProgressPerTick` is poorly named, it actually returns the attack cooldown in ticks
-                    ? attack.duration
-                    : Math.max(caster.getAttackCooldownProgressPerTick() * (1F / speed), 1);
-            float delay = duration * attack.delay;
-            // Create resolved MeleeAttack with all calculations done
-            var meleeAttack = new Melee.Attack(
-                    Math.round(duration),
-                    Math.round(delay),
-                    attack.additional_strikes,
-                    Math.max(Math.round(duration * attack.additional_strike_delay), 1),
-                    attack.additional_hits_on_same_target,
-                    speed,
-                    attack.forward_momentum,
-                    attack.movement_speed,
-                    attack.hitbox,
-                    attack.animation,
-                    new AttackContext(spellId, attack.id)
-            );
+            var meleeAttack = convert(caster, spellId, attack, attackSpeedMultiplier);
             attacks.add(meleeAttack);
         }
 
         return attacks;
+    }
+
+    private static Attack convert(ServerPlayerEntity caster, Identifier spellId, Spell.Delivery.Melee.Attack attack, double attackSpeedMultiplier) {
+        var speed = (float) (attack.attack_speed_multiplier * attackSpeedMultiplier);
+        float duration = attack.duration > 0
+                // `getAttackCooldownProgressPerTick` is poorly named, it actually returns the attack cooldown in ticks
+                ? attack.duration
+                : Math.max(caster.getAttackCooldownProgressPerTick() * (1F / speed), 1);
+        float delay = duration * attack.delay;
+        // Create resolved MeleeAttack with all calculations done
+        return new Attack(
+                Math.round(duration),
+                Math.round(delay),
+                attack.additional_strikes,
+                Math.max(Math.round(duration * attack.additional_strike_delay), 1),
+                attack.additional_hits_on_same_target,
+                speed,
+                attack.forward_momentum,
+                attack.movement_speed,
+                attack.movement_slipperiness,
+                attack.hitbox,
+                attack.animation,
+                new AttackContext(spellId, attack.id)
+        );
     }
 
     @Nullable public static Spell.Delivery.Melee.Attack resolveAttackData(World world, @Nullable AttackContext context) {
@@ -173,6 +180,11 @@ public class Melee {
         var world = player.getWorld();
         var attackData = resolveAttackData(world, attackContext);
         if (attackData != null) {
+            // Saving the attack on server side - mainly for the slipperiness
+            var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player);
+            var attack = convert(player, attackContext.spellId(), attackData, attackSpeedMultiplier);
+            ((SpellCasterEntity) player).setMeleeSkillAttack(new ActiveAttack(attack, player.age, player.getMainHandStack().getItem()));
+            // Sending fx to clients - animation, sound, particles
             var trackers = PlayerLookup.tracking(player);
             float speed = (float) (attackData.attack_speed_multiplier * AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player));
             AnimationHelper.sendAnimationExcluding(player, trackers, SpellCast.Animation.RELEASE, attackData.animation, speed);

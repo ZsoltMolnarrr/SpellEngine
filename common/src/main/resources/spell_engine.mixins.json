@@ -32,6 +32,7 @@
     "entity.LivingEntityAccessor",
     "entity.LivingEntityEvents",
     "entity.LivingEntityKnockback",
+    "entity.LivingEntityMovementMixin",
     "entity.PlayerEntityEvents",
     "entity.PlayerEntityMixin",
     "entity.PlayerEntitySpellBatching",

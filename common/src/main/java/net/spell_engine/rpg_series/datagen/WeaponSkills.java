@@ -2,6 +2,7 @@ package net.spell_engine.rpg_series.datagen;
 
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.datagen.SpellBuilder;
+import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
@@ -31,10 +32,7 @@ public class WeaponSkills {
         var id = Identifier.of(NAMESPACE, "whirlwind");
         var title = "Whirlwind";
         var description = "Hold to spin around, dealing {damage} damage per second, to nearby enemies.";
-        var spell = SpellBuilder.createWeaponSpell();
-        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
-        spell.range = 0;
-        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+        var spell = SpellBuilder.createMeleeSpell();
 
         spell.active.cast.duration = 8F;
         spell.active.cast.movement_speed = 1.1F;
@@ -89,10 +87,7 @@ public class WeaponSkills {
         var id = Identifier.of(NAMESPACE, "cleave");
         var title = "Cleave";
         var description = "Performs a spin attack, dealing {damage} damage to nearby enemies.";
-        var spell = SpellBuilder.createWeaponSpell();
-        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
-        spell.range = 0;
-        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+        var spell = SpellBuilder.createMeleeSpell();
 
         SpellBuilder.Casting.instant(spell);
 
@@ -133,20 +128,16 @@ public class WeaponSkills {
         var id = Identifier.of(NAMESPACE, "ground_slam");
         var title = "Ground Slam";
         var description = "Leaps into the air and slams into the ground, dealing {damage} damage to nearby enemies.";
-        var spell = SpellBuilder.createWeaponSpell();
-        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
-        spell.range = 0;
-        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+        var spell = SpellBuilder.createMeleeSpell();
 
         SpellBuilder.Casting.cast(spell, 1.0F);
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_slam_jump");
+        spell.active.cast.animation_pitch = false;
         spell.active.cast.start_sound = new Sound(SpellEngineSounds.HAMMER_SWING.id());
 
         spell.release.animation = PlayerAnimation.of("spell_engine:weapon_slam_end");
-        spell.active.cast.animation_pitch = false;
 
-        spell.target.type = Spell.Target.Type.AIM;
-        spell.target.aim = new Spell.Target.Aim();
+        SpellBuilder.Target.aim(spell);
         spell.target.aim.required = false;
         spell.target.aim.reposition_vertically = -1.5F;
 
@@ -184,10 +175,7 @@ public class WeaponSkills {
         var id = Identifier.of(NAMESPACE, "slam");
         var title = "Slam";
         var description = "Delivers a strike with powerful knockback, disabling shield and item usage of target.";
-        var spell = SpellBuilder.createWeaponSpell();
-        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
-        spell.range = 0;
-        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+        var spell = SpellBuilder.createMeleeSpell();
 
         SpellBuilder.Casting.cast(spell, 0.5F);
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_mace_uppercut_start");
@@ -195,8 +183,7 @@ public class WeaponSkills {
         spell.active.cast.animation_pitch = false;
         spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
 
-        spell.target = new Spell.Target();
-        spell.target.type = Spell.Target.Type.NONE;
+        SpellBuilder.Target.none(spell);
 
         var cut_1 = new Spell.Delivery.Melee.Attack();
         cut_1.attack_speed_multiplier = 1.5F;
@@ -224,18 +211,14 @@ public class WeaponSkills {
         var id = Identifier.of(NAMESPACE, "flurry");
         var title = "Flurry";
         var description = "Unleash a rapid series of strikes.";
-        var spell = SpellBuilder.createWeaponSpell();
-        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
-        spell.range = 0;
-        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+        var spell = SpellBuilder.createMeleeSpell();
 
         SpellBuilder.Casting.cast(spell, 1F);
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_charge");
         spell.active.cast.animation.speed = 2F;
         spell.active.cast.animation_pitch = false;
 
-        spell.target = new Spell.Target();
-        spell.target.type = Spell.Target.Type.NONE;
+        SpellBuilder.Target.none(spell);
 
         var cut_1 = new Spell.Delivery.Melee.Attack();
         cut_1.attack_speed_multiplier = 1.5F;
@@ -277,15 +260,10 @@ public class WeaponSkills {
         var id = Identifier.of(NAMESPACE, "swift_strikes");
         var title = "Swift Strikes";
         var description = "Unleash a rapid series of strikes.";
-        var spell = SpellBuilder.createWeaponSpell();
-        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
-        spell.range = 0;
-        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+        var spell = SpellBuilder.createMeleeSpell();
 
         SpellBuilder.Casting.instant(spell);
-
-        spell.target = new Spell.Target();
-        spell.target.type = Spell.Target.Type.NONE;
+        SpellBuilder.Target.none(spell);
 
         var cut_1 = new Spell.Delivery.Melee.Attack();
         cut_1.attack_speed_multiplier = 2F;
@@ -318,20 +296,137 @@ public class WeaponSkills {
         return new Entry(id, spell, title, description, null);
     }
 
+    public static Entry IMPALE = add(IMPALE());
+    private static Entry IMPALE() {
+        var id = Identifier.of(NAMESPACE, "impale");
+        var title = "Impale";
+        var description = "Throws your weapon forwards, dealing {damage} damage and powerful knockback;";
+        var spell = SpellBuilder.createMeleeSpell();
+        spell.range_mechanic = null;
+        spell.range = 20;
+
+        SpellBuilder.Casting.cast(spell, 1F, "spell_engine:one_handed_throw_charge");
+        spell.release.animation = PlayerAnimation.of("spell_engine:one_handed_throw_release_instant");
+
+        SpellBuilder.Target.aim(spell);
+
+        spell.deliver.type = Spell.Delivery.Type.PROJECTILE;
+        spell.deliver.projectile = thrown();
+        spell.deliver.projectile.launch_properties.velocity = 1.5F;
+
+        var damage = SpellBuilder.Impacts.damage(1.2F, 3F);
+        spell.impacts = List.of(damage);
+
+        SpellBuilder.Cost.cooldown(spell, 4);
+
+        return new Entry(id, spell, title, description, null);
+    }
+
+    public static Entry FAN_OF_KNIVES = add(FAN_OF_KNIVES());
+    private static Entry FAN_OF_KNIVES() {
+        var id = Identifier.of(NAMESPACE, "fan_of_knives");
+        var title = "Fan of Knives";
+        var description = "Throws several of your blades in a cone, dealing {damage} damage, bouncing of terrain {bounce} times.";
+        var spell = SpellBuilder.createMeleeSpell();
+        spell.range_mechanic = null;
+        spell.range = 15;
+
+        SpellBuilder.Casting.instant(spell);
+        spell.release.animation = PlayerAnimation.of("spell_engine:one_handed_throw_release_instant");
+
+        SpellBuilder.Target.aim(spell);
+        spell.deliver.type = Spell.Delivery.Type.PROJECTILE;
+        spell.deliver.projectile = thrown();
+        spell.deliver.projectile.launch_properties.velocity = 1.2F;
+        spell.deliver.projectile.launch_properties.extra_launch_delay = 3;
+        spell.deliver.projectile.launch_properties.extra_launch_count = 2;
+        spell.deliver.projectile.direction_offsets = new Spell.Delivery.ShootProjectile.DirectionOffset[] {
+                new Spell.Delivery.ShootProjectile.DirectionOffset(-15, 0),
+                new Spell.Delivery.ShootProjectile.DirectionOffset(0, 0),
+                new Spell.Delivery.ShootProjectile.DirectionOffset(15, 0)
+        };
+        spell.deliver.projectile.projectile.perks.bounce = 2;
+
+        var damage = SpellBuilder.Impacts.damage(0.8F, 0.5F);
+        spell.impacts = List.of(damage);
+
+        SpellBuilder.Cost.cooldown(spell, 4);
+
+        return new Entry(id, spell, title, description, null);
+    }
+
     public static Entry THRUST = add(THRUST());
     private static Entry THRUST() {
         var id = Identifier.of(NAMESPACE, "thrust");
         var title = "Thrust";
-        var description = "Lunge forward with your weapon, dealing {damage} damage to the first enemy hit.";
-        var spell = SpellBuilder.createWeaponSpell();
-        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
-        spell.range = 0;
-        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+        var description = "Lunge forward with your weapon, striking all enemies along your path.";
+        var spell = SpellBuilder.createMeleeSpell();
 
+        SpellBuilder.Target.none(spell);
 
         SpellBuilder.Cost.cooldown(spell, 4);
-        spell.cost.cooldown.attempt_duration = 0.5F;
 
         return new Entry(id, spell, title, description, null);
+    }
+
+    public static Entry SWIPE = add(SWIPE());
+    private static Entry SWIPE() {
+        var id = Identifier.of(NAMESPACE, "swipe");
+        var title = "Swipe";
+        var description = "Slide forward with your weapon, striking all enemies along your path.";
+        var spell = SpellBuilder.createMeleeSpell();
+
+        SpellBuilder.Casting.instant(spell);
+        SpellBuilder.Target.none(spell);
+
+        var attack = new Spell.Delivery.Melee.Attack();
+        attack.attack_speed_multiplier = 1F;
+        attack.delay = 0.3F;
+        attack.hitbox = new Spell.Delivery.Melee.HitBox();
+        attack.hitbox.arc = 160;
+        attack.hitbox.height = 0.2F;
+        attack.forward_momentum = 1.5F;
+        attack.movement_slipperiness = 0.3F;
+        attack.delay = 0.1F;
+        attack.additional_strikes = 4;
+        attack.additional_strike_delay = 0.15F;
+        attack.additional_hits_on_same_target = false;
+        attack.animation = PlayerAnimation.of("spell_engine:dual_handed_slash_uncross");
+        attack.animation.speed = 3F;
+
+        SpellBuilder.Deliver.melee(spell, List.of(attack));
+
+        spell.impacts = List.of();
+
+        SpellBuilder.Cost.cooldown(spell, 4);
+
+        return new Entry(id, spell, title, description, null);
+    }
+
+    // Helpers
+
+    private static Spell.Delivery.ShootProjectile thrown() {
+        var projectile = new Spell.Delivery.ShootProjectile();
+
+        var projectileData = new Spell.ProjectileData();
+        projectileData.homing_angle = 0F;
+        projectileData.perks.bounce = 0;
+
+        projectileData.client_data = new Spell.ProjectileData.Client();
+
+        var model = new Spell.ProjectileModel();
+        model.use_held_item = true;
+        model.light_emission = LightEmission.NONE;
+        model.scale = 1F;
+        model.rotate_degrees_per_tick = 0;
+        model.rotate_degrees_offset = -135F;
+        model.orientation = Spell.ProjectileModel.Orientation.ALONG_MOTION;
+        projectileData.client_data.model = model;
+
+        projectileData.travel_sound_interval = 8;
+        // projectileData.travel_sound = new Sound(RogueSounds.THROW.id());
+        projectile.projectile = projectileData;
+
+        return projectile;
     }
 }

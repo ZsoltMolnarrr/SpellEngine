@@ -5,10 +5,12 @@
   "tier": 1,
   "learn": {},
   "active": {},
+  "target": {
+    "type": "NONE"
+  },
   "cost": {
     "cooldown": {
       "group": "weapon",
-      "attempt_duration": 0.5,
       "duration": 4.0
     }
   }

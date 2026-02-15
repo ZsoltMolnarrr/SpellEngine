@@ -260,6 +260,9 @@ public class Spell {
                 public float forward_momentum = 0F;
                 /// Multiplier applied to the movement speed while executing this melee attack.
                 public float movement_speed = 1F;
+                /// Bonus applied to block slipperiness. Use positive value to slide further.
+                /// grass is 0.6, ice is 0.98
+                public float movement_slipperiness = 0F;
                 /// Collision detection shape of this attack.
                 public HitBox hitbox = new HitBox();
 

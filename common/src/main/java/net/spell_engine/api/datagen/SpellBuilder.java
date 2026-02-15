@@ -38,6 +38,15 @@ public class SpellBuilder {
         return spell;
     }
 
+    public static Spell createMeleeSpell() {
+        var spell = createWeaponSpell();
+        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
+        spell.range = 0;
+        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+        spell.cost.exhaust = 0.1F;
+        return spell;
+    }
+
     public static Spell createSpellPassive() {
         var spell = new Spell();
         spell.type = Spell.Type.PASSIVE;
@@ -67,8 +76,15 @@ public class SpellBuilder {
         }
 
         public static void cast(Spell spell, float duration) {
+            cast(spell, duration, null);
+        }
+
+        public static void cast(Spell spell, float duration, @Nullable String animation) {
             spell.active.cast = new Spell.Active.Cast();
             spell.active.cast.duration = duration;
+            if (animation != null) {
+                spell.active.cast.animation = PlayerAnimation.of(animation);
+            }
         }
 
         public static void channel(Spell spell, float duration, int ticks) {
@@ -137,6 +153,16 @@ public class SpellBuilder {
             var targetCondition = new Spell.TargetCondition();
             targetCondition.entity_predicate_id = entityPredicate.id().toString();
             return targetCondition;
+        }
+    }
+
+    public static class Target {
+        public static void none(Spell spell) {
+            spell.target.type = Spell.Target.Type.NONE;
+        }
+        public static void aim(Spell spell) {
+            spell.target.type = Spell.Target.Type.AIM;
+            spell.target.aim = new Spell.Target.Aim();
         }
     }
 

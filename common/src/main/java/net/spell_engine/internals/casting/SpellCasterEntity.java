@@ -1,9 +1,9 @@
 package net.spell_engine.internals.casting;
 
-import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.SpellCooldownManager;
 import net.spell_engine.internals.arrow.ArrowShootContext;
+import net.spell_engine.internals.melee.Melee;
 import org.jetbrains.annotations.Nullable;
 
 public interface SpellCasterEntity {
@@ -25,6 +25,9 @@ public interface SpellCasterEntity {
     boolean isBeaming();
     @Nullable
     Spell.Target.Beam getBeam();
+
+    void setMeleeSkillAttack(Melee.ActiveAttack attack);
+    float getExtraSlipperiness();
 
     default boolean isCastingSpell() {
         return getSpellCastProcess() != null;

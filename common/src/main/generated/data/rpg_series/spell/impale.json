@@ -1,0 +1,61 @@
+{
+  "school": "spell_power:physical_melee",
+  "range": 20.0,
+  "tier": 1,
+  "learn": {},
+  "active": {
+    "cast": {
+      "duration": 1.0,
+      "animation": {
+        "id": "spell_engine:one_handed_throw_charge"
+      }
+    }
+  },
+  "release": {
+    "animation": {
+      "id": "spell_engine:one_handed_throw_release_instant"
+    }
+  },
+  "target": {
+    "type": "AIM",
+    "aim": {}
+  },
+  "deliver": {
+    "type": "PROJECTILE",
+    "projectile": {
+      "launch_properties": {
+        "velocity": 1.5
+      },
+      "projectile": {
+        "homing_angle": 0.0,
+        "travel_sound_interval": 8,
+        "client_data": {
+          "model": {
+            "use_held_item": true,
+            "light_emission": "NONE",
+            "rotate_degrees_per_tick": 0.0,
+            "rotate_degrees_offset": -135.0,
+            "orientation": "ALONG_MOTION"
+          }
+        }
+      }
+    }
+  },
+  "impacts": [
+    {
+      "action": {
+        "type": "DAMAGE",
+        "damage": {
+          "spell_power_coefficient": 1.2,
+          "knockback": 3.0
+        }
+      }
+    }
+  ],
+  "cost": {
+    "cooldown": {
+      "group": "weapon",
+      "duration": 4.0
+    }
+  }
+}
