@@ -31,7 +31,7 @@
           "delay": 0.3,
           "hitbox": {
             "height": 0.2,
-            "roll": 45.0,
+            "roll": 15.0,
             "arc": 90.0
           },
           "animation": {
@@ -41,6 +41,26 @@
       ]
     }
   },
+  "impacts": [
+    {
+      "action": {
+        "type": "DAMAGE",
+        "damage": {
+          "spell_power_coefficient": 0.0,
+          "knockback": 3.0
+        }
+      }
+    },
+    {
+      "action": {
+        "type": "DISRUPT",
+        "disrupt": {
+          "shield_blocking": true,
+          "item_usage_seconds": 2.0
+        }
+      }
+    }
+  ],
   "cost": {
     "cooldown": {
       "group": "weapon",

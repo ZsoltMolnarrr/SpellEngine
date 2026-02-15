@@ -152,7 +152,7 @@ public class WeaponSkills {
 
         spell.deliver.delay = 2;
 
-        var damage = SpellBuilder.Impacts.damage(1F);
+        var damage = SpellBuilder.Impacts.damage(1.5F);
         spell.impacts = List.of(damage);
 
         spell.area_impact = new Spell.AreaImpact();
@@ -183,13 +183,12 @@ public class WeaponSkills {
     private static Entry SLAM() {
         var id = Identifier.of(NAMESPACE, "slam");
         var title = "Slam";
-        var description = "Delivers a powerful overhead strike, dealing {damage} damage and slowing the target for {duration} seconds.";
+        var description = "Delivers a strike with powerful knockback, disabling shield and item usage of target.";
         var spell = SpellBuilder.createWeaponSpell();
         spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
         spell.range = 0;
         spell.range_mechanic = Spell.RangeMechanic.MELEE;
 
-        // SpellBuilder.Casting.instant(spell);
         SpellBuilder.Casting.cast(spell, 0.5F);
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_mace_uppercut_start");
         spell.active.cast.animation.speed = 2F;
@@ -205,12 +204,14 @@ public class WeaponSkills {
         cut_1.hitbox = new Spell.Delivery.Melee.HitBox();
         cut_1.hitbox.arc = 90;
         cut_1.hitbox.height = 0.2F;
-        cut_1.hitbox.roll = 45F;
+        cut_1.hitbox.roll = 15F;
         cut_1.animation = PlayerAnimation.of("spell_engine:weapon_mace_uppercut_end");
 
         SpellBuilder.Deliver.melee(spell, List.of(cut_1));
 
-        spell.impacts = List.of();
+        var damage = SpellBuilder.Impacts.damage(0F, 3F);
+        var disrupt = SpellBuilder.Impacts.disrupt(true, 2F);
+        spell.impacts = List.of(damage, disrupt);
 
         SpellBuilder.Cost.cooldown(spell, 1);
         spell.cost.cooldown.attempt_duration = 1F;
@@ -228,7 +229,6 @@ public class WeaponSkills {
         spell.range = 0;
         spell.range_mechanic = Spell.RangeMechanic.MELEE;
 
-        // SpellBuilder.Casting.instant(spell);
         SpellBuilder.Casting.cast(spell, 1F);
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_charge");
         spell.active.cast.animation.speed = 2F;
@@ -247,6 +247,7 @@ public class WeaponSkills {
         cut_1.forward_momentum = 1F;
         cut_1.movement_speed = 0F;
         cut_1.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash1");
+        cut_1.animation.speed = 1.5F;
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
         cut_2.attack_speed_multiplier = 1.5F;
@@ -259,6 +260,7 @@ public class WeaponSkills {
         cut_2.forward_momentum = 1F;
         cut_2.movement_speed = 0F;
         cut_2.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash2");
+        cut_2.animation.speed = 1.5F;
 
         SpellBuilder.Deliver.melee(spell, List.of(cut_1, cut_2));
 
@@ -281,9 +283,6 @@ public class WeaponSkills {
         spell.range_mechanic = Spell.RangeMechanic.MELEE;
 
         SpellBuilder.Casting.instant(spell);
-//        SpellBuilder.Casting.cast(spell, 0.5F);
-//        spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_twinstrike_start");
-//        spell.active.cast.animation_pitch = false;
 
         spell.target = new Spell.Target();
         spell.target.type = Spell.Target.Type.NONE;
@@ -296,6 +295,7 @@ public class WeaponSkills {
         cut_1.hitbox.height = 0.2F;
         cut_1.hitbox.roll = 45F;
         cut_1.animation = PlayerAnimation.of("spell_engine:weapon_twinstrike_slash_1");
+        cut_1.animation.speed = 1F;
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
         cut_2.attack_speed_multiplier = 2F;
@@ -306,6 +306,7 @@ public class WeaponSkills {
         cut_2.hitbox.roll = -45;
         cut_2.additional_strike_delay = 0.2F;
         cut_2.animation = PlayerAnimation.of("spell_engine:weapon_twinstrike_slash_2");
+        cut_2.animation.speed = 1F;
 
         SpellBuilder.Deliver.melee(spell, List.of(cut_1, cut_2));
 

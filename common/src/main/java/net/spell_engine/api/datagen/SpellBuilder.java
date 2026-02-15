@@ -612,6 +612,16 @@ public class SpellBuilder {
             return taunt;
         }
 
+        public static Spell.Impact disrupt(boolean shieldBlocking, float itemUsageTime) {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.DISRUPT;
+            impact.action.disrupt = new Spell.Impact.Action.Disrupt();
+            impact.action.disrupt.shield_blocking = shieldBlocking;
+            impact.action.disrupt.item_usage_seconds = itemUsageTime;
+            return impact;
+        }
+
         public static Spell.Impact disengage(boolean onlyIfTargeted) {
             var taunt = new Spell.Impact();
             taunt.action = new Spell.Impact.Action();

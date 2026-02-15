@@ -273,6 +273,7 @@ public class Spell {
                 /// Relative height of the hitbox, will be scaled up by attack range.
                 public float height = 1F;
                 /// Rotation along the forward axis, in degrees.
+                /// Positive values rotate clockwise, negative values rotate counterclockwise.
                 public float roll = 0F;
                 /// Arc of the melee attack hitbox, in degrees. 0 means no angular checks.
                 public float arc = 0F;
@@ -405,6 +406,7 @@ public class Spell {
                 TELEPORT,
                 COOLDOWN,
                 AGGRO,
+                DISRUPT,
                 CUSTOM
             }
             public Damage damage;
@@ -531,6 +533,12 @@ public class Spell {
                     CLEAR
                 }
                 public Mode mode = Mode.SET;
+            }
+
+            public Disrupt disrupt;
+            public static class Disrupt {  public Disrupt() { }
+                public boolean shield_blocking = false;
+                public float item_usage_seconds = 0F;
             }
 
             public Custom custom;

@@ -10,7 +10,9 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -1493,6 +1495,29 @@ public class SpellHelper {
                         success = true;
                     }
                 }
+                case DISRUPT -> {
+                    if (target instanceof LivingEntity livingTarget) {
+                        var disrupt = impact.action.disrupt;
+                        if (target instanceof PlayerEntity playerTarget) {
+                             if (disrupt.shield_blocking && playerTarget.isBlocking()) {
+                                 playerTarget.disableShield();
+                                 success = true;
+                             } else if (disrupt.item_usage_seconds > 0 && playerTarget.isUsingItem()) {
+                                 var activeStack = playerTarget.getActiveItem();
+                                 playerTarget.getItemCooldownManager().set(activeStack.getItem(), (int) (disrupt.item_usage_seconds * 20F));
+                                 success = true;
+                             }
+                        } else {
+                            if (disrupt.shield_blocking && livingTarget.isBlocking()) {
+                                livingTarget.clearActiveItem();
+                                success = true;
+                            } else if (disrupt.item_usage_seconds > 0 && livingTarget.isUsingItem()) {
+                                livingTarget.clearActiveItem();
+                                success = true;
+                            }
+                        }
+                    }
+                }
                 case CUSTOM -> {
                     if (impact.action.custom != null) {
                         var handler = SpellHandlers.customImpact.get(impact.action.custom.handler);
@@ -1744,7 +1769,7 @@ public class SpellHelper {
 
     public static SpellTarget.Intent impactIntent(Spell.Impact.Action action) {
         switch (action.type) {
-            case DAMAGE, FIRE, AGGRO -> {
+            case DAMAGE, FIRE, AGGRO, DISRUPT -> {
                 return SpellTarget.Intent.HARMFUL;
             }
             case HEAL, SPAWN -> {

@@ -34,7 +34,9 @@
     {
       "action": {
         "type": "DAMAGE",
-        "damage": {}
+        "damage": {
+          "spell_power_coefficient": 1.5
+        }
       }
     }
   ],

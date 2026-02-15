@@ -57,6 +57,8 @@ API Additions:
   - Supports fx: animation, sound, particles
   - Includes optional momentum to be gained with the attack
   - Supports additional impacts to be performed on hit
+- Add new impact type: `DISRUPT`
+  - Can disable: shield blocking, item usage
 
 Other changes:
 - Added fallback config for automatic spell container assignment to weapons without spell container

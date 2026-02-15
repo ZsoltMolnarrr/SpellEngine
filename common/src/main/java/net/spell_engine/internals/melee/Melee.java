@@ -7,6 +7,7 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
@@ -129,14 +130,19 @@ public class Melee {
         return attacks;
     }
 
-    @Nullable public static Spell.Delivery.Melee.Attack resolveAttackData(World world, @Nullable LivingEntity caster, @Nullable AttackContext context) {
+    @Nullable public static Spell.Delivery.Melee.Attack resolveAttackData(World world, @Nullable AttackContext context) {
         if (context == null) {
             return null;
         }
-        return resolveAttackData(world, caster, context.spellId(), context.attackId());
+        return resolveAttackData(world, context.spellId(), context.attackId()).attack;
     }
 
-    @Nullable public static Spell.Delivery.Melee.Attack resolveAttackData(World world, @Nullable LivingEntity caster, Identifier spellId, String attackId) {
+    public record ResolutionResult(
+            RegistryEntry<Spell> spell,
+            Spell.Delivery.Melee melee,
+            Spell.Delivery.Melee.Attack attack
+    ) {}
+    @Nullable public static ResolutionResult resolveAttackData(World world, Identifier spellId, String attackId) {
         var spellEntry = SpellRegistry.from(world).getEntry(spellId).orElse(null);
         if (spellEntry == null) {
             return null;
@@ -146,7 +152,8 @@ public class Melee {
         if (spell.deliver.type == Spell.Delivery.Type.MELEE && spell.deliver.melee != null) {
             for (var attack : spell.deliver.melee.attacks) {
                 if (attack.id.equals(attackId)) {
-                    return attack; }
+                    return new ResolutionResult(spellEntry, spell.deliver.melee, attack);
+                }
             }
         }
 
@@ -164,7 +171,7 @@ public class Melee {
 
     public static void broadcastAttackFx(ServerPlayerEntity player, AttackContext attackContext) {
         var world = player.getWorld();
-        var attackData = resolveAttackData(world, player, attackContext);
+        var attackData = resolveAttackData(world, attackContext);
         if (attackData != null) {
             var trackers = PlayerLookup.tracking(player);
             float speed = (float) (attackData.attack_speed_multiplier * AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player));
@@ -183,8 +190,9 @@ public class Melee {
         try {
             var lastAttackTime = ((LivingEntityAccessor)player).spellEngine_getLastAttackedTicks();
             var targets = new ArrayList<Entity>();
-            var spellEntry = SpellRegistry.from(world).getEntry(context.spellId());
-            var attack = resolveAttackData(player.getWorld(), player, context);
+            var resolvedContext = resolveAttackData(world, context.spellId, context.attackId);
+            var spellEntry = resolvedContext.spell();
+            var attack = resolvedContext.attack();
             if (attack != null && attributeInstance != null) {
                 var damageModifierAmount = attack.damage_bonus;
                 if (damageModifierAmount != 0) {
@@ -197,7 +205,7 @@ public class Melee {
                 var target = world.getEntityById(targetId);
                 if (target != null && target.isAttackable()) {
                     if (!EntityRelations.actionAllowed(
-                            SpellTarget.FocusMode.DIRECT, SpellTarget.Intent.HARMFUL,
+                            SpellTarget.FocusMode.AREA, SpellTarget.Intent.HARMFUL,
                             player, target)) {
                         continue;
                     }
@@ -210,15 +218,14 @@ public class Melee {
                 }
             }
 
-            if (!targets.isEmpty() && spellEntry.isPresent()) {
+            if (!targets.isEmpty()) {
                 var impactContext = new SpellHelper.ImpactContext()
                         .position(player.getPos());
-                SpellHelper.meleeImpact(player, targets, spellEntry.get(), impactContext);
+                SpellHelper.meleeImpact(player, targets, spellEntry, impactContext);
             }
             ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(lastAttackTime);
         } catch (Exception e) {
-            // Just in case something goes wrong with cooldowns, we don't want to break the attack
-            e.printStackTrace();
+            System.err.println("Failed to perform melee attack: " + e.getMessage());
         }
         if (appliedDamageModifier != null) {
             attributeInstance.removeModifier(appliedDamageModifier);
