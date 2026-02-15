@@ -15,7 +15,7 @@ public class LivingEntityMovementMixin {
         var result = original.call(instance);
         var entity = (LivingEntity) (Object) this;
         if (entity instanceof SpellCasterEntity caster) {
-            result += caster.getExtraSlipperiness();
+            result = Math.min(result + caster.getExtraSlipperiness(), 1F);
         }
         return result;
     }
