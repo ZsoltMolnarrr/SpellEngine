@@ -180,7 +180,9 @@ public class ParticleHelper {
             Entity sourceEntity = world.getEntityById(spawn.sourceEntityId());
             switch (sourceType) {
                 case ENTITY -> {
-                    origin = origin(sourceEntity, batch.origin);
+                    origin = sourceEntity != null
+                            ? origin(sourceEntity, batch.origin)
+                            : origin(world, spawn.sourceLocation(), 2, batch.origin);
                 }
                 case COORDINATE -> {
                     origin = spawn.sourceLocation();
@@ -250,6 +252,30 @@ public class ParticleHelper {
         }
         assert true;
         return entity.getPos();
+    }
+
+    private static Vec3d origin(World world, Vec3d entityPos, float entityHeight, ParticleBatch.Origin origin) {
+        switch (origin) {
+            case FEET -> {
+                return entityPos.add(0, entityHeight * 0.1F, 0);
+            }
+            case CENTER -> {
+                return entityPos.add(0, entityHeight * 0.5F, 0);
+            }
+            case LAUNCH_POINT -> {
+                return entityPos.add(0, entityHeight * 0.75F, 0);
+            }
+            case GROUND -> {
+                var position = TargetHelper.findSolidBlockBelow(null, entityPos, world, -2);
+                if (position != null) {
+                    return new Vec3d(entityPos.getX(), position.getY() + 0.1F, entityPos.getZ());
+                } else {
+                    return entityPos.add(0, 0.1F, 0);
+                }
+            }
+        }
+        assert true;
+        return entityPos;
     }
 
     private static Vec3d offset(float width, float extent, ParticleBatch.Shape shape, Vec3d direction,
