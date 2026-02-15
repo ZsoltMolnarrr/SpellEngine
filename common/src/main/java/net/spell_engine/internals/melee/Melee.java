@@ -41,6 +41,7 @@ public class Melee {
             boolean additional_hits_on_same_target,
             float speed,
             float forward_momentum,
+            float movement_speed,
             Spell.Delivery.Melee.HitBox hitbox,
             PlayerAnimation animation,
             @Nullable AttackContext context
@@ -117,6 +118,7 @@ public class Melee {
                     attack.additional_hits_on_same_target,
                     speed,
                     attack.forward_momentum,
+                    attack.movement_speed,
                     attack.hitbox,
                     attack.animation,
                     new AttackContext(spellId, attack.id)

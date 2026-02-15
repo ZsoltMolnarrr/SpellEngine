@@ -26,5 +26,12 @@ public class SpellCastingMovement {
             input.movementForward *= multiplier;
             ticksLeftToDoubleTapSprint = 0;
         }
+        var attack = caster.getCurrentSkillAttack();
+        if (attack != null) {
+            var multiplier = attack.attack.movement_speed();
+            input.movementSideways *= multiplier;
+            input.movementForward *= multiplier;
+            ticksLeftToDoubleTapSprint = 0;
+        }
     }
 }

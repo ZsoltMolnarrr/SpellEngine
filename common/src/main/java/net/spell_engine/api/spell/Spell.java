@@ -258,6 +258,8 @@ public class Spell {
 
                 /// Forward momentum applied to the caster when performing this melee attack
                 public float forward_momentum = 0F;
+                /// Multiplier applied to the movement speed while executing this melee attack.
+                public float movement_speed = 1F;
                 /// Collision detection shape of this attack.
                 public HitBox hitbox = new HitBox();
 

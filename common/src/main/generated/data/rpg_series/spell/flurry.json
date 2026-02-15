@@ -25,6 +25,7 @@
           "attack_speed_multiplier": 1.5,
           "delay": 0.3,
           "forward_momentum": 1.0,
+          "movement_speed_multiplier": 0.0,
           "hitbox": {
             "height": 0.2,
             "roll": 45.0,
@@ -39,6 +40,7 @@
           "attack_speed_multiplier": 1.5,
           "delay": 0.6,
           "forward_momentum": 1.0,
+          "movement_speed_multiplier": 0.0,
           "hitbox": {
             "height": 0.2,
             "roll": -45.0,

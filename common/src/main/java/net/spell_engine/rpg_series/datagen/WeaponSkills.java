@@ -245,6 +245,7 @@ public class WeaponSkills {
         cut_1.hitbox.height = 0.2F;
         cut_1.hitbox.roll = 45F;
         cut_1.forward_momentum = 1F;
+        cut_1.movement_speed = 0F;
         cut_1.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash1");
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
@@ -256,6 +257,7 @@ public class WeaponSkills {
         cut_2.hitbox.roll = -45;
         cut_2.damage_bonus = 0.5F;
         cut_2.forward_momentum = 1F;
+        cut_2.movement_speed = 0F;
         cut_2.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash2");
 
         SpellBuilder.Deliver.melee(spell, List.of(cut_1, cut_2));
