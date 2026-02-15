@@ -214,6 +214,7 @@ public class WeaponSkills {
         var spell = SpellBuilder.createMeleeSpell();
 
         SpellBuilder.Casting.cast(spell, 1F);
+//        SpellBuilder.Casting.channel(spell, 2.1F, 10);
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_charge");
         spell.active.cast.animation.speed = 2F;
         spell.active.cast.animation_pitch = false;
@@ -249,8 +250,8 @@ public class WeaponSkills {
 
         spell.impacts = List.of();
 
-        // SpellBuilder.Cost.cooldown(spell, 10);
-        spell.cost.cooldown.attempt_duration = 1F;
+        SpellBuilder.Cost.cooldown(spell, 10);
+//        spell.cost.cooldown.attempt_duration = 1F;
 
         return new Entry(id, spell, title, description, null);
     }
@@ -300,7 +301,7 @@ public class WeaponSkills {
     private static Entry IMPALE() {
         var id = Identifier.of(NAMESPACE, "impale");
         var title = "Impale";
-        var description = "Throws your weapon forwards, dealing {damage} damage and powerful knockback;";
+        var description = "Throws your weapon forwards, dealing {damage} damage and powerful knockback.";
         var spell = SpellBuilder.createMeleeSpell();
         spell.range_mechanic = null;
         spell.range = 20;
@@ -326,7 +327,7 @@ public class WeaponSkills {
     private static Entry FAN_OF_KNIVES() {
         var id = Identifier.of(NAMESPACE, "fan_of_knives");
         var title = "Fan of Knives";
-        var description = "Throws several of your blades in a cone, dealing {damage} damage, bouncing of terrain {bounce} times.";
+        var description = "Throws several of your blades in a cone, dealing {damage} damage, bouncing off terrain up to {bounce} times.";
         var spell = SpellBuilder.createMeleeSpell();
         spell.range_mechanic = null;
         spell.range = 15;
@@ -362,7 +363,25 @@ public class WeaponSkills {
         var description = "Lunge forward with your weapon, striking all enemies along your path.";
         var spell = SpellBuilder.createMeleeSpell();
 
+        SpellBuilder.Casting.cast(spell, 0.5F, "spell_engine:dual_handed_weapon_charge");
         SpellBuilder.Target.none(spell);
+
+        var attack = new Spell.Delivery.Melee.Attack();
+        attack.attack_speed_multiplier = 1F;
+        attack.delay = 0.3F;
+        attack.hitbox = new Spell.Delivery.Melee.HitBox();
+        attack.hitbox.arc = 160;
+        attack.hitbox.height = 0.2F;
+        attack.forward_momentum = 1.5F;
+        attack.movement_slipperiness = 0.3F;
+        attack.delay = 0.1F;
+        attack.additional_strikes = 4;
+        attack.additional_strike_delay = 0.15F;
+        attack.additional_hits_on_same_target = false;
+        attack.animation = PlayerAnimation.of("spell_engine:weapon_twinstrike_slash_1");
+        attack.animation.speed = 1F;
+
+        SpellBuilder.Deliver.melee(spell, List.of(attack));
 
         SpellBuilder.Cost.cooldown(spell, 4);
 
@@ -392,7 +411,7 @@ public class WeaponSkills {
         attack.additional_strike_delay = 0.15F;
         attack.additional_hits_on_same_target = false;
         attack.animation = PlayerAnimation.of("spell_engine:dual_handed_slash_uncross");
-        attack.animation.speed = 3F;
+        attack.animation.speed = 1F;
 
         SpellBuilder.Deliver.melee(spell, List.of(attack));
 

@@ -4,9 +4,38 @@
   "range_mechanic": "MELEE",
   "tier": 1,
   "learn": {},
-  "active": {},
+  "active": {
+    "cast": {
+      "duration": 0.5,
+      "animation": {
+        "id": "spell_engine:dual_handed_weapon_charge"
+      }
+    }
+  },
   "target": {
     "type": "NONE"
+  },
+  "deliver": {
+    "type": "MELEE",
+    "melee": {
+      "attacks": [
+        {
+          "delay": 0.1,
+          "additional_strikes": 4,
+          "additional_strike_delay": 0.15,
+          "additional_hits_on_same_target": false,
+          "forward_momentum": 1.5,
+          "movement_slipperiness": 0.3,
+          "hitbox": {
+            "height": 0.2,
+            "arc": 160.0
+          },
+          "animation": {
+            "id": "spell_engine:weapon_twinstrike_slash_1"
+          }
+        }
+      ]
+    }
   },
   "cost": {
     "cooldown": {

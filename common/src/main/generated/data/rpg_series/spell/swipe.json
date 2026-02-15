@@ -24,8 +24,7 @@
             "arc": 160.0
           },
           "animation": {
-            "id": "spell_engine:dual_handed_slash_uncross",
-            "speed": 3.0
+            "id": "spell_engine:dual_handed_slash_uncross"
           }
         }
       ]

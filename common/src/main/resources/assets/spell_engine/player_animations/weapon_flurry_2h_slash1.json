@@ -3,7 +3,7 @@
     "author": "Forg/Cleannrooster",
     "description": "Flurry 2h Slash 1",
     "emote":{
-        "isLoop": "true",
+        "isLoop": "false",
         "returnTick": 20,
         "beginTick":1,
         "endTick":40,

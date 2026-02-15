@@ -177,6 +177,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     public void playSpellAnimation(SpellCast.Animation type, String name, float speed) {
         try {
             var stack = spellAnimationStackFor(type);
+            // System.out.println("Player animation, type: " + type + ", name: " + name + ", speed: " + speed);
             if (name != null && !name.isEmpty()) {
                 var id = Identifier.of(name);
                 var animation = (KeyframeAnimation) PlayerAnimationRegistry.getAnimation(id);
