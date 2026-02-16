@@ -3,7 +3,6 @@ package net.spell_engine.rpg_series.datagen;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.datagen.SpellBuilder;
 import net.spell_engine.api.render.LightEmission;
-import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
@@ -170,10 +169,10 @@ public class WeaponSkills {
         return new Entry(id, spell, title, description, null);
     }
 
-    public static Entry SLAM = add(SLAM());
-    private static Entry SLAM() {
-        var id = Identifier.of(NAMESPACE, "slam");
-        var title = "Slam";
+    public static Entry SMASH = add(SMASH());
+    private static Entry SMASH() {
+        var id = Identifier.of(NAMESPACE, "smash");
+        var title = "Smash";
         var description = "Delivers a strike with powerful knockback, disabling shield and item usage of target.";
         var spell = SpellBuilder.createMeleeSpell();
 

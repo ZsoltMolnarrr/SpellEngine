@@ -9,6 +9,7 @@ import net.spell_engine.api.item.weapon.SpellSwordItem;
 import net.spell_engine.api.item.weapon.SpellWeaponItem;
 import net.spell_engine.api.item.weapon.StaffItem;
 import net.spell_engine.api.item.weapon.Weapon;
+import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainers;
 import net.spell_engine.rpg_series.datagen.WeaponSkills;
 import net.spell_power.api.SpellSchools;
@@ -295,46 +296,112 @@ public class Weapons {
 
     // ===== WEAPON-TYPE-SPECIFIC HELPER METHODS =====
 
-    // Melee Weapons
+    // == MELEE WEAPONS ==
 
-    public static Weapon.Entry claymore(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.CLAYMORE, tier, repairIngredient);
-    }
-
-    public static Weapon.Entry hammer(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.HAMMER, tier, repairIngredient);
-    }
-
-    public static Weapon.Entry mace(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.MACE, tier, repairIngredient);
-    }
-
-    public static Weapon.Entry spear(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.SPEAR, tier, repairIngredient);
-    }
-
-    public static Weapon.Entry dagger(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.DAGGER, tier, repairIngredient);
-    }
-
-    public static Weapon.Entry sickle(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.SICKLE, tier, repairIngredient);
-    }
-
-    public static Weapon.Entry doubleAxe(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        var entry = create(namespace, name, Equipment.WeaponType.DOUBLE_AXE, tier, repairIngredient);
-        return entry.spellContainer(SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.WHIRLWIND.id()));
-    }
-
-    public static Weapon.Entry glaive(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.GLAIVE, tier, repairIngredient);
-    }
+    // Sword
 
     public static Weapon.Entry sword(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
         return create(namespace, name, Equipment.WeaponType.SWORD, tier, repairIngredient);
     }
+    public static Weapon.Entry swordWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        var entry = sword(namespace, name, tier, repairIngredient);
+        return entry.spellContainer(SWORD_CONTAINER);
+    }
+    public static final SpellContainer SWORD_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.SWIFT_STRIKES.id());
 
-    // Magical Weapons
+    // Claymore
+
+    public static Weapon.Entry claymore(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.CLAYMORE, tier, repairIngredient);
+    }
+    public static Weapon.Entry claymoreWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        var entry = claymore(namespace, name, tier, repairIngredient);
+        return entry.spellContainer(CLAYMORE_CONTAINER);
+    }
+    public static final SpellContainer CLAYMORE_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.FLURRY.id());
+
+    // Mace
+
+    public static Weapon.Entry mace(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.MACE, tier, repairIngredient);
+    }
+    public static Weapon.Entry maceWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        var entry = mace(namespace, name, tier, repairIngredient);
+        return entry.spellContainer(MACE_CONTAINER);
+    }
+    public static final SpellContainer MACE_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.SMASH.id());
+
+    // Hammer
+
+    public static Weapon.Entry hammer(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.HAMMER, tier, repairIngredient);
+    }
+    public static Weapon.Entry hammerWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        var entry = hammer(namespace, name, tier, repairIngredient);
+        return entry.spellContainer(HAMMER_CONTAINER);
+    }
+    public static final SpellContainer HAMMER_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.GROUND_SLAM.id());
+
+    // Axe
+
+    public static final SpellContainer AXE_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.CLEAVE.id());
+
+    // Double Axe
+
+    public static Weapon.Entry doubleAxe(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.DOUBLE_AXE, tier, repairIngredient);
+    }
+    public static Weapon.Entry doubleAxeWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        var entry = doubleAxe(namespace, name, tier, repairIngredient);
+        return entry.spellContainer(DOUBLE_AXE_CONTAINER);
+    }
+    public static final SpellContainer DOUBLE_AXE_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.WHIRLWIND.id());
+
+    // Spear
+
+    public static Weapon.Entry spear(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.SPEAR, tier, repairIngredient);
+    }
+    public static Weapon.Entry spearWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        var entry = spear(namespace, name, tier, repairIngredient);
+        return entry.spellContainer(SPEAR_CONTAINER);
+    }
+    public static final SpellContainer SPEAR_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.IMPALE.id());
+
+    // Dagger
+
+    public static Weapon.Entry dagger(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.DAGGER, tier, repairIngredient);
+    }
+    public static Weapon.Entry daggerWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        var entry = dagger(namespace, name, tier, repairIngredient);
+        return entry.spellContainer(DAGGER_CONTAINER);
+    }
+    public static final SpellContainer DAGGER_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.FAN_OF_KNIVES.id());
+
+    // Sickle
+
+    public static Weapon.Entry sickle(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.SICKLE, tier, repairIngredient);
+    }
+    public static Weapon.Entry sickleWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        var entry = sickle(namespace, name, tier, repairIngredient);
+        return entry.spellContainer(SICKLE_CONTAINER);
+    }
+    public static final SpellContainer SICKLE_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.SWIPE.id());
+
+    // Glaive
+
+    public static Weapon.Entry glaive(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        return create(namespace, name, Equipment.WeaponType.GLAIVE, tier, repairIngredient);
+    }
+    public static Weapon.Entry glaiveWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
+        var entry = glaive(namespace, name, tier, repairIngredient);
+        return entry.spellContainer(GLAIVE_CONTAINER);
+    }
+    public static final SpellContainer GLAIVE_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.THRUST.id());
+
+    // == MAGICAL WEAPONS ==
 
     public static Weapon.Entry damageWand(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient, List<Identifier> spellSchools) {
         var entry = create(namespace, name, Equipment.WeaponType.DAMAGE_WAND, tier, repairIngredient);

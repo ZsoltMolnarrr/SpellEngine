@@ -26,9 +26,11 @@ import net.spell_engine.api.item.Equipment;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
+import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.container.SpellContainers;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -145,6 +147,14 @@ public class Weapon {
         public Entry withSpellChoices(String pool) {
             this.spellContainer = this.spellContainer.withBindingPool(Identifier.of(pool));
             this.spellChoice = SpellChoice.of(pool);
+            return this;
+        }
+
+        public Entry withAdditionalSpell(String spellId) {
+            var container = this.spellContainer;
+            if (container != null) {
+                this.spellContainer = container.withAdditionalSpell(List.of(spellId));
+            }
             return this;
         }
 
