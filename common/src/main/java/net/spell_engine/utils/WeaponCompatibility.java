@@ -16,6 +16,9 @@ import net.spell_engine.internals.container.SpellAssignments;
 public class WeaponCompatibility {
     public static void initialize() {
         var config = SpellEngineMod.fallbackConfig.safeValue();
+        if (!config.enabled) {
+            return;
+        }
 
         // Process all items in the registry
         for (var itemId : Registries.ITEM.getIds()) {
@@ -23,11 +26,11 @@ public class WeaponCompatibility {
             var itemEntry = item.getRegistryEntry();
 
             // Try melee weapons group
-            if (config.melee_weapons.enabled) {
+            if (config.melee_weapons.enabled &&
+                    (item instanceof SwordItem || item instanceof TridentItem || item instanceof MaceItem) ) {
                 SpellContainer container = processCompatGroup(
                         itemEntry,
-                        config.melee_weapons,
-                        item instanceof SwordItem || item instanceof TridentItem || item instanceof MaceItem
+                        config.melee_weapons
                 );
                 if (container != null) {
                     SpellAssignments.containers.putIfAbsent(itemId, container);
@@ -36,14 +39,15 @@ public class WeaponCompatibility {
             }
 
             // Try ranged weapons group
-            if (config.ranged_weapons.enabled) {
+            if (config.ranged_weapons.enabled &&
+                (item instanceof RangedWeaponItem) ) {
                 SpellContainer container = processCompatGroup(
                         itemEntry,
-                        config.ranged_weapons,
-                        item instanceof RangedWeaponItem
+                        config.ranged_weapons
                 );
                 if (container != null) {
                     SpellAssignments.containers.putIfAbsent(itemId, container);
+                    continue; // Don't process other groups
                 }
             }
         }
@@ -51,13 +55,7 @@ public class WeaponCompatibility {
 
     private static SpellContainer processCompatGroup(
             RegistryEntry<Item> itemEntry,
-            FallbackConfig.CompatGroup group,
-            boolean isItemTypeMatch) {
-
-        // Check if item type matches (e.g., is it a sword/bow?)
-        if (!isItemTypeMatch) {
-            return null;
-        }
+            FallbackConfig.CompatGroup group) {
 
         // Check blacklist
         if (group.blacklist != null && !group.blacklist.isEmpty()) {
@@ -67,10 +65,12 @@ public class WeaponCompatibility {
         }
 
         // Try to match against specifiers in order
-        for (var specifier : group.specifiers) {
-            if (specifier.item != null && !specifier.item.isEmpty()) {
-                if (PatternMatching.matches(itemEntry, RegistryKeys.ITEM, specifier.item)) {
-                    return specifier.container; // First match wins
+        if (group.enable_specifiers) {
+            for (var specifier : group.specifiers) {
+                if (specifier.item != null && !specifier.item.isEmpty()) {
+                    if (PatternMatching.matches(itemEntry, RegistryKeys.ITEM, specifier.item)) {
+                        return specifier.container; // First match wins
+                    }
                 }
             }
         }

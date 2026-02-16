@@ -27,6 +27,9 @@ public class RPGSeriesItemTags {
         public static TagKey<Item> get(Equipment.WeaponType category) {
             return ALL.get(category);
         }
+        public static String tagString(Equipment.WeaponType category) {
+            return "#" + get(category).id().toString();
+        }
     }
 
     public enum ArmorMetaType {
