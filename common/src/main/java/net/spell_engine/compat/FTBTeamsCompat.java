@@ -1,6 +1,7 @@
 package net.spell_engine.compat;
 
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
+import dev.ftb.mods.ftbteams.api.Team;
 import dev.ftb.mods.ftbteams.api.client.KnownClientPlayer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
@@ -47,6 +48,21 @@ public class FTBTeamsCompat {
             return new EntityRelations.TeamRelation(true, false);
         }
 
+        // --- ANTI-ABUSE: Check for MUTUAL alliance ---
+        Optional<Team> attackerTeamOpt = manager.getTeamByID(attackerKnownPlayer.teamId());
+        Optional<Team> targetTeamOpt = manager.getTeamByID(targetKnownPlayer.teamId());
+
+        if (attackerTeamOpt.isPresent() && targetTeamOpt.isPresent()) {
+            // Check if Attacker's team considers Target an ally
+            boolean attackerSeesAlly = attackerTeamOpt.get().getRankForPlayer(targetPlayer.getUuid()).isAllyOrBetter();
+            // Check if Target's team considers Attacker an ally
+            boolean targetSeesAlly = targetTeamOpt.get().getRankForPlayer(attackerPlayer.getUuid()).isAllyOrBetter();
+
+            if (attackerSeesAlly && targetSeesAlly) {
+                return new EntityRelations.TeamRelation(true, false);
+            }
+        }
+
         return null;
     }
 
@@ -56,10 +72,28 @@ public class FTBTeamsCompat {
         }
         var manager = FTBTeamsAPI.api().getManager();
 
-        if (manager.arePlayersInSameTeam(attackerPlayer.getUuid(), targetPlayer.getUuid())) {
-            return new EntityRelations.TeamRelation(true, false);
+        Optional<Team> attackerTeamOpt = manager.getTeamForPlayerID(attackerPlayer.getUuid());
+        Optional<Team> targetTeamOpt = manager.getTeamForPlayerID(targetPlayer.getUuid());
+
+        if (attackerTeamOpt.isPresent() && targetTeamOpt.isPresent()) {
+            Team attackerTeam = attackerTeamOpt.get();
+            Team targetTeam = targetTeamOpt.get();
+
+            if (attackerTeam.getTeamId().equals(targetTeam.getTeamId())) {
+                return new EntityRelations.TeamRelation(true, false);
+            }
+
+            // Check if Attacker's team considers Target an ally
+            boolean attackerSeesAlly = attackerTeam.getRankForPlayer(targetPlayer.getUuid()).isAllyOrBetter();
+            // Check if Target's team considers Attacker an ally
+            boolean targetSeesAlly = targetTeam.getRankForPlayer(attackerPlayer.getUuid()).isAllyOrBetter();
+
+            if (attackerSeesAlly && targetSeesAlly) {
+                return new EntityRelations.TeamRelation(true, false);
+            }
         }
 
         return null;
     }
 }
+
