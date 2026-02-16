@@ -2,12 +2,14 @@ package net.spell_engine.api.spell.fx;
 
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
 import net.spell_engine.utils.PatternMatching;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class PlayerAnimation {
     public static class Override { public Override() { }
@@ -22,6 +24,7 @@ public class PlayerAnimation {
             }
         }
         @Nullable public Equipment equipment;
+        @Nullable public Boolean two_handed_weapon;
         public String id = "";
     }
     public String id = "";
@@ -66,7 +69,16 @@ public class PlayerAnimation {
                     return override.id;
                 }
             }
+            if (override.two_handed_weapon != null) {
+                if (twoHandedChecker.apply(entity.getMainHandStack()) == override.two_handed_weapon) {
+                    return override.id;
+                }
+            }
         }
         return this.id;
     }
+
+    public static Function<ItemStack, Boolean> twoHandedChecker = itemStack -> {
+        return false;
+    };
 }
