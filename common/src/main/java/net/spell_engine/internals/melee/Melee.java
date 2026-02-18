@@ -170,7 +170,7 @@ public class Melee {
     public static List<Integer> detectTargets(PlayerEntity player, Attack attack) {
         var hitbox = attack.hitbox();
         var range = player.getEntityInteractionRange();
-        var hitboxSize = new Vec3d(hitbox.width * range, hitbox.height * range, hitbox.width * range);
+        var hitboxSize = new Vec3d(hitbox.width * range, hitbox.height * range, hitbox.length * range);
         var result = TargetFinder.findAttackTargetResult(player, null, hitboxSize, hitbox.arc, range, hitbox.roll);
 
         return result.entities.stream().map(Entity::getId).toList();

@@ -6,8 +6,8 @@
   "learn": {},
   "active": {
     "cast": {
-      "duration": 1.5,
-      "channel_ticks": 9,
+      "duration": 1.25,
+      "channel_ticks": 10,
       "animation": {
         "id": "spell_engine:weapon_flurry_2h_charge",
         "speed": 1.5
@@ -33,7 +33,8 @@
             "arc": 90.0
           },
           "animation": {
-            "id": "spell_engine:weapon_flurry_2h_slash_1"
+            "id": "spell_engine:weapon_flurry_2h_slash_1",
+            "speed": 1.25
           }
         },
         {
@@ -48,7 +49,8 @@
             "arc": 90.0
           },
           "animation": {
-            "id": "spell_engine:weapon_flurry_2h_slash_2"
+            "id": "spell_engine:weapon_flurry_2h_slash_2",
+            "speed": 1.25
           }
         }
       ]

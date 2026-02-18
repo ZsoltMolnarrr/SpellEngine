@@ -134,7 +134,7 @@ public class SpellHelper {
         var haste = spell.active.cast.haste_affected
                 ? (float) SpellPower.getHaste(caster, spell.school)
                 : 1F;
-        var duration =  hasteAffectedValue(spell.active.cast.duration, haste);
+        var duration = hasteAffectedValue(spell.active.cast.duration, haste);
         return new SpellCast.Duration(haste, Math.round(duration * 20F));
     }
 

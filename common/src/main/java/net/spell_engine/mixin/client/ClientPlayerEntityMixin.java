@@ -15,6 +15,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.PlatformClient;
+import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.client.input.SpellHotbar;
@@ -197,7 +198,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                         && (currentTick % cast.channel_ticks) == 0;
                 if (isDue) {
                     // Channel spell
-                    System.out.println("Channel tick due! current tick: " + currentTick);
                     releaseSpellCast(process, SpellCast.Action.CHANNEL);
                 }
             } else {
@@ -230,6 +230,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         ClientPlayNetworking.send(new Packets.SpellRequest(action, spellId, progress.ratio(), targetIDs, location));
         switch (action) {
             case CHANNEL -> {
+
                 if (progress.ratio() >= 1) {
                     cancelSpellCast();
                 }

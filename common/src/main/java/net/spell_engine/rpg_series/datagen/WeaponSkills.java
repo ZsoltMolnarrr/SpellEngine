@@ -213,7 +213,7 @@ public class WeaponSkills {
         var spell = SpellBuilder.createMeleeSpell();
 
 //        SpellBuilder.Casting.cast(spell, 1F);
-        SpellBuilder.Casting.channel(spell, 1.5F, 9);
+        SpellBuilder.Casting.channel(spell, 1.25F, 10);
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_charge");
         spell.active.cast.animation.speed = 1.5F;
         spell.active.cast.animation_pitch = false;
@@ -230,7 +230,7 @@ public class WeaponSkills {
         cut_1.forward_momentum = 0.8F;
         cut_1.movement_speed = 0F;
         cut_1.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash_1");
-        // cut_1.animation.speed = 1.5F;
+        cut_1.animation.speed = 1.25F;
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
         cut_2.attack_speed_multiplier = 2F;
@@ -243,7 +243,7 @@ public class WeaponSkills {
         cut_2.forward_momentum = 1F;
         cut_2.movement_speed = 0.8F;
         cut_2.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash_2");
-        // cut_2.animation.speed = 1.5F;
+        cut_2.animation.speed = 1.25F;
 
         SpellBuilder.Deliver.melee(spell, List.of(cut_1, cut_2));
 
@@ -373,6 +373,7 @@ public class WeaponSkills {
         attack.hitbox = new Spell.Delivery.Melee.HitBox();
         attack.hitbox.arc = 160;
         attack.hitbox.height = 0.2F;
+        attack.hitbox.width = 0.5F;
         attack.forward_momentum = 1.5F;
         attack.movement_slipperiness = 0.3F;
         attack.delay = 0.1F;
@@ -404,6 +405,7 @@ public class WeaponSkills {
         attack.delay = 0.3F;
         attack.hitbox = new Spell.Delivery.Melee.HitBox();
         attack.hitbox.arc = 160;
+        attack.hitbox.length = 0.5F;
         attack.hitbox.height = 0.2F;
         attack.forward_momentum = 1.5F;
         attack.movement_slipperiness = 0.3F;

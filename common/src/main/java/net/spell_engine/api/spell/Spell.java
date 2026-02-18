@@ -271,6 +271,7 @@ public class Spell {
                 public ParticleBatch[] particles = new ParticleBatch[]{};
             }
             public static class HitBox {
+                public float length = 1F;
                 /// Relative width of the hitbox, will be scaled up by attack range.
                 public float width = 1F;
                 /// Relative height of the hitbox, will be scaled up by attack range.
