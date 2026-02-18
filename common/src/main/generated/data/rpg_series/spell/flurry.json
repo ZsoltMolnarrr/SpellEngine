@@ -6,10 +6,11 @@
   "learn": {},
   "active": {
     "cast": {
-      "duration": 1.0,
+      "duration": 1.5,
+      "channel_ticks": 9,
       "animation": {
         "id": "spell_engine:weapon_flurry_2h_charge",
-        "speed": 2.0
+        "speed": 1.5
       },
       "animation_pitch": false
     }
@@ -22,9 +23,9 @@
     "melee": {
       "attacks": [
         {
-          "attack_speed_multiplier": 1.5,
+          "attack_speed_multiplier": 2.0,
           "delay": 0.3,
-          "forward_momentum": 1.0,
+          "forward_momentum": 0.8,
           "movement_speed": 0.0,
           "hitbox": {
             "height": 0.2,
@@ -32,24 +33,22 @@
             "arc": 90.0
           },
           "animation": {
-            "id": "spell_engine:weapon_flurry_2h_slash1",
-            "speed": 1.5
+            "id": "spell_engine:weapon_flurry_2h_slash_1"
           }
         },
         {
           "damage_bonus": 0.5,
-          "attack_speed_multiplier": 1.5,
+          "attack_speed_multiplier": 2.0,
           "delay": 0.6,
           "forward_momentum": 1.0,
-          "movement_speed": 0.0,
+          "movement_speed": 0.8,
           "hitbox": {
             "height": 0.2,
             "roll": -45.0,
             "arc": 90.0
           },
           "animation": {
-            "id": "spell_engine:weapon_flurry_2h_slash2",
-            "speed": 1.5
+            "id": "spell_engine:weapon_flurry_2h_slash_2"
           }
         }
       ]

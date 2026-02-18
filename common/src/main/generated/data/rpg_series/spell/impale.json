@@ -5,15 +5,17 @@
   "learn": {},
   "active": {
     "cast": {
-      "duration": 1.0,
+      "duration": 0.75,
       "animation": {
-        "id": "spell_engine:one_handed_throw_charge"
+        "id": "spell_engine:weapon_spearthrow_ready",
+        "speed": 1.5
       }
     }
   },
   "release": {
     "animation": {
-      "id": "spell_engine:one_handed_throw_release_instant"
+      "id": "spell_engine:weapon_spearthrow_toss",
+      "speed": 1.5
     }
   },
   "target": {

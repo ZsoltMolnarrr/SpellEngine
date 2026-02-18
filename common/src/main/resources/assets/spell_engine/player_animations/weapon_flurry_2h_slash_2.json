@@ -1,13 +1,13 @@
 {
-    "name": "weapon_flurry_2h_slash2",
+    "name": "weapon_flurry_2h_slash_2",
     "author": "Forg/Cleannrooster",
-    "description": "Flurry 2h Slash 2",
+    "description": "Flurry 2h Slash2",
     "emote":{
         "isLoop": "false",
         "returnTick": 0,
         "beginTick":1,
-        "endTick":25,
-        "stopTick":35,
+        "endTick":20,
+        "stopTick":30,
         "degrees":false,
         "moves":[
             
@@ -72,7 +72,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "head":{
-                    "yaw":0.0018293112516403198
+                    "yaw":-0.1901727318763733
                 }
             },
             {
@@ -120,7 +120,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "head":{
-                    "roll":0.3033166825771332
+                    "roll":0.15122579038143158
                 }
             },
             {
@@ -168,7 +168,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "head":{
-                    "pitch":-0.45851820707321167
+                    "pitch":-0.010902434587478638
                 }
             },
             {

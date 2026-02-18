@@ -6,7 +6,7 @@
   "active": {},
   "release": {
     "animation": {
-      "id": "spell_engine:one_handed_throw_release_instant"
+      "id": "spell_engine:weapon_dual_throw"
     }
   },
   "target": {

@@ -178,7 +178,7 @@ public class WeaponSkills {
 
         SpellBuilder.Casting.cast(spell, 0.5F);
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_mace_uppercut_start");
-        spell.active.cast.animation.speed = 2F;
+        spell.active.cast.animation.speed = 1.5F;
         spell.active.cast.animation_pitch = false;
         spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
 
@@ -212,28 +212,28 @@ public class WeaponSkills {
         var description = "Unleash a rapid series of strikes.";
         var spell = SpellBuilder.createMeleeSpell();
 
-        SpellBuilder.Casting.cast(spell, 1F);
-//        SpellBuilder.Casting.channel(spell, 2.1F, 10);
+//        SpellBuilder.Casting.cast(spell, 1F);
+        SpellBuilder.Casting.channel(spell, 1.5F, 9);
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_charge");
-        spell.active.cast.animation.speed = 2F;
+        spell.active.cast.animation.speed = 1.5F;
         spell.active.cast.animation_pitch = false;
 
         SpellBuilder.Target.none(spell);
 
         var cut_1 = new Spell.Delivery.Melee.Attack();
-        cut_1.attack_speed_multiplier = 1.5F;
+        cut_1.attack_speed_multiplier = 2F;
         cut_1.delay = 0.3F;
         cut_1.hitbox = new Spell.Delivery.Melee.HitBox();
         cut_1.hitbox.arc = 90;
         cut_1.hitbox.height = 0.2F;
         cut_1.hitbox.roll = 45F;
-        cut_1.forward_momentum = 1F;
+        cut_1.forward_momentum = 0.8F;
         cut_1.movement_speed = 0F;
-        cut_1.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash1");
-        cut_1.animation.speed = 1.5F;
+        cut_1.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash_1");
+        // cut_1.animation.speed = 1.5F;
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
-        cut_2.attack_speed_multiplier = 1.5F;
+        cut_2.attack_speed_multiplier = 2F;
         cut_2.delay = 0.6F;
         cut_2.hitbox = new Spell.Delivery.Melee.HitBox();
         cut_2.hitbox.arc = 90;
@@ -241,9 +241,9 @@ public class WeaponSkills {
         cut_2.hitbox.roll = -45;
         cut_2.damage_bonus = 0.5F;
         cut_2.forward_momentum = 1F;
-        cut_2.movement_speed = 0F;
-        cut_2.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash2");
-        cut_2.animation.speed = 1.5F;
+        cut_2.movement_speed = 0.8F;
+        cut_2.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash_2");
+        // cut_2.animation.speed = 1.5F;
 
         SpellBuilder.Deliver.melee(spell, List.of(cut_1, cut_2));
 
@@ -305,8 +305,10 @@ public class WeaponSkills {
         spell.range_mechanic = null;
         spell.range = 20;
 
-        SpellBuilder.Casting.cast(spell, 1F, "spell_engine:one_handed_throw_charge");
-        spell.release.animation = PlayerAnimation.of("spell_engine:one_handed_throw_release_instant");
+        SpellBuilder.Casting.cast(spell, 0.75F, "spell_engine:weapon_spearthrow_ready");
+        spell.active.cast.animation.speed = 1.5F;
+        spell.release.animation = PlayerAnimation.of("spell_engine:weapon_spearthrow_toss");
+        spell.release.animation.speed = 1.5F;
 
         SpellBuilder.Target.aim(spell);
 
@@ -332,7 +334,7 @@ public class WeaponSkills {
         spell.range = 15;
 
         SpellBuilder.Casting.instant(spell);
-        spell.release.animation = PlayerAnimation.of("spell_engine:one_handed_throw_release_instant");
+        spell.release.animation = PlayerAnimation.of("spell_engine:weapon_dual_throw");
 
         SpellBuilder.Target.aim(spell);
         spell.deliver.type = Spell.Delivery.Type.PROJECTILE;

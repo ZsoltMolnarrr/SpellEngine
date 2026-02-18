@@ -197,6 +197,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                         && (currentTick % cast.channel_ticks) == 0;
                 if (isDue) {
                     // Channel spell
+                    System.out.println("Channel tick due! current tick: " + currentTick);
                     releaseSpellCast(process, SpellCast.Action.CHANNEL);
                 }
             } else {
