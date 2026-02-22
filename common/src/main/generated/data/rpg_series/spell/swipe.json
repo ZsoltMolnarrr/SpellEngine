@@ -20,6 +20,7 @@
           "forward_momentum": 1.5,
           "movement_slipperiness": 0.3,
           "hitbox": {
+            "length": 0.5,
             "height": 0.2,
             "arc": 160.0
           },

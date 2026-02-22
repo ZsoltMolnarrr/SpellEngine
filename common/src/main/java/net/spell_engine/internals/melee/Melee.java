@@ -2,7 +2,6 @@ package net.spell_engine.internals.melee;
 
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
@@ -10,6 +9,7 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
@@ -45,6 +45,7 @@ public class Melee {
             float forward_momentum,
             float movement_speed,
             float movement_slip,
+            float range,
             Spell.Delivery.Melee.HitBox hitbox,
             PlayerAnimation animation,
             @Nullable AttackContext context
@@ -120,6 +121,8 @@ public class Melee {
                 ? attack.duration
                 : Math.max(caster.getAttackCooldownProgressPerTick() * (1F / speed), 1);
         float delay = duration * attack.delay;
+        var spell = SpellRegistry.from(caster.getWorld()).getEntry(spellId);
+        var range = spell.isPresent() ? SpellHelper.getRange(caster, spell.get()) : (float)caster.getEntityInteractionRange();
         // Create resolved MeleeAttack with all calculations done
         return new Attack(
                 Math.round(duration),
@@ -131,6 +134,7 @@ public class Melee {
                 attack.forward_momentum,
                 attack.movement_speed,
                 attack.movement_slipperiness,
+                range,
                 attack.hitbox,
                 attack.animation,
                 new AttackContext(spellId, attack.id)
@@ -169,7 +173,7 @@ public class Melee {
 
     public static List<Integer> detectTargets(PlayerEntity player, Attack attack) {
         var hitbox = attack.hitbox();
-        var range = player.getEntityInteractionRange();
+        var range = attack.range();
         var hitboxSize = new Vec3d(hitbox.width * range, hitbox.height * range, hitbox.length * range);
         var result = TargetFinder.findAttackTargetResult(player, null, hitboxSize, hitbox.arc, range, hitbox.roll);
 
@@ -212,6 +216,7 @@ public class Melee {
                     attributeInstance.addTemporaryModifier(appliedDamageModifier);
                 }
             }
+            var attackRange = spellEntry != null ? SpellHelper.getRange(player, spellEntry) : (float)player.getEntityInteractionRange();
 
             for (int targetId : targetIds) {
                 var target = world.getEntityById(targetId);
@@ -221,6 +226,12 @@ public class Melee {
                             player, target)) {
                         continue;
                     }
+
+                    var distanceGuard = (attackRange + largesSideLength(target.getBoundingBox())) * 1.2F; // Adding some tolerance
+                    if (player.squaredDistanceTo(target) > (distanceGuard * distanceGuard) ) {
+                        continue;
+                    }
+
                     var timeUntilRegen = target.timeUntilRegen;
                     target.timeUntilRegen = 0;
                     ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(100);
@@ -246,5 +257,12 @@ public class Melee {
 
     private static SpellTarget.FocusMode focusMode() {
         return SpellEngineMod.config.melee_skills_area_focus_mode ? SpellTarget.FocusMode.AREA : SpellTarget.FocusMode.DIRECT;
+    }
+
+    private static float largesSideLength(Box boundingBox) {
+        double x = boundingBox.getLengthX();
+        double y = boundingBox.getLengthY();
+        double z = boundingBox.getLengthZ();
+        return Math.max((float)x, Math.max((float)y, (float)z));
     }
 }

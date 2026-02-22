@@ -239,7 +239,6 @@ public class WeaponSkills {
         cut_2.hitbox.arc = 90;
         cut_2.hitbox.height = 0.2F;
         cut_2.hitbox.roll = -45;
-        cut_2.damage_bonus = 0.5F;
         cut_2.forward_momentum = 1F;
         cut_2.movement_speed = 0.8F;
         cut_2.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash_2");
