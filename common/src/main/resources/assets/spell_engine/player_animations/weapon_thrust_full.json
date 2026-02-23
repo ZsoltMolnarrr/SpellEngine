@@ -304,7 +304,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "rightArm":{
-                    "yaw":0.5198591351509094
+                    "yaw":0.5496796369552612
                 }
             },
             {
@@ -328,7 +328,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "rightArm":{
-                    "roll":0.35991835594177246
+                    "roll":-0.4650140702724457
                 }
             },
             {
@@ -424,7 +424,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "rightArm":{
-                    "pitch":-1.2434271574020386
+                    "pitch":-1.6863930225372314
                 }
             },
             {
@@ -448,7 +448,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "leftArm":{
-                    "roll":-1.634597897529602
+                    "roll":-1.4448316097259521
                 }
             },
             {
@@ -480,7 +480,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "leftArm":{
-                    "yaw":1.4169214963912964
+                    "yaw":1.4849650859832764
                 }
             },
             {
@@ -512,7 +512,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "leftArm":{
-                    "pitch":-2.999121904373169
+                    "pitch":-2.09020733833313
                 }
             },
             {
@@ -544,7 +544,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "leftArm":{
-                    "y":3.1323413848876953
+                    "y":3.119656562805176
                 }
             },
             {
@@ -576,7 +576,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "leftArm":{
-                    "z":-4.161066055297852
+                    "z":-3.720228433609009
                 }
             },
             {
@@ -608,7 +608,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "leftArm":{
-                    "x":0.8819701671600342
+                    "x":0.8514264822006226
                 }
             },
             {
@@ -1000,7 +1000,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "rightItem":{
-                    "pitch":0.30581510066986084
+                    "pitch":0.18161225318908691
                 }
             },
             {
@@ -1024,7 +1024,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "rightItem":{
-                    "yaw":-0.14869903028011322
+                    "yaw":-0.1616392433643341
                 }
             },
             {
@@ -1048,7 +1048,7 @@
                 "easing": "EASEINOUTQUAD",
                 "turn": 0,
                 "rightItem":{
-                    "roll":-0.054439276456832886
+                    "roll":-0.06018301472067833
                 }
             },
             {

@@ -406,7 +406,7 @@ public class WeaponSkills {
         attack.hitbox.arc = 160;
         attack.hitbox.length = 0.5F;
         attack.hitbox.height = 0.2F;
-        attack.forward_momentum = 1.5F;
+        attack.forward_momentum = 2F;
         attack.movement_slipperiness = 0.3F;
         attack.delay = 0.1F;
         attack.additional_strikes = 4;
