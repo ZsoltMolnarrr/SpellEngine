@@ -70,6 +70,7 @@ Other changes:
   - `spell_book_additional_cooldown` - Additional cooldown in seconds applied to spell book items, to prevent quick swapping and casting."
 - Global cooldown is now enabled by default for instant spells (0.5 seconds), adjustable in server config
 - Fixed operation of spell variant, target:`AIM`+ deliver:`DIRECT` + area impact
+- Fixed Player data corruption caused by invalid spell identifiers #170
 
 # 1.8.19
 
