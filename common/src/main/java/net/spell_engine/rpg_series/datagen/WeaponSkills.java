@@ -224,25 +224,25 @@ public class WeaponSkills {
         cut_1.attack_speed_multiplier = 2F;
         cut_1.delay = 0.3F;
         cut_1.hitbox = new Spell.Delivery.Melee.HitBox();
-        cut_1.hitbox.arc = 90;
+        cut_1.hitbox.arc = 120;
         cut_1.hitbox.height = 0.2F;
         cut_1.hitbox.roll = 45F;
         cut_1.forward_momentum = 0.8F;
         cut_1.movement_speed = 0F;
         cut_1.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash_1");
-        cut_1.animation.speed = 1.25F;
+        // cut_1.animation.speed = 1.25F;
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
         cut_2.attack_speed_multiplier = 2F;
         cut_2.delay = 0.6F;
         cut_2.hitbox = new Spell.Delivery.Melee.HitBox();
-        cut_2.hitbox.arc = 90;
+        cut_2.hitbox.arc = 120;
         cut_2.hitbox.height = 0.2F;
         cut_2.hitbox.roll = -45;
         cut_2.forward_momentum = 1F;
         cut_2.movement_speed = 0.8F;
         cut_2.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash_2");
-        cut_2.animation.speed = 1.25F;
+        // cut_2.animation.speed = 1.25F;
 
         SpellBuilder.Deliver.melee(spell, List.of(cut_1, cut_2));
 
@@ -412,7 +412,7 @@ public class WeaponSkills {
         attack.additional_strikes = 4;
         attack.additional_strike_delay = 0.15F;
         attack.additional_hits_on_same_target = false;
-        attack.animation = PlayerAnimation.of("spell_engine:dual_handed_slash_uncross");
+        attack.animation = PlayerAnimation.of("spell_engine:weapon_slash_uncross_swipe");
         attack.animation.speed = 1F;
 
         SpellBuilder.Deliver.melee(spell, List.of(attack));

@@ -30,15 +30,13 @@
           "hitbox": {
             "height": 0.2,
             "roll": 45.0,
-            "arc": 90.0
+            "arc": 120.0
           },
           "animation": {
-            "id": "spell_engine:weapon_flurry_2h_slash_1",
-            "speed": 1.25
+            "id": "spell_engine:weapon_flurry_2h_slash_1"
           }
         },
         {
-          "damage_bonus": 0.5,
           "attack_speed_multiplier": 2.0,
           "delay": 0.6,
           "forward_momentum": 1.0,
@@ -46,11 +44,10 @@
           "hitbox": {
             "height": 0.2,
             "roll": -45.0,
-            "arc": 90.0
+            "arc": 120.0
           },
           "animation": {
-            "id": "spell_engine:weapon_flurry_2h_slash_2",
-            "speed": 1.25
+            "id": "spell_engine:weapon_flurry_2h_slash_2"
           }
         }
       ]
