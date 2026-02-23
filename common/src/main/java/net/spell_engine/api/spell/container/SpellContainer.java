@@ -38,13 +38,19 @@ public record SpellContainer(
         public static Codec<ContentType> CODEC = Codec.STRING.xmap(ContentType::valueOf, ContentType::name);
     }
 
+    /// Normalizes a spell ID string to be a valid Minecraft identifier path.
+    /// Lowercases the input and strips any character outside [a-z0-9/._:-].
+    public static String normalizeId(String id) {
+        return id.toLowerCase().replaceAll("[^a-z0-9/._:-]", "");
+    }
+
     public static final Codec<SpellContainer> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ContentType.CODEC.optionalFieldOf("access", ContentType.NONE).forGetter(x -> x.access),
             Codec.STRING.optionalFieldOf("access_param", "").forGetter(x -> x.access_param),
             Codec.STRING.optionalFieldOf("pool", "").forGetter(x -> x.pool),
             Codec.STRING.optionalFieldOf("slot", "").forGetter(x -> x.slot),
             Codec.INT.optionalFieldOf("max_spell_count", 0).forGetter(x -> x.max_spell_count),
-            Codec.STRING.listOf().optionalFieldOf("spell_ids", List.of()).forGetter(x -> x.spell_ids),
+            Codec.STRING.xmap(SpellContainer::normalizeId, s -> s).listOf().optionalFieldOf("spell_ids", List.of()).forGetter(x -> x.spell_ids),
             Codec.INT.optionalFieldOf("extra_tier_binding", 0).forGetter(x -> x.extra_tier_binding)
     ).apply(instance, SpellContainer::new));
 
@@ -65,7 +71,7 @@ public record SpellContainer(
         this.pool = pool != null ? pool : "";
         this.slot = slot != null ? slot : "";
         this.max_spell_count = max_spell_count;
-        this.spell_ids = spell_ids != null ? spell_ids : List.of();
+        this.spell_ids = spell_ids != null ? spell_ids.stream().map(SpellContainer::normalizeId).toList() : List.of();
         this.extra_tier_binding = extra_tier_binding;
     }
 
