@@ -363,7 +363,7 @@ public class WeaponSkills {
         var description = "Lunge forward with your weapon, striking all enemies along your path.";
         var spell = SpellBuilder.createMeleeSpell();
 
-        SpellBuilder.Casting.cast(spell, 0.5F, "spell_engine:dual_handed_weapon_charge");
+        SpellBuilder.Casting.cast(spell, 0.5F, "spell_engine:weapon_thrust_charge");
         SpellBuilder.Target.none(spell);
 
         var attack = new Spell.Delivery.Melee.Attack();
@@ -379,7 +379,7 @@ public class WeaponSkills {
         attack.additional_strikes = 4;
         attack.additional_strike_delay = 0.15F;
         attack.additional_hits_on_same_target = false;
-        attack.animation = PlayerAnimation.of("spell_engine:weapon_twinstrike_slash_1");
+        attack.animation = PlayerAnimation.of("spell_engine:weapon_thrust_full");
         attack.animation.speed = 1F;
 
         SpellBuilder.Deliver.melee(spell, List.of(attack));
