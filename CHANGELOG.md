@@ -28,6 +28,8 @@ API Breaking Changes:
   - Casting and release animations are now wrapped into a `PlayerAnimation` object, instead of a plain String
   - `PlayerAnimation` supports: `overrides`, `speed`
   - Reworked `spell.active.cast.channel_ticks` now representing the number of releases during channeling, instead of a duration interval (in game ticks) between channel releases
+- Relocated all equipment related APIs to a new dedicated package `rpg_series.item`, to better separate them from the core spell engine APIs
+  - types moved: `Equipment`, `Armor`, `ConfigurableAttributes`, `Weapon`  
 
 API Additions:
 - Added new `spell_choices` data component
@@ -62,7 +64,7 @@ API Additions:
 - Spell Data structure changes
   - Added `spell.cost.cooldown.attempt_duration` to prevent multiple performs of delayed deliveries
 
-Other changes:
+Functional changes:
 - RPG Series core dedicated sub-package now includes melee weapon skills
   - Whirlwind (designed for double axes) - Hold to spin around, dealing {damage} damage per second, to nearby enemies.
   - Cleave (designed for axes) - Performs a spin attack, dealing {damage} damage to nearby enemies.

@@ -1,4 +1,4 @@
-package net.spell_engine.api.item.armor;
+package net.spell_engine.rpg_series.item;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.component.type.AttributeModifierSlot;
@@ -15,7 +15,6 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.config.ArmorSetConfig;
-import net.spell_engine.api.item.Equipment;
 import net.spell_engine.mixin.item.ArmorMaterialLayerAccessor;
 import org.jetbrains.annotations.Nullable;
 

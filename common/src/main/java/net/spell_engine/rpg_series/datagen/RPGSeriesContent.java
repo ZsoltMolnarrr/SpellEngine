@@ -8,7 +8,7 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
 import net.spell_engine.api.datagen.NamespacedLangGenerator;
 import net.spell_engine.api.datagen.SpellGenerator;
-import net.spell_engine.api.item.Equipment;
+import net.spell_engine.rpg_series.item.Equipment;
 import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.rpg_series.tags.RPGSeriesItemTags;
 import net.spell_power.api.SpellPowerTags;

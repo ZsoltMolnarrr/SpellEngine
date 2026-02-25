@@ -5,7 +5,6 @@ import net.fabric_extras.ranged_weapon.api.CustomCrossbow;
 import net.fabric_extras.ranged_weapon.api.RangedConfig;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.util.Identifier;
-import net.spell_engine.api.item.Equipment;
 
 import java.util.EnumMap;
 import java.util.Map;

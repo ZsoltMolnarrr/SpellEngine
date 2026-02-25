@@ -1,4 +1,4 @@
-package net.spell_engine.api.item;
+package net.spell_engine.rpg_series.item;
 
 import net.minecraft.item.ToolMaterials;
 import org.jetbrains.annotations.Nullable;

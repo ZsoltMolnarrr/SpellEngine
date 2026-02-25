@@ -1,4 +1,4 @@
-package net.spell_engine.api.item.weapon;
+package net.spell_engine.rpg_series.item;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -22,11 +22,9 @@ import net.minecraft.util.Lazy;
 import net.minecraft.util.Rarity;
 import net.spell_engine.api.config.AttributeModifier;
 import net.spell_engine.api.config.WeaponConfig;
-import net.spell_engine.api.item.Equipment;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
-import net.spell_engine.api.spell.container.SpellContainers;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

@@ -17,8 +17,6 @@ import net.minecraft.util.Rarity;
 import net.minecraft.util.Util;
 import net.spell_engine.api.config.AttributeModifier;
 import net.spell_engine.api.config.ShieldConfig;
-import net.spell_engine.api.item.Equipment;
-import net.spell_engine.api.item.weapon.Weapon;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;

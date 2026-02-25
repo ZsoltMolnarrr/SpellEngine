@@ -6,7 +6,6 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.config.AttributeModifier;
-import net.spell_engine.api.item.Equipment;
 
 import java.util.List;
 import java.util.function.Supplier;

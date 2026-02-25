@@ -4,7 +4,7 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
-import net.spell_engine.api.item.Equipment;
+import net.spell_engine.rpg_series.item.Equipment;
 import net.spell_engine.rpg_series.RPGSeriesCore;
 
 import java.util.LinkedHashMap;

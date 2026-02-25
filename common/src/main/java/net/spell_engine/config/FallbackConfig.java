@@ -1,6 +1,6 @@
 package net.spell_engine.config;
 
-import net.spell_engine.api.item.Equipment;
+import net.spell_engine.rpg_series.item.Equipment;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainers;
 import net.spell_engine.api.tags.SpellEngineItemTags;
