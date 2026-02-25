@@ -63,6 +63,17 @@ API Additions:
   - Added `spell.cost.cooldown.attempt_duration` to prevent multiple performs of delayed deliveries
 
 Other changes:
+- RPG Series core dedicated sub-package now includes melee weapon skills
+  - Whirlwind (designed for double axes) - Hold to spin around, dealing {damage} damage per second, to nearby enemies.
+  - Cleave (designed for axes) - Performs a spin attack, dealing {damage} damage to nearby enemies.
+  - Ground Slam (designed for great hammers) - Leaps into the air and slams into the ground, dealing {damage} damage to nearby enemies.
+  - Smash (designed for maces) - SmashesDelivers a strike with powerful knockback, disabling shield and item usage of target.
+  - Flurry (designed for claymores) - Hold to unleash a rapid series of strikes, while also gaining momentum.
+  - Swift Strikes (designed for swords) - Unleash a rapid series of strikes.
+  - Impale (designed for spears) - Throws your weapon forwards, dealing {damage} damage and powerful knockback.
+  - Fan of Knives (designed for daggers) - Throws several of your blades in a cone, dealing {damage} damage, bouncing off terrain up to 2 times.
+  - Thrust (designed for glaives) - Lunge forward with your weapon, striking all enemies along your path.
+  - Swipe (designed for sickles) - Slide forward with your weapon, striking all enemies along your path.
 - Added fallback config for automatic spell container assignment to weapons without spell container
   - Supports various pattern matching methods (item id, item tag, regex, inversion)
   - Config file: `config/spell_engine/weapon_fallbacks.json`

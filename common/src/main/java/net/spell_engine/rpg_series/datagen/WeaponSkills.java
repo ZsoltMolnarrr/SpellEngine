@@ -208,7 +208,7 @@ public class WeaponSkills {
     private static Entry FLURRY() {
         var id = Identifier.of(NAMESPACE, "flurry");
         var title = "Flurry";
-        var description = "Unleash a rapid series of strikes.";
+        var description = "Hold to unleash a rapid series of strikes, while also gaining momentum.";
         var spell = SpellBuilder.createMeleeSpell();
 
 //        SpellBuilder.Casting.cast(spell, 1F);
