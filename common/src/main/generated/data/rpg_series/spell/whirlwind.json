@@ -7,7 +7,7 @@
   "active": {
     "cast": {
       "duration": 8.0,
-      "channel_ticks": 8,
+      "channel_ticks": 20,
       "animation": {
         "id": "spell_engine:two_handed_spin_static"
       },

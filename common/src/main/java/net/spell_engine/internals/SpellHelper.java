@@ -178,7 +178,8 @@ public class SpellHelper {
         if (ticks <= 0) {
             return 0;
         }
-        return ((float)ticks) / 20F;
+        var interval = (spell.active.cast.duration * 20F) / (float)ticks;
+        return interval / 20F;
     }
 
     public static void startCasting(PlayerEntity player, Identifier spellId, float speed, int length) {
@@ -233,6 +234,14 @@ public class SpellHelper {
                 channelTickIndex = caster.getChannelTickIndex();
                 incrementChannelTicks = 1;
                 channelMultiplier = channelValueMultiplier(spell);
+                // Compensating with extra damage, for spell with less than intended ticks
+                // (due to tick interval shorter than 1 tick.)
+                if (caster.getSpellCastProcess() != null) {
+                    var channelInterval = caster.getSpellCastProcess().channelInterval();
+                    if (channelInterval < 1) {
+                        channelMultiplier *= (1F / channelInterval);
+                    }
+                }
             }
             case RELEASE -> {
                 if (isChanneled(spell)) {
@@ -1171,9 +1180,6 @@ public class SpellHelper {
                     var amount = result.amount();
                     amount *= damageData.spell_power_coefficient;
                     amount *= context.total();
-                    if (context.isChanneled()) {
-                        amount *= SpellPower.getHaste(caster, school);
-                    }
                     particleMultiplier = power.criticalDamage() + vulnerability.criticalDamageBonus();
 
                     ///

@@ -33,6 +33,7 @@ public class Spell {
     @AlwaysGenerate
     public int tier = 1;
     /// Secondary quality classifier, used for sorting spells, in an increasing order
+    @Deprecated
     public int sub_tier = 1;
 
     /// If this can be obtained from Spell Binding Table, provide an object
@@ -71,6 +72,8 @@ public class Spell {
         public static class Cast { public Cast() { }
             public boolean haste_affected = true;
             public float duration = 0;
+            /// The number of times the spell should perform delivery during casting.
+            /// If greater than zero, the spell is considered as "channeled", and the deliveries are evenly distributed during the casting duration.
             public int channel_ticks = 0;
 
             public PlayerAnimation animation;

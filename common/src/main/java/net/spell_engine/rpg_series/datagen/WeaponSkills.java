@@ -33,12 +33,11 @@ public class WeaponSkills {
         var description = "Hold to spin around, dealing {damage} damage per second, to nearby enemies.";
         var spell = SpellBuilder.createMeleeSpell();
 
-        spell.active.cast.duration = 8F;
+        SpellBuilder.Casting.channel(spell, 8F, 20);
         spell.active.cast.movement_speed = 1.1F;
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:two_handed_spin_static");
         spell.active.cast.animation_pitch = false;
         spell.active.cast.animation_spin = -18F;
-        spell.active.cast.channel_ticks = 8;
         spell.active.cast.sound = Sound.withRandomness(SpellEngineSounds.WHIRLWIND.id(), 0F);
         spell.active.cast.particles = new ParticleBatch[]{
                 new ParticleBatch(SpellEngineParticles.smoke_medium.id().toString(),
@@ -213,7 +212,7 @@ public class WeaponSkills {
         var spell = SpellBuilder.createMeleeSpell();
 
 //        SpellBuilder.Casting.cast(spell, 1F);
-        SpellBuilder.Casting.channel(spell, 1.25F, 10);
+        SpellBuilder.Casting.channel(spell, 1.25F, 3);
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_charge");
         spell.active.cast.animation.speed = 1.5F;
         spell.active.cast.animation_pitch = false;

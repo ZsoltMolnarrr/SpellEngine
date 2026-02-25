@@ -7,6 +7,7 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
+import net.spell_engine.utils.AttributeModifierUtil;
 import net.spell_power.SpellPowerMod;
 import net.spell_power.api.SpellSchool;
 import net.spell_power.api.SpellSchools;
@@ -51,6 +52,9 @@ public class ExternalSpellSchools {
         EntityAttributes.GENERIC_ATTACK_DAMAGE.value().setTracked(true);
         PHYSICAL_MELEE.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {
             return query.entity().getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
+        });
+        PHYSICAL_MELEE.addSource(SpellSchool.Trait.HASTE, SpellSchool.Apply.ADD, query -> {
+            return AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, query.entity()) - 1.0;
         });
         SpellSchools.configureSpellHaste(PHYSICAL_MELEE);
         SpellSchools.register(PHYSICAL_MELEE);

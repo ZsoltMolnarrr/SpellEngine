@@ -189,18 +189,18 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             var cast = spell.active.cast;
             spellTarget = SpellTarget.findTargets(player, process.spell(), spellTarget, SpellEngineClient.config.filterInvalidTargets);
 
-            var spellCastTicks = process.spellCastTicksSoFar(player.getWorld().getTime());
             if (SpellHelper.isChanneled(spell)) {
-                // Is channel tick due?
-                var offset = Math.round(cast.channel_ticks * 0.5F);
-                var currentTick = spellCastTicks + offset;
-                var isDue = currentTick >= cast.channel_ticks
-                        && (currentTick % cast.channel_ticks) == 0;
-                if (isDue) {
-                    // Channel spell
+                // System.out.println("Channeling tick: " + process.spellCastTicksSoFar(player.getWorld().getTime()) + " ticks, isDue: " + process.isDue(player.getWorld().getTime()));
+                if (process.isDue(player.getWorld().getTime())) {
+                    process.markDue();
                     releaseSpellCast(process, SpellCast.Action.CHANNEL);
                 }
+                var progress = process.progress(player.getWorld().getTime());
+                if (progress.ratio() >= 1) {
+                    cancelSpellCast();
+                }
             } else {
+                var spellCastTicks = process.spellCastTicksSoFar(player.getWorld().getTime());
                 var isFinished = spellCastTicks >= process.length();
                 if (isFinished) {
                     // Release spell
@@ -214,10 +214,8 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
     private void releaseSpellCast(SpellCast.Process process, SpellCast.Action action) {
         var spellId = process.id();
-        var spell = process.spell().value();
         var player = player();
         var progress = process.progress(player.getWorld().getTime());
-        // var release = spell.release.target;
         var targets = spellTarget.entities();
         var location = spellTarget.location();
         int[] targetIDs = new int[targets.size()];
@@ -230,7 +228,6 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         ClientPlayNetworking.send(new Packets.SpellRequest(action, spellId, progress.ratio(), targetIDs, location));
         switch (action) {
             case CHANNEL -> {
-
                 if (progress.ratio() >= 1) {
                     cancelSpellCast();
                 }

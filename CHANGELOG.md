@@ -27,7 +27,7 @@ API Breaking Changes:
 - Spell Data structure changes
   - Casting and release animations are now wrapped into a `PlayerAnimation` object, instead of a plain String
   - `PlayerAnimation` supports: `overrides`, `speed`
-  - Add `spell.cost.cooldown.attempt_duration` to prevent multiple performs of delayed deliveries
+  - Reworked `spell.active.cast.channel_ticks` now representing the number of releases during channeling, instead of a duration interval (in game ticks) between channel releases
 
 API Additions:
 - Added new `spell_choices` data component
@@ -59,6 +59,8 @@ API Additions:
   - Supports additional impacts to be performed on hit
 - Add new impact type: `DISRUPT`
   - Can disable: shield blocking, item usage
+- Spell Data structure changes
+  - Added `spell.cost.cooldown.attempt_duration` to prevent multiple performs of delayed deliveries
 
 Other changes:
 - Added fallback config for automatic spell container assignment to weapons without spell container
@@ -68,6 +70,9 @@ Other changes:
 - Added new server config options:
   - `melee_skills_area_focus_mode` - Determines the focus mode (AREA vs DIRECT) for melee skills.
   - `spell_book_additional_cooldown` - Additional cooldown in seconds applied to spell book items, to prevent quick swapping and casting."
+- Improved spell channeling mechanics
+  - Channel ticks are now calculated more accurately, spell haste actually increasing tick frequency 
+  - Melee skill haste - casting duration is now effected by attack speed multiplier bonuses
 - Global cooldown is now enabled by default for instant spells (0.5 seconds), adjustable in server config
 - Fixed operation of spell variant, target:`AIM`+ deliver:`DIRECT` + area impact
 - Fixed Player data corruption caused by invalid spell identifiers #170

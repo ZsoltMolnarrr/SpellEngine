@@ -7,7 +7,7 @@
   "active": {
     "cast": {
       "duration": 1.25,
-      "channel_ticks": 10,
+      "channel_ticks": 3,
       "animation": {
         "id": "spell_engine:weapon_flurry_2h_charge",
         "speed": 1.5
