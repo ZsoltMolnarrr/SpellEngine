@@ -26,6 +26,12 @@
           },
           "animation": {
             "id": "spell_engine:weapon_slash_uncross_swipe"
+          },
+          "swing_sound": {
+            "id": "spell_engine:weapon_swipe_launch"
+          },
+          "impact_sound": {
+            "id": "spell_engine:weapon_sickle_impact_small"
           }
         }
       ]

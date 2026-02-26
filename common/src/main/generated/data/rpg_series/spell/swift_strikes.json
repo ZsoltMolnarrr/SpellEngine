@@ -22,6 +22,9 @@
           },
           "animation": {
             "id": "spell_engine:weapon_twinstrike_slash_1"
+          },
+          "swing_sound": {
+            "id": "spell_engine:weapon_sword_swing"
           }
         },
         {
@@ -35,6 +38,9 @@
           },
           "animation": {
             "id": "spell_engine:weapon_twinstrike_slash_2"
+          },
+          "swing_sound": {
+            "id": "spell_engine:weapon_sword_swing"
           }
         }
       ]

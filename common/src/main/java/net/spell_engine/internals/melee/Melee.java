@@ -15,6 +15,7 @@ import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
+import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellHelper;
@@ -192,7 +193,7 @@ public class Melee {
             var trackers = PlayerLookup.tracking(player);
             float speed = (float) (attackData.attack_speed_multiplier * AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player));
             AnimationHelper.sendAnimationExcluding(player, trackers, SpellCast.Animation.RELEASE, attackData.animation, speed);
-            SoundHelper.playSound(player.getWorld(), player, attackData.sound);
+            SoundHelper.playSound(player.getWorld(), player, attackData.swing_sound);
             ParticleHelper.sendBatches(player, attackData.particles, 1, trackers);
         }
     }
@@ -209,12 +210,16 @@ public class Melee {
             var resolvedContext = resolveAttackData(world, context.spellId, context.attackId);
             var spellEntry = resolvedContext.spell();
             var attack = resolvedContext.attack();
+            Sound impactSound = null;
+            int impactSoundLimit = 0;
             if (attack != null && attributeInstance != null) {
                 var damageModifierAmount = attack.damage_bonus;
                 if (damageModifierAmount != 0) {
                     appliedDamageModifier = new EntityAttributeModifier(DAMAGE_MODIFIER_ID, damageModifierAmount, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
                     attributeInstance.addTemporaryModifier(appliedDamageModifier);
                 }
+                impactSound = attack.impact_sound;
+                impactSoundLimit = attack.impact_sound_cap > 0 ? attack.impact_sound_cap : 999;
             }
             var attackRange = spellEntry != null ? SpellHelper.getRange(player, spellEntry) : (float)player.getEntityInteractionRange();
 
@@ -236,6 +241,10 @@ public class Melee {
                     target.timeUntilRegen = 0;
                     ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(100);
                     player.attack(target);
+                    if (impactSound != null && impactSoundLimit > 0) {
+                        SoundHelper.playSound(target.getWorld(), target, impactSound);
+                        impactSoundLimit -= 1;
+                    }
                     targets.add(target);
                     target.timeUntilRegen = timeUntilRegen;
                 }

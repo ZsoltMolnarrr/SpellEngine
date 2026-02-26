@@ -12,7 +12,7 @@
       },
       "animation_pitch": false,
       "start_sound": {
-        "id": "spell_engine:hammer_swing"
+        "id": "spell_engine:weapon_hammer_swing"
       }
     }
   },
@@ -72,7 +72,7 @@
       }
     ],
     "sound": {
-      "id": "spell_engine:ground_slam"
+      "id": "spell_engine:weapon_ground_slam"
     }
   },
   "cost": {

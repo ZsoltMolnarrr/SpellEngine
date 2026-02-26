@@ -34,6 +34,12 @@
           },
           "animation": {
             "id": "spell_engine:weapon_flurry_2h_slash_1"
+          },
+          "swing_sound": {
+            "id": "spell_engine:weapon_claymore_swing"
+          },
+          "impact_sound": {
+            "id": "spell_engine:weapon_claymore_impact"
           }
         },
         {
@@ -48,6 +54,12 @@
           },
           "animation": {
             "id": "spell_engine:weapon_flurry_2h_slash_2"
+          },
+          "swing_sound": {
+            "id": "spell_engine:weapon_claymore_swing"
+          },
+          "impact_sound": {
+            "id": "spell_engine:weapon_claymore_impact"
           }
         }
       ]

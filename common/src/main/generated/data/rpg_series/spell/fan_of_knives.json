@@ -7,6 +7,9 @@
   "release": {
     "animation": {
       "id": "spell_engine:weapon_dual_throw"
+    },
+    "sound": {
+      "id": "spell_engine:weapon_dagger_throw"
     }
   },
   "target": {
@@ -56,6 +59,9 @@
           "spell_power_coefficient": 0.8,
           "knockback": 0.5
         }
+      },
+      "sound": {
+        "id": "spell_engine:weapon_dagger_impact"
       }
     }
   ],

@@ -48,7 +48,7 @@ public class WeaponSkills {
                         0.1F, 0.01F, 0.1F)
         };
 
-        spell.release.sound = new Sound(SpellEngineSounds.THROW_WEAPON.id());
+        spell.release.sound = new Sound(SpellEngineSounds.WEAPON_THROW.id());
         spell.release.particles = new ParticleBatch[]{
                 new ParticleBatch(SpellEngineParticles.smoke_medium.id().toString(),
                         ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET,
@@ -89,7 +89,7 @@ public class WeaponSkills {
 
         SpellBuilder.Casting.instant(spell);
 
-        spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
+        spell.release.sound = new Sound(SpellEngineSounds.WEAPON_CLEAVE.id());
         spell.release.animation = PlayerAnimation.of("spell_engine:weapon_cleave");
         spell.active.cast.animation_pitch = false;
 
@@ -131,7 +131,7 @@ public class WeaponSkills {
         SpellBuilder.Casting.cast(spell, 1.0F);
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_slam_jump");
         spell.active.cast.animation_pitch = false;
-        spell.active.cast.start_sound = new Sound(SpellEngineSounds.HAMMER_SWING.id());
+        spell.active.cast.start_sound = new Sound(SpellEngineSounds.WEAPON_HAMMER_SWING.id());
 
         spell.release.animation = PlayerAnimation.of("spell_engine:weapon_slam_end");
 
@@ -160,7 +160,7 @@ public class WeaponSkills {
                         25, 0.4F, 0.4F)
                         .preSpawnTravel(4)
         };
-        spell.area_impact.sound = new Sound(SpellEngineSounds.GROUND_SLAM.id());
+        spell.area_impact.sound = new Sound(SpellEngineSounds.WEAPON_GROUND_SLAM.id());
 
         SpellBuilder.Cost.cooldown(spell, 12);
         spell.cost.cooldown.attempt_duration = 0.5F;
@@ -179,7 +179,7 @@ public class WeaponSkills {
         spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_mace_uppercut_start");
         spell.active.cast.animation.speed = 1.5F;
         spell.active.cast.animation_pitch = false;
-        spell.release.sound = new Sound(SpellEngineSounds.CLEAVE.id());
+        spell.release.sound = new Sound(SpellEngineSounds.WEAPON_CLEAVE.id());
 
         SpellBuilder.Target.none(spell);
 
@@ -196,6 +196,7 @@ public class WeaponSkills {
 
         var damage = SpellBuilder.Impacts.damage(0F, 3F);
         var disrupt = SpellBuilder.Impacts.disrupt(true, 2F);
+        disrupt.sound = Sound.of(SpellEngineSounds.WEAPON_MACE_SMASH_IMPACT.id());
         spell.impacts = List.of(damage, disrupt);
 
         SpellBuilder.Cost.cooldown(spell, 1);
@@ -229,6 +230,8 @@ public class WeaponSkills {
         cut_1.forward_momentum = 0.8F;
         cut_1.movement_speed = 0F;
         cut_1.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash_1");
+        cut_1.swing_sound = Sound.of(SpellEngineSounds.WEAPON_CLAYMORE_SWING.id());
+        cut_1.impact_sound = Sound.of(SpellEngineSounds.WEAPON_CLAYMORE_IMPACT.id());
         // cut_1.animation.speed = 1.25F;
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
@@ -241,6 +244,8 @@ public class WeaponSkills {
         cut_2.forward_momentum = 1F;
         cut_2.movement_speed = 0.8F;
         cut_2.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash_2");
+        cut_2.swing_sound = Sound.of(SpellEngineSounds.WEAPON_CLAYMORE_SWING.id());
+        cut_2.impact_sound = Sound.of(SpellEngineSounds.WEAPON_CLAYMORE_IMPACT.id());
         // cut_2.animation.speed = 1.25F;
 
         SpellBuilder.Deliver.melee(spell, List.of(cut_1, cut_2));
@@ -272,6 +277,7 @@ public class WeaponSkills {
         cut_1.hitbox.roll = 45F;
         cut_1.animation = PlayerAnimation.of("spell_engine:weapon_twinstrike_slash_1");
         cut_1.animation.speed = 1F;
+        cut_1.swing_sound = Sound.of(SpellEngineSounds.WEAPON_SWORD_SWING.id());
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
         cut_2.attack_speed_multiplier = 2F;
@@ -283,6 +289,7 @@ public class WeaponSkills {
         cut_2.additional_strike_delay = 0.2F;
         cut_2.animation = PlayerAnimation.of("spell_engine:weapon_twinstrike_slash_2");
         cut_2.animation.speed = 1F;
+        cut_2.swing_sound = Sound.of(SpellEngineSounds.WEAPON_SWORD_SWING.id());
 
         SpellBuilder.Deliver.melee(spell, List.of(cut_1, cut_2));
 
@@ -306,15 +313,18 @@ public class WeaponSkills {
         SpellBuilder.Casting.cast(spell, 0.75F, "spell_engine:weapon_spearthrow_ready");
         spell.active.cast.animation.speed = 1.5F;
         spell.release.animation = PlayerAnimation.of("spell_engine:weapon_spearthrow_toss");
+        spell.release.sound = Sound.of(SpellEngineSounds.WEAPON_SPEAR_THROW.id());
         spell.release.animation.speed = 1.5F;
 
         SpellBuilder.Target.aim(spell);
 
         spell.deliver.type = Spell.Delivery.Type.PROJECTILE;
         spell.deliver.projectile = thrown();
+        spell.deliver.projectile.projectile.travel_sound = Sound.of(SpellEngineSounds.WEAPON_SPEAR_TRAVEL.id());
         spell.deliver.projectile.launch_properties.velocity = 1.5F;
 
         var damage = SpellBuilder.Impacts.damage(1.2F, 3F);
+        damage.sound = Sound.of(SpellEngineSounds.WEAPON_SPEAR_STAB.id());
         spell.impacts = List.of(damage);
 
         SpellBuilder.Cost.cooldown(spell, 4);
@@ -333,10 +343,12 @@ public class WeaponSkills {
 
         SpellBuilder.Casting.instant(spell);
         spell.release.animation = PlayerAnimation.of("spell_engine:weapon_dual_throw");
+        spell.release.sound = Sound.of(SpellEngineSounds.WEAPON_DAGGER_THROW.id());
 
         SpellBuilder.Target.aim(spell);
         spell.deliver.type = Spell.Delivery.Type.PROJECTILE;
         spell.deliver.projectile = thrown();
+        // spell.deliver.projectile.projectile.travel_sound = Sound.of(SpellEngineSounds.WEAPON_DAGGER_TRAVEL.id());
         spell.deliver.projectile.launch_properties.velocity = 1.2F;
         spell.deliver.projectile.launch_properties.extra_launch_delay = 3;
         spell.deliver.projectile.launch_properties.extra_launch_count = 2;
@@ -348,6 +360,7 @@ public class WeaponSkills {
         spell.deliver.projectile.projectile.perks.bounce = 2;
 
         var damage = SpellBuilder.Impacts.damage(0.8F, 0.5F);
+        damage.sound = Sound.of(SpellEngineSounds.WEAPON_DAGGER_IMPACT.id());
         spell.impacts = List.of(damage);
 
         SpellBuilder.Cost.cooldown(spell, 4);
@@ -363,6 +376,7 @@ public class WeaponSkills {
         var spell = SpellBuilder.createMeleeSpell();
 
         SpellBuilder.Casting.cast(spell, 0.5F, "spell_engine:weapon_thrust_charge");
+        spell.active.cast.start_sound = Sound.of(SpellEngineSounds.WEAPON_SHING_A.id());
         SpellBuilder.Target.none(spell);
 
         var attack = new Spell.Delivery.Melee.Attack();
@@ -380,6 +394,8 @@ public class WeaponSkills {
         attack.additional_hits_on_same_target = false;
         attack.animation = PlayerAnimation.of("spell_engine:weapon_thrust_full");
         attack.animation.speed = 1F;
+        attack.swing_sound = Sound.of(SpellEngineSounds.WEAPON_THRUST_LAUNCH.id());
+        attack.impact_sound = Sound.of(SpellEngineSounds.WEAPON_SICKLE_IMPACT_LARGE.id());
 
         SpellBuilder.Deliver.melee(spell, List.of(attack));
 
@@ -413,6 +429,8 @@ public class WeaponSkills {
         attack.additional_hits_on_same_target = false;
         attack.animation = PlayerAnimation.of("spell_engine:weapon_slash_uncross_swipe");
         attack.animation.speed = 1F;
+        attack.swing_sound = Sound.of(SpellEngineSounds.WEAPON_SWIPE_LAUNCH.id());
+        attack.impact_sound = Sound.of(SpellEngineSounds.WEAPON_SICKLE_IMPACT_SMALL.id());
 
         SpellBuilder.Deliver.melee(spell, List.of(attack));
 

@@ -270,7 +270,13 @@ public class Spell {
                 public HitBox hitbox = new HitBox();
 
                 public PlayerAnimation animation;
-                public Sound sound;
+                /// The sound to be played when the melee attack is performed.
+                public Sound swing_sound;
+                /// The sound to be played when the melee attack hits a target.
+                public Sound impact_sound;
+                /// The maximum number of times the impact sound to be played, to avoid overwhelming the audio channel when hitting lots of targets.
+                /// Zero means no limit.
+                public int impact_sound_cap = 3;
                 public ParticleBatch[] particles = new ParticleBatch[]{};
             }
             public static class HitBox {

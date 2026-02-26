@@ -51,7 +51,7 @@
       }
     ],
     "sound": {
-      "id": "spell_engine:throw_weapon"
+      "id": "spell_engine:weapon_throw"
     }
   },
   "target": {

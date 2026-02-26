@@ -9,6 +9,9 @@
       "duration": 0.5,
       "animation": {
         "id": "spell_engine:weapon_thrust_charge"
+      },
+      "start_sound": {
+        "id": "spell_engine:weapon_shing_a"
       }
     }
   },
@@ -33,6 +36,12 @@
           },
           "animation": {
             "id": "spell_engine:weapon_thrust_full"
+          },
+          "swing_sound": {
+            "id": "spell_engine:weapon_thrust_launch"
+          },
+          "impact_sound": {
+            "id": "spell_engine:weapon_sickle_impact_large"
           }
         }
       ]

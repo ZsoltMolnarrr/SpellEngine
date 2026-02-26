@@ -16,7 +16,7 @@
   },
   "release": {
     "sound": {
-      "id": "spell_engine:cleave"
+      "id": "spell_engine:weapon_cleave"
     }
   },
   "target": {
@@ -58,6 +58,9 @@
           "shield_blocking": true,
           "item_usage_seconds": 2.0
         }
+      },
+      "sound": {
+        "id": "spell_engine:weapon_mace_smash_impact"
       }
     }
   ],
