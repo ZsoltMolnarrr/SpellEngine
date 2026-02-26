@@ -284,9 +284,9 @@ public class Weapons {
 
         // Apply loot properties with tier
         if (tier == Equipment.Tier.GOLDEN) {
-            entry.loot(Equipment.LootProperties.of(tier.getNumber()));
-        } else {
             entry.loot(Equipment.LootProperties.of("golden_weapon"));
+        } else {
+            entry.loot(Equipment.LootProperties.of(tier.getNumber()));
         }
 
         return entry;
