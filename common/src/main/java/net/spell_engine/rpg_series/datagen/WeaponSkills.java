@@ -115,7 +115,7 @@ public class WeaponSkills {
         var damage = SpellBuilder.Impacts.damage(1F);
         spell.impacts = List.of(damage);
 
-        SpellBuilder.Cost.cooldown(spell, 6);
+        SpellBuilder.Cost.cooldown(spell, 12);
         spell.cost.cooldown.attempt_duration = 0.5F;
 
         return new Entry(id, spell, title, description, null);
@@ -199,7 +199,7 @@ public class WeaponSkills {
         disrupt.sound = Sound.of(SpellEngineSounds.WEAPON_MACE_SMASH_IMPACT.id());
         spell.impacts = List.of(damage, disrupt);
 
-        SpellBuilder.Cost.cooldown(spell, 1);
+        SpellBuilder.Cost.cooldown(spell, 12);
         spell.cost.cooldown.attempt_duration = 1F;
 
         return new Entry(id, spell, title, description, null);
@@ -252,7 +252,7 @@ public class WeaponSkills {
 
         spell.impacts = List.of();
 
-        SpellBuilder.Cost.cooldown(spell, 10);
+        SpellBuilder.Cost.cooldown(spell, 16);
 //        spell.cost.cooldown.attempt_duration = 1F;
 
         return new Entry(id, spell, title, description, null);
@@ -295,7 +295,7 @@ public class WeaponSkills {
 
         spell.impacts = List.of();
 
-        // SpellBuilder.Cost.cooldown(spell, 10);
+        SpellBuilder.Cost.cooldown(spell, 8);
         spell.cost.cooldown.attempt_duration = 1F;
 
         return new Entry(id, spell, title, description, null);
@@ -327,7 +327,7 @@ public class WeaponSkills {
         damage.sound = Sound.of(SpellEngineSounds.WEAPON_SPEAR_STAB.id());
         spell.impacts = List.of(damage);
 
-        SpellBuilder.Cost.cooldown(spell, 4);
+        SpellBuilder.Cost.cooldown(spell, 12);
 
         return new Entry(id, spell, title, description, null);
     }
@@ -363,7 +363,7 @@ public class WeaponSkills {
         damage.sound = Sound.of(SpellEngineSounds.WEAPON_DAGGER_IMPACT.id());
         spell.impacts = List.of(damage);
 
-        SpellBuilder.Cost.cooldown(spell, 4);
+        SpellBuilder.Cost.cooldown(spell, 8);
 
         return new Entry(id, spell, title, description, null);
     }
@@ -399,7 +399,7 @@ public class WeaponSkills {
 
         SpellBuilder.Deliver.melee(spell, List.of(attack));
 
-        SpellBuilder.Cost.cooldown(spell, 4);
+        SpellBuilder.Cost.cooldown(spell, 12);
 
         return new Entry(id, spell, title, description, null);
     }
@@ -436,7 +436,7 @@ public class WeaponSkills {
 
         spell.impacts = List.of();
 
-        SpellBuilder.Cost.cooldown(spell, 4);
+        SpellBuilder.Cost.cooldown(spell, 8);
 
         return new Entry(id, spell, title, description, null);
     }

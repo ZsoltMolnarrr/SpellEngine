@@ -68,7 +68,7 @@
   "cost": {
     "cooldown": {
       "group": "weapon",
-      "duration": 10.0
+      "duration": 16.0
     }
   }
 }

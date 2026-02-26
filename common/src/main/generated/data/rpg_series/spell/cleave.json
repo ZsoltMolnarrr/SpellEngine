@@ -58,7 +58,7 @@
     "cooldown": {
       "group": "weapon",
       "attempt_duration": 0.5,
-      "duration": 6.0
+      "duration": 12.0
     }
   }
 }
