@@ -10,6 +10,8 @@ import net.spell_engine.internals.Ammo;
 import net.spell_engine.internals.SpellHelper;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+
 public class SpellCast {
     public record Attempt(Result result,
                           @Nullable MissingItemInfo missingItem,
@@ -45,7 +47,22 @@ public class SpellCast {
     public record Duration(float speed, int length) {
         public static final Duration EMPTY = new Duration(0, 0);
     }
-    public record Process(RegistryEntry<Spell> spell, Item item, float speed, int length, long startedAt) {
+    public static class TickHolder {
+        public ArrayList<Float> ticks = new ArrayList<>();
+    }
+    public record Process(RegistryEntry<Spell> spell, Item item, float speed, int length, long startedAt, TickHolder tickHolder) {
+        public Process(RegistryEntry<Spell> spell, Item item, float speed, int length, long startedAt) {
+            this(spell, item, speed, length, startedAt, new TickHolder());
+            if (SpellHelper.isChanneled(spell.value())) {
+                var channelCount = spell().value().active.cast.channel_ticks;
+                var interval = channelInterval();
+                var offset = -interval * 0.5F;
+                for (int i = 1; i <= channelCount; i++) {
+                    tickHolder.ticks.add((interval * i) + offset);
+                }
+            }
+        }
+
         public int spellCastTicksSoFar(long worldTime) {
             // At least zero
             // The difference must fit into an integer
@@ -93,6 +110,29 @@ public class SpellCast {
          * Short field names are used to improve JSON performance.
          */
         public record SyncFormat(String i, float s, int l) { }
+
+        public float channelInterval() {
+            var spell = this.spell.value();
+            if (spell.active.cast.channel_ticks > 0) {
+                return length / (float)spell.active.cast.channel_ticks;
+            } else {
+                return length;
+            }
+        }
+
+        public boolean isDue(long time) {
+            var castTicks = spellCastTicksSoFar(time);
+            if (tickHolder.ticks.isEmpty()) {
+                return false;
+            } else {
+                return castTicks >= tickHolder.ticks.getFirst();
+            }
+        }
+        public void markDue() {
+            if (!tickHolder.ticks.isEmpty()) {
+                tickHolder.ticks.removeFirst();
+            }
+        }
     }
     public record Progress(float ratio, Process process) { }
 

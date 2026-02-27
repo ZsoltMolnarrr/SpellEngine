@@ -100,7 +100,6 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
                 .toList();
 
         ArrayList<RegistryEntry<Spell>> selectedSpells = new ArrayList<>();
-        @Nullable var selectedContentType = existingContainer != null ? existingContainer.content() : null;
         if (!spells.isEmpty()) {
             var selectedCount = this.count != null ? this.count.nextInt(context) : 1;
             var retryAttempts = 3;
@@ -112,8 +111,6 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
                                 // already selected
                                 (
                                         selectedSpells.contains(entry)
-                                                // content type mismatch
-                                                || (selectedContentType != null && Objects.equals(SpellContainerHelper.contentTypeForSpell(entry.value()), selectedContentType))
                                 )
                 ) {
                     entry = spells.get(context.getRandom().nextInt(spells.size()));
@@ -121,13 +118,11 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
                 }
 
                 selectedSpells.add(entry);
-                selectedContentType = SpellContainerHelper.contentTypeForSpell(entry.value());
             }
         }
 
         if (!selectedSpells.isEmpty()) {
-            var newContainer = existingContainer != null ? existingContainer : SpellContainer.EMPTY
-                    .withContentType(selectedContentType != null ? selectedContentType : SpellContainer.ContentType.MAGIC);
+            var newContainer = existingContainer != null ? existingContainer : SpellContainer.EMPTY;
             var newSpellIds = selectedSpells.stream().map(entry -> entry.getKey().get().getValue().toString()).toList();
             newContainer = newContainer
                     .withAdditionalSpell(newSpellIds);

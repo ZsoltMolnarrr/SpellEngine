@@ -6,7 +6,6 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.*;
@@ -14,6 +13,7 @@ import net.spell_engine.internals.arrow.ArrowShootContext;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCastSyncHelper;
 import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.melee.Melee;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -32,11 +32,13 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     private final SpellCooldownManager spellCooldownManager = new SpellCooldownManager(player());
 
     private static final TrackedData<String> SPELL_ENGINE_SPELL_PROGRESS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.STRING);
+    private static final TrackedData<Float> SPELL_ENGINE_EXTRA_SLIPPERINESS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.FLOAT);
     private static final Gson syncGson = new Gson();
 
     @Inject(method = "initDataTracker", at = @At("TAIL"))
     private void initDataTracker_TAIL_SpellEngine_SyncEffects(DataTracker.Builder builder, CallbackInfo ci) {
         builder.add(SPELL_ENGINE_SPELL_PROGRESS, "");
+        builder.add(SPELL_ENGINE_EXTRA_SLIPPERINESS, 0F);
     }
 
     private SpellCast.Process synchronizedSpellCastProcess = null;
@@ -122,6 +124,11 @@ public class PlayerEntityMixin implements SpellCasterEntity {
                     SpellCastSyncHelper.clearCasting(player);
                 }
             }
+            if (activeAttack_serverSide != null
+                    // Offsetting time by 1 tick, to compensate sync delays
+                    && activeAttack_serverSide.isFinished(player.age + 1)) {
+                setMeleeSkillAttack(null);
+            }
         }
         spellCooldownManager.tickUpdate();
     }
@@ -137,6 +144,21 @@ public class PlayerEntityMixin implements SpellCasterEntity {
             return spell.target.beam;
         }
         return null;
+    }
+
+    private Melee.ActiveAttack activeAttack_serverSide = null;
+    @Override
+    public void setMeleeSkillAttack(Melee.ActiveAttack attack) {
+        activeAttack_serverSide = attack;
+        float slip = 0;
+        if (attack != null) {
+            slip = attack.attack.movement_slip();
+        }
+        player().getDataTracker().set(SPELL_ENGINE_EXTRA_SLIPPERINESS, slip);
+    }
+    @Override
+    public float getExtraSlipperiness() {
+        return player().getDataTracker().get(SPELL_ENGINE_EXTRA_SLIPPERINESS);
     }
 
     // MARK: Persistence

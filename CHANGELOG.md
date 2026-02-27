@@ -1,6 +1,95 @@
-# 1.8.20
+# 1.9.0
+
+DISCLAIMER: All spell books and spell scrolls will be reset, due to major API changes. Some (looted) weapons with custom spell containers become non-functional, and need to be re-obtained. Apologies for the inconvenience.
+
+API Breaking Changes:
+- Reworked `SpellContainer` structure
+  - Removed `content` field, replace by `access` field
+  - Removed `is_proxy` fields, replace by `access` field
+  - Add new `access` field, controlling the spell resolution behavior (`ANY, NONE, MAGIC, ARCHERY, CONTAINED, TAG`)
+  - Add new `access_param` field, providing additional parameter for certain access types (such as tag name for `TAG` access type)
+  - Add new `extra_tier_binding` field to `SpellContainer`, to specify spell choice limit per spell tiers
+- Reworked spell tag conventions
+  - `<NAMESPACE>:spell_books/<TAG_NAME>` - spell collections in this folder, are explicitly marked for generating spell books
+  - `<NAMESPACE>:spell_scrolls/<TAG_NAME>` - spell collections in this folder, are explicitly marked for generating scrolls
+  - `<NAMESPACE>:weapon/<WEAPON_NAME>` - spell collections meant for weapons (such as Wizard Staff)
+- Fully data driven Spell Scrolls
+  - New item id: `spell_engine:spell_scroll`
+  - Generated for all spells listed under tags located in `spell_scroll/` folder  (such as: `#wizards:spell_scroll/fire`)
+  - Automatically assigned item model based on tag id: `<NAMESPACE>:models/item/spell_scroll/<TAG_NAME>.json`
+  - Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_scroll/<TAG_NAME>`
+- Fully data driven Spell Books
+  - All spell books now use the same item id: `spell_engine:spell_book`
+  - Generated for all spells listed under tags located in `spell_books/` folder (such as: `#wizards:spell_book/fire`)
+  - Automatically assigned item model based on tag id: `<NAMESPACE>:models/item/spell_book/<TAG_NAME>.json`
+  - Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_book/<TAG_NAME>`
+  - Custom spell books can be made with datapacks, for any combination of spells, just with a spell tag (and some additional assets)
+- Spell Data structure changes
+  - Casting and release animations are now wrapped into a `PlayerAnimation` object, instead of a plain String
+  - `PlayerAnimation` supports: `overrides`, `speed`
+  - Reworked `spell.active.cast.channel_ticks` now representing the number of releases during channeling, instead of a duration interval (in game ticks) between channel releases
+- Relocated all equipment related APIs to a new dedicated package `rpg_series.item`, to better separate them from the core spell engine APIs
+  - types moved: `Equipment`, `Armor`, `ConfigurableAttributes`, `Weapon`  
+
+API Additions:
+- Added new `spell_choices` data component
+  - Defines a one-time single spell selection, from a given spell tag, before first use
+  - Designed for weapons meant for multiple classes (such as Wizard Staff)
+- Add choices in Spell Books (Spell Binding Screen)
+  - Spells in the same tier are presented as choices
+  - Spell tags of spell books can be expanded with choices by third party content
+  - Behavior controlled by new `extra_tier_binding` field of spell container
+- Added new centralized weapon factory APIs (in `rpg_series` package)
+  - Add `Weapons.java` API, creating melee and magic weapons
+  - Add `Shields.java` API, creating shields
+  - Add `RangedWeapons.java` API, creating bows and crossbows
+- Added automatic item model registration for assets in the following folders:
+  - `models/item/spell_book/`
+  - `models/item/spell_scroll/`
+  - `models/spell_projectile/`
+  - `models/spell_effect/`
+- Added shared spell cooldowns
+  - Spells with the same coodown group set each other on cooldown
+  - `spell.cost.cooldown.group` field specifies the cooldown group
+  - To be used for weapon specific spells
+- Added new delivery type: `MELEE`, for performing better combat alike weapon swings
+  - Upon performing this delivery type, the caster gains melee attacks, to be automatically executed
+  - Attack duration may be static, or attack speed based
+  - Custom hitbox definition, using OBB collision detection, ran on the client side
+  - Supports fx: animation, sound, particles
+  - Includes optional momentum to be gained with the attack
+  - Supports additional impacts to be performed on hit
+- Add new impact type: `DISRUPT`
+  - Can disable: shield blocking, item usage
+- Spell Data structure changes
+  - Added `spell.cost.cooldown.attempt_duration` to prevent multiple performs of delayed deliveries
+- Added `WeaponAttributeGenerator` to datagen API
 
 Functional changes:
+- RPG Series core dedicated sub-package now includes melee weapon skills
+  - Whirlwind (designed for double axes) - Hold to spin around, dealing {damage} damage per second, to nearby enemies.
+  - Cleave (designed for axes) - Performs a spin attack, dealing {damage} damage to nearby enemies.
+  - Ground Slam (designed for great hammers) - Leaps into the air and slams into the ground, dealing {damage} damage to nearby enemies.
+  - Smash (designed for maces) - SmashesDelivers a strike with powerful knockback, disabling shield and item usage of target.
+  - Flurry (designed for claymores) - Hold to unleash a rapid series of strikes, while also gaining momentum.
+  - Swift Strikes (designed for swords) - Unleash a rapid series of strikes.
+  - Impale (designed for spears) - Throws your weapon forwards, dealing {damage} damage and powerful knockback.
+  - Fan of Knives (designed for daggers) - Throws several of your blades in a cone, dealing {damage} damage, bouncing off terrain up to 2 times.
+  - Thrust (designed for glaives) - Lunge forward with your weapon, striking all enemies along your path.
+  - Swipe (designed for sickles) - Slide forward with your weapon, striking all enemies along your path.
+- Added fallback config for automatic spell container assignment to weapons without spell container
+  - Supports various pattern matching methods (item id, item tag, regex, inversion)
+  - Config file: `config/spell_engine/weapon_fallbacks.json`
+  - Removed related old config options from `server.json5`
+- Added new server config options:
+  - `melee_skills_area_focus_mode` - Determines the focus mode (AREA vs DIRECT) for melee skills.
+  - `spell_book_additional_cooldown` - Additional cooldown in seconds applied to spell book items, to prevent quick swapping and casting."
+- Improved spell channeling mechanics
+  - Channel ticks are now calculated more accurately, spell haste actually increasing tick frequency 
+  - Melee skill haste - casting duration is now effected by attack speed multiplier bonuses
+- Global cooldown is now enabled by default for instant spells (0.5 seconds), adjustable in server config
+- Fixed operation of spell variant, target:`AIM`+ deliver:`DIRECT` + area impact
+- Fixed Player data corruption caused by invalid spell identifiers #170
 - Update loot injection defaults: Hellish Trials, Draugr Invasion
 
 # 1.8.19

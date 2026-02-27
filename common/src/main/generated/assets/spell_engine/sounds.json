@@ -179,5 +179,110 @@
     "sounds": [
       "spell_engine:stun_generic"
     ]
+  },
+  "unbind_spell": {
+    "sounds": [
+      "spell_engine:unbind_spell"
+    ]
+  },
+  "weapon_claymore_impact": {
+    "sounds": [
+      "spell_engine:weapon_claymore_impact"
+    ]
+  },
+  "weapon_claymore_swing": {
+    "sounds": [
+      "spell_engine:weapon_claymore_swing"
+    ]
+  },
+  "weapon_cleave": {
+    "sounds": [
+      "spell_engine:weapon_cleave"
+    ]
+  },
+  "weapon_dagger_impact": {
+    "sounds": [
+      "spell_engine:weapon_dagger_impact"
+    ]
+  },
+  "weapon_dagger_throw": {
+    "sounds": [
+      "spell_engine:weapon_dagger_throw"
+    ]
+  },
+  "weapon_dagger_travel": {
+    "sounds": [
+      "spell_engine:weapon_dagger_travel"
+    ]
+  },
+  "weapon_ground_slam": {
+    "sounds": [
+      "spell_engine:weapon_ground_slam"
+    ]
+  },
+  "weapon_hammer_swing": {
+    "sounds": [
+      "spell_engine:weapon_hammer_swing"
+    ]
+  },
+  "weapon_mace_smash_impact": {
+    "sounds": [
+      "spell_engine:weapon_mace_smash_impact"
+    ]
+  },
+  "weapon_shing_a": {
+    "sounds": [
+      "spell_engine:weapon_shing_a"
+    ]
+  },
+  "weapon_sickle_impact_large": {
+    "sounds": [
+      "spell_engine:weapon_sickle_impact_large"
+    ]
+  },
+  "weapon_sickle_impact_small": {
+    "sounds": [
+      "spell_engine:weapon_sickle_impact_small"
+    ]
+  },
+  "weapon_spear_stab": {
+    "sounds": [
+      "spell_engine:weapon_spear_stab"
+    ]
+  },
+  "weapon_spear_throw": {
+    "sounds": [
+      "spell_engine:weapon_spear_throw"
+    ]
+  },
+  "weapon_spear_travel": {
+    "sounds": [
+      "spell_engine:weapon_spear_travel"
+    ]
+  },
+  "weapon_swipe_launch": {
+    "sounds": [
+      "spell_engine:weapon_swipe_launch"
+    ]
+  },
+  "weapon_sword_swing": {
+    "sounds": [
+      "spell_engine:weapon_sword_swing"
+    ]
+  },
+  "weapon_throw": {
+    "sounds": [
+      "spell_engine:weapon_throw"
+    ]
+  },
+  "weapon_thrust_launch": {
+    "sounds": [
+      "spell_engine:weapon_thrust_launch"
+    ]
+  },
+  "whirlwind": {
+    "sounds": [
+      "spell_engine:whirlwind"
+    ]
   }
 }

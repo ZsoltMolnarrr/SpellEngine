@@ -1,0 +1,56 @@
+{
+  "school": "spell_power:physical_melee",
+  "range": 0.0,
+  "range_mechanic": "MELEE",
+  "tier": 1,
+  "learn": {},
+  "active": {},
+  "target": {
+    "type": "NONE"
+  },
+  "deliver": {
+    "type": "MELEE",
+    "melee": {
+      "attacks": [
+        {
+          "attack_speed_multiplier": 2.0,
+          "delay": 0.3,
+          "hitbox": {
+            "height": 0.2,
+            "roll": 45.0,
+            "arc": 90.0
+          },
+          "animation": {
+            "id": "spell_engine:weapon_twinstrike_slash_1"
+          },
+          "swing_sound": {
+            "id": "spell_engine:weapon_sword_swing"
+          }
+        },
+        {
+          "attack_speed_multiplier": 2.0,
+          "delay": 0.6,
+          "additional_strike_delay": 0.2,
+          "hitbox": {
+            "height": 0.2,
+            "roll": -45.0,
+            "arc": 90.0
+          },
+          "animation": {
+            "id": "spell_engine:weapon_twinstrike_slash_2"
+          },
+          "swing_sound": {
+            "id": "spell_engine:weapon_sword_swing"
+          }
+        }
+      ]
+    }
+  },
+  "cost": {
+    "cooldown": {
+      "group": "weapon",
+      "attempt_duration": 1.0,
+      "duration": 8.0
+    }
+  }
+}

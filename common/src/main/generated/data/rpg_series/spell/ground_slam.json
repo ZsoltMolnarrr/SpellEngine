@@ -1,0 +1,85 @@
+{
+  "school": "spell_power:physical_melee",
+  "range": 0.0,
+  "range_mechanic": "MELEE",
+  "tier": 1,
+  "learn": {},
+  "active": {
+    "cast": {
+      "duration": 1.0,
+      "animation": {
+        "id": "spell_engine:weapon_slam_jump"
+      },
+      "animation_pitch": false,
+      "start_sound": {
+        "id": "spell_engine:weapon_hammer_swing"
+      }
+    }
+  },
+  "release": {
+    "animation": {
+      "id": "spell_engine:weapon_slam_end"
+    }
+  },
+  "target": {
+    "type": "AIM",
+    "aim": {
+      "reposition_vertically": -1.5
+    }
+  },
+  "deliver": {
+    "delay": 2
+  },
+  "impacts": [
+    {
+      "action": {
+        "type": "DAMAGE",
+        "damage": {
+          "spell_power_coefficient": 1.5
+        }
+      }
+    }
+  ],
+  "area_impact": {
+    "radius": 3.0,
+    "particles": [
+      {
+        "particle_id": "spell_engine:smoke_medium",
+        "origin": "FEET",
+        "shape": "CIRCLE",
+        "count": 25.0,
+        "min_speed": 0.2,
+        "max_speed": 0.2,
+        "pre_spawn_travel": 1.0
+      },
+      {
+        "particle_id": "spell_engine:smoke_medium",
+        "origin": "FEET",
+        "shape": "CIRCLE",
+        "count": 25.0,
+        "min_speed": 0.3,
+        "max_speed": 0.3,
+        "pre_spawn_travel": 2.0
+      },
+      {
+        "particle_id": "spell_engine:smoke_medium",
+        "origin": "FEET",
+        "shape": "CIRCLE",
+        "count": 25.0,
+        "min_speed": 0.4,
+        "max_speed": 0.4,
+        "pre_spawn_travel": 4.0
+      }
+    ],
+    "sound": {
+      "id": "spell_engine:weapon_ground_slam"
+    }
+  },
+  "cost": {
+    "cooldown": {
+      "group": "weapon",
+      "attempt_duration": 0.5,
+      "duration": 12.0
+    }
+  }
+}

@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.spell_engine.SpellEngineMod;
@@ -12,6 +13,7 @@ import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.AutoSwapHelper;
 import net.spell_engine.client.input.MinecraftClientExtension;
 import net.spell_engine.client.input.SpellHotbar;
+import net.spell_engine.spellbinding.spellchoice.SpellChoices;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,6 +28,11 @@ public class ClientPlayerInteractionManagerMixin {
     @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
     public void interactItem_HEAD_LockHotbar(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
         if (player instanceof ClientPlayerEntity clientPlayer) {
+            ItemStack stack = player.getStackInHand(hand);
+            if (SpellChoices.from(stack) != null) {
+                return;
+            }
+
             if (SpellEngineClient.config.autoSwapHands) {
                 if (AutoSwapHelper.autoSwapForSpells()) {
                     // client.item = SpellEngineMod.config.auto_swap_cooldown;

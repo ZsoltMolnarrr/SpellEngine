@@ -1,0 +1,74 @@
+{
+  "school": "spell_power:physical_melee",
+  "range": 0.0,
+  "range_mechanic": "MELEE",
+  "tier": 1,
+  "learn": {},
+  "active": {
+    "cast": {
+      "duration": 1.25,
+      "channel_ticks": 3,
+      "animation": {
+        "id": "spell_engine:weapon_flurry_2h_charge",
+        "speed": 1.5
+      },
+      "animation_pitch": false
+    }
+  },
+  "target": {
+    "type": "NONE"
+  },
+  "deliver": {
+    "type": "MELEE",
+    "melee": {
+      "attacks": [
+        {
+          "attack_speed_multiplier": 2.0,
+          "delay": 0.3,
+          "forward_momentum": 0.8,
+          "movement_speed": 0.0,
+          "hitbox": {
+            "height": 0.2,
+            "roll": 45.0,
+            "arc": 120.0
+          },
+          "animation": {
+            "id": "spell_engine:weapon_flurry_2h_slash_1"
+          },
+          "swing_sound": {
+            "id": "spell_engine:weapon_claymore_swing"
+          },
+          "impact_sound": {
+            "id": "spell_engine:weapon_claymore_impact"
+          }
+        },
+        {
+          "attack_speed_multiplier": 2.0,
+          "delay": 0.6,
+          "forward_momentum": 1.0,
+          "movement_speed": 0.8,
+          "hitbox": {
+            "height": 0.2,
+            "roll": -45.0,
+            "arc": 120.0
+          },
+          "animation": {
+            "id": "spell_engine:weapon_flurry_2h_slash_2"
+          },
+          "swing_sound": {
+            "id": "spell_engine:weapon_claymore_swing"
+          },
+          "impact_sound": {
+            "id": "spell_engine:weapon_claymore_impact"
+          }
+        }
+      ]
+    }
+  },
+  "cost": {
+    "cooldown": {
+      "group": "weapon",
+      "duration": 16.0
+    }
+  }
+}

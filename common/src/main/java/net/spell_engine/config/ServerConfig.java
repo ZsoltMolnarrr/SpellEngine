@@ -22,9 +22,11 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     @Comment("Spells should damage items on use. Set `false` to disable.")
     public boolean spell_cost_durability_allowed = true;
     @Comment("The time in ticks of global cooldown to apply to all instant cast spells when casted.")
-    public int spell_instant_cast_gcd = 0;
+    public int spell_instant_cast_global_cooldown = 10;
     @Comment("Players cannot unequip a spell book, if one of the spells in it is on cooldown.")
     public boolean spell_item_cooldown_lock = true;
+    @Comment("Additional cooldown in seconds applied to equipped spell book item, after casting a spell from them, to prevent quick swapping and casting.")
+    public float spell_book_additional_cooldown = 10F;
     @Comment("Players can use the Spell Binding Table to create spell books.")
     public boolean spell_book_creation_enabled = true;
     @Comment("Spell book creation level levelCost")
@@ -35,6 +37,8 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     public int spell_binding_level_cost_multiplier = 1;
     @Comment("Spell binding lapis lazuli levelCost multiplier")
     public int spell_binding_lapis_cost_multiplier = 1;
+    @Comment("Spell binding allow unbinding spells")
+    public boolean spell_binding_allow_unbinding = true;
 
     public int spell_scroll_level_cost_per_tier = 0;
     public int spell_scroll_apply_cost_base = 1;
@@ -47,14 +51,6 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     public boolean projectiles_pass_thru_irrelevant_targets = true;
     @Comment("Auto swap Bow & Spear cooldown ticks to apply for attack and itemUse")
     public int auto_swap_cooldown = 5;
-    @Comment("Apply `Spell Casting from Spell Book` capability to Swords, Tridents, Maces")
-    public boolean add_spell_casting_to_melee_weapons = true;
-    @Comment("Apply `Spell Casting from Spell Book` capability to Bows, Crossbows")
-    public boolean add_spell_casting_to_ranged_weapons = true;
-    @Comment("Apply `Spell Casting from Spell Book` capability to any item matching this regex. (Not applied of empty)")
-    public String add_spell_casting_regex = "";
-    @Comment("Do not apply `Spell Casting from Spell Book` capability to any item matching this regex. (Not applied of empty)")
-    public String blacklist_spell_casting_regex = "";
 
     @Comment("""
             Evasion to work within certain angle of attack
@@ -67,6 +63,8 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     public boolean attribute_evasion_allowed_while_spell_casting = false;
     @Comment("Allow evasion to work while the player is using an item (e.g. eating, drawing a bow)")
     public boolean attribute_evasion_allowed_while_item_usage = false;
+    @Comment("Determines the focus mode (AREA vs DIRECT) for melee skills.")
+    public boolean melee_skills_area_focus_mode = true;
 
     @Comment("""
             Relations determine which cases the effect of a player casted spell can effect a target.

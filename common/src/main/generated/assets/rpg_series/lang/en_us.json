@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Performs a spin attack, dealing {damage} damage to nearby enemies.",
+  "spell.rpg_series.cleave.name": "Cleave",
+  "spell.rpg_series.fan_of_knives.description": "Throws several of your blades in a cone, dealing {damage} damage, bouncing off terrain up to {bounce} times.",
+  "spell.rpg_series.fan_of_knives.name": "Fan of Knives",
+  "spell.rpg_series.flurry.description": "Hold to unleash a rapid series of strikes, while also gaining momentum.",
+  "spell.rpg_series.flurry.name": "Flurry",
+  "spell.rpg_series.ground_slam.description": "Leaps into the air and slams into the ground, dealing {damage} damage to nearby enemies.",
+  "spell.rpg_series.ground_slam.name": "Ground Slam",
+  "spell.rpg_series.impale.description": "Throws your weapon forwards, dealing {damage} damage and powerful knockback.",
+  "spell.rpg_series.impale.name": "Impale",
+  "spell.rpg_series.smash.description": "Delivers a strike with powerful knockback, disabling shield and item usage of target.",
+  "spell.rpg_series.smash.name": "Smash",
+  "spell.rpg_series.swift_strikes.description": "Unleash a rapid series of strikes.",
+  "spell.rpg_series.swift_strikes.name": "Swift Strikes",
+  "spell.rpg_series.swipe.description": "Slide forward with your weapon, striking all enemies along your path.",
+  "spell.rpg_series.swipe.name": "Swipe",
+  "spell.rpg_series.thrust.description": "Lunge forward with your weapon, striking all enemies along your path.",
+  "spell.rpg_series.thrust.name": "Thrust",
+  "spell.rpg_series.whirlwind.description": "Hold to spin around, dealing {damage} damage per second, to nearby enemies.",
+  "spell.rpg_series.whirlwind.name": "Whirlwind"
+}

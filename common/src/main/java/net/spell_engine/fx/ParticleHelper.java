@@ -32,35 +32,58 @@ public class ParticleHelper {
     }
 
     public static void sendBatches(Entity trackedEntity, ParticleBatch[] batches, boolean includeSourceEntity) {
-        sendBatches(trackedEntity, batches, 1, PlayerLookup.tracking(trackedEntity), includeSourceEntity);
+        sendBatches(trackedEntity, null, batches, 1, PlayerLookup.tracking(trackedEntity), includeSourceEntity);
     }
 
     public static void sendBatches(Entity trackedEntity, ParticleBatch[] batches, float countMultiplier, Collection<ServerPlayerEntity> trackers) {
-        sendBatches(trackedEntity, batches, countMultiplier, trackers, true);
+        sendBatches(trackedEntity, null, batches, countMultiplier, trackers, true);
     }
 
-    public static void sendBatches(Entity trackedEntity, ParticleBatch[] batches, float countMultiplier, Collection<ServerPlayerEntity> trackers, boolean includeSourceEntity) {
+    public static void sendBatches(Vec3d location, LivingEntity caster, ParticleBatch[] batches) {
+        Collection<ServerPlayerEntity> trackers;
+        if (caster instanceof ServerPlayerEntity serverPlayer) {
+            var array = new ArrayList<ServerPlayerEntity>(PlayerLookup.tracking(caster));
+            array.add(serverPlayer);
+            trackers = array;
+        } else {
+            trackers = PlayerLookup.tracking(caster);
+        }
+        sendBatches(null, location, batches, 1, trackers, false);
+    }
+
+    public static void sendBatches(@Nullable Entity trackedEntity, @Nullable Vec3d location, ParticleBatch[] batches, float countMultiplier, Collection<ServerPlayerEntity> trackers, boolean includeSourceEntity) {
         if (batches == null || batches.length == 0) {
             return;
         }
-        int sourceEntityId = trackedEntity.getId();
-//        Packets.ParticleBatches.SourceType sourceType = trackedEntity.isAlive() ?
-//                Packets.ParticleBatches.SourceType.ENTITY : Packets.ParticleBatches.SourceType.COORDINATE;
+        int sourceEntityId = 0;
         var sourceType = Packets.ParticleBatches.SourceType.COORDINATE;
+        if (trackedEntity != null) {
+            sourceEntityId = trackedEntity.getId();
+            sourceType = Packets.ParticleBatches.SourceType.ENTITY;
+        }
         ArrayList<Packets.ParticleBatches.Spawn> spawns = new ArrayList<>();
         for(var batch : batches) {
             Vec3d sourceLocation = Vec3d.ZERO;
             switch (sourceType) {
                 case ENTITY -> {
-                }
-                case COORDINATE -> {
                     sourceLocation = origin(trackedEntity, batch.origin);
                 }
+                case COORDINATE -> {
+                    if (location != null) {
+                        sourceLocation = location;
+                    }
+                }
+            }
+            float yaw = 0;
+            float pitch = 0;
+            if (trackedEntity != null) {
+                yaw = trackedEntity.getYaw();
+                pitch = trackedEntity.getPitch();
             }
             spawns.add(new Packets.ParticleBatches.Spawn(
                     includeSourceEntity ? sourceEntityId : 0,
-                    trackedEntity.getYaw(),
-                    trackedEntity.getPitch(),
+                    yaw,
+                    pitch,
                     sourceLocation, batch));
         }
         var packet = new Packets.ParticleBatches(sourceType, countMultiplier, spawns);
@@ -157,7 +180,9 @@ public class ParticleHelper {
             Entity sourceEntity = world.getEntityById(spawn.sourceEntityId());
             switch (sourceType) {
                 case ENTITY -> {
-                    origin = origin(sourceEntity, batch.origin);
+                    origin = sourceEntity != null
+                            ? origin(sourceEntity, batch.origin)
+                            : origin(world, spawn.sourceLocation(), 2, batch.origin);
                 }
                 case COORDINATE -> {
                     origin = spawn.sourceLocation();
@@ -227,6 +252,30 @@ public class ParticleHelper {
         }
         assert true;
         return entity.getPos();
+    }
+
+    private static Vec3d origin(World world, Vec3d entityPos, float entityHeight, ParticleBatch.Origin origin) {
+        switch (origin) {
+            case FEET -> {
+                return entityPos.add(0, entityHeight * 0.1F, 0);
+            }
+            case CENTER -> {
+                return entityPos.add(0, entityHeight * 0.5F, 0);
+            }
+            case LAUNCH_POINT -> {
+                return entityPos.add(0, entityHeight * 0.75F, 0);
+            }
+            case GROUND -> {
+                var position = TargetHelper.findSolidBlockBelow(null, entityPos, world, -2);
+                if (position != null) {
+                    return new Vec3d(entityPos.getX(), position.getY() + 0.1F, entityPos.getZ());
+                } else {
+                    return entityPos.add(0, 0.1F, 0);
+                }
+            }
+        }
+        assert true;
+        return entityPos;
     }
 
     private static Vec3d offset(float width, float extent, ParticleBatch.Shape shape, Vec3d direction,

@@ -14,6 +14,7 @@ public final class FabricClientMod implements ClientModInitializer {
         SpellEngineClient.registerParticleAppearances();
         registerKeyBindings();
         registerModels();
+        ModelLoadingPlugin.register(new FabricModelDiscovery());
     }
 
     private static void registerKeyBindings() {

@@ -4,7 +4,7 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
-import net.spell_engine.api.item.Equipment;
+import net.spell_engine.rpg_series.item.Equipment;
 import net.spell_engine.rpg_series.RPGSeriesCore;
 
 import java.util.LinkedHashMap;
@@ -26,6 +26,9 @@ public class RPGSeriesItemTags {
 
         public static TagKey<Item> get(Equipment.WeaponType category) {
             return ALL.get(category);
+        }
+        public static String tagString(Equipment.WeaponType category) {
+            return "#" + get(category).id().toString();
         }
     }
 

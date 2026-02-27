@@ -14,7 +14,7 @@ public class AccessoriesItemHelper {
                 (args) -> new SpellScrollAccessoryItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP::entry)
         );
         SlotModCompat.setSpellBookFactory(
-                (args) -> new SpellBookAccessoryItem(args.settings(), args.poolId(), SpellEngineSounds.SPELLBOOK_EQUIP::entry)
+                (args) -> new SpellBookAccessoryItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP::entry)
         );
         SlotModCompat.spellBookResolver = AccessoriesCompat::getSpellBookStack;
     }

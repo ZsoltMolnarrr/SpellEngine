@@ -12,17 +12,13 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.item.trinket.ISpellBookItem;
-import net.spell_engine.api.item.trinket.SpellBookItem;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.compat.SlotModCompat;
 import net.spell_engine.spellbinding.SpellBinding;
 import net.spell_engine.spellbinding.SpellBindingBlock;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class SpellEngineItems {
     public static class Group {
@@ -34,7 +30,6 @@ public class SpellEngineItems {
                 .build();
     }
 
-
     public static final Lazy<Item> SCROLL = new Lazy<>(() -> {
         var settings = new Item.Settings().maxCount(1);
         var args = new SlotModCompat.SpellScrollArs(settings);
@@ -42,29 +37,55 @@ public class SpellEngineItems {
         return factory != null ? factory.apply(args) : new ScrollItem(args.settings());
     });
 
-    public static ISpellBookItem createBook(Identifier poolId) {
+    public static final Lazy<Item> SPELL_BOOK = new Lazy<>(() -> {
         var settings = new Item.Settings().maxCount(1);
-        var args = new SlotModCompat.SpellBookArs(poolId, settings);
+        var args = new SlotModCompat.SpellBookArgs(settings);
         var factory = SlotModCompat.spellBookFactory;
-        return factory != null ? factory.apply(args) : new SpellBookItem(args.poolId(), args.settings());
-    }
+        return factory != null ? factory.apply(args) : new UniversalSpellBookItem(args.settings());
+    });
 
     public static void register() {
         Registry.register(Registries.ITEM_GROUP, Group.KEY, Group.SPELLS);
         Registry.register(Registries.ITEM, SpellBinding.ID, SpellBindingBlock.ITEM);
         Registry.register(Registries.ITEM, ScrollItem.ID, SCROLL.get());
+        Registry.register(Registries.ITEM, UniversalSpellBookItem.ID, SPELL_BOOK.get());
         ItemGroupEvents.modifyEntriesEvent(Group.KEY).register(content -> {
             content.add(SpellBindingBlock.ITEM);
 
             var registryWrapper = content.getContext().lookup().getWrapperOrThrow(SpellRegistry.KEY);
-            registryWrapper.streamEntries()
-                    .sorted(Comparator.comparing(a -> a.getKey().get().getValue().getNamespace() + "_" + a.value().tier + "_" + a.getKey().get().getValue().getPath()))
-                    .forEach((entry) -> {
-                        var scroll = new ItemStack(SCROLL.get());
-                        if (ScrollItem.applySpell(scroll, entry, ScrollItem.resolveSpellPool(registryWrapper, entry))) {
+
+            // Spell book variants from tags
+            var spellBookTags = registryWrapper.streamTags()
+                    .filter(tag ->
+                            tag.getTagKey().isPresent()
+                                    && tag.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_BOOK_PREFIX)
+                    )
+                    .sorted(Comparator.comparing(tag ->
+                            tag.getTagKey().get().id().getNamespace() + "_" + tag.getTagKey().get().id().getPath()))
+                    .toList();
+            for (var spellBookTag : spellBookTags) {
+                var tagKey = spellBookTag.getTagKey().get();
+                var spellBook = new ItemStack(SPELL_BOOK.get());
+                if (UniversalSpellBookItem.applyFromTag(spellBook, tagKey)) {
+                    content.add(spellBook);
+                }
+            }
+
+            var scrollTags = registryWrapper.streamTags()
+                    .filter(tag ->
+                            tag.getTagKey().isPresent() && tag.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_SCROLL_PREFIX)
+                    )
+                    .sorted(Comparator.comparing(tag -> tag.getTagKey().get().id().getNamespace() + "_" + tag.getTagKey().get().id().getPath()))
+                    .toList();
+            for (var scrollTag: scrollTags) {
+                scrollTag.stream()
+                        .sorted(Comparator.comparing(a -> a.getKey().get().getValue().getNamespace() + "_" + a.value().tier + "_" + a.getKey().get().getValue().getPath()))
+                        .forEach((entry) -> {
+                            var scroll = new ItemStack(SCROLL.get());
+                            ScrollItem.applySpell(scroll, entry, scrollTag.getTag());
                             content.add(scroll);
-                        }
-                    });
+                        });
+            }
         });
     }
 }

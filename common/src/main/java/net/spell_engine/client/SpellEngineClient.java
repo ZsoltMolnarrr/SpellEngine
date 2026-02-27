@@ -27,9 +27,12 @@ import net.spell_engine.config.HudConfig;
 import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.fx.SpellEngineParticles;
+import net.spell_engine.rpg_series.client.RPGSeriesCoreClient;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 import net.spell_engine.spellbinding.SpellBindingScreen;
 import net.spell_engine.spellbinding.SpellBindingScreenHandler;
+import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreen;
+import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
 import net.tiny_config.ConfigManager;
 
 public class SpellEngineClient {
@@ -55,6 +58,7 @@ public class SpellEngineClient {
         });
 
         HandledScreens.register(SpellBindingScreenHandler.HANDLER_TYPE, SpellBindingScreen::new);
+        HandledScreens.register(SpellChoiceScreenHandler.HANDLER_TYPE, SpellChoiceScreen::new);
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
         CompatFeatures.initialize();
         BeamRenderer.setup();
@@ -66,6 +70,8 @@ public class SpellEngineClient {
         });
         EntityRendererRegistry.register(SpellProjectile.ENTITY_TYPE, SpellProjectileRenderer::new);
         EntityRendererRegistry.register(SpellCloud.ENTITY_TYPE, SpellCloudRenderer::new);
+
+        RPGSeriesCoreClient.init();
     }
 
     private static void injectRangedWeaponModelPredicates() {

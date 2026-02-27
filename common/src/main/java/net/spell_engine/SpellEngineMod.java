@@ -22,6 +22,7 @@ import net.spell_engine.api.spell.weakness.SpellSchoolWeakness;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.compat.CompatFeatures;
+import net.spell_engine.config.FallbackConfig;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
 import net.spell_engine.config.WeaknessConfig;
@@ -38,11 +39,11 @@ import net.spell_engine.internals.delivery.SpellStashHelper;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.rpg_series.RPGSeriesCore;
 import net.spell_engine.spellbinding.*;
+import net.spell_engine.spellbinding.spellchoice.SpellChoiceFeature;
+import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
 import net.spell_engine.utils.StatusEffectUtil;
-import net.spell_power.api.SpellSchools;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class SpellEngineMod {
     public static final String ID = "spell_engine";
@@ -60,10 +61,19 @@ public class SpellEngineMod {
             .validate(WeaknessConfig::isValid)
             .build();
 
+    public static ConfigManager<FallbackConfig> fallbackConfig = new ConfigManager<>
+            ("weapon_fallback", FallbackConfig.defaults())
+            .builder()
+            .setDirectory(ID)
+            .sanitize(true)
+            .validate(FallbackConfig::isValid)
+            .build();
+
     public static void init() {
         AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
         weaknessConfig.refresh();
+        fallbackConfig.refresh();
 
         DynamicRegistries.registerSynced(SpellRegistry.KEY, SpellRegistry.LOCAL_CODEC, SpellRegistry.NETWORK_CODEC_V2);
 
@@ -109,6 +119,7 @@ public class SpellEngineMod {
         Registry.register(Registries.BLOCK_ENTITY_TYPE, SpellBinding.ID, SpellBindingBlockEntity.ENTITY_TYPE);
         Registry.register(Registries.SCREEN_HANDLER, SpellBinding.ID, SpellBindingScreenHandler.HANDLER_TYPE);
         Registry.register(Registries.LOOT_FUNCTION_TYPE, SpellBindRandomlyLootFunction.ID, SpellBindRandomlyLootFunction.TYPE);
+        Registry.register(Registries.SCREEN_HANDLER, SpellChoiceFeature.ID, SpellChoiceScreenHandler.HANDLER_TYPE);
     }
 
     public static void registerEntityTypes() {

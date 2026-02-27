@@ -6,140 +6,21 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
-import net.spell_engine.api.item.Equipment;
-import net.spell_engine.api.item.armor.Armor;
-import net.spell_engine.api.item.weapon.Weapon;
-import net.spell_engine.api.tags.SpellEngineItemTags;
+import net.spell_engine.rpg_series.item.Equipment;
+import net.spell_engine.rpg_series.item.Armor;
+import net.spell_engine.rpg_series.item.Weapon;
+import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.rpg_series.tags.RPGSeriesItemTags;
-import net.spell_power.api.SpellPowerTags;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class RPGSeriesDataGen {
-    public static class BaselineTagGenerator extends FabricTagProvider<Item> {
-        public BaselineTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
-            super(output, RegistryKeys.ITEM, registriesFuture);
-        }
-
-        @Override
-        protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
-            for (var entry: RPGSeriesItemTags.WeaponType.ALL.entrySet()) {
-                var tag = getOrCreateTagBuilder(entry.getValue());
-            }
-            for (var archetype: RPGSeriesItemTags.RoleArchetype.values()) {
-                var tag = getOrCreateTagBuilder(RPGSeriesItemTags.Archetype.tag(archetype));
-                for (var entry: RPGSeriesItemTags.WeaponType.ALL.entrySet()) {
-                    if (RPGSeriesItemTags.Archetype.classify(entry.getKey()) == archetype) {
-                        tag.addTag(entry.getValue());
-                    }
-                }
-            }
-            for (var entry: RPGSeriesItemTags.LootThemes.ALL.entrySet()) {
-                var tag = getOrCreateTagBuilder(entry.getValue());
-            }
-            for (int i = 0; i < RPGSeriesItemTags.LootTiers.DEFAULT_TIERS; i++) {
-                for (var category: RPGSeriesItemTags.LootCategory.values()) {
-                    var tag = getOrCreateTagBuilder(RPGSeriesItemTags.LootTiers.get(i, category));
-                }
-            }
-            for (var entry: RPGSeriesItemTags.ArmorType.ALL.entrySet()) {
-                var tag = getOrCreateTagBuilder(entry.getValue());
-            }
-
-            var fullSpellWeaponTypes = List.of(
-                    Equipment.WeaponType.DAMAGE_STAFF, Equipment.WeaponType.DAMAGE_WAND,
-                    Equipment.WeaponType.HEALING_STAFF, Equipment.WeaponType.HEALING_WAND,
-                    Equipment.WeaponType.SPELL_BLADE, Equipment.WeaponType.SPELL_SCYTHE
-            );
-            var meleeSpellWeaponTypes = List.of(
-                    Equipment.WeaponType.SWORD,
-                    Equipment.WeaponType.CLAYMORE, Equipment.WeaponType.MACE, Equipment.WeaponType.HAMMER,
-                    Equipment.WeaponType.GLAIVE
-            );
-
-            /// Spell Infinity enchantables
-            var spellInfinityTypes = combine(fullSpellWeaponTypes, meleeSpellWeaponTypes);
-            var spellInfinityTag = getOrCreateTagBuilder(SpellEngineItemTags.ENCHANTABLE_SPELL_INFINITY);
-            for (var type: spellInfinityTypes) {
-                spellInfinityTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
-
-            /// Spell Haste enchantables
-            var spellHasteTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.HASTE);
-            for (var type: fullSpellWeaponTypes) {
-                spellHasteTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
-
-            /// Amplify Spell enchantables
-            var criticalDamageTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.CRITICAL_DAMAGE);
-            for (var type: fullSpellWeaponTypes) {
-                criticalDamageTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
-
-            /// Spell Power enchantables
-            var spellPowerTypes = combine(fullSpellWeaponTypes, meleeSpellWeaponTypes);
-            var spellPowerTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.SPELL_POWER_GENERIC);
-            for (var type: spellPowerTypes) {
-                spellPowerTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
-
-            /// Spell Volatility enchantables
-            var spellVolatilityTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.CRITICAL_CHANCE);
-            for (var type: fullSpellWeaponTypes) {
-                spellVolatilityTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
-            // spellVolatilityTag.addTag(RPGSeriesItemTags.ArmorType.get(RPGSeriesItemTags.ArmorMetaType.MAGIC));
-
-            /// Unbreaking enchantables
-            var unbreakingTypes = Equipment.WeaponType.values();
-            var unbreakingTag = getOrCreateTagBuilder(ItemTags.DURABILITY_ENCHANTABLE);
-            for (var type: unbreakingTypes) {
-                unbreakingTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
-
-            /// Sharpness enchantables
-            var sharpWeaponTypes = List.of(
-                    Equipment.WeaponType.SWORD, Equipment.WeaponType.SPEAR,
-                    Equipment.WeaponType.CLAYMORE, Equipment.WeaponType.MACE, Equipment.WeaponType.HAMMER,
-                    Equipment.WeaponType.DAGGER, Equipment.WeaponType.SICKLE, Equipment.WeaponType.DOUBLE_AXE,
-                    Equipment.WeaponType.GLAIVE, Equipment.WeaponType.SPELL_BLADE, Equipment.WeaponType.SPELL_SCYTHE
-            );
-            var sharpTag = getOrCreateTagBuilder(ItemTags.SHARP_WEAPON_ENCHANTABLE);
-            for (var type: sharpWeaponTypes) {
-                sharpTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
-
-            /// Melee enchantables
-            var meleeWeaponTypes = List.of(
-                    Equipment.WeaponType.SWORD, Equipment.WeaponType.CLAYMORE, Equipment.WeaponType.MACE, Equipment.WeaponType.HAMMER,
-                    Equipment.WeaponType.SPEAR, Equipment.WeaponType.DAGGER, Equipment.WeaponType.SICKLE, Equipment.WeaponType.DOUBLE_AXE,
-                    Equipment.WeaponType.GLAIVE
-            );
-            var meleeTag = getOrCreateTagBuilder(ItemTags.SWORDS);
-            for (var type: meleeWeaponTypes) {
-                meleeTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
-
-            /// Ranged enchantables
-            var bowTypes = List.of(Equipment.WeaponType.SHORT_BOW, Equipment.WeaponType.LONG_BOW);
-            for (var type: bowTypes) {
-                var tag = getOrCreateTagBuilder(ItemTags.BOW_ENCHANTABLE);
-                tag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
-            var crossbowTypes = List.of(Equipment.WeaponType.RAPID_CROSSBOW, Equipment.WeaponType.HEAVY_CROSSBOW);
-            for (var type: crossbowTypes) {
-                var tag = getOrCreateTagBuilder(ItemTags.CROSSBOW_ENCHANTABLE);
-                tag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
-        }
-    }
-
     public record ShieldEntry(Identifier id, Equipment.LootProperties lootProperties) {}
     public record BowEntry(Identifier id, Equipment.WeaponType weaponType, Equipment.LootProperties lootProperties) {}
 
@@ -279,6 +160,36 @@ public class RPGSeriesDataGen {
                     var themeTag = getOrCreateTagBuilder(RPGSeriesItemTags.LootThemes.get(lootTheme));
                     themeTag.addOptional(id);
                 }
+            }
+        }
+    }
+
+    public static abstract class SpellTagGenerator extends FabricTagProvider<Spell> {
+        public SpellTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+            super(output, SpellRegistry.KEY, registriesFuture);
+        }
+
+        public void generateScrollTag(String namespace, String scroll, List<Identifier> spellIds) {
+            TagKey<Spell> tagKey = SpellTags.spellScroll(namespace, scroll);
+            var scrollTag = getOrCreateTagBuilder(tagKey);
+            for (var id: spellIds) {
+                scrollTag.add(id);
+            }
+        }
+
+        public void generateBookTag(String namespace, String book, List<Identifier> spellIds) {
+            TagKey<Spell> tagKey = SpellTags.spellBook(namespace, book);
+            var bookTag = getOrCreateTagBuilder(tagKey);
+            for (var id: spellIds) {
+                bookTag.add(id);
+            }
+        }
+
+        public void generateWeaponTag(String namespace, String weapon, List<Identifier> spellIds) {
+            TagKey<Spell> tagKey = SpellTags.weapon(namespace, weapon);
+            var weaponTag = getOrCreateTagBuilder(tagKey);
+            for (var id: spellIds) {
+                weaponTag.add(id);
             }
         }
     }

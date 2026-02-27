@@ -1,19 +1,13 @@
 package net.spell_engine.fabric.compat.trinkets;
 
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
-import net.spell_engine.api.item.trinket.ISpellBookItem;
 
-public class SpellBookTrinketItem extends SpellHostTrinketItem implements ISpellBookItem {
-    private final Identifier poolId;
-
-    public SpellBookTrinketItem(Settings settings, Identifier poolId, SoundEvent equipSound) {
+/**
+ * Universal spell book item for Trinkets mod compatibility.
+ * Pool ID is derived from the SPELL_CONTAINER component, not stored in the item.
+ */
+public class SpellBookTrinketItem extends SpellHostTrinketItem {
+    public SpellBookTrinketItem(Settings settings, SoundEvent equipSound) {
         super(settings, equipSound);
-        this.poolId = poolId;
-    }
-
-    @Override
-    public Identifier getPoolId() {
-        return poolId;
     }
 }

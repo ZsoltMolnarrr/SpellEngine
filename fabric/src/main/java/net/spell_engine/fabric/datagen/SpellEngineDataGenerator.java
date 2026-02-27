@@ -7,8 +7,6 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.damage.DamageTypes;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.DamageTypeTags;
@@ -19,12 +17,10 @@ import net.spell_engine.api.tags.SpellEngineDamageTypeTags;
 import net.spell_engine.api.tags.SpellEngineEntityTags;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.fx.SpellEngineSounds;
-import net.spell_engine.rpg_series.datagen.RPGSeriesDataGen;
+import net.spell_engine.rpg_series.datagen.RPGSeriesContent;
 
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
-
-import net.spell_engine.fx.SpellEngineParticles.MagicParticleFamily.Shape;
 
 public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
     @Override
@@ -34,8 +30,9 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         pack.addProvider(SoundGen::new);
         pack.addProvider(DamageTypeTagGen::new);
         pack.addProvider(EntityTypeTagGen::new);
-        pack.addProvider(RPGSeriesDataGen.BaselineTagGenerator::new);
-
+        pack.addProvider(RPGSeriesContent.EquipmentTagGen::new);
+        pack.addProvider(RPGSeriesContent.WeaponSkillGen::new);
+        pack.addProvider(RPGSeriesContent.LangGenerator::new);
         // TestDataGen.addTo(pack);
     }
 

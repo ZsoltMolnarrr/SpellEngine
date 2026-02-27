@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.AttributeModifiersComponent;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
@@ -39,6 +40,28 @@ public class AttributeModifierUtil {
             }
         }
         return 0;
+    }
+
+    public static double multipliersOf(RegistryEntry<EntityAttribute> attribute, LivingEntity entity) {
+        double value = 1;
+        double totalMultiplier = 1;
+        var attributeInstance = entity.getAttributes().getCustomInstance(attribute);
+        if (attributeInstance != null) {
+            for (var modifier: attributeInstance.getModifiers()) {
+                switch (modifier.operation()) {
+                    case ADD_VALUE -> {
+                        break;
+                    }
+                    case ADD_MULTIPLIED_BASE -> {
+                        value += modifier.value();
+                    }
+                    case ADD_MULTIPLIED_TOTAL -> {
+                        totalMultiplier += modifier.value();
+                    }
+                }
+            }
+        }
+        return value * totalMultiplier;
     }
 
     public static boolean isItemStackEquipped(ItemStack itemStack, PlayerEntity player) {

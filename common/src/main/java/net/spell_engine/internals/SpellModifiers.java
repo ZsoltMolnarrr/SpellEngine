@@ -1,11 +1,13 @@
 package net.spell_engine.internals;
 
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.utils.PatternMatching;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,5 +69,34 @@ public class SpellModifiers {
             value += modifier.cooldown_duration_deduct;
         }
         return value;
+    }
+
+
+    public record ExtendedImpacts(List<Spell.Impact> impacts, @Nullable Spell.AreaImpact areaImpact) { }
+
+    public static ExtendedImpacts extendedImpactsOf(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
+        var spell = spellEntry.value();
+        var area_impact = spell.area_impact;
+        var mutableImpacts = new ArrayList<>(spell.impacts);
+
+        if (caster instanceof PlayerEntity player) {
+            var modifiers = SpellModifiers.of(player, spellEntry);
+            for (var modifier: modifiers) {
+                if (modifier.mutate_impacts != null) {
+                    switch (modifier.mutate_impacts) {
+                        case PREPEND -> {
+                            mutableImpacts.addAll(0, modifier.impacts);
+                        }
+                        case APPEND -> {
+                            mutableImpacts.addAll(modifier.impacts);
+                        }
+                    }
+                }
+                if (modifier.replacing_area_impact != null) {
+                    area_impact = modifier.replacing_area_impact;
+                }
+            }
+        }
+        return new ExtendedImpacts(mutableImpacts, area_impact);
     }
 }

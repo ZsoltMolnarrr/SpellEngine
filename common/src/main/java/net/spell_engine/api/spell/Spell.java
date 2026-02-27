@@ -2,18 +2,22 @@ package net.spell_engine.api.spell;
 
 import net.minecraft.entity.EquipmentSlot;
 import net.spell_engine.api.render.LightEmission;
+import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.util.AlwaysGenerate;
+import net.spell_engine.api.util.NeverGenerate;
 import net.spell_engine.api.util.TriState;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_power.api.SpellSchool;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.UUID;
 
 public class Spell {
     public SpellSchool school;
+
     public enum ExtendedArchetype { ARCHERY, MAGIC, MELEE, ANY }
     @Nullable public ExtendedArchetype secondary_archetype = null;
     public float range = 50;
@@ -29,6 +33,7 @@ public class Spell {
     @AlwaysGenerate
     public int tier = 1;
     /// Secondary quality classifier, used for sorting spells, in an increasing order
+    @Deprecated
     public int sub_tier = 1;
 
     /// If this can be obtained from Spell Binding Table, provide an object
@@ -67,11 +72,16 @@ public class Spell {
         public static class Cast { public Cast() { }
             public boolean haste_affected = true;
             public float duration = 0;
+            /// The number of times the spell should perform delivery during casting.
+            /// If greater than zero, the spell is considered as "channeled", and the deliveries are evenly distributed during the casting duration.
             public int channel_ticks = 0;
-            public String animation;
+
+            public PlayerAnimation animation;
             public boolean animation_pitch = true;
+            public float animation_spin = 0F;
             public boolean animates_ranged_weapon = false;
-            /// Default `0.2` matches the same as movement speed during vanilla item usage (such as bow)"
+
+            /// Default `0.2` matches the same as movement speed during vanilla item usage (such as bow)
             public float movement_speed = 0.2F;
             public Sound start_sound;
             public Sound sound;
@@ -121,7 +131,7 @@ public class Spell {
 
     public Release release = new Release();
     public static class Release { public Release() { }
-        public String animation;
+        public PlayerAnimation animation;
         public ParticleBatch[] particles;
         public ParticleBatch[] particles_scaled_with_ranged;
         public Sound sound;
@@ -144,10 +154,16 @@ public class Spell {
             public boolean sticky = false;
             /// Whether the spell casting process uses the caster as a fallback target
             public boolean use_caster_as_fallback = false;
+            /// Vertical repositioning of the aimed position (from cursor),
+            /// ignored if an entity is targeted, respects ground
+            public float reposition_vertically = 0F;
         }
 
         public Beam beam;
-        public static class Beam { public Beam() { }
+        public static class Beam {
+            public Beam() {
+
+            }
             public enum Luminance { LOW, MEDIUM, HIGH }
             public Beam.Luminance luminance = Beam.Luminance.HIGH;
             public String texture_id = "textures/entity/beacon_beam.png";
@@ -173,7 +189,7 @@ public class Spell {
     public static class Delivery {
         public Type type = Type.DIRECT;
         public enum Type {
-            DIRECT, PROJECTILE, METEOR, CLOUD, SHOOT_ARROW, STASH_EFFECT, CUSTOM
+            DIRECT, PROJECTILE, METEOR, CLOUD, SHOOT_ARROW, MELEE, STASH_EFFECT, CUSTOM
         }
         public int delay = 0;
 
@@ -219,6 +235,63 @@ public class Spell {
             /// Launch properties of the arrow
             /// (vanilla default velocity for crossbows is 3.15)
             public LaunchProperties launch_properties = new LaunchProperties().velocity(3.15F);
+        }
+
+        public Melee melee;
+        public static class Melee { public Melee() { }
+            public List<Attack> attacks = List.of();
+            public static class Attack { public Attack() { }
+                /// Only for internal use, do not touch this :)
+                @NeverGenerate
+                public String id = UUID.randomUUID().toString();
+                /// Total damage additive multiplier. Example value: 0.5F for +50% of the total damage.
+                public float damage_bonus = 0F;
+                /// Duration of the melee attack (in ticks), if zero deferring to use attack cooldown duration (vanilla attack speed).
+                public int duration = 0;
+                /// A multiplier applied to animation, and non-static duration
+                public float attack_speed_multiplier = 1F;
+                /// Delay before strike (aka windup), actual value: multiplied by duration, rounded to whole ticks.
+                public float delay = 0.25F;
+                /// Whether additional melee attack should be performed in a row, with `additional_strike_delay` delay between them
+                public int additional_strikes = 0;
+                /// Delay between additional strikes, actual value: multiplied by duration, rounded to whole ticks.
+                public float additional_strike_delay = 0.25F;
+                /// If true additional hits on the same target are allowed.
+                public boolean additional_hits_on_same_target = true;
+
+                /// Forward momentum applied to the caster when performing this melee attack
+                public float forward_momentum = 0F;
+                /// Multiplier applied to the movement speed while executing this melee attack.
+                public float movement_speed = 1F;
+                /// Bonus applied to block slipperiness. Use positive value to slide further.
+                /// grass is 0.6, ice is 0.98
+                public float movement_slipperiness = 0F;
+                /// Collision detection shape of this attack.
+                public HitBox hitbox = new HitBox();
+
+                public PlayerAnimation animation;
+                /// The sound to be played when the melee attack is performed.
+                public Sound swing_sound;
+                /// The sound to be played when the melee attack hits a target.
+                public Sound impact_sound;
+                /// The maximum number of times the impact sound to be played, to avoid overwhelming the audio channel when hitting lots of targets.
+                /// Zero means no limit.
+                public int impact_sound_cap = 3;
+                public ParticleBatch[] particles = new ParticleBatch[]{};
+            }
+            public static class HitBox {
+                /// Relative length of the hitbox, will be scaled up by attack range.
+                public float length = 1F;
+                /// Relative width of the hitbox, will be scaled up by attack range.
+                public float width = 1F;
+                /// Relative height of the hitbox, will be scaled up by attack range.
+                public float height = 1F;
+                /// Rotation along the forward axis, in degrees.
+                /// Positive values rotate clockwise, negative values rotate counterclockwise.
+                public float roll = 0F;
+                /// Arc of the melee attack hitbox, in degrees. 0 means no angular checks.
+                public float arc = 0F;
+            }
         }
 
         public List<Cloud> clouds;
@@ -347,6 +420,7 @@ public class Spell {
                 TELEPORT,
                 COOLDOWN,
                 AGGRO,
+                DISRUPT,
                 CUSTOM
             }
             public Damage damage;
@@ -475,6 +549,12 @@ public class Spell {
                 public Mode mode = Mode.SET;
             }
 
+            public Disrupt disrupt;
+            public static class Disrupt {  public Disrupt() { }
+                public boolean shield_blocking = false;
+                public float item_usage_seconds = 0F;
+            }
+
             public Custom custom;
             public static class Custom { public Custom() { }
                 public SpellTarget.Intent intent = SpellTarget.Intent.HELPFUL;
@@ -520,6 +600,10 @@ public class Spell {
 
         public Cooldown cooldown = new Cooldown();
         public static class Cooldown {
+            /// Arbitrary group code, used to share cooldowns between multiple spells
+            @Nullable public String group;
+            /// Duration of the cooldown applied on spell cast attempt in seconds (useful for delayed deliveries)
+            public float attempt_duration = 0;
             /// Duration of the cooldown in seconds
             public float duration = 0;
             /// Whether the duration to be multiplied by channeling duration

@@ -64,6 +64,10 @@ public final class Sound {
         this(id.toString(), 1F, 1F, randomness);
     }
 
+    public static Sound of(Identifier id) {
+        return new Sound(id);
+    }
+
     public static Sound withRandomness(Identifier id, float randomness) {
         var sound = new Sound(id.toString());
         sound.randomness = randomness;

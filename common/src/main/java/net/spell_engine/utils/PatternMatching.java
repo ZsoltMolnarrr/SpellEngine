@@ -16,6 +16,10 @@ public class PatternMatching {
     public static final String REGEX_PREFIX = "~";
     public static final String NEGATE_PREFIX = "!";
 
+    public static String regex(String pattern) {
+        return REGEX_PREFIX + pattern;
+    }
+
     public static <T> boolean matches(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
         if (pattern == null || pattern.isEmpty() || pattern.equals(ANY)) {
             return true;

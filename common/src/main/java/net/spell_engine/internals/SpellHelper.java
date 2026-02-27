@@ -35,6 +35,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.event.SpellHandlers;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.compat.CriticalStrikeCompat;
 import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.DamageSourceExtension;
@@ -46,6 +47,7 @@ import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCastSyncHelper;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.container.SpellContainerSource;
+import net.spell_engine.internals.melee.Melee;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.fx.ParticleHelper;
@@ -73,7 +75,7 @@ public class SpellHelper {
             return SpellCast.Attempt.none();
         }
         var spell = spellEntry.value();
-        if (caster.getCooldownManager().isCoolingDown(spellId)) {
+        if (caster.getCooldownManager().isCoolingDown(spellEntry)) {
             return SpellCast.Attempt.failOnCooldown(new SpellCast.Attempt.OnCooldownInfo());
         }
         if (checkAmmo) {
@@ -132,7 +134,7 @@ public class SpellHelper {
         var haste = spell.active.cast.haste_affected
                 ? (float) SpellPower.getHaste(caster, spell.school)
                 : 1F;
-        var duration =  hasteAffectedValue(spell.active.cast.duration, haste);
+        var duration = hasteAffectedValue(spell.active.cast.duration, haste);
         return new SpellCast.Duration(haste, Math.round(duration * 20F));
     }
 
@@ -176,7 +178,8 @@ public class SpellHelper {
         if (ticks <= 0) {
             return 0;
         }
-        return ((float)ticks) / 20F;
+        var interval = (spell.active.cast.duration * 20F) / (float)ticks;
+        return interval / 20F;
     }
 
     public static void startCasting(PlayerEntity player, Identifier spellId, float speed, int length) {
@@ -231,6 +234,14 @@ public class SpellHelper {
                 channelTickIndex = caster.getChannelTickIndex();
                 incrementChannelTicks = 1;
                 channelMultiplier = channelValueMultiplier(spell);
+                // Compensating with extra damage, for spell with less than intended ticks
+                // (due to tick interval shorter than 1 tick.)
+                if (caster.getSpellCastProcess() != null) {
+                    var channelInterval = caster.getSpellCastProcess().channelInterval();
+                    if (channelInterval < 1) {
+                        channelMultiplier *= (1F / channelInterval);
+                    }
+                }
             }
             case RELEASE -> {
                 if (isChanneled(spell)) {
@@ -289,8 +300,8 @@ public class SpellHelper {
             }
 
             if (shouldPerformImpact) {
+                consumeAttemptCost(player, spellEntry);
                 // Channel tick or charge release
-
                 success = false;
                 var context = new ImpactContext(channelMultiplier,
                         1F,
@@ -316,7 +327,14 @@ public class SpellHelper {
                             targetsWithContext = List.of(new DeliveryTarget(target, targetSpecificContext));
                         }
                         if (!aim.required || firstTarget.isPresent()) {
-                            success = deliver(world, spellEntry, player, targetsWithContext, context, targetResult.location(), completion);
+                            var location = targetResult.location();
+                            if (location != null && firstTarget.isEmpty() && aim.reposition_vertically != 0) {
+                                var collidedLocation = TargetHelper.findSolidBelow(player, location, world, aim.reposition_vertically);
+                                if (collidedLocation != null) {
+                                    location = collidedLocation;
+                                }
+                            }
+                            success = deliver(world, spellEntry, player, targetsWithContext, context, location, completion);
                         }
                         // Very specific attempt failure display, generic solution would be very difficult
                         if (!success && aim.required && firstTarget.isEmpty()) {
@@ -376,6 +394,18 @@ public class SpellHelper {
         }
     }
 
+
+    private static void consumeAttemptCost(PlayerEntity player, RegistryEntry<Spell> spellEntry) {
+        var spell = spellEntry.value();
+        if (spell.cost.cooldown != null) {
+            var attemptCooldown = spell.cost.cooldown.attempt_duration;
+            if (attemptCooldown > 0) {
+                var durationTicks = Math.round(attemptCooldown * 20F);
+                ((SpellCasterEntity) player).getCooldownManager().set(spellEntry, durationTicks);
+            }
+        }
+    }
+
     private static void consumeSpellCost(PlayerEntity player, float progress, SpellContainerSource.SourcedContainer spellSource, Identifier spellId, RegistryEntry<Spell> spellEntry, ItemStack heldItemStack, Ammo.Result ammoResult, boolean scheduled) {
         var spell = spellEntry.value();
         var batching = spell.cost.batching;
@@ -390,7 +420,7 @@ public class SpellHelper {
 
         // Consume things
         // Cooldown
-        imposeCooldown(player, spellSource, spellId, spellEntry, progress);
+        imposeCooldown(player, spellSource, spellEntry, progress);
         // Exhaust
         player.addExhaustion(spell.cost.exhaust * SpellEngineMod.config.spell_cost_exhaust_multiplier);
         // Durability
@@ -441,14 +471,14 @@ public class SpellHelper {
                         && spell.area_impact != null) { // Special check to allow area impacts only, in the absence of targets
                     var position = targetLocation.lerp(casterPos, 0.001F);
                     var targetSpecificContext = context.position(position);
-                    performImpacts(world, caster, caster, caster, spellEntry, spell.impacts, targetSpecificContext);
+                    performImpacts(world, caster, caster, null, spellEntry, spell.impacts, targetSpecificContext);
                     anySuccess = true; // The area impact will be executed, hence always true
                 } else {
                     for(var targeted: targets) {
                         var target = targeted.entity;
                         var position = target == caster
                                 ? casterPos
-                                : target.getPos().add(0, target.getHeight() / 2F, 0).lerp(casterPos, 0.001F);
+                                : target.getPos().add(0, target.getHeight() / 2F, 0).lerp(casterPos, 0.01F);
                         var targetSpecificContext = targeted.context.position(position);
                         var result = performImpacts(world, caster, target, target, spellEntry, spell.impacts, targetSpecificContext);
                         anySuccess = anySuccess || result;
@@ -501,6 +531,31 @@ public class SpellHelper {
             case SHOOT_ARROW -> {
                 ArrowHelper.shootArrow(world, caster, spellEntry, context);
                 delivered = true;
+            }
+            case MELEE -> {
+                if (spell.deliver.melee != null
+                        && !spell.deliver.melee.attacks.isEmpty()) {
+                    var attackers = !targets.isEmpty()
+                            ? targets.stream().map(e -> e.entity).toList()
+                            : List.of(caster);
+                    var meleeData = spell.deliver.melee;
+                    var spellId = spellEntry.getKey().get().getValue();
+                    var attacks = meleeData.attacks;
+                    if (context.isChanneled()) {
+                        var index = context.channelTickIndex() % attacks.size();
+                        attacks = List.of(attacks.get(index));
+                    }
+                    for (var attacker: attackers) {
+                        if (attacker instanceof ServerPlayerEntity serverPlayer) {
+                            // Map to resolved MeleeAttack structures
+                            var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, attacks, spellId);
+                            // Send AttackAvailable packet to client
+                            var packet = new Packets.AttackAvailable(spellId, meleeAttacks);
+                            ServerPlayNetworking.send(serverPlayer, packet);
+                            delivered = true;
+                        }
+                    }
+                }
             }
             case STASH_EFFECT -> {
                 var anyAdded = false;
@@ -557,16 +612,19 @@ public class SpellHelper {
         return delivered;
     }
 
-    public static void imposeCooldown(PlayerEntity player, SpellContainerSource.SourcedContainer source, Identifier spellId, RegistryEntry<Spell> spellEntry, float progress) {
+    public static void imposeCooldown(PlayerEntity player, SpellContainerSource.SourcedContainer source, RegistryEntry<Spell> spellEntry, float progress) {
         var spell = spellEntry.value();
         var duration = cooldownToSet(player, spellEntry, progress);
         var durationTicks = Math.round(duration * 20F);
         if (duration > 0) {
-            ((SpellCasterEntity) player).getCooldownManager().set(spellId, durationTicks);
+            ((SpellCasterEntity) player).getCooldownManager().set(spellEntry, durationTicks);
         }
         if (SpellEngineMod.config.spell_item_cooldown_lock && spell.cost.cooldown.hosting_item && source.itemStack() != null) {
             var hostingItem = source.itemStack().getItem();
             var itemCooldowns = player.getItemCooldownManager();
+            if (source.itemStack().isIn(SpellEngineItemTags.SPELL_BOOK)) {
+                durationTicks += (int) (SpellEngineMod.config.spell_book_additional_cooldown * 20F);
+            }
             var durationLeft = ((ItemCooldownManagerExtension)itemCooldowns).SE_getLastCooldownDuration(hostingItem)
                     * itemCooldowns.getCooldownProgress(hostingItem, 0);
             if (durationTicks > durationLeft) {
@@ -810,18 +868,48 @@ public class SpellHelper {
         return false;
     }
 
-    public static boolean lookupAndPerformAreaImpact(Spell.AreaImpact area_impact, RegistryEntry<Spell> spellEntry, LivingEntity caster, Entity exclude, Entity aoeSource,
+    public static boolean meleeImpact(LivingEntity caster, List<Entity> targets, RegistryEntry<Spell> spellEntry, @Nullable ImpactContext context) {
+        var spell = spellEntry.value();
+        var anySuccess = false;
+        if (spell.impacts != null) {
+            if (context.power() == null) {
+                context = context.power(SpellPower.getSpellPower(spell.school, caster));
+            }
+
+            var world = caster.getWorld();
+            var casterPos = caster.getPos().add(0, caster.getHeight() / 2F, 0);
+
+            for(var target: targets) {
+                var position = target == caster
+                        ? casterPos
+                        : target.getPos().add(0, target.getHeight() / 2F, 0).lerp(casterPos, 0.01F);
+                var targetSpecificContext = context.position(position);
+                var result = performImpacts(world, caster, target, target, spellEntry, spell.impacts, targetSpecificContext);
+                anySuccess = anySuccess || result;
+            }
+        }
+        return anySuccess;
+    }
+
+    public static boolean lookupAndPerformAreaImpact(Spell.AreaImpact area_impact, RegistryEntry<Spell> spellEntry, LivingEntity caster, Entity exclude, @Nullable Entity aoeSource,
                                                   List<Spell.Impact> impacts, ImpactContext context, boolean additionalTargetLookup) {
         var center = context.position();
         var radius = area_impact.combinedRadius(context.power().baseValue());
-        var targets = TargetHelper.targetsFromArea(aoeSource, center, radius, area_impact.area, null);
+
+        var contextEntity = aoeSource != null ? aoeSource : caster;
+        var targets = TargetHelper.targetsFromArea(contextEntity.getWorld(), aoeSource, center, contextEntity.getRotationVector(), radius, area_impact.area, null);
         if (exclude != null) {
             targets.remove(exclude);
         }
-        var result = applyAreaImpact(aoeSource.getWorld(), caster, targets, radius, area_impact.area, spellEntry, impacts,
+        var result = applyAreaImpact(contextEntity.getWorld(), caster, targets, radius, area_impact.area, spellEntry, impacts,
                 context.target(SpellTarget.FocusMode.AREA), additionalTargetLookup, area_impact.execute_action_type);
-        ParticleHelper.sendBatches(aoeSource, area_impact.particles);
-        SoundHelper.playSound(aoeSource.getWorld(), aoeSource, area_impact.sound);
+        if (aoeSource != null) {
+            ParticleHelper.sendBatches(aoeSource, area_impact.particles);
+        } else {
+            ParticleHelper.sendBatches(center, caster, area_impact.particles);
+        }
+
+        SoundHelper.playSound(contextEntity.getWorld(), contextEntity, area_impact.sound);
         return result;
     }
 
@@ -899,30 +987,11 @@ public class SpellHelper {
                                          RegistryEntry<Spell> spellEntry, List<Spell.Impact> impacts, ImpactContext context,
                                          boolean additionalTargetLookup, @Nullable Spell.Impact.Action.Type filteredAction) {
         var trackers = target != null ? PlayerLookup.tracking(target) : null;
-        var spell = spellEntry.value();
         SpellTarget.Intent selectedIntent = null;
 
-        var area_impact = spell.area_impact;
-        var mutableImpacts = new ArrayList<>(impacts);
-
-        if (caster instanceof PlayerEntity player) {
-            var modifiers = SpellModifiers.of(player, spellEntry);
-            for (var modifier: modifiers) {
-                if (modifier.mutate_impacts != null) {
-                    switch (modifier.mutate_impacts) {
-                        case PREPEND -> {
-                            mutableImpacts.addAll(0, modifier.impacts);
-                        }
-                        case APPEND -> {
-                            mutableImpacts.addAll(modifier.impacts);
-                        }
-                    }
-                }
-                if (modifier.replacing_area_impact != null) {
-                    area_impact = modifier.replacing_area_impact;
-                }
-            }
-        }
+        var extendedImpacts = SpellModifiers.extendedImpactsOf(caster, spellEntry);
+        var area_impact = extendedImpacts.areaImpact();
+        var mutableImpacts = extendedImpacts.impacts();
 
         var perform = true;
         if (additionalTargetLookup && area_impact != null && area_impact.force_indirect) {
@@ -1111,9 +1180,6 @@ public class SpellHelper {
                     var amount = result.amount();
                     amount *= damageData.spell_power_coefficient;
                     amount *= context.total();
-                    if (context.isChanneled()) {
-                        amount *= SpellPower.getHaste(caster, school);
-                    }
                     particleMultiplier = power.criticalDamage() + vulnerability.criticalDamageBonus();
 
                     ///
@@ -1437,6 +1503,29 @@ public class SpellHelper {
                         success = true;
                     }
                 }
+                case DISRUPT -> {
+                    if (target instanceof LivingEntity livingTarget) {
+                        var disrupt = impact.action.disrupt;
+                        if (target instanceof PlayerEntity playerTarget) {
+                             if (disrupt.shield_blocking && playerTarget.isBlocking()) {
+                                 playerTarget.disableShield();
+                                 success = true;
+                             } else if (disrupt.item_usage_seconds > 0 && playerTarget.isUsingItem()) {
+                                 var activeStack = playerTarget.getActiveItem();
+                                 playerTarget.getItemCooldownManager().set(activeStack.getItem(), (int) (disrupt.item_usage_seconds * 20F));
+                                 success = true;
+                             }
+                        } else {
+                            if (disrupt.shield_blocking && livingTarget.isBlocking()) {
+                                livingTarget.clearActiveItem();
+                                success = true;
+                            } else if (disrupt.item_usage_seconds > 0 && livingTarget.isUsingItem()) {
+                                livingTarget.clearActiveItem();
+                                success = true;
+                            }
+                        }
+                    }
+                }
                 case CUSTOM -> {
                     if (impact.action.custom != null) {
                         var handler = SpellHandlers.customImpact.get(impact.action.custom.handler);
@@ -1485,10 +1574,10 @@ public class SpellHelper {
         for (var spell: spells) {
             var id = spell.getKey().get().getValue();
             if (PatternMatching.matches(spell, SpellRegistry.KEY, modifier.id)) {
-                var duration = cooldownManager.getCooldownDuration(id);
+                var duration = cooldownManager.getCooldownDuration(spell);
                 int updatedDuration = (int) ((duration + modifier.duration_add) * modifier.duration_multiplier);
                 if (updatedDuration != duration) {
-                    cooldownManager.setDurationLeft(id, updatedDuration);
+                    cooldownManager.setDurationLeft(spell, updatedDuration);
                     modifiedAny = true;
                 }
             }
@@ -1688,7 +1777,7 @@ public class SpellHelper {
 
     public static SpellTarget.Intent impactIntent(Spell.Impact.Action action) {
         switch (action.type) {
-            case DAMAGE, FIRE, AGGRO -> {
+            case DAMAGE, FIRE, AGGRO, DISRUPT -> {
                 return SpellTarget.Intent.HARMFUL;
             }
             case HEAL, SPAWN -> {

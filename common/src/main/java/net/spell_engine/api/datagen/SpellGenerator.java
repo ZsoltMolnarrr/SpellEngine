@@ -14,9 +14,11 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.util.AlwaysGenerate;
+import net.spell_engine.api.util.NeverGenerate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -81,7 +83,8 @@ public abstract class SpellGenerator implements DataProvider {
                 .setPrettyPrinting()
                 .registerTypeAdapter(Spell.class, new DefaultValueSkippingSerializer<>(Spell.class))
                 .registerTypeAdapter(ParticleBatch.class, new DefaultValueSkippingSerializer<>(ParticleBatch.class))
-                .registerTypeAdapter(Sound.class, new DefaultValueSkippingSerializer<>(Sound.class));
+                .registerTypeAdapter(Sound.class, new DefaultValueSkippingSerializer<>(Sound.class))
+                .registerTypeAdapter(PlayerAnimation.class, new DefaultValueSkippingSerializer<>(PlayerAnimation.class));
         for (var nestedClass : getAllNestedClasses(Spell.class)) {
             gson = gson.registerTypeAdapter(nestedClass, new DefaultValueSkippingSerializer<>(nestedClass));
         }
@@ -183,6 +186,9 @@ public abstract class SpellGenerator implements DataProvider {
 //                    if (!value.equals(defaultValue)) {
 //                        jsonObject.add(field.getName(), context.serialize(value));
 //                    }
+                    if (field.isAnnotationPresent(NeverGenerate.class)) {
+                        continue; // Skip this field entirely
+                    }
                     if (field.isAnnotationPresent(AlwaysGenerate.class) || !objectsJSONEqual(value, defaultValue)) {
                         jsonObject.add(field.getName(), context.serialize(value));
                     }

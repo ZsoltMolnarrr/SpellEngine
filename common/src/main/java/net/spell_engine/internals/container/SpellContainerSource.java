@@ -5,6 +5,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
@@ -209,12 +210,12 @@ public class SpellContainerSource {
             var heldContainer = SpellContainerHelper.containerFromItemStack(heldItemStack);
             var activeContainer = SpellContainer.EMPTY;
             List<RegistryEntry<Spell>> activeSpells = List.of();
-            if (heldContainer != null && heldContainer.is_proxy()) {
-                var merged = mergedContainerSources(allContainers, heldContainer.is_proxy(), heldContainer.content(), Spell.Type.ACTIVE, player.getWorld());
+            if (heldContainer != null && heldContainer.isResolver()) {
+                var merged = mergedContainerSources1(allContainers, heldContainer, Spell.Type.ACTIVE, player.getWorld());
                 activeContainer = merged.container();
                 activeSpells = merged.spells();
             }
-            List<RegistryEntry<Spell>> passiveSpells = mergedContainerSources(allContainers, null, Spell.Type.PASSIVE, player.getWorld());
+            List<RegistryEntry<Spell>> passiveSpells = mergedContainerSources(allContainers, null, null, Spell.Type.PASSIVE, player.getWorld());
 
             var registry = SpellRegistry.from(player.getWorld());
             LinkedHashSet<RegistryEntry<Spell>> modifiers = new LinkedHashSet<>();
@@ -233,12 +234,23 @@ public class SpellContainerSource {
         }
     }
 
-    public static List<RegistryEntry<Spell>> mergedContainerSources(List<SourcedContainer> sources, @Nullable SpellContainer.ContentType contentType, Spell.Type type, World world) {
+    public static List<RegistryEntry<Spell>> mergedContainerSources(List<SourcedContainer> sources, @Nullable SpellContainer.ContentType contentType, @Nullable String accessParams, Spell.Type type, World world) {
         if (sources.isEmpty()) {
             return List.of();
         }
         var spells = new ArrayList<RegistryEntry<Spell>>();
         var registry = SpellRegistry.from(world);
+
+        TagKey<Spell> spellTag = null;
+        if (accessParams != null && !accessParams.isEmpty()) {
+            if (contentType == SpellContainer.ContentType.TAG) {
+                var id = Identifier.tryParse(accessParams);
+                if (id != null) {
+                    spellTag = TagKey.of(SpellRegistry.KEY, id);
+                }
+            }
+        }
+
         for (var source : sources) {
             var container = source.container();
             if (type == Spell.Type.ACTIVE && source.name.equals("off_hand")) {
@@ -252,45 +264,23 @@ public class SpellContainerSource {
                 var id = Identifier.of(idString);
                 var spell = registry.getEntry(id).orElse(null);
                 if (spell != null && spell.value().type == type
-                        && ( spellMatchesContentType(spell.value(), contentType)
-                        || container.content() == SpellContainer.ContentType.ANY )) { // FIXME: Legacy mode
+                        && ( spellMatchesContentType(spell, contentType, spellTag) )) {
                     spells.add(spell);
                 }
             }
         }
 
-        // Remove spells with the same group, and lower tier
-        var toRemove = new HashSet<RegistryEntry<Spell>>();
-        for (var spellEntry : spells) {
-            var spell = spellEntry.value();
-            var tag = spell.group;
-            if (tag != null) {
-                for (var other : spells) {
-                    var spellId = spellEntry.getKey().get().getValue();
-                    var otherId = other.getKey().get().getValue();
-                    if (spellId.equals(otherId)) continue;
-                    if (tag.equals(other.value().group)) {
-                        if (spellEntry.value().tier == other.value().tier) {
-                            if (spellEntry.value().sub_tier > other.value().sub_tier) {
-                                toRemove.add(other);
-                            }
-                        }
-                        if (spellEntry.value().tier > other.value().tier) {
-                            toRemove.add(other);
-                        }
-                    }
-                }
-            }
-        }
-        spells.removeAll(toRemove);
-
         return spells;
     }
 
-    private static boolean spellMatchesContentType(Spell spell, @Nullable SpellContainer.ContentType contentType) {
+    private static boolean spellMatchesContentType(RegistryEntry<Spell> spellEntry, @Nullable SpellContainer.ContentType contentType, @Nullable TagKey<Spell> spellTag) {
         if (contentType == null || contentType == SpellContainer.ContentType.ANY) {
             return true;
         }
+        if (contentType == SpellContainer.ContentType.TAG) {
+            return spellTag != null && spellEntry.isIn(spellTag);
+        }
+        var spell = spellEntry.value();
         var matches = switch (spell.school.archetype) {
             case ARCHERY -> contentType == SpellContainer.ContentType.ARCHERY;
             case MAGIC, MELEE -> contentType == SpellContainer.ContentType.MAGIC;
@@ -310,12 +300,26 @@ public class SpellContainerSource {
     public record MergeResult(SpellContainer container, List<RegistryEntry<Spell>> spells) {
         public static final MergeResult EMPTY = new MergeResult(SpellContainer.EMPTY, List.of());
     }
-    public static MergeResult mergedContainerSources(List<SourcedContainer> sources, boolean proxy, @Nullable SpellContainer.ContentType contentType, Spell.Type type, World world) {
-        if (sources.isEmpty()) {
+    public static MergeResult mergedContainerSources1(List<SourcedContainer> sources, SpellContainer heldContainer, Spell.Type type, World world) { // FIXME: NAME
+        if (sources.isEmpty() || heldContainer.access() == SpellContainer.ContentType.NONE) {
             return MergeResult.EMPTY;
         }
+        if (heldContainer.access() == SpellContainer.ContentType.CONTAINED) {
+            var spells = new ArrayList<RegistryEntry<Spell>>();
+            var registry = SpellRegistry.from(world);
+            for (var idString : heldContainer.spell_ids()) {
+                var id = Identifier.of(idString);
+                var spell = registry.getEntry(id).orElse(null);
+                if (spell != null && spell.value().type == type) {
+                    spells.add(spell);
+                }
+            }
+            return new MergeResult(heldContainer, spells);
+        }
 
-        var spells = mergedContainerSources(sources, contentType, type, world);
+        var contentType = heldContainer.access();
+
+        var spells = mergedContainerSources(sources, contentType, heldContainer.access_param(), type, world);
 
         var spellIds = new LinkedHashSet<String>(); // We need the IDs only, but remove duplicates
         for (var spell : spells) {
@@ -324,8 +328,8 @@ public class SpellContainerSource {
 
         // System.out.println("Updated for " + type + ", Spell IDs: " + spellIds);
 
-        var finalContentType = contentType != null ? contentType : SpellContainer.ContentType.MAGIC;
-        var container = new SpellContainer(finalContentType, proxy, null, 0, new ArrayList<>(spellIds));
+        var finalContentType = contentType != null ? contentType : SpellContainer.ContentType.NONE;
+        var container = new SpellContainer(finalContentType, "", null, "", 0, new ArrayList<>(spellIds), 0);
         return new MergeResult(container, spells);
     }
 

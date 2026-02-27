@@ -26,6 +26,7 @@ import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.mixin.entity.LivingEntityAccessor;
 import net.spell_engine.fx.ParticleHelper;
+import net.spell_engine.utils.AnimationHelper;
 import net.spell_engine.utils.StringUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -64,14 +65,14 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         var spell = ((SpellCasterEntity)player).getCurrentSpell();
         if (spell != null && spell.active != null) {
             var cast = spell.active.cast;
-            castAnimationName = cast.animation;
+            castAnimationName = AnimationHelper.getAnimationId(player, cast.animation);
             castSound = cast.sound;
             // Rotate body towards look vector
             ((LivingEntityAccessor)player).spellEngine_invoke_TurnHead(player.getHeadYaw(), 0);
             for (var batch: cast.particles) {
                 ParticleHelper.play(player.getWorld(), player, player.getYaw(), getPitch(), batch);
             }
-            speed = ((SpellCasterEntity)player).getCurrentCastingSpeed();
+            speed = ((SpellCasterEntity)player).getCurrentCastingSpeed() * cast.animation.speed;
             castingAnimationPitching = cast.animation_pitch;
         } else {
             castingAnimationPitching = true;
@@ -176,6 +177,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
     public void playSpellAnimation(SpellCast.Animation type, String name, float speed) {
         try {
             var stack = spellAnimationStackFor(type);
+            // System.out.println("Player animation, type: " + type + ", name: " + name + ", speed: " + speed);
             if (name != null && !name.isEmpty()) {
                 var id = Identifier.of(name);
                 var animation = (KeyframeAnimation) PlayerAnimationRegistry.getAnimation(id);

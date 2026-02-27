@@ -7,6 +7,7 @@ import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.api.entity.SpellEntityPredicates;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.client.util.Color;
@@ -30,10 +31,27 @@ public class SpellBuilder {
         return spell;
     }
 
+    public static Spell createWeaponSpell() {
+        var spell = createSpellActive();
+        spell.tier = 1;
+        Cost.cooldownGroupWeapon(spell);
+        return spell;
+    }
+
+    public static Spell createMeleeSpell() {
+        var spell = createWeaponSpell();
+        spell.school = ExternalSpellSchools.PHYSICAL_MELEE;
+        spell.range = 0;
+        spell.range_mechanic = Spell.RangeMechanic.MELEE;
+        spell.cost.exhaust = 0.1F;
+        return spell;
+    }
+
     public static Spell createSpellPassive() {
         var spell = new Spell();
         spell.type = Spell.Type.PASSIVE;
         spell.passive = new Spell.Passive();
+        spell.cost.durability = 0;
         return spell;
     }
 
@@ -58,8 +76,15 @@ public class SpellBuilder {
         }
 
         public static void cast(Spell spell, float duration) {
+            cast(spell, duration, null);
+        }
+
+        public static void cast(Spell spell, float duration, @Nullable String animation) {
             spell.active.cast = new Spell.Active.Cast();
             spell.active.cast.duration = duration;
+            if (animation != null) {
+                spell.active.cast.animation = PlayerAnimation.of(animation);
+            }
         }
 
         public static void channel(Spell spell, float duration, int ticks) {
@@ -74,7 +99,7 @@ public class SpellBuilder {
                 spell.active.cast = new Spell.Active.Cast();
             }
             if (playerAnimation != null) {
-                spell.active.cast.animation = playerAnimation;
+                spell.active.cast.animation = PlayerAnimation.of(playerAnimation);
             }
             if (particles != null) {
                 spell.active.cast.particles = particles;
@@ -87,7 +112,7 @@ public class SpellBuilder {
                                    @Nullable String playerAnimation, @Nullable ParticleBatch[] particles, @Nullable Sound sound) {
             spell.release = new Spell.Release();
             if (playerAnimation != null) {
-                spell.release.animation = playerAnimation;
+                spell.release.animation = PlayerAnimation.of(playerAnimation);
             }
             if (particles != null) {
                 spell.release.particles = particles;
@@ -131,6 +156,16 @@ public class SpellBuilder {
         }
     }
 
+    public static class Target {
+        public static void none(Spell spell) {
+            spell.target.type = Spell.Target.Type.NONE;
+        }
+        public static void aim(Spell spell) {
+            spell.target.type = Spell.Target.Type.AIM;
+            spell.target.aim = new Spell.Target.Aim();
+        }
+    }
+
     public static class Deliver {
         public static void stash(Spell spell, String stashEffectId, float duration, Spell.Trigger trigger) {
             stash(spell, stashEffectId, duration, List.of(trigger));
@@ -167,6 +202,12 @@ public class SpellBuilder {
             cloud.client_data.particles = presenceParticles;
 
             return cloud;
+        }
+
+        public static void melee(Spell spell, List<Spell.Delivery.Melee.Attack> attacks) {
+            spell.deliver.type = Spell.Delivery.Type.MELEE;
+            spell.deliver.melee = new Spell.Delivery.Melee();
+            spell.deliver.melee.attacks = attacks;
         }
     }
 
@@ -597,6 +638,16 @@ public class SpellBuilder {
             return taunt;
         }
 
+        public static Spell.Impact disrupt(boolean shieldBlocking, float itemUsageTime) {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.DISRUPT;
+            impact.action.disrupt = new Spell.Impact.Action.Disrupt();
+            impact.action.disrupt.shield_blocking = shieldBlocking;
+            impact.action.disrupt.item_usage_seconds = itemUsageTime;
+            return impact;
+        }
+
         public static Spell.Impact disengage(boolean onlyIfTargeted) {
             var taunt = new Spell.Impact();
             taunt.action = new Spell.Impact.Action();
@@ -685,6 +736,20 @@ public class SpellBuilder {
                 spell.cost.cooldown = new Spell.Cost.Cooldown();
             }
             spell.cost.cooldown.duration = duration;
+        }
+
+        public static void cooldownGroup(Spell spell, String group) {
+            if (spell.cost == null) {
+                spell.cost = new Spell.Cost();
+            }
+            if (spell.cost.cooldown == null) {
+                spell.cost.cooldown = new Spell.Cost.Cooldown();
+            }
+            spell.cost.cooldown.group = group;
+        }
+
+        public static void cooldownGroupWeapon(Spell spell) {
+            cooldownGroup(spell, "weapon");
         }
 
         public static void item(Spell spell, String itemId) {

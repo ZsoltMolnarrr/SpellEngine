@@ -113,10 +113,33 @@ public class SpellEngineSounds {
 
     public static final Entry DODGE = add(new Entry("dodge").variants(2));
 
+    // MARK: Weapon skill sounds
+
+    public static final Entry WHIRLWIND = add(new Entry("whirlwind"));
+    public static final Entry WEAPON_CLEAVE = add(new Entry("weapon_cleave"));
+    public static final Entry WEAPON_DAGGER_THROW = add(new Entry("weapon_dagger_throw"));
+    public static final Entry WEAPON_DAGGER_TRAVEL = add(new Entry("weapon_dagger_travel"));
+    public static final Entry WEAPON_DAGGER_IMPACT = add(new Entry("weapon_dagger_impact"));
+    public static final Entry WEAPON_SWORD_SWING = add(new Entry("weapon_sword_swing"));
+    public static final Entry WEAPON_HAMMER_SWING = add(new Entry("weapon_hammer_swing"));
+    public static final Entry WEAPON_CLAYMORE_SWING = add(new Entry("weapon_claymore_swing"));
+    public static final Entry WEAPON_CLAYMORE_IMPACT = add(new Entry("weapon_claymore_impact"));
+    public static final Entry WEAPON_GROUND_SLAM = add(new Entry("weapon_ground_slam"));
+    public static final Entry WEAPON_THROW = add(new Entry("weapon_throw"));
+    public static final Entry WEAPON_MACE_SMASH_IMPACT = add(new Entry("weapon_mace_smash_impact"));
+    public static final Entry WEAPON_SPEAR_THROW = add(new Entry("weapon_spear_throw"));
+    public static final Entry WEAPON_SPEAR_TRAVEL = add(new Entry("weapon_spear_travel"));
+    public static final Entry WEAPON_SPEAR_STAB = add(new Entry("weapon_spear_stab"));
+    public static final Entry WEAPON_SHING_A = add(new Entry("weapon_shing_a"));
+    public static final Entry WEAPON_SWIPE_LAUNCH = add(new Entry("weapon_swipe_launch"));
+    public static final Entry WEAPON_SICKLE_IMPACT_SMALL = add(new Entry("weapon_sickle_impact_small"));
+    public static final Entry WEAPON_SICKLE_IMPACT_LARGE = add(new Entry("weapon_sickle_impact_large"));
+    public static final Entry WEAPON_THRUST_LAUNCH = add(new Entry("weapon_thrust_launch"));
 
     // MARK: Spell binding sounds
 
     public static final Entry BIND_SPELL = add(new Entry("bind_spell"));
+    public static final Entry UNBIND_SPELL = add(new Entry("unbind_spell"));
 
     // MARK: Item sounds
 

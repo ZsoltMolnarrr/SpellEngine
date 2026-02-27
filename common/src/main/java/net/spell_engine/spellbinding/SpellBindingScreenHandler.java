@@ -15,10 +15,13 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.fx.SpellEngineSounds;
+import net.spell_engine.item.SpellEngineItems;
+import net.spell_engine.item.UniversalSpellBookItem;
 
 import java.util.Arrays;
 
@@ -101,6 +104,10 @@ public class SpellBindingScreenHandler extends ScreenHandler {
             return 0;
         }
         return itemStack.getCount();
+    }
+
+    public SpellBinding.Mode getMode() {
+        return SpellBinding.Mode.values()[this.mode[0]];
     }
 
     @Override
@@ -218,10 +225,6 @@ public class SpellBindingScreenHandler extends ScreenHandler {
             var consumableStack = getStacks().get(1);
             var playerWorld = player.getWorld();
 
-            if (poweredByLib == 0) {
-                return false;
-            }
-
             switch (mode) {
                 case SPELL -> {
                     var spellEntry = SpellRegistry.from(playerWorld).getEntry(rawId);
@@ -229,7 +232,21 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                         return false;
                     }
                     var spellId = spellEntry.get().getKey().get().getValue();
-                    var binding = SpellBinding.State.of(spellId, mainStack, requiredLevel, levelCost, lapisCost);
+                    var binding = SpellBinding.State.of(playerWorld, spellId, mainStack, levelCost, requiredLevel, lapisCost);
+
+                    if (allowUnbinding() && binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED) {
+                        this.context.run((world, pos) -> {
+                            SpellContainerHelper.removeSpell(world, spellId, mainStack);
+                            this.inventory.markDirty();
+                            this.onContentChanged(this.inventory);
+                            world.playSound(null, pos, SpellEngineSounds.UNBIND_SPELL.soundEvent(), SoundCategory.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
+                        });
+                        return true;
+                    }
+
+                    if (poweredByLib == 0) {
+                        return false;
+                    }
                     if (binding.state == SpellBinding.State.ApplyState.INVALID) {
                         return false;
                     }
@@ -255,7 +272,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                             var poolId = SpellContainerHelper.getPoolId(container);
                             if (poolId != null) {
                                 var pool = SpellRegistry.entries(world, container.pool());
-                                var isComplete = container.spell_ids().size() == pool.size();
+                                var isComplete = container.spell_ids().size() == SpellContainerHelper.poolTierSize(pool);
                                 SpellBindingCriteria.INSTANCE.trigger(serverPlayer, poolId, isComplete);
                                 // System.out.println("Triggering advancement SpellBindingCriteria.INSTANCE spell_pool: " + poolId + " isComplete: " + isComplete);
                             } else {
@@ -265,8 +282,22 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                     });
                 }
                 case BOOK -> {
-                    var item = SpellBinding.availableSpellBooks(player.getWorld()).get(rawId - SpellBinding.BOOK_OFFSET);
-                    var itemStack = ((Item)item).getDefaultStack(); // Upcast to `Item` to make sure this line is remapped for other devs
+                    if (poweredByLib == 0) {
+                        return false;
+                    }
+                    var tags = SpellBinding.availableSpellBookTags(player.getWorld());
+                    var tagIndex = rawId - SpellBinding.BOOK_OFFSET;
+                    if (tagIndex < 0 || tagIndex >= tags.size()) {
+                        return false;
+                    }
+                    var tag = tags.get(tagIndex);
+
+                    // Create UniversalSpellBookItem stack
+                    var itemStack = new ItemStack(SpellEngineItems.SPELL_BOOK.get());
+                    if (!UniversalSpellBookItem.applyFromTag(itemStack, tag)) {
+                        return false;
+                    }
+
                     var container = SpellContainerHelper.containerFromItemStack(itemStack);
                     if (container == null || !container.isValid() || container.pool() == null) {
                         return false;
@@ -294,7 +325,6 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                             SpellBookCreationCriteria.INSTANCE.trigger(serverPlayer, poolId);
                         }
                     });
-
                 }
             }
             return true;
@@ -315,5 +345,9 @@ public class SpellBindingScreenHandler extends ScreenHandler {
         if (player instanceof ServerPlayerEntity serverPlayer) {
             serverPlayer.setExperienceLevel(player.experienceLevel); // Triggers XP sync
         }
+    }
+
+    public boolean allowUnbinding() {
+        return SpellEngineMod.config.spell_binding_allow_unbinding;
     }
 }

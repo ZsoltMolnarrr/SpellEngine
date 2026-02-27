@@ -1,0 +1,139 @@
+package net.spell_engine.internals.melee;
+
+import net.bettercombat.logic.TargetHelper;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
+import net.spell_engine.utils.VectorHelper;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class TargetFinder {
+    public static class TargetResult {
+        public Entity cursorTarget;
+        public List<Entity> entities;
+        public OrientedBoundingBox obb;
+        public TargetResult(@Nullable Entity cursorTarget, List<Entity> entities, OrientedBoundingBox obb) {
+            this.entities = entities;
+            this.obb = obb;
+        }
+    }
+
+    public static TargetResult findAttackTargetResult(PlayerEntity player, @Nullable Entity cursorTarget, Vec3d hitboxSize, double arc, double attackRange, float roll) {
+//        long startTime = System.nanoTime();
+        Vec3d origin = getInitialTracingPoint(player);
+        List<Entity> entities = getInitialTargets(player, cursorTarget, attackRange);
+
+        boolean isSpinAttack = arc > 180;
+        Vec3d size = hitboxSize;
+        var obb = new OrientedBoundingBox(origin, size, player.getPitch(), player.getYaw(), roll);
+        if (!isSpinAttack) {
+            obb = obb.offsetAlongAxisZ(size.z / 2F);
+        }
+        obb.updateVertex();
+
+        var collisionFilter = new CollisionFilter(obb);
+        entities = collisionFilter.filter(entities);
+        var radialFilter = new RadialFilter(origin, obb.axisZ, attackRange, arc);
+        entities = radialFilter.filter(entities);
+//        long elapsedTime = System.nanoTime() - startTime;
+//        System.out.println("TargetResult findAttackTargetResult (ms): " + ((double)elapsedTime) / 1000000.0);
+        return new TargetResult(cursorTarget, entities, obb);
+    }
+    
+    public static Vec3d getInitialTracingPoint(PlayerEntity player) {
+        double shoulderHeight = player.getHeight() * 0.15 * player.getScaleFactor();
+        return player.getEyePos().subtract(0, shoulderHeight, 0);
+    }
+
+    public static List<Entity> getInitialTargets(PlayerEntity player, Entity cursorTarget, double attackRange) {
+        Box box = player.getBoundingBox().expand(attackRange * 2F + 1.0);
+        List<Entity> entities = player
+                .getWorld()
+                .getOtherEntities(player, box, entity ->  !entity.isSpectator() && entity.canHit())
+                .stream()
+                .filter(entity -> entity != player
+                        && entity.isAttackable()
+                        && entity != cursorTarget
+                        // && TargetHelper.isHitAllowed(false, TargetHelper.getRelation(player, entity)) // isDirect: false due to not being the cursor target
+                        && (!entity.equals(player.getVehicle()) || TargetHelper.isAttackableMount(entity)))
+                .collect(Collectors.toList());
+        if (cursorTarget != null && cursorTarget.isAttackable()) {
+            entities.add(cursorTarget);
+        }
+        return entities;
+    }
+
+
+    public interface Filter {
+        List<Entity> filter(List<Entity> entities);
+    }
+
+    public static class CollisionFilter implements Filter {
+        private OrientedBoundingBox obb;
+
+        public CollisionFilter(OrientedBoundingBox obb) {
+            this.obb = obb;
+        }
+
+        @Override
+        public List<Entity> filter(List<Entity> entities) {
+            return entities.stream()
+                    .filter(entity -> obb.intersects(entity.getBoundingBox().expand(entity.getTargetingMargin()))
+                                || obb.contains(entity.getPos().add(0, entity.getHeight() / 2F, 0))
+                    )
+                    .collect(Collectors.toList());
+        }
+    }
+
+    public static class RadialFilter implements Filter {
+        final private Vec3d origin;
+        final private Vec3d orientation;
+        final private double attackRange;
+        final private double attackAngle;
+
+        public RadialFilter(Vec3d origin, Vec3d orientation, double attackRange, double attackAngle) {
+            this.origin = origin;
+            this.orientation = orientation;
+            this.attackRange = attackRange;
+            this.attackAngle = MathHelper.clamp(attackAngle, 0, 360);
+        }
+
+        @Override
+        public List<Entity> filter(List<Entity> entities) {
+            return entities.stream()
+                    .filter(entity -> {
+                        var maxAngleDif = (attackAngle / 2.0);
+                        Vec3d distanceVector = VectorHelper.distanceVector(origin, entity.getBoundingBox());
+                        Vec3d positionVector = entity.getPos().add(0, entity.getHeight() / 2F, 0).subtract(origin);
+                        return distanceVector.length() <= attackRange
+                                && ((attackAngle == 0)
+                                    || (VectorHelper.angleBetween(positionVector, orientation) <= maxAngleDif
+                                    || VectorHelper.angleBetween(distanceVector, orientation) <= maxAngleDif))
+                                && (rayContainsNoObstacle(origin, origin.add(distanceVector))
+                                    || rayContainsNoObstacle(origin, origin.add(positionVector)));
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        private static boolean rayContainsNoObstacle(Vec3d start, Vec3d end) {
+            var client = MinecraftClient.getInstance();
+            BlockHitResult hit = null;
+            if (client.world != null) {
+                hit = client.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, client.player));
+            }
+            if (hit != null) {
+                return hit.getType() != HitResult.Type.BLOCK;
+            }
+            return false;
+        }
+    }
+}

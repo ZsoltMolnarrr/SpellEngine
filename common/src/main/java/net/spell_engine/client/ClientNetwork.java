@@ -5,8 +5,10 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Language;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.client.gui.HudMessages;
+import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.container.SpellAssignments;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -49,7 +51,11 @@ public class ClientNetwork {
         ClientPlayNetworking.registerGlobalReceiver(Packets.SpellCooldown.PACKET_ID, (packet, context) -> {
             var client = context.client();
             client.execute(() -> {
-                ((SpellCasterEntity)client.player).getCooldownManager().set(packet.spellId(), packet.duration());
+                if (client.world == null) return;
+                var registry = SpellRegistry.from(client.world);
+                var spell = registry.getEntry(packet.spellId());
+                if (spell.isEmpty()) return;
+                ((SpellCasterEntity)client.player).getCooldownManager().set(spell.get(), packet.duration());
             });
         });
 
@@ -82,6 +88,16 @@ public class ClientNetwork {
                     containers.putAll(packet.containers());
                 }
                 SpellContainerSource.setDirty(client.player, SpellContainerSource.MAIN_HAND);
+            });
+        });
+
+        ClientPlayNetworking.registerGlobalReceiver(Packets.AttackAvailable.PACKET_ID, (packet, context) -> {
+            var client = context.client();
+            client.execute(() -> {
+                var player = client.player;
+                if (player instanceof SpellCasterClient caster) {
+                    caster.onAttacksAvailable(packet.attacks());
+                }
             });
         });
     }

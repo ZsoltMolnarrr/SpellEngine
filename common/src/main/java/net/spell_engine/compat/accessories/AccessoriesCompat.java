@@ -1,15 +1,10 @@
 package net.spell_engine.compat.accessories;
 
 import io.wispforest.accessories.api.events.AccessoryChangeCallback;
-import io.wispforest.accessories.api.AccessoriesAPI;
 import io.wispforest.accessories.api.AccessoriesCapability;
-import net.fabricmc.fabric.api.util.TriState;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
-import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.item.trinket.ISpellBookItem;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.compat.container.ContainerCompat;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -35,12 +30,6 @@ public class AccessoriesCompat {
             return enabled;
         }
 
-        AccessoriesAPI.registerPredicate(Identifier.of(SpellEngineMod.ID, SLOT_SPELL_BOOK), (world, slotType, i, itemStack) -> {
-            if (ISpellBookItem.isSpellBook(itemStack.getItem())) {
-                return TriState.TRUE;
-            }
-            return TriState.DEFAULT;
-        });
         ContainerCompat.addProvider(AccessoriesCompat::getAll);
 
         final var spellSourceName = "accessories";

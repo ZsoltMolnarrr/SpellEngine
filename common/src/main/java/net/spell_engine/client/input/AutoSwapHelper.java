@@ -106,7 +106,7 @@ public class AutoSwapHelper {
     private static SpellContainer.ContentType spellContentType(ItemStack itemStack) {
         var container = SpellContainerHelper.containerFromItemStack(itemStack);
         if (container != null) {
-            return container.content();
+            return container.access();
         }
         return null;
     }

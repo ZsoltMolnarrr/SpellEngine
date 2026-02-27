@@ -33,7 +33,7 @@ public class TargetHelper {
                 .normalize()
                 .multiply(range);
         Vec3d end = start.add(look);
-        var hit = raycastObstacle(caster, start, end);
+        var hit = raycastObstacle(caster.getWorld(), caster, start, end);
         if (hit.getType() == HitResult.Type.BLOCK) {
             return hit.getPos();
         }
@@ -51,7 +51,7 @@ public class TargetHelper {
             return !target.isSpectator() && target.canHit() && predicate.test(target);
         }, range*range); // `range*range` is provided for squared distance comparison
         if (hitResult != null) {
-            if (hitResult.getPos() == null || raycastObstacleFree(caster, start, hitResult.getPos())) {
+            if (hitResult.getPos() == null || raycastObstacleFree(caster.getWorld(), caster, start, hitResult.getPos())) {
                 return hitResult.getEntity();
             }
         }
@@ -69,7 +69,7 @@ public class TargetHelper {
             return !target.isSpectator() && target.canHit() && predicate.test(target);
         }, range*range); // `range*range` is provided for squared distance comparison
         return entitiesHit.stream()
-                .filter((hit) -> hit.position() == null || raycastObstacleFree(caster, start, hit.position()))
+                .filter((hit) -> hit.position() == null || raycastObstacleFree(caster.getWorld(), caster, start, hit.position()))
                 .sorted(new Comparator<EntityHit>() {
                     @Override
                     public int compare(EntityHit hit1, EntityHit hit2) {
@@ -126,22 +126,24 @@ public class TargetHelper {
 
     public static List<Entity> targetsFromArea(Entity caster, float range, Spell.Target.Area area, @Nullable Predicate<Entity> predicate) {
         var origin = caster.getEyePos();
-        return targetsFromArea(caster, origin, range, area, predicate);
+        return targetsFromArea(caster.getWorld(), caster, origin, caster.getRotationVector(), range, area, predicate);
     }
 
-    public static List<Entity> targetsFromArea(Entity centerEntity, Vec3d origin, float range, Spell.Target.Area area, @Nullable Predicate<Entity> predicate) {
+    public static List<Entity> targetsFromArea(World world, @Nullable Entity centerEntity, Vec3d origin, Vec3d look, float range, Spell.Target.Area area, @Nullable Predicate<Entity> predicate) {
         var horizontal = range * area.horizontal_range_multiplier;
         var vertical = range * area.vertical_range_multiplier;
-        var box = centerEntity.getBoundingBox().expand(
+        var initialBox = centerEntity != null
+                ? centerEntity.getBoundingBox()
+                : new Box(origin, origin);
+        var box = initialBox.expand(
                 // Extending bounding box to add some intersection tolerance
                 // Range check will filter out entities that are too far
                 horizontal + 0.5F,
                 vertical + 0.5F,
                 horizontal + 0.5F);
         var squaredDistance = range * range;
-        var look = centerEntity.getRotationVector();
         var angle = area.angle_degrees / 2F;
-        return centerEntity.getWorld().getOtherEntities(centerEntity, box, (target) -> {
+        return world.getOtherEntities(centerEntity, box, (target) -> {
             var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
             var distanceVector = VectorHelper.distanceVector(origin, target.getBoundingBox());
             return !target.isSpectator()
@@ -160,8 +162,8 @@ public class TargetHelper {
                         )
                     // Obstacle check
                     && (range < 1
-                        || raycastObstacleFree(centerEntity, origin, targetCenter)
-                        || raycastObstacleFree(centerEntity, origin, origin.add(distanceVector))
+                        || raycastObstacleFree(world, centerEntity, origin, targetCenter)
+                        || raycastObstacleFree(world, centerEntity, origin, origin.add(distanceVector))
                         )
                     ;
         });
@@ -171,16 +173,20 @@ public class TargetHelper {
         var origin = attacker.getEyePos();
         var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
         var distanceVector = VectorHelper.distanceVector(origin, target.getBoundingBox());
-        return raycastObstacleFree(attacker, origin, targetCenter)
-                || raycastObstacleFree(attacker, origin, origin.add(distanceVector));
+        return raycastObstacleFree(attacker.getWorld(), attacker, origin, targetCenter)
+                || raycastObstacleFree(attacker.getWorld(), attacker, origin, origin.add(distanceVector));
     }
 
-    private static BlockHitResult raycastObstacle(Entity entity, Vec3d start, Vec3d end) {
-        return entity.getWorld().raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
+    private static BlockHitResult raycastObstacle(World world, Entity entity, Vec3d start, Vec3d end) {
+        if (entity != null) {
+            return world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
+        } else {
+            return world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, ShapeContext.absent()));
+        }
     }
 
-    private static boolean raycastObstacleFree(Entity entity, Vec3d start, Vec3d end) {
-        var hit = raycastObstacle(entity, start, end);
+    private static boolean raycastObstacleFree(World world, Entity entity, Vec3d start, Vec3d end) {
+        var hit = raycastObstacle(world, entity, start, end);
         return hit.getType() != HitResult.Type.BLOCK;
     }
 
