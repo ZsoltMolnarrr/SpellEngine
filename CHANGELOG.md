@@ -63,6 +63,7 @@ API Additions:
   - Can disable: shield blocking, item usage
 - Spell Data structure changes
   - Added `spell.cost.cooldown.attempt_duration` to prevent multiple performs of delayed deliveries
+- Added `WeaponAttributeGenerator` to datagen API
 
 Functional changes:
 - RPG Series core dedicated sub-package now includes melee weapon skills
