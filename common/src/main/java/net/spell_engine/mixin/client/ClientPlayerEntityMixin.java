@@ -140,6 +140,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         if (duration > 0) {
             for (var slot: SpellHotbar.INSTANCE.slots) {
                 var spellEntry = slot.spell();
+                if (spellEntry == null) {
+                    // Some slots may not have spells (such as item usage bypass slot)
+                    continue;
+                }
                 var spell = spellEntry.value();
                 if (spell.active != null && spell.active.cast != null && spell.active.cast.duration <= 0) {
                     getCooldownManager().set(spellEntry, duration, false);

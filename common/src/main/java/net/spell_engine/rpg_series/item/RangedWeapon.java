@@ -48,7 +48,7 @@ public class RangedWeapon {
         public Entry(Identifier id, Equipment.Tier tier, RangedFactory factory, RangedConfig defaults, Supplier<Ingredient> repairIngredientSupplier, Equipment.WeaponType category) {
             this.id = id;
             this.tier = tier;
-            this.lootProperties = Equipment.LootProperties.of(tier.ordinal());
+            this.lootProperties = Equipment.LootProperties.of(tier.getNumber());
             this.factory = factory;
             this.defaults = defaults;
             this.repairIngredientSupplier = repairIngredientSupplier;
