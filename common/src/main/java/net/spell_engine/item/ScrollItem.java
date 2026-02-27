@@ -35,14 +35,9 @@ public class ScrollItem extends Item {
         return false;
     }
 
-    @Nullable public static boolean applySpell(ItemStack itemStack, RegistryEntry<Spell> spellEntry, @Nullable TagKey<Spell> pool) {
-        if (spellEntry.isIn(SpellTags.TREASURE)) {
-            itemStack.set(SpellDataComponents.SPELL_CONTAINER, SpellContainers.forScroll(spellEntry));
-            onSpellAdded(itemStack, spellEntry, pool);
-            return true;
-        } else {
-            return false;
-        }
+    public static void applySpell(ItemStack itemStack, RegistryEntry<Spell> spellEntry, @Nullable TagKey<Spell> pool) {
+        itemStack.set(SpellDataComponents.SPELL_CONTAINER, SpellContainers.forScroll(spellEntry));
+        onSpellAdded(itemStack, spellEntry, pool);
     }
 
     public static String translationKeyForPool(Identifier poolId) {

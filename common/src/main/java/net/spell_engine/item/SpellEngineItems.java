@@ -82,9 +82,8 @@ public class SpellEngineItems {
                         .sorted(Comparator.comparing(a -> a.getKey().get().getValue().getNamespace() + "_" + a.value().tier + "_" + a.getKey().get().getValue().getPath()))
                         .forEach((entry) -> {
                             var scroll = new ItemStack(SCROLL.get());
-                            if (ScrollItem.applySpell(scroll, entry, scrollTag.getTag())) {
-                                content.add(scroll);
-                            }
+                            ScrollItem.applySpell(scroll, entry, scrollTag.getTag());
+                            content.add(scroll);
                         });
             }
         });
