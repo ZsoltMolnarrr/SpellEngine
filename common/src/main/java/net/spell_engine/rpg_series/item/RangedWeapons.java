@@ -95,6 +95,7 @@ public class RangedWeapons {
     }
 
     private static final Map<Equipment.WeaponType, DamageMap> DAMAGE_MAPS = new EnumMap<>(Equipment.WeaponType.class);
+    private static final Map<Equipment.WeaponType, String> WEAPON_ATTRIBUTES = new EnumMap<>(Equipment.WeaponType.class);
 
     // ===== PULL TIME AND VELOCITY CONSTANTS =====
 
@@ -130,6 +131,9 @@ public class RangedWeapons {
         DAMAGE_MAPS.put(Equipment.WeaponType.HEAVY_CROSSBOW, DamageMap.builder()
                 .t1(11F).t2(13F).t3(15F).t4(17F).t5(17F).golden(9F)
                 .build());
+
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.LONG_BOW, "bow_two_handed_heavy");
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.HEAVY_CROSSBOW, "crossbow_two_handed_heavy");
     }
 
     // ===== PUBLIC FACTORY METHODS =====
@@ -173,6 +177,7 @@ public class RangedWeapons {
         // Create entry (RangedWeapon.Entry handles durability automatically via tier)
         var id = Identifier.of(namespace, name);
         var entry = new RangedWeapon.Entry(id, tier, factory, config, repairIngredient, weaponType);
+        entry.weaponAttributesPreset = WEAPON_ATTRIBUTES.getOrDefault(weaponType, "");
 
         return entry;
     }

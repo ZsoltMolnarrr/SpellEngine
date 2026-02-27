@@ -163,6 +163,7 @@ public class Weapons {
     }
 
     private static final Map<Equipment.WeaponType, SpellPowerMap> SPELL_POWER_MAPS = new EnumMap<>(Equipment.WeaponType.class);
+    private static final Map<Equipment.WeaponType, String> WEAPON_ATTRIBUTES = new EnumMap<>(Equipment.WeaponType.class);
 
     // ===== STATIC INITIALIZATION =====
 
@@ -223,6 +224,22 @@ public class Weapons {
         ATTACK_SPEEDS.put(Equipment.WeaponType.HEALING_STAFF, -3.0F);
         ATTACK_SPEEDS.put(Equipment.WeaponType.HAMMER, -3.2F);
 
+        // Initialize weapon attribute presets
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.DAGGER, "dagger");
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.SICKLE, "sickle");
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.DAMAGE_WAND, "wand");
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.HEALING_WAND, "wand");
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.SWORD, "sword");
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.SPEAR, "spear");
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.GLAIVE, "glaive");
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.MACE, "mace");
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.DOUBLE_AXE, "double_axe");
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.CLAYMORE, "claymore");
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.DAMAGE_STAFF, "staff");
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.HEALING_STAFF, "staff");
+        WEAPON_ATTRIBUTES.put(Equipment.WeaponType.HAMMER, "hammer");
+
+
         // Initialize spell power maps for wands and staves
         var wandPower = SpellPowerMap.builder()
                 .wooden(2.5F).t0(3F).t1(4F).t2(5F).t3(5.5F).t4(8F).t5(8F).golden(3F).build();
@@ -281,6 +298,8 @@ public class Weapons {
 
         // Create entry
         var entry = new Weapon.Entry(namespace, name, material, factory, config, weaponType);
+
+        entry.weaponAttributesPreset = WEAPON_ATTRIBUTES.getOrDefault(weaponType, "");
 
         // Apply loot properties with tier
         if (tier == Equipment.Tier.GOLDEN) {
