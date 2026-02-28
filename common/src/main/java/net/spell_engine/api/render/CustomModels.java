@@ -18,6 +18,8 @@ import net.spell_engine.mixin.client.render.ItemRendererAccessor;
 import java.util.List;
 
 public class CustomModels {
+    /// Still used by Quiver renderer registration,
+    /// should only be removed past 1.21.6
     @Deprecated(forRemoval = true)
     public static void registerModelIds(List<Identifier> ids) {
         CustomModelRegistry.modelIds.addAll(ids);
