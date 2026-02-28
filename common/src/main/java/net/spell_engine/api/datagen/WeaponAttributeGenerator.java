@@ -34,7 +34,8 @@ public abstract class WeaponAttributeGenerator implements DataProvider {
 
     private record WeaponAttributesFile(String parent) { }
     private static WeaponAttributesFile createFileContent(String preset) {
-        return new WeaponAttributesFile("bettercombat:" + preset);
+        var prefix = preset.contains(":") ? "" : "bettercombat:";
+        return new WeaponAttributesFile(prefix + preset);
     }
 
     @Override
