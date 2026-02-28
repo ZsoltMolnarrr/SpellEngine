@@ -91,6 +91,7 @@ Functional changes:
 - Fixed operation of spell variant, target:`AIM`+ deliver:`DIRECT` + area impact
 - Fixed Player data corruption caused by invalid spell identifiers #170
 - Update loot injection defaults: Hellish Trials, Draugr Invasion
+- Improved Friend or Foe logic on FTB Teams membership, thanks to LeDok
 
 # 1.8.19
 
