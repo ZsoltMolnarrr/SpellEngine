@@ -87,7 +87,6 @@ Functional changes:
 - Improved spell channeling mechanics
   - Channel ticks are now calculated more accurately, spell haste actually increasing tick frequency 
   - Melee skill haste - casting duration is now effected by attack speed multiplier bonuses
-- Global cooldown is now enabled by default for instant spells (0.5 seconds), adjustable in server config
 - Fixed operation of spell variant, target:`AIM`+ deliver:`DIRECT` + area impact
 - Fixed Player data corruption caused by invalid spell identifiers #170
 - Update loot injection defaults: Hellish Trials, Draugr Invasion
