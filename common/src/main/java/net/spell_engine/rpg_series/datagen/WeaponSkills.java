@@ -232,11 +232,11 @@ public class WeaponSkills {
         cut_1.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash_1");
         cut_1.swing_sound = Sound.of(SpellEngineSounds.WEAPON_CLAYMORE_SWING.id());
         cut_1.impact_sound = Sound.of(SpellEngineSounds.WEAPON_CLAYMORE_IMPACT.id());
-        // cut_1.animation.speed = 1.25F;
+        cut_1.animation.speed = 0.8F;
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
         cut_2.attack_speed_multiplier = 2F;
-        cut_2.delay = 0.6F;
+        cut_1.delay = 0.3F;
         cut_2.hitbox = new Spell.Delivery.Melee.HitBox();
         cut_2.hitbox.arc = 120;
         cut_2.hitbox.height = 0.2F;
@@ -246,14 +246,14 @@ public class WeaponSkills {
         cut_2.animation = PlayerAnimation.of("spell_engine:weapon_flurry_2h_slash_2");
         cut_2.swing_sound = Sound.of(SpellEngineSounds.WEAPON_CLAYMORE_SWING.id());
         cut_2.impact_sound = Sound.of(SpellEngineSounds.WEAPON_CLAYMORE_IMPACT.id());
-        // cut_2.animation.speed = 1.25F;
+        cut_2.animation.speed = 0.8F;
 
         SpellBuilder.Deliver.melee(spell, List.of(cut_1, cut_2));
 
         spell.impacts = List.of();
 
         SpellBuilder.Cost.cooldown(spell, 16);
-//        spell.cost.cooldown.attempt_duration = 1F;
+        spell.cost.cooldown.proportional = true;
 
         return new Entry(id, spell, title, description, null);
     }
@@ -281,7 +281,7 @@ public class WeaponSkills {
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
         cut_2.attack_speed_multiplier = 2F;
-        cut_2.delay = 0.6F;
+        cut_2.delay = 0.3F;
         cut_2.hitbox = new Spell.Delivery.Melee.HitBox();
         cut_2.hitbox.arc = 90;
         cut_2.hitbox.height = 0.2F;

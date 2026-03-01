@@ -33,7 +33,8 @@
             "arc": 120.0
           },
           "animation": {
-            "id": "spell_engine:weapon_flurry_2h_slash_1"
+            "id": "spell_engine:weapon_flurry_2h_slash_1",
+            "speed": 0.8
           },
           "swing_sound": {
             "id": "spell_engine:weapon_claymore_swing"
@@ -44,7 +45,6 @@
         },
         {
           "attack_speed_multiplier": 2.0,
-          "delay": 0.6,
           "forward_momentum": 1.0,
           "movement_speed": 0.8,
           "hitbox": {
@@ -53,7 +53,8 @@
             "arc": 120.0
           },
           "animation": {
-            "id": "spell_engine:weapon_flurry_2h_slash_2"
+            "id": "spell_engine:weapon_flurry_2h_slash_2",
+            "speed": 0.8
           },
           "swing_sound": {
             "id": "spell_engine:weapon_claymore_swing"
@@ -68,7 +69,8 @@
   "cost": {
     "cooldown": {
       "group": "weapon",
-      "duration": 16.0
+      "duration": 16.0,
+      "proportional": true
     }
   }
 }

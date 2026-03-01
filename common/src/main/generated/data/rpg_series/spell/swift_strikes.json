@@ -29,7 +29,7 @@
         },
         {
           "attack_speed_multiplier": 2.0,
-          "delay": 0.6,
+          "delay": 0.3,
           "additional_strike_delay": 0.2,
           "hitbox": {
             "height": 0.2,

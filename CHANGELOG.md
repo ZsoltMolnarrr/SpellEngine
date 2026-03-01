@@ -1,3 +1,9 @@
+# 1.9.2
+
+Functional changes:
+- Fix issues of Flurry skill (windup time, animation speed, cooldown proportionality)
+- Fix issues of Swift Strikes skill (windup time)
+
 # 1.9.1
 
 Fix NeoForge launch crash.
