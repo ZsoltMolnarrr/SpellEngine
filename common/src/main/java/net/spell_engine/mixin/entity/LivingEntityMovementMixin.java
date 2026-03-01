@@ -10,7 +10,8 @@ import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(LivingEntity.class)
 public class LivingEntityMovementMixin {
-    @WrapOperation(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getSlipperiness()F"))
+    // NeoForge completely rewrites slipperiness handling, hence this is optional
+    @WrapOperation(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/Block;getSlipperiness()F"), require = 0)
     private float getSlipperiness_Wrapped(Block instance, Operation<Float> original) {
         var result = original.call(instance);
         var entity = (LivingEntity) (Object) this;
