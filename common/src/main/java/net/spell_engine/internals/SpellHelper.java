@@ -462,9 +462,9 @@ public class SpellHelper {
                 player.removeStatusEffect(effect.get());
             }
         }
-        if (SpellEvents.SPELL_COST_CONSUME.isListened()) {
+        if (SpellEvents.COST_CONSUME.isListened()) {
             var args = new SpellEvents.SpellCostConsumeEvent.Args(player, spellEntry, heldItemStack);
-            SpellEvents.SPELL_COST_CONSUME.invoke(l -> l.onSpellCostConsume(args));
+            SpellEvents.COST_CONSUME.invoke(l -> l.onSpellCostConsume(args));
         }
     }
 

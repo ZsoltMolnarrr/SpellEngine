@@ -11,7 +11,7 @@ API changes:
 - Added new spell modifier `channel_ticks_add`, to add extra channel ticks to channeling spells
 - Added new SpellEvents:
   - `SpellEvents.CASTING_ATTEMPT` (with Pre & Post stages) - to be able to inject custom failure reason
-  - `SpellEvents.SPELL_COST_CONSUME` - executed when spell cost is being consumed
+  - `SpellEvents.COST_CONSUME` - executed when spell cost is being consumed
 
 # 1.9.1
 
