@@ -21,6 +21,12 @@ public class SpellEvents {
         @Nullable SpellCast.Attempt onCastingAttempt(Args args);
     }
 
+    public static final Event<SpellCostConsumeEvent> SPELL_COST_CONSUME = new Event<>();
+    public interface SpellCostConsumeEvent {
+        record Args(PlayerEntity caster, RegistryEntry<Spell> spell, ItemStack itemStack) {}
+        void onSpellCostConsume(Args args);
+    }
+
     public static final Event<SpellCastEvent> SPELL_CAST = new Event<SpellCastEvent>();
     public interface SpellCastEvent {
         record Args(PlayerEntity caster, RegistryEntry<Spell> spell, List<Entity> targets, SpellCast.Action action, float progress) {}
