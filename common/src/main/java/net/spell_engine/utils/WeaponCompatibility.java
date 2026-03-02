@@ -1,10 +1,6 @@
 package net.spell_engine.utils;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.MaceItem;
-import net.minecraft.item.RangedWeaponItem;
-import net.minecraft.item.SwordItem;
-import net.minecraft.item.TridentItem;
+import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -27,7 +23,7 @@ public class WeaponCompatibility {
 
             // Try melee weapons group
             if (config.melee_weapons.enabled &&
-                    (item instanceof SwordItem || item instanceof TridentItem || item instanceof MaceItem) ) {
+                    (item instanceof SwordItem || item instanceof TridentItem || item instanceof MaceItem || item instanceof AxeItem) ) {
                 SpellContainer container = processCompatGroup(
                         itemEntry,
                         config.melee_weapons

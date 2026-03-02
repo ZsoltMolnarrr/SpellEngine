@@ -77,6 +77,7 @@ public class FallbackConfig {
                 new CompatGroup.Specifier(PatternMatching.regex("dagger|knife"), Weapons.DAGGER_CONTAINER),
                 new CompatGroup.Specifier(RPGSeriesItemTags.WeaponType.tagString(Equipment.WeaponType.MACE), Weapons.MACE_CONTAINER),
                 new CompatGroup.Specifier(PatternMatching.regex("mace|hammer|flail"), Weapons.MACE_CONTAINER),
+                new CompatGroup.Specifier("#minecraft:axes", Weapons.AXE_CONTAINER),
                 new CompatGroup.Specifier(PatternMatching.regex("_axe"), Weapons.AXE_CONTAINER),
                 new CompatGroup.Specifier(RPGSeriesItemTags.WeaponType.tagString(Equipment.WeaponType.SWORD), Weapons.SWORD_CONTAINER),
                 new CompatGroup.Specifier(PatternMatching.regex("sword|blade"), Weapons.SWORD_CONTAINER)

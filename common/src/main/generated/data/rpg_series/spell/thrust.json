@@ -28,7 +28,7 @@
           "additional_strike_delay": 0.15,
           "additional_hits_on_same_target": false,
           "forward_momentum": 1.5,
-          "movement_slipperiness": 0.3,
+          "movement_slipperiness": 0.25,
           "hitbox": {
             "width": 0.5,
             "height": 0.2,

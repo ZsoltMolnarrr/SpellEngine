@@ -381,14 +381,14 @@ public class WeaponSkills {
 
         var attack = new Spell.Delivery.Melee.Attack();
         attack.attack_speed_multiplier = 1F;
-        attack.delay = 0.3F;
+        attack.delay = 0.1F;
         attack.hitbox = new Spell.Delivery.Melee.HitBox();
         attack.hitbox.arc = 160;
         attack.hitbox.height = 0.2F;
         attack.hitbox.width = 0.5F;
         attack.forward_momentum = 1.5F;
-        attack.movement_slipperiness = 0.3F;
-        attack.delay = 0.1F;
+        attack.movement_slipperiness = 0.25F;
+
         attack.additional_strikes = 4;
         attack.additional_strike_delay = 0.15F;
         attack.additional_hits_on_same_target = false;
