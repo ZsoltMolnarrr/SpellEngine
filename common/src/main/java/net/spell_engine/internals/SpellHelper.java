@@ -75,6 +75,13 @@ public class SpellHelper {
             return SpellCast.Attempt.none();
         }
         var spell = spellEntry.value();
+        if (SpellEvents.CASTING_ATTEMPT.PRE.isListened()) {
+            var args = new SpellEvents.CastingAttemptEvent.Args(player, spellEntry, itemStack);
+            var injected = SpellEvents.CASTING_ATTEMPT.PRE.invokeWithResult(listener -> listener.onCastingAttempt(args));
+            if (injected != null) {
+                return injected;
+            }
+        }
         if (caster.getCooldownManager().isCoolingDown(spellEntry)) {
             return SpellCast.Attempt.failOnCooldown(new SpellCast.Attempt.OnCooldownInfo());
         }
@@ -84,9 +91,9 @@ public class SpellHelper {
                 return SpellCast.Attempt.failMissingItem(new SpellCast.Attempt.MissingItemInfo(ammoResult.item()));
             }
         }
-        if (SpellEvents.CASTING_ATTEMPT.isListened()) {
+        if (SpellEvents.CASTING_ATTEMPT.POST.isListened()) {
             var args = new SpellEvents.CastingAttemptEvent.Args(player, spellEntry, itemStack);
-            var injected = SpellEvents.CASTING_ATTEMPT.invokeWithResult(listener -> listener.onCastingAttempt(args));
+            var injected = SpellEvents.CASTING_ATTEMPT.POST.invokeWithResult(listener -> listener.onCastingAttempt(args));
             if (injected != null) {
                 return injected;
             }
