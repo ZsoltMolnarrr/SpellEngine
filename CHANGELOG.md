@@ -4,6 +4,8 @@ Functional changes:
 - Fixed issues of Flurry skill (windup time, animation speed, cooldown proportionality)
 - Fixed issues of Swift Strikes skill (windup time)
 - Fixed fallback config applying to Axes
+- Fixed movement friction of attack skills on NeoForge 
+- Fine tune momentum given by Swipe and Thrust skills
 
 # 1.9.1
 
