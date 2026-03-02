@@ -84,6 +84,13 @@ public class SpellHelper {
                 return SpellCast.Attempt.failMissingItem(new SpellCast.Attempt.MissingItemInfo(ammoResult.item()));
             }
         }
+        if (SpellEvents.CASTING_ATTEMPT.isListened()) {
+            var args = new SpellEvents.CastingAttemptEvent.Args(player, spellEntry, itemStack);
+            var injected = SpellEvents.CASTING_ATTEMPT.invokeWithResult(listener -> listener.onCastingAttempt(args));
+            if (injected != null) {
+                return injected;
+            }
+        }
         return SpellCast.Attempt.success();
     }
 

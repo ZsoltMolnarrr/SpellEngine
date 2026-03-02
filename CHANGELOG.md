@@ -9,6 +9,8 @@ Functional changes:
 
 API changes:
 - Added new spell modifier `channel_ticks_add`, to add extra channel ticks to channeling spells
+- Added new SpellEvents:
+  - `SpellEvents.CASTING_ATTEMPT` - to be able to inject custom failure reason
 
 # 1.9.1
 

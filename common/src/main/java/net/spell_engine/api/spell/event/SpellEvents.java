@@ -3,6 +3,7 @@ package net.spell_engine.api.spell.event;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.event.Event;
 import net.spell_engine.api.spell.Spell;
@@ -14,6 +15,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class SpellEvents {
+    public static final Event<CastingAttemptEvent> CASTING_ATTEMPT = new Event<CastingAttemptEvent>();
+    public interface CastingAttemptEvent {
+        record Args(PlayerEntity caster, RegistryEntry<Spell> spell, ItemStack itemStack) {}
+        @Nullable SpellCast.Attempt onCastingAttempt(Args args);
+    }
+
     public static final Event<SpellCastEvent> SPELL_CAST = new Event<SpellCastEvent>();
     public interface SpellCastEvent {
         record Args(PlayerEntity caster, RegistryEntry<Spell> spell, List<Entity> targets, SpellCast.Action action, float progress) {}
