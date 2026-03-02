@@ -1,5 +1,6 @@
 package net.spell_engine.internals.casting;
 
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
@@ -51,11 +52,11 @@ public class SpellCast {
         public ArrayList<Float> ticks = new ArrayList<>();
     }
     public record Process(RegistryEntry<Spell> spell, Item item, float speed, int length, long startedAt, TickHolder tickHolder) {
-        public Process(RegistryEntry<Spell> spell, Item item, float speed, int length, long startedAt) {
+        public Process(LivingEntity caster, RegistryEntry<Spell> spell, Item item, float speed, int length, long startedAt) {
             this(spell, item, speed, length, startedAt, new TickHolder());
             if (SpellHelper.isChanneled(spell.value())) {
-                var channelCount = spell().value().active.cast.channel_ticks;
-                var interval = channelInterval();
+                var channelCount = SpellHelper.channelTicks(caster, spell);
+                var interval = channelInterval(caster);
                 var offset = -interval * 0.5F;
                 for (int i = 1; i <= channelCount; i++) {
                     tickHolder.ticks.add((interval * i) + offset);
@@ -95,14 +96,14 @@ public class SpellCast {
         }
 
         @Nullable
-        public static Process fromSync(World world, SyncFormat sync, Item item, long startedAt) {
+        public static Process fromSync(LivingEntity caster, World world, SyncFormat sync, Item item, long startedAt) {
             var spellId = sync.i();
             if (spellId.isEmpty()) {
                 return null;
             }
             var id = Identifier.of(spellId);
             var spellEntry = SpellRegistry.from(world).getEntry(id).orElse(null);
-            return new Process(spellEntry, item, sync.s(), sync.l(), startedAt);
+            return new Process(caster, spellEntry, item, sync.s(), sync.l(), startedAt);
         }
 
         /**
@@ -111,10 +112,10 @@ public class SpellCast {
          */
         public record SyncFormat(String i, float s, int l) { }
 
-        public float channelInterval() {
-            var spell = this.spell.value();
-            if (spell.active.cast.channel_ticks > 0) {
-                return length / (float)spell.active.cast.channel_ticks;
+        public float channelInterval(LivingEntity caster) {
+            var ticks = SpellHelper.channelTicks(caster, spell());
+            if (ticks > 0) {
+                return length / (float)ticks;
             } else {
                 return length;
             }

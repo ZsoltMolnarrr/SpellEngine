@@ -26,7 +26,7 @@ public class LivingEntityRendererMixin {
                 if (spell.active != null && spell.active.cast != null && spell.active.cast.animation_spin != 0) {
                     var ticks = process.spellCastTicksSoFar(livingEntity.getWorld().getTime());
                     var spin = spell.active.cast.animation_spin;
-                    var turn = spin / (process.channelInterval() / 20F);
+                    var turn = spin / (process.channelInterval(livingEntity) / 20F);
                     var degress = turn * ticks + delta * turn;
                     matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(degress));
                 }

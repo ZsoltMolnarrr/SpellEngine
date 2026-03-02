@@ -138,6 +138,17 @@ public class SpellHelper {
         return new SpellCast.Duration(haste, Math.round(duration * 20F));
     }
 
+    public static int channelTicks(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
+        var ticks = spellEntry.value().active.cast.channel_ticks;
+        if (caster instanceof PlayerEntity player) {
+            var modifiers = SpellModifiers.of(player, spellEntry);
+            for (var modifier: modifiers) {
+                ticks += modifier.channel_ticks_add;
+            }
+        }
+        return ticks;
+    }
+
     public static float getCooldownDuration(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
         return getCooldownDuration(caster, spellEntry, null);
     }
@@ -198,7 +209,7 @@ public class SpellHelper {
         }
         // Allow clients to specify their haste without validation
         // var details = SpellHelper.getCastTimeDetails(player, spell);
-        var process = new SpellCast.Process(spellEntry, itemStack.getItem(), speed, length, player.getWorld().getTime());
+        var process = new SpellCast.Process(player, spellEntry, itemStack.getItem(), speed, length, player.getWorld().getTime());
         SpellCastSyncHelper.setCasting(player, process);
         SoundHelper.playSound(player.getWorld(), player, spell.active.cast.start_sound);
     }
@@ -237,7 +248,7 @@ public class SpellHelper {
                 // Compensating with extra damage, for spell with less than intended ticks
                 // (due to tick interval shorter than 1 tick.)
                 if (caster.getSpellCastProcess() != null) {
-                    var channelInterval = caster.getSpellCastProcess().channelInterval();
+                    var channelInterval = caster.getSpellCastProcess().channelInterval(player);
                     if (channelInterval < 1) {
                         channelMultiplier *= (1F / channelInterval);
                     }

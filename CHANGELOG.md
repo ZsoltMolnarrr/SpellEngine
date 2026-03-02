@@ -7,6 +7,9 @@ Functional changes:
 - Fixed movement friction of attack skills on NeoForge 
 - Fine tune momentum given by Swipe and Thrust skills
 
+API changes:
+- Added new spell modifier `channel_ticks_add`, to add extra channel ticks to channeling spells
+
 # 1.9.1
 
 Fix NeoForge launch crash.

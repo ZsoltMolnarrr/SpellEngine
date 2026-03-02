@@ -118,6 +118,7 @@ public class Spell {
         @Nullable public LaunchProperties projectile_launch;
         @Nullable public ProjectileData.Perks projectile_perks;
         @Nullable public Impact.Modifier power_modifier;
+        public int channel_ticks_add = 0;
         public float knockback_multiply_base = 0;
         public float spawn_duration_add = 0;
         public int effect_amplifier_add = 0;

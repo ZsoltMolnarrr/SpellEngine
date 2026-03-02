@@ -111,7 +111,7 @@ public class PlayerEntityMixin implements SpellCasterEntity {
                     this.synchronizedSpellCastProcess = null;
                 } else {
                     var syncFormat = syncGson.fromJson(progressString, SpellCast.Process.SyncFormat.class);
-                    this.synchronizedSpellCastProcess = SpellCast.Process.fromSync(player.getWorld(), syncFormat, player.getMainHandStack().getItem(), player.getWorld().getTime());
+                    this.synchronizedSpellCastProcess = SpellCast.Process.fromSync(player, player.getWorld(), syncFormat, player.getMainHandStack().getItem(), player.getWorld().getTime());
                 }
                 lastHandledSyncData = progressString;
             }

@@ -660,6 +660,9 @@ public class SpellTooltip {
             if (modifier.projectile_launch != null) {
                 tokenizeProjectileLaunch(modifier.projectile_launch, tokenReplacements);
             }
+            if (modifier.channel_ticks_add != 0) {
+                addToken("channel_ticks_add", formattedNumber(modifier.channel_ticks_add), tokenReplacements);
+            }
             if (modifier.effect_amplifier_add != 0) {
                 addToken("effect_amplifier_add", formattedNumber(modifier.effect_amplifier_add), tokenReplacements);
             }
