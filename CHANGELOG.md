@@ -1,8 +1,8 @@
 # 1.9.4
 
 Functional changes:
-- Fix some weapon factory constants
-- Fix ranged weapon pull times
+- Fixed some weapon factory constants
+- Fixed ranged weapon pull time constants
 
 # 1.9.3
 
