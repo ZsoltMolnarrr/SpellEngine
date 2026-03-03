@@ -99,13 +99,13 @@ public class RangedWeapons {
 
     // ===== PULL TIME AND VELOCITY CONSTANTS =====
 
-    // Pull times (actual_time - 1F formula from ranged weapon API)
-    private static final float PULL_TIME_SHORT_BOW = -0.2F;      // 0.8F - 1F
-    private static final float PULL_TIME_LONG_BOW = -0.5F;       // 1.5F - 1F
-    private static final float PULL_TIME_RAPID_CROSSBOW = 0F;    // Instant
-    private static final float PULL_TIME_HEAVY_CROSSBOW = -0.75F; // 1.75F - 1F
+    // Pull time in seconds, with 1 sec offset
+    private static final float PULL_TIME_SHORT_BOW = -0.2F;
+    private static final float PULL_TIME_LONG_BOW = 0.5F;
+    private static final float PULL_TIME_RAPID_CROSSBOW = 0F;
+    private static final float PULL_TIME_HEAVY_CROSSBOW = 0.75F;
 
-    // Velocities (projectile speed multipliers)
+    // Velocity bonus (projectile speed addition)
     private static final float VELOCITY_SHORT_BOW = 0F;
     private static final float VELOCITY_LONG_BOW = 0.75F;
     private static final float VELOCITY_RAPID_CROSSBOW = 0F;
