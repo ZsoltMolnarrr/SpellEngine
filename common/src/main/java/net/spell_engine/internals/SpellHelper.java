@@ -1812,7 +1812,7 @@ public class SpellHelper {
             case DAMAGE, FIRE, AGGRO, DISRUPT -> {
                 return SpellTarget.Intent.HARMFUL;
             }
-            case HEAL, SPAWN -> {
+            case HEAL -> {
                 return SpellTarget.Intent.HELPFUL;
             }
             case STATUS_EFFECT -> {
@@ -1820,6 +1820,13 @@ public class SpellHelper {
                     return action.status_effect.remove.select_beneficial ? SpellTarget.Intent.HARMFUL : SpellTarget.Intent.HELPFUL;
                 }
                 return intentForStatusEffect(action.status_effect.effect_id);
+            }
+            case SPAWN -> {
+                var intent = SpellTarget.Intent.HELPFUL;
+                if (!action.spawns.isEmpty()) {
+                    intent = action.spawns.getFirst().intent;
+                }
+                return intent;
             }
             case TELEPORT -> {
                 return action.teleport.intent;

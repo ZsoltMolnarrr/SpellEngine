@@ -7,6 +7,7 @@ API Changes:
 - Added new melee attack skill fields related to momentum
   - `spell.deliver.melee.allow_airborne` (default: true) - to hold up using momentum based melee skills while airborne
   - `spell.deliver.melee.attack.allow_momentum_airborne` (default: false) - whether the attack specific forward momentum can be applied while airborne
+- Added `SPAWN` impact intent specifier to enable spawning onto hostile targets
 
 # 1.9.2
 

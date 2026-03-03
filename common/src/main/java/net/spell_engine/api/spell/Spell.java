@@ -490,7 +490,8 @@ public class Spell {
 
             // Populate either `spawn` or `spawns` but not both
             public List<Spawn> spawns;
-            public static class Spawn {
+            public static class Spawn { public Spawn() { }
+                public SpellTarget.Intent intent = SpellTarget.Intent.HELPFUL;
                 // Custom entity type id to spawn
                 // Implement `SpellEntity.Spawned` to receive information about spawning context
                 public String entity_type_id;
@@ -500,6 +501,7 @@ public class Spell {
 
                 public Spawn copy() {
                     Spawn copy = new Spawn();
+                    copy.intent = this.intent;
                     copy.entity_type_id = this.entity_type_id;
                     copy.time_to_live_seconds = this.time_to_live_seconds;
                     copy.delay_ticks = this.delay_ticks;
