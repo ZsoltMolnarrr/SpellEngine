@@ -3,7 +3,7 @@
     "author": "Daedelus",
     "description": "Dual handed stab attack",
     "emote":{
-        "isLoop": "false",
+        "isLoop": "true",
         "returnTick": 2,
         "beginTick":1,
         "endTick":12,
