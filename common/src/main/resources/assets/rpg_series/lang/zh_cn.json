@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "旋转攻击，对附近的敌人造成{damage}伤害。",
+  "spell.rpg_series.cleave.name": "切割",
+  "spell.rpg_series.fan_of_knives.description": "向锥形区域投掷数把刀，造成{damage}点伤害，并可在地上弹跳最多{bounce}次。",
+  "spell.rpg_series.fan_of_knives.name": "飞刀扇",
+  "spell.rpg_series.flurry.description": "握住武器发动一系列迅捷的连击，同时获得动量。",
+  "spell.rpg_series.flurry.name": "连击",
+  "spell.rpg_series.ground_slam.description": "跳起并砸向地面，对附近的敌人造成{damage}伤害。",
+  "spell.rpg_series.ground_slam.name": "撼地重击",
+  "spell.rpg_series.impale.description": "向前掷出你的武器，造成{damage}点伤害，附加大量击退。",
+  "spell.rpg_series.impale.name": "刺穿",
+  "spell.rpg_series.smash.description": "带有强力击退效果的打击，使目标无法使用护盾和物品。",
+  "spell.rpg_series.smash.name": "猛击",
+  "spell.rpg_series.swift_strikes.description": "发动一系列迅速的连击。",
+  "spell.rpg_series.swift_strikes.name": "迅捷打击",
+  "spell.rpg_series.swipe.description": "手持武器向前滑行，伤害沿途所有敌人。",
+  "spell.rpg_series.swipe.name": "滑动",
+  "spell.rpg_series.thrust.description": "手持武器向前冲锋，伤害沿途所有敌人。",
+  "spell.rpg_series.thrust.name": "戳刺",
+  "spell.rpg_series.whirlwind.description": "持续旋转，对附近的敌人造成{damage}伤害。",
+  "spell.rpg_series.whirlwind.name": "旋风斩"
+}
