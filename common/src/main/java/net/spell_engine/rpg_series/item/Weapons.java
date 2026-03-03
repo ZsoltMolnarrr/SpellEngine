@@ -176,25 +176,25 @@ public class Weapons {
                 .wooden(6.6F).t0(8.5F).t1(10.3F).t2(12.2F).t3(14.1F).t4(16F).t5(16F).golden(6.6F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.MACE, DamageMap.builder()
-                .t1(7F).t2(8.3F).t3(9.6F).t4(11F).t5(11F).golden(4.3F).build());
+                .wooden(4.4F).t0(5.7F).t1(7F).t2(8.3F).t3(9.6F).t4(11F).t5(11F).golden(4.3F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.SPEAR, DamageMap.builder()
-                .wooden(3.1F).t0(4F).t1(5F).t2(6F).t3(7F).t4(8F).t5(8F).golden(3F).build());
+                .wooden(3F).t0(4F).t1(5F).t2(6F).t3(7F).t4(8F).t5(8F).golden(3F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.DAGGER, DamageMap.builder()
                 .wooden(2F).t0(2.6F).t1(3.3F).t2(4F).t3(4.7F).t4(5.5F).t5(5.5F).golden(1.8F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.SICKLE, DamageMap.builder()
-                .t1(4.1F).t2(5F).t3(5.9F).t4(6.8F).t5(6.8F).golden(2.4F).build());
+                .wooden(2.4F).t0(3.2F).t1(4.1F).t2(5F).t3(5.9F).t4(6.8F).t5(6.8F).golden(2.4F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.DOUBLE_AXE, DamageMap.builder()
                 .wooden(4.4F).t0(5.6F).t1(7F).t2(8.3F).t3(9.6F).t4(11F).t5(11F).golden(4.3F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.GLAIVE, DamageMap.builder()
-                .t1(5.8F).t2(7F).t3(8.1F).t4(9.3F).t5(9.3F).golden(3.5F).build());
+                .wooden(3.5F).t0(4.6F).t1(5.8F).t2(7F).t3(8.1F).t4(9.3F).t5(9.3F).golden(3.5F).build());
 
         DAMAGE_MAPS.put(Equipment.WeaponType.SWORD, DamageMap.builder()
-                .wooden(6.2F).t0(8F).t1(9.6F).t2(11.2F).t3(12.8F).t4(14.5F).t5(14.5F).golden(7.7F).build());
+                .wooden(3F).t0(4F).t1(5F).t2(6F).t3(7F).t4(8F).t5(8F).golden(3F).build());
 
         // Wands and staves have constant damage regardless of tier
         DAMAGE_MAPS.put(Equipment.WeaponType.DAMAGE_WAND, DamageMap.builder()

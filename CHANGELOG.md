@@ -1,3 +1,8 @@
+# 1.9.4
+
+Functional changes:
+- Fix some weapon factory constants
+
 # 1.9.3
 
 Functional changes:
