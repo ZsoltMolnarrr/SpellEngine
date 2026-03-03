@@ -444,6 +444,12 @@ public class Weapons {
         return entry;
     }
 
+    public static Weapon.Entry healingStaff(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient, List<Identifier> spellSchools) {
+        var entry = create(namespace, name, Equipment.WeaponType.HEALING_STAFF, tier, repairIngredient);
+        applySpellPower(entry, Equipment.WeaponType.HEALING_STAFF, tier, spellSchools);
+        return entry;
+    }
+    
     // ===== PRIVATE HELPER METHODS =====
 
     /**
