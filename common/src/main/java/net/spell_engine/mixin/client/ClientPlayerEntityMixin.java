@@ -302,7 +302,8 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
 
         var player = player();
         var momentum = attack.forward_momentum();
-        if (momentum > 0) {
+        if (momentum > 0
+                && (attack.allow_momentum_airborne() || player.isOnGround()) ) {
             var direction = new Vec3d(0, 0, 1)
                     .rotateY((float) Math.toRadians((-1.0) * player.getYaw()))
                     .multiply(attack.forward_momentum());

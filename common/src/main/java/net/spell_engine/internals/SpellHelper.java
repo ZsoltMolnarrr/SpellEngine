@@ -575,6 +575,9 @@ public class SpellHelper {
                         attacks = List.of(attacks.get(index));
                     }
                     for (var attacker: attackers) {
+                        if (!attacker.isOnGround() && !spell.deliver.melee.allow_airborne) {
+                            break;
+                        }
                         if (attacker instanceof ServerPlayerEntity serverPlayer) {
                             // Map to resolved MeleeAttack structures
                             var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, attacks, spellId);

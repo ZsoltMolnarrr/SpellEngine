@@ -1,3 +1,13 @@
+# 1.9.3
+
+Functional changes:
+- Improve interaction between melee skills and given momentum while being airborne
+
+API Changes:
+- Added new melee attack skill fields related to momentum
+  - `spell.deliver.melee.allow_airborne` (default: true) - to hold up using momentum based melee skills while airborne
+  - `spell.deliver.melee.attack.allow_momentum_airborne` (default: false) - whether the attack specific forward momentum can be applied while airborne
+
 # 1.9.2
 
 Functional changes:

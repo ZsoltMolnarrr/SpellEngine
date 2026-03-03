@@ -240,6 +240,9 @@ public class Spell {
 
         public Melee melee;
         public static class Melee { public Melee() { }
+            /// Whether the melee attacks can be started to perform while airborne,
+            /// if false, the attack will be delayed until the caster is on the ground
+            public boolean allow_airborne = true;
             public List<Attack> attacks = List.of();
             public static class Attack { public Attack() { }
                 /// Only for internal use, do not touch this :)
@@ -262,6 +265,8 @@ public class Spell {
 
                 /// Forward momentum applied to the caster when performing this melee attack
                 public float forward_momentum = 0F;
+                /// Whether forward momentum can be applied while airborne
+                public boolean allow_momentum_airborne = false;
                 /// Multiplier applied to the movement speed while executing this melee attack.
                 public float movement_speed = 1F;
                 /// Bonus applied to block slipperiness. Use positive value to slide further.

@@ -398,6 +398,7 @@ public class WeaponSkills {
         attack.impact_sound = Sound.of(SpellEngineSounds.WEAPON_SICKLE_IMPACT_LARGE.id());
 
         SpellBuilder.Deliver.melee(spell, List.of(attack));
+        spell.deliver.melee.allow_airborne = false;
 
         SpellBuilder.Cost.cooldown(spell, 12);
 
@@ -421,7 +422,7 @@ public class WeaponSkills {
         attack.hitbox.arc = 160;
         attack.hitbox.length = 0.5F;
         attack.hitbox.height = 0.2F;
-        attack.forward_momentum = 1.5F;
+        attack.forward_momentum = 1.75F;
         attack.movement_slipperiness = 0.3F;
         attack.delay = 0.1F;
         attack.additional_strikes = 4;
@@ -433,6 +434,7 @@ public class WeaponSkills {
         attack.impact_sound = Sound.of(SpellEngineSounds.WEAPON_SICKLE_IMPACT_SMALL.id());
 
         SpellBuilder.Deliver.melee(spell, List.of(attack));
+        spell.deliver.melee.allow_airborne = false;
 
         spell.impacts = List.of();
 
