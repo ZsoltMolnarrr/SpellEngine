@@ -11,6 +11,7 @@
   "deliver": {
     "type": "MELEE",
     "melee": {
+      "allow_airborne": false,
       "attacks": [
         {
           "delay": 0.1,
