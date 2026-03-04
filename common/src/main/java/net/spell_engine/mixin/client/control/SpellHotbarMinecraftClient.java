@@ -1,6 +1,7 @@
 package net.spell_engine.mixin.client.control;
 
-import com.llamalad7.mixinextras.injector.WrapWithCondition;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -22,8 +23,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Mixin(value = MinecraftClient.class, priority = 999)
 public abstract class SpellHotbarMinecraftClient implements MinecraftClientExtension {
@@ -36,6 +37,9 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
     // @Nullable private WrappedKeybinding.Category spellHotbarHandle = null;
 
     private boolean useKeySpellCastingLock = false;
+
+    // Holds the list of keys that are currently being used for something else.
+    private final List<KeyBinding> concurrentKeys = new ArrayList<>();
 
     @Inject(method = "handleInputEvents", at = @At(value = "HEAD"))
     private void handleInputEvents_HEAD_SpellHotbar(CallbackInfo ci) {
@@ -62,11 +66,13 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
                 return;
             }
         }
+
+        concurrentKeys.removeIf(k -> !k.isPressed());
         SpellHotbar.Handle handled;
         if (useKeySpellCastingLock || SpellEngineClient.config.useKeyHighPriority) {
-            handled = SpellHotbar.INSTANCE.handleAll(player, options);
+            handled = SpellHotbar.INSTANCE.handleAll(player, options, concurrentKeys);
         } else {
-            handled = SpellHotbar.INSTANCE.handleOther(player, options);
+            handled = SpellHotbar.INSTANCE.handleOther(player, options, concurrentKeys);
         }
         onSpellHotbarInputHandled(handled);
     }
@@ -105,8 +111,12 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
         SpellHotbar.INSTANCE.syncItemUseSkill(player);
     }
 
-    @WrapWithCondition(method = "handleInputEvents", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerInventory;selectedSlot:I", ordinal = 0, opcode = Opcodes.PUTFIELD))
-    private boolean handleInputEvents_OverrideNumberKeys(PlayerInventory instance, int index) {
+    @WrapOperation(
+            method = "handleInputEvents",
+            at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerInventory;selectedSlot:I", ordinal = 0, opcode = Opcodes.PUTFIELD),
+            require = 0
+    )
+    private void selectSlot_Wrap(PlayerInventory instance, int index, Operation<Void> original) {
         var shouldControlSpellHotbar = false;
         if (!Keybindings.bypass_spell_hotbar.isPressed()) {
             for (var slot: SpellHotbar.INSTANCE.slots) {
@@ -119,9 +129,11 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
         }
 
         if (shouldControlSpellHotbar) {
-            return false;
+            // Do nothing
         } else {
-            return true;
+            var trigger = this.options.hotbarKeys[index];
+            concurrentKeys.add(trigger);
+            original.call(instance, index);
         }
     }
 

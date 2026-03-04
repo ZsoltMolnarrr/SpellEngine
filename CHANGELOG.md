@@ -1,3 +1,8 @@
+# 1.9.5
+
+Functional changes:
+- Improved handling of number keys concurrently to vanilla item switching, fixes #153
+
 # 1.9.4
 
 Functional changes:

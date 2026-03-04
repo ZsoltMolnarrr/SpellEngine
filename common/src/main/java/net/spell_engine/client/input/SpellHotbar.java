@@ -146,21 +146,21 @@ public class SpellHotbar {
         this.updateDebounced();
     }
 
-    @Nullable public Handle handleAll(ClientPlayerEntity player, GameOptions options) {
-        return handleSlotsInternal(player, this.slots, options);
+    @Nullable public Handle handleAll(ClientPlayerEntity player, GameOptions options, List<KeyBinding> exclude) {
+        return handleSlotsInternal(player, this.slots, options, exclude);
     }
 
     @Nullable public Handle handleUseKey(ClientPlayerEntity player, GameOptions options) {
-        return handleSlotsInternal(player, this.structuredSlots.onUseKey != null ? List.of(this.structuredSlots.onUseKey) : List.of(), options);
+        return handleSlotsInternal(player, this.structuredSlots.onUseKey != null ? List.of(this.structuredSlots.onUseKey) : List.of(), options, List.of());
     }
 
-    @Nullable public Handle handleOther(ClientPlayerEntity player, GameOptions options) {
-        return handleSlotsInternal(player, this.structuredSlots.other(), options);
+    @Nullable public Handle handleOther(ClientPlayerEntity player, GameOptions options, List<KeyBinding> exclude) {
+        return handleSlotsInternal(player, this.structuredSlots.other(), options, exclude);
     }
 
-    @Nullable public Handle handleSome(ClientPlayerEntity player, @Nullable Slot slot, GameOptions options) {
+    @Nullable public Handle handleSome(ClientPlayerEntity player, @Nullable Slot slot, GameOptions options, List<KeyBinding> exclude) {
         if (slot == null) { return null; }
-        return handleSlotsInternal(player, List.of(slot), options);
+        return handleSlotsInternal(player, List.of(slot), options, exclude);
     }
 
     @Nullable public Handle lastHandled() {
@@ -182,7 +182,7 @@ public class SpellHotbar {
         }
     }
 
-    @Nullable private Handle handleSlotsInternal(ClientPlayerEntity player, List<Slot> slots, GameOptions options) {
+    @Nullable private Handle handleSlotsInternal(ClientPlayerEntity player, List<Slot> slots, GameOptions options, List<KeyBinding> exclude) {
         if (handledThisTick != null || player.isSpectator()) { return null; }
         if (Keybindings.bypass_spell_hotbar.isPressed()
                 || (SpellEngineClient.config.sneakingByPassSpellHotbar && options.sneakKey.isPressed())) {
@@ -199,6 +199,9 @@ public class SpellHotbar {
                 var unwrapped = slot.keybinding.get(options);
                 if (unwrapped == null) { continue; }
                 var keyBinding = unwrapped.keyBinding();
+                if (exclude.contains(keyBinding)) {
+                    continue;
+                }
                 var pressed = keyBinding.isPressed();
                 var handle = Handle.from(slot, keyBinding, unwrapped.vanillaHandle());
                 if (pressed) {
