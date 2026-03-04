@@ -13,6 +13,7 @@ import net.minecraft.world.World;
 import net.spell_engine.internals.SpellTriggers;
 import net.spell_engine.internals.arrow.ArrowExtension;
 import net.spell_engine.internals.arrow.ArrowHelper;
+import net.spell_engine.internals.arrow.ArrowShootContext;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.utils.WorldScheduler;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,20 +34,21 @@ public class RangedWeaponItemMixin {
             var caster = (SpellCasterEntity) player;
             var shotContext = caster.getArrowShootContext();
 
+            // First run triggers to enable modifying the arrow by passive spells
+            // (by appending the arrow shot context)
+
+            final var firedBySpell = shotContext.firedBySpell;
+            SpellTriggers.onArrowShot(arrow, player, firedBySpell);
+
+            // Apply arrow modification
+
             var trackers = Suppliers.memoize(() -> PlayerLookup.tracking(shooter));
             for (var spellEntry: shotContext.activeSpells) {
                 ArrowHelper.onArrowShot(arrow, shooter, spellEntry, trackers);
             }
 
-            // Avoid arrow shot event listeners self triggering
-            // For example: Bonus Shot (triggering itself infinitely)
-//            final var firedBySpell = shotContext.firedBySpell;
-//            ((WorldScheduler)world).schedule(0, () -> {
-//                SpellTriggers.onArrowShot(arrow, player, firedBySpell);
-//            });
-
-            final var firedBySpell = shotContext.firedBySpell;
-            SpellTriggers.onArrowShot(arrow, player, firedBySpell);
+            // Clear arrow shoot context
+            caster.setArrowShootContext(ArrowShootContext.EMPTY);
         }
         return projectile;
     }

@@ -190,7 +190,7 @@ public class Spell {
     public static class Delivery {
         public Type type = Type.DIRECT;
         public enum Type {
-            DIRECT, PROJECTILE, METEOR, CLOUD, SHOOT_ARROW, MELEE, STASH_EFFECT, CUSTOM
+            DIRECT, PROJECTILE, METEOR, CLOUD, SHOOT_ARROW, AFFECT_ARROW, MELEE, STASH_EFFECT, CUSTOM
         }
         public int delay = 0;
 
@@ -236,6 +236,10 @@ public class Spell {
             /// Launch properties of the arrow
             /// (vanilla default velocity for crossbows is 3.15)
             public LaunchProperties launch_properties = new LaunchProperties().velocity(3.15F);
+        }
+
+        public AffectArrow affect_arrow;
+        public static class AffectArrow { public AffectArrow() { }
         }
 
         public Melee melee;

@@ -3,6 +3,9 @@
 Functional changes:
 - Improved handling of number keys concurrently to vanilla item switching, fixes #153
 
+API Changes:
+- Added new spell delivery method `AFFECT_ARROW` allowing passive spells to apply `arrow_perks` and impacts to any fired arrow 
+
 # 1.9.4
 
 Functional changes:

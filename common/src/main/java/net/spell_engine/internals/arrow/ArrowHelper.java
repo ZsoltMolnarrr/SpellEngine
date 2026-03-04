@@ -62,10 +62,9 @@ public class ArrowHelper {
 
             // Save as active spell
             if (shooter instanceof SpellCasterEntity caster) {
-                var shotContext = new ArrowShootContext();
+                var shotContext = caster.getArrowShootContext();
                 shotContext.firedBySpell = true;
                 shotContext.activeSpells.add(spellEntry);
-                caster.setArrowShootContext(shotContext);
             }
             var divergence = (sequenceIndex == 0) ? 0F : shoot_arrow.divergence;
             // Perform shoot
@@ -93,10 +92,6 @@ public class ArrowHelper {
                         1.0F,
                         1.0F / (world.getRandom().nextFloat() * 0.4F + 1.2F) + 1 * 0.5F
                 );
-            }
-
-            if (shooter instanceof SpellCasterEntity caster) {
-                caster.setArrowShootContext(ArrowShootContext.EMPTY);
             }
 
             var extra_launch = mutableLaunchProperties.extra_launch_count;

@@ -124,6 +124,7 @@ public class SpellTriggers {
 
     public static void onArrowShot(ArrowExtension arrow, PlayerEntity player, boolean firedBySpell) {
         var event = new Event(Spell.Trigger.Type.ARROW_SHOT, player, player, null);
+        event.stage = Spell.Trigger.Stage.POST;
         event.arrow = arrow;
         event.arrowFiredBySpell = firedBySpell;
         fireTriggers(event);

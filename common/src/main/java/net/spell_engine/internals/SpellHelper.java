@@ -561,6 +561,13 @@ public class SpellHelper {
                 ArrowHelper.shootArrow(world, caster, spellEntry, context);
                 delivered = true;
             }
+            case AFFECT_ARROW -> {
+                if (caster instanceof SpellCasterEntity shooter) {
+                    var arrowContext = shooter.getArrowShootContext();
+                    arrowContext.activeSpells.add(spellEntry);
+                }
+                delivered = true;
+            }
             case MELEE -> {
                 if (spell.deliver.melee != null
                         && !spell.deliver.melee.attacks.isEmpty()) {
