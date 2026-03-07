@@ -95,7 +95,7 @@ public class ArrowHelper {
             }
 
             if (shooter instanceof SpellCasterEntity caster) {
-                caster.setArrowShootContext(ArrowShootContext.EMPTY);
+                caster.setArrowShootContext(ArrowShootContext.empty());
             }
 
             var extra_launch = mutableLaunchProperties.extra_launch_count;

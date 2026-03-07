@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ArrowShootContext {
-    public static final ArrowShootContext EMPTY = new ArrowShootContext();
+    public static final ArrowShootContext empty() {
+        return new ArrowShootContext();
+    };
 
     public boolean firedBySpell = false;
     public List<RegistryEntry<Spell>> activeSpells = new ArrayList<>();

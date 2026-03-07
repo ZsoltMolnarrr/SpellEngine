@@ -15,11 +15,8 @@ import net.spell_engine.internals.arrow.ArrowExtension;
 import net.spell_engine.internals.arrow.ArrowHelper;
 import net.spell_engine.internals.arrow.ArrowShootContext;
 import net.spell_engine.internals.casting.SpellCasterEntity;
-import net.spell_engine.utils.WorldScheduler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-
-import java.util.function.Supplier;
 
 @Mixin(RangedWeaponItem.class)
 public class RangedWeaponItemMixin {
@@ -48,7 +45,7 @@ public class RangedWeaponItemMixin {
             }
 
             // Clear arrow shoot context
-            caster.setArrowShootContext(ArrowShootContext.EMPTY);
+            caster.setArrowShootContext(ArrowShootContext.empty());
         }
         return projectile;
     }

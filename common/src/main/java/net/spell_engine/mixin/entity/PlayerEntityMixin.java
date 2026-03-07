@@ -81,7 +81,7 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         return 1F; // Fallback value
     }
 
-    private ArrowShootContext arrowShotContext = ArrowShootContext.EMPTY;
+    private ArrowShootContext arrowShotContext = ArrowShootContext.empty();
     @Override
     public void setArrowShootContext(ArrowShootContext shotContext) {
         arrowShotContext = shotContext;

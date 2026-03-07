@@ -1,3 +1,8 @@
+# 1.9.6
+
+Hotfix:
+- Fixed `arrow context` not being cleaned up properly, causing Barrage skill to degrade ranged damage over (short) time
+
 # 1.9.5
 
 Functional changes:
