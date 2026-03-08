@@ -31,6 +31,24 @@ public class SpellEngineEffects {
             ))
     ));
 
+    public static Effects.Entry IMMOBILIZE = add(new Effects.Entry(Identifier.of(SpellEngineMod.ID,"immobilize"),
+            "Immobilized",
+            "Cannot move or jump.",
+            new CustomStatusEffect(StatusEffectCategory.HARMFUL, 0x880000),
+            new EffectConfig(List.of(
+                    new AttributeModifier(
+                            EntityAttributes.GENERIC_JUMP_STRENGTH.getIdAsString(),
+                            0,
+                            EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+                    ),
+                    new AttributeModifier(
+                            EntityAttributes.GENERIC_MOVEMENT_SPEED.getIdAsString(),
+                            0,
+                            EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+                    )
+            ))
+    ));
+
     public static void register() {
         ActionImpairing.configure(STUN.effect, EntityActionsAllowed.STUN);
 

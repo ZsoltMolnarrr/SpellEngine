@@ -357,7 +357,7 @@ public class WeaponSkills {
                 new Spell.Delivery.ShootProjectile.DirectionOffset(0, 0),
                 new Spell.Delivery.ShootProjectile.DirectionOffset(15, 0)
         };
-        spell.deliver.projectile.projectile.perks.bounce = 2;
+        // spell.deliver.projectile.projectile.perks.bounce = 0;
 
         var damage = SpellBuilder.Impacts.damage(0.8F, 0.5F);
         damage.sound = Sound.of(SpellEngineSounds.WEAPON_DAGGER_IMPACT.id());

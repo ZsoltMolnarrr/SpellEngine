@@ -108,6 +108,8 @@
 
   "effect.spell_engine.stun": "Stunned",
   "effect.spell_engine.stun.description": "Cannot move or act.",
+  "effect.spell_engine.immobilize": "Immobilized",
+  "effect.spell_engine.immobilize.description": "Cannot move or jump",
 
   "text.autoconfig.spell_engine.title" : "Spell Engine",
 
