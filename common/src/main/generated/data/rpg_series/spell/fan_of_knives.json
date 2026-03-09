@@ -26,18 +26,24 @@
         {},
         {
           "yaw": 15.0
+        },
+        {
+          "yaw": -30.0
+        },
+        {
+          "yaw": 30.0
         }
       ],
       "launch_properties": {
         "velocity": 1.2,
         "extra_launch_count": 2,
-        "extra_launch_delay": 3
+        "extra_launch_delay": 1
       },
       "projectile": {
         "homing_angle": 0.0,
         "travel_sound_interval": 8,
         "perks": {
-          "bounce": 2
+          "bounce": 1
         },
         "client_data": {
           "model": {

@@ -350,7 +350,7 @@ public class WeaponSkills {
         spell.deliver.projectile = thrown();
         // spell.deliver.projectile.projectile.travel_sound = Sound.of(SpellEngineSounds.WEAPON_DAGGER_TRAVEL.id());
         spell.deliver.projectile.launch_properties.velocity = 1.2F;
-        spell.deliver.projectile.launch_properties.extra_launch_delay = 3;
+        spell.deliver.projectile.launch_properties.extra_launch_delay = 1;
         spell.deliver.projectile.launch_properties.extra_launch_count = 2;
         spell.deliver.projectile.direction_offsets = new Spell.Delivery.ShootProjectile.DirectionOffset[] {
                 new Spell.Delivery.ShootProjectile.DirectionOffset(-15, 0),
@@ -359,7 +359,7 @@ public class WeaponSkills {
                 new Spell.Delivery.ShootProjectile.DirectionOffset(-30, 0),
                 new Spell.Delivery.ShootProjectile.DirectionOffset(30, 0)
         };
-        // spell.deliver.projectile.projectile.perks.bounce = 0;
+        spell.deliver.projectile.projectile.perks.bounce = 1;
 
         var damage = SpellBuilder.Impacts.damage(0.8F, 0.5F);
         damage.sound = Sound.of(SpellEngineSounds.WEAPON_DAGGER_IMPACT.id());
