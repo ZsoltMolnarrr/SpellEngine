@@ -124,10 +124,14 @@ public class SpellBinding {
                     } else {
                         if (spell.learn != null && spell.tier > 0) {
                             var cost = spell.tier * spell.learn.level_cost_per_tier;
+                            var levelCost = Math.max(
+                                    SpellEngineMod.config.spell_binding_level_cost_min,
+                                    cost * SpellEngineMod.config.spell_binding_level_cost_multiplier + SpellEngineMod.config.spell_binding_level_cost_offset);
+
                             var levelRequirement = spell.tier * spell.learn.level_requirement_per_tier;
                             return new Offer(
                                     rawSpellId(world, entry.getKey()),
-                                    cost * SpellEngineMod.config.spell_binding_level_cost_multiplier,
+                                    levelCost,
                                     levelRequirement,
                                     cost * SpellEngineMod.config.spell_binding_lapis_cost_multiplier,
                                     (libraryPower == LIBRARY_POWER_CAP)

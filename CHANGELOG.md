@@ -2,6 +2,9 @@
 
 Functional changes:
 - Fixed melee skill animations for replay mod
+- Added new server config options:
+  - `spell_binding_level_cost_offset`
+  - `spell_binding_level_cost_min`
 
 API Changes:
 - Added new shared status effect: `spell_engine:immobilize`
