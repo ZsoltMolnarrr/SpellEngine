@@ -68,6 +68,8 @@ public record Color(float red, float green, float blue, float alpha) {
     public static final Color FROST = Color.from(0x66ccff);
     public static final Color ELECTRIC = Color.from(0xffff66);
     public static final Color RAGE = Color.from(0xbf4040);
+    /// Thematic color of weapon skills
+    public static final Color PHYSICAL_BLUE = Color.from(0x7ac5ff);
 
     public static final Color POISON_LIGHT = Color.from(0x99FF66);
     public static final Color POISON_MID = Color.from(0x33DD33);

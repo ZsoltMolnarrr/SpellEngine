@@ -34,7 +34,7 @@ public class SpellEngineEffects {
     public static Effects.Entry IMMOBILIZE = add(new Effects.Entry(Identifier.of(SpellEngineMod.ID,"immobilize"),
             "Immobilized",
             "Cannot move or jump.",
-            new CustomStatusEffect(StatusEffectCategory.HARMFUL, 0x880000),
+            new CustomStatusEffect(StatusEffectCategory.HARMFUL, 0xcc0000),
             new EffectConfig(List.of(
                     new AttributeModifier(
                             EntityAttributes.GENERIC_JUMP_STRENGTH.getIdAsString(),

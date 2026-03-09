@@ -126,6 +126,14 @@ public class Spell {
         public int stash_amplifier_add = 0;
         public float effect_duration_add = 0;
         public float cooldown_duration_deduct = 0;
+
+        public float melee_momentum_add = 0;
+        public float melee_slipperiness_add = 0;
+        /// Melee delivery - damage multiplier base, applied to all attacks of the melee delivery, example value: `0.5F` for +50% of the total damage.
+        public float melee_damage_multiplier = 0F;
+        /// Melee delivery - attacks to append
+        @Nullable public List<Delivery.Melee.Attack> melee_attacks = null;
+
         /// Additional cloud or entity spawn placements
         public List<EntityPlacement> additional_placements = List.of();
     }

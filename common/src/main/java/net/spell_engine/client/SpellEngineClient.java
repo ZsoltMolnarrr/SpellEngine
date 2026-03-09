@@ -16,11 +16,14 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.CustomParticleStatusEffect;
 import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.api.item.set.EquipmentSetTooltip;
+import net.spell_engine.api.render.BuffParticleSpawner;
 import net.spell_engine.api.render.StunParticleSpawner;
+import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.client.compatibility.CompatFeatures;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.particle.*;
 import net.spell_engine.client.render.*;
+import net.spell_engine.client.util.Color;
 import net.spell_engine.config.ClientConfig;
 import net.spell_engine.config.ClientConfigWrapper;
 import net.spell_engine.config.HudConfig;
@@ -90,6 +93,20 @@ public class SpellEngineClient {
                 SpellEngineEffects.STUN.effect,
                 new StunParticleSpawner()
         );
+        final var magicSnareParticles = new ParticleBatch(
+                SpellEngineParticles.MagicParticles.get(
+                        SpellEngineParticles.MagicParticles.Shape.SPARK,
+                        SpellEngineParticles.MagicParticles.Motion.DECELERATE).id().toString(),
+                ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET,
+                2F, 0.15F, 0.15F)
+                .preSpawnTravel(5)
+                .invert();
+        CustomParticleStatusEffect.register(
+                SpellEngineEffects.IMMOBILIZE.effect,
+                new BuffParticleSpawner(new ParticleBatch[]{ magicSnareParticles
+                        .copy().color(Color.PHYSICAL_BLUE.toRGBA()) })
+        );
+
     }
 
     public static void registerParticleAppearances() {

@@ -19,6 +19,7 @@ import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.target.EntityRelations;
@@ -99,24 +100,45 @@ public class Melee {
         }
     }
 
+
+    public record CombinedAttacks(
+            List<Spell.Delivery.Melee.Attack> attacks,
+            List<Spell.Modifier> spellModifiers
+    ) {}
+
+    public static CombinedAttacks allAttacksOf(PlayerEntity caster, List<Spell.Delivery.Melee.Attack> meleeDataAttacks,
+                                                                 RegistryEntry<Spell> spellEntry) {
+        var attacks = new ArrayList<>(meleeDataAttacks);
+        var modifiers = SpellModifiers.of(caster, spellEntry);
+        for (var modifier: modifiers) {
+            if (modifier.melee_attacks != null) {
+                for (var attack : modifier.melee_attacks) {
+                    attacks.add(attack);
+                }
+            }
+        }
+        return new CombinedAttacks(attacks, modifiers);
+    }
+
     /**
      * Server-side: Map spell melee configuration to resolved MeleeAttack list
      * This flattens and resolves all server-side calculations (haste, etc.)
      */
     public static List<Attack> createMeleeAttacks(ServerPlayerEntity caster, List<Spell.Delivery.Melee.Attack> meleeDataAttacks,
-                                                  Identifier spellId) {
+                                                  RegistryEntry<Spell> spellEntry) {
         var attacks = new ArrayList<Attack>();
         var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, caster);
-        for (var attack : meleeDataAttacks) {
+        var spellId = spellEntry.getKey().get().getValue();
+        var allAttacks = allAttacksOf(caster, meleeDataAttacks, spellEntry);
+        for (var attack : allAttacks.attacks()) {
             // Calculate haste-affected duration
-            var meleeAttack = convert(caster, spellId, attack, attackSpeedMultiplier);
+            var meleeAttack = convert(caster, spellId, attack, attackSpeedMultiplier, allAttacks.spellModifiers());
             attacks.add(meleeAttack);
         }
-
         return attacks;
     }
 
-    private static Attack convert(ServerPlayerEntity caster, Identifier spellId, Spell.Delivery.Melee.Attack attack, double attackSpeedMultiplier) {
+    private static Attack convert(ServerPlayerEntity caster, Identifier spellId, Spell.Delivery.Melee.Attack attack, double attackSpeedMultiplier, List<Spell.Modifier> spellModifiers) {
         var speed = (float) (attack.attack_speed_multiplier * attackSpeedMultiplier);
         float duration = attack.duration > 0
                 // `getAttackCooldownProgressPerTick` is poorly named, it actually returns the attack cooldown in ticks
@@ -125,6 +147,14 @@ public class Melee {
         float delay = duration * attack.delay;
         var spell = SpellRegistry.from(caster.getWorld()).getEntry(spellId);
         var range = spell.isPresent() ? SpellHelper.getRange(caster, spell.get()) : (float)caster.getEntityInteractionRange();
+
+        var momentumBonus = 0F;
+        var slipBonus = 0F;
+        for (var modifier : spellModifiers) {
+            momentumBonus += modifier.melee_momentum_add;
+            slipBonus += modifier.melee_slipperiness_add;
+        }
+
         // Create resolved MeleeAttack with all calculations done
         return new Attack(
                 Math.round(duration),
@@ -135,8 +165,8 @@ public class Melee {
                 speed,
                 attack.forward_momentum,
                 attack.allow_momentum_airborne,
-                attack.movement_speed,
-                attack.movement_slipperiness,
+                attack.movement_speed + momentumBonus,
+                attack.movement_slipperiness + slipBonus,
                 range,
                 attack.hitbox,
                 attack.animation,
@@ -144,11 +174,11 @@ public class Melee {
         );
     }
 
-    @Nullable public static Spell.Delivery.Melee.Attack resolveAttackData(World world, @Nullable AttackContext context) {
+    @Nullable public static Spell.Delivery.Melee.Attack resolveAttackData(PlayerEntity attacker, World world, @Nullable AttackContext context) {
         if (context == null) {
             return null;
         }
-        return resolveAttackData(world, context.spellId(), context.attackId()).attack;
+        return resolveAttackData(attacker, world, context.spellId(), context.attackId()).attack;
     }
 
     public record ResolutionResult(
@@ -156,7 +186,7 @@ public class Melee {
             Spell.Delivery.Melee melee,
             Spell.Delivery.Melee.Attack attack
     ) {}
-    @Nullable public static ResolutionResult resolveAttackData(World world, Identifier spellId, String attackId) {
+    @Nullable public static ResolutionResult resolveAttackData(PlayerEntity attacker, World world, Identifier spellId, String attackId) {
         var spellEntry = SpellRegistry.from(world).getEntry(spellId).orElse(null);
         if (spellEntry == null) {
             return null;
@@ -164,7 +194,8 @@ public class Melee {
 
         var spell = spellEntry.value();
         if (spell.deliver.type == Spell.Delivery.Type.MELEE && spell.deliver.melee != null) {
-            for (var attack : spell.deliver.melee.attacks) {
+            var allAttacks = allAttacksOf(attacker, spell.deliver.melee.attacks, spellEntry);
+            for (var attack : allAttacks.attacks()) {
                 if (attack.id.equals(attackId)) {
                     return new ResolutionResult(spellEntry, spell.deliver.melee, attack);
                 }
@@ -185,11 +216,11 @@ public class Melee {
 
     public static void broadcastAttackFx(ServerPlayerEntity player, AttackContext attackContext) {
         var world = player.getWorld();
-        var attackData = resolveAttackData(world, attackContext);
+        var attackData = resolveAttackData(player, world, attackContext);
         if (attackData != null) {
             // Saving the attack on server side - mainly for the slipperiness
             var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player);
-            var attack = convert(player, attackContext.spellId(), attackData, attackSpeedMultiplier);
+            var attack = convert(player, attackContext.spellId(), attackData, attackSpeedMultiplier, List.of());
             ((SpellCasterEntity) player).setMeleeSkillAttack(new ActiveAttack(attack, player.age, player.getMainHandStack().getItem()));
             // Sending fx to clients - animation, sound, particles
             var trackers = PlayerLookup.tracking(player);
@@ -209,13 +240,18 @@ public class Melee {
         try {
             var lastAttackTime = ((LivingEntityAccessor)player).spellEngine_getLastAttackedTicks();
             var targets = new ArrayList<Entity>();
-            var resolvedContext = resolveAttackData(world, context.spellId, context.attackId);
+            var resolvedContext = resolveAttackData(player, world, context.spellId, context.attackId);
             var spellEntry = resolvedContext.spell();
             var attack = resolvedContext.attack();
             Sound impactSound = null;
             int impactSoundLimit = 0;
+            var modifiers = SpellModifiers.of(player, spellEntry);
+            var damageMultiplierBase = 0F;
+            for (var modifier : modifiers) {
+                damageMultiplierBase += modifier.melee_damage_multiplier;
+            }
             if (attack != null && attributeInstance != null) {
-                var damageModifierAmount = attack.damage_bonus;
+                var damageModifierAmount = attack.damage_bonus * (1F + damageMultiplierBase);
                 if (damageModifierAmount != 0) {
                     appliedDamageModifier = new EntityAttributeModifier(DAMAGE_MODIFIER_ID, damageModifierAmount, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
                     attributeInstance.addTemporaryModifier(appliedDamageModifier);

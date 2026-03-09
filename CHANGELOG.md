@@ -1,3 +1,14 @@
+# 1.9.7
+
+API Changes:
+- Added new shared status effect: `spell_engine:immobilize`
+  - Immobilizes the target, preventing movement and jumping
+- Added melee delivery related spell modifier fields:
+  - `spell.modifier.melee_momentum_add` adding extra momentum to all melee attacks
+  - `spell.modifier.melee_slipperiness_add` adding extra slipperiness to the caster while performing melee attacks
+  - `spell.modifier.melee_damage_multiplier` multiplying damage of all melee attacks
+  - `melee_attacks` list of additional melee attacks
+
 # 1.9.6
 
 Hotfix:

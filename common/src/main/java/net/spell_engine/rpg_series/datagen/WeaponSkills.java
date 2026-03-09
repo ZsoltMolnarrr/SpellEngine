@@ -355,7 +355,9 @@ public class WeaponSkills {
         spell.deliver.projectile.direction_offsets = new Spell.Delivery.ShootProjectile.DirectionOffset[] {
                 new Spell.Delivery.ShootProjectile.DirectionOffset(-15, 0),
                 new Spell.Delivery.ShootProjectile.DirectionOffset(0, 0),
-                new Spell.Delivery.ShootProjectile.DirectionOffset(15, 0)
+                new Spell.Delivery.ShootProjectile.DirectionOffset(15, 0),
+                new Spell.Delivery.ShootProjectile.DirectionOffset(-30, 0),
+                new Spell.Delivery.ShootProjectile.DirectionOffset(30, 0)
         };
         // spell.deliver.projectile.projectile.perks.bounce = 0;
 
