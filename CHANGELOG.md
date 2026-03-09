@@ -1,5 +1,8 @@
 # 1.9.7
 
+Functional changes:
+- Fixed melee skill animations for replay mod
+
 API Changes:
 - Added new shared status effect: `spell_engine:immobilize`
   - Immobilizes the target, preventing movement and jumping

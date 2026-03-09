@@ -1,5 +1,7 @@
 package net.spell_engine.internals.melee;
 
+import com.google.common.base.Suppliers;
+import net.bettercombat.Platform;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -34,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class Melee {
 
@@ -214,6 +217,8 @@ public class Melee {
         return result.entities.stream().map(Entity::getId).toList();
     }
 
+    private static final Supplier<Boolean> REPLAY = Suppliers.memoize(() -> Platform.isModLoaded("replaymod"));
+
     public static void broadcastAttackFx(ServerPlayerEntity player, AttackContext attackContext) {
         var world = player.getWorld();
         var attackData = resolveAttackData(player, world, attackContext);
@@ -225,7 +230,11 @@ public class Melee {
             // Sending fx to clients - animation, sound, particles
             var trackers = PlayerLookup.tracking(player);
             float speed = (float) (attackData.attack_speed_multiplier * AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player));
-            AnimationHelper.sendAnimationExcluding(player, trackers, SpellCast.Animation.RELEASE, attackData.animation, speed);
+            if (REPLAY.get()) {
+                AnimationHelper.sendAnimation(player, trackers, SpellCast.Animation.RELEASE, attackData.animation, speed);
+            } else {
+                AnimationHelper.sendAnimationExcluding(player, trackers, SpellCast.Animation.RELEASE, attackData.animation, speed);
+            }
             SoundHelper.playSound(player.getWorld(), player, attackData.swing_sound);
             ParticleHelper.sendBatches(player, attackData.particles, 1, trackers);
         }
