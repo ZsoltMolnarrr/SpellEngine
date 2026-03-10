@@ -6,6 +6,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.*;
@@ -159,6 +160,14 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     @Override
     public float getExtraSlipperiness() {
         return player().getDataTracker().get(SPELL_ENGINE_EXTRA_SLIPPERINESS);
+    }
+
+    @Nullable private RegistryEntry<Spell> activeMeleeSpell = null;
+    public void setActiveMeleeSkill(RegistryEntry<Spell> spell) {
+        activeMeleeSpell = spell;
+    }
+    public RegistryEntry<Spell> getActiveMeleeSkill() {
+        return activeMeleeSpell;
     }
 
     // MARK: Persistence

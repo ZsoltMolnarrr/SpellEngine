@@ -20,6 +20,7 @@ API Changes:
   - Duration
   - Additionally available via java API: `LivingEntityImmunity`
   - Old `EntityImmunity` API is now deprecated
+- Melee attack triggers now support spell condition requirement
 
 # 1.9.6
 

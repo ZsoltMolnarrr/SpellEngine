@@ -251,6 +251,7 @@ public class Melee {
             var targets = new ArrayList<Entity>();
             var resolvedContext = resolveAttackData(player, world, context.spellId, context.attackId);
             var spellEntry = resolvedContext.spell();
+            ((SpellCasterEntity)player).setActiveMeleeSkill(spellEntry);
             var attack = resolvedContext.attack();
             Sound impactSound = null;
             int impactSoundLimit = 0;
@@ -309,6 +310,7 @@ public class Melee {
         if (appliedDamageModifier != null) {
             attributeInstance.removeModifier(appliedDamageModifier);
         }
+        ((SpellCasterEntity)player).setActiveMeleeSkill(null);
     }
 
     private static SpellTarget.FocusMode focusMode() {

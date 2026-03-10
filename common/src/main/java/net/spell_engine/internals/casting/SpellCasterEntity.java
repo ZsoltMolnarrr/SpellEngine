@@ -1,5 +1,6 @@
 package net.spell_engine.internals.casting;
 
+import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.SpellCooldownManager;
 import net.spell_engine.internals.arrow.ArrowShootContext;
@@ -28,6 +29,8 @@ public interface SpellCasterEntity {
 
     void setMeleeSkillAttack(Melee.ActiveAttack attack);
     float getExtraSlipperiness();
+    void setActiveMeleeSkill(RegistryEntry<Spell> spell);
+    RegistryEntry<Spell> getActiveMeleeSkill();
 
     default boolean isCastingSpell() {
         return getSpellCastProcess() != null;

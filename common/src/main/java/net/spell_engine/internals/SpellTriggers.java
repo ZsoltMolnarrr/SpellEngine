@@ -147,6 +147,11 @@ public class SpellTriggers {
             event.criticalImpact = CriticalStrikeCompat.isCriticalStrike(event.damageSource);
         }
         event.melee = MeleeCompat.attackProperties.apply(player);
+
+        var activeSpell = ((SpellCasterEntity)player).getActiveMeleeSkill();
+        if (activeSpell != null) {
+            event.spell = activeSpell;
+        }
         fireTriggers(event);
     }
 
@@ -359,7 +364,8 @@ public class SpellTriggers {
                 result = evaluateDamage(trigger.damage, event);
             }
             case MELEE_IMPACT -> {
-                result = evaluateMelee(event.melee, trigger.melee)
+                result = evaluateSpellCast(event.spell, trigger.spell)
+                        && evaluateMelee(event.melee, trigger.melee)
                         && evaluateDamage(trigger.damage, event);
             }
             case EFFECT_TICK -> {
