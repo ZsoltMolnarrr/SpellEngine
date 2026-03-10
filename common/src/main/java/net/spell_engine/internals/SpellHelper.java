@@ -28,7 +28,7 @@ import net.minecraft.world.event.GameEvent;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.InstantCast;
 import net.spell_engine.api.effect.StatusEffectClassification;
-import net.spell_engine.api.entity.LivingEntityInvulnerability;
+import net.spell_engine.api.entity.LivingEntityImmunity;
 import net.spell_engine.api.spell.weakness.SpellSchoolWeakness;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.tags.SpellEngineEntityTags;
@@ -1562,10 +1562,10 @@ public class SpellHelper {
                         }
                     }
                 }
-                case INVULNERABILITY -> {
-                    var data = impact.action.invulnerability;
+                case IMMUNITY -> {
+                    var data = impact.action.immunity;
                     if (target instanceof LivingEntity livingTarget
-                            && impact.action.invulnerability != null) {
+                            && impact.action.immunity != null) {
                         DamageType type = null;
                         TagKey<DamageType> typeTagKey = null;
                         if (data.damage_type != null) {
@@ -1579,7 +1579,7 @@ public class SpellHelper {
                             }
                         }
                         if (data.duration_ticks > 0) {
-                            LivingEntityInvulnerability.apply(livingTarget, type, typeTagKey, data.indirect, data.duration_ticks);
+                            LivingEntityImmunity.apply(livingTarget, type, typeTagKey, data.damage_indirect, data.duration_ticks);
                             success = true;
                         }
                     }
@@ -1838,7 +1838,7 @@ public class SpellHelper {
             case DAMAGE, FIRE, AGGRO, DISRUPT -> {
                 return SpellTarget.Intent.HARMFUL;
             }
-            case HEAL, INVULNERABILITY -> {
+            case HEAL, IMMUNITY -> {
                 return SpellTarget.Intent.HELPFUL;
             }
             case STATUS_EFFECT -> {

@@ -9,11 +9,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class LivingEntityInvulnerability {
+public class LivingEntityImmunity {
     public record Entry(
             @Nullable DamageType damageType,
             @Nullable TagKey<DamageType> damageTypeTag,
-            @Nullable Boolean indirect,
+            @Nullable Boolean damageIndirect,
+            boolean effectAnyHarmful,
             int validUntil
     ) {
         public boolean protectsAgainst(DamageSource source) {
@@ -24,20 +25,20 @@ public class LivingEntityInvulnerability {
             if (damageTypeTag != null) {
                 if (sourceType == null || !source.isIn(damageTypeTag)) return false;
             }
-            if (indirect != null) {
+            if (damageIndirect != null) {
                 var isInDirect = ((DamageSourceExtension)source).isSpellIndirect();
-                if (isInDirect != indirect) return false;
+                if (isInDirect != damageIndirect) return false;
             }
             return true;
         }
     }
 
-    public static boolean isInvulnerable(LivingEntity entity, DamageSource source) {
-        var invulnerabilities = ((Owner)entity).getInvulnerabilities();
-        return isProtected(invulnerabilities, source);
+    public static boolean isImmune(LivingEntity entity, DamageSource source) {
+        var invulnerabilities = ((Owner)entity).getImmunities();
+        return isDamageProtected(invulnerabilities, source);
     }
 
-    public static boolean isProtected(List<Entry> invulnerabilities, DamageSource source) {
+    public static boolean isDamageProtected(List<Entry> invulnerabilities, DamageSource source) {
         for (var entry: invulnerabilities) {
             if (entry.protectsAgainst(source)) {
                 return true;
@@ -48,7 +49,7 @@ public class LivingEntityInvulnerability {
 
     public interface Owner {
         void addImmunity(Entry entry);
-        List<Entry> getInvulnerabilities();
+        List<Entry> getImmunities();
     }
 
     public static void apply(LivingEntity livingEntity, DamageType damageType, int ticks) {
@@ -65,9 +66,16 @@ public class LivingEntityInvulnerability {
     }
 
     public static void apply(LivingEntity livingEntity, @Nullable DamageType damageType, @Nullable TagKey<DamageType> damageTypeTag, @Nullable Boolean indirect, int ticks) {
+        apply(livingEntity, damageType, damageTypeTag, indirect, false, ticks);
+    }
+
+    public static void apply(LivingEntity livingEntity,
+                             @Nullable DamageType damageType, @Nullable TagKey<DamageType> damageTypeTag, @Nullable Boolean indirect,
+                             boolean effectAnyHarmful,
+                             int ticks) {
         var time = livingEntity.age;
         var validUntil = time + ticks;
-        var entry = new Entry(damageType, damageTypeTag, indirect, validUntil);
+        var entry = new Entry(damageType, damageTypeTag, indirect, effectAnyHarmful, validUntil);
         ((Owner)livingEntity).addImmunity(entry);
     }
 }
