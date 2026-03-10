@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.MobEntity;
@@ -14,6 +15,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Formatting;
@@ -24,9 +26,9 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.effect.EntityImmunity;
 import net.spell_engine.api.effect.InstantCast;
 import net.spell_engine.api.effect.StatusEffectClassification;
+import net.spell_engine.api.entity.LivingEntityInvulnerability;
 import net.spell_engine.api.spell.weakness.SpellSchoolWeakness;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.tags.SpellEngineEntityTags;
@@ -1122,11 +1124,6 @@ public class SpellHelper {
                 if (!EntityRelations.actionAllowed(context.focusMode(), intent, caster, target)) {
                     return false;
                 }
-                if (intent == SpellTarget.Intent.HARMFUL
-                        && context.focusMode() == SpellTarget.FocusMode.AREA
-                        && ((EntityImmunity)target).isImmuneTo(EntityImmunity.Type.AREA_EFFECT)) {
-                    return false;
-                }
             }
             // Merge school-level weaknesses with spell-level target modifiers
             var mergedTargetModifiers = new ArrayList<>(impact.target_modifiers);
@@ -1565,6 +1562,28 @@ public class SpellHelper {
                         }
                     }
                 }
+                case INVULNERABILITY -> {
+                    var data = impact.action.invulnerability;
+                    if (target instanceof LivingEntity livingTarget
+                            && impact.action.invulnerability != null) {
+                        DamageType type = null;
+                        TagKey<DamageType> typeTagKey = null;
+                        if (data.damage_type != null) {
+                            if (data.damage_type.startsWith(PatternMatching.TAG_PREFIX)) {
+                                var id = Identifier.of(data.damage_type.substring(PatternMatching.TAG_PREFIX.length()));
+                                typeTagKey = TagKey.of(RegistryKeys.DAMAGE_TYPE, id);
+                            } else {
+                                var id = Identifier.of(data.damage_type);
+                                var registry = world.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE);
+                                type = registry.get(id);
+                            }
+                        }
+                        if (data.duration_ticks > 0) {
+                            LivingEntityInvulnerability.apply(livingTarget, type, typeTagKey, data.indirect, data.duration_ticks);
+                            success = true;
+                        }
+                    }
+                }
                 case CUSTOM -> {
                     if (impact.action.custom != null) {
                         var handler = SpellHandlers.customImpact.get(impact.action.custom.handler);
@@ -1819,7 +1838,7 @@ public class SpellHelper {
             case DAMAGE, FIRE, AGGRO, DISRUPT -> {
                 return SpellTarget.Intent.HARMFUL;
             }
-            case HEAL -> {
+            case HEAL, INVULNERABILITY -> {
                 return SpellTarget.Intent.HELPFUL;
             }
             case STATUS_EFFECT -> {

@@ -14,6 +14,12 @@ API Changes:
   - `spell.modifier.melee_slipperiness_add` adding extra slipperiness to the caster while performing melee attacks
   - `spell.modifier.melee_damage_multiplier` multiplying damage of all melee attacks
   - `melee_attacks` list of additional melee attacks
+- Added new impact type: `INVULERABILITY` to provide temporary invulnerability to certain damage types
+  - Specific damage type, or tag of damage types
+  - Directness check
+  - Duration
+  - Additionally available via java API: `LivingEntityInvulnerability`
+  - Old `EntityImmunity` API is now deprecated
 
 # 1.9.6
 

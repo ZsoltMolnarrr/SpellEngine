@@ -439,6 +439,7 @@ public class Spell {
                 COOLDOWN,
                 AGGRO,
                 DISRUPT,
+                INVULNERABILITY,
                 CUSTOM
             }
             public Damage damage;
@@ -573,6 +574,22 @@ public class Spell {
             public static class Disrupt {  public Disrupt() { }
                 public boolean shield_blocking = false;
                 public float item_usage_seconds = 0F;
+            }
+
+            public Invulnerability invulnerability;
+            public static class Invulnerability { public Invulnerability() { }
+                /// Damage type specifier, id or tag, for example:
+                /// - `#minecraft:bypasses_armor` - tag
+                /// - `minecraft:drown` - id
+                /// - null means all damage types
+                public @Nullable String damage_type;
+                /// Whether the DamageSource needs to be indirect or not, for example:
+                /// - player melee attacks are direct
+                /// - spell projectile impacts (such as Fireball) are direct
+                /// - spell area effects (such as Fire Breath) are indirect
+                public @Nullable Boolean indirect;
+                /// Duration of the invulnerability in ticks
+                public int duration_ticks = 20;
             }
 
             public Custom custom;
