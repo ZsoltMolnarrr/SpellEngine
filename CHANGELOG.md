@@ -5,6 +5,7 @@ Functional changes:
 - Added new server config options:
   - `spell_binding_level_cost_offset`
   - `spell_binding_level_cost_min`
+- Rebalanced some of the weapon skill cooldowns
 
 API Changes:
 - Added new shared status effect: `spell_engine:immobilize`
