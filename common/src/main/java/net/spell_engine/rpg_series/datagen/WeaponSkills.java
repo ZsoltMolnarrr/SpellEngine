@@ -115,7 +115,7 @@ public class WeaponSkills {
         var damage = SpellBuilder.Impacts.damage(1F);
         spell.impacts = List.of(damage);
 
-        SpellBuilder.Cost.cooldown(spell, 12);
+        SpellBuilder.Cost.cooldown(spell, 8);
         spell.cost.cooldown.attempt_duration = 0.5F;
 
         return new Entry(id, spell, title, description, null);

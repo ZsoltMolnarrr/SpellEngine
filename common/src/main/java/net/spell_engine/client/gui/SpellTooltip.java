@@ -681,6 +681,16 @@ public class SpellTooltip {
             if (modifier.cooldown_duration_deduct != 0) {
                 addToken("cooldown_duration_deduct", formattedNumber(modifier.cooldown_duration_deduct), tokenReplacements);
             }
+            if (modifier.melee_momentum_add != 0) {
+                addToken("melee_momentum_add", formattedNumber(modifier.melee_momentum_add), tokenReplacements);
+            }
+            if (modifier.melee_slipperiness_add != 0) {
+                addToken("melee_slipperiness_add", formattedNumber(modifier.melee_slipperiness_add), tokenReplacements);
+            }
+            if (modifier.melee_damage_multiplier != 0) {
+                addToken("melee_damage_multiplier", percent(modifier.melee_damage_multiplier), tokenReplacements);
+            }
+
             if (!modifier.additional_placements.isEmpty()) {
                 addToken(additional_placement_count, formattedNumber(modifier.additional_placements.size()), tokenReplacements);
             }
