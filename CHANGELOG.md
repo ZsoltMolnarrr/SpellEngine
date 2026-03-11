@@ -5,6 +5,7 @@ Functional changes:
 - Fixed melee skill modifiers:
   - attack damage bonus
   - momentum bonus
+- Fixed immobilize effect attribute modifiers
 
 # 1.9.7
 

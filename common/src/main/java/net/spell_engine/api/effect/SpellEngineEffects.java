@@ -38,12 +38,12 @@ public class SpellEngineEffects {
             new EffectConfig(List.of(
                     new AttributeModifier(
                             EntityAttributes.GENERIC_JUMP_STRENGTH.getIdAsString(),
-                            0,
+                            -10,
                             EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
                     ),
                     new AttributeModifier(
                             EntityAttributes.GENERIC_MOVEMENT_SPEED.getIdAsString(),
-                            0,
+                            -10,
                             EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
                     )
             ))
