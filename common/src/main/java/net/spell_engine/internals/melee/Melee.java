@@ -1,7 +1,6 @@
 package net.spell_engine.internals.melee;
 
 import com.google.common.base.Suppliers;
-import net.bettercombat.Platform;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -14,6 +13,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.spell_engine.Platform;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
@@ -217,7 +217,7 @@ public class Melee {
         return result.entities.stream().map(Entity::getId).toList();
     }
 
-    private static final Supplier<Boolean> REPLAY = Suppliers.memoize(() -> Platform.isModLoaded("replaymod"));
+    private static final Supplier<Boolean> REPLAY = Suppliers.memoize(() -> Platform.util().isModLoaded("replaymod"));
 
     public static void broadcastAttackFx(ServerPlayerEntity player, AttackContext attackContext) {
         var world = player.getWorld();

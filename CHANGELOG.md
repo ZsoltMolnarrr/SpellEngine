@@ -1,3 +1,8 @@
+# 1.9.8
+
+Functional changes:
+- Fixed crash without Better Combat #174
+
 # 1.9.7
 
 Functional changes:
