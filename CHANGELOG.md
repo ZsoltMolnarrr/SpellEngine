@@ -2,6 +2,7 @@
 
 Functional changes:
 - Fixed crash without Better Combat #174
+- Fixed spell modifiers increasing damage of melee skills
 
 # 1.9.7
 

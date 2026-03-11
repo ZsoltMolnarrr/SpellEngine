@@ -2,6 +2,7 @@ package net.spell_engine.internals.melee;
 
 import com.google.common.base.Suppliers;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -13,7 +14,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.spell_engine.Platform;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
@@ -217,7 +217,7 @@ public class Melee {
         return result.entities.stream().map(Entity::getId).toList();
     }
 
-    private static final Supplier<Boolean> REPLAY = Suppliers.memoize(() -> Platform.util().isModLoaded("replaymod"));
+    private static final Supplier<Boolean> REPLAY = Suppliers.memoize(() -> FabricLoader.getInstance().isModLoaded("replaymod"));
 
     public static void broadcastAttackFx(ServerPlayerEntity player, AttackContext attackContext) {
         var world = player.getWorld();
@@ -261,7 +261,7 @@ public class Melee {
                 damageMultiplierBase += modifier.melee_damage_multiplier;
             }
             if (attack != null && attributeInstance != null) {
-                var damageModifierAmount = attack.damage_bonus * (1F + damageMultiplierBase);
+                var damageModifierAmount = attack.damage_bonus + damageMultiplierBase;
                 if (damageModifierAmount != 0) {
                     appliedDamageModifier = new EntityAttributeModifier(DAMAGE_MODIFIER_ID, damageModifierAmount, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
                     attributeInstance.addTemporaryModifier(appliedDamageModifier);
