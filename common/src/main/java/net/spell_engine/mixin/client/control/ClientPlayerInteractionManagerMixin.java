@@ -10,7 +10,6 @@ import net.minecraft.util.Hand;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.client.SpellEngineClient;
-import net.spell_engine.client.input.AutoSwapHelper;
 import net.spell_engine.client.input.MinecraftClientExtension;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.spellbinding.spellchoice.SpellChoices;
@@ -34,16 +33,7 @@ public class ClientPlayerInteractionManagerMixin {
             if (SpellChoices.from(stack) != null) {
                 return;
             }
-
-            if (SpellEngineClient.config.autoSwapHands) {
-                if (AutoSwapHelper.autoSwapForSpells()) {
-                    // client.item = SpellEngineMod.config.auto_swap_cooldown;
-                    client.attackCooldown = SpellEngineMod.config.auto_swap_cooldown;;
-                    cir.setReturnValue(ActionResult.FAIL);
-                    cir.cancel();
-                }
-            }
-
+            
             if (SpellHotbar.INSTANCE.lastHandled() == null) {
                 var handled = SpellHotbar.INSTANCE.handleUseKey(clientPlayer, client.options);
                 ((MinecraftClientExtension) client).onSpellHotbarInputHandled(handled);

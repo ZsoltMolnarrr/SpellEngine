@@ -4,7 +4,6 @@ import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import net.spell_engine.client.input.WrappedKeybinding;
-import org.jetbrains.annotations.Nullable;
 
 @Config(name = "client")
 public class ClientConfig implements ConfigData {
@@ -14,8 +13,6 @@ public class ClientConfig implements ConfigData {
     public boolean holdToCastChannelled = true;
     @ConfigEntry.Gui.Tooltip
     public boolean holdToCastCharged = true;
-    @ConfigEntry.Gui.Tooltip
-    public boolean autoSwapHands = true;
     @ConfigEntry.Gui.Tooltip
     public boolean spellHotbarHidesOffhand = true;
     @ConfigEntry.Gui.Tooltip

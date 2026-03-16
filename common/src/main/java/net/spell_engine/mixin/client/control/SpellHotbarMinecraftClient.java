@@ -148,19 +148,7 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
         // Auto swap right click is handled instead in ClientPlayerInteractionManagerMixin
         // to allow block interactions to be handled first
     }
-
-    @Inject(method = "doAttack", at = @At("HEAD"), cancellable = true)
-    private void doAttack_HEAD_autoSwap(CallbackInfoReturnable<Boolean> cir) {
-        if (SpellEngineClient.config.autoSwapHands) {
-            if (AutoSwapHelper.autoSwapForAttack()) {
-                itemUseCooldown = SpellEngineMod.config.auto_swap_cooldown;;
-                attackCooldown = SpellEngineMod.config.auto_swap_cooldown;;
-                cir.setReturnValue(false);
-                cir.cancel();
-            }
-        }
-    }
-
+    
     @Override public boolean isSpellCastLockActive() {
         return useKeySpellCastingLock;
     }
