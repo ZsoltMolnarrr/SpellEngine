@@ -15,13 +15,13 @@ import java.util.*;
 
 @Mixin(PlayerEntity.class)
 public class PlayerSpellContainerMixin implements SpellContainerSource.Owner {
-    private Map<String, List<SpellContainerSource.SourcedContainer>> spellContainerCache = new LinkedHashMap<>();
+    private final Map<String, List<SpellContainerSource.SourcedContainer>> spellContainerCache = new LinkedHashMap<>();
     @Override
     public Map<String, List<SpellContainerSource.SourcedContainer>> spellContainerCache() {
         return spellContainerCache;
     }
 
-    private Map<Identifier, List<Spell.Modifier>> spellModifierCache = new HashMap<>();
+    private final Map<Identifier, List<Spell.Modifier>> spellModifierCache = new HashMap<>();
     @Override
     public Map<Identifier, List<Spell.Modifier>> spellModifierCache() {
         return spellModifierCache;
