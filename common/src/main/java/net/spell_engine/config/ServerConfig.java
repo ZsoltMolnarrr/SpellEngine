@@ -39,6 +39,12 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     public int spell_binding_level_cost_offset = 0;
     @Comment("Spell binding level levelCost minimum levelCost after applying multiplier and offset")
     public int spell_binding_level_cost_min = 1;
+    @Comment("Spell binding level requirement multiplier")
+    public int spell_binding_level_requirement_multiplier = 1;
+    @Comment("Spell binding level requirement offset (added after multiplier)")
+    public int spell_binding_level_requirement_offset = 0;
+    @Comment("Spell binding level requirement minimum level requirement after applying multiplier and offset")
+    public int spell_binding_level_requirement_min = 1;
     @Comment("Spell binding lapis lazuli levelCost multiplier")
     public int spell_binding_lapis_cost_multiplier = 1;
     @Comment("Spell binding allow unbinding spells")

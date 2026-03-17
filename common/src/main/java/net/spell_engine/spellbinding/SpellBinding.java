@@ -128,7 +128,10 @@ public class SpellBinding {
                                     SpellEngineMod.config.spell_binding_level_cost_min,
                                     cost * SpellEngineMod.config.spell_binding_level_cost_multiplier + SpellEngineMod.config.spell_binding_level_cost_offset);
 
-                            var levelRequirement = spell.tier * spell.learn.level_requirement_per_tier;
+                            var levelRequirementDefault = spell.tier * spell.learn.level_requirement_per_tier;
+                            var levelRequirement = Math.max(
+                                    SpellEngineMod.config.spell_binding_level_requirement_min,
+                                    levelRequirementDefault * SpellEngineMod.config.spell_binding_level_requirement_multiplier + SpellEngineMod.config.spell_binding_level_requirement_offset);
                             return new Offer(
                                     rawSpellId(world, entry.getKey()),
                                     levelCost,

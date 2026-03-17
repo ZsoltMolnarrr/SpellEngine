@@ -1,6 +1,7 @@
 # 1.9.9
 
 Functional changes:
+- Added server-side config fields for spell binding level requirements
 - Removed auto hand swap feature (due to colliding with weapon skills)
 
 # 1.9.8
