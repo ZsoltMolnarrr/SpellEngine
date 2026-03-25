@@ -2,7 +2,7 @@ package net.spell_engine.internals;
 
 import com.google.common.collect.Maps;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -25,9 +25,9 @@ public class SpellCooldownManager {
     private final Map<Identifier, Entry> entries = Maps.newHashMap();
     private int tick;
 
-    private final PlayerEntity owner;
+    private final Entity owner;
 
-    public SpellCooldownManager(PlayerEntity owner) {
+    public SpellCooldownManager(Entity owner) {
         this.owner = owner;
     }
 
