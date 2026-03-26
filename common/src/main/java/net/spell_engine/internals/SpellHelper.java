@@ -116,19 +116,25 @@ public class SpellHelper {
         return hasteAffectedValue(value, haste) ;
     }
 
-    public static float getRange(PlayerEntity player, RegistryEntry<Spell> spellEntry) {
+    public static float getRange(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
         var spell = spellEntry.value();
         var range = spell.range;
         if (spell.range_mechanic != null) {
             switch (spell.range_mechanic) {
                 case MELEE -> {
-                    range = (float) (player.getEntityInteractionRange() + spell.range);
+                    double meleeRange = 3;
+                    if (caster instanceof PlayerEntity player) {
+                        meleeRange = player.getEntityInteractionRange();
+                    }
+                    range = (float) (meleeRange + spell.range);
                 }
             }
         }
-        for (var modifier: SpellModifiers.of(player, spellEntry)) {
-            if (modifier.range_add != 0) {
-                range += modifier.range_add;
+        if (caster instanceof PlayerEntity player) {
+            for (var modifier: SpellModifiers.of(player, spellEntry)) {
+                if (modifier.range_add != 0) {
+                    range += modifier.range_add;
+                }
             }
         }
         return range;
@@ -336,71 +342,7 @@ public class SpellHelper {
                         SpellPower.getSpellPower(spell.school, player),
                         focusMode(spell),
                         channelTickIndex);
-                switch (targeting.type) {
-                    case NONE -> {
-                        success = deliver(world, spellEntry, player, List.of(), context, null, completion);
-                    }
-                    case CASTER -> {
-                        var targetsWithContext = List.of(new DeliveryTarget(player, context));
-                        success = deliver(world, spellEntry, player, targetsWithContext, context, null, completion);
-                    }
-                    case AIM -> {
-                        var aim = targeting.aim;
-                        var firstTarget = targets.stream().findFirst();
-                        List<DeliveryTarget> targetsWithContext = List.of();
-                        if (firstTarget.isPresent()) {
-                            var target = firstTarget.get();
-                            var targetSpecificContext = context;
-                            targetsWithContext = List.of(new DeliveryTarget(target, targetSpecificContext));
-                        }
-                        if (!aim.required || firstTarget.isPresent()) {
-                            var location = targetResult.location();
-                            if (location != null && firstTarget.isEmpty() && aim.reposition_vertically != 0) {
-                                var collidedLocation = TargetHelper.findSolidBelow(player, location, world, aim.reposition_vertically);
-                                if (collidedLocation != null) {
-                                    location = collidedLocation;
-                                }
-                            }
-                            success = deliver(world, spellEntry, player, targetsWithContext, context, location, completion);
-                        }
-                        // Very specific attempt failure display, generic solution would be very difficult
-                        if (!success && aim.required && firstTarget.isEmpty()) {
-                            if (player instanceof ServerPlayerEntity serverPlayer) {
-                                ServerPlayNetworking.send(serverPlayer, new Packets.SpellMessage("hud.cast_attempt_error.missing_target", Formatting.RED));
-                            }
-                        }
-                    }
-                    case AREA -> {
-                        var center = player.getPos().add(0, player.getHeight() / 2F, 0);
-                        var area = spell.target.area;
-                        var range = getRange(player, spellEntry) * player.getScale();
-                        final var centeredContext = context; // .position(center);
-                        double squaredRange = range * range;
-                        var targetsWithContext = targets.stream().map(target -> {
-                            float distanceBasedMultiplier = 1F;
-                            switch (area.distance_dropoff) {
-                                case NONE -> { }
-                                case SQUARED -> {
-                                    distanceBasedMultiplier = (float) ((squaredRange - target.squaredDistanceTo(center)) / squaredRange);
-                                    distanceBasedMultiplier = Math.max(distanceBasedMultiplier, 0F);
-                                }
-                            }
-                            return new DeliveryTarget(target, centeredContext.distance(distanceBasedMultiplier));
-                        }).toList();
-                        // `forceSuccess` is true because area spells should always go to cooldown
-                        deliver(world, spellEntry, player, targetsWithContext, context, null, completion, true, false);
-                        // success = true; // Always true, otherwise area spells don't go to CD without targets
-                    }
-                    case BEAM -> {
-                        var targetsWithContext = targets.stream().map(target -> new DeliveryTarget(target, context)).toList();
-                        success = deliver(world, spellEntry, player, targetsWithContext, context, null, completion);
-                    }
-                    case FROM_TRIGGER -> {
-                        var targetsWithContext = targets.stream().map(target -> new DeliveryTarget(target, context)).toList();
-                        success = deliver(world, spellEntry, player, targetsWithContext, context, targetResult.location(), completion);
-                    }
-                    default -> throw new IllegalStateException("Unexpected value: " + targeting.type);
-                }
+                success = resolveAndDeliver(world, player, spellEntry, targetResult, context, completion);
                 caster.setChannelTickIndex(channelTickIndex + incrementChannelTicks);
             } else {
                 if (finished && completion != null) {
@@ -421,6 +363,121 @@ public class SpellHelper {
         }
     }
 
+
+    /**
+     * Routes a resolved {@link SpellTarget.SearchResult} through the delivery system based on the
+     * spell's targeting type.  Called from both {@link #performSpell} (player, client-supplied
+     * targets) and {@link #targetAndPerformSpell} (entity, server-resolved targets).
+     */
+    private static boolean resolveAndDeliver(
+            World world,
+            LivingEntity caster,
+            RegistryEntry<Spell> spellEntry,
+            SpellTarget.SearchResult targetResult,
+            ImpactContext context,
+            @Nullable Consumer<DeliveryCompletion> completion) {
+        var spell = spellEntry.value();
+        var targeting = spell.target;
+        var targets = targetResult.entities();
+        boolean success = false;
+        switch (targeting.type) {
+            case NONE -> {
+                success = deliver(world, spellEntry, caster, List.of(), context, null, completion);
+            }
+            case CASTER -> {
+                var targetsWithContext = List.of(new DeliveryTarget(caster, context));
+                success = deliver(world, spellEntry, caster, targetsWithContext, context, null, completion);
+            }
+            case AIM -> {
+                var aim = targeting.aim;
+                var firstTarget = targets.stream().findFirst();
+                List<DeliveryTarget> targetsWithContext = List.of();
+                if (firstTarget.isPresent()) {
+                    var target = firstTarget.get();
+                    targetsWithContext = List.of(new DeliveryTarget(target, context));
+                }
+                if (!aim.required || firstTarget.isPresent()) {
+                    var location = targetResult.location();
+                    if (location != null && firstTarget.isEmpty() && aim.reposition_vertically != 0) {
+                        var collidedLocation = TargetHelper.findSolidBelow(caster, location, world, aim.reposition_vertically);
+                        if (collidedLocation != null) {
+                            location = collidedLocation;
+                        }
+                    }
+                    success = deliver(world, spellEntry, caster, targetsWithContext, context, location, completion);
+                }
+                // Very specific attempt failure display, generic solution would be very difficult
+                if (!success && aim.required && firstTarget.isEmpty()) {
+                    if (caster instanceof ServerPlayerEntity serverPlayer) {
+                        ServerPlayNetworking.send(serverPlayer, new Packets.SpellMessage("hud.cast_attempt_error.missing_target", Formatting.RED));
+                    }
+                }
+            }
+            case AREA -> {
+                var center = caster.getPos().add(0, caster.getHeight() / 2F, 0);
+                var area = spell.target.area;
+                var range = getRange(caster, spellEntry) * caster.getScale();
+                final var centeredContext = context; // .position(center);
+                double squaredRange = range * range;
+                var targetsWithContext = targets.stream().map(target -> {
+                    float distanceBasedMultiplier = 1F;
+                    switch (area.distance_dropoff) {
+                        case NONE -> { }
+                        case SQUARED -> {
+                            distanceBasedMultiplier = (float) ((squaredRange - target.squaredDistanceTo(center)) / squaredRange);
+                            distanceBasedMultiplier = Math.max(distanceBasedMultiplier, 0F);
+                        }
+                    }
+                    return new DeliveryTarget(target, centeredContext.distance(distanceBasedMultiplier));
+                }).toList();
+                // `forceSuccess` is true because area spells should always go to cooldown
+                deliver(world, spellEntry, caster, targetsWithContext, context, null, completion, true, false);
+                // success = true; // Always true, otherwise area spells don't go to CD without targets
+            }
+            case BEAM -> {
+                var targetsWithContext = targets.stream().map(target -> new DeliveryTarget(target, context)).toList();
+                success = deliver(world, spellEntry, caster, targetsWithContext, context, null, completion);
+            }
+            case FROM_TRIGGER -> {
+                var targetsWithContext = targets.stream().map(target -> new DeliveryTarget(target, context)).toList();
+                success = deliver(world, spellEntry, caster, targetsWithContext, context, targetResult.location(), completion);
+            }
+            default -> throw new IllegalStateException("Unexpected value: " + targeting.type);
+        }
+        return success;
+    }
+
+    /**
+     * Server-side entry point for non-player entities (e.g. summoned companions) to cast a spell.
+     * Performs targeting based on the entity's current rotation/position, then runs the full
+     * delivery pipeline.  No player-side costs (ammo, exhaust, cooldown, animations) are applied;
+     * callers are responsible for managing their own cooldown.
+     *
+     * <p>Must be called on the server; silently no-ops on the client.</p>
+     */
+    public static void targetAndPerformSpell(World world, LivingEntity caster, RegistryEntry<Spell> spellEntry) {
+        if (world.isClient()) return;
+        var spell = spellEntry.value();
+        if (spell.active == null) return;
+
+        var context = new ImpactContext()
+                .power(SpellPower.getSpellPower(spell.school, caster))
+                .target(focusMode(spell));
+
+        var targetResult = SpellTarget.findTargets(caster, spellEntry, SpellTarget.SearchResult.empty(), true);
+
+        // Apply target cap, sorted by distance to caster
+        var targets = targetResult.entities();
+        if (spell.target.cap > 0) {
+            targets = targets.stream()
+                    .sorted(Comparator.comparingDouble(t -> t.squaredDistanceTo(caster.getPos())))
+                    .limit(spell.target.cap)
+                    .toList();
+            targetResult = new SpellTarget.SearchResult(targets, targetResult.location());
+        }
+
+        resolveAndDeliver(world, caster, spellEntry, targetResult, context, null);
+    }
 
     private static void consumeAttemptCost(PlayerEntity player, RegistryEntry<Spell> spellEntry) {
         var spell = spellEntry.value();
@@ -472,10 +529,10 @@ public class SpellHelper {
 
     public record DeliveryTarget(Entity entity, ImpactContext context) {}
     public record DeliveryCompletion(boolean success) {}
-    public static boolean deliver(World world, RegistryEntry<Spell> spellEntry, PlayerEntity caster, List<DeliveryTarget> targets, ImpactContext context, @Nullable Vec3d targetLocation, Consumer<DeliveryCompletion> completion) {
+    public static boolean deliver(World world, RegistryEntry<Spell> spellEntry, LivingEntity caster, List<DeliveryTarget> targets, ImpactContext context, @Nullable Vec3d targetLocation, Consumer<DeliveryCompletion> completion) {
         return deliver(world, spellEntry, caster, targets, context, targetLocation, completion, false, false);
     }
-    public static boolean deliver(World world, RegistryEntry<Spell> spellEntry, PlayerEntity caster, List<DeliveryTarget> targets, ImpactContext context,
+    public static boolean deliver(World world, RegistryEntry<Spell> spellEntry, LivingEntity caster, List<DeliveryTarget> targets, ImpactContext context,
                                   @Nullable Vec3d targetLocation, @Nullable Consumer<DeliveryCompletion> completion, boolean forceSuccess, boolean scheduled) {
         var spell = spellEntry.value();
 

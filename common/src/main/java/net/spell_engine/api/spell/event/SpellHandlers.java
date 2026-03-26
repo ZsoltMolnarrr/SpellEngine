@@ -19,7 +19,7 @@ import java.util.Map;
 public class SpellHandlers {
     public static final Map<String, CustomDelivery> customDelivery = new HashMap<>();
     public interface CustomDelivery {
-        boolean onSpellDelivery(World world, RegistryEntry<Spell> spellEntry, PlayerEntity caster,
+        boolean onSpellDelivery(World world, RegistryEntry<Spell> spellEntry, LivingEntity caster,
                                 List<SpellHelper.DeliveryTarget> targets, SpellHelper.ImpactContext context,
                                 @Nullable Vec3d targetLocation);
     }

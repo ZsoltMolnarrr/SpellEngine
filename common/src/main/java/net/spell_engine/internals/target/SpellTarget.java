@@ -2,7 +2,6 @@ package net.spell_engine.internals.target;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.Vec3d;
@@ -39,7 +38,7 @@ public class SpellTarget {
         }
     }
 
-    public static SearchResult findTargets(PlayerEntity caster, RegistryEntry<Spell> spellEntry, SearchResult previous, boolean filterInvalidTargets) {
+    public static SearchResult findTargets(LivingEntity caster, RegistryEntry<Spell> spellEntry, SearchResult previous, boolean filterInvalidTargets) {
         var currentSpell = spellEntry.value();
         List<Entity> targets = List.of();
         var previousTargets = previous.entities;
