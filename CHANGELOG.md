@@ -4,6 +4,9 @@ Functional changes:
 - Added server-side config fields for spell binding level requirements
 - Removed auto hand swap feature (due to colliding with weapon skills)
 
+API changes:
+- Added server-side entry point for entity spell casting (SpellHelper.java)
+
 # 1.9.8
 
 Functional changes:
