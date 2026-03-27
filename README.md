@@ -393,9 +393,15 @@ builder.put(EntityAttributes_SpellPower.CRITICAL_CHANCE,
 
 # 🔨 Using Spell Engine as mod developer
 
-❗️ DOCUMENTATION IS INCOMPLETE!
-
 ❗️ API IS NOT FINALIZED, MAY INTRODUCE BREAKING CHANGE AT ANY POINT.
+
+## 📖 Spell Creation Guide
+
+See **[docs/](docs/README.md)** for the full spell creation documentation, covering:
+- Two authoring workflows (JSON and Java datagen)
+- Spell anatomy and execution pipeline
+- Casting, targeting, delivery, impacts, cost, triggers
+- Visuals and audio
 
 ## Installation
 
@@ -422,72 +428,6 @@ Install dependencies:
 - [Mixin Extras](https://github.com/LlamaLad7/MixinExtras) (no need to include in your mod, just have it present in the development environment)
   
 (Can be done locally by putting release jars into `/run/fabric/mods`, or can be resolved from maven and like Spell Engine.)
-
-## ⭐️ Creating a spell
-
-Create a new file at `resources/data/MOD_ID/spells/SPELL_ID.json`.
-
-Write the content of the JSON file to match the structure of the [Spell](common/src/main/java/net/spell_engine/api/spell/Spell.java) class. Your JSON will be parsed into a Spell instance.
-
-Spells are automatically registered. 
-
-### Resources
-
-#### Sound
-You can register a sound effects to be used for different stages of the spell casting. Alternatively you can use generic magic school related sound effects provided by this mod.
-
-#### Icon
-Place your spell icon to the following location: `resources/assets/MOD_ID/textures/spell/SPELL_ID.png`
-
-#### Name and description
-
-Add name and description entries into your translation file.
-```
-"spell.MOD_ID.SPELL_ID.name": "Spell Name",
-"spell.MOD_ID.SPELL_ID.description": "Shoots and epic energy ball that does {damage} lightning damage",
-```
-The description supports multiple string [token](common/src/main/java/net/spell_engine/client/gui/SpellTooltip.java) to display dynamic information.
-
-#### Custom models
-
-Spells can render custom models, using Item/Block format (can be created using BlockBench).
-Place your model to: `resources/assets/MOD_ID/models/item/MY_PROJECTILE_NAME.json`
-Register your own model, like this:
-
-```
-CustomModels.registerModelIds(List.of(
-    Identifier.of(MOD_ID, "MY_PROJECTILE_NAME")
-));
-```
-
-##### Projectiles
-
-Custom model projectiles can be used by just referencing the registered projectile model.
-
-##### Status effects
-
-Custom models can be used to be rendered over entities affected by custom status effects.
-
-Create a renderer, implementing `CustomModelStatusEffect.Renderer`, and register it:
-```
-`CustomModelStatusEffect.register(MyStatusEffects.myEffectInstance, new MyRenderer());`
-```
-Example (Frost Shield, renders a big block around to player):
-```
-public class FrostShieldRenderer implements CustomModelStatusEffect.Renderer {
-    public static final Identifier modelId_base = Identifier.of(WizardsMod.ID, "frost_shield_base");
-    private static final RenderLayer BASE_RENDER_LAYER = RenderLayer.getTranslucentMovingBlock();
-    @Override
-    public void renderEffect(int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumers, int light) {
-        float yOffset = 0.51F; // y + 0.01 to avoid Y fighting
-        matrixStack.push();
-        matrixStack.translate(0, yOffset, 0); // y + 0.01 to avoid Y fighting
-        CustomModels.render(BASE_RENDER_LAYER, MinecraftClient.getInstance().getItemRenderer(), modelId_base,
-                matrixStack, vertexConsumers, light, livingEntity.getId());
-        matrixStack.pop();
-    }
-}
-```
 
 ## 🪄 Assigning spells to items
 
@@ -541,11 +481,3 @@ Example staff (zero spell assigned, 3 can be added)
 
 When an item has an assigned Spell Container, it will be eligible for Spell Power enchantments.
 
-## ✨ Audio and visuals
-
-Spell Engine has multiple kind of assets built in: 
-- Sound effects (you can find the available sounds [here](common/src/main/java/net/spell_engine/fx/SpellEngineSounds.java))
-- Particle effects (you can find the available effects [here](common/src/main/java/net/spell_engine/fx/Particles.java))
-- Player Animations (you can find the available animations [here](common/src/main/resources/assets/spell_engine/player_animations))
-
-These assets are referenced in spell json files, by using their Identifier.
