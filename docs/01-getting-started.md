@@ -52,7 +52,19 @@ public class MySpellGen extends SpellGenerator {
 pack.addProvider(MySpellGen::new);
 ```
 
-Running datagen writes the spell JSON to your resources, which is then bundled with your mod. For reference implementations see `WizardsDataGenerator.java` (Wizards mod).
+Running datagen writes the spell JSON to your resources, which is then bundled with your mod.
+
+## Reference Implementations
+
+These open-source mods use Spell Engine and serve as real-world examples for both workflows:
+
+| Mod | What it covers |
+|---|---|
+| [Wizards](https://github.com/ZsoltMolnarrr/Wizards) | Projectiles, beams, channeled spells, meteors, clouds |
+| [Paladins](https://github.com/ZsoltMolnarrr/Paladins) | Healing, area heals, banners, barriers |
+| [Archers](https://github.com/ZsoltMolnarrr/Archers) | Archery skills, `SHOOT_ARROW` delivery |
+| [Relics](https://github.com/ZsoltMolnarrr/Relics) | Passive spells, triggers, stash effects |
+| [Arsenal](https://github.com/ZsoltMolnarrr/Arsenal) | Melee weapon skills, `MELEE` delivery |
 
 ## Required Resources
 
