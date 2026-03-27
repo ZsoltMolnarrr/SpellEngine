@@ -310,18 +310,7 @@ public class SpellHelper {
                 completion = (completionArgs) -> {
                     var deliverySuccess = completionArgs.success();
                     if (deliverySuccess) {
-                        ParticleHelper.sendBatches(player, spell.release.particles);
-                        // particles_scaled_with_ranged
-                        if (spell.release.particles_scaled_with_ranged != null) {
-                            ParticleBatch[] scaledParticles = new ParticleBatch[spell.release.particles_scaled_with_ranged.length];
-                            for (int i = 0; i < spell.release.particles_scaled_with_ranged.length; i++) {
-                                var particles = spell.release.particles_scaled_with_ranged[i];
-                                var range = getRange(player, spellEntry);
-                                scaledParticles[i] = particles.copy().scale(range);
-                            }
-                            ParticleHelper.sendBatches(player, scaledParticles);
-                        }
-                        SoundHelper.playSound(world, player, spell.release.sound);
+                        sendReleaseFx(world, player, spellEntry);
                         AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation, castingSpeed);
 
                         consumeSpellCost(player, finalProgress, spellSource, spellId, spellEntry, heldItemStack, ammoResult, false);
@@ -476,7 +465,27 @@ public class SpellHelper {
             targetResult = new SpellTarget.SearchResult(targets, targetResult.location());
         }
 
-        resolveAndDeliver(world, caster, spellEntry, targetResult, context, null);
+        resolveAndDeliver(world, caster, spellEntry, targetResult, context,
+                (completionArgs) -> {
+                    if (completionArgs.success()) {
+                        sendReleaseFx(world, caster, spellEntry);
+                    }
+                });
+    }
+
+    private static void sendReleaseFx(World world, LivingEntity caster, RegistryEntry<Spell> spellEntry) {
+        var spell = spellEntry.value();
+        ParticleHelper.sendBatches(caster, spell.release.particles);
+        if (spell.release.particles_scaled_with_ranged != null) {
+            ParticleBatch[] scaledParticles = new ParticleBatch[spell.release.particles_scaled_with_ranged.length];
+            for (int i = 0; i < spell.release.particles_scaled_with_ranged.length; i++) {
+                var particles = spell.release.particles_scaled_with_ranged[i];
+                var range = getRange(caster, spellEntry);
+                scaledParticles[i] = particles.copy().scale(range);
+            }
+            ParticleHelper.sendBatches(caster, scaledParticles);
+        }
+        SoundHelper.playSound(world, caster, spell.release.sound);
     }
 
     private static void consumeAttemptCost(PlayerEntity player, RegistryEntry<Spell> spellEntry) {
