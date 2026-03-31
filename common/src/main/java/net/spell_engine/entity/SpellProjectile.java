@@ -36,11 +36,14 @@ import net.spell_engine.utils.VectorHelper;
 import net.spell_power.api.SpellPower;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Predicate;
+import net.spell_engine.internals.melee.OrientedBoundingBox;
 
 public class SpellProjectile extends ProjectileEntity implements FlyingSpellEntity {
     public static EntityType<SpellProjectile> ENTITY_TYPE;
@@ -213,13 +216,26 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
             if (!getWorld().isClient) {
                 HitResult hitResult = ProjectileUtil.getCollision(this, this::canHit);
-                handleHitResult(hitResult, behaviour, spellEntry);
-                if (hitResult.getType() == HitResult.Type.MISS && hasCustomDimensions) {
-                    var boundingBox = this.getBoundingBox();
-                    for (Entity areaTarget : this.getWorld().getOtherEntities(entity, this.getBoundingBox().expand(1), this::canHit)) {
-                        areaTarget.getBoundingBox().intersects(boundingBox);
-                        var areaHitResult = new EntityHitResult(areaTarget);
-                        handleHitResult(areaHitResult, behaviour, spellEntry);
+                var data = projectileData();
+                if (data != null && data.hitbox != null) {
+                    if (hitResult.getType() == HitResult.Type.BLOCK) {
+                        // Block hit: handle normally (preserves bounce/block-impact)
+                        handleHitResult(hitResult, behaviour, spellEntry);
+                    } else {
+                        // Entity/miss from raycast: discard, use swept OBB detection instead
+                        performVolumetricEntityCollision(behaviour, spellEntry, data);
+                    }
+                } else {
+                    // RAYCAST mode (default) — original path with intersects bug fixed
+                    handleHitResult(hitResult, behaviour, spellEntry);
+                    if (hitResult.getType() == HitResult.Type.MISS && hasCustomDimensions) {
+                        var boundingBox = this.getBoundingBox();
+                        for (Entity areaTarget : this.getWorld().getOtherEntities(entity, this.getBoundingBox().expand(1), this::canHit)) {
+                            if (areaTarget.getBoundingBox().intersects(boundingBox)) {
+                                var areaHitResult = new EntityHitResult(areaTarget);
+                                handleHitResult(areaHitResult, behaviour, spellEntry);
+                            }
+                        }
                     }
                 }
             }
@@ -307,6 +323,91 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 }
             }
         }
+    }
+
+    private void performVolumetricEntityCollision(
+            Behaviour behaviour,
+            RegistryEntry<Spell> spellEntry,
+            Spell.ProjectileData data) {
+
+        // 1. Determine OBB dimensions from hitbox (caller guarantees hitbox is non-null)
+        var hitbox = data.hitbox;
+        float obbWidth  = hitbox.width;
+        float obbHeight = hitbox.height;
+        float obbLength = (hitbox.length > 0) ? hitbox.length : hitbox.width;
+        Vec3d obbCenter = this.getPos().add(this.getVelocity().normalize().multiply(obbLength));
+
+        // point backward and miss targets that are clearly in the travel path.
+        float obbYaw = this.getYaw();
+        float obbPitch = this.getPitch();
+
+        // NOTE: OBB constructor param order is (pitch_value, yaw_value) — matches fromPolar(pitch, yaw)
+        var obb = new OrientedBoundingBox(
+                obbCenter, obbWidth, obbHeight, obbLength,
+                obbPitch, obbYaw);
+        obb.updateVertex();
+
+        var effectiveLength = Math.max(obbWidth, obbLength);
+
+        // 3. Broad-phase: query candidate entities in a conservative search box
+        double searchRadius = effectiveLength / 2.0 + Math.max(obbWidth, obbHeight) / 2.0 + 1.0;
+        var broadPhaseBox = this.getBoundingBox().expand(searchRadius);
+        List<Entity> candidates = this.getWorld().getOtherEntities(
+                this, broadPhaseBox, this::canHit);
+
+        // === DEBUG LOG ===
+        if (age <= 60) {
+            System.out.println("[VOBB] t=" + age
+                    + " p=" + fmt(getPos()) + " pp=" + fmtRaw(prevX, prevY, prevZ)
+                    + " y=" + String.format("%.2f", getYaw()) + "(vy=" + String.format("%.2f", obbYaw) + ")"
+                    + " pt=" + String.format("%.2f", getPitch()) + "(vpt=" + String.format("%.2f", obbPitch) + ")");
+            System.out.println("[VOBB]  c=" + fmt(obbCenter)
+                    + " e(w=" + String.format("%.2f", obbWidth) + ",h=" + String.format("%.2f", obbHeight) + ",l=" + String.format("%.2f", effectiveLength) + ")"
+                    + " td=" + String.format("%.2f", 0F));
+            var bb = broadPhaseBox;
+            System.out.println("[VOBB]  bb=[" + String.format("%.2f,%.2f,%.2f->%.2f,%.2f,%.2f", bb.minX, bb.minY, bb.minZ, bb.maxX, bb.maxY, bb.maxZ) + "] n=" + candidates.size());
+            for (Entity c : candidates) {
+                var cb = c.getBoundingBox().expand(c.getTargetingMargin());
+                var cc = c.getPos().add(0, c.getHeight() / 2.0, 0);
+                boolean ix = obb.intersects(cb);
+                boolean cn = obb.contains(cc);
+                System.out.println("[VOBB]   e=" + c.getName().getString()
+                        + " ep=" + fmt(c.getPos())
+                        + " d=" + String.format("%.2f", c.distanceTo(this))
+                        + " h=" + impactHistory.contains(c.getId())
+                        + " ix=" + ix + " cn=" + cn);
+            }
+        }
+        // === END DEBUG LOG ===
+
+        if (candidates.isEmpty()) return;
+
+        // 4. Narrow-phase: SAT test (OBB vs entity AABB, plus center-point containment check)
+        List<Entity> hits = new ArrayList<>();
+        for (Entity candidate : candidates) {
+            if (obb.intersects(candidate.getBoundingBox().expand(candidate.getTargetingMargin()))
+                    || obb.contains(candidate.getPos().add(0, candidate.getHeight() / 2.0, 0))) {
+                hits.add(candidate);
+            }
+        }
+        if (hits.isEmpty()) return;
+
+        // 5. Sort by distance to mid-center: nearest processed first (pierce/ricochet consistency)
+        hits.sort(Comparator.comparingDouble(e -> e.squaredDistanceTo(obbCenter)));
+
+        // 6. Process hits sequentially; stop if projectile is killed mid-loop
+        for (Entity hitEntity : hits) {
+            if (this.isRemoved()) break;
+            if (impactHistory.contains(hitEntity.getId())) continue;
+            handleHitResult(new EntityHitResult(hitEntity), behaviour, spellEntry);
+        }
+    }
+
+    private static String fmt(Vec3d v) {
+        return String.format("(%.2f, %.2f, %.2f)", v.x, v.y, v.z);
+    }
+    private static String fmtRaw(double x, double y, double z) {
+        return String.format("(%.2f, %.2f, %.2f)", x, y, z);
     }
 
     private void finishFalling() {

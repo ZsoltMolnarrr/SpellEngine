@@ -900,12 +900,15 @@ public class Spell {
             }
         }
 
-        /// Custom bounding box of the projectile (applied when not null)
+        /// Custom bounding box of the projectile.
+        /// When set, enables volumetric (OBB/SAT) collision detection instead of raycast.
         @Nullable public HitBox hitbox;
         public static class HitBox { public HitBox() { }
             public HitBox(float width, float height) { this.width = width; this.height = height; }
             public float width = 0.5F;
             public float height = 0.5F;
+            /// OBB depth along the travel direction; 0 = use width as fallback
+            public float length = 0;
         }
 
         public Client client_data;
