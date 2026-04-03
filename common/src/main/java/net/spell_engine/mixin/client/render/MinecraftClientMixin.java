@@ -20,7 +20,9 @@ public abstract class MinecraftClientMixin {
 
     @Inject(method = "hasOutline", at = @At(value = "HEAD"), cancellable = true)
     private void hasOutline_HEAD_SpellEngine(Entity entity, CallbackInfoReturnable<Boolean> cir) {
-        if(TargetHelper.isTargetedByPlayer(entity, player) && SpellEngineClient.config.highlightTarget) {
+        if(TargetHelper.isTargetedByPlayer(entity, player)
+                && !entity.isInvisibleTo(player)
+                && SpellEngineClient.config.highlightTarget) {
             cir.setReturnValue(true);
             cir.cancel();
         }

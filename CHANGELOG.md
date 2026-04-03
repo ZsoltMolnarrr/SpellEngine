@@ -1,11 +1,17 @@
+# 1.9.10
+
+Functional changes:
+- Targeted entities may only be highlighted if not invisible
+
+API changes:
+- Added true volumetric collision detection for spell projectiles
+- Added server-side entry point for entity spell casting (SpellHelper.java)
+
 # 1.9.9
 
 Functional changes:
 - Added server-side config fields for spell binding level requirements
 - Removed auto hand swap feature (due to colliding with weapon skills)
-
-API changes:
-- Added server-side entry point for entity spell casting (SpellHelper.java)
 
 # 1.9.8
 
