@@ -1,12 +1,12 @@
 {
   "textures": [
-    "spell_engine:flame_spark_0",
-    "spell_engine:flame_spark_1",
-    "spell_engine:flame_spark_2",
-    "spell_engine:flame_spark_3",
-    "spell_engine:flame_spark_4",
-    "spell_engine:flame_spark_5",
-    "spell_engine:flame_spark_6",
-    "spell_engine:flame_spark_7"
+    "spell_engine:elemental/flame_spark_0",
+    "spell_engine:elemental/flame_spark_1",
+    "spell_engine:elemental/flame_spark_2",
+    "spell_engine:elemental/flame_spark_3",
+    "spell_engine:elemental/flame_spark_4",
+    "spell_engine:elemental/flame_spark_5",
+    "spell_engine:elemental/flame_spark_6",
+    "spell_engine:elemental/flame_spark_7"
   ]
 }

@@ -1,20 +1,20 @@
 {
   "textures": [
-    "spell_engine:area/swirl_0",
-    "spell_engine:area/swirl_1",
-    "spell_engine:area/swirl_2",
-    "spell_engine:area/swirl_3",
-    "spell_engine:area/swirl_4",
-    "spell_engine:area/swirl_5",
-    "spell_engine:area/swirl_6",
-    "spell_engine:area/swirl_7",
-    "spell_engine:area/swirl_8",
-    "spell_engine:area/swirl_9",
-    "spell_engine:area/swirl_10",
-    "spell_engine:area/swirl_11",
-    "spell_engine:area/swirl_12",
-    "spell_engine:area/swirl_13",
-    "spell_engine:area/swirl_14",
-    "spell_engine:area/swirl_15"
+    "spell_engine:zone/swirl_0",
+    "spell_engine:zone/swirl_1",
+    "spell_engine:zone/swirl_2",
+    "spell_engine:zone/swirl_3",
+    "spell_engine:zone/swirl_4",
+    "spell_engine:zone/swirl_5",
+    "spell_engine:zone/swirl_6",
+    "spell_engine:zone/swirl_7",
+    "spell_engine:zone/swirl_8",
+    "spell_engine:zone/swirl_9",
+    "spell_engine:zone/swirl_10",
+    "spell_engine:zone/swirl_11",
+    "spell_engine:zone/swirl_12",
+    "spell_engine:zone/swirl_13",
+    "spell_engine:zone/swirl_14",
+    "spell_engine:zone/swirl_15"
   ]
 }
