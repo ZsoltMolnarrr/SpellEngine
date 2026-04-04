@@ -89,11 +89,18 @@ Data type: `SpellContainer` object (see [Spell Container](common/src/main/java/n
 
 #### Spell Choice
 
-Defines a set of spells available for the item. Upon first use, player can choose one of the spells from the set to be bound to the item.
+The spell choice component defines a set of spells available for the item. 
+
+Upon first use, player can choose one of the spells from the set to be bound to the item. The chosen spell will be bound to the item, removing the spell choice component from the item, and adding the chosen spell to the spell container of the item. Note: this means items also need to have a valid spell container assigned (otherwise the chosen has nowhere to be placed).
 
 Designed for weapons, meant to be used by multiple classes. For example: Wizard Staff that can be used by any of the Wizard specializations.
 
 Data type: `SpellChoice` object (see [Spell Choice](common/src/main/java/net/spell_engine/api/spell/container/SpellChoice.java) for details)
+
+Assigning a spell choice with a spell container to an item, using a game command:
+```
+/give @p minecraft:wooden_sword[spell_engine:spell_choice={"pool":"wizards:weapon/wizard_staff"}, spell_engine:spell_container={access:MAGIC, spell_ids: [] }]
+```
 
 #### Equipment Set
 
@@ -136,6 +143,7 @@ public static final Weapon.Entry noviceWand = add(Weapons.damageWand(
 
 Some third party tools offer ways to override this, in a data driven way.
 - [Default Components mod](https://modrinth.com/mod/default-components) (Fabric)
+- [Defaulted mod](https://modrinth.com/mod/defaulted/) (Fabric & NeoForge)
 
 #### Assignment with Spell Assignment Data File (Legacy)
 
