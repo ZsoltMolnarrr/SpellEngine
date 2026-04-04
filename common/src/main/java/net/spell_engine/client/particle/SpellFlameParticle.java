@@ -153,6 +153,42 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
     }
 
     @Environment(EnvType.CLIENT)
+    public static class GlowingTemplateFactory implements ParticleFactory<TemplateParticleType> {
+        private final SpriteProvider spriteProvider;
+        private final SpellEngineParticles.Texture texture;
+
+        public GlowingTemplateFactory(SpriteProvider spriteProvider, SpellEngineParticles.Texture texture) {
+            this.spriteProvider = spriteProvider;
+            this.texture = texture;
+        }
+
+        @Override
+        public @Nullable Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
+            particle.setSprite(this.spriteProvider);
+            particle.spriteProviderForAnimation = this.spriteProvider;
+
+            particle.setAlpha(1F);
+            // glow = true by default in SpellFlameParticle
+
+            particle.maxAge = texture.frames() > 1 ? texture.frames() : 40;
+
+            var appearance = particleType.getAppearance();
+            if (appearance != null) {
+                var color = appearance.color;
+                if (color != null) {
+                    particle.setColor(color.red(), color.green(), color.blue());
+                    particle.alpha *= color.alpha();
+                }
+                particle.scale = appearance.scale;
+                particle.followEntity = appearance.entityFollowed;
+            }
+
+            return particle;
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
     public static class SmokeFactory implements ParticleFactory<TemplateParticleType> {
         private final SpriteProvider spriteProvider;
 

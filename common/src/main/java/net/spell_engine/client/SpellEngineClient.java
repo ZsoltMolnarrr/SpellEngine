@@ -161,6 +161,11 @@ public class SpellEngineClient {
 
         ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.smoke_large.particleType(), SpellSmokeParticle.CosySmokeFactory::new);
 
+        var lightningArcA = SpellEngineParticles.lightning_arc_A;
+        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.lightning_arc_A.particleType(), (provider) -> new SpellFlameParticle.GlowingTemplateFactory(provider, lightningArcA.texture()));
+        var lightningArcB = SpellEngineParticles.lightning_arc_B;
+        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.lightning_arc_B.particleType(), (provider) -> new SpellFlameParticle.GlowingTemplateFactory(provider, lightningArcB.texture()));
+
         for (var entry: SpellEngineParticles.areaEffects()) {
             ParticleFactoryRegistry.getInstance().register(
                     entry.particleType(), (provider) -> new SpellAreaParticle.Factory(provider, entry.texture(), entry.fading(), entry.orientation())

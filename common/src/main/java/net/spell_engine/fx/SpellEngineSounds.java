@@ -70,6 +70,7 @@ public class SpellEngineSounds {
     // MARK: Generic spell sounds
 
     public static final Entry GENERIC_ARCANE_CASTING = add(new Entry("generic_arcane_casting"));
+    public static final Entry GENERIC_ARCANE_CASTING_2 = add(new Entry("generic_arcane_casting_2"));
     public static final Entry GENERIC_ARCANE_RELEASE = add(new Entry("generic_arcane_release"));
 
     public static final Entry GENERIC_FIRE_CASTING = add(new Entry("generic_fire_casting"));

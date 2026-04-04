@@ -231,10 +231,10 @@ public class SpellEngineParticles {
     public static final Entry shield_small = add(new Entry("shield_small", Texture.of("shield_small")));
     public static final Entry dripping_blood = add(new Entry("dripping_blood", Texture.vanilla("drip_hang")));
 
+    public static final TemplateEntry lightning_arc_A = addTemplate(new TemplateEntry("lightning_arc_a", Texture.of("elemental/lightning_arc_a", 8)));
+    public static final TemplateEntry lightning_arc_B = addTemplate(new TemplateEntry("lightning_arc_b", Texture.of("elemental/lightning_arc_b", 8)));
     public static final TemplateEntry smoke_medium = addTemplate(new TemplateEntry("smoke_medium", Texture.of("smoke_medium", 9)));
     public static final TemplateEntry smoke_large = addTemplate(new TemplateEntry("smoke_large", Texture.vanilla("big_smoke", 12)));
-    public static final TemplateEntry lightning_arc_A = addTemplate(new TemplateEntry("lightning_arc_a", Texture.of("lightning_arc_a", 8)));
-    public static final TemplateEntry lightning_arc_B = addTemplate(new TemplateEntry("lightning_arc_b", Texture.of("lightning_arc_b", 8)));
 
     public static final TemplateEntry sign_aggro = addSignEffect(new TemplateEntry("sign_aggro", Texture.of("sign/aggro")));
     public static final TemplateEntry sign_arrow = addSignEffect(new TemplateEntry("sign_arrow", Texture.of("sign/arrow")));
