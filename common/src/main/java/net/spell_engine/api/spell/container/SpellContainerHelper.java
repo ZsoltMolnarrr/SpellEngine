@@ -143,9 +143,11 @@ public class SpellContainerHelper {
     }
 
     public static final Comparator<Map.Entry<Identifier, Spell>> spellSorter = (spell1, spell2) -> {
-        if (spell1.getValue().tier > spell2.getValue().tier) {
+        float value1 = spell1.getValue().tier + ((float)spell1.getValue().order) * 0.1F;
+        float value2 = spell2.getValue().tier + ((float)spell2.getValue().order) * 0.1F;
+        if (value1 > value2) {
             return 1;
-        } else if (spell1.getValue().tier < spell2.getValue().tier) {
+        } else if (value1 < value2) {
             return -1;
         } else {
             return spell1.getKey().toString().compareTo(spell2.getKey().toString());
@@ -174,18 +176,4 @@ public class SpellContainerHelper {
         }
         return tiers.size();
     }
-
-//    public static SpellContainer create(RegistryEntry<Spell> spell, Item item) {
-//        return create(List.of(spell), item);
-//    }
-//
-//    public static SpellContainer create(List<RegistryEntry<Spell>> spells, Item item) {
-//        final var contentType = contentTypeForSpell(spells.get(0).value());
-//        var isProxy = !(ISpellBookItem.isSpellBook(item) || item.getRegistryEntry().isIn(SpellEngineItemTags.SPELL_BOOK_MERGEABLE));
-//        var spellIds = spells.stream()
-//                .filter(entry -> contentTypeForSpell(entry.value()) == contentType)
-//                .map(entry -> entry.getKey().get().getValue().toString())
-//                .toList();
-//        return new SpellContainer(contentType, isProxy, "", spellIds.size(), spellIds);
-//    }
 }

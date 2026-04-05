@@ -7,6 +7,8 @@ API changes:
 - Added true volumetric collision detection for spell projectiles
 - Added server-side entry point for entity spell casting (SpellHelper.java)
 - Added some new assets: player animations, particles, sounds
+- Spell data structure changes:
+  - Added new root field `order`, for sorting spells on the hotbar and spell binding GUI
 
 # 1.9.9
 

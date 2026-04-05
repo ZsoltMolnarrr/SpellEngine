@@ -25,15 +25,18 @@ public class Spell {
     @Nullable public RangeMechanic range_mechanic;
     public enum RangeMechanic { MELEE }
 
-    /// Group classifier
-    /// Can be any arbitrary string, commonly used: `primary` (recommended for main attack or healing spells)
-    /// Spells with the same group override each other, prioritized by tier and rank
-    @Nullable public String group;
     /// Quality classifier, used for sorting spells, in an increasing order
     @AlwaysGenerate
     public int tier = 1;
+    /// Ordering classifier, used for sorting spells of the same tier, in an increasing order
+    public int order = 0;
+
+    /// Group classifier
+    /// Can be any arbitrary string, commonly used: `primary` (recommended for main attack or healing spells)
+    /// Spells with the same group override each other, prioritized by tier and rank
+    @Deprecated(forRemoval = true) @Nullable public String group;
     /// Secondary quality classifier, used for sorting spells, in an increasing order
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public int sub_tier = 1;
 
     /// If this can be obtained from Spell Binding Table, provide an object
