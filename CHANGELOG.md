@@ -6,6 +6,7 @@ Functional changes:
 API changes:
 - Added true volumetric collision detection for spell projectiles
 - Added server-side entry point for entity spell casting (SpellHelper.java)
+- Added some new assets: player animations, particles, sounds
 
 # 1.9.9
 
