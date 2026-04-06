@@ -802,11 +802,12 @@ public class SpellHelper {
             }
         }
 
-        var owner = context.effectiveCaster() != null ? context.effectiveCaster() : caster;
+        var effectiveCaster = context.effectiveCaster(world);
+        var owner = effectiveCaster != null ? effectiveCaster : caster;
+
         var projectile = new SpellProjectile(world, owner,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
                 SpellProjectile.Behaviour.FLY, spellEntry, context, mutablePerks);
-
 
         if (SpellEvents.PROJECTILE_SHOOT.isListened()) {
             SpellEvents.PROJECTILE_SHOOT.invoke((listener) -> listener.onProjectileLaunch(
@@ -1055,39 +1056,44 @@ public class SpellHelper {
 
     public record ImpactContext(float channel, float distance, @Nullable Vec3d position,
                                 SpellPower.Result power, SpellTarget.FocusMode focusMode,
-                                int channelTickIndex, @Nullable LivingEntity effectiveCaster) {
+                                int channelTickIndex, @Nullable int effectiveCasterId) {
         public ImpactContext() {
-            this(1, 1, null, null, SpellTarget.FocusMode.DIRECT, 0, null);
+            this(1, 1, null, null, SpellTarget.FocusMode.DIRECT, 0, 0);
         }
 
         public ImpactContext(float channel, float distance, @Nullable Vec3d position,
                              SpellPower.Result power, SpellTarget.FocusMode focusMode,
                              int channelTickIndex) {
-            this(channel, distance, position, power, focusMode, channelTickIndex, null);
+            this(channel, distance, position, power, focusMode, channelTickIndex, 0);
         }
 
         public ImpactContext channeled(float multiplier) {
-            return new ImpactContext(multiplier, distance, position, power, focusMode, channelTickIndex, effectiveCaster);
+            return new ImpactContext(multiplier, distance, position, power, focusMode, channelTickIndex, effectiveCasterId);
         }
 
         public ImpactContext distance(float multiplier) {
-            return new ImpactContext(channel, multiplier, position, power, focusMode, channelTickIndex, effectiveCaster);
+            return new ImpactContext(channel, multiplier, position, power, focusMode, channelTickIndex, effectiveCasterId);
         }
 
         public ImpactContext position(Vec3d position) {
-            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCaster);
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId);
         }
 
         public ImpactContext power(SpellPower.Result spellPower) {
-            return new ImpactContext(channel, distance, position, spellPower, focusMode, channelTickIndex, effectiveCaster);
+            return new ImpactContext(channel, distance, position, spellPower, focusMode, channelTickIndex, effectiveCasterId);
         }
 
         public ImpactContext target(SpellTarget.FocusMode focusMode) {
-            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCaster);
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId);
         }
 
-        public ImpactContext effectiveCaster(LivingEntity effectiveCaster) {
-            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCaster);
+        public ImpactContext effectiveCaster(@Nullable LivingEntity effectiveCaster) {
+            var id = effectiveCaster != null ? effectiveCaster.getId() : 0;
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, id);
+        }
+
+        public @Nullable LivingEntity effectiveCaster(World world) {
+            return effectiveCasterId != 0 ? (LivingEntity) world.getEntityById(effectiveCasterId) : null;
         }
 
         public boolean hasOffset() {
@@ -1204,7 +1210,8 @@ public class SpellHelper {
             var school = impact.school != null ? impact.school : spell.school;
             var originalTarget = target;
 
-            var caster = context.effectiveCaster() != null ? context.effectiveCaster() : givenCaster;
+            var effectiveCaster = context.effectiveCaster(world);
+            var caster = effectiveCaster != null ? effectiveCaster : givenCaster;
 
             if (impact.action.apply_to_caster) {
                 target = caster;
