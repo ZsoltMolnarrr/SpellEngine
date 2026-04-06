@@ -9,6 +9,8 @@ API changes:
 - Added some new assets: player animations, particles, sounds
 - Spell data structure changes:
   - Added new root field `order`, for sorting spells on the hotbar and spell binding GUI
+- Spell execution pipeline now supports performing impacts on other's behalf (ImpactContext.effectiveCaster field)
+- Fine-tuned some server config defaults related to owned entities 
 
 # 1.9.9
 

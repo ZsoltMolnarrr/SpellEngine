@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.Tameable;
 import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -453,6 +454,13 @@ public class SpellHelper {
                 .power(SpellPower.getSpellPower(spell.school, caster))
                 .target(focusMode(spell));
 
+        if (!caster.isAttackable() && caster instanceof Tameable) {
+            var owner = ((Tameable) caster).getOwner();
+            if (owner != null) {
+                context = context.effectiveCaster(owner);
+            }
+        }
+
         var targetResult = SpellTarget.findTargets(caster, spellEntry, SpellTarget.SearchResult.empty(), true);
 
         // Apply target cap, sorted by distance to caster
@@ -794,7 +802,8 @@ public class SpellHelper {
             }
         }
 
-        var projectile = new SpellProjectile(world, caster,
+        var owner = context.effectiveCaster() != null ? context.effectiveCaster() : caster;
+        var projectile = new SpellProjectile(world, owner,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
                 SpellProjectile.Behaviour.FLY, spellEntry, context, mutablePerks);
 
@@ -1044,29 +1053,41 @@ public class SpellHelper {
         return anyPerformed;
     }
 
-    public record ImpactContext(float channel, float distance, @Nullable Vec3d position, SpellPower.Result power, SpellTarget.FocusMode focusMode, int channelTickIndex) {
+    public record ImpactContext(float channel, float distance, @Nullable Vec3d position,
+                                SpellPower.Result power, SpellTarget.FocusMode focusMode,
+                                int channelTickIndex, @Nullable LivingEntity effectiveCaster) {
         public ImpactContext() {
-            this(1, 1, null, null, SpellTarget.FocusMode.DIRECT, 0);
+            this(1, 1, null, null, SpellTarget.FocusMode.DIRECT, 0, null);
+        }
+
+        public ImpactContext(float channel, float distance, @Nullable Vec3d position,
+                             SpellPower.Result power, SpellTarget.FocusMode focusMode,
+                             int channelTickIndex) {
+            this(channel, distance, position, power, focusMode, channelTickIndex, null);
         }
 
         public ImpactContext channeled(float multiplier) {
-            return new ImpactContext(multiplier, distance, position, power, focusMode, channelTickIndex);
+            return new ImpactContext(multiplier, distance, position, power, focusMode, channelTickIndex, effectiveCaster);
         }
 
         public ImpactContext distance(float multiplier) {
-            return new ImpactContext(channel, multiplier, position, power, focusMode, channelTickIndex);
+            return new ImpactContext(channel, multiplier, position, power, focusMode, channelTickIndex, effectiveCaster);
         }
 
         public ImpactContext position(Vec3d position) {
-            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex);
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCaster);
         }
 
         public ImpactContext power(SpellPower.Result spellPower) {
-            return new ImpactContext(channel, distance, position, spellPower, focusMode, channelTickIndex);
+            return new ImpactContext(channel, distance, position, spellPower, focusMode, channelTickIndex, effectiveCaster);
         }
 
         public ImpactContext target(SpellTarget.FocusMode focusMode) {
-            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex);
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCaster);
+        }
+
+        public ImpactContext effectiveCaster(LivingEntity effectiveCaster) {
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCaster);
         }
 
         public boolean hasOffset() {
@@ -1166,7 +1187,7 @@ public class SpellHelper {
 
     private static final float knockbackDefaultStrength = 0.4F;
 
-    private static boolean performImpact(World world, LivingEntity caster, Entity target, RegistryEntry<Spell> spellEntry,
+    private static boolean performImpact(World world, LivingEntity givenCaster, Entity target, RegistryEntry<Spell> spellEntry,
                                          Spell.Impact impact, ImpactContext context, Collection<ServerPlayerEntity> trackers) {
         if (!target.isAttackable()) {
             return false;
@@ -1182,6 +1203,8 @@ public class SpellHelper {
             }
             var school = impact.school != null ? impact.school : spell.school;
             var originalTarget = target;
+
+            var caster = context.effectiveCaster() != null ? context.effectiveCaster() : givenCaster;
 
             if (impact.action.apply_to_caster) {
                 target = caster;

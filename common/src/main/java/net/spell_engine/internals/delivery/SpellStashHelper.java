@@ -92,7 +92,7 @@ public class SpellStashHelper {
                             var aoeSource = event.aoeSource(trigger);
                             var spell = stash.spell().value();
                             var power = SpellPower.getSpellPower(spell.school, event.player);
-                            var impactContext = new SpellHelper.ImpactContext(1F, 1F, null, power, SpellTarget.FocusMode.DIRECT, 0);
+                            var impactContext = new SpellHelper.ImpactContext(1F, 1F, null, power, SpellTarget.FocusMode.DIRECT, 0, null);
                             if (target != null) {
                                 impactContext = impactContext.position(target.getPos());
                             } else if (aoeSource != null) {

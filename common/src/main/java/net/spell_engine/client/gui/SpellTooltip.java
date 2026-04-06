@@ -781,7 +781,7 @@ public class SpellTooltip {
     }
 
     public static String percent(float chance) {
-        return (int) (chance * 100) + "%";
+        return String.valueOf((int) (chance * 100)) + '%';
     }
 
     public static String bonus(float amount, EntityAttributeModifier.Operation operation) {

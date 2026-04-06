@@ -28,6 +28,14 @@ public class EntityRelations {
         }
         target = MultipartEntityCompat.coalesce(target);
 
+        if (attacker instanceof Tameable attackerTameable) {
+            var owner = attackerTameable.getOwner();
+            if (owner != null) {
+                if (target == owner) {
+                    return config.summoned_relation_to_owner;
+                }
+            }
+        }
         if (target instanceof Tameable tameable) {
             var owner = tameable.getOwner();
             if (owner != null) {
