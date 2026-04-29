@@ -148,6 +148,7 @@ public class Spell {
         public ParticleBatch[] particles;
         public ParticleBatch[] particles_scaled_with_ranged;
         public Sound sound;
+        public List<ModelEffect> model_fx = List.of();
     }
 
     public Target target = new Target();
@@ -300,6 +301,7 @@ public class Spell {
                 /// Zero means no limit.
                 public int impact_sound_cap = 3;
                 public ParticleBatch[] particles = new ParticleBatch[]{};
+                public List<ModelEffect> model_fx = List.of();
             }
             public static class HitBox {
                 /// Relative length of the hitbox, will be scaled up by attack range.
@@ -350,6 +352,7 @@ public class Spell {
             public static class Spawn {
                 public Sound sound;
                 public ParticleBatch[] particles = new ParticleBatch[]{};
+                public List<ModelEffect> model_fx = List.of();
             }
         }
 
@@ -542,7 +545,9 @@ public class Spell {
                     public float distance = 1.5F;
                 }
                 @Nullable public ParticleBatch[] depart_particles;
+                @Nullable public List<ModelEffect> depart_model_fx;
                 @Nullable public ParticleBatch[] arrive_particles;
+                @Nullable public List<ModelEffect> arrive_model_fx;
             }
 
             public Cooldown cooldown;
@@ -608,6 +613,7 @@ public class Spell {
 
         public ParticleBatch[] particles = new ParticleBatch[]{};
         public Sound sound;
+        public List<ModelEffect> model_fx = List.of();
     }
     /// Apply this impact to other entities nearby
     @Nullable public AreaImpact area_impact;
@@ -790,7 +796,7 @@ public class Spell {
         public ParticleBatch[] particles = new ParticleBatch[]{};
         @Nullable
         public Sound sound;
-        public ModelEffect[] models = new ModelEffect[]{};
+        public List<ModelEffect> model_fx = List.of();
 
         public float combinedRadius(double power) {
             return radius + extra_radius.power_coefficient * (float) Math.min(extra_radius.power_cap, power);

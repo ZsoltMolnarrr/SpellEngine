@@ -11,7 +11,15 @@ API changes:
 - Spell data structure changes:
   - Added new root field `order`, for sorting spells on the hotbar and spell binding GUI
 - Spell execution pipeline now supports performing impacts on other's behalf (ImpactContext.effectiveCaster field)
-- Fine-tuned some server config defaults related to owned entities 
+- Fine-tuned some server config defaults related to owned entities
+- Added **Model FX** — animated 3D spell model effects spawned as world entities
+  - Supports per-axis `scale`, `translate`, and `rotate` transforms with easing
+  - Full easing library matching [easings.net](https://easings.net) conventions (31 functions)
+  - `initial[]` transforms define the starting state; `animations[]` drive changes over time with `start`, `end`, and `easing` fields
+  - Extensible operation registry: `ModelEffectOperations.register()` for third-party transform types
+  - `model_fx` field available at: `release`, `impacts[]`, `area_impact`, `deliver.melee.swing`, `deliver.clouds[].spawn`, and teleport `depart`/`arrive`
+  - Model files placed at `assets/MOD_ID/models/spell_effect/` are auto-discovered
+
 
 # 1.9.9
 

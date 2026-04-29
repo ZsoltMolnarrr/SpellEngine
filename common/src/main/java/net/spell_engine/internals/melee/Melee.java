@@ -19,6 +19,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellModifiers;
@@ -237,6 +238,7 @@ public class Melee {
             }
             SoundHelper.playSound(player.getWorld(), player, attackData.swing_sound);
             ParticleHelper.sendBatches(player, attackData.particles, 1, trackers);
+            ModelEffectHelper.spawn(player.getWorld(), player.getPos(), player.getYaw(), attackData.model_fx);
         }
     }
 

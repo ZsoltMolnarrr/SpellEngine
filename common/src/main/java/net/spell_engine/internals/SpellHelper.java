@@ -495,6 +495,7 @@ public class SpellHelper {
             ParticleHelper.sendBatches(caster, scaledParticles);
         }
         SoundHelper.playSound(world, caster, spell.release.sound);
+        ModelEffectHelper.spawn(world, caster.getPos(), caster.getYaw(), spell.release.model_fx);
     }
 
     private static void consumeAttemptCost(PlayerEntity player, RegistryEntry<Spell> spellEntry) {
@@ -1028,7 +1029,7 @@ public class SpellHelper {
         }
 
         SoundHelper.playSound(contextEntity.getWorld(), contextEntity, area_impact.sound);
-        ModelEffectHelper.spawn(contextEntity.getWorld(), center, caster.getYaw(), area_impact.models);
+        ModelEffectHelper.spawn(contextEntity.getWorld(), center, caster.getYaw(), area_impact.model_fx);
         return result;
     }
 
@@ -1569,6 +1570,7 @@ public class SpellHelper {
                         }
                         if (destination != null && startingPosition != null && teleportedEntity != null) {
                             ParticleHelper.sendBatches(teleportedEntity, data.depart_particles, false);
+                            ModelEffectHelper.spawn(world, startingPosition, teleportedEntity.getYaw(), data.depart_model_fx);
                             world.emitGameEvent(GameEvent.TELEPORT, startingPosition, GameEvent.Emitter.of(teleportedEntity));
 
                             if (applyRotation != null
@@ -1587,6 +1589,7 @@ public class SpellHelper {
                             success = true;
 
                             ParticleHelper.sendBatches(teleportedEntity, data.arrive_particles, false);
+                            ModelEffectHelper.spawn(world, teleportedEntity.getPos(), teleportedEntity.getYaw(), data.arrive_model_fx);
                         }
                     }
                 }
@@ -1707,6 +1710,7 @@ public class SpellHelper {
                 if (impact.sound != null) {
                     SoundHelper.playSound(world, target, impact.sound);
                 }
+                ModelEffectHelper.spawn(world, target.getPos(), caster.getYaw(), impact.model_fx);
                 if (targetWasAlive && caster instanceof PlayerEntity player) {
                     var finalTarget = target;
                     var finalCritical = critical;
@@ -1853,6 +1857,7 @@ public class SpellHelper {
                     if (particles != null) {
                         ParticleHelper.sendBatches(entity, particles);
                     }
+                    ModelEffectHelper.spawn(world, entity.getPos(), entity.getYaw(), cloud.spawn.model_fx);
                 });
 
                 if (cloud.placement_delay_stacks) {

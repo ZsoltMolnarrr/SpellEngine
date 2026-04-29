@@ -5,9 +5,11 @@ import net.minecraft.world.World;
 import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.entity.SpellModelEffect;
 
+import java.util.List;
+
 public class ModelEffectHelper {
-    public static void spawn(World world, Vec3d location, float yaw, ModelEffect[] models) {
-        if (models == null || models.length == 0) {
+    public static void spawn(World world, Vec3d location, float yaw, List<ModelEffect> models) {
+        if (models == null || models.isEmpty()) {
             return;
         }
         for (var effect : models) {
