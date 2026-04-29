@@ -24,9 +24,8 @@ public class ModelEffectOperations {
     }
 
     public static void registerDefaults() {
-        register("scale", (matrices, progress, t) -> {
-            matrices.scale(1F + progress * t.x, 1F + progress * t.y, 1F + progress * t.z);
-        });
+        // Note: "scale" is handled specially in SpellModelEffectRenderer (accumulated additively,
+        // applied as a single MatrixStack.scale call) and is not dispatched through this registry.
         register("translate", (matrices, progress, t) -> {
             matrices.translate(progress * t.x, progress * t.y, progress * t.z);
         });

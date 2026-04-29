@@ -96,11 +96,12 @@ public class SpellModelEffect extends Entity {
 
     @Override
     public boolean shouldRender(double distance) {
-        double d = this.getBoundingBox().getAverageSideLength() * 4.0;
-        if (Double.isNaN(d)) {
-            d = 4.0;
-        }
-        d *= 64.0;
-        return distance < d * d;
+//        double d = this.getBoundingBox().getAverageSideLength() * 4.0;
+//        if (Double.isNaN(d)) {
+//            d = 4.0;
+//        }
+//        d *= 64.0;
+//        return distance < d * d;
+        return true;
     }
 }

@@ -34,14 +34,18 @@ public class SpellModelEffectRenderer<T extends SpellModelEffect> extends Entity
 
         matrixStack.push();
 
-        // Apply base scale
-        matrixStack.scale(effect.scale, effect.scale, effect.scale);
+        // Scale transforms are accumulated additively and applied as a single call at the end,
+        // because MatrixStack.scale() composes multiplicatively — chaining scale(0)*scale(s) = 0 forever.
+        // All other operations (translate, rotate) go through the MatrixStack directly.
+        float sx = 0, sy = 0, sz = 0;
 
         // Apply initial transforms (at full effect, progress=1)
         for (var transform : effect.initial) {
-            var handler = ModelEffectOperations.get(transform.operation);
-            if (handler != null) {
-                handler.apply(matrixStack, 1F, transform);
+            if ("scale".equals(transform.operation)) {
+                sx += transform.x; sy += transform.y; sz += transform.z;
+            } else {
+                var handler = ModelEffectOperations.get(transform.operation);
+                if (handler != null) handler.apply(matrixStack, 1F, transform);
             }
         }
 
@@ -52,11 +56,16 @@ public class SpellModelEffectRenderer<T extends SpellModelEffect> extends Entity
             float t = (anim.end <= anim.start) ? 1F
                     : Math.clamp((age - anim.start) / (float)(anim.end - anim.start), 0F, 1F);
             float progress = EasingHelper.apply(anim.easing, t);
-            var handler = ModelEffectOperations.get(anim.operation);
-            if (handler != null) {
-                handler.apply(matrixStack, progress, anim);
+            if ("scale".equals(anim.operation)) {
+                sx += progress * anim.x; sy += progress * anim.y; sz += progress * anim.z;
+            } else {
+                var handler = ModelEffectOperations.get(anim.operation);
+                if (handler != null) handler.apply(matrixStack, progress, anim);
             }
         }
+
+        // Apply base scale combined with accumulated scale deltas as one call
+        matrixStack.scale(effect.scale * (1 + sx), effect.scale * (1 + sy), effect.scale * (1 + sz));
 
         // Render model
         var modelId = Identifier.of(effect.model_id);
