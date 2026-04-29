@@ -28,6 +28,7 @@ import net.spell_engine.config.ClientConfig;
 import net.spell_engine.config.ClientConfigWrapper;
 import net.spell_engine.config.HudConfig;
 import net.spell_engine.entity.SpellCloud;
+import net.spell_engine.entity.SpellModelEffect;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.rpg_series.client.RPGSeriesCoreClient;
@@ -73,6 +74,8 @@ public class SpellEngineClient {
         });
         EntityRendererRegistry.register(SpellProjectile.ENTITY_TYPE, SpellProjectileRenderer::new);
         EntityRendererRegistry.register(SpellCloud.ENTITY_TYPE, SpellCloudRenderer::new);
+        EntityRendererRegistry.register(SpellModelEffect.ENTITY_TYPE, SpellModelEffectRenderer::new);
+        ModelEffectOperations.registerDefaults();
 
         RPGSeriesCoreClient.init();
     }

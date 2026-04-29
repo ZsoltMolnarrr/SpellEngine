@@ -28,6 +28,7 @@ import net.spell_engine.config.ServerConfigWrapper;
 import net.spell_engine.config.WeaknessConfig;
 import net.tiny_config.ConfigManager;
 import net.spell_engine.entity.SpellCloud;
+import net.spell_engine.entity.SpellModelEffect;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.internals.SpellEngineCommands;
 import net.spell_engine.internals.SpellTriggers;
@@ -138,6 +139,16 @@ public class SpellEngineMod {
                 Identifier.of(SpellEngineMod.ID, "spell_area_effect"),
                 FabricEntityTypeBuilder.<SpellCloud>create(SpawnGroup.MISC, SpellCloud::new)
                         .dimensions(EntityDimensions.changing(6F, 0.5F)) // dimensions in Minecraft units of the render
+                        .fireImmune()
+                        .trackRangeBlocks(128)
+                        .trackedUpdateRate(20)
+                        .build()
+        );
+        SpellModelEffect.ENTITY_TYPE = Registry.register(
+                Registries.ENTITY_TYPE,
+                Identifier.of(SpellEngineMod.ID, "spell_model_effect"),
+                FabricEntityTypeBuilder.<SpellModelEffect>create(SpawnGroup.MISC, SpellModelEffect::new)
+                        .dimensions(EntityDimensions.fixed(0.5F, 0.5F))
                         .fireImmune()
                         .trackRangeBlocks(128)
                         .trackedUpdateRate(20)

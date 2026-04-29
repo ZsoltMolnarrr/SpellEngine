@@ -2,6 +2,7 @@
 
 Functional changes:
 - Targeted entities may only be highlighted if not invisible
+- Fixed missing default translation for Spell Scroll item 
 
 API changes:
 - Added true volumetric collision detection for spell projectiles

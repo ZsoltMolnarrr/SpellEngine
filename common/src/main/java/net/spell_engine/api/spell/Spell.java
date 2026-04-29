@@ -3,6 +3,7 @@ package net.spell_engine.api.spell;
 import net.minecraft.entity.EquipmentSlot;
 import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
+import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.util.AlwaysGenerate;
@@ -789,6 +790,7 @@ public class Spell {
         public ParticleBatch[] particles = new ParticleBatch[]{};
         @Nullable
         public Sound sound;
+        public ModelEffect[] models = new ModelEffect[]{};
 
         public float combinedRadius(double power) {
             return radius + extra_radius.power_coefficient * (float) Math.min(extra_radius.power_cap, power);

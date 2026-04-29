@@ -53,6 +53,7 @@ import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.melee.Melee;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.internals.target.SpellTarget;
+import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.network.Packets;
 import net.spell_engine.utils.*;
@@ -1027,6 +1028,7 @@ public class SpellHelper {
         }
 
         SoundHelper.playSound(contextEntity.getWorld(), contextEntity, area_impact.sound);
+        ModelEffectHelper.spawn(contextEntity.getWorld(), center, caster.getYaw(), area_impact.models);
         return result;
     }
 
