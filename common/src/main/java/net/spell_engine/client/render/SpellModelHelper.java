@@ -10,6 +10,7 @@ public class SpellModelHelper {
     public static final Map<LightEmission, RenderLayer> LAYERS = Map.of(
             LightEmission.NONE, CustomLayers.spellObject(LightEmission.NONE),
             LightEmission.GLOW, CustomLayers.spellObject(LightEmission.GLOW),
+            LightEmission.GLOW_TRANSLUCENT, CustomLayers.spellObject(LightEmission.GLOW_TRANSLUCENT),
             LightEmission.RADIATE, CustomLayers.spellObject(LightEmission.RADIATE)
     );
 }

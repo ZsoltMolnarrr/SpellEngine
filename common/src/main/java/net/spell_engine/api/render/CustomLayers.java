@@ -99,6 +99,8 @@ public class CustomLayers extends RenderLayer {
         switch (lightEmission) {
             case RADIATE:
                 return spellObject(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, lightEmission, false);
+            case GLOW_TRANSLUCENT:
+                return spellObject(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, lightEmission, true);
             case GLOW:
                 return spellObject(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, lightEmission, false);
             case NONE:
@@ -109,7 +111,7 @@ public class CustomLayers extends RenderLayer {
 
     public static RenderLayer spellObject(Identifier texture, LightEmission lightEmission, boolean translucent) {
         RenderPhase.ShaderProgram shaderProgram = switch (lightEmission) {
-            case RADIATE -> ENTITY_TRANSLUCENT_EMISSIVE_PROGRAM;
+            case RADIATE, GLOW_TRANSLUCENT -> ENTITY_TRANSLUCENT_EMISSIVE_PROGRAM;
             case GLOW -> BEACON_BEAM_PROGRAM;
             case NONE -> ENTITY_TRANSLUCENT_PROGRAM;
         };
