@@ -60,12 +60,10 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
     @Inject(method = "onTrackedDataSet", at = @At("TAIL"))
     private void onTrackedDataSet_TAIL_SpellEngine_SyncEffects(TrackedData<?> data, CallbackInfo ci) {
         if (SPELL_ENGINE_SYNCED_EFFECTS.equals(data)) {
-            SpellEngine_syncedStatusEffects.clear();
             var newEffects = SpellEngine_decodeStatusEffects();
-            var oldEffects = SpellEngine_syncedStatusEffects();
             var merged = new ArrayList<Synchronized.Effect>();
             for (var newEffect : newEffects) {
-                var oldEffect = oldEffects.stream()
+                var oldEffect = SpellEngine_syncedStatusEffects.stream()
                         .filter(e -> e.effect() == newEffect.effect())
                         .findFirst();
                 if (oldEffect.isPresent() && oldEffect.get().appliedAtAge() < newEffect.appliedAtAge()) {
@@ -74,10 +72,12 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
                     merged.add(newEffect);
                 }
             }
+            SpellEngine_syncedStatusEffects.clear();
             SpellEngine_syncedStatusEffects.addAll(merged);
         }
     }
 
+    @Unique
     private String SpellEngine_encodedStatusEffects() {
         StringBuilder builder = new StringBuilder();
         int i = 0;
@@ -96,6 +96,7 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
         return builder.toString();
     }
 
+    @Unique
     private List<Synchronized.Effect> SpellEngine_decodeStatusEffects() {
         var string = dataTracker.get(SPELL_ENGINE_SYNCED_EFFECTS);
         var effects = new ArrayList<Synchronized.Effect>();
