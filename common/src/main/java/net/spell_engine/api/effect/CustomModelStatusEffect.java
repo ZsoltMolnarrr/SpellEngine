@@ -15,7 +15,7 @@ public final class CustomModelStatusEffect {
                           VertexConsumerProvider vertexConsumers, int light);
         default void renderEffect(int appliedAtAge, int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack,
                           VertexConsumerProvider vertexConsumers, int light) {
-            renderEffect(0, amplifier, livingEntity, delta, matrixStack, vertexConsumers, light);
+            renderEffect(amplifier, livingEntity, delta, matrixStack, vertexConsumers, light);
         }
     }
     public record Args(boolean scaleWithEntity) {
