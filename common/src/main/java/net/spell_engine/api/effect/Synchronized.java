@@ -13,7 +13,7 @@ public interface Synchronized {
         ((Synchronized)effect).setSynchronized(isSynchronized);
     }
 
-    record Effect(StatusEffect effect, int amplifier) { }
+    record Effect(StatusEffect effect, int amplifier, int appliedAtAge) { }
     static List<Effect> effectsOf(LivingEntity entity) {
         return ((Provider)entity).SpellEngine_syncedStatusEffects();
     }

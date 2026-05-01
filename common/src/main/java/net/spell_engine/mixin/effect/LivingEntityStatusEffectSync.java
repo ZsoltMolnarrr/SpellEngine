@@ -61,7 +61,20 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
     private void onTrackedDataSet_TAIL_SpellEngine_SyncEffects(TrackedData<?> data, CallbackInfo ci) {
         if (SPELL_ENGINE_SYNCED_EFFECTS.equals(data)) {
             SpellEngine_syncedStatusEffects.clear();
-            SpellEngine_syncedStatusEffects.addAll(SpellEngine_decodeStatusEffects());
+            var newEffects = SpellEngine_decodeStatusEffects();
+            var oldEffects = SpellEngine_syncedStatusEffects();
+            var merged = new ArrayList<Synchronized.Effect>();
+            for (var newEffect : newEffects) {
+                var oldEffect = oldEffects.stream()
+                        .filter(e -> e.effect() == newEffect.effect())
+                        .findFirst();
+                if (oldEffect.isPresent() && oldEffect.get().appliedAtAge() < newEffect.appliedAtAge()) {
+                    merged.add(oldEffect.get());
+                } else {
+                    merged.add(newEffect);
+                }
+            }
+            SpellEngine_syncedStatusEffects.addAll(merged);
         }
     }
 
@@ -94,8 +107,9 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
             int rawId = Integer.valueOf(components[0]);
             int amplifier = Integer.valueOf(components[1]);
             var statusEffect = Registries.STATUS_EFFECT.get(rawId);
+            var age = this.age;
             if (statusEffect != null) {
-                effects.add(new Synchronized.Effect(statusEffect, amplifier));
+                effects.add(new Synchronized.Effect(statusEffect, amplifier, age));
             }
         }
         return effects;

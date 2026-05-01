@@ -10,8 +10,13 @@ import java.util.Map;
 
 public final class CustomModelStatusEffect {
     public interface Renderer {
+        @Deprecated(forRemoval = true)
         void renderEffect(int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack,
                           VertexConsumerProvider vertexConsumers, int light);
+        default void renderEffect(int appliedAtAge, int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack,
+                          VertexConsumerProvider vertexConsumers, int light) {
+            renderEffect(0, amplifier, livingEntity, delta, matrixStack, vertexConsumers, light);
+        }
     }
     public record Args(boolean scaleWithEntity) {
         public static final Args DEFAULT = new Args(true);

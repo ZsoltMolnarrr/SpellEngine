@@ -49,7 +49,7 @@ public class LivingEntityRendererMixin {
                         var scale = livingEntity.getScale();
                         matrixStack.scale(scale, scale, scale);
                     }
-                    rendererEntry.renderer().renderEffect(amplifier, livingEntity, delta, matrixStack, vertexConsumerProvider, light);
+                    rendererEntry.renderer().renderEffect(entry.appliedAtAge(), amplifier, livingEntity, delta, matrixStack, vertexConsumerProvider, light);
                     matrixStack.pop();
                 }
             }
