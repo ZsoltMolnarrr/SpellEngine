@@ -137,7 +137,7 @@ public class SpellBinding {
                                     levelCost,
                                     levelRequirement,
                                     cost * SpellEngineMod.config.spell_binding_lapis_cost_multiplier,
-                                    (libraryPower == LIBRARY_POWER_CAP)
+                                    (libraryPower >= LIBRARY_POWER_CAP)
                                             || ((LIBRARY_POWER_BASE + libraryPower * LIBRARY_POWER_MULTIPLIER) >= levelRequirement)
                             );
                         }
