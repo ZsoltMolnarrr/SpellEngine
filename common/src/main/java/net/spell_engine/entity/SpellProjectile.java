@@ -355,30 +355,30 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         List<Entity> candidates = this.getWorld().getOtherEntities(
                 this, broadPhaseBox, this::canHit);
 
-        // === DEBUG LOG ===
-        if (age <= 60) {
-            System.out.println("[VOBB] t=" + age
-                    + " p=" + fmt(getPos()) + " pp=" + fmtRaw(prevX, prevY, prevZ)
-                    + " y=" + String.format("%.2f", getYaw()) + "(vy=" + String.format("%.2f", obbYaw) + ")"
-                    + " pt=" + String.format("%.2f", getPitch()) + "(vpt=" + String.format("%.2f", obbPitch) + ")");
-            System.out.println("[VOBB]  c=" + fmt(obbCenter)
-                    + " e(w=" + String.format("%.2f", obbWidth) + ",h=" + String.format("%.2f", obbHeight) + ",l=" + String.format("%.2f", effectiveLength) + ")"
-                    + " td=" + String.format("%.2f", 0F));
-            var bb = broadPhaseBox;
-            System.out.println("[VOBB]  bb=[" + String.format("%.2f,%.2f,%.2f->%.2f,%.2f,%.2f", bb.minX, bb.minY, bb.minZ, bb.maxX, bb.maxY, bb.maxZ) + "] n=" + candidates.size());
-            for (Entity c : candidates) {
-                var cb = c.getBoundingBox().expand(c.getTargetingMargin());
-                var cc = c.getPos().add(0, c.getHeight() / 2.0, 0);
-                boolean ix = obb.intersects(cb);
-                boolean cn = obb.contains(cc);
-                System.out.println("[VOBB]   e=" + c.getName().getString()
-                        + " ep=" + fmt(c.getPos())
-                        + " d=" + String.format("%.2f", c.distanceTo(this))
-                        + " h=" + impactHistory.contains(c.getId())
-                        + " ix=" + ix + " cn=" + cn);
-            }
-        }
-        // === END DEBUG LOG ===
+//        // === DEBUG LOG ===
+//        if (age <= 60) {
+//            System.out.println("[VOBB] t=" + age
+//                    + " p=" + fmt(getPos()) + " pp=" + fmtRaw(prevX, prevY, prevZ)
+//                    + " y=" + String.format("%.2f", getYaw()) + "(vy=" + String.format("%.2f", obbYaw) + ")"
+//                    + " pt=" + String.format("%.2f", getPitch()) + "(vpt=" + String.format("%.2f", obbPitch) + ")");
+//            System.out.println("[VOBB]  c=" + fmt(obbCenter)
+//                    + " e(w=" + String.format("%.2f", obbWidth) + ",h=" + String.format("%.2f", obbHeight) + ",l=" + String.format("%.2f", effectiveLength) + ")"
+//                    + " td=" + String.format("%.2f", 0F));
+//            var bb = broadPhaseBox;
+//            System.out.println("[VOBB]  bb=[" + String.format("%.2f,%.2f,%.2f->%.2f,%.2f,%.2f", bb.minX, bb.minY, bb.minZ, bb.maxX, bb.maxY, bb.maxZ) + "] n=" + candidates.size());
+//            for (Entity c : candidates) {
+//                var cb = c.getBoundingBox().expand(c.getTargetingMargin());
+//                var cc = c.getPos().add(0, c.getHeight() / 2.0, 0);
+//                boolean ix = obb.intersects(cb);
+//                boolean cn = obb.contains(cc);
+//                System.out.println("[VOBB]   e=" + c.getName().getString()
+//                        + " ep=" + fmt(c.getPos())
+//                        + " d=" + String.format("%.2f", c.distanceTo(this))
+//                        + " h=" + impactHistory.contains(c.getId())
+//                        + " ix=" + ix + " cn=" + cn);
+//            }
+//        }
+//        // === END DEBUG LOG ===
 
         if (candidates.isEmpty()) return;
 
@@ -403,12 +403,12 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         }
     }
 
-    private static String fmt(Vec3d v) {
-        return String.format("(%.2f, %.2f, %.2f)", v.x, v.y, v.z);
-    }
-    private static String fmtRaw(double x, double y, double z) {
-        return String.format("(%.2f, %.2f, %.2f)", x, y, z);
-    }
+//    private static String fmt(Vec3d v) {
+//        return String.format("(%.2f, %.2f, %.2f)", v.x, v.y, v.z);
+//    }
+//    private static String fmtRaw(double x, double y, double z) {
+//        return String.format("(%.2f, %.2f, %.2f)", x, y, z);
+//    }
 
     private void finishFalling() {
         Entity owner = this.getOwner();
