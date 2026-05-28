@@ -238,7 +238,7 @@ public class Melee {
             }
             SoundHelper.playSound(player.getWorld(), player, attackData.swing_sound);
             ParticleHelper.sendBatches(player, attackData.particles, 1, trackers);
-            ModelEffectHelper.spawn(player.getWorld(), player.getPos(), player.getYaw(), attackData.model_fx);
+            ModelEffectHelper.spawn(player.getWorld(), player.getPos(), player.getYaw(), attackData.model_fx, player);
         }
     }
 

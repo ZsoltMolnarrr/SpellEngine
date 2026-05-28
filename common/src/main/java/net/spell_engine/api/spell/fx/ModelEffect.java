@@ -10,8 +10,15 @@ public class ModelEffect { public ModelEffect() { }
     public float scale = 1F;
     /// Duration in ticks the model persists
     public int duration = 20;
-    public Positioning positioning = Positioning.CENTER;
-    public enum Positioning { CENTER, FEET, GROUND }
+    public Positioning positioning = new Positioning();
+    /// Vertical placement within the contextually relevant entity's bounding box.
+    /// 0 = feet/ground, 0.5 = center, 1 = top.
+    public static class Positioning { public Positioning() { }
+        public float vertical = 0.5F;
+    }
+    /// When true, the spawned model effect entity follows the contextually relevant entity
+    /// (e.g. the impact target on area_impact, the caster on release).
+    public boolean follow_entity = false;
 
     /// Transforms applied at full effect from tick 0 (no time dimension)
     public List<Transform> initial = List.of();
