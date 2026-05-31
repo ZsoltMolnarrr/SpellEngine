@@ -68,6 +68,7 @@
     "client.render.EntityMixin",
     "client.render.InGameHudMixin",
     "client.render.ItemRendererAccessor",
+    "client.render.LivingEntityModelFxRendererMixin",
     "client.render.LivingEntityRendererMixin",
     "client.render.MinecraftClientMixin",
     "client.render.ModelPredicateProviderRegistryAccessor",
