@@ -3,7 +3,7 @@ package net.spell_engine.fx;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.spell_engine.api.spell.fx.AttachedModelFx;
+import net.spell_engine.api.spell.fx.ModelEffectAttachment;
 import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.entity.SpellModelEffect;
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +25,7 @@ public class ModelEffectHelper {
                 continue;
             }
             if (effect.follow_entity && contextEntity != null) {
-                ((AttachedModelFx.Provider) contextEntity)
+                ((ModelEffectAttachment.Provider) contextEntity)
                         .SpellEngine_attachModelFx(effect, world.getTime());
             } else {
                 var spawnPos = (contextEntity != null)

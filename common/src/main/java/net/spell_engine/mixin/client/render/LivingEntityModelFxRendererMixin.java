@@ -5,7 +5,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
-import net.spell_engine.api.spell.fx.AttachedModelFx;
+import net.spell_engine.api.spell.fx.ModelEffectAttachment;
 import net.spell_engine.client.render.ModelEffectOperations;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,7 +23,7 @@ public class LivingEntityModelFxRendererMixin {
         if (camera == null) return;
         if (entity == camera.getFocusedEntity() && !camera.isThirdPerson()) return;
 
-        var attached = AttachedModelFx.of(entity);
+        var attached = ModelEffectAttachment.of(entity);
         if (attached.isEmpty()) return;
 
         var itemRenderer = client.getItemRenderer();

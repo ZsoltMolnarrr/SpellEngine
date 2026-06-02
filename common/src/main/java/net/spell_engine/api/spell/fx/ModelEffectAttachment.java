@@ -4,7 +4,7 @@ import net.minecraft.entity.LivingEntity;
 
 import java.util.List;
 
-public class AttachedModelFx {
+public class ModelEffectAttachment {
     public interface Provider {
         List<Entry> SpellEngine_getAttachedModelFx();
         void SpellEngine_attachModelFx(ModelEffect effect, long worldTime);

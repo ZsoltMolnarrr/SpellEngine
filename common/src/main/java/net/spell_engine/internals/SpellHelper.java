@@ -297,6 +297,11 @@ public class SpellHelper {
             var targeting = spell.target;
             boolean finished = action == SpellCast.Action.RELEASE
                     || (action == SpellCast.Action.TRIGGER && spell.type == Spell.Type.PASSIVE); // For stashed spells release has been done already
+            boolean shouldSendReleaseFx = switch (action) {
+                case CHANNEL -> spell.active.cast.channeled_release_fx;
+                case RELEASE -> !(isChanneled(spell) && spell.active.cast.channeled_release_fx);
+                case TRIGGER -> spell.type == Spell.Type.PASSIVE;
+            };
             boolean success = true;
             if (targeting.cap > 0) {
                 targets = targets.stream()
@@ -306,17 +311,17 @@ public class SpellHelper {
             }
 
             Consumer<DeliveryCompletion> completion = null;
-            if (finished) {
+            if (shouldSendReleaseFx || finished) {
                 float finalProgress = progress;
                 List<Entity> finalTargets = targets;
                 completion = (completionArgs) -> {
-                    var deliverySuccess = completionArgs.success();
-                    if (deliverySuccess) {
+                    if (!completionArgs.success()) return;
+                    if (shouldSendReleaseFx) {
                         sendReleaseFx(world, player, spellEntry);
                         AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation, castingSpeed);
-
+                    }
+                    if (finished) {
                         consumeSpellCost(player, finalProgress, spellSource, spellId, spellEntry, heldItemStack, ammoResult, false);
-
                         var args = new SpellEvents.SpellCastEvent.Args(player, spellEntry, finalTargets, action, finalProgress);
                         SpellEvents.SPELL_CAST.invoke((listener) -> listener.onSpellCast(args));
                     }

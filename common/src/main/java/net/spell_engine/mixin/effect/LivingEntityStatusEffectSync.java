@@ -14,7 +14,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.World;
 import net.spell_engine.api.effect.Synchronized;
-import net.spell_engine.api.spell.fx.AttachedModelFx;
+import net.spell_engine.api.spell.fx.ModelEffectAttachment;
 import net.spell_engine.api.spell.fx.ModelEffect;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityStatusEffectSync extends Entity implements Synchronized.Provider, AttachedModelFx.Provider {
+public abstract class LivingEntityStatusEffectSync extends Entity implements Synchronized.Provider, ModelEffectAttachment.Provider {
     @Shadow @Final private Map<RegistryEntry<StatusEffect>, StatusEffectInstance> activeStatusEffects;
 
     // MARK: Status effect sync
@@ -41,11 +41,11 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
     // MARK: Attached model FX
 
     private static final Gson SpellEngine_gson = new Gson();
-    private static final Type SpellEngine_entryListType = new TypeToken<List<AttachedModelFx.Entry>>(){}.getType();
+    private static final Type SpellEngine_entryListType = new TypeToken<List<ModelEffectAttachment.Entry>>(){}.getType();
     private static final TrackedData<String> SPELL_ENGINE_MODEL_FX = DataTracker.registerData(LivingEntity.class, TrackedDataHandlerRegistry.STRING);
 
     @Unique
-    private final List<AttachedModelFx.Entry> SpellEngine_attachedModelFx = new ArrayList<>();
+    private final List<ModelEffectAttachment.Entry> SpellEngine_attachedModelFx = new ArrayList<>();
 
     // MARK: Constructors
 
@@ -111,7 +111,7 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
             var json = dataTracker.get(SPELL_ENGINE_MODEL_FX);
             SpellEngine_attachedModelFx.clear();
             if (json != null && !json.isEmpty()) {
-                List<AttachedModelFx.Entry> parsed = SpellEngine_gson.fromJson(json, SpellEngine_entryListType);
+                List<ModelEffectAttachment.Entry> parsed = SpellEngine_gson.fromJson(json, SpellEngine_entryListType);
                 if (parsed != null) SpellEngine_attachedModelFx.addAll(parsed);
             }
         }
@@ -165,13 +165,13 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
     }
 
     @Override
-    public List<AttachedModelFx.Entry> SpellEngine_getAttachedModelFx() {
+    public List<ModelEffectAttachment.Entry> SpellEngine_getAttachedModelFx() {
         return SpellEngine_attachedModelFx;
     }
 
     @Override
     public void SpellEngine_attachModelFx(ModelEffect effect, long worldTime) {
-        SpellEngine_attachedModelFx.add(new AttachedModelFx.Entry(effect, worldTime, effect.duration));
+        SpellEngine_attachedModelFx.add(new ModelEffectAttachment.Entry(effect, worldTime, effect.duration));
         dataTracker.set(SPELL_ENGINE_MODEL_FX, SpellEngine_gson.toJson(SpellEngine_attachedModelFx));
     }
 }

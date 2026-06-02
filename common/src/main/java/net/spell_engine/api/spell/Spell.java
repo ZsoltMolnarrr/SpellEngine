@@ -79,6 +79,7 @@ public class Spell {
             /// The number of times the spell should perform delivery during casting.
             /// If greater than zero, the spell is considered as "channeled", and the deliveries are evenly distributed during the casting duration.
             public int channel_ticks = 0;
+            public boolean channeled_release_fx = false;
 
             public PlayerAnimation animation;
             public boolean animation_pitch = true;
