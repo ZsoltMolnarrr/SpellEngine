@@ -1904,7 +1904,6 @@ public class SpellHelper {
             if (placement.apply_pitch) {
                 placedEntity.setPitch(targetedPitch);
             }
-            position = position.add(new Vec3d(placement.location_offset_x, placement.location_offset_y, placement.location_offset_z));
         }
         placedEntity.setPosition(position.getX(), position.getY(), position.getZ());
     }
