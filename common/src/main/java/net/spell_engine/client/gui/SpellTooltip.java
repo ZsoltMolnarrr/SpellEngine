@@ -694,6 +694,30 @@ public class SpellTooltip {
             if (!modifier.additional_placements.isEmpty()) {
                 addToken(additional_placement_count, formattedNumber(modifier.additional_placements.size()), tokenReplacements);
             }
+
+            // Summon impact modifiers
+            if (modifier.summon_spawn_count_add != 0) {
+                addToken("summon_spawn_count_add", formattedNumber(modifier.summon_spawn_count_add), tokenReplacements);
+            }
+            if (modifier.summon_group_count_add != 0) {
+                addToken("summon_group_count_add", formattedNumber(modifier.summon_group_count_add), tokenReplacements);
+            }
+            if (modifier.summon_behaviour != null) {
+                var summonBehaviour = modifier.summon_behaviour;
+                if (!summonBehaviour.actions_add.isEmpty()) {
+                    addToken("summon_actions_add_count", formattedNumber(summonBehaviour.actions_add.size()), tokenReplacements);
+                }
+                var lifespan = summonBehaviour.lifespan;
+                if (lifespan.spawn_ticks_add != 0) {
+                    addToken("summon_spawn_ticks_add", formattedNumber(lifespan.spawn_ticks_add), tokenReplacements);
+                }
+                if (lifespan.active_seconds_add != 0) {
+                    addToken("summon_active_seconds_add", formattedNumber(lifespan.active_seconds_add), tokenReplacements);
+                }
+                if (lifespan.despawn_ticks_add != 0) {
+                    addToken("summon_despawn_ticks_add", formattedNumber(lifespan.despawn_ticks_add), tokenReplacements);
+                }
+            }
         }
 
         Set<String> tokenStarts = new HashSet<>();
