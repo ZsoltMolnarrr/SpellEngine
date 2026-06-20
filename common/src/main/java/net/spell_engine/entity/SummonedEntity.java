@@ -1,4 +1,4 @@
-package net.spell_engine.api.spell.summon;
+package net.spell_engine.entity;
 
 import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
@@ -33,6 +33,9 @@ import net.minecraft.world.explosion.Explosion;
 import net.spell_engine.api.entity.TwoWayCollisionChecker;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.api.spell.summon.SpellSummoned;
+import net.spell_engine.api.spell.summon.SummonBehaviour;
+import net.spell_engine.entity.goal.*;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellCooldownManager;
@@ -111,7 +114,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private int timeToLive = 0;
     private int spawnEndAge = 0;
     private int despawnStartAge = 0;
-    @Nullable protected SummonBehaviour behaviour = null;
+    @Nullable public SummonBehaviour behaviour = null;
 
     public SummonedEntity(EntityType<? extends SummonedEntity> entityType, World world) {
         super(entityType, world);
@@ -457,29 +460,29 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         // --- Goal selector ---
 
         goalSelector.add(0, new SwimGoal(this));
-        goalSelector.add(1, new PhaseBlockGoal());
+        goalSelector.add(1, new PhaseBlockGoal(this));
         // Teleport is intentionally ordered above action goals so it preempts an in-progress
         // melee swing or spell cast. Walk-follow stays below them (added later, priority
         // after FaceTargetGoal) so normal catch-up doesn't interrupt active combat.
         if (behaviour.movement.can_move && behaviour.movement.follow != null) {
-            goalSelector.add(2, new TeleportToSummonerGoal());
+            goalSelector.add(2, new TeleportToSummonerGoal(this));
         }
         int actionPriority = 10;
         for (var action : behaviour.actions) {
             switch (action.type) {
                 case MELEE_ATTACK -> goalSelector.add(actionPriority, new DynamicMeleeAttackGoal(this, action.melee_attack));
-                case SPELL_CAST -> goalSelector.add(actionPriority, new SpellCastGoal(action.spell_cast));
+                case SPELL_CAST -> goalSelector.add(actionPriority, new SpellCastGoal(this, action.spell_cast));
             }
             actionPriority++;
         }
         int priority = actionPriority;
-        goalSelector.add(priority++, new FaceTargetGoal());
+        goalSelector.add(priority++, new FaceTargetGoal(this));
         var movement = behaviour.movement;
         if (movement.can_move) {
             if (movement.follow != null) {
-                goalSelector.add(priority++, new FollowSummonerGoal());
+                goalSelector.add(priority++, new FollowSummonerGoal(this));
             }
-            goalSelector.add(priority++, new WanderWhenIdleGoal(movement.wander.speed, movement.wander.probability));
+            goalSelector.add(priority++, new WanderWhenIdleGoal(this, movement.wander.speed, movement.wander.probability));
         }
         if (behaviour.targeting.look_around) {
             goalSelector.add(priority++, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
@@ -489,20 +492,20 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         // --- Target selector ---
 
         if (behaviour.targeting.attack_with_owner) {
-            targetSelector.add(1, new DefendOwnerGoal());
-            targetSelector.add(3, new MirrorOwnerAttackGoal());
+            targetSelector.add(1, new DefendOwnerGoal(this));
+            targetSelector.add(3, new MirrorOwnerAttackGoal(this));
         }
         if (behaviour.targeting.revenge) {
-            targetSelector.add(2, new ClosestAttackerRevengeGoal());
+            targetSelector.add(2, new ClosestAttackerRevengeGoal(this));
         }
         // Friendly goal added first (lower priority number) so wounded-ally healing takes
         // precedence over hostile acquisition when BOTH is configured.
         switch (behaviour.targeting.automatic_targeting) {
-            case FRIENDLY -> targetSelector.add(4, new DetectionRangeTargetGoal<>(LivingEntity.class, 10, true, false, this::shouldHealTarget));
-            case HOSTILE  -> targetSelector.add(4, new DetectionRangeTargetGoal<>(MobEntity.class,    10, true, false, this::shouldTarget));
+            case FRIENDLY -> targetSelector.add(4, new DetectionRangeTargetGoal<>(this, LivingEntity.class, 10, true, false, this::shouldHealTarget));
+            case HOSTILE  -> targetSelector.add(4, new DetectionRangeTargetGoal<>(this, MobEntity.class,    10, true, false, this::shouldTarget));
             case BOTH     -> {
-                targetSelector.add(4, new DetectionRangeTargetGoal<>(LivingEntity.class, 10, true, false, this::shouldHealTarget));
-                targetSelector.add(5, new DetectionRangeTargetGoal<>(MobEntity.class,    10, true, false, this::shouldTarget));
+                targetSelector.add(4, new DetectionRangeTargetGoal<>(this, LivingEntity.class, 10, true, false, this::shouldHealTarget));
+                targetSelector.add(5, new DetectionRangeTargetGoal<>(this, MobEntity.class,    10, true, false, this::shouldTarget));
             }
             case NONE     -> { /* no auto-acquisition */ }
         }
@@ -538,7 +541,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     /// configured detection-range mode. Falls back to GENERIC_FOLLOW_RANGE for the
     /// FOLLOW_RANGE mode, a null config (e.g. legacy NBT), or a MAXIMUM_ACTION_RANGE that
     /// resolves to nothing.
-    private double detectionRange() {
+    public double detectionRange() {
         double followRange = getAttributeValue(EntityAttributes.GENERIC_FOLLOW_RANGE);
         var config = behaviour != null ? behaviour.targeting.detection_range : null;
         if (config == null) return followRange;
@@ -582,30 +585,10 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         return SpellHelper.getRange(this, entry) * spell.range.max;
     }
 
-    /// ActiveTargetGoal whose detection range is the behaviour's `detection_range` rather
-    /// than the GENERIC_FOLLOW_RANGE attribute. getFollowRange() drives both the candidate
-    /// search box (horizontal extent) and the predicate's max-distance filter, and is also
-    /// used by TrackTargetGoal.shouldContinue for retention — so overriding it scopes the
-    /// whole acquire/keep lifecycle to detection_range. It reads detectionRange() from the
-    /// outer entity (already populated before initGoals runs), so it is safe even when the
-    /// superclass constructor calls getFollowRange() before this subclass is initialized.
-    private class DetectionRangeTargetGoal<T extends LivingEntity> extends ActiveTargetGoal<T> {
-        private DetectionRangeTargetGoal(Class<T> targetClass, int reciprocalChance,
-                                         boolean checkVisibility, boolean checkCanNavigate,
-                                         java.util.function.Predicate<LivingEntity> predicate) {
-            super(SummonedEntity.this, targetClass, reciprocalChance, checkVisibility, checkCanNavigate, predicate);
-        }
-
-        @Override
-        protected double getFollowRange() {
-            return detectionRange();
-        }
-    }
-
     /// True if the entity currently has a live target. Used by passive navigation goals
     /// (wander, follow-summoner) to defer to combat behaviour the moment a target is
     /// acquired by any route — revenge, defend-owner, mirror-owner, or auto-aggro.
-    private boolean hasLiveTarget() {
+    public boolean hasLiveTarget() {
         LivingEntity target = getTarget();
         return target != null && target.isAlive();
     }
@@ -631,6 +614,13 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private int ownerLastAttackTimeSeen = 0;
     @Nullable private LivingEntity ownerHitTarget = null;
     private int ownerHitCount = 0;
+
+    /// The target the owner has been hitting (see `tickOwnerAttackTracking`). Read by MirrorOwnerAttackGoal.
+    @Nullable public LivingEntity getOwnerHitTarget() { return ownerHitTarget; }
+    /// Consecutive hits the owner has landed on `getOwnerHitTarget()`.
+    public int getOwnerHitCount() { return ownerHitCount; }
+    /// Resets the owner-hit tally; called once MirrorOwnerAttackGoal commits to the target.
+    public void consumeOwnerHits() { ownerHitCount = 0; }
 
     /// Observes the owner's attacks once per server tick and tallies consecutive hits on a
     /// single target. A new attack on the same target increments the count; switching to a
@@ -818,24 +808,24 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
      * is invoked (no time-based auto-stop) — cast length isn't always known when the cast
      * starts, and short, premature stops felt choppy.
      */
-    protected void onSpellCastStarted(int variant) {
+    public void onSpellCastStarted(int variant) {
         getDataTracker().set(SPELL_CAST_ANIMATION, packAnim(variant, DURATION_ENDLESS, age));
     }
 
     /** Stops the cast animation (e.g., on cancel or release). */
-    protected void onSpellCastEnded() {
+    public void onSpellCastEnded() {
         // duration=0 = inactive; age in the payload guarantees a dirty write so the client
         // gets the stop transition even when the previous value was already "stopped".
         getDataTracker().set(SPELL_CAST_ANIMATION, packAnim(0, 0, age));
     }
 
     /** Called when a spell is released. Animation plays for `durationTicks`. */
-    protected void onSpellReleased(int variant, int durationTicks) {
+    public void onSpellReleased(int variant, int durationTicks) {
         getDataTracker().set(SPELL_RELEASE_ANIMATION, packAnim(variant, durationTicks, age));
     }
 
     /** Called when a melee swing begins. The animation plays for `durationTicks`. */
-    protected void onAttackAnimated(int durationTicks, int variant) {
+    public void onAttackAnimated(int durationTicks, int variant) {
         getDataTracker().set(ATTACK_ANIMATION, packAnim(variant, durationTicks, age));
     }
 
@@ -867,7 +857,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
 
     // --- Spell cooldowns ---
 
-    private final SpellCooldownManager cooldownManager = new SpellCooldownManager(this);
+    public final SpellCooldownManager cooldownManager = new SpellCooldownManager(this);
 
     @Override
     public void tick() {
@@ -944,517 +934,4 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         }
     }
 
-    // --- Inner goal classes ---
-
-    // Targets whoever attacked the owner (mirrors TrackOwnerAttackerGoal)
-    private class DefendOwnerGoal extends TrackTargetGoal {
-        private LivingEntity attacker;
-        private int lastAttackedTime;
-
-        public DefendOwnerGoal() {
-            super(SummonedEntity.this, false);
-            setControls(EnumSet.of(Control.TARGET));
-        }
-
-        @Override
-        public boolean canStart() {
-            LivingEntity owner = getOwner();
-            if (owner == null) return false;
-            attacker = owner.getAttacker();
-            int time = owner.getLastAttackedTime();
-            return time != lastAttackedTime
-                    && canTrack(attacker, TargetPredicate.DEFAULT)
-                    && canAttackTarget(attacker, owner);
-        }
-
-        @Override
-        public void start() {
-            SummonedEntity.this.setTarget(attacker);
-            LivingEntity owner = getOwner();
-            if (owner != null) lastAttackedTime = owner.getLastAttackedTime();
-            super.start();
-        }
-    }
-
-    // Joins the owner's current attack target (mirrors AttackWithOwnerGoal) once the owner
-    // has hit it `attack_with_owner_hits` times. The hit tally lives on the entity
-    // (ownerHitTarget / ownerHitCount, updated by tickOwnerAttackTracking).
-    private class MirrorOwnerAttackGoal extends TrackTargetGoal {
-        private LivingEntity attacking;
-
-        public MirrorOwnerAttackGoal() {
-            super(SummonedEntity.this, false);
-            setControls(EnumSet.of(Control.TARGET));
-        }
-
-        @Override
-        public boolean canStart() {
-            LivingEntity owner = getOwner();
-            if (owner == null) return false;
-            int threshold = Math.max(1, behaviour != null ? behaviour.targeting.attack_with_owner_hits : 1);
-            if (ownerHitTarget == null || ownerHitCount < threshold) return false;
-            attacking = ownerHitTarget;
-            return canTrack(attacking, TargetPredicate.DEFAULT)
-                    && canAttackTarget(attacking, owner);
-        }
-
-        @Override
-        public void start() {
-            SummonedEntity.this.setTarget(attacking);
-            // Consume the tally so the goal doesn't immediately re-fire on the same hits —
-            // the owner must land another `threshold` hits to switch the summon again.
-            ownerHitCount = 0;
-            super.start();
-        }
-    }
-
-    // Revenge that prefers the nearer threat. Unlike vanilla RevengeGoal — which always
-    // switches to whoever landed the last hit — this only retargets when the new attacker
-    // is closer than the current target, so the summon stays focused on whatever enemy is
-    // in its face rather than chasing a distant sniper just because it scored a hit.
-    private class ClosestAttackerRevengeGoal extends TrackTargetGoal {
-        private int lastAttackedTime;
-
-        public ClosestAttackerRevengeGoal() {
-            super(SummonedEntity.this, true);
-            setControls(EnumSet.of(Control.TARGET));
-        }
-
-        @Override
-        public boolean canStart() {
-            int time = getLastAttackedTime();
-            if (time == lastAttackedTime) return false;
-            LivingEntity attacker = getAttacker();
-            if (attacker == null) return false;
-            if (!canTrack(attacker, TargetPredicate.DEFAULT)) return false;
-            LivingEntity currentTarget = getTarget();
-            if (currentTarget != null && currentTarget.isAlive()
-                    && squaredDistanceTo(attacker) >= squaredDistanceTo(currentTarget)) {
-                // Attacker isn't closer — consume the hit so canStart doesn't re-fire on
-                // every subsequent tick until the next attack lands.
-                lastAttackedTime = time;
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public void start() {
-            setTarget(getAttacker());
-            lastAttackedTime = getLastAttackedTime();
-            super.start();
-        }
-    }
-
-    // One-shot teleport to the owner when they are farther than `teleport_after_distance`.
-    // Runs at a higher priority than action goals (priority 2 vs 10+) and claims Control.MOVE,
-    // matching what SpellCastGoal / DynamicMeleeAttackGoal claim — so this preempts any
-    // in-progress combat goal the moment it can start, rather than waiting for the summon to
-    // disengage. The target is cleared after the teleport so the summon doesn't immediately
-    // sprint back toward the same far-away enemy it was chasing.
-    private class TeleportToSummonerGoal extends Goal {
-        public TeleportToSummonerGoal() {
-            setControls(EnumSet.of(Control.MOVE));
-        }
-
-        private SummonBehaviour.Movement.Follow follow() {
-            return behaviour.movement.follow;
-        }
-
-        @Override
-        public boolean canStart() {
-            LivingEntity owner = getOwner();
-            if (owner == null) return false;
-            float teleportDist = follow().teleport_after_distance;
-            if (teleportDist <= 0) return false;
-            return squaredDistanceTo(owner) > teleportDist * teleportDist;
-        }
-
-        @Override
-        public boolean shouldContinue() { return false; }
-
-        @Override
-        public void start() {
-            LivingEntity owner = getOwner();
-            if (owner == null) return;
-            teleport(owner.getX(), owner.getY(), owner.getZ(), false);
-            setTarget(null);
-            getNavigation().stop();
-        }
-    }
-
-    private class FollowSummonerGoal extends Goal {
-        // Last horizontal velocity of the owner that was significant enough to determine orientation.
-        // Null until the owner is seen moving; falls back to north when still null.
-        @Nullable private Vec3d lastOwnerForward = null;
-
-        public FollowSummonerGoal() {
-            setControls(EnumSet.of(Control.MOVE, Control.LOOK));
-        }
-
-        private SummonBehaviour.Movement.Follow follow() {
-            return behaviour.movement.follow;
-        }
-
-        @Override
-        public boolean canStart() {
-            if (hasLiveTarget()) return false;
-            LivingEntity owner = getOwner();
-            if (owner == null) return false;
-            float start = follow().start_distance;
-            return squaredDistanceTo(owner) > start * start;
-        }
-
-        @Override
-        public boolean shouldContinue() {
-            if (hasLiveTarget()) return false;
-            LivingEntity owner = getOwner();
-            if (owner == null) return false;
-            float stop = follow().stop_distance;
-            return squaredDistanceTo(owner) > stop * stop;
-        }
-
-        @Override
-        public void start() {
-            LivingEntity owner = getOwner();
-            if (owner == null) return;
-            Vec3d target = computeFollowTarget(owner);
-            getNavigation().startMovingTo(target.x, target.y, target.z, 1.0);
-        }
-
-        @Override
-        public void tick() {
-            LivingEntity owner = getOwner();
-            if (owner == null) return;
-            Vec3d target = computeFollowTarget(owner);
-            getNavigation().startMovingTo(target.x, target.y, target.z, 1.0);
-        }
-
-        // Returns a position 2 blocks to the owner's right side.
-        // Forward is taken from the owner's current velocity when significant; otherwise the last
-        // cached forward is reused. If no valid forward has ever been observed, falls back to north.
-        private Vec3d computeFollowTarget(LivingEntity owner) {
-            Vec3d vel = owner.getVelocity();
-            double horizSpeed = Math.sqrt(vel.x * vel.x + vel.z * vel.z);
-            if (horizSpeed > 0.02) {
-                lastOwnerForward = new Vec3d(vel.x / horizSpeed, 0, vel.z / horizSpeed);
-            }
-            // North (-Z) as the last-resort default before the owner has ever moved
-            Vec3d forward = lastOwnerForward != null ? lastOwnerForward : new Vec3d(0, 0, -1);
-            // Right = forward rotated 90° clockwise (viewed from above) in Minecraft's coordinate system
-            Vec3d right = new Vec3d(-forward.z, 0, forward.x);
-            return owner.getPos().add(right.multiply(2.0));
-        }
-    }
-
-    // Vanilla wander, gated on target presence: the summon stops drifting the moment a
-    // target is acquired by any route, and won't restart wandering until the target is gone.
-    private class WanderWhenIdleGoal extends WanderAroundFarGoal {
-        public WanderWhenIdleGoal(double speed, float probability) {
-            super(SummonedEntity.this, speed, probability);
-        }
-
-        @Override
-        public boolean canStart() {
-            if (hasLiveTarget()) return false;
-            return super.canStart();
-        }
-
-        @Override
-        public boolean shouldContinue() {
-            if (hasLiveTarget()) return false;
-            return super.shouldContinue();
-        }
-    }
-
-    // Holds MOVE/LOOK/JUMP controls during spawn and despawn phases, making the entity inactionable.
-    private class PhaseBlockGoal extends Goal {
-        public PhaseBlockGoal() {
-            setControls(EnumSet.of(Control.MOVE, Control.LOOK, Control.JUMP));
-        }
-
-        @Override
-        public boolean canStart() { return !isActive(); }
-
-        @Override
-        public boolean shouldContinue() { return !isActive(); }
-    }
-
-    // Holds LOOK control whenever the entity has an attack target, keeping it facing that target
-    // between spell casts and melee attacks. Sits just below action goals so it is displaced
-    // when any combat goal is active but takes over as soon as they release controls.
-    private class FaceTargetGoal extends Goal {
-        public FaceTargetGoal() {
-            setControls(EnumSet.of(Control.LOOK));
-        }
-
-        @Override
-        public boolean canStart() {
-            LivingEntity target = getTarget();
-            return target != null && target.isAlive() && isActive();
-        }
-
-        @Override
-        public boolean shouldContinue() { return canStart(); }
-
-        @Override
-        public boolean shouldRunEveryTick() { return true; }
-
-        @Override
-        public void tick() {
-            LivingEntity target = getTarget();
-            if (target == null) return;
-            getLookControl().lookAt(target, 30F, 30F);
-            setBodyYaw(getHeadYaw());
-        }
-    }
-
-    private class SpellCastGoal extends Goal {
-        private final SummonBehaviour.Action.SpellCast config;
-
-        // Spell registry entry — resolved lazily and cached (registry is stable at runtime)
-        @Nullable private RegistryEntry<Spell> spellEntry = null;
-        private boolean spellLookupAttempted = false;
-
-        // Per-activation state
-        private int castTick = 0;
-        private int castDuration = 1;
-        private boolean released = false;
-        // How this activation aims, resolved once when the cast begins: a tracked target or
-        // a stationary fallback (forward / self). Holds all per-activation aiming state, so
-        // the lifecycle methods never branch on the configured mode. Capturing it at start()
-        // also pins the target for the whole cast, so a mid-cast RevengeGoal retarget can't
-        // redirect the spell at a different enemy. Cleared in stop().
-        @Nullable private CastAim aim = null;
-
-        public SpellCastGoal(SummonBehaviour.Action.SpellCast config) {
-            this.config = config;
-            setControls(EnumSet.of(Control.MOVE, Control.LOOK));
-        }
-
-        @Nullable
-        private RegistryEntry<Spell> resolveSpell() {
-            if (spellLookupAttempted) return spellEntry;
-            spellLookupAttempted = true;
-            var id = Identifier.of(config.spell_id);
-            spellEntry = SpellRegistry.from(getWorld()).getEntry(id).orElse(null);
-            return spellEntry;
-        }
-
-        // Resolved engagement distances. The `range.{min,max,preferred}` fields are
-        // FRACTIONS of the spell's effective range (i.e. `SpellHelper.getRange`, which
-        // applies caster-level modifiers like gear and attributes — not the raw
-        // `spell.range`), so they auto-scale per caster.
-        private float spellRange(RegistryEntry<Spell> entry) {
-            return SpellHelper.getRange(SummonedEntity.this, entry);
-        }
-        private float effectiveMin(RegistryEntry<Spell> entry) {
-            return config.range.min * spellRange(entry);
-        }
-        private float effectiveMax(RegistryEntry<Spell> entry) {
-            return config.range.max * spellRange(entry);
-        }
-        private float effectivePreferred(RegistryEntry<Spell> entry) {
-            return config.range.preferred * spellRange(entry);
-        }
-
-        @Override
-        public boolean shouldRunEveryTick() { return true; }
-
-        @Override
-        public boolean canStart() {
-            var entry = resolveSpell();
-            if (entry == null) return false;
-            var spell = entry.value();
-            if (spell.active == null) return false;           // ACTIVE spells only
-            if (SpellHelper.isChanneled(spell)) return false; // INSTANT or CHARGE only
-            if (!isActive()) return false;                    // not in spawn/despawn phase
-            if (cooldownManager.isCoolingDown(entry)) return false;
-            return resolveAim(entry) != null;                 // is there anything to fire at?
-        }
-
-        @Override
-        public void start() {
-            castTick = 0;
-            released = false;
-            var entry = spellEntry; // already resolved by canStart()
-            aim = resolveAim(entry);
-            if (entry != null) {
-                var spell = entry.value();
-                castDuration = SpellHelper.isInstant(spell)
-                        ? 1
-                        : SpellHelper.getCastTimeDetails(SummonedEntity.this, spell).length();
-                if (castDuration <= 0) castDuration = 1;
-            }
-            onSpellCastStarted(pickVariant(config.cast_animation_variants));
-            setAttacking(true);
-        }
-
-        @Override
-        public boolean shouldContinue() {
-            return !released && isActive() && aim != null && aim.valid();
-        }
-
-        @Override
-        public void stop() {
-            setAttacking(false);
-            getNavigation().stop();
-            aim = null;
-            // Covers both the natural-end path (release ran, goal then stopped next tick)
-            // and early cancellation (target lost mid-cast, etc.). Idempotent.
-            onSpellCastEnded();
-            // Only consult clear_conditions when the spell actually fired this activation —
-            // cancellations (target lost, LOS broken, etc.) are not "the action completed".
-            if (released) {
-                onActionCompleted(SummonBehaviour.Action.Type.SPELL_CAST, config.spell_id);
-            }
-        }
-
-        @Override
-        public void tick() {
-            if (released || aim == null) return;
-            var entry = spellEntry;
-            if (entry == null) return;
-            aim.approach();                 // chase the subject (no-op when stationary)
-            aim.orient();                   // face the way the spell must fire
-            if (aim.engaged()) castTick++;  // progress only while in range and visible
-            if (castTick >= castDuration) {
-                releaseSpell(entry, entry.value());
-                released = true;
-            }
-        }
-
-        private void releaseSpell(RegistryEntry<Spell> entry, Spell spell) {
-            if (getWorld().isClient()) return;
-            // Final orient before the engine reads the look vector: targetAndPerformSpell
-            // raycasts (AIM/BEAM) and launches projectiles along the caster's facing.
-            aim.orient();
-            SpellHelper.targetAndPerformSpell(getWorld(), SummonedEntity.this, entry);
-            onSpellCastEnded();
-            onSpellReleased(pickVariant(config.release_animation_variants), config.release_animation_duration);
-
-            // Cooldown: use spell's own duration if set, else fall back to config override (ticks)
-            int cooldownTicks;
-            if (spell.cost.cooldown != null && spell.cost.cooldown.duration > 0) {
-                cooldownTicks = Math.round(
-                        SpellHelper.getCooldownDuration(SummonedEntity.this, entry) * 20F);
-            } else {
-                cooldownTicks = config.cooldown; // already in ticks; default = 20
-            }
-            if (cooldownTicks > 0) {
-                cooldownManager.set(entry, cooldownTicks);
-            }
-        }
-
-        // --- Aim resolution ---
-
-        /// Picks how this activation aims: the live target when targeting is enabled and a
-        /// usable target sits inside the engagement band, otherwise the configured fallback.
-        /// Returns null when there is nothing to fire at (fallback NONE with no target), so
-        /// the goal simply doesn't start.
-        @Nullable
-        private CastAim resolveAim(RegistryEntry<Spell> entry) {
-            if (config.aiming.accept_target && entry != null) {
-                var target = getTarget();
-                if (target != null && target.isAlive() && withinBand(entry, target)) {
-                    return new TrackedAim(target);
-                }
-            }
-            return switch (config.aiming.fallback) {
-                case NONE    -> null;
-                case FORWARD -> forwardAim;
-                case SELF    -> selfAim;
-            };
-        }
-
-        /// True when the target sits inside `[min, max] × effective range`. Defaults
-        /// (`min = 0`, `max = 1`) mean "anywhere within the spell's effective range".
-        private boolean withinBand(RegistryEntry<Spell> entry, LivingEntity target) {
-            double distSq = squaredDistanceTo(target);
-            float maxR = effectiveMax(entry);
-            if (distSq > (double) maxR * maxR) return false;
-            float minR = effectiveMin(entry);
-            return minR <= 0 || distSq >= (double) minR * minR;
-        }
-
-        /// Per-activation aiming strategy. Each method answers one question the cast
-        /// lifecycle asks, so the lifecycle code stays free of mode checks.
-        private interface CastAim {
-            /// May the goal keep running? (subject still valid, or always for stationary)
-            boolean valid();
-            /// Move toward the subject. No-op for stationary fallbacks.
-            void approach();
-            /// May the cast counter advance this tick? (in range and visible, or always)
-            boolean engaged();
-            /// Rotate the entity so the spell fires the right way.
-            void orient();
-        }
-
-        /// Tracks the entity's current target: navigates to `preferred × range`, follows
-        /// line-of-sight, and locks rotation onto it. The target is captured for the whole
-        /// cast, so a mid-cast retarget can't redirect the spell.
-        private class TrackedAim implements CastAim {
-            private final LivingEntity target;
-            private int seeingTicker = 0;
-            private boolean inPreferredRange = false;
-
-            private TrackedAim(LivingEntity target) { this.target = target; }
-
-            @Override
-            public boolean valid() {
-                if (!target.isAlive()) return false;
-                // Enforce the upper engagement edge mid-cast (a target leaving `max` aborts).
-                // The lower edge is intentionally not re-checked, so a target stepping inside
-                // `min` mid-cast still gets hit rather than cancelling the goal.
-                float maxR = effectiveMax(spellEntry);
-                return squaredDistanceTo(target) <= (double) maxR * maxR;
-            }
-
-            @Override
-            public void approach() {
-                float preferred = effectivePreferred(spellEntry);
-                double preferredSq = (double) preferred * preferred;
-                inPreferredRange = squaredDistanceTo(target) <= preferredSq;
-                boolean canSee = getVisibilityCache().canSee(target);
-                if (canSee) { if (seeingTicker < 10) seeingTicker++; }
-                else        { if (seeingTicker > 0)  seeingTicker--; }
-                // Close in until inside preferred range (or while sight is broken); then hold.
-                // No retreat — a target stepping closer just gets cast on from where we stand.
-                if (!inPreferredRange || seeingTicker <= 0) {
-                    getNavigation().startMovingTo(target, 1.0);
-                } else {
-                    getNavigation().stop();
-                }
-            }
-
-            @Override
-            public boolean engaged() { return inPreferredRange && seeingTicker > 0; }
-
-            @Override
-            public void orient() { lockRotationTo(target); }
-        }
-
-        /// Shared base for stationary fallbacks: never chases, fires on cooldown, runs to
-        /// release. Subclasses only choose where to point.
-        private abstract class StationaryAim implements CastAim {
-            @Override public boolean valid()   { return true; }
-            @Override public void approach()   { }
-            @Override public boolean engaged() { return true; }
-        }
-
-        /// Fires straight ahead along the entity's current (spawn-set) facing — turret.
-        private final CastAim forwardAim = new StationaryAim() {
-            @Override public void orient() { /* keep current facing */ }
-        };
-
-        /// Aims at the entity's own position (pitch straight down), so directional spells
-        /// resolve at its feet; self-centred AoE spells are unaffected by rotation.
-        private final CastAim selfAim = new StationaryAim() {
-            @Override public void orient() {
-                setPitch(90F);
-                setHeadYaw(getYaw());
-                setBodyYaw(getYaw());
-            }
-        };
-    }
 }

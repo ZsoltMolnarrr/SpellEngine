@@ -1,10 +1,12 @@
-package net.spell_engine.api.spell.summon;
+package net.spell_engine.entity.goal;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
+import net.spell_engine.api.spell.summon.SummonBehaviour;
+import net.spell_engine.entity.SummonedEntity;
 
 import java.util.EnumSet;
 
