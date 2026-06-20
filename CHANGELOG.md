@@ -19,6 +19,18 @@ API changes:
   - Extensible operation registry: `ModelEffectOperations.register()` for third-party transform types
   - `model_fx` field available at: `release`, `impacts[]`, `area_impact`, `deliver.melee.swing`, `deliver.clouds[].spawn`, and teleport `depart`/`arrive`
   - Model files placed at `assets/MOD_ID/models/spell_effect/` are auto-discovered
+- Added **Entity Summoning** — a new `SUMMON` impact action that spawns and controls owned entities, fully data-driven
+  - `Spell.Impact.Action.Summon`: entity type, runtime behaviour, placement formation, group layout, and spawn FX/sound
+  - `SummonedEntity` base class (`api.spell.summon`, implement `SpellSummoned`) — phase-driven, owner-aware, with a full goal/targeting AI
+  - `SummonBehaviour`: spawn→active→despawn lifespan, movement/collision modes, targeting + target-clear conditions, owner-driven attribute scaling, lifecycle sounds, and FX
+  - Summoned entity capabilities:
+    - Melee attacks — windup timing, attack speed, size-scaled reach, optional AoE radius, swing/impact sounds and animation variants
+    - Spell casting — casts any active SpellEngine spell on cooldown, with aiming modes (track target / fire forward / self) and min/preferred/max engagement range bands
+    - Following — trails the owner within a distance band, teleporting to them when left too far behind
+    - Targeting — auto-acquires nearby hostiles or wounded allies, mirrors the owner's target, defends the owner and retaliates, with optional target-clear conditions (timeout, out-of-range, on action completed)
+  - Placement on `Spell.EntityPlacement` (look-relative offset, ground-snap, line-of-sight clamp) with `SpellBuilder.Placements` factories: `byLook`, `compass`, `square`, `line`, `circle`, `staggered`
+  - Groups: spawn N formations, each translated by a group placement, with summed group + per-entity spawn delays
+  - One-shot spawn FX/sound at individual and group level; client-side existence particles (configurable tick interval, no per-tick network traffic)
 
 
 # 1.9.9
