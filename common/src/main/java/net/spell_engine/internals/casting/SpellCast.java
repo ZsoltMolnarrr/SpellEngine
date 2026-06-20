@@ -139,7 +139,7 @@ public class SpellCast {
 
     public enum Mode {
         INSTANT,
-        CHARGE,
+        CASTING,
         CHANNEL,
         PASSIVE,
         ITEM_USE; // This one is never produced by mapping, only manually from SpellHotbar logic
@@ -148,7 +148,7 @@ public class SpellCast {
                 if (spell.active.cast.duration <= 0) {
                     return INSTANT;
                 }
-                return SpellHelper.isChanneled(spell) ? CHANNEL : CHARGE;
+                return SpellHelper.isChanneled(spell) ? CHANNEL : CASTING;
             } else {
                 return PASSIVE;
             }

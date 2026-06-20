@@ -72,7 +72,7 @@ public class SpellCastGoal extends Goal {
         if (entry == null) return false;
         var spell = entry.value();
         if (spell.active == null) return false;           // ACTIVE spells only
-        if (SpellHelper.isChanneled(spell)) return false; // INSTANT or CHARGE only
+        if (SpellHelper.isChanneled(spell)) return false; // INSTANT or CASTING only
         if (!entity.isActive()) return false;             // not in spawn/despawn phase
         if (entity.cooldownManager.isCoolingDown(entry)) return false;
         return resolveAim(entry) != null;                 // is there anything to fire at?

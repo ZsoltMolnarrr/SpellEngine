@@ -223,7 +223,7 @@ public class SpellHotbar {
                             return handledWithAttempt;
                         }
                     }
-                    case CHARGE, CHANNEL -> {
+                    case CASTING, CHANNEL -> {
                         if (casted != null && casted.process().id().equals(slot.spell.getKey().get().getValue())) {
                             // The spell is already being casted
                             var needsToBeHeld = SpellHelper.isChanneled(casted.process().spell().value()) ?
