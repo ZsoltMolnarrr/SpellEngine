@@ -33,6 +33,7 @@ import net.minecraft.world.explosion.Explosion;
 import net.spell_engine.api.entity.TwoWayCollisionChecker;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.api.spell.summon.AttributeScaling;
 import net.spell_engine.api.spell.summon.SpellSummoned;
 import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.entity.goal.*;
@@ -115,6 +116,10 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private int spawnEndAge = 0;
     private int despawnStartAge = 0;
     @Nullable public SummonBehaviour behaviour = null;
+    // Owner-scaled attribute bonuses, applied once at spawn (and re-applied on reload). Kept separate
+    // from `behaviour` and persisted on its own, because the scaling is a spawn-time effect rather
+    // than part of the runtime behaviour, and the resulting attribute modifiers are temporary.
+    @Nullable public AttributeScaling attributeScaling = null;
 
     public SummonedEntity(EntityType<? extends SummonedEntity> entityType, World world) {
         super(entityType, world);
@@ -387,6 +392,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         this.timeToLive      = ls.spawn_ticks + ls.active_seconds * 20 + ls.despawn_ticks;
         this.despawnStartAge = this.timeToLive - ls.despawn_ticks;
         setOwnerUuid(args.owner.getUuid());
+        this.attributeScaling = args.attribute_scaling; // set before setBehaviour applies it
         setBehaviour(args.behaviour);
         // Defer to the first server tick: callers like WizardEntities run
         //   onSummonedBySpell() → setPos() → spawnEntity()
@@ -429,9 +435,9 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     }
 
     private void applyAttributeScaling(LivingEntity owner) {
-        if (behaviour == null) return;
+        if (attributeScaling == null) return;
         var healthRatio = this.getHealth() / this.getMaxHealth();
-        for (var entry : behaviour.attribute_scaling.entries) {
+        for (var entry : attributeScaling.entries) {
             var targetAttrOpt = Registries.ATTRIBUTE.getEntry(Identifier.of(entry.attribute_id));
             if (targetAttrOpt.isEmpty()) continue;
             var instance = this.getAttributeInstance(targetAttrOpt.get());
@@ -903,6 +909,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private static final String NBT_SPAWN_END_AGE     = "SpawnEndAge";
     private static final String NBT_DESPAWN_START_AGE = "DespawnStartAge";
     private static final String NBT_BEHAVIOUR         = "Behaviour";
+    private static final String NBT_ATTRIBUTE_SCALING = "AttributeScaling";
 
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
@@ -913,6 +920,10 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         this.timeToLive      = nbt.getInt(NBT_TTL);
         this.spawnEndAge     = nbt.getInt(NBT_SPAWN_END_AGE);
         this.despawnStartAge = nbt.getInt(NBT_DESPAWN_START_AGE);
+        // Read before setBehaviour, which (re-)applies the scaling.
+        if (nbt.contains(NBT_ATTRIBUTE_SCALING)) {
+            this.attributeScaling = GSON.fromJson(nbt.getString(NBT_ATTRIBUTE_SCALING), AttributeScaling.class);
+        }
         if (nbt.contains(NBT_BEHAVIOUR)) {
             var behaviour = GSON.fromJson(nbt.getString(NBT_BEHAVIOUR), SummonBehaviour.class);
             setBehaviour(behaviour);
@@ -931,6 +942,9 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         nbt.putInt(NBT_DESPAWN_START_AGE, this.despawnStartAge);
         if (this.behaviour != null) {
             nbt.putString(NBT_BEHAVIOUR, GSON.toJson(this.behaviour));
+        }
+        if (this.attributeScaling != null) {
+            nbt.putString(NBT_ATTRIBUTE_SCALING, GSON.toJson(this.attributeScaling));
         }
     }
 

@@ -7,6 +7,7 @@ import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.fx.VFX;
+import net.spell_engine.api.spell.summon.AttributeScaling;
 import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.api.util.AlwaysGenerate;
 import net.spell_engine.api.util.NeverGenerate;
@@ -628,8 +629,13 @@ public class Spell {
                 /// `SpellSummoned`.
                 public String entity_type_id;
 
-                /// Full runtime behaviour: lifespan, movement, targeting, actions, sounds, scaling.
+                /// Full runtime behaviour: lifespan, movement, targeting, actions, sounds.
                 public SummonBehaviour behaviour = new SummonBehaviour();
+
+                /// Owner-scaled attribute bonuses, applied once at spawn (a one-time effect, not part
+                /// of the runtime behaviour). Re-applied on chunk reload since the resulting attribute
+                /// modifiers are temporary.
+                public AttributeScaling attribute_scaling = new AttributeScaling();
 
                 /// Per-entity spawn-location slots within a group. {@link #spawn_count} entities are
                 /// spawned per group, cycling through this list and wrapping (slot `i % size`).

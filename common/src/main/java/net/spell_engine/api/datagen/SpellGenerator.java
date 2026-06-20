@@ -18,6 +18,7 @@ import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
+import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.api.util.AlwaysGenerate;
 import net.spell_engine.api.util.NeverGenerate;
 
@@ -86,8 +87,14 @@ public abstract class SpellGenerator implements DataProvider {
                 .registerTypeAdapter(ParticleBatch.class, new DefaultValueSkippingSerializer<>(ParticleBatch.class))
                 .registerTypeAdapter(Sound.class, new DefaultValueSkippingSerializer<>(Sound.class))
                 .registerTypeAdapter(PlayerAnimation.class, new DefaultValueSkippingSerializer<>(PlayerAnimation.class))
-                .registerTypeAdapter(ModelEffect.class, new DefaultValueSkippingSerializer<>(ModelEffect.class));
+                .registerTypeAdapter(ModelEffect.class, new DefaultValueSkippingSerializer<>(ModelEffect.class))
+                // SummonBehaviour (referenced by the SUMMON impact) is a separate top-level type, so
+                // its tree isn't covered by getAllNestedClasses(Spell.class) — register it explicitly.
+                .registerTypeAdapter(SummonBehaviour.class, new DefaultValueSkippingSerializer<>(SummonBehaviour.class));
         for (var nestedClass : getAllNestedClasses(Spell.class)) {
+            gson = gson.registerTypeAdapter(nestedClass, new DefaultValueSkippingSerializer<>(nestedClass));
+        }
+        for (var nestedClass : getAllNestedClasses(SummonBehaviour.class)) {
             gson = gson.registerTypeAdapter(nestedClass, new DefaultValueSkippingSerializer<>(nestedClass));
         }
         return gson.create();

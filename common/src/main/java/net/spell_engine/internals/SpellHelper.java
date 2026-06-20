@@ -1920,7 +1920,7 @@ public class SpellHelper {
                 // Next per-entity slot, wrapping around the list (null when no slots are configured).
                 var placement = def.placements.isEmpty() ? null : def.placements.get(i % def.placements.size());
 
-                summoned.onSummonedBySpell(new SpellSummoned.Args(caster, spellEntry, def.behaviour, context));
+                summoned.onSummonedBySpell(new SpellSummoned.Args(caster, spellEntry, def.behaviour, def.attribute_scaling, context));
 
                 // Compose placements: the group offset's resulting position seeds the per-entity
                 // placement (both rotate the look-offset by the caster's yaw, so the formation keeps

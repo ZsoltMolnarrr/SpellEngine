@@ -23,10 +23,6 @@ public class SummonBehaviour {
         return id != null ? SoundEvent.of(id) : null;
     }
 
-    // --- Attribute Scaling ---
-
-    public AttributeScaling attribute_scaling = new AttributeScaling();
-
     // --- Spawn FX ---
 
     /// One-shot FX emitted server-side when this individual summon enters the world (on its first
