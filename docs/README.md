@@ -15,6 +15,7 @@
 | [07 · Cost](07-cost.md) | Cooldown, exhaust, item consumption, cooldown groups |
 | [08 · Triggers](08-triggers.md) | Passive spell triggers — types, filters, conditions |
 | [09 · Visuals & Audio](09-visuals-and-audio.md) | Sounds, particles, projectile models, beam visuals |
+| [10 · Summons](10-summons.md) | Spell-summoned companion entities: behaviour, authoring, casting limits |
 
 ## Reference Implementations
 

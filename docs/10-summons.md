@@ -483,9 +483,11 @@ To add a brand-new summon:
 
 Three things to know before planning a summon. Each is **user-facing**, not an internal detail.
 
-### 4.1 Every summon needs a custom Java entity
+### 4.1 Summons only work on specially-prepared entities
 
-You can't make a summon from data alone. Each one requires a Java entity class (extending `SummonedEntity`) compiled into a mod. Data **tunes** an existing summon — it can't introduce a new one. *(A future data form is planned, but the entity itself will always be code.)*
+A summon can't be pointed at just any entity. Summon behaviour only applies to entities whose class **extends `SummonedEntity`** — that base class is what reads the behaviour and runs the AI, lifecycle, scaling, and animations. You can't summon a vanilla mob (a Pig, a Zombie) or any third-party entity that wasn't built for this; behaviour would have nothing to attach to.
+
+In practice this means every summon needs a purpose-built Java entity compiled into a mod. Data **tunes** a prepared summon — it can't turn an ordinary entity into one. *(A future data form is planned for the behaviour, but the entity itself will always need to be the prepared type.)*
 
 ### 4.2 Models need custom animation wiring
 
