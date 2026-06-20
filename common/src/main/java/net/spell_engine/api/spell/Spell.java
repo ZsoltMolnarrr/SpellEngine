@@ -953,6 +953,8 @@ public class Spell {
         // If greater than 0, the entity will be placed at the caster's look direction, by this many blocks
         public int delay_ticks = 0;
         public boolean force_onto_ground = true;
+        // Determines whether line of sight based fallback position need to be resolved
+        public boolean line_of_sight = false;
         public float location_offset_by_look = 0;
         public float location_yaw_offset = 0;
         public boolean apply_yaw = false;
