@@ -239,6 +239,11 @@ public class SpellBuilder {
             placement.location_yaw_offset = yawOffset;
             return placement;
         }
+        public static Spell.EntityPlacement byLook(float distance, float yawOffset, int delay) {
+            var placement = byLook(distance, yawOffset);
+            placement.delay_ticks = delay;
+            return placement;
+        }
 
         /// `count` placements evenly spaced around a circle of `radius` about the caster, the first
         /// at `startAngle` (0 = front) and proceeding clockwise. Each slot is a clone of `template`.
@@ -292,14 +297,14 @@ public class SpellBuilder {
         }
 
         /// `count` placements in a straight row centered on the caster and perpendicular to its
-        /// facing (a left-right line), `spacing` blocks apart. Geometry is symmetric about the centre
-        /// (an exact centre slot for odd counts); `order` chooses the fill sequence. Each slot clones
-        /// `template`.
-        public static List<Spell.EntityPlacement> line(int count, float spacing, LineOrder order, Spell.EntityPlacement template) {
+        /// facing (a left-right line), `spacing` blocks apart, the whole row offset `forward` blocks
+        /// ahead of the caster (negative = behind). Geometry is symmetric about the centre (an exact
+        /// centre slot for odd counts); `order` chooses the fill sequence. Each slot clones `template`.
+        public static List<Spell.EntityPlacement> line(int count, float spacing, float forward, LineOrder order, Spell.EntityPlacement template) {
             var list = new ArrayList<Spell.EntityPlacement>();
             if (count <= 0) return list;
             // Signed position of each slot along the perpendicular axis, centered on the caster.
-            // Positive = right (yaw 90), negative = left (yaw 270).
+            // Positive = right, negative = left.
             float[] offsets = new float[count];
             for (int i = 0; i < count; i++) {
                 offsets[i] = (i - (count - 1) / 2F) * spacing;
@@ -320,20 +325,25 @@ public class SpellBuilder {
             for (int index : indices) {
                 float signed = offsets[index];
                 var placement = template.copy();
-                placement.location_offset_by_look = Math.abs(signed);
-                placement.location_yaw_offset = (signed >= 0) ? 90 : 270; // right / left
+                // Resolve the (forward, side) vector into a single look-offset: distance from the
+                // caster and yaw rotated from its facing. forward = 0 gives a row through the caster.
+                placement.location_offset_by_look = (float) Math.hypot(forward, signed);
+                placement.location_yaw_offset = (float) Math.toDegrees(Math.atan2(signed, forward));
                 list.add(placement);
             }
             return list;
         }
+        public static List<Spell.EntityPlacement> line(int count, float spacing, LineOrder order, Spell.EntityPlacement template) {
+            return line(count, spacing, 0F, order, template);
+        }
         public static List<Spell.EntityPlacement> line(int count, float spacing, LineOrder order) {
-            return line(count, spacing, order, template());
+            return line(count, spacing, 0F, order, template());
         }
         public static List<Spell.EntityPlacement> line(int count, float spacing, Spell.EntityPlacement template) {
-            return line(count, spacing, LineOrder.CENTER_OUT, template);
+            return line(count, spacing, 0F, LineOrder.CENTER_OUT, template);
         }
         public static List<Spell.EntityPlacement> line(int count, float spacing) {
-            return line(count, spacing, LineOrder.CENTER_OUT, template());
+            return line(count, spacing, 0F, LineOrder.CENTER_OUT, template());
         }
 
         /// Adds a staggered spawn delay in place: the placement at index `i` gets `i * stepTicks`
