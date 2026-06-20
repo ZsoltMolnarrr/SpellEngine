@@ -31,6 +31,10 @@ API changes:
   - Placement on `Spell.EntityPlacement` (look-relative offset, ground-snap, line-of-sight clamp) with `SpellBuilder.Placements` factories: `byLook`, `compass`, `square`, `line`, `circle`, `staggered`
   - Groups: spawn N formations, each translated by a group placement, with summed group + per-entity spawn delays
   - One-shot spawn FX/sound at individual and group level; client-side existence particles (configurable tick interval, no per-tick network traffic)
+- Spell modifiers can now target the `SUMMON` impact via `Spell.Modifier` fields
+  - `summon_attribute_scaling` (merged with the summon's scaling, summed per attribute)
+  - `summon_spawn_count_add`, `summon_group_count_add`
+  - `summon_behaviour` sub-structure adding behaviour (attack and spell casting)
 
 
 # 1.9.9

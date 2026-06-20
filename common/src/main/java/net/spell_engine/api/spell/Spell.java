@@ -145,6 +145,33 @@ public class Spell {
 
         /// Additional cloud or entity spawn placements
         public List<EntityPlacement> additional_placements = List.of();
+
+        // Summon impact (`Impact.Action.Summon`) modifiers.
+        /// Additional owner-scaled attribute bonuses, merged into the summon's `attribute_scaling`.
+        /// Entries are combined by `attribute_id` (summing their owner modifiers), so a modifier
+        /// scaling an attribute the base summon already scales stacks additively rather than replacing.
+        @Nullable public AttributeScaling summon_attribute_scaling;
+        /// Extra entities spawned per group (added to `Summon.spawn_count`).
+        public int summon_spawn_count_add = 0;
+        /// Extra groups spawned (added to `Summon.group_count`).
+        public int summon_group_count_add = 0;
+        /// Modifiers applied to the summon's `SummonBehaviour`. Applied onto a copy of the behaviour,
+        /// never mutating the shared instance stored on the spell.
+        public SummonBehaviourModifier summon_behaviour = new SummonBehaviourModifier();
+        public static class SummonBehaviourModifier { public SummonBehaviourModifier() { }
+            /// Behaviour actions appended to the summon (e.g. additional spells to cast).
+            public List<SummonBehaviour.Action.Entry> actions_add = List.of();
+            /// Additive adjustments to the summon's lifespan phases.
+            public Lifespan lifespan = new Lifespan();
+            public static class Lifespan { public Lifespan() { }
+                /// Ticks added to the inactionable spawn phase.
+                public int spawn_ticks_add = 0;
+                /// Seconds added to the active phase (the summon's effective lifetime).
+                public int active_seconds_add = 0;
+                /// Ticks added to the inactionable despawn phase.
+                public int despawn_ticks_add = 0;
+            }
+        }
     }
 
     public Release release = new Release();

@@ -37,7 +37,9 @@ import net.spell_engine.api.spell.weakness.SpellSchoolWeakness;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.fx.VFX;
+import net.spell_engine.api.spell.summon.AttributeScaling;
 import net.spell_engine.api.spell.summon.SpellSummoned;
+import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.api.tags.SpellEngineEntityTags;
 import net.spell_engine.api.entity.SpellEntity;
 import net.spell_engine.api.spell.Spell;
@@ -1704,7 +1706,7 @@ public class SpellHelper {
                             SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
                         }
                         ///
-                        summon(impact.action.summon, spellEntry, caster, context);
+                        summon(impact.action.summon, spellModifiers, spellEntry, caster, context);
                         success = true;
                     }
                 }
@@ -1902,25 +1904,54 @@ public class SpellHelper {
     /// visible point when a placement opts into line-of-sight. Group and per-entity `delay_ticks` are
     /// summed and defer the actual world spawn (entities are positioned at cast time, anchored to the
     /// caster's cast-time state, matching the built-in SPAWN action).
-    private static void summon(Spell.Impact.Action.Summon def, RegistryEntry<Spell> spellEntry, LivingEntity caster, ImpactContext context) {
+    private static void summon(Spell.Impact.Action.Summon def, List<Spell.Modifier> spellModifiers,
+                               RegistryEntry<Spell> spellEntry, LivingEntity caster, ImpactContext context) {
         var world = caster.getWorld();
         if (!(world instanceof ServerWorld serverWorld)) return;
 
+        // Fold in summon-targeting spell modifiers without mutating the shared Summon / SummonBehaviour
+        // instances stored on the registered spell: counts and lifespan adds are accumulated into
+        // locals, attribute scaling and behaviour are recomputed onto fresh copies only when needed.
+        int spawnCount = def.spawn_count;
+        int groupCount = def.group_count;
+        int spawnTicksAdd = 0, activeSecondsAdd = 0, despawnTicksAdd = 0;
+        var extraActions = new ArrayList<SummonBehaviour.Action.Entry>();
+        var attributeScaling = def.attribute_scaling;
+        for (var modifier : spellModifiers) {
+            spawnCount += modifier.summon_spawn_count_add;
+            groupCount += modifier.summon_group_count_add;
+            var behaviourMod = modifier.summon_behaviour;
+            if (behaviourMod != null) {
+                extraActions.addAll(behaviourMod.actions_add);
+                spawnTicksAdd += behaviourMod.lifespan.spawn_ticks_add;
+                activeSecondsAdd += behaviourMod.lifespan.active_seconds_add;
+                despawnTicksAdd += behaviourMod.lifespan.despawn_ticks_add;
+            }
+            if (modifier.summon_attribute_scaling != null) {
+                attributeScaling = AttributeScaling.merged(attributeScaling, modifier.summon_attribute_scaling);
+            }
+        }
+        spawnCount = Math.max(0, spawnCount);
+        groupCount = Math.max(0, groupCount);
+        var behaviour = (extraActions.isEmpty() && spawnTicksAdd == 0 && activeSecondsAdd == 0 && despawnTicksAdd == 0)
+                ? def.behaviour
+                : def.behaviour.withModifiers(extraActions, spawnTicksAdd, activeSecondsAdd, despawnTicksAdd);
+
         var type = Registries.ENTITY_TYPE.get(Identifier.of(def.entity_type_id));
-        for (int g = 0; g < def.group_count; g++) {
+        for (int g = 0; g < groupCount; g++) {
             // Next group slot, wrapping around the list (null when no group offset is configured).
             var groupPlacement = def.group_placements.isEmpty() ? null : def.group_placements.get(g % def.group_placements.size());
             int groupDelay = groupPlacement != null ? groupPlacement.delay_ticks : 0;
             Vec3d groupAnchor = null; // caster position + group offset; captured from the first entity
 
-            for (int i = 0; i < def.spawn_count; i++) {
+            for (int i = 0; i < spawnCount; i++) {
                 var created = (Entity) type.create(world);
                 if (!(created instanceof SpellSummoned summoned)) return;
 
                 // Next per-entity slot, wrapping around the list (null when no slots are configured).
                 var placement = def.placements.isEmpty() ? null : def.placements.get(i % def.placements.size());
 
-                summoned.onSummonedBySpell(new SpellSummoned.Args(caster, spellEntry, def.behaviour, def.attribute_scaling, context));
+                summoned.onSummonedBySpell(new SpellSummoned.Args(caster, spellEntry, behaviour, attributeScaling, context));
 
                 // Compose placements: the group offset's resulting position seeds the per-entity
                 // placement (both rotate the look-offset by the caster's yaw, so the formation keeps

@@ -1,6 +1,7 @@
 package net.spell_engine.api.spell.summon;
 
 import com.google.common.base.Suppliers;
+import com.google.gson.Gson;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.fx.ParticleBatch;
@@ -13,6 +14,38 @@ import java.util.function.Supplier;
 public class SummonBehaviour {
 
     public boolean is_attackable = true;
+
+    /// Gson used for the deep copy below. A plain `Gson` round-trips a `SummonBehaviour` losslessly —
+    /// it is the very same mechanism `SummonedEntity` uses to persist the behaviour to/from NBT, so
+    /// every field (including nested structs and lists) is known to serialize cleanly. The `transient`
+    /// `Supplier` fields in `Sounds` are intentionally skipped and lazily re-created on the copy.
+    private static final Gson GSON = new Gson();
+
+    /// Returns a fully independent deep copy of this behaviour, sharing no mutable sub-structure with
+    /// the original. The same {@link SummonBehaviour} instance is shared across every summon of a
+    /// registered spell, so it must never be mutated in place — callers that need to tweak it (e.g.
+    /// applying spell modifiers) must work on a copy.
+    public SummonBehaviour deepCopy() {
+        return GSON.fromJson(GSON.toJson(this), SummonBehaviour.class);
+    }
+
+    /// Returns a deep copy of this behaviour with summon spell modifiers applied, leaving this
+    /// instance untouched. `extraActions` are appended after the behaviour's own actions; the lifespan
+    /// adds are applied per phase and floored at zero. The copy is independent, so its sub-structures
+    /// are mutated directly.
+    public SummonBehaviour withModifiers(@Nullable List<Action.Entry> extraActions,
+                                         int spawnTicksAdd, int activeSecondsAdd, int despawnTicksAdd) {
+        var copy = deepCopy();
+        if (extraActions != null && !extraActions.isEmpty()) {
+            copy.actions.addAll(extraActions);
+        }
+        if (spawnTicksAdd != 0 || activeSecondsAdd != 0 || despawnTicksAdd != 0) {
+            copy.lifespan.spawn_ticks    = Math.max(0, copy.lifespan.spawn_ticks    + spawnTicksAdd);
+            copy.lifespan.active_seconds = Math.max(0, copy.lifespan.active_seconds + activeSecondsAdd);
+            copy.lifespan.despawn_ticks  = Math.max(0, copy.lifespan.despawn_ticks  + despawnTicksAdd);
+        }
+        return copy;
+    }
 
     /// Parses a sound id string into a SoundEvent. Blank / unparseable → null.
     /// Used by the lazy accessors in `Sounds` and `Action.MeleeAttack`.
