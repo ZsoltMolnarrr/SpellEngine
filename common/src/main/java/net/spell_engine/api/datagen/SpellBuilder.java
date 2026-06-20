@@ -10,6 +10,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
+import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.fx.SpellEngineSounds;
@@ -863,6 +864,47 @@ public class SpellBuilder {
             impact.action.cooldown.actives.duration_multiplier = 0F; // reset cooldown
 
             return impact;
+        }
+
+        // MARK: Summon impacts
+
+        /// Wraps a fully-built {@link Spell.Impact.Action.Summon} into a SUMMON impact, ready to drop
+        /// straight into `spell.impacts`. This is the boilerplate every summon spell otherwise repeats
+        /// by hand (new impact + action + `Type.SUMMON` + assign). Build the {@code Summon} however you
+        /// like first — configuring its behaviour, attribute scaling, placements and group composition —
+        /// then hand it here. See `WizardSummons` for example {@code Summon} factories.
+        public static Spell.Impact summon(Spell.Impact.Action.Summon summon) {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.SUMMON;
+            impact.action.summon = summon;
+            return impact;
+        }
+
+        /// A single-group SUMMON impact built from its parts: spawns `spawnCount` entities of
+        /// `entityTypeId`, cycling through `placements` (slot `i % size`), all driven by `behaviour`.
+        /// Convenience for summons that don't need group composition; for attribute scaling or group
+        /// fields, build the {@link Spell.Impact.Action.Summon} yourself and use {@link #summon(Spell.Impact.Action.Summon)}.
+        public static Spell.Impact summon(String entityTypeId, SummonBehaviour behaviour,
+                                          List<Spell.EntityPlacement> placements, int spawnCount) {
+            return summon(new Spell.Impact.Action.Summon(entityTypeId, behaviour, placements, spawnCount));
+        }
+
+        /// A grouped SUMMON impact: `groupCount` groups, each replaying the per-entity formation
+        /// (`placements` cycled `spawnCount` times) translated by the next `groupPlacements` slot
+        /// (slot `g % size`).
+        public static Spell.Impact summon(String entityTypeId, SummonBehaviour behaviour,
+                                          List<Spell.EntityPlacement> placements, int spawnCount,
+                                          List<Spell.EntityPlacement> groupPlacements, int groupCount) {
+            return summon(new Spell.Impact.Action.Summon(entityTypeId, behaviour, placements, spawnCount,
+                    groupPlacements, groupCount));
+        }
+
+        /// A single summoned entity of `entityTypeId` at `placement`, driven by `behaviour` — the
+        /// simplest case (spawn_count = 1, one placement slot).
+        public static Spell.Impact summon(String entityTypeId, SummonBehaviour behaviour,
+                                          Spell.EntityPlacement placement) {
+            return summon(entityTypeId, behaviour, List.of(placement), 1);
         }
     }
 
