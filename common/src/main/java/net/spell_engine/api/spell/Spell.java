@@ -6,6 +6,8 @@ import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
+import net.spell_engine.api.spell.fx.VFX;
+import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.api.util.AlwaysGenerate;
 import net.spell_engine.api.util.NeverGenerate;
 import net.spell_engine.api.util.TriState;
@@ -13,6 +15,7 @@ import net.spell_engine.internals.target.SpellTarget;
 import net.spell_power.api.SpellSchool;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -443,6 +446,7 @@ public class Spell {
                 STATUS_EFFECT,
                 FIRE,
                 SPAWN,
+                SUMMON,
                 TELEPORT,
                 COOLDOWN,
                 AGGRO,
@@ -609,6 +613,68 @@ public class Spell {
                 public SpellTarget.Intent intent = SpellTarget.Intent.HELPFUL;
                 /// ID of the handler
                 public String handler;
+            }
+
+            public Summon summon;
+            /// Declarative definition of a spell-summoned entity (or formation of them): the entity
+            /// type to spawn, its full runtime {@link SummonBehaviour}, and where/how it is placed
+            /// (reusing {@link EntityPlacement}). Spawned relative to the caster — see the SUMMON
+            /// impact handling in `SpellHelper`.
+            ///
+            /// Unlike {@link Spawn}, time-to-live is not a separate field — it is part of
+            /// {@link SummonBehaviour#lifespan}.
+            public static class Summon {
+                /// Registry id of the entity type to spawn. The entity type must implement
+                /// `SpellSummoned`.
+                public String entity_type_id;
+
+                /// Full runtime behaviour: lifespan, movement, targeting, actions, sounds, scaling.
+                public SummonBehaviour behaviour = new SummonBehaviour();
+
+                /// Per-entity spawn-location slots within a group. {@link #spawn_count} entities are
+                /// spawned per group, cycling through this list and wrapping (slot `i % size`).
+                public List<EntityPlacement> placements = new ArrayList<>();
+
+                /// How many entities to spawn per group, cycling through {@link #placements}. Default 1.
+                public int spawn_count = 1;
+
+                /// Group-level placement slots. {@link #group_count} groups are spawned; group `g`
+                /// uses `group_placements.get(g % size)` as a translation offset (its resulting
+                /// position seeds the per-entity placements) applied to every entity in that group.
+                /// Empty (default) = a single group anchored at the caster, no group offset.
+                ///
+                /// Composition is translation only: a group offset moves where its formation is
+                /// anchored, but the in-group formation keeps its caster-relative orientation.
+                public List<EntityPlacement> group_placements = new ArrayList<>();
+
+                /// How many groups to spawn, each replaying the per-entity formation translated by the
+                /// next group placement. Default 1.
+                public int group_count = 1;
+
+                /// One-shot FX emitted once per group, at the group's anchor, deferred by the group
+                /// placement's `delay_ticks`. Null = none.
+                @Nullable public VFX group_spawn_fx = null;
+
+                /// Sound played once per group when it spawns, at the group's anchor (deferred by the
+                /// group placement's `delay_ticks`). Null = none.
+                @Nullable public Sound group_spawn_sound = null;
+
+                public Summon() {}
+
+                public Summon(String entity_type_id, SummonBehaviour behaviour, List<EntityPlacement> placements, int spawn_count) {
+                    this.entity_type_id = entity_type_id;
+                    this.behaviour = behaviour;
+                    this.placements = placements;
+                    this.spawn_count = spawn_count;
+                }
+
+                public Summon(String entity_type_id, SummonBehaviour behaviour,
+                              List<EntityPlacement> placements, int spawn_count,
+                              List<EntityPlacement> group_placements, int group_count) {
+                    this(entity_type_id, behaviour, placements, spawn_count);
+                    this.group_placements = group_placements;
+                    this.group_count = group_count;
+                }
             }
         }
 

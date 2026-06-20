@@ -13,6 +13,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -21,9 +22,11 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
 import net.spell_engine.SpellEngineMod;
@@ -32,6 +35,9 @@ import net.spell_engine.api.effect.StatusEffectClassification;
 import net.spell_engine.api.entity.LivingEntityImmunity;
 import net.spell_engine.api.spell.weakness.SpellSchoolWeakness;
 import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.Sound;
+import net.spell_engine.api.spell.fx.VFX;
+import net.spell_engine.api.spell.summon.SpellSummoned;
 import net.spell_engine.api.tags.SpellEngineEntityTags;
 import net.spell_engine.api.entity.SpellEntity;
 import net.spell_engine.api.spell.Spell;
@@ -1691,6 +1697,17 @@ public class SpellHelper {
                         }
                     }
                 }
+                case SUMMON -> {
+                    if (impact.action.summon != null) {
+                        ///
+                        if (caster instanceof PlayerEntity player) {
+                            SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
+                        }
+                        ///
+                        summon(impact.action.summon, spellEntry, caster, context);
+                        success = true;
+                    }
+                }
                 case CUSTOM -> {
                     if (impact.action.custom != null) {
                         var handler = SpellHandlers.customImpact.get(impact.action.custom.handler);
@@ -1875,6 +1892,126 @@ public class SpellHelper {
         }
     }
 
+    // MARK: Summon
+
+    /// Spawns the summon(s) from a {@link Spell.Impact.Action.Summon}. `group_count` groups are
+    /// spawned; each group replays the per-entity formation (`spawn_count` entities cycling through
+    /// `placements`), translated by the next group placement (cycling through `group_placements`).
+    /// Every entity is created by id, handed the behaviour, positioned via {@link #applyEntityPlacement}
+    /// (group offset first, then the per-entity placement on top), and pulled back to the nearest
+    /// visible point when a placement opts into line-of-sight. Group and per-entity `delay_ticks` are
+    /// summed and defer the actual world spawn (entities are positioned at cast time, anchored to the
+    /// caster's cast-time state, matching the built-in SPAWN action).
+    private static void summon(Spell.Impact.Action.Summon def, RegistryEntry<Spell> spellEntry, LivingEntity caster, ImpactContext context) {
+        var world = caster.getWorld();
+        if (!(world instanceof ServerWorld serverWorld)) return;
+
+        var type = Registries.ENTITY_TYPE.get(Identifier.of(def.entity_type_id));
+        for (int g = 0; g < def.group_count; g++) {
+            // Next group slot, wrapping around the list (null when no group offset is configured).
+            var groupPlacement = def.group_placements.isEmpty() ? null : def.group_placements.get(g % def.group_placements.size());
+            int groupDelay = groupPlacement != null ? groupPlacement.delay_ticks : 0;
+            Vec3d groupAnchor = null; // caster position + group offset; captured from the first entity
+
+            for (int i = 0; i < def.spawn_count; i++) {
+                var created = (Entity) type.create(world);
+                if (!(created instanceof SpellSummoned summoned)) return;
+
+                // Next per-entity slot, wrapping around the list (null when no slots are configured).
+                var placement = def.placements.isEmpty() ? null : def.placements.get(i % def.placements.size());
+
+                summoned.onSummonedBySpell(new SpellSummoned.Args(caster, spellEntry, def.behaviour, context));
+
+                // Compose placements: the group offset's resulting position seeds the per-entity
+                // placement (both rotate the look-offset by the caster's yaw, so the formation keeps
+                // a consistent caster-relative orientation across groups).
+                var origin = caster.getPos();
+                if (groupPlacement != null) {
+                    applyEntityPlacement(created, caster, origin, groupPlacement);
+                    origin = created.getPos();
+                }
+                if (i == 0) groupAnchor = origin; // the group's anchor (pre per-entity offset)
+                applyEntityPlacement(created, caster, origin, placement);
+
+                // applyEntityPlacement only sets entity yaw; sync head/body yaw so the initial pose matches.
+                boolean appliedYaw = (groupPlacement != null && groupPlacement.apply_yaw)
+                        || (placement != null && placement.apply_yaw);
+                if (appliedYaw && created instanceof LivingEntity living) {
+                    living.setHeadYaw(living.getYaw());
+                    living.setBodyYaw(living.getYaw());
+                }
+                // Anti-clip: when a contributing placement opts into `line_of_sight`, pull a placed
+                // position that is out of the caster's line of sight back to the nearest visible point.
+                boolean checkLineOfSight = (placement != null && placement.line_of_sight)
+                        || (groupPlacement != null && groupPlacement.line_of_sight);
+                if (checkLineOfSight) {
+                    var visible = nearestVisiblePosition(caster, created.getPos(), serverWorld);
+                    created.setPosition(visible.x, visible.y, visible.z);
+                }
+
+                // Defer the world spawn by the combined group + per-entity delay (0 = spawn this tick).
+                int entityDelay = placement != null ? placement.delay_ticks : 0;
+                ((WorldScheduler) serverWorld).schedule(groupDelay + entityDelay, () -> serverWorld.spawnEntity(created));
+            }
+
+            // Group spawn FX + sound: one-shot at the group anchor, deferred by the group delay.
+            if (groupAnchor != null && (def.group_spawn_fx != null || def.group_spawn_sound != null)) {
+                var anchor = groupAnchor;
+                var fx = def.group_spawn_fx;
+                var sound = def.group_spawn_sound;
+                ((WorldScheduler) serverWorld).schedule(groupDelay, () -> {
+                    if (fx != null) emitSummonGroupFx(serverWorld, caster, anchor, fx);
+                    if (sound != null) playSummonSound(serverWorld, anchor, sound);
+                });
+            }
+        }
+    }
+
+    private static void emitSummonGroupFx(ServerWorld world, LivingEntity caster, Vec3d anchor, VFX fx) {
+        if (fx.particles != null && fx.particles.length > 0) {
+            ParticleHelper.sendBatches(anchor, caster, fx.particles);
+        }
+        ModelEffectHelper.spawn(world, anchor, caster.getYaw(), fx.model_fx);
+    }
+
+    private static void playSummonSound(ServerWorld world, Vec3d pos, Sound sound) {
+        var soundEvent = Registries.SOUND_EVENT.get(Identifier.of(sound.id()));
+        if (soundEvent != null) {
+            world.playSound(null, pos.x, pos.y, pos.z, soundEvent,
+                    SoundCategory.PLAYERS, sound.volume(), sound.randomizedPitch());
+        }
+    }
+
+    /// Distance the result is pulled back from a blocking surface along the sightline, so the entity
+    /// sits just shy of the geometry rather than embedded in its face.
+    private static final double SUMMON_LOS_BACKOFF = 0.5;
+
+    /// The point along the segment from the caster's eyes to `desired` that is still in line of sight:
+    /// `desired` itself when unobstructed, otherwise the closest clear point just before the blocking
+    /// surface. Never returns a point behind the caster's eyes.
+    private static Vec3d nearestVisiblePosition(LivingEntity caster, Vec3d desired, ServerWorld world) {
+        var from = caster.getEyePos();
+        var hit = world.raycast(new RaycastContext(
+                from, desired,
+                RaycastContext.ShapeType.COLLIDER,
+                RaycastContext.FluidHandling.NONE,
+                caster));
+        if (hit.getType() != HitResult.Type.BLOCK) {
+            return desired; // unobstructed line of sight
+        }
+        var ray = desired.subtract(from);
+        var length = ray.length();
+        if (length < 1.0e-4) {
+            return from;
+        }
+        var candidate = hit.getPos().subtract(ray.multiply(SUMMON_LOS_BACKOFF / length));
+        // Guard against a surface right at the caster's face pushing the point behind the eyes.
+        if (candidate.subtract(from).dotProduct(ray) < 0) {
+            return from;
+        }
+        return candidate;
+    }
+
     public static void applyEntityPlacement(Entity entity, Entity target, Vec3d initialPosition, Spell.EntityPlacement placement) {
         applyEntityPlacement(target.getWorld(), entity, target.getYaw(), target.getPitch(), target, initialPosition, placement);
     }
@@ -1962,6 +2099,9 @@ public class SpellHelper {
                     intent = action.spawns.getFirst().intent;
                 }
                 return intent;
+            }
+            case SUMMON -> {
+                return SpellTarget.Intent.HELPFUL;
             }
             case TELEPORT -> {
                 return action.teleport.intent;

@@ -4,6 +4,7 @@ import com.google.common.base.Suppliers;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.VFX;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public class SummonBehaviour {
 
     /// One-shot FX emitted server-side when this individual summon enters the world (on its first
     /// tick, alongside the spawn sound). Null = none.
-    @Nullable public SummonFx spawn_fx = null;
+    @Nullable public VFX spawn_fx = null;
 
     // --- Existence FX ---
 
