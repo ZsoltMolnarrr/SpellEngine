@@ -962,6 +962,21 @@ public class Spell {
         public float location_offset_x = 0;
         public float location_offset_y = 0;
         public float location_offset_z = 0;
+
+        public EntityPlacement copy() {
+            var copy = new EntityPlacement();
+            copy.delay_ticks = this.delay_ticks;
+            copy.force_onto_ground = this.force_onto_ground;
+            copy.line_of_sight = this.line_of_sight;
+            copy.location_offset_by_look = this.location_offset_by_look;
+            copy.location_yaw_offset = this.location_yaw_offset;
+            copy.apply_yaw = this.apply_yaw;
+            copy.apply_pitch = this.apply_pitch;
+            copy.location_offset_x = this.location_offset_x;
+            copy.location_offset_y = this.location_offset_y;
+            copy.location_offset_z = this.location_offset_z;
+            return copy;
+        }
     }
 
     public static class TargetCondition {

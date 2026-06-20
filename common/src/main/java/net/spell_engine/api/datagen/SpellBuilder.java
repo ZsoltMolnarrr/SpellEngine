@@ -17,6 +17,8 @@ import net.spell_power.api.SpellSchool;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class SpellBuilder {
@@ -208,6 +210,139 @@ public class SpellBuilder {
             spell.deliver.type = Spell.Delivery.Type.MELEE;
             spell.deliver.melee = new Spell.Delivery.Melee();
             spell.deliver.melee.attacks = attacks;
+        }
+    }
+
+    /// Factory functions for {@link Spell.EntityPlacement}s and common multi-placement arrangements
+    /// (compass, square, line, circle of N), to keep generator code declarative.
+    ///
+    /// Geometry is relative to the caster's facing: a placement is positioned `distance` blocks away
+    /// in a direction `yawOffset` degrees clockwise from where the caster looks (0 = front, 90 =
+    /// right, 180 = back, 270 = left). The arrangements clone a `template` placement so shared flags
+    /// (delay, ground-snap, line-of-sight, orientation, fixed offsets) carry over to every slot,
+    /// while the layout fields (`location_offset_by_look` / `location_yaw_offset`) are set per slot.
+    public static class Placements {
+        /// Default template for the no-template overloads: oriented to the caster's yaw and
+        /// ground-snapped.
+        public static Spell.EntityPlacement template() {
+            var placement = new Spell.EntityPlacement();
+            placement.apply_yaw = true;
+            placement.force_onto_ground = true;
+            return placement;
+        }
+
+        /// A single placement `distance` blocks from the caster, `yawOffset` degrees clockwise from
+        /// its facing (0 = front, 90 = right, 180 = back, 270 = left).
+        public static Spell.EntityPlacement byLook(float distance, float yawOffset) {
+            var placement = template();
+            placement.location_offset_by_look = distance;
+            placement.location_yaw_offset = yawOffset;
+            return placement;
+        }
+
+        /// `count` placements evenly spaced around a circle of `radius` about the caster, the first
+        /// at `startAngle` (0 = front) and proceeding clockwise. Each slot is a clone of `template`.
+        public static List<Spell.EntityPlacement> circle(int count, float radius, float startAngle, Spell.EntityPlacement template) {
+            var list = new ArrayList<Spell.EntityPlacement>();
+            if (count <= 0) return list;
+            float step = 360F / count;
+            for (int i = 0; i < count; i++) {
+                var placement = template.copy();
+                placement.location_offset_by_look = radius;
+                placement.location_yaw_offset = startAngle + step * i;
+                list.add(placement);
+            }
+            return list;
+        }
+        public static List<Spell.EntityPlacement> circle(int count, float radius) {
+            return circle(count, radius, 0, template());
+        }
+
+        /// 4 placements in the cardinal directions relative to the caster's facing — front, right,
+        /// back, left — each `distance` blocks out (a compass rose / diamond).
+        public static List<Spell.EntityPlacement> compass(float distance, Spell.EntityPlacement template) {
+            return circle(4, distance, 0, template);
+        }
+        public static List<Spell.EntityPlacement> compass(float distance) {
+            return compass(distance, template());
+        }
+
+        /// 4 placements at the corners of a square around the caster (the diagonals: front-right,
+        /// back-right, back-left, front-left), each `distance` blocks from the centre.
+        public static List<Spell.EntityPlacement> square(float distance, Spell.EntityPlacement template) {
+            return circle(4, distance, 45, template);
+        }
+        public static List<Spell.EntityPlacement> square(float distance) {
+            return square(distance, template());
+        }
+
+        /// The order in which a {@link #line} fills its slots. The geometry is always a centered row;
+        /// this only controls the sequence the placements are returned in — which matters because a
+        /// partial fill (`spawn_count` < slots) keeps the leading slots, and {@link #staggered}
+        /// delays scale with list index.
+        public enum LineOrder {
+            /// Centre first, then outward in alternating sides: centre, right 1, left 1, right 2, ...
+            CENTER_OUT,
+            /// Outermost slots first, working inward toward the centre.
+            EDGES_IN,
+            /// Leftmost slot first, proceeding to the right.
+            LEFT_TO_RIGHT,
+            /// Rightmost slot first, proceeding to the left.
+            RIGHT_TO_LEFT
+        }
+
+        /// `count` placements in a straight row centered on the caster and perpendicular to its
+        /// facing (a left-right line), `spacing` blocks apart. Geometry is symmetric about the centre
+        /// (an exact centre slot for odd counts); `order` chooses the fill sequence. Each slot clones
+        /// `template`.
+        public static List<Spell.EntityPlacement> line(int count, float spacing, LineOrder order, Spell.EntityPlacement template) {
+            var list = new ArrayList<Spell.EntityPlacement>();
+            if (count <= 0) return list;
+            // Signed position of each slot along the perpendicular axis, centered on the caster.
+            // Positive = right (yaw 90), negative = left (yaw 270).
+            float[] offsets = new float[count];
+            for (int i = 0; i < count; i++) {
+                offsets[i] = (i - (count - 1) / 2F) * spacing;
+            }
+            // Order the slot indices per the requested fill order. Side ties (a symmetric pair at the
+            // same distance) resolve right-before-left.
+            Integer[] indices = new Integer[count];
+            for (int i = 0; i < count; i++) indices[i] = i;
+            Comparator<Integer> comparator = switch (order) {
+                case LEFT_TO_RIGHT -> Comparator.comparingDouble(i -> offsets[i]);
+                case RIGHT_TO_LEFT -> Comparator.comparingDouble(i -> -offsets[i]);
+                case CENTER_OUT -> Comparator.<Integer>comparingDouble(i -> Math.abs(offsets[i]))
+                        .thenComparingDouble(i -> -offsets[i]);
+                case EDGES_IN -> Comparator.<Integer>comparingDouble(i -> -Math.abs(offsets[i]))
+                        .thenComparingDouble(i -> -offsets[i]);
+            };
+            Arrays.sort(indices, comparator);
+            for (int index : indices) {
+                float signed = offsets[index];
+                var placement = template.copy();
+                placement.location_offset_by_look = Math.abs(signed);
+                placement.location_yaw_offset = (signed >= 0) ? 90 : 270; // right / left
+                list.add(placement);
+            }
+            return list;
+        }
+        public static List<Spell.EntityPlacement> line(int count, float spacing, LineOrder order) {
+            return line(count, spacing, order, template());
+        }
+        public static List<Spell.EntityPlacement> line(int count, float spacing, Spell.EntityPlacement template) {
+            return line(count, spacing, LineOrder.CENTER_OUT, template);
+        }
+        public static List<Spell.EntityPlacement> line(int count, float spacing) {
+            return line(count, spacing, LineOrder.CENTER_OUT, template());
+        }
+
+        /// Adds a staggered spawn delay in place: the placement at index `i` gets `i * stepTicks`
+        /// added to its `delay_ticks`. Returns the same list for chaining.
+        public static List<Spell.EntityPlacement> staggered(List<Spell.EntityPlacement> placements, int stepTicks) {
+            for (int i = 0; i < placements.size(); i++) {
+                placements.get(i).delay_ticks += i * stepTicks;
+            }
+            return placements;
         }
     }
 
