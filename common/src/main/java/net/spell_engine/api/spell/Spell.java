@@ -181,6 +181,9 @@ public class Spell {
         public ParticleBatch[] particles_scaled_with_ranged;
         public Sound sound;
         public List<ModelEffect> model_fx = List.of();
+        /// Model effects whose `scale` is multiplied by the spell's range on release.
+        /// Each entry's authored `scale` acts as the coefficient (final scale = scale * range).
+        public List<ModelEffect> model_fx_scaled_with_ranged = List.of();
     }
 
     public Target target = new Target();

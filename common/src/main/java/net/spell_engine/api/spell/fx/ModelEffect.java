@@ -25,6 +25,22 @@ public class ModelEffect { public ModelEffect() { }
     /// Animated transforms, applied additively over time
     public List<Animation> animations = List.of();
 
+    /// Shallow copy: scalar fields are duplicated, nested transform lists are shared (treated as
+    /// immutable). Use this before mutating a field (e.g. `scale`) so the shared registered spell
+    /// instance is never modified.
+    public ModelEffect copy() {
+        var copy = new ModelEffect();
+        copy.model_id = this.model_id;
+        copy.light_emission = this.light_emission;
+        copy.scale = this.scale;
+        copy.duration = this.duration;
+        copy.positioning = this.positioning;
+        copy.follow_entity = this.follow_entity;
+        copy.initial = this.initial;
+        copy.animations = this.animations;
+        return copy;
+    }
+
     /// Base: operation + value fields
     public static class Transform { public Transform() { }
         /// Operation type identifier, looked up in the operation registry

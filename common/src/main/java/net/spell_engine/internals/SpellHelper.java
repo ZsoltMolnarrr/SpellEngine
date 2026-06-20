@@ -34,6 +34,7 @@ import net.spell_engine.api.effect.InstantCast;
 import net.spell_engine.api.effect.StatusEffectClassification;
 import net.spell_engine.api.entity.LivingEntityImmunity;
 import net.spell_engine.api.spell.weakness.SpellSchoolWeakness;
+import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.fx.VFX;
@@ -509,6 +510,17 @@ public class SpellHelper {
         }
         SoundHelper.playSound(world, caster, spell.release.sound);
         ModelEffectHelper.spawn(world, caster.getPos(), caster.getYaw(), spell.release.model_fx, caster);
+        var scaledModelFx = spell.release.model_fx_scaled_with_ranged;
+        if (scaledModelFx != null && !scaledModelFx.isEmpty()) {
+            var range = getRange(caster, spellEntry);
+            var scaledModels = new ArrayList<ModelEffect>(scaledModelFx.size());
+            for (var effect : scaledModelFx) {
+                var scaled = effect.copy();
+                scaled.scale *= range;
+                scaledModels.add(scaled);
+            }
+            ModelEffectHelper.spawn(world, caster.getPos(), caster.getYaw(), scaledModels, caster);
+        }
     }
 
     private static void consumeAttemptCost(PlayerEntity player, RegistryEntry<Spell> spellEntry) {
