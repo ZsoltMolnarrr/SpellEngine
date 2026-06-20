@@ -346,6 +346,33 @@ public class SpellBuilder {
             return line(count, spacing, 0F, LineOrder.CENTER_OUT, template());
         }
 
+        /// `count` placements in a straight line projecting away from the caster: the first
+        /// `startDistance` blocks out and each subsequent one `spacing` blocks further, all along a ray
+        /// `angle` degrees clockwise from the caster's facing (0 = straight ahead, 90 = right,
+        /// 180 = back, 270 = left). The slot nearest the caster is first in the list, the farthest is
+        /// last — so pairing with {@link #staggered} marches the spawns outward over time. Each slot
+        /// clones `template`.
+        public static List<Spell.EntityPlacement> forwardLine(int count, float spacing, float startDistance, float angle, Spell.EntityPlacement template) {
+            var list = new ArrayList<Spell.EntityPlacement>();
+            if (count <= 0) return list;
+            for (int i = 0; i < count; i++) {
+                var placement = template.copy();
+                placement.location_offset_by_look = startDistance + i * spacing;
+                placement.location_yaw_offset = angle;
+                list.add(placement);
+            }
+            return list;
+        }
+        public static List<Spell.EntityPlacement> forwardLine(int count, float spacing, float startDistance, float angle) {
+            return forwardLine(count, spacing, startDistance, angle, template());
+        }
+        public static List<Spell.EntityPlacement> forwardLine(int count, float spacing, float startDistance) {
+            return forwardLine(count, spacing, startDistance, 0F, template());
+        }
+        public static List<Spell.EntityPlacement> forwardLine(int count, float spacing) {
+            return forwardLine(count, spacing, spacing, 0F, template());
+        }
+
         /// Adds a staggered spawn delay in place: the placement at index `i` gets `i * stepTicks`
         /// added to its `delay_ticks`. Returns the same list for chaining.
         public static List<Spell.EntityPlacement> staggered(List<Spell.EntityPlacement> placements, int stepTicks) {
