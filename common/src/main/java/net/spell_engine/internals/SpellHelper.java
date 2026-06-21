@@ -489,12 +489,6 @@ public class SpellHelper {
                 .power(SpellPower.getSpellPower(spell.school, caster))
                 .target(focusMode(spell));
 
-        // Non-player casters can't "hold" a charge; treat charge spells as fully charged.
-        var cast = spell.active.cast;
-        if (cast.resolvedType() == Spell.Active.Cast.Type.CHARGE && cast.charge != null) {
-            context = context.chargeModifier(SpellModifiers.scaledBy(cast.charge.bonus, 1F));
-        }
-
         if (!caster.isAttackable() && caster instanceof Tameable) {
             var owner = ((Tameable) caster).getOwner();
             if (owner != null) {

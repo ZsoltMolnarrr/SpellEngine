@@ -35,6 +35,11 @@ API changes:
   - `summon_attribute_scaling` (merged with the summon's scaling, summed per attribute)
   - `summon_spawn_count_add`, `summon_group_count_add`
   - `summon_behaviour` sub-structure adding behaviour (attack and spell casting)
+- Added new spell casting mode: Charging
+  - Similar to regular spell casting, but can be released prematurely
+  - The longer the spell is charged, the stronger it becomes
+  - Uses spell modifier pipeline to modify spell properties based on charge time
+  - Reworked `spell.active.cast` data structure to accommodate this feature - some fields are now marked for removal
 
 
 # 1.9.9

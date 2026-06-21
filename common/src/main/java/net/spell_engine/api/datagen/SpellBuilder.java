@@ -93,7 +93,26 @@ public class SpellBuilder {
         public static void channel(Spell spell, float duration, int ticks) {
             spell.active.cast = new Spell.Active.Cast();
             spell.active.cast.duration = duration;
-            spell.active.cast.channel_ticks = ticks;
+            spell.active.cast.type = Spell.Active.Cast.Type.CHANNEL;
+            spell.active.cast.channel = new Spell.Active.Cast.Channel();
+            spell.active.cast.channel.ticks = ticks;
+        }
+
+        /// Configures the spell as CHARGE: the player holds to charge and may release early, and the
+        /// returned `Charge` carries the bonus applied at full charge (scaled toward zero by the
+        /// curved release ratio). Configure `bonus`, `curve` and `min_release_ratio` on the result.
+        public static Spell.Active.Cast.Charge charge(Spell spell, float duration) {
+            spell.active.cast = new Spell.Active.Cast();
+            spell.active.cast.duration = duration;
+            spell.active.cast.type = Spell.Active.Cast.Type.CHARGE;
+            spell.active.cast.charge = new Spell.Active.Cast.Charge();
+            return spell.active.cast.charge;
+        }
+
+        public static Spell.Active.Cast.Charge charge(Spell spell, float duration, Spell.Active.Cast.Charge.Curve curve) {
+            var charge = charge(spell, duration);
+            charge.curve = curve;
+            return charge;
         }
 
         public static void visuals(Spell spell,
