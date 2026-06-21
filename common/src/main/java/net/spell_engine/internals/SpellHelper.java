@@ -172,7 +172,7 @@ public class SpellHelper {
     }
 
     public static int channelTicks(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
-        var ticks = spellEntry.value().active.cast.channel_ticks;
+        var ticks = spellEntry.value().active.cast.channelTicks();
         if (caster instanceof PlayerEntity player) {
             var modifiers = SpellModifiers.of(player, spellEntry);
             for (var modifier: modifiers) {
@@ -218,7 +218,7 @@ public class SpellHelper {
 
     public static float channelValueMultiplier(Spell spell) {
         if (spell.active == null) { return 0F; }
-        var ticks = spell.active.cast.channel_ticks;
+        var ticks = spell.active.cast.channelTicks();
         if (ticks <= 0) {
             return 0;
         }
@@ -307,8 +307,8 @@ public class SpellHelper {
             boolean finished = action == SpellCast.Action.RELEASE
                     || (action == SpellCast.Action.TRIGGER && spell.type == Spell.Type.PASSIVE); // For stashed spells release has been done already
             boolean shouldSendReleaseFx = switch (action) {
-                case CHANNEL -> spell.active.cast.channeled_release_fx;
-                case RELEASE -> !(isChanneled(spell) && spell.active.cast.channeled_release_fx);
+                case CHANNEL -> spell.active.cast.channelReleaseFx();
+                case RELEASE -> !(isChanneled(spell) && spell.active.cast.channelReleaseFx());
                 case TRIGGER -> spell.type == Spell.Type.PASSIVE;
             };
             boolean success = true;
