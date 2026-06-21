@@ -177,6 +177,21 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         spellTarget = SpellTarget.SearchResult.empty();
     }
 
+    @Override
+    public void releaseCharge() {
+        var process = spellCastProcess;
+        if (process == null) {
+            return;
+        }
+        var charge = process.spell().value().active.cast.charge;
+        var progress = process.progress(player().getWorld().getTime());
+        if (charge != null && progress.ratio() < charge.min_release_ratio) {
+            cancelSpellCast(); // below the minimum charge — fizzle
+            return;
+        }
+        releaseSpellCast(process, SpellCast.Action.RELEASE);
+    }
+
     private void updateSpellCast() {
         var process = spellCastProcess;
         if (process != null) {

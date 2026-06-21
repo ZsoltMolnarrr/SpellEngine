@@ -141,6 +141,7 @@ public class SpellCast {
         INSTANT,
         CASTING,
         CHANNEL,
+        CHARGED,
         PASSIVE,
         ITEM_USE; // This one is never produced by mapping, only manually from SpellHotbar logic
         public static Mode from(Spell spell) {
@@ -148,7 +149,13 @@ public class SpellCast {
                 if (spell.active.cast.duration <= 0) {
                     return INSTANT;
                 }
-                return SpellHelper.isChanneled(spell) ? CHANNEL : CASTING;
+                if (SpellHelper.isChanneled(spell)) {
+                    return CHANNEL;
+                }
+                if (spell.active.cast.resolvedType() == Spell.Active.Cast.Type.CHARGE) {
+                    return CHARGED;
+                }
+                return CASTING;
             } else {
                 return PASSIVE;
             }

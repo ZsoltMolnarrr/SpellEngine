@@ -17,6 +17,9 @@ public interface SpellCasterClient extends SpellCasterEntity {
     @Nullable SpellCast.Progress getSpellCastProgress();
     boolean isCastingSpell();
     void cancelSpellCast();
+    /// Releases a CHARGED spell at its current progress (the charge ratio). Below the spell's
+    /// `min_release_ratio` the cast fizzles instead.
+    void releaseCharge();
 
     void onAttacksAvailable(List<Melee.Attack> attacks);
     Melee.ActiveAttack getCurrentSkillAttack();

@@ -112,7 +112,7 @@ public class Spell {
                 /// drive the charge (power, projectile launch/perks, effect amplifiers, range, ...).
                 /// Scoped implicitly to this spell: `spell_pattern` is ignored; `impact_filters` still
                 /// select which impacts the bonus boosts.
-                public Spell.Modifier full_charge = new Spell.Modifier();
+                public Spell.Modifier bonus = new Spell.Modifier();
 
                 /// Easing curves (per easings.net). IN = slow start, OUT = fast start, IN_OUT = slow at both ends.
                 public enum Curve {

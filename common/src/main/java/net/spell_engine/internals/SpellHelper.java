@@ -270,6 +270,7 @@ public class SpellHelper {
         var channelTickIndex = 0;
         int incrementChannelTicks = 0;
         boolean shouldPerformImpact = true;
+        Spell.Modifier chargeModifier = null;
         Supplier<Collection<ServerPlayerEntity>> trackingPlayers = Suppliers.memoize(() -> { // Suppliers.memoize = Lazy
             return PlayerLookup.tracking(player);
         });
@@ -288,9 +289,20 @@ public class SpellHelper {
                 }
             }
             case RELEASE -> {
+                var cast = spell.active.cast;
                 if (isChanneled(spell)) {
                     shouldPerformImpact = false;
                     channelMultiplier = 1;
+                } else if (cast.resolvedType() == Spell.Active.Cast.Type.CHARGE && cast.charge != null) {
+                    // `progress` is the charge ratio (already clamped to 0..1). Below the minimum it
+                    // fizzles via channelMultiplier = 0 (reusing the delivery gate below); otherwise
+                    // the curved ratio scales the charge modifier carried on the ImpactContext.
+                    if (progress >= cast.charge.min_release_ratio) {
+                        chargeModifier = SpellModifiers.scaledBy(cast.charge.bonus, cast.charge.curve.apply(progress));
+                        channelMultiplier = 1;
+                    } else {
+                        channelMultiplier = 0;
+                    }
                 } else {
                     channelMultiplier = (progress >= 1) ? 1 : 0;
                 }
@@ -346,7 +358,8 @@ public class SpellHelper {
                         null,
                         SpellPower.getSpellPower(spell.school, player),
                         focusMode(spell),
-                        channelTickIndex);
+                        channelTickIndex)
+                        .chargeModifier(chargeModifier);
                 success = resolveAndDeliver(world, player, spellEntry, targetResult, context, completion);
                 caster.setChannelTickIndex(channelTickIndex + incrementChannelTicks);
             } else {
@@ -468,6 +481,12 @@ public class SpellHelper {
         var context = new ImpactContext()
                 .power(SpellPower.getSpellPower(spell.school, caster))
                 .target(focusMode(spell));
+
+        // Non-player casters can't "hold" a charge; treat charge spells as fully charged.
+        var cast = spell.active.cast;
+        if (cast.resolvedType() == Spell.Active.Cast.Type.CHARGE && cast.charge != null) {
+            context = context.chargeModifier(SpellModifiers.scaledBy(cast.charge.bonus, 1F));
+        }
 
         if (!caster.isAttackable() && caster instanceof Tameable) {
             var owner = ((Tameable) caster).getOwner();
@@ -710,11 +729,8 @@ public class SpellHelper {
                     var power = SpellPower.getSpellPower(spell.school, caster);
                     amplifier += (int)(stash.amplifier_power_multiplier * power.nonCriticalValue());
                 }
-                if (caster instanceof PlayerEntity player) {
-                    var spellModifiers = SpellModifiers.of(player, spellEntry);
-                    for (var modifier: spellModifiers) {
-                        amplifier += modifier.stash_amplifier_add;
-                    }
+                for (var modifier: SpellModifiers.of(caster, spellEntry, context.chargeModifier())) {
+                    amplifier += modifier.stash_amplifier_add;
                 }
                 for (var targeted: targets) {
                     if (targeted.entity() instanceof LivingEntity livingEntity) {
@@ -817,15 +833,12 @@ public class SpellHelper {
         var mutablePerks = projectileData.perks.copy();
         var mutableLaunchProperties = data.launch_properties.copy();
 
-        if (caster instanceof PlayerEntity player) {
-            var spellModifiers = SpellModifiers.of(player, spellEntry);
-            for (var modifier: spellModifiers) {
-                if (modifier.projectile_launch != null) {
-                    mutableLaunchProperties.mutatingCombine(modifier.projectile_launch);
-                }
-                if (modifier.projectile_perks != null) {
-                    mutablePerks.mutatingCombine(modifier.projectile_perks);
-                }
+        for (var modifier: SpellModifiers.of(caster, spellEntry, context.chargeModifier())) {
+            if (modifier.projectile_launch != null) {
+                mutableLaunchProperties.mutatingCombine(modifier.projectile_launch);
+            }
+            if (modifier.projectile_perks != null) {
+                mutablePerks.mutatingCombine(modifier.projectile_perks);
             }
         }
 
@@ -913,15 +926,12 @@ public class SpellHelper {
         var mutableLaunchProperties = data.launch_properties.copy();
         var mutablePerks = projectileData.perks.copy();
 
-        if (caster instanceof PlayerEntity player) {
-            var spellModifiers = SpellModifiers.of(player, spellEntry);
-            for (var modifier: spellModifiers) {
-                if (modifier.projectile_launch != null) {
-                    mutableLaunchProperties.mutatingCombine(modifier.projectile_launch);
-                }
-                if (modifier.projectile_perks != null) {
-                    mutablePerks.mutatingCombine(modifier.projectile_perks);
-                }
+        for (var modifier: SpellModifiers.of(caster, spellEntry, context.chargeModifier())) {
+            if (modifier.projectile_launch != null) {
+                mutableLaunchProperties.mutatingCombine(modifier.projectile_launch);
+            }
+            if (modifier.projectile_perks != null) {
+                mutablePerks.mutatingCombine(modifier.projectile_perks);
             }
         }
 
@@ -1085,40 +1095,45 @@ public class SpellHelper {
 
     public record ImpactContext(float channel, float distance, @Nullable Vec3d position,
                                 SpellPower.Result power, SpellTarget.FocusMode focusMode,
-                                int channelTickIndex, @Nullable int effectiveCasterId) {
+                                int channelTickIndex, @Nullable int effectiveCasterId,
+                                @Nullable Spell.Modifier chargeModifier) {
         public ImpactContext() {
-            this(1, 1, null, null, SpellTarget.FocusMode.DIRECT, 0, 0);
+            this(1, 1, null, null, SpellTarget.FocusMode.DIRECT, 0, 0, null);
         }
 
         public ImpactContext(float channel, float distance, @Nullable Vec3d position,
                              SpellPower.Result power, SpellTarget.FocusMode focusMode,
                              int channelTickIndex) {
-            this(channel, distance, position, power, focusMode, channelTickIndex, 0);
+            this(channel, distance, position, power, focusMode, channelTickIndex, 0, null);
         }
 
         public ImpactContext channeled(float multiplier) {
-            return new ImpactContext(multiplier, distance, position, power, focusMode, channelTickIndex, effectiveCasterId);
+            return new ImpactContext(multiplier, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier);
         }
 
         public ImpactContext distance(float multiplier) {
-            return new ImpactContext(channel, multiplier, position, power, focusMode, channelTickIndex, effectiveCasterId);
+            return new ImpactContext(channel, multiplier, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier);
         }
 
         public ImpactContext position(Vec3d position) {
-            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId);
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier);
         }
 
         public ImpactContext power(SpellPower.Result spellPower) {
-            return new ImpactContext(channel, distance, position, spellPower, focusMode, channelTickIndex, effectiveCasterId);
+            return new ImpactContext(channel, distance, position, spellPower, focusMode, channelTickIndex, effectiveCasterId, chargeModifier);
         }
 
         public ImpactContext target(SpellTarget.FocusMode focusMode) {
-            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId);
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier);
         }
 
         public ImpactContext effectiveCaster(@Nullable LivingEntity effectiveCaster) {
             var id = effectiveCaster != null ? effectiveCaster.getId() : 0;
-            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, id);
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, id, chargeModifier);
+        }
+
+        public ImpactContext chargeModifier(@Nullable Spell.Modifier chargeModifier) {
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier);
         }
 
         public @Nullable LivingEntity effectiveCaster(World world) {
@@ -1272,10 +1287,7 @@ public class SpellHelper {
 
             // Power calculation
 
-            List<Spell.Modifier> spellModifiers = List.of();
-            if (caster instanceof PlayerEntity player) {
-                spellModifiers = SpellModifiers.ofImpact(player, spellEntry, impact);
-            }
+            List<Spell.Modifier> spellModifiers = SpellModifiers.ofImpact(caster, spellEntry, impact, context.chargeModifier());
 
             double particleMultiplier = 1 * context.total();
             var power = context.power();
@@ -1839,10 +1851,7 @@ public class SpellHelper {
             target = caster;
         }
 
-        List<Spell.Modifier> spellModifiers = List.of();
-        if (caster instanceof PlayerEntity player) {
-            spellModifiers = SpellModifiers.of(player, spellEntry);
-        }
+        List<Spell.Modifier> spellModifiers = SpellModifiers.of(caster, spellEntry, context.chargeModifier());
         float extraTimeToLive = 0;
         var extraPlacements = new ArrayList<Spell.EntityPlacement>();
         for (var spellModifier: spellModifiers) {

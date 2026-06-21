@@ -255,6 +255,35 @@ public class SpellHotbar {
                             }
                         }
                     }
+                    case CHARGED -> {
+                        if (casted != null && casted.process().id().equals(slot.spell.getKey().get().getValue())) {
+                            // The spell is already being charged
+                            if (SpellEngineClient.config.holdToCastCharged) {
+                                if (!pressed) {
+                                    caster.releaseCharge();
+                                    handledThisTick = handle;
+                                    return handle;
+                                }
+                            } else {
+                                if (pressed && isReleased(keyBinding, UseCase.START)) {
+                                    caster.releaseCharge();
+                                    debounce(keyBinding, UseCase.STOP);
+                                    handledThisTick = handle;
+                                    return handle;
+                                }
+                            }
+                        } else {
+                            // A different spell or no spell is being casted
+                            if (pressed && isReleased(keyBinding, UseCase.STOP)) {
+                                var attempt = caster.startSpellCast(casterStack, slot.spell);
+                                debounce(keyBinding, UseCase.START);
+                                var handledWithAttempt = handle.withAttempt(attempt);
+                                handledThisTick = handledWithAttempt;
+                                displayAttempt(attempt, slot.spell);
+                                return handledWithAttempt;
+                            }
+                        }
+                    }
                 }
                 if (pressed) {
                     handledThisTick = handle;

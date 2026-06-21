@@ -37,7 +37,27 @@ public class SpellModifiers {
 
     public static List<Spell.Modifier> ofImpact(PlayerEntity player, RegistryEntry<Spell> spellEntry,
                                           Spell.Impact impact) {
-        return of(player, spellEntry).stream()
+        return ofImpact((LivingEntity) player, spellEntry, impact, null);
+    }
+
+    /// Equipment/skill-tree modifiers are resolved for players only (cached per spell). The optional
+    /// `chargeModifier` (a charge-ratio-scaled bonus carried on the ImpactContext) is prepended for
+    /// any caster, so non-player casters still receive it.
+    public static List<Spell.Modifier> of(LivingEntity caster, RegistryEntry<Spell> spellEntry,
+                                          @Nullable Spell.Modifier chargeModifier) {
+        var base = (caster instanceof PlayerEntity player) ? of(player, spellEntry) : List.<Spell.Modifier>of();
+        if (chargeModifier == null) {
+            return base;
+        }
+        var merged = new ArrayList<Spell.Modifier>(base.size() + 1);
+        merged.add(chargeModifier); // prepend
+        merged.addAll(base);
+        return merged;
+    }
+
+    public static List<Spell.Modifier> ofImpact(LivingEntity caster, RegistryEntry<Spell> spellEntry,
+                                          Spell.Impact impact, @Nullable Spell.Modifier chargeModifier) {
+        return of(caster, spellEntry, chargeModifier).stream()
                 .filter(modifier -> {
                     for(var filter: modifier.impact_filters) {
                         if (!impactMatches(impact, spellEntry, filter)) {
@@ -98,5 +118,67 @@ public class SpellModifiers {
             }
         }
         return new ExtendedImpacts(mutableImpacts, area_impact);
+    }
+
+    /// Returns a deep copy of `modifier` with every magnitude field scaled by `r` (floats multiplied,
+    /// ints rounded). Index/flag, list, enum and string fields are copied unchanged. Used to apply a
+    /// charge-ratio-scaled bonus without mutating the shared template stored on the spell.
+    public static Spell.Modifier scaledBy(Spell.Modifier modifier, float r) {
+        var copy = new Spell.Modifier();
+        // Copied unchanged (matchers / list / enum fields)
+        copy.spell_pattern = modifier.spell_pattern;
+        copy.mutate_impacts = modifier.mutate_impacts;
+        copy.impacts = modifier.impacts;
+        copy.replacing_area_impact = modifier.replacing_area_impact;
+        copy.impact_filters = modifier.impact_filters;
+        copy.melee_attacks = modifier.melee_attacks;
+        copy.additional_placements = modifier.additional_placements;
+        copy.summon_attribute_scaling = modifier.summon_attribute_scaling;
+        // Scaled top-level magnitudes
+        copy.range_add = modifier.range_add * r;
+        copy.channel_ticks_add = Math.round(modifier.channel_ticks_add * r);
+        copy.knockback_multiply_base = modifier.knockback_multiply_base * r;
+        copy.spawn_duration_add = modifier.spawn_duration_add * r;
+        copy.effect_amplifier_add = Math.round(modifier.effect_amplifier_add * r);
+        copy.effect_amplifier_cap_add = Math.round(modifier.effect_amplifier_cap_add * r);
+        copy.stash_amplifier_add = Math.round(modifier.stash_amplifier_add * r);
+        copy.effect_duration_add = modifier.effect_duration_add * r;
+        copy.cooldown_duration_deduct = modifier.cooldown_duration_deduct * r;
+        copy.melee_momentum_add = modifier.melee_momentum_add * r;
+        copy.melee_slipperiness_add = modifier.melee_slipperiness_add * r;
+        copy.melee_damage_multiplier = modifier.melee_damage_multiplier * r;
+        copy.summon_spawn_count_add = Math.round(modifier.summon_spawn_count_add * r);
+        copy.summon_group_count_add = Math.round(modifier.summon_group_count_add * r);
+        // Scaled nested objects (fresh copies, so the shared template is never mutated)
+        if (modifier.power_modifier != null) {
+            var pm = new Spell.Impact.Modifier();
+            pm.power_multiplier = modifier.power_modifier.power_multiplier * r;
+            pm.critical_chance_bonus = modifier.power_modifier.critical_chance_bonus * r;
+            pm.critical_damage_bonus = modifier.power_modifier.critical_damage_bonus * r;
+            copy.power_modifier = pm;
+        }
+        if (modifier.projectile_launch != null) {
+            var pl = modifier.projectile_launch.copy(); // velocity is the only magnitude we scale
+            pl.velocity *= r;                            // (extra_launch_* are index/flag fields)
+            copy.projectile_launch = pl;
+        }
+        if (modifier.projectile_perks != null) {
+            var pk = modifier.projectile_perks.copy();
+            pk.ricochet = Math.round(pk.ricochet * r);
+            pk.ricochet_range *= r;
+            pk.bounce = Math.round(pk.bounce * r);
+            pk.pierce = Math.round(pk.pierce * r);
+            pk.chain_reaction_size = Math.round(pk.chain_reaction_size * r);
+            pk.chain_reaction_triggers = Math.round(pk.chain_reaction_triggers * r);
+            pk.chain_reaction_increment = Math.round(pk.chain_reaction_increment * r);
+            copy.projectile_perks = pk;
+        }
+        var sb = new Spell.Modifier.SummonBehaviourModifier();
+        sb.actions_add = modifier.summon_behaviour.actions_add;
+        sb.lifespan.spawn_ticks_add = Math.round(modifier.summon_behaviour.lifespan.spawn_ticks_add * r);
+        sb.lifespan.active_seconds_add = Math.round(modifier.summon_behaviour.lifespan.active_seconds_add * r);
+        sb.lifespan.despawn_ticks_add = Math.round(modifier.summon_behaviour.lifespan.despawn_ticks_add * r);
+        copy.summon_behaviour = sb;
+        return copy;
     }
 }
