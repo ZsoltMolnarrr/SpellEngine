@@ -79,11 +79,100 @@ public class Spell {
         public Cast cast = new Cast();
         public static class Cast { public Cast() { }
             public boolean haste_affected = true;
+            /// Length of the casting phase in seconds. 0 => INSTANT (no casting phase; `type` is ignored).
             public float duration = 0;
-            /// The number of times the spell should perform delivery during casting.
-            /// If greater than zero, the spell is considered as "channeled", and the deliveries are evenly distributed during the casting duration.
-            public int channel_ticks = 0;
-            public boolean channeled_release_fx = false;
+
+            /// The casting mechanic, for a timed cast (duration > 0). Exactly one — the matching
+            /// sub-struct below is read, the others are ignored.
+            public Type type = Type.STANDARD;
+            public enum Type {
+                STANDARD,  /// Single delivery on full completion; cannot be released early.
+                CHANNEL,   /// Repeated deliveries spread evenly across the duration.
+                CHARGE     /// May be released early; the bonus scales with how long it was held.
+            }
+
+            /// Read only when `type == CHANNEL`.
+            @Nullable public Channel channel;
+            public static class Channel { public Channel() { }
+                /// Number of deliveries, evenly distributed across the casting duration.
+                public int ticks = 0;
+                /// Whether release FX/animation are sent on each channel tick.
+                public boolean release_fx = false;
+            }
+
+            /// Read only when `type == CHARGE`.
+            @Nullable public Charge charge;
+            public static class Charge { public Charge() { }
+                /// Minimum charge ratio (0..1) required to fire on release. Below this, the cast fizzles.
+                public float min_release_ratio = 0.2F;
+                /// Shapes how the raw charge ratio maps to the scaling applied to `full_charge`.
+                public Curve curve = Curve.LINEAR;
+                /// The bonus applied at 100% charge, scaled toward zero as the (curved) ratio drops.
+                /// Reuses the spell-modifier vocabulary, so the same fields equipment/talents already use
+                /// drive the charge (power, projectile launch/perks, effect amplifiers, range, ...).
+                /// Scoped implicitly to this spell: `spell_pattern` is ignored; `impact_filters` still
+                /// select which impacts the bonus boosts.
+                public Spell.Modifier full_charge = new Spell.Modifier();
+
+                /// Easing curves (per easings.net). IN = slow start, OUT = fast start, IN_OUT = slow at both ends.
+                public enum Curve {
+                    LINEAR,
+                    EASE_IN_QUAD, EASE_OUT_QUAD, EASE_IN_OUT_QUAD,
+                    EASE_IN_QUART, EASE_OUT_QUART, EASE_IN_OUT_QUART,
+                    EASE_IN_EXPO, EASE_OUT_EXPO, EASE_IN_OUT_EXPO;
+
+                    /// Maps a raw charge ratio to its eased value, both in 0..1.
+                    public float apply(float t) {
+                        t = Math.max(0F, Math.min(1F, t));
+                        switch (this) {
+                            case LINEAR:           return t;
+                            case EASE_IN_QUAD:     return (float) Math.pow(t, 2);
+                            case EASE_OUT_QUAD:    return 1F - (float) Math.pow(1F - t, 2);
+                            case EASE_IN_OUT_QUAD: return t < 0.5F ? 2F * (float) Math.pow(t, 2)
+                                                                   : 1F - (float) Math.pow(-2F * t + 2F, 2) / 2F;
+                            case EASE_IN_QUART:    return (float) Math.pow(t, 4);
+                            case EASE_OUT_QUART:   return 1F - (float) Math.pow(1F - t, 4);
+                            case EASE_IN_OUT_QUART:return t < 0.5F ? 8F * (float) Math.pow(t, 4)
+                                                                   : 1F - (float) Math.pow(-2F * t + 2F, 4) / 2F;
+                            case EASE_IN_EXPO:     return t == 0F ? 0F : (float) Math.pow(2F, 10F * t - 10F);
+                            case EASE_OUT_EXPO:    return t == 1F ? 1F : 1F - (float) Math.pow(2F, -10F * t);
+                            case EASE_IN_OUT_EXPO:
+                                if (t == 0F) return 0F;
+                                if (t == 1F) return 1F;
+                                return t < 0.5F ? (float) Math.pow(2F, 20F * t - 10F) / 2F
+                                                : (2F - (float) Math.pow(2F, -20F * t + 10F)) / 2F;
+                            default:               return t;
+                        }
+                    }
+                }
+            }
+
+            // MARK: Legacy migration (handled with priority — see resolver accessors below)
+
+            /// @deprecated Use `type = CHANNEL` with a `channel` block instead.
+            /// Kept for backward compatibility: when non-zero it takes priority and the spell behaves
+            /// exactly as before (channeled), ignoring the `type`/`channel`/`charge` structure.
+            @Deprecated(forRemoval = true) public int channel_ticks = 0;
+            /// @deprecated Use `channel.release_fx` instead. Only consulted while legacy channeling is active.
+            @Deprecated(forRemoval = true) public boolean channeled_release_fx = false;
+
+            // MARK: Resolved accessors — single source of truth for the engine.
+            // Legacy fields win when set to a non-default value; otherwise the new structure is interpreted.
+
+            public Type resolvedType() {
+                if (channel_ticks != 0) { return Type.CHANNEL; } // legacy override
+                return type;
+            }
+            public int channelTicks() {
+                if (channel_ticks != 0) { return channel_ticks; }
+                if (type == Type.CHANNEL && channel != null) { return channel.ticks; }
+                return 0;
+            }
+            public boolean channelReleaseFx() {
+                if (channel_ticks != 0) { return channeled_release_fx; }
+                if (type == Type.CHANNEL && channel != null) { return channel.release_fx; }
+                return false;
+            }
 
             public PlayerAnimation animation;
             public boolean animation_pitch = true;
