@@ -184,6 +184,14 @@ public abstract class SpellGenerator implements DataProvider {
 
             try {
                 for (Field field : src.getClass().getDeclaredFields()) {
+                    // Mirror Gson's default Excluder: never serialize static or transient fields.
+                    // E.g. SummonBehaviour's `static final Gson GSON` (a Gson holds a ThreadLocal,
+                    // which can't be made accessible under JDK 17+) and its `transient Supplier` caches.
+                    int modifiers = field.getModifiers();
+                    if (java.lang.reflect.Modifier.isStatic(modifiers)
+                            || java.lang.reflect.Modifier.isTransient(modifiers)) {
+                        continue;
+                    }
                     field.setAccessible(true); // Allow access to private fields
 
                     Object value = field.get(src);

@@ -128,6 +128,10 @@ public class SpellHelper {
     }
 
     public static float getRange(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
+        return getRange(caster, spellEntry, null);
+    }
+
+    public static float getRange(LivingEntity caster, RegistryEntry<Spell> spellEntry, @Nullable Spell.Modifier chargeModifier) {
         var spell = spellEntry.value();
         var range = spell.range;
         if (spell.range_mechanic != null) {
@@ -147,6 +151,9 @@ public class SpellHelper {
                     range += modifier.range_add;
                 }
             }
+        }
+        if (chargeModifier != null) {
+            range += chargeModifier.range_add;
         }
         return range;
     }
@@ -434,7 +441,7 @@ public class SpellHelper {
             case AREA -> {
                 var center = caster.getPos().add(0, caster.getHeight() / 2F, 0);
                 var area = spell.target.area;
-                var range = getRange(caster, spellEntry) * caster.getScale();
+                var range = getRange(caster, spellEntry, context.chargeModifier()) * caster.getScale();
                 final var centeredContext = context; // .position(center);
                 double squaredRange = range * range;
                 var targetsWithContext = targets.stream().map(target -> {
@@ -832,6 +839,7 @@ public class SpellHelper {
         var projectileData = data.projectile;
         var mutablePerks = projectileData.perks.copy();
         var mutableLaunchProperties = data.launch_properties.copy();
+        var scaleMultiplier = 1F;
 
         for (var modifier: SpellModifiers.of(caster, spellEntry, context.chargeModifier())) {
             if (modifier.projectile_launch != null) {
@@ -840,6 +848,7 @@ public class SpellHelper {
             if (modifier.projectile_perks != null) {
                 mutablePerks.mutatingCombine(modifier.projectile_perks);
             }
+            scaleMultiplier += modifier.projectile_scale_multiply;
         }
 
         var effectiveCaster = context.effectiveCaster(world);
@@ -848,6 +857,7 @@ public class SpellHelper {
         var projectile = new SpellProjectile(world, owner,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
                 SpellProjectile.Behaviour.FLY, spellEntry, context, mutablePerks);
+        projectile.setScaleMultiplier(scaleMultiplier);
 
         if (SpellEvents.PROJECTILE_SHOOT.isListened()) {
             SpellEvents.PROJECTILE_SHOOT.invoke((listener) -> listener.onProjectileLaunch(
@@ -878,7 +888,9 @@ public class SpellHelper {
             var look = caster.getRotationVector(directionPitch, directionYaw).normalize();
             projectile.setVelocity(look.x, look.y, look.z, velocity, divergence);
         }
-        projectile.range = spell.range;
+        // Charge `bonus.range_add` extends the projectile's flight distance (already ratio-scaled).
+        var chargeModifier = context.chargeModifier();
+        projectile.range = spell.range + (chargeModifier != null ? chargeModifier.range_add : 0F);
         projectile.setPitch(directionPitch);
         projectile.setYaw(directionYaw);
 
@@ -925,6 +937,7 @@ public class SpellHelper {
         var projectileData = data.projectile;
         var mutableLaunchProperties = data.launch_properties.copy();
         var mutablePerks = projectileData.perks.copy();
+        var scaleMultiplier = 1F;
 
         for (var modifier: SpellModifiers.of(caster, spellEntry, context.chargeModifier())) {
             if (modifier.projectile_launch != null) {
@@ -933,11 +946,13 @@ public class SpellHelper {
             if (modifier.projectile_perks != null) {
                 mutablePerks.mutatingCombine(modifier.projectile_perks);
             }
+            scaleMultiplier += modifier.projectile_scale_multiply;
         }
 
         var projectile = new SpellProjectile(world, caster,
                 launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
                 SpellProjectile.Behaviour.FALL, spellEntry, context, mutablePerks);
+        projectile.setScaleMultiplier(scaleMultiplier);
 
         if (SpellEvents.PROJECTILE_FALL.isListened()) {
             SpellEvents.PROJECTILE_FALL.invoke((listener) -> listener.onProjectileLaunch(new SpellEvents.ProjectileLaunchEvent(projectile, mutableLaunchProperties, caster, target, spellEntry, context, sequenceIndex)));

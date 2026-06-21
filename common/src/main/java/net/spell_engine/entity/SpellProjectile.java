@@ -132,8 +132,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         var data = projectileData();
         if (data != null && data.hitbox != null) {
             this.hasCustomDimensions = true;
-            var width = data.hitbox.width;
-            var height = data.hitbox.height;
+            var scale = getScaleMultiplier();
+            var width = data.hitbox.width * scale;
+            var height = data.hitbox.height * scale;
             return EntityDimensions.changing(width, height);
         } else {
             return super.getDimensions(pose);
@@ -332,9 +333,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
         // 1. Determine OBB dimensions from hitbox (caller guarantees hitbox is non-null)
         var hitbox = data.hitbox;
-        float obbWidth  = hitbox.width;
-        float obbHeight = hitbox.height;
-        float obbLength = (hitbox.length > 0) ? hitbox.length : hitbox.width;
+        var scale = getScaleMultiplier();
+        float obbWidth  = hitbox.width * scale;
+        float obbHeight = hitbox.height * scale;
+        float obbLength = ((hitbox.length > 0) ? hitbox.length : hitbox.width) * scale;
         Vec3d obbCenter = this.getPos().add(this.getVelocity().normalize().multiply(obbLength));
 
         // point backward and miss targets that are clearly in the travel path.
@@ -722,6 +724,16 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     public void setBehaviour(Behaviour behaviour) {
         this.getDataTracker().set(TRACKER_BEHAVIOUR, behaviour.toString());
     }
+
+    /// Per-instance multiplier applied to the projectile's render scale and hitbox (1 = unchanged).
+    /// Accumulated from spell modifiers (e.g. charge `bonus.projectile_scale_multiply`) at launch.
+    public float getScaleMultiplier() {
+        return this.getDataTracker().get(TRACKER_SCALE);
+    }
+    public void setScaleMultiplier(float scale) {
+        this.getDataTracker().set(TRACKER_SCALE, scale);
+        this.calculateDimensions();
+    }
     public Behaviour getBehaviour() {
         var string = this.getDataTracker().get(TRACKER_BEHAVIOUR);
         if (string == null || string.isEmpty()) {
@@ -786,6 +798,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     private static String NBT_PERKS = "Perks";
     private static String NBT_IMPACT_CONTEXT = "Impact.Context";
     private static String NBT_ITEM_MODEL_ID = "Item.Model.ID";
+    private static String NBT_SCALE = "Scale";
 
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
@@ -797,6 +810,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         }
         nbt.putString(NBT_IMPACT_CONTEXT, gson.toJson(this.context));
         nbt.putString(NBT_PERKS, gson.toJson(this.perks));
+        nbt.putFloat(NBT_SCALE, getScaleMultiplier());
 
         var itemModelId = getDataTracker().get(TRACKER_ITEM_MODEL_ID);
         if (!itemModelId.isEmpty()) {
@@ -817,6 +831,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
                 this.context = gson.fromJson(nbt.getString(NBT_IMPACT_CONTEXT), SpellHelper.ImpactContext.class);
                 this.perks = gson.fromJson(nbt.getString(NBT_PERKS), Spell.ProjectileData.Perks.class);
+                if (nbt.contains(NBT_SCALE, NbtElement.FLOAT_TYPE)) {
+                    this.setScaleMultiplier(nbt.getFloat(NBT_SCALE));
+                }
 
                 if (nbt.contains(NBT_ITEM_MODEL_ID, NbtElement.STRING_TYPE)) {
                     updateItemModel(nbt.getString(NBT_ITEM_MODEL_ID));
@@ -835,18 +852,21 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         builder.add(TRACKER_BEHAVIOUR, Behaviour.FLY.toString());
         builder.add(TRACKER_TARGET_ID, 0);
         builder.add(TRACKER_ITEM_MODEL_ID, "");
+        builder.add(TRACKER_SCALE, 1F);
     }
 
     private static final TrackedData<String> TRACKER_SPELL_ID;
     private static final TrackedData<String> TRACKER_BEHAVIOUR;
     private static final TrackedData<Integer> TRACKER_TARGET_ID;
     private static final TrackedData<String> TRACKER_ITEM_MODEL_ID;
+    private static final TrackedData<Float> TRACKER_SCALE;
 
     static {
         TRACKER_SPELL_ID = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.STRING);
         TRACKER_BEHAVIOUR = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.STRING);
         TRACKER_TARGET_ID = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.INTEGER);
         TRACKER_ITEM_MODEL_ID = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.STRING);
+        TRACKER_SCALE = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.FLOAT);
     }
 
     public void onTrackedDataSet(TrackedData<?> data) {
@@ -864,6 +884,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 var id = this.getDataTracker().get(TRACKER_TARGET_ID);
                 var target = id > 0 ? this.getWorld().getEntityById(id) : null;
                 this.setFollowedTarget(target);
+            }
+            if (data.equals(TRACKER_SCALE)) {
+                this.calculateDimensions();
             }
         }
     }

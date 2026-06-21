@@ -46,7 +46,7 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
     public void render(T entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         if (entity instanceof SpellProjectile projectile && projectile.renderData() != null) {
             var renderData = projectile.renderData();
-            var rendered = render(this.scale, this.dispatcher, this.itemRenderer, renderData, projectile.previousVelocity,
+            var rendered = render(this.scale * projectile.getScaleMultiplier(), this.dispatcher, this.itemRenderer, renderData, projectile.previousVelocity,
                     entity, yaw, tickDelta, true, matrices, vertexConsumers, light);
             if (rendered) {
                 super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);

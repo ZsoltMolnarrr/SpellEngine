@@ -147,6 +147,7 @@ public class SpellModifiers {
         copy.melee_momentum_add = modifier.melee_momentum_add * r;
         copy.melee_slipperiness_add = modifier.melee_slipperiness_add * r;
         copy.melee_damage_multiplier = modifier.melee_damage_multiplier * r;
+        copy.projectile_scale_multiply = modifier.projectile_scale_multiply * r;
         copy.summon_spawn_count_add = Math.round(modifier.summon_spawn_count_add * r);
         copy.summon_group_count_add = Math.round(modifier.summon_group_count_add * r);
         // Scaled nested objects (fresh copies, so the shared template is never mutated)
