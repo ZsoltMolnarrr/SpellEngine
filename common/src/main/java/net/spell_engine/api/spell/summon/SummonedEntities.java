@@ -1,9 +1,9 @@
 package net.spell_engine.api.spell.summon;
 
-import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
+import net.spell_engine.Platform;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.entity.SummonedEntity;
 
@@ -19,7 +19,9 @@ public class SummonedEntities {
     /// config key.
     public static void registerAttributes(Identifier entityId, EntityType<? extends LivingEntity> type, SummonedEntityConfig.Entry defaults) {
         var entry = SpellEngineMod.summonedEntityConfig.value.entries.computeIfAbsent(entityId.toString(), k -> defaults);
-        FabricDefaultAttributeRegistry.register(type, SummonedEntity.createAttributes(entry).build());
+        // The actual default-attribute registration is platform-specific (kept out of `common` so it
+        // carries no loader-specific dependency): Fabric registers imperatively, NeoForge via its event.
+        Platform.util().registerSummonedEntityAttributes(type, SummonedEntity.createAttributes(entry));
         SpellEngineMod.summonedEntityConfig.save(); // persist merged-in defaults
     }
 }

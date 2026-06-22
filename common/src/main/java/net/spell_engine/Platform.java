@@ -1,6 +1,9 @@
 package net.spell_engine;
 
 import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.network.ServerPlayerEntity;
 
@@ -27,6 +30,10 @@ public class Platform {
         boolean isModLoaded(String modid);
         void awakeSlotModCompat();
         void sendVanillaPacket_S2C(ServerPlayerEntity player, Packet<?> packet);
+        /// Registers a summoned entity's default attribute container with the loader. Fabric registers
+        /// imperatively; NeoForge buffers it for its `EntityAttributeCreationEvent`. Kept here so `common`
+        /// stays free of loader-specific attribute-registration APIs.
+        void registerSummonedEntityAttributes(EntityType<? extends LivingEntity> type, DefaultAttributeContainer.Builder builder);
     }
 
     @ExpectPlatform

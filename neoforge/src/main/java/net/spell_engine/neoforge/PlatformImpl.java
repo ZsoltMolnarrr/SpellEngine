@@ -1,5 +1,8 @@
 package net.spell_engine.neoforge;
 
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.neoforged.fml.ModList;
@@ -25,6 +28,12 @@ public class PlatformImpl {
         @Override
         public void sendVanillaPacket_S2C(ServerPlayerEntity player, Packet<?> packet) {
             player.networkHandler.send(packet);
+        }
+
+        @Override
+        public void registerSummonedEntityAttributes(EntityType<? extends LivingEntity> type, DefaultAttributeContainer.Builder builder) {
+            // Buffered until EntityAttributeCreationEvent — NeoForge can't register attributes imperatively.
+            SummonedEntityAttributeRegistrar.buffer(type, builder);
         }
     }
     private static final Platform.Util UTIL = new NeoForgeUtil();

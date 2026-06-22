@@ -1,6 +1,10 @@
 package net.spell_engine.fabric;
 
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.spell_engine.Platform;
@@ -25,6 +29,12 @@ public class PlatformImpl {
         @Override
         public void sendVanillaPacket_S2C(ServerPlayerEntity player, Packet<?> packet) {
             player.networkHandler.sendPacket(packet);
+        }
+
+        @Override
+        public void registerSummonedEntityAttributes(EntityType<? extends LivingEntity> type, DefaultAttributeContainer.Builder builder) {
+            // Fabric registers default attributes imperatively — fine to call any time during init.
+            FabricDefaultAttributeRegistry.register(type, builder.build());
         }
     }
     private static final Platform.Util UTIL = new FabricUtil();

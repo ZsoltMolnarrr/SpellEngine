@@ -4,6 +4,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.SpellEngineEffects;
@@ -19,6 +20,10 @@ public final class NeoForgeMod {
         SpellEngineMod.init();
         NeoForgeCompatFeatures.init();
         modBus.addListener(RegisterEvent.class, NeoForgeMod::register);
+        // Summoned-entity default attributes are buffered by content mods during entity registration
+        // and supplied here, the only point NeoForge accepts them. Works for every mod's summons since
+        // the buffer is static and this event accepts any entity type.
+        modBus.addListener(EntityAttributeCreationEvent.class, SummonedEntityAttributeRegistrar::onCreateAttributes);
     }
 
     public static void register(RegisterEvent event) {
