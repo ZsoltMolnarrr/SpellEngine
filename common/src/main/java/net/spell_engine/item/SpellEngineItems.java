@@ -79,7 +79,7 @@ public class SpellEngineItems {
                     .toList();
             for (var scrollTag: scrollTags) {
                 scrollTag.stream()
-                        .sorted(Comparator.comparing(a -> a.getKey().get().getValue().getNamespace() + "_" + a.value().tier + "_" + a.getKey().get().getValue().getPath()))
+                        .sorted(Comparator.comparing(a -> a.getKey().get().getValue().getNamespace() + "_" + a.value().tier  + "_" + a.value().order + "_" + a.getKey().get().getValue().getPath()))
                         .forEach((entry) -> {
                             var scroll = new ItemStack(SCROLL.get());
                             ScrollItem.applySpell(scroll, entry, scrollTag.getTag());
