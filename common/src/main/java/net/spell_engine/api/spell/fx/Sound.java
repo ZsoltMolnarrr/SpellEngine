@@ -136,4 +136,11 @@ public final class Sound {
         copy.randomness = this.randomness;
         return copy;
     }
+
+    /// Returns a copy with `delta` added to the pitch.
+    public Sound shiftPitch(float delta) {
+        var copy = this.copy();
+        copy.pitch += delta;
+        return copy;
+    }
 }

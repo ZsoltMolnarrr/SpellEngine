@@ -345,7 +345,7 @@ public class SpellHelper {
                 completion = (completionArgs) -> {
                     if (!completionArgs.success()) return;
                     if (shouldSendReleaseFx) {
-                        sendReleaseFx(world, player, spellEntry);
+                        sendReleaseFx(world, player, spellEntry, finalProgress);
                         AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation, castingSpeed);
                     }
                     if (finished) {
@@ -511,12 +511,13 @@ public class SpellHelper {
         resolveAndDeliver(world, caster, spellEntry, targetResult, context,
                 (completionArgs) -> {
                     if (completionArgs.success()) {
-                        sendReleaseFx(world, caster, spellEntry);
+                        // Summons never cast CHARGE spells, so the pitch shift never applies; pass full.
+                        sendReleaseFx(world, caster, spellEntry, 1F);
                     }
                 });
     }
 
-    private static void sendReleaseFx(World world, LivingEntity caster, RegistryEntry<Spell> spellEntry) {
+    private static void sendReleaseFx(World world, LivingEntity caster, RegistryEntry<Spell> spellEntry, float progress) {
         var spell = spellEntry.value();
         ParticleHelper.sendBatches(caster, spell.release.particles);
         if (spell.release.particles_scaled_with_ranged != null) {
@@ -528,7 +529,15 @@ public class SpellHelper {
             }
             ParticleHelper.sendBatches(caster, scaledParticles);
         }
-        SoundHelper.playSound(world, caster, spell.release.sound);
+        var releaseSound = spell.release.sound;
+        // For CHARGE casts, shift the release sound's pitch by the charge ratio (`progress`).
+        if (releaseSound != null
+                && spell.release.pitch_shift != 0
+                && spell.active != null
+                && spell.active.cast.resolvedType() == Spell.Active.Cast.Type.CHARGE) {
+            releaseSound = releaseSound.shiftPitch(spell.release.pitch_shift * progress);
+        }
+        SoundHelper.playSound(world, caster, releaseSound);
         ModelEffectHelper.spawn(world, caster.getPos(), caster.getYaw(), spell.release.model_fx, caster);
         var scaledModelFx = spell.release.model_fx_scaled_with_ranged;
         if (scaledModelFx != null && !scaledModelFx.isEmpty()) {

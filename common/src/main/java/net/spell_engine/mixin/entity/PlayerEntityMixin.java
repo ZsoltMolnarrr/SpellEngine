@@ -120,8 +120,13 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         } else {
             // Server side
             if (synchronizedSpellCastProcess != null) {
+                var castSpell = synchronizedSpellCastProcess.spell().value();
+                // CHARGE spells may be held at full charge indefinitely, so they are exempt from the
+                // overrun timeout (otherwise their cast state would be cleared while still held).
+                var isCharge = castSpell.active != null
+                        && castSpell.active.cast.resolvedType() == Spell.Active.Cast.Type.CHARGE;
                 var castTicks = synchronizedSpellCastProcess.spellCastTicksSoFar(player.getWorld().getTime());
-                if (castTicks >= (synchronizedSpellCastProcess.length() * 1.5)) {
+                if (!isCharge && castTicks >= (synchronizedSpellCastProcess.length() * 1.5)) {
                     SpellCastSyncHelper.clearCasting(player);
                 }
             }

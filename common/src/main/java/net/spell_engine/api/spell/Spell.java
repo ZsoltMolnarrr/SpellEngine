@@ -271,6 +271,9 @@ public class Spell {
         public PlayerAnimation animation;
         public ParticleBatch[] particles;
         public ParticleBatch[] particles_scaled_with_ranged;
+        /// Amount added to the release `sound` pitch, scaled by the charge ratio (CHARGE casts only).
+        /// e.g. `0.5` raises the pitch by up to +0.5 at full charge.
+        public float pitch_shift = 0F;
         public Sound sound;
         public List<ModelEffect> model_fx = List.of();
         /// Model effects whose `scale` is multiplied by the spell's range on release.
