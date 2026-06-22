@@ -349,81 +349,48 @@ That's the whole class. No AI code — the behaviour drives it.
 Register like any other entity. One detail matters:
 
 ```java
-FabricEntityTypeBuilder.create(SpawnGroup.MISC, FrostElementalEntity::new)
-    .dimensions(EntityDimensions.changing(1F, 2F)) // use `changing`, not `fixed`
-    .trackRangeBlocks(64)
-    .build();
+FrostElementalEntity.TYPE = Registry.register(
+    Registries.ENTITY_TYPE,
+    FrostElementalEntity.ID,
+    EntityType.Builder.<FrostElementalEntity>create(FrostElementalEntity::new, SpawnGroup.MISC)
+        .dimensions(1F, 2F)   // yields `changing`, not `fixed` — see below
+        .maxTrackingRange(64)
+        .build()
+);
 ```
 
-Use **`EntityDimensions.changing(...)`** if the summon ever scales with size (via attribute scaling). With `fixed`, size changes are silently ignored and the melee reach won't grow with the model. Use `fixed` only for summons that never resize.
+Use **changing** dimensions if the summon ever scales with size (via attribute scaling) — the two-arg `.dimensions(w, h)` builder already yields `changing`. With `fixed`, size changes are silently ignored and the melee reach won't grow with the model. Use `fixed` only for summons that never resize.
 
 ### 3.3 Base attributes
 
-Give the entity its starting stats with `createMobAttributes` — max health, movement speed, attack damage, follow range, plus any custom spell-school attributes. The simplest version just hard-codes them:
+You don't write `createMobAttributes`, and you don't roll your own config file. SpellEngine hosts a **single, shared base-attribute config** for every summon across every content mod — `config/spell_engine/summoned_entities.json` — keyed by the **full entity id** (`namespace:path`), so entries from different mods never collide. Server owners rebalance any summon's health/speed/damage by editing that one file.
+
+Your job is just to hand the engine the **defaults** for a new summon. Build a `SummonedEntityConfig.Entry` — the four common attributes plus any custom spell-school attributes — and register it with `SummonedEntities.registerAttributes`:
 
 ```java
-public static DefaultAttributeContainer.Builder createMobAttributes() {
-    return LivingEntity.createLivingAttributes()
-        .add(EntityAttributes.GENERIC_MAX_HEALTH, 30)
-        .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.25)
-        .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, 4)
-        .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 32);
+public static SummonedEntityConfig.Entry frostDefaults() {
+    var e = new SummonedEntityConfig.Entry();
+    e.common = new SummonedEntityConfig.CommonAttributes(30, 0.25, 4); // health, speed, attack
+    e.common.follow_range = 32;
+    e.custom.add(new SummonedEntityConfig.CustomAttribute(SpellSchools.FROST.id.toString(), 1));
+    return e;
 }
 ```
 
-Attribute scaling (§2.7) adds the owner's bonuses **on top** of these base values.
-
-#### Recommended: make the stats configurable
-
-Hard-coded numbers can only be changed by recompiling. The Wizards mod instead keeps base stats in a **config file**, so server owners can rebalance health or damage by editing JSON. It uses the lightweight **tiny_config** library (`net.tiny_config`) — if you haven't used it, here's the whole pattern.
-
-**1. Define a plain data class** for the values you want to expose:
-
 ```java
-public class EntityConfig {
-    public LinkedHashMap<String, Entry> entries = new LinkedHashMap<>();
-
-    public static class Entry {
-        public CommonAttributes common = new CommonAttributes();
-        public List<CustomAttribute> custom = new ArrayList<>();
-    }
-    public static class CommonAttributes {
-        public double max_health = 20, movement_speed = 0.25, attack_damage = 2, follow_range = 32;
-    }
-    public static class CustomAttribute { public String id = ""; public double value = 0; }
-}
+SummonedEntities.registerAttributes(FrostElementalEntity.ID, FrostElementalEntity.TYPE, frostDefaults());
 ```
 
-**2. Wrap it in a `ConfigManager`** with default values. tiny_config reads the JSON from disk on `refresh()` (creating it from the defaults the first time) and exposes the loaded object as `.value`:
+What the helper does:
 
-```java
-public static ConfigManager<EntityConfig> entityConfig =
-        new ConfigManager<>("entities", WizardEntities.defaultEntityConfig())
-            .builder().setDirectory(ID).sanitize(true).build();
+- **Seeds, never overwrites.** If the config already has an entry for this id (an admin edited it), that entry wins; otherwise your defaults are inserted and the file is saved. So shipped defaults are a first-run fallback, not a hard-coded value.
+- **Builds the container** from the resolved entry (`SummonedEntity.createAttributes`) — the common attributes plus each custom spell-school attribute — and registers it for the type.
 
-// during mod init:
-entityConfig.refresh(); // loads config/wizards/entities.json (or writes defaults)
-```
+> **Why pass the `EntityType`?** Earlier the helper took only the id and looked the type up in the registry, which forced you to call it *after* the type was registered. It now takes the type you just built, so **there is no ordering requirement** — register the attributes right where you create the type (as above). The id is only used as the config key.
 
-**3. Read from the config** in `createMobAttributes`, looking the entity up by id:
+#### Custom spell-school attributes matter
 
-```java
-public static DefaultAttributeContainer.Builder createMobAttributes() {
-    var cfg = WizardsMod.entityConfig.value.entries.get(ID.getPath());
-    var builder = LivingEntity.createLivingAttributes()
-        .add(EntityAttributes.GENERIC_FOLLOW_RANGE, cfg.common.follow_range)
-        .add(EntityAttributes.GENERIC_MAX_HEALTH,   cfg.common.max_health)
-        .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, cfg.common.movement_speed)
-        .add(EntityAttributes.GENERIC_ATTACK_DAMAGE,  cfg.common.attack_damage);
-    for (var custom : cfg.custom) {
-        Registries.ATTRIBUTE.getEntry(Identifier.of(custom.id))
-            .ifPresent(entry -> builder.add(entry, custom.value));
-    }
-    return builder;
-}
-```
-
-The result is a generated `config/wizards/entities.json` with a tweakable block per summon. `sanitize(true)` keeps that file tidy by stripping unknown keys and filling in anything missing. Everything else about the entity stays the same — this only changes *where the base numbers come from*.
+A summon's spells deal damage from **its own** spell power (§4.3), so add the matching school attribute (e.g. `spell_power:frost`) in `custom`, or its spells hit for almost nothing. Attribute scaling (§2.7) then adds the owner's bonuses **on top** of these base values.
 
 ### 3.4 Binding the summon
 

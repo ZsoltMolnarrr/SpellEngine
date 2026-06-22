@@ -3,7 +3,6 @@ package net.spell_engine.api.spell.summon;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.entity.SummonedEntity;
@@ -14,17 +13,13 @@ public class SummonedEntities {
 
     /// Registers the default attribute container for a summoned entity type, sourcing its base values from
     /// the central {@link SummonedEntityConfig} (seeding `defaults` into the config if the entity has no
-    /// entry yet). Keyed by the raw entity {@link Identifier} — the {@link EntityType} is resolved from the
-    /// registry here, because it is created at a later stage and isn't available synchronously at the call
-    /// site. Call this AFTER the entity type has been registered.
-    @SuppressWarnings("unchecked")
-    public static void registerAttributes(Identifier entityId, SummonedEntityConfig.Entry defaults) {
+    /// entry yet). The caller passes the {@link EntityType} it just built, so there is no registry lookup
+    /// and no ordering requirement: register the attributes right where the type is created — the two no
+    /// longer have to happen as separately ordered steps. {@code entityId} is only used as the (stable)
+    /// config key.
+    public static void registerAttributes(Identifier entityId, EntityType<? extends LivingEntity> type, SummonedEntityConfig.Entry defaults) {
         var entry = SpellEngineMod.summonedEntityConfig.value.entries.computeIfAbsent(entityId.toString(), k -> defaults);
-        // getOrEmpty, not get: a defaulted registry returns minecraft:pig for a missing id; getOrEmpty is
-        // empty if the type isn't registered yet (then we simply skip — the caller invoked us too early).
-        Registries.ENTITY_TYPE.getOrEmpty(entityId).ifPresent(type ->
-                FabricDefaultAttributeRegistry.register((EntityType<? extends LivingEntity>) type,
-                        SummonedEntity.createAttributes(entry).build()));
+        FabricDefaultAttributeRegistry.register(type, SummonedEntity.createAttributes(entry).build());
         SpellEngineMod.summonedEntityConfig.save(); // persist merged-in defaults
     }
 }
