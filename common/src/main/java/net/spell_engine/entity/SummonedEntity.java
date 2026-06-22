@@ -12,6 +12,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.ai.goal.*;
+import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -36,6 +37,7 @@ import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.summon.AttributeScaling;
 import net.spell_engine.api.spell.summon.SpellSummoned;
 import net.spell_engine.api.spell.summon.SummonBehaviour;
+import net.spell_engine.api.spell.summon.SummonedEntityConfig;
 import net.spell_engine.entity.goal.*;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
@@ -432,6 +434,21 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         if (!behaviour.movement.is_pushable) {
             this.getAttributeInstance(EntityAttributes.GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE).addTemporaryModifier(new EntityAttributeModifier(Identifier.of("unpushable"), 9999, EntityAttributeModifier.Operation.ADD_VALUE));
         }
+    }
+
+    /// Builds the default attribute container for a summoned entity type from its config entry: the four
+    /// common attributes plus any custom (e.g. spell-power school) attributes. Shared by all summon entity
+    /// types — registered via `SummonedEntities.registerAttributes` rather than a per-entity method.
+    public static DefaultAttributeContainer.Builder createAttributes(SummonedEntityConfig.Entry entry) {
+        var builder = LivingEntity.createLivingAttributes()
+                .add(EntityAttributes.GENERIC_FOLLOW_RANGE, entry.common.follow_range)
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, entry.common.max_health)
+                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, entry.common.movement_speed)
+                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, entry.common.attack_damage);
+        for (var custom : entry.custom) {
+            Registries.ATTRIBUTE.getEntry(Identifier.of(custom.id)).ifPresent(e -> builder.add(e, custom.value));
+        }
+        return builder;
     }
 
     private void applyAttributeScaling(LivingEntity owner) {

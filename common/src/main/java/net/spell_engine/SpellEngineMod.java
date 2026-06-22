@@ -26,6 +26,7 @@ import net.spell_engine.config.FallbackConfig;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.config.ServerConfigWrapper;
 import net.spell_engine.config.WeaknessConfig;
+import net.spell_engine.api.spell.summon.SummonedEntityConfig;
 import net.tiny_config.ConfigManager;
 import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellModelEffect;
@@ -70,11 +71,21 @@ public class SpellEngineMod {
             .validate(FallbackConfig::isValid)
             .build();
 
+    // Central base-attribute config for summoned entities, shared across content mods. Starts empty;
+    // content mods seed their per-entity defaults at their own init via SummonedEntities.registerAttributes.
+    public static ConfigManager<SummonedEntityConfig> summonedEntityConfig = new ConfigManager<>
+            ("summoned_entities", new SummonedEntityConfig())
+            .builder()
+            .setDirectory(ID)
+            .sanitize(true)
+            .build();
+
     public static void init() {
         AutoConfig.register(ServerConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ServerConfigWrapper.class).getConfig().server;
         weaknessConfig.refresh();
         fallbackConfig.refresh();
+        summonedEntityConfig.refresh();
 
         DynamicRegistries.registerSynced(SpellRegistry.KEY, SpellRegistry.LOCAL_CODEC, SpellRegistry.NETWORK_CODEC_V2);
 
