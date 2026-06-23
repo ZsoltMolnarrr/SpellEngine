@@ -35,6 +35,8 @@
   "spell.tooltip.cast_instant": "Instant cast",
   "spell.tooltip.cast_time": "Cast Time: {duration} second",
   "spell.tooltip.cast_time.plural": "Cast Time: {duration} seconds",
+  "spell.tooltip.cast_charge": "Charge Time: {duration} second",
+  "spell.tooltip.cast_charge.plural": "Charge Time: {duration} seconds",
   "spell.tooltip.trigger.base": "Triggered by {trigger_list}",
   "spell.tooltip.trigger.arrow_shot": "shooting arrow",
   "spell.tooltip.trigger.arrow_impact": "hitting with arrow",

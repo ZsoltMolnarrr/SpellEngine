@@ -446,6 +446,14 @@ public class SpellTooltip {
                         lines.add(indentation(indentLevel)
                                 .append(Text.translatable("spell.tooltip.cast_instant"))
                                 .formatted(Formatting.GOLD));
+                    } else if (active.cast.resolvedType() == Spell.Active.Cast.Type.CHARGE) {
+                        // CHARGE: the duration is the time to reach full charge (releasable earlier).
+                        var chargeDuration = SpellHelper.getCastDuration(player, spell, itemStack);
+                        var chargeKey = keyWithPlural("spell.tooltip.cast_charge", chargeDuration);
+                        var chargeText = I18n.translate(chargeKey).replace(placeholder(durationToken), formattedNumber(chargeDuration));
+                        lines.add(indentation(indentLevel)
+                                .append(Text.literal(chargeText))
+                                .formatted(Formatting.GOLD));
                     } else {
                         var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
                         var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
