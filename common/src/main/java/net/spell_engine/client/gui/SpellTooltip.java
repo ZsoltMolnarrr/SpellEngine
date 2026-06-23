@@ -28,6 +28,7 @@ import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.internals.Ammo;
 import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.spellbinding.spellchoice.SpellChoices;
 import net.spell_power.api.SpellPower;
@@ -56,6 +57,9 @@ public class SpellTooltip {
     public static final String trigger_chance = "trigger_chance";
     public static final String trigger_list = "trigger_list";
     public static final String additional_placement_count = "additional_placement_count";
+    public static final String summonDurationToken = "summon_duration";
+    public static final String summonCountToken = "summon_count";
+    public static final String summonGroupCountToken = "summon_group_count";
     public static String placeholder(String token) { return "{" + token + "}"; }
 
     // Constant token-start matcher; compiling per-tooltip-frame was a needless cost.
@@ -643,6 +647,21 @@ public class SpellTooltip {
                         // if (impact.action.taunt != null) {
                         //    var taunt = impact.action.taunt;
                         // }
+                    }
+                    case SUMMON -> {
+                        var summon = impact.action.summon;
+                        if (summon != null) {
+                            var spawnCount = summon.spawn_count;
+                            var groupCount = summon.group_count;
+                            // Counts reflect the player's equipped spell modifiers (matches SpellHelper.summon).
+                            for (var modifier : SpellModifiers.of(player, spellEntry)) {
+                                spawnCount += modifier.summon_spawn_count_add;
+                                groupCount += modifier.summon_group_count_add;
+                            }
+                            addToken(summonDurationToken, formattedNumber(summon.behaviour.lifespan.active_seconds), tokenReplacements);
+                            addToken(summonCountToken, "" + Math.max(0, spawnCount), tokenReplacements);
+                            addToken(summonGroupCountToken, "" + Math.max(0, groupCount), tokenReplacements);
+                        }
                     }
                 }
             }
