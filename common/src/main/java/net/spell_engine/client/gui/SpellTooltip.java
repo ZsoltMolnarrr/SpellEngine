@@ -10,12 +10,14 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.registry.Registry;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Language;
+import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellChoice;
@@ -55,6 +57,17 @@ public class SpellTooltip {
     public static final String trigger_list = "trigger_list";
     public static final String additional_placement_count = "additional_placement_count";
     public static String placeholder(String token) { return "{" + token + "}"; }
+
+    // Constant token-start matcher; compiling per-tooltip-frame was a needless cost.
+    private static final Pattern TOKEN_PATTERN = Pattern.compile("\\{[a-z]{3}");
+
+    // DecimalFormat is expensive to construct (loads locale/symbol data) and formattedNumber
+    // is called many times per tooltip frame. Reuse one per thread (tooltips may be built off-thread).
+    private static final ThreadLocal<DecimalFormat> NUMBER_FORMAT = ThreadLocal.withInitial(() -> {
+        var formatter = new DecimalFormat();
+        formatter.setMaximumFractionDigits(1);
+        return formatter;
+    });
 
     public static void addSpellLines(ItemStack itemStack, TooltipType tooltipType, List<Text> lines) {
         var player = MinecraftClient.getInstance().player;
@@ -243,17 +256,10 @@ public class SpellTooltip {
         var spellTextLines = new ArrayList<Text>();
         int addSectionDivider = 0;
         if (world != null) {
-            spells = container.spell_ids().stream().map(idString -> {
-                var spellId = Identifier.of(idString);
-                var optionalSpellEntry = SpellRegistry.from(world).getEntry(spellId);
-                if (optionalSpellEntry.isPresent()) {
-                    return (RegistryEntry<Spell>) optionalSpellEntry.get();
-                } else {
-                    return null;
-                }
-            })
-            .filter(Objects::nonNull)
-            .toList();
+            spells = container.spell_ids().stream()
+                    .map(idString -> resolveSpell(world, idString))
+                    .filter(Objects::nonNull)
+                    .toList();
         }
 
         forceHideHeader = forceHideHeader || itemStack.isIn(SpellEngineItemTags.SPELL_BOOK_MERGEABLE);
@@ -361,11 +367,11 @@ public class SpellTooltip {
         if (world == null) {
             return List.of();
         }
-        var optionalSpellEntry = SpellRegistry.from(world).getEntry(spellId);
-        if (optionalSpellEntry.isEmpty()) {
+        var spellEntry = resolveSpell(world, spellId);
+        if (spellEntry == null) {
             return List.of();
         }
-        return spellEntry(optionalSpellEntry.get(), player, itemStack, details, indentLevel);
+        return spellEntry(spellEntry, player, itemStack, details, indentLevel);
     }
 
     public static List<Text> spellEntry(RegistryEntry<Spell> spellEntry, PlayerEntity player, ItemStack itemStack, boolean details, int indentLevel) {
@@ -425,12 +431,11 @@ public class SpellTooltip {
         if (world == null) {
             return List.of();
         }
-        var optionalSpellEntry = SpellRegistry.from(world).getEntry(spellId);
-        if (optionalSpellEntry.isEmpty()) {
+        var spellEntry = resolveSpell(world, spellId);
+        if (spellEntry == null) {
             return List.of();
         }
         var lines = new ArrayList<Text>();
-        var spellEntry = optionalSpellEntry.get();
         addSpellDescription(spellEntry, player, itemStack, true, indentLevel, lines);
         addSpellDetails(spellEntry, player, itemStack, indentLevel, lines);
         return lines;
@@ -729,9 +734,7 @@ public class SpellTooltip {
         }
 
         Set<String> tokenStarts = new HashSet<>();
-        String regex = "\\{[a-z]{3}";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(description);
+        Matcher matcher = TOKEN_PATTERN.matcher(description);
         while (matcher.find()) {
             tokenStarts.add(matcher.group().substring(1));
         }
@@ -839,9 +842,7 @@ public class SpellTooltip {
     }
 
     public static String formattedNumber(float number) {
-        DecimalFormat formatter = new DecimalFormat();
-        formatter.setMaximumFractionDigits(1);
-        return formatter.format(number);
+        return NUMBER_FORMAT.get().format(number);
     }
 
     public static String keyWithPlural(String key, float value) {
@@ -882,5 +883,33 @@ public class SpellTooltip {
 
     public static void addDescriptionMutator(Identifier spellId, DescriptionMutator handler) {
         descriptionMutators.put(spellId, handler);
+    }
+
+    // Resolved spell entries depend only on the loaded spell registry, never on the player or
+    // attributes, so they are stable until a datapack reload / registry resync swaps the
+    // Registry<Spell> instance. We compare instance identity to invalidate, which avoids an
+    // Identifier parse + registry lookup for every spell id on every tooltip render frame.
+    // Negative results are cached too (Optional.empty), so unknown ids aren't re-resolved each frame.
+    private static Registry<Spell> resolvedRegistry;
+    private static final Map<String, Optional<RegistryEntry<Spell>>> resolvedSpells = new HashMap<>();
+
+    @SuppressWarnings("unchecked")
+    private static synchronized @Nullable RegistryEntry<Spell> resolveSpell(World world, String idString) {
+        var registry = SpellRegistry.from(world);
+        if (registry != resolvedRegistry) {
+            resolvedRegistry = registry;
+            resolvedSpells.clear();
+        }
+        return resolvedSpells.computeIfAbsent(idString, key -> {
+            var id = Identifier.tryParse(key);
+            if (id == null) {
+                return Optional.empty();
+            }
+            return registry.getEntry(id).map(entry -> (RegistryEntry<Spell>) entry);
+        }).orElse(null);
+    }
+
+    private static @Nullable RegistryEntry<Spell> resolveSpell(World world, Identifier id) {
+        return resolveSpell(world, id.toString());
     }
 }
