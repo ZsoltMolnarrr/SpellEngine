@@ -33,9 +33,7 @@ public class ModelEffectBuilder {
 
     private ModelEffectBuilder(ModelEffect effect) {
         this.effect = effect;
-        this.baseScaleInjected = !effect.initial.isEmpty()
-                && "scale".equals(effect.initial.get(0).operation)
-                && effect.initial.get(0).x == -1 && effect.initial.get(0).y == -1 && effect.initial.get(0).z == -1;
+        this.baseScaleInjected = !effect.initial.isEmpty() && isBaseScale(effect.initial.get(0));
     }
 
     public static ModelEffectBuilder create(String modelId) {
@@ -63,20 +61,55 @@ public class ModelEffectBuilder {
         return this;
     }
 
-    /** Permanent translation applied every frame at full progress. */
+    /**
+     * Permanent translation applied every frame at full progress. Combines with any existing initial
+     * translate (added by an earlier call) so the list holds at most one translate transform, keeping
+     * its original position relative to other transforms. The existing transform is replaced rather
+     * than mutated, so translates shared with copied builders are never affected.
+     */
     public ModelEffectBuilder initialTranslate(float x, float y, float z) {
+        for (int i = 0; i < effect.initial.size(); i++) {
+            var existing = effect.initial.get(i);
+            if ("translate".equals(existing.operation)) {
+                effect.initial.set(i, transform("translate", existing.x + x, existing.y + y, existing.z + z));
+                return this;
+            }
+        }
         effect.initial.add(transform("translate", x, y, z));
         return this;
     }
 
-    /** Permanent scale delta applied every frame at full progress. */
+    /** Adds to the permanent initial translation along the X axis. See {@link #initialTranslate}. */
+    public ModelEffectBuilder initialTranslateX(float x) { return initialTranslate(x, 0, 0); }
+
+    /** Adds to the permanent initial translation along the Y axis. See {@link #initialTranslate}. */
+    public ModelEffectBuilder initialTranslateY(float y) { return initialTranslate(0, y, 0); }
+
+    /** Adds to the permanent initial translation along the Z axis. See {@link #initialTranslate}. */
+    public ModelEffectBuilder initialTranslateZ(float z) { return initialTranslate(0, 0, z); }
+
+    /**
+     * Permanent scale delta applied every frame at full progress. Combines with any existing initial
+     * scale delta (added by an earlier call) so the list holds at most one — apart from the internal
+     * base-scale sentinel injected by {@link #scaleIn}/{@link #scaleOut}, which is left untouched so
+     * the scale-from-zero detection keeps working. The existing transform is replaced rather than
+     * mutated, so scales shared with copied builders are never affected. Scale deltas are summed by
+     * the renderer regardless of list position, so combining is purely a tidying step.
+     */
     public ModelEffectBuilder initialScale(float x, float y, float z) {
+        for (int i = 0; i < effect.initial.size(); i++) {
+            var existing = effect.initial.get(i);
+            if ("scale".equals(existing.operation) && !isBaseScale(existing)) {
+                effect.initial.set(i, transform("scale", existing.x + x, existing.y + y, existing.z + z));
+                return this;
+            }
+        }
         effect.initial.add(transform("scale", x, y, z));
         return this;
     }
 
     public ModelEffectBuilder initialScale(float scale) {
-        return initialRotate(scale, scale, scale);
+        return initialScale(scale, scale, scale);
     }
 
     // --- Scale animations ---
@@ -231,6 +264,12 @@ public class ModelEffectBuilder {
         if (baseScaleInjected) return;
         effect.initial.add(0, transform("scale", -1, -1, -1));
         baseScaleInjected = true;
+    }
+
+    /** The scale-from-zero sentinel that {@link #ensureBaseScale} injects: a scale delta of −1 on
+     *  every axis. Combining other scale deltas into it would break {@link #baseScaleInjected} detection. */
+    private static boolean isBaseScale(ModelEffect.Transform t) {
+        return "scale".equals(t.operation) && t.x == -1 && t.y == -1 && t.z == -1;
     }
 
     private static ModelEffect.Transform transform(String op, float x, float y, float z) {
