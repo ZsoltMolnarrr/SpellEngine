@@ -160,6 +160,33 @@ public class ModelEffectBuilder {
         return this;
     }
 
+    // --- Timing adjustments ---
+
+    /**
+     * Delays the most recently added animated operation by {@code ticks}, moving its start and end
+     * together so its duration is preserved. No-op if no animations have been added yet. Initial
+     * (static) transforms are untouched — they have no time dimension.
+     */
+    public ModelEffectBuilder delayLast(int ticks) {
+        int last = effect.animations.size() - 1;
+        if (last >= 0) {
+            effect.animations.set(last, shifted(effect.animations.get(last), ticks));
+        }
+        return this;
+    }
+
+    /**
+     * Delays every animated operation by {@code ticks}, moving each start and end together so all
+     * durations are preserved. Initial (static) transforms are untouched. Note this can push
+     * animations past {@link #duration}; extend the duration separately if needed.
+     */
+    public ModelEffectBuilder delayAll(int ticks) {
+        for (int i = 0; i < effect.animations.size(); i++) {
+            effect.animations.set(i, shifted(effect.animations.get(i), ticks));
+        }
+        return this;
+    }
+
     // --- Build ---
 
     /** Returns the {@link ModelEffect} being built. */
@@ -221,6 +248,40 @@ public class ModelEffectBuilder {
                     .duration(duration)
                     .orbit(radius, totalAngle, 0, duration, easing)
                     .spreadBuild(count);
+        }
+
+        /**
+         * Applies a "spike" eruption to an existing model builder: the model rises from below ground
+         * to full height, holds there, then retracts back underground. Returns the same
+         * {@link ModelEffectBuilder} (not yet built) so callers can chain further transforms — rotation,
+         * {@link ModelEffectBuilder#delayAll}, etc. — before {@code build()}.
+         *
+         * <p>Timeline (ticks): rise over [0, riseTime] → hold over [riseTime, riseTime + upTime] → sink
+         * over [riseTime + upTime, 2*riseTime + upTime]. Full height is reached exactly at
+         * {@code riseTime}. The model rests {@code buryDepth} blocks underground so it is hidden before
+         * and after. When {@code withScale} is set, it also scales up with the rise and back down with
+         * the sink, on the same windows. The rise eases out elastic (punchy, springs at the top); the
+         * sink eases in elastic.</p>
+         *
+         * @param builder   a builder with its model and light emission already configured
+         * @param riseTime  ticks to rise to full height; the retract mirrors it
+         * @param upTime    ticks held at full height before retracting
+         * @param withScale also scale the model in with the rise and out with the sink
+         * @param buryDepth blocks the model rests underground at rest, so it stays hidden
+         */
+        public static ModelEffectBuilder spike(ModelEffectBuilder builder, int riseTime, int upTime,
+                                                boolean withScale, float buryDepth) {
+            int sinkStart = riseTime + upTime;
+            int end = sinkStart + riseTime;
+            builder.duration(end)
+                    .initialTranslate(0, -buryDepth, 0)
+                    .translate(0, buryDepth, 0, 0, riseTime, ModelEffect.Easing.EASE_OUT_ELASTIC)
+                    .translate(0, -buryDepth, 0, sinkStart, end, ModelEffect.Easing.EASE_IN_ELASTIC);
+            if (withScale) {
+                builder.scaleIn(0, riseTime, ModelEffect.Easing.EASE_OUT_ELASTIC)
+                        .scaleOut(sinkStart, end, ModelEffect.Easing.EASE_IN_ELASTIC);
+            }
+            return builder;
         }
     }
 
@@ -284,5 +345,11 @@ public class ModelEffectBuilder {
         a.operation = op; a.x = x; a.y = y; a.z = z;
         a.start = start; a.end = end; a.easing = easing;
         return a;
+    }
+
+    /** A copy of {@code a} with its window shifted later by {@code ticks}. Replacing rather than
+     *  mutating keeps animations shared with copied builders ({@link #deepCopy}) unaffected. */
+    private static ModelEffect.Animation shifted(ModelEffect.Animation a, int ticks) {
+        return anim(a.operation, a.x, a.y, a.z, a.start + ticks, a.end + ticks, a.easing);
     }
 }
