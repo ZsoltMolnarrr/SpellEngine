@@ -427,7 +427,73 @@ public class SpellTooltip {
             lines.add(indentation(indentLevel)
                     .append(Text.translatable(description))
                     .formatted(color));
+            addSummonCapabilities(spell, color, indentLevel, lines);
         }
+    }
+
+    /// Appends one "Capabilities: ..." line per SUMMON impact, listing what each summoned entity can
+    /// do (the spells it casts and whether it melees), built by simple concatenation rather than token
+    /// replacement. Multiple summon impacts simply produce multiple lines.
+    private static void addSummonCapabilities(Spell spell, Formatting color, int indentLevel, ArrayList<Text> lines) {
+        ArrayList<Spell.Impact> impacts = new ArrayList<>();
+        if (spell.impacts != null) {
+            impacts.addAll(spell.impacts);
+        }
+        if (spell.modifiers != null) {
+            for (var modifier : spell.modifiers) {
+                impacts.addAll(modifier.impacts);
+            }
+        }
+        for (var impact : impacts) {
+            if (impact.action == null || impact.action.type != Spell.Impact.Action.Type.SUMMON) {
+                continue;
+            }
+            var summon = impact.action.summon;
+            if (summon == null) {
+                continue;
+            }
+            var capabilities = summonCapabilities(summon);
+            if (capabilities.isEmpty()) {
+                continue;
+            }
+            var line = I18n.translate("spell.tooltip.summon.capabilities") + " " + String.join(", ", capabilities);
+            lines.add(indentation(indentLevel)
+                    .append(Text.literal(line))
+                    .formatted(color));
+        }
+    }
+
+    /// Translated capability names for a single summon: each spell it casts (by spell name) plus a
+    /// single "Melee Attacks" entry if it has any melee attack action, in behaviour-declaration order.
+    private static List<String> summonCapabilities(Spell.Impact.Action.Summon summon) {
+        var names = new ArrayList<String>();
+        var behaviour = summon.behaviour;
+        if (behaviour == null) {
+            return names;
+        }
+        boolean meleeListed = false;
+        for (var entry : behaviour.actions) {
+            if (entry == null || entry.type == null) {
+                continue;
+            }
+            switch (entry.type) {
+                case SPELL_CAST -> {
+                    if (entry.spell_cast != null && entry.spell_cast.spell_id != null && !entry.spell_cast.spell_id.isBlank()) {
+                        var id = Identifier.tryParse(entry.spell_cast.spell_id);
+                        if (id != null) {
+                            names.add(I18n.translate(spellTranslationKey(id)));
+                        }
+                    }
+                }
+                case MELEE_ATTACK -> {
+                    if (!meleeListed) {
+                        names.add(I18n.translate("spell.tooltip.summon.melee"));
+                        meleeListed = true;
+                    }
+                }
+            }
+        }
+        return names;
     }
 
     public static List<Text> spellDescriptionWithDetails(Identifier spellId, PlayerEntity player, ItemStack itemStack, int indentLevel) {

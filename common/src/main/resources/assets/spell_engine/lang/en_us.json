@@ -31,6 +31,8 @@
   "spell.tooltip.container.list.archery": "Skills:",
   "spell.tooltip.container.list.passives": "Passives:",
   "spell.tooltip.container.list.modifiers": "Modifiers:",
+  "spell.tooltip.summon.capabilities": "Capabilities:",
+  "spell.tooltip.summon.melee": "Melee Attacks",
   "spell.tooltip.container.limit": "({current}/{max})",
   "spell.tooltip.cast_instant": "Instant cast",
   "spell.tooltip.cast_time": "Cast Time: {duration} second",
