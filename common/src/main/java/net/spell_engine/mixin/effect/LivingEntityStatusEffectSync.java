@@ -128,14 +128,31 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
             if (((Synchronized)effect).shouldSynchronize()) {
                 int id = Registries.STATUS_EFFECT.getRawId(effect);
                 int amplifier = entry.getValue().getAmplifier();
+                int appliedAtAge = SpellEngine_appliedAtAgeFor(effect);
                 if (i > 0) {
                     builder.append("-");
                 }
-                builder.append(id).append(":").append(amplifier);
+                builder.append(id).append(":").append(amplifier).append(":").append(appliedAtAge);
                 i += 1;
             }
         }
         return builder.toString();
+    }
+
+    /**
+     * Resolves the age at which the given effect was first applied, so it survives re-encoding.
+     * For an effect already known (present in the synced list), its original applied age is reused;
+     * a freshly applied effect uses the entity's current age. This keeps `appliedAtAge` authoritative
+     * on the encoding side instead of being re-derived after decode.
+     */
+    @Unique
+    private int SpellEngine_appliedAtAgeFor(StatusEffect effect) {
+        for (var synced : SpellEngine_syncedStatusEffects) {
+            if (synced.effect() == effect) {
+                return synced.appliedAtAge();
+            }
+        }
+        return this.age;
     }
 
     @Unique
@@ -144,15 +161,15 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
         var effects = new ArrayList<Synchronized.Effect>();
         for (var effect : string.split("-")) {
             var components = effect.split(":");
-            if (components.length != 2) {
+            if (components.length != 3) {
                 continue;
             }
             int rawId = Integer.valueOf(components[0]);
             int amplifier = Integer.valueOf(components[1]);
+            int appliedAtAge = Integer.valueOf(components[2]);
             var statusEffect = Registries.STATUS_EFFECT.get(rawId);
-            var age = this.age;
             if (statusEffect != null) {
-                effects.add(new Synchronized.Effect(statusEffect, amplifier, age));
+                effects.add(new Synchronized.Effect(statusEffect, amplifier, appliedAtAge));
             }
         }
         return effects;
