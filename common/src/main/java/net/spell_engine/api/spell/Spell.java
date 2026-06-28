@@ -452,7 +452,12 @@ public class Spell {
         public static class Cloud { public Cloud() { }
             // Custom entity type id to spawn, must be a subclass of `SpellCloud`
             @Nullable public String entity_type_id;
+            /// Ticks of spawn warm-up before the cloud turns active (no impacts; scales in).
+            public int spawn_ticks = 0;
+            /// Ticks of despawn wind-down after the active period (no impacts; scales out).
+            public int despawn_ticks = 0;
             public AreaImpact volume = new AreaImpact();
+            /// Active-phase duration (when impacts fire). Total life = spawn_ticks + this*20 + despawn_ticks.
             public float time_to_live_seconds = 0;
 
             /// The number of ticks between looking for targets and trying to apply impact

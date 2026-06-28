@@ -28,14 +28,31 @@ public class SpellCloud extends Entity implements Ownable {
     @Nullable
     private UUID ownerUuid;
     private int timeToLive;
+    // Lifecycle phase durations (ticks), mirroring SummonedEntity. Stored as durations rather than
+    // absolute age points so they survive an NBT round-trip regardless of the entity's age:
+    //   [0, spawnDuration)                   -> SPAWNING   (warm-up, no impacts)
+    //   [spawnDuration, ttl - despawnDur)    -> ACTIVE     (impacts performed)
+    //   [ttl - despawnDuration, timeToLive)  -> DESPAWNING (wind-down, no impacts)
+    private int spawnDuration = 0;
+    private int despawnDuration = 0;
     private int impactsPerformed = 0;
     private int impactCap = 0;
     private Identifier spellId;
     private int dataIndex = 0;
     private SpellHelper.ImpactContext context;
 
+    // MARK: Lifecycle phases
+
+    public static final byte PHASE_SPAWNING   = 0;
+    public static final byte PHASE_ACTIVE     = 1;
+    public static final byte PHASE_DESPAWNING = 2;
+
     public SpellCloud(EntityType<? extends SpellCloud> entityType, World world) {
         super(entityType, world);
+        // Eagerly start the spawn animation so the first render frame already has its t=0 keyframes
+        // (e.g. scale 0), avoiding a one-frame flash at full size before setupAnimationStates() runs.
+        // Harmless when there's no spawning phase: the first client tick stops it via setRunning(false).
+        spawnAnimationState.startIfNotRunning(0);
     }
 
     public SpellCloud(World world) {
@@ -61,8 +78,61 @@ public class SpellCloud extends Entity implements Ownable {
         this.getDataTracker().set(DATA_INDEX_TRACKER, this.dataIndex);
         this.getDataTracker().set(RADIUS_TRACKER, calculateRadius());
 
-        this.timeToLive = (int) (time_to_live_seconds * 20);
+        // Carve the lifetime into spawning / active / despawning, like a summoned entity.
+        // `time_to_live_seconds` is the ACTIVE duration; spawn/despawn bracket it.
+        this.spawnDuration   = cloudData.spawn_ticks;
+        this.despawnDuration = cloudData.despawn_ticks;
+        int activeTicks      = (int) (time_to_live_seconds * 20);
+        this.timeToLive      = this.spawnDuration + activeTicks + this.despawnDuration;
         this.impactCap = cloudData.impact_cap;
+    }
+
+    // MARK: Phase accessors
+
+    public boolean isSpawning()   { return getDataTracker().get(PHASE_TRACKER) == PHASE_SPAWNING; }
+    public boolean isActive()     { return getDataTracker().get(PHASE_TRACKER) == PHASE_ACTIVE; }
+    public boolean isDespawning() { return getDataTracker().get(PHASE_TRACKER) == PHASE_DESPAWNING; }
+
+    /// Server-side: publishes the current phase and the absolute age at which it ends, so the client
+    /// can drive the spawn/despawn scale without knowing the raw boundary fields (mirrors SummonedEntity).
+    private void setPhase(byte phase) {
+        if (getDataTracker().get(PHASE_TRACKER) != phase) {
+            getDataTracker().set(PHASE_TRACKER, phase);
+        }
+        int endOfPhaseAge = switch (phase) {
+            case PHASE_SPAWNING   -> spawnDuration;
+            case PHASE_ACTIVE     -> timeToLive - despawnDuration;
+            case PHASE_DESPAWNING -> timeToLive;
+            default               -> 0;
+        };
+        getDataTracker().set(END_OF_PHASE_AGE, endOfPhaseAge);
+    }
+
+    // MARK: Animation states
+    // Exposed for renderers that want to animate the lifecycle — e.g. scale-in across the spawning
+    // phase and scale-out across the despawning phase. Driven client-side each tick from the synced
+    // phase, mirroring SummonedEntity. A renderer reads `getTimeRunning()` / `getTimeInMilliseconds()`
+    // off the relevant state to map duration progress onto a keyframed animation.
+
+    public final AnimationState spawnAnimationState   = new AnimationState();
+    // Runs throughout the ACTIVE phase. Named `idle` (not `active`) to match the summon-model
+    // convention (see FrostElementalModel), so a cloud model can drive it the same way.
+    public final AnimationState idleAnimationState    = new AnimationState();
+    public final AnimationState despawnAnimationState = new AnimationState();
+
+    /// Client-side: keeps the three lifecycle animation states in sync with the current phase.
+    private void setupAnimationStates() {
+        spawnAnimationState.setRunning(isSpawning(), this.age);
+        boolean despawning = isDespawning();
+        if (despawning && !despawnAnimationState.isRunning()) {
+            // END_OF_PHASE_AGE = timeToLive during DESPAWNING (a future absolute age). Starting the
+            // state there makes getTimeRunning() begin negative, so a renderer can play the spawn clip
+            // at speedMultiplier=-1F to scale back out as despawn completes (same trick as SummonedEntity).
+            despawnAnimationState.start(getDataTracker().get(END_OF_PHASE_AGE));
+        } else if (!despawning) {
+            despawnAnimationState.stop();
+        }
+        idleAnimationState.setRunning(isActive(), this.age);
     }
 
     private float calculateRadius() {
@@ -113,12 +183,16 @@ public class SpellCloud extends Entity implements Ownable {
     private static final TrackedData<String> SPELL_ID_TRACKER  = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.STRING);
     private static final TrackedData<Integer> DATA_INDEX_TRACKER = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Float> RADIUS_TRACKER = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.FLOAT);
+    private static final TrackedData<Byte> PHASE_TRACKER = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.BYTE);
+    private static final TrackedData<Integer> END_OF_PHASE_AGE = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.INTEGER);
 
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {
         builder.add(SPELL_ID_TRACKER, "");
         builder.add(DATA_INDEX_TRACKER, this.dataIndex);
         builder.add(RADIUS_TRACKER, 0F);
+        builder.add(PHASE_TRACKER, PHASE_SPAWNING);
+        builder.add(END_OF_PHASE_AGE, 0);
     }
 
     public void onTrackedDataSet(TrackedData<?> data) {
@@ -138,6 +212,8 @@ public class SpellCloud extends Entity implements Ownable {
     private enum NBTKey {
         AGE("Age"),
         TIME_TO_LIVE("TTL"),
+        SPAWN_DURATION("SpawnDuration"),
+        DESPAWN_DURATION("DespawnDuration"),
         SPELL_ID("SpellId"),
         DATA_INDEX("DataIndex")
         ;
@@ -152,6 +228,8 @@ public class SpellCloud extends Entity implements Ownable {
     protected void readCustomDataFromNbt(NbtCompound nbt) {
         this.age = nbt.getInt(NBTKey.AGE.key);
         this.timeToLive = nbt.getInt(NBTKey.TIME_TO_LIVE.key);
+        this.spawnDuration = nbt.getInt(NBTKey.SPAWN_DURATION.key);
+        this.despawnDuration = nbt.getInt(NBTKey.DESPAWN_DURATION.key);
         this.spellId = Identifier.of(nbt.getString(NBTKey.SPELL_ID.key));
         this.dataIndex = nbt.getInt(NBTKey.DATA_INDEX.key);
     }
@@ -160,6 +238,8 @@ public class SpellCloud extends Entity implements Ownable {
     protected void writeCustomDataToNbt(NbtCompound nbt) {
         nbt.putInt(NBTKey.AGE.key, this.age);
         nbt.putInt(NBTKey.TIME_TO_LIVE.key, this.timeToLive);
+        nbt.putInt(NBTKey.SPAWN_DURATION.key, this.spawnDuration);
+        nbt.putInt(NBTKey.DESPAWN_DURATION.key, this.despawnDuration);
         nbt.putString(NBTKey.SPELL_ID.key, this.spellId.toString());
         nbt.putInt(NBTKey.DATA_INDEX.key, this.dataIndex);
     }
@@ -182,6 +262,7 @@ public class SpellCloud extends Entity implements Ownable {
         var world = this.getWorld();
         if (world.isClient) {
             // Client side tick
+            setupAnimationStates();
             var clientData = cloudData.client_data;
             var spawnParticles = clientData.particle_spawn_interval <= 1 || (this.age % clientData.particle_spawn_interval) == 0;
             if (spawnParticles) {
@@ -213,7 +294,18 @@ public class SpellCloud extends Entity implements Ownable {
                 this.discard();
                 return;
             }
-            if ((this.age % cloudData.impact_tick_interval) == 0) {
+            // Advance the lifecycle phase. Impacts are only performed while ACTIVE — the
+            // spawning and despawning phases are warm-up / wind-down, matching SummonedEntity.
+            byte phase;
+            if (this.age < spawnDuration) {
+                phase = PHASE_SPAWNING;
+            } else if (this.age >= timeToLive - despawnDuration) {
+                phase = PHASE_DESPAWNING;
+            } else {
+                phase = PHASE_ACTIVE;
+            }
+            setPhase(phase);
+            if (phase == PHASE_ACTIVE && (this.age % cloudData.impact_tick_interval) == 0) {
                 // Impact tick due
                 var area_impact = cloudData.volume;
                 var owner = (LivingEntity) this.getOwner();
