@@ -482,7 +482,12 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
 
         // --- Goal selector ---
 
-        goalSelector.add(0, new SwimGoal(this));
+        // SwimGoal keeps the entity afloat by bobbing it to the surface (and flips the navigation
+        // to swim-capable). A summon that cannot move must stay put — including in water — so only
+        // install it when movement is enabled. Otherwise a stationary summon would drift upward.
+        if (behaviour.movement.can_move) {
+            goalSelector.add(0, new SwimGoal(this));
+        }
         goalSelector.add(1, new PhaseBlockGoal(this));
         // Teleport is intentionally ordered above action goals so it preempts an in-progress
         // melee swing or spell cast. Walk-follow stays below them (added later, priority
