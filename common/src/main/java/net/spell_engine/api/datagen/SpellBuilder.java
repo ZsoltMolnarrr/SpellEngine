@@ -396,6 +396,41 @@ public class SpellBuilder {
             return ray(count, spacing, spacing, 0F, template());
         }
 
+        /// SPATIAL: a `rows` x `columns` grid of placements centered on the caster — `rows` rows
+        /// stacked along the forward axis `rowSpacing` blocks apart, each holding `columns` slots
+        /// along the left-right axis `columnSpacing` blocks apart. The whole block is symmetric about
+        /// the caster (an exact centre slot when both counts are odd), so the front half sits ahead of
+        /// the caster and the back half behind. Filled front row first (nearest the caster's facing),
+        /// left to right within each row — so pairing with {@link #delayCascade} sweeps the grid from
+        /// front to back. Total slots = `rows * columns`. Each slot clones `template`.
+        public static List<Spell.EntityPlacement> squareGrid(int rows, float rowSpacing, int columns, float columnSpacing, Spell.EntityPlacement template) {
+            var list = new ArrayList<Spell.EntityPlacement>();
+            if (rows <= 0 || columns <= 0) return list;
+            for (int r = 0; r < rows; r++) {
+                // Forward position of this row: r = 0 is the frontmost row, increasing r steps backward.
+                float forward = ((rows - 1) / 2F - r) * rowSpacing;
+                for (int c = 0; c < columns; c++) {
+                    // Side position of this column: negative = left, positive = right, centered.
+                    float side = (c - (columns - 1) / 2F) * columnSpacing;
+                    var placement = template.copy();
+                    // Resolve the (forward, side) vector into a single look-offset: radial distance
+                    // from the caster and yaw rotated from its facing.
+                    placement.location_offset_by_look = (float) Math.hypot(forward, side);
+                    placement.location_yaw_offset = (float) Math.toDegrees(Math.atan2(side, forward));
+                    list.add(placement);
+                }
+            }
+            return list;
+        }
+        public static List<Spell.EntityPlacement> squareGrid(int rows, float rowSpacing, int columns, float columnSpacing) {
+            return squareGrid(rows, rowSpacing, columns, columnSpacing, template());
+        }
+        /// A uniform `size` x `size` grid, `spacing` blocks apart on both axes. See
+        /// {@link #squareGrid(int, float, int, float, Spell.EntityPlacement)}.
+        public static List<Spell.EntityPlacement> squareGrid(int size, float spacing) {
+            return squareGrid(size, spacing, size, spacing, template());
+        }
+
         /// TIMING: cascades spawn delays in place so the slots spawn in sequence — the placement at
         /// index `i` gets `i * stepTicks` added to its `delay_ticks`, producing a marching-wave effect.
         /// Returns the same list for chaining.
