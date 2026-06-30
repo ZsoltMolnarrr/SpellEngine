@@ -5,6 +5,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.particle.*;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
+import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.util.math.random.Random;
 import net.spell_engine.fx.SpellEngineParticles;
 import org.jetbrains.annotations.Nullable;
@@ -154,6 +155,24 @@ public class SpellUniversalParticle extends SpriteBillboardParticle  {
             float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
             particle.setColor(particle.red * j, particle.green * j, particle.blue * j);
 
+            return particle;
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static class Opaque implements ParticleFactory<SimpleParticleType> {
+        private final SpriteProvider spriteProvider;
+        private final SpellEngineParticles.MagicParticles.Motion motion;
+
+        public Opaque(SpriteProvider spriteProvider, SpellEngineParticles.MagicParticles.Motion motion) {
+            this.spriteProvider = spriteProvider;
+            this.motion = motion;
+        }
+
+        public Particle createParticle(SimpleParticleType SimpleParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
+            var particle = new SpellUniversalParticle(clientWorld, this.spriteProvider, motion, d, e, f, g, h, i);
+            float j = clientWorld.random.nextFloat() * 0.25F + 0.7F;
+            particle.setColor(j, j, j);
             return particle;
         }
     }
