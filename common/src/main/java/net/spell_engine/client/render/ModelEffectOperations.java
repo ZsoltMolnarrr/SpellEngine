@@ -41,12 +41,11 @@ public class ModelEffectOperations {
         });
     }
 
-    /// Applies transforms and renders a single ModelEffect.
-    /// `age` is the elapsed time in ticks (with tick delta) used to evaluate animations.
-    public static void renderEffect(ModelEffect effect, float age, MatrixStack matrixStack,
-                                    ItemRenderer itemRenderer, VertexConsumerProvider vertexConsumers, int light, int entityId) {
-        matrixStack.push();
-
+    /// Applies a ModelEffect's transform stack (initial + animated transforms + base scale) onto the
+    /// matrices. Does NOT push/pop, does NOT apply `positioning`, and does NOT draw — callers handle
+    /// those. Shared by `renderEffect` and the projectile composite renderer so both drive animation
+    /// through identical logic. `age` is elapsed time in ticks (with tick delta).
+    public static void applyTransforms(MatrixStack matrixStack, ModelEffect effect, float age) {
         // Scale deltas accumulated additively and applied as a single call,
         // because MatrixStack.scale() composes multiplicatively — chaining scale(0)*scale(s) = 0 forever.
         float sx = 0, sy = 0, sz = 0;
@@ -77,6 +76,14 @@ public class ModelEffectOperations {
 
         // Apply base scale + accumulated deltas
         matrixStack.scale(effect.scale * (1 + sx), effect.scale * (1 + sy), effect.scale * (1 + sz));
+    }
+
+    /// Applies transforms and renders a single ModelEffect.
+    /// `age` is the elapsed time in ticks (with tick delta) used to evaluate animations.
+    public static void renderEffect(ModelEffect effect, float age, MatrixStack matrixStack,
+                                    ItemRenderer itemRenderer, VertexConsumerProvider vertexConsumers, int light, int entityId) {
+        matrixStack.push();
+        applyTransforms(matrixStack, effect, age);
 
         // Render model
         var modelId = Identifier.of(effect.model_id);

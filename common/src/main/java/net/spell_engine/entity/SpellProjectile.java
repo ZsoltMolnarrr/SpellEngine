@@ -84,6 +84,11 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 setItemStackModel(caster.getMainHandStack());
             }
         }
+        // New multi-model path: capture the held item once if any composite model wants it.
+        if (projectileData.client_data != null && projectileData.client_data.models != null
+                && projectileData.client_data.models.models.stream().anyMatch(m -> m.use_held_item)) {
+            setItemStackModel(caster.getMainHandStack());
+        }
     }
 
     /**
@@ -690,6 +695,21 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             return data.client_data.model;
         }
         return null;
+    }
+
+    /// New multi-model render data; null when the projectile uses the legacy single model.
+    public Spell.ProjectileModelComposite renderModels() {
+        var data = projectileData();
+        if (data != null && data.client_data != null) {
+            return data.client_data.models;
+        }
+        return null;
+    }
+
+    /// Synced registry id of the caster's captured held item (empty when none). Used by the
+    /// composite renderer for models with `use_held_item`.
+    public String heldItemModelId() {
+        return this.getDataTracker().get(TRACKER_ITEM_MODEL_ID);
     }
 
     @Override

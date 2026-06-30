@@ -8,6 +8,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
 import net.spell_engine.api.render.CustomModels;
+import net.spell_engine.api.spell.Spell;
 import net.spell_engine.entity.SpellCloud;
 
 public class SpellCloudRenderer<T extends SpellCloud> extends EntityRenderer<T> {
@@ -30,7 +31,42 @@ public class SpellCloudRenderer<T extends SpellCloud> extends EntityRenderer<T> 
         if (data == null) {
             return;
         }
-        var renderData = data.client_data.model;
+        var clientData = data.client_data;
+        if (!clientData.model_fx.isEmpty()) {
+            renderModelFx(entity, clientData, tickDelta, matrixStack, vertexConsumers, light); // new path
+        } else {
+            renderLegacyModel(entity, clientData, tickDelta, matrixStack, vertexConsumers, light); // legacy path
+        }
+    }
+
+    /// New multi-model path: each model animated through the modelFX system, under the shared
+    /// cloud-root transform. Animation time is the cloud's age (lines up with its lifecycle phases).
+    private void renderModelFx(T entity, Spell.Delivery.Cloud.ClientData clientData, float tickDelta,
+                               MatrixStack matrixStack, VertexConsumerProvider vertexConsumers, int light) {
+        matrixStack.push();
+        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-1F * entity.getYaw() + 180F));
+        matrixStack.translate(0, 0.5, 0); // Compensate for translate within CustomModels.render
+
+        float age = entity.age + tickDelta;
+        for (var effect : clientData.model_fx) {
+            if (effect == null || effect.model_id == null || effect.model_id.isEmpty()) {
+                continue;
+            }
+            matrixStack.push();
+            if (effect.positioning != null && effect.positioning.vertical != 0) {
+                matrixStack.translate(0, effect.positioning.vertical * entity.getHeight(), 0);
+            }
+            ModelEffectOperations.renderEffect(effect, age, matrixStack, itemRenderer, vertexConsumers, light, entity.getId());
+            matrixStack.pop();
+        }
+
+        matrixStack.pop();
+    }
+
+    @SuppressWarnings("removal") // legacy single-model path; delete together with ProjectileModel
+    private void renderLegacyModel(T entity, Spell.Delivery.Cloud.ClientData clientData, float tickDelta,
+                                   MatrixStack matrixStack, VertexConsumerProvider vertexConsumers, int light) {
+        var renderData = clientData.model;
         if (renderData == null) {
             return;
         }

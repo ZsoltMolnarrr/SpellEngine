@@ -152,7 +152,7 @@ public class SpellEngineClient {
         ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.weakness_smoke.particleType(), SpellFlameParticle.WeaknessSmokeFactory::new);
 
         ParticleFactoryRegistry.getInstance().register(
-                SpellEngineParticles.shield_small.particleType(), (provider) -> new UniversalSpellParticle.Opaque(provider, SpellEngineParticles.MagicParticleFamily.Motion.DECELERATE)
+                SpellEngineParticles.shield_small.particleType(), (provider) -> new SpellUniversalParticle.Opaque(provider, SpellEngineParticles.MagicParticles.Motion.DECELERATE)
         );
 
         ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.dripping_blood.particleType(), SpellSnowflakeParticle.DrippingBloodFactory::new);

@@ -481,7 +481,12 @@ public class Spell {
                 /// Particles to be spawned at the interval of `particle_spawn_interval`
                 /// Useful for ground particles with fixed animation duration
                 public ParticleBatch[] interval_particles = new ParticleBatch[]{};
+                /// Legacy single cloud model. Superseded by `model_fx`.
+                @Deprecated(forRemoval = true)
                 public ProjectileModel model;
+                /// Animatable cloud models, each driven by the modelFX system. When non-empty,
+                /// supersedes `model`.
+                public List<ModelEffect> model_fx = List.of();
             }
             public Cloud.Spawn spawn = new Cloud.Spawn();
             public static class Spawn {
@@ -833,7 +838,11 @@ public class Spell {
         public ParticleBatch[] travel_particles = new ParticleBatch[]{};
         public ParticleBatch[] launch_particles = new ParticleBatch[]{};
         @Nullable public Sound launch_sound;
+        /// Legacy single override model. Superseded by `override_render_models`.
+        @Deprecated(forRemoval = true)
         @Nullable public ProjectileModel override_render;
+        /// Multi-model successor to `override_render`. When present and non-empty, supersedes it.
+        @Nullable public ProjectileModelComposite override_render_models;
     }
 
     /// Applied to the caster, once the spell casting process finishes
@@ -1134,10 +1143,18 @@ public class Spell {
             /// 10 - soul torch
             public int light_level = 0;
             public ParticleBatch[] travel_particles = new ParticleBatch[]{};
+            /// Legacy single projectile model. Superseded by `models`.
+            @Deprecated(forRemoval = true)
             public ProjectileModel model;
+            /// Multi-model successor to `model`. When present and non-empty, supersedes `model`.
+            public ProjectileModelComposite models;
         }
     }
 
+    /// Legacy single-model projectile/cloud visual. Superseded by {@link ProjectileModelComposite}
+    /// (projectiles) and a `List<ModelEffect>` (clouds); slated for removal once both legacy render
+    /// paths are gone.
+    @Deprecated(forRemoval = true)
     public static class ProjectileModel { public ProjectileModel() { }
         public boolean use_held_item = false;
         public String model_id;
@@ -1146,6 +1163,36 @@ public class Spell {
         public float rotate_degrees_per_tick = 2F;
         public float rotate_degrees_offset = 0;
         public Orientation orientation = Orientation.TOWARDS_MOTION;
+        public enum Orientation {
+            TOWARDS_CAMERA, TOWARDS_MOTION, ALONG_MOTION
+        }
+    }
+
+    /// Multi-model successor to {@link ProjectileModel}: a projectile can render several models,
+    /// each animatable via the modelFX system ({@link ModelEffect}). Self-contained on purpose
+    /// (its own {@link Orientation}) so the legacy {@link ProjectileModel} can be removed without
+    /// touching this. When a projectile's composite is present and non-empty, it supersedes the
+    /// legacy single model.
+    public static class ProjectileModelComposite { public ProjectileModelComposite() { }
+        public List<Model> models = List.of();
+
+        public static class Model { public Model() { }
+            /// Facing relative to the projectile's travel.
+            public Orientation orientation = Orientation.TOWARDS_MOTION;
+            /// Continuous spin about the view/motion axis (degrees per tick) plus a static offset.
+            public float rotate_degrees_per_tick = 0F;
+            public float rotate_degrees_offset = 0F;
+            /// Render the caster's held-item id as this model's source instead of `fx.model_id`.
+            public boolean use_held_item = false;
+            /// The animatable model, driven by the modelFX system: `model_id`, `light_emission`,
+            /// `scale`, `positioning`, and the `initial`/`animations` transforms.
+            /// `fx.duration` and `fx.follow_entity` are unused in projectile context (animation time
+            /// is the projectile's age; the model is rendered on the projectile itself).
+            public ModelEffect fx = new ModelEffect();
+        }
+
+        /// Duplicated from {@link ProjectileModel.Orientation} on purpose, to keep this type
+        /// independent of the legacy one.
         public enum Orientation {
             TOWARDS_CAMERA, TOWARDS_MOTION, ALONG_MOTION
         }
