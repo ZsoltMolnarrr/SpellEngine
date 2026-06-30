@@ -91,50 +91,6 @@ public class SpellEngineParticles {
         return entry;
     }
 
-
-    public static final List<MagicParticleFamily> MAGIC_FAMILIES = new ArrayList<>();
-    public static MagicParticleFamily addMagicFamily(MagicParticleFamily family) {
-        MAGIC_FAMILIES.add(family);
-        return family;
-    }
-    public record MagicParticleFamily(String name, Color color) {
-        public enum Shape { SPELL, IMPACT, SPARK, STRIPE }
-        public enum Motion { FLOAT, ASCEND, DECELERATE, BURST }
-        public List<Variant> variants() {
-            var variants = new ArrayList<Variant>();
-            for(var motion: Motion.values()) {
-                for(var shape: Shape.values()) {
-                    variants.add(new Variant(this, shape, motion, createSimple()));
-                }
-            }
-            return variants;
-        }
-        public static final String prefix = "magic";
-        public record Variant(MagicParticleFamily family, Shape shape, Motion motion, ParticleType particleType) {
-            public Identifier id() {
-                return Identifier.of(SpellEngineMod.ID, name());
-            }
-            public String familyName() {
-                return family.name;
-            }
-            public Color color() {
-                return family.color;
-            }
-            public String name() {
-                return String.format("%s_%s_%s_%s", prefix,
-                        familyName().toLowerCase(Locale.ENGLISH),
-                        shape.toString().toLowerCase(Locale.ENGLISH),
-                        motion.toString().toLowerCase(Locale.ENGLISH));
-            }
-            public int frameCount() {
-                return switch (shape) {
-                    case SPELL -> 8;
-                    default -> 1;
-                };
-            }
-        }
-    }
-
     public record MagicParticles(String name, Color color) {
         public enum Shape {
             SPELL(8), SPARK, STRIPE(8, true),
