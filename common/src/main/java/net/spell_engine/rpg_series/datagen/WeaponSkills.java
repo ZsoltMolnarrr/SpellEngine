@@ -6,7 +6,6 @@ import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
-import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.fx.SpellEngineParticles;
@@ -459,14 +458,12 @@ public class WeaponSkills {
 
         projectileData.client_data = new Spell.ProjectileData.Client();
 
-        var model = new Spell.ProjectileModel();
-        model.use_held_item = true;
-        model.light_emission = LightEmission.NONE;
-        model.scale = 1F;
+        var model = SpellBuilder.ProjectileModels.heldItem();
+        model.fx.light_emission = LightEmission.NONE;
         model.rotate_degrees_per_tick = 0;
         model.rotate_degrees_offset = -135F;
-        model.orientation = Spell.ProjectileModel.Orientation.ALONG_MOTION;
-        projectileData.client_data.model = model;
+        model.orientation = Spell.ProjectileModelComposite.Orientation.ALONG_MOTION;
+        projectileData.client_data.composite_model = SpellBuilder.ProjectileModels.composite(model);
 
         projectileData.travel_sound_interval = 8;
         // projectileData.travel_sound = new Sound(RogueSounds.THROW.id());

@@ -38,12 +38,18 @@
           "id": "spell_engine:weapon_spear_travel"
         },
         "client_data": {
-          "model": {
-            "use_held_item": true,
-            "light_emission": "NONE",
-            "rotate_degrees_per_tick": 0.0,
-            "rotate_degrees_offset": -135.0,
-            "orientation": "ALONG_MOTION"
+          "composite_model": {
+            "models": [
+              {
+                "orientation": "ALONG_MOTION",
+                "rotate_degrees_per_tick": 0.0,
+                "rotate_degrees_offset": -135.0,
+                "use_held_item": true,
+                "fx": {
+                  "light_emission": "NONE"
+                }
+              }
+            ]
           }
         }
       }

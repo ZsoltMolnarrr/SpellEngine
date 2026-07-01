@@ -838,11 +838,11 @@ public class Spell {
         public ParticleBatch[] travel_particles = new ParticleBatch[]{};
         public ParticleBatch[] launch_particles = new ParticleBatch[]{};
         @Nullable public Sound launch_sound;
-        /// Legacy single override model. Superseded by `override_render_models`.
+        /// Legacy single override model. Superseded by `composite_model`.
         @Deprecated(forRemoval = true)
         @Nullable public ProjectileModel override_render;
         /// Multi-model successor to `override_render`. When present and non-empty, supersedes it.
-        @Nullable public ProjectileModelComposite override_render_models;
+        @Nullable public ProjectileModelComposite composite_model;
     }
 
     /// Applied to the caster, once the spell casting process finishes
@@ -1143,11 +1143,11 @@ public class Spell {
             /// 10 - soul torch
             public int light_level = 0;
             public ParticleBatch[] travel_particles = new ParticleBatch[]{};
-            /// Legacy single projectile model. Superseded by `models`.
+            /// Legacy single projectile model. Superseded by `composite_model`.
             @Deprecated(forRemoval = true)
             public ProjectileModel model;
             /// Multi-model successor to `model`. When present and non-empty, supersedes `model`.
-            public ProjectileModelComposite models;
+            public ProjectileModelComposite composite_model;
         }
     }
 

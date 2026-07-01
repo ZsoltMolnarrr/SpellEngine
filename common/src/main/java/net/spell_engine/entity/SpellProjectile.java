@@ -85,8 +85,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             }
         }
         // New multi-model path: capture the held item once if any composite model wants it.
-        if (projectileData.client_data != null && projectileData.client_data.models != null
-                && projectileData.client_data.models.models.stream().anyMatch(m -> m.use_held_item)) {
+        if (projectileData.client_data != null && projectileData.client_data.composite_model != null
+                && projectileData.client_data.composite_model.models.stream().anyMatch(m -> m.use_held_item)) {
             setItemStackModel(caster.getMainHandStack());
         }
     }
@@ -701,7 +701,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     public Spell.ProjectileModelComposite renderModels() {
         var data = projectileData();
         if (data != null && data.client_data != null) {
-            return data.client_data.models;
+            return data.client_data.composite_model;
         }
         return null;
     }

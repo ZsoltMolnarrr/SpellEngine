@@ -7,7 +7,6 @@ import net.minecraft.client.render.entity.ProjectileEntityRenderer;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.client.render.SpellProjectileRenderer;
 import net.spell_engine.internals.arrow.ArrowExtension;
@@ -44,7 +43,7 @@ public abstract class ProjectileEntityRendererMixin extends EntityRenderer {
                 }
                 var allowSpin = !arrowExtension.isInGround_SpellEngine();
                 // New multi-model path takes priority over the legacy single override model.
-                var composite = arrowPerks.override_render_models;
+                var composite = arrowPerks.composite_model;
                 if (composite != null && !composite.models.isEmpty()) {
                     ci.cancel();
                     // Arrows have no captured held item, so models with use_held_item are skipped (null id).
