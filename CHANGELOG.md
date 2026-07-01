@@ -20,6 +20,11 @@ API changes:
   - Extensible operation registry: `ModelEffectOperations.register()` for third-party transform types
   - `model_fx` field available at: `release`, `impacts[]`, `area_impact`, `deliver.melee.swing`, `deliver.clouds[].spawn`, and teleport `depart`/`arrive`
   - Model files placed at `assets/MOD_ID/models/spell_effect/` are auto-discovered
+- Reworked **projectile** and **spell cloud** models to build on the Model FX system — both can now render multiple, individually animatable models
+  - Projectiles: new `client_data.composite_model` (and `arrow_perks.composite_model` for arrows) — a list of models, each with its own `orientation`, spin, optional `use_held_item`, and an `fx` Model FX block driving scale/translate/rotate animation
+  - Spell clouds: new `client_data.model_fx` — a list of Model FX definitions rendered on the cloud
+  - `SpellBuilder.ProjectileModels` datagen helpers for the common cases (`single`, `model`, `heldItem`, `composite`)
+  - Legacy single-model fields `client_data.model` and `arrow_perks.override_render` are deprecated and marked for removal
 - Added **Entity Summoning** — a new `SUMMON` impact action that spawns and controls owned entities, fully data-driven
   - `Spell.Impact.Action.Summon`: entity type, runtime behaviour, placement formation, group layout, and spawn FX/sound
   - `SummonedEntity` base class (`api.spell.summon`, implement `SpellSummoned`) — phase-driven, owner-aware, with a full goal/targeting AI
