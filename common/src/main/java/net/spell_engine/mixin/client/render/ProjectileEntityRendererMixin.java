@@ -34,23 +34,36 @@ public abstract class ProjectileEntityRendererMixin extends EntityRenderer {
             at = @At("HEAD"),
             cancellable = true
     )
+    @SuppressWarnings("removal") // legacy override_render branch; delete with ProjectileModel
     private void render_HEAD_SpellEngine(Entity entity, float yaw, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
         if (entity instanceof ArrowExtension arrowExtension) {
             for (var spellEntry: arrowExtension.getCarriedSpells()) {
                 var arrowPerks = spellEntry.value().arrow_perks;
-                if (arrowPerks != null) {
-                    var renderData = arrowPerks.override_render;
-                    if (renderData != null) {
-                        ci.cancel();
-                        var allowSpin = !arrowExtension.isInGround_SpellEngine();
-                        var rendered = SpellProjectileRenderer.render(1F, this.dispatcher, this.itemRenderer, renderData, Vec3d.ZERO,
-                                entity, yaw, tickDelta, allowSpin, matrices, vertexConsumers, light);
-                        ci.cancel();
-                        if (rendered) {
-                            super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
-                        }
-                        return;
+                if (arrowPerks == null) {
+                    continue;
+                }
+                var allowSpin = !arrowExtension.isInGround_SpellEngine();
+                // New multi-model path takes priority over the legacy single override model.
+                var composite = arrowPerks.override_render_models;
+                if (composite != null && !composite.models.isEmpty()) {
+                    ci.cancel();
+                    // Arrows have no captured held item, so models with use_held_item are skipped (null id).
+                    var rendered = SpellProjectileRenderer.renderComposite(1F, this.dispatcher, this.itemRenderer, composite, null,
+                            Vec3d.ZERO, entity, tickDelta, allowSpin, matrices, vertexConsumers, light);
+                    if (rendered) {
+                        super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
                     }
+                    return;
+                }
+                var renderData = arrowPerks.override_render;
+                if (renderData != null) {
+                    ci.cancel();
+                    var rendered = SpellProjectileRenderer.render(1F, this.dispatcher, this.itemRenderer, renderData, Vec3d.ZERO,
+                            entity, yaw, tickDelta, allowSpin, matrices, vertexConsumers, light);
+                    if (rendered) {
+                        super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
+                    }
+                    return;
                 }
             }
         }

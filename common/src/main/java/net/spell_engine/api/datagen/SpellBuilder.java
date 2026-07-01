@@ -5,6 +5,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.api.entity.SpellEntityPredicates;
+import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
@@ -1092,6 +1093,67 @@ public class SpellBuilder {
                 );
             }
             return particles.toArray(new ParticleBatch[0]);
+        }
+    }
+
+    /// Factory functions for {@link Spell.ProjectileModelComposite} — the multi-model projectile/arrow
+    /// visual. Methods return mutable objects, so the simple cases are one-liners and anything beyond
+    /// them is reached by mutating the result directly (orientation, spin, `fx.positioning`,
+    /// `fx.initial` / `fx.animations` for modelFX animation, additional models, ...).
+    ///
+    /// Defaults mirror the legacy {@link Spell.ProjectileModel} (GLOW, scale 1, spin 2°/tick,
+    /// TOWARDS_MOTION), so a single-model composite reproduces the old look with no extra config.
+    public static class ProjectileModels {
+        /// A single model element from a model id (scale 1, GLOW, spins at 2°/tick, faces its motion).
+        public static Spell.ProjectileModelComposite.Model model(String modelId) {
+            var model = new Spell.ProjectileModelComposite.Model();
+            model.fx.model_id = modelId;
+            return model;
+        }
+
+        /// As {@link #model(String)} with an explicit scale.
+        public static Spell.ProjectileModelComposite.Model model(String modelId, float scale) {
+            var model = model(modelId);
+            model.fx.scale = scale;
+            return model;
+        }
+
+        /// As {@link #model(String, float)} with an explicit light emission.
+        public static Spell.ProjectileModelComposite.Model model(String modelId, float scale, LightEmission light) {
+            var model = model(modelId, scale);
+            model.fx.light_emission = light;
+            return model;
+        }
+
+        /// A model element that renders the caster's held item instead of a model id (e.g. a thrown
+        /// weapon). Combine with direct mutation, e.g. `orientation = ALONG_MOTION`.
+        public static Spell.ProjectileModelComposite.Model heldItem() {
+            var model = new Spell.ProjectileModelComposite.Model();
+            model.use_held_item = true;
+            return model;
+        }
+
+        /// Wraps one or more model elements into a composite. The backing list is mutable, so further
+        /// models can be added to the result.
+        public static Spell.ProjectileModelComposite composite(Spell.ProjectileModelComposite.Model... models) {
+            var composite = new Spell.ProjectileModelComposite();
+            composite.models = new ArrayList<>(Arrays.asList(models));
+            return composite;
+        }
+
+        /// The common case: a composite of a single model id (scale 1, GLOW, spinning, motion-facing).
+        public static Spell.ProjectileModelComposite single(String modelId) {
+            return composite(model(modelId));
+        }
+
+        /// As {@link #single(String)} with an explicit scale.
+        public static Spell.ProjectileModelComposite single(String modelId, float scale) {
+            return composite(model(modelId, scale));
+        }
+
+        /// As {@link #single(String, float)} with an explicit light emission.
+        public static Spell.ProjectileModelComposite single(String modelId, float scale, LightEmission light) {
+            return composite(model(modelId, scale, light));
         }
     }
 

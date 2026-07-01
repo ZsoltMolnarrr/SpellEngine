@@ -52,8 +52,8 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
         var composite = projectile.renderModels();
         if (composite != null && !composite.models.isEmpty()) {
             // New multi-model path.
-            rendered = renderComposite(effectiveScale, composite, projectile.heldItemModelId(), projectile.previousVelocity,
-                    entity, tickDelta, matrices, vertexConsumers, light);
+            rendered = renderComposite(effectiveScale, this.dispatcher, this.itemRenderer, composite, projectile.heldItemModelId(),
+                    projectile.previousVelocity, entity, tickDelta, true, matrices, vertexConsumers, light);
         } else if (projectile.renderData() != null) {
             // Legacy single-model path.
             rendered = render(effectiveScale, this.dispatcher, this.itemRenderer, projectile.renderData(), projectile.previousVelocity,
@@ -65,15 +65,18 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
     }
 
     /// New multi-model path: each model positioned/oriented/spun independently and animated through
-    /// the modelFX system ({@link ModelEffectOperations#applyTransforms}). Mirrors SpellCloudRenderer's
-    /// split into a new method and a separable legacy method. Returns true if rendering happened
-    /// (keeps the legacy near-camera guard, so the caller knows whether to draw the debug hitbox).
-    private boolean renderComposite(float scale, Spell.ProjectileModelComposite composite, @Nullable String heldItemModelId,
-                                    @Nullable Vec3d previousVelocity, Entity entity, float tickDelta,
-                                    MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+    /// the modelFX system ({@link ModelEffectOperations#applyTransforms}). Public static like the legacy
+    /// `render(...)` so it can be driven both by this renderer and by ProjectileEntityRendererMixin (arrow
+    /// `override_render_models`). `heldItemModelId` may be null when there is no captured held item (e.g.
+    /// arrows) — models with `use_held_item` are then skipped. Returns true if rendering happened (keeps
+    /// the legacy near-camera guard, so the caller knows whether to draw the debug hitbox).
+    public static boolean renderComposite(float scale, EntityRenderDispatcher dispatcher, ItemRenderer itemRenderer,
+                                          Spell.ProjectileModelComposite composite, @Nullable String heldItemModelId,
+                                          @Nullable Vec3d previousVelocity, Entity entity, float tickDelta, boolean allowSpin,
+                                          MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         // Skip while very fresh and very close to the camera, so a just-spawned projectile doesn't
         // fill the caster's view (same guard as the legacy renderer).
-        if (entity.age < 2 && this.dispatcher.camera.getFocusedEntity().squaredDistanceTo(entity) < 12.25) {
+        if (entity.age < 2 && dispatcher.camera.getFocusedEntity().squaredDistanceTo(entity) < 12.25) {
             return false;
         }
 
@@ -89,9 +92,9 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
             // Overall projectile scale.
             matrices.scale(scale, scale, scale);
             // Facing relative to travel.
-            applyCompositeOrientation(model.orientation, entity, previousVelocity, tickDelta, matrices);
-            // Continuous spin.
-            if (model.rotate_degrees_per_tick != 0 || model.rotate_degrees_offset != 0) {
+            applyCompositeOrientation(model.orientation, dispatcher, entity, previousVelocity, tickDelta, matrices);
+            // Continuous spin (disabled e.g. while an arrow is stuck in the ground).
+            if (allowSpin && (model.rotate_degrees_per_tick != 0 || model.rotate_degrees_offset != 0)) {
                 matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(
                         model.rotate_degrees_offset + age * model.rotate_degrees_per_tick));
             }
@@ -102,7 +105,7 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
             var modelId = model.use_held_item ? heldItemModelId : fx.model_id;
             if (modelId != null && !modelId.isEmpty()) {
                 var layer = SpellModelHelper.LAYERS.get(fx.light_emission);
-                CustomModels.render(layer, this.itemRenderer, Identifier.of(modelId), matrices, vertexConsumers, light, entity.getId());
+                CustomModels.render(layer, itemRenderer, Identifier.of(modelId), matrices, vertexConsumers, light, entity.getId());
             }
 
             matrices.pop();
@@ -110,11 +113,11 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
         return true;
     }
 
-    private void applyCompositeOrientation(Spell.ProjectileModelComposite.Orientation orientation,
-                                           Entity entity, @Nullable Vec3d previousVelocity, float tickDelta, MatrixStack matrices) {
+    private static void applyCompositeOrientation(Spell.ProjectileModelComposite.Orientation orientation, EntityRenderDispatcher dispatcher,
+                                                  Entity entity, @Nullable Vec3d previousVelocity, float tickDelta, MatrixStack matrices) {
         switch (orientation) {
             case TOWARDS_CAMERA -> {
-                matrices.multiply(this.dispatcher.getRotation());
+                matrices.multiply(dispatcher.getRotation());
                 matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
             }
             case TOWARDS_MOTION, ALONG_MOTION -> {

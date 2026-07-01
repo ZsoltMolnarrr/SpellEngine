@@ -1180,7 +1180,8 @@ public class Spell {
             /// Facing relative to the projectile's travel.
             public Orientation orientation = Orientation.TOWARDS_MOTION;
             /// Continuous spin about the view/motion axis (degrees per tick) plus a static offset.
-            public float rotate_degrees_per_tick = 0F;
+            /// Defaults to 2 to match the legacy ProjectileModel; set 0 for a non-spinning (e.g. flat) model.
+            public float rotate_degrees_per_tick = 2F;
             public float rotate_degrees_offset = 0F;
             /// Render the caster's held-item id as this model's source instead of `fx.model_id`.
             public boolean use_held_item = false;
