@@ -180,22 +180,61 @@ ModelEffectOperations.register("my_op", (matrices, progress, transform) -> {
 
 ## Projectile Models
 
-Custom projectile visuals are defined under `deliver.projectile.projectile.client_data.model`:
+A projectile can render one or more custom 3D models, each independently oriented, spun, and animated with the [Model FX](#model-fx) system. Models are defined under `deliver.projectile.projectile.client_data.composite_model`:
 
 ```json
-"model": {
-  "model_id": "mymod:spell_projectile/my_projectile",
-  "scale": 1.0,
-  "light_emission": "GLOW",
-  "orientation": "TOWARDS_MOTION"
+"composite_model": {
+  "models": [
+    {
+      "orientation": "TOWARDS_MOTION",
+      "rotate_degrees_per_tick": 2,
+      "fx": {
+        "model_id": "mymod:spell_projectile/my_projectile",
+        "scale": 1.0,
+        "light_emission": "GLOW"
+      }
+    }
+  ]
 }
 ```
 
-Place the model file at `assets/MOD_ID/models/spell_projectile/MY_PROJECTILE.json` — Spell Engine registers these automatically. No Java registration needed.
+Place each model file at `assets/MOD_ID/models/spell_projectile/MY_PROJECTILE.json` — Spell Engine registers these automatically. No Java registration needed.
 
-`orientation` options: `TOWARDS_CAMERA`, `TOWARDS_MOTION`, `ALONG_MOTION`.
+### Per-model fields
 
-Dynamic lighting (`light_level` field) requires the LambDynamicLights mod.
+Each entry in `models` combines projectile-specific placement with a Model FX definition:
+
+| Field | Default | Description |
+|---|---|---|
+| `orientation` | `TOWARDS_MOTION` | Facing relative to travel: `TOWARDS_CAMERA` (billboard), `TOWARDS_MOTION`, `ALONG_MOTION` |
+| `rotate_degrees_per_tick` | `2` | Continuous spin about the view/motion axis. Set `0` for a static (e.g. flat) model |
+| `rotate_degrees_offset` | `0` | Fixed rotation offset about that axis |
+| `use_held_item` | `false` | Render the caster's held item instead of `fx.model_id` |
+| `fx` | — | A [Model FX](#model-fx) definition — `model_id`, `light_emission`, `scale`, `positioning`, `initial`, `animations` — driving the model's appearance and animation |
+
+The `fx` block is a full Model FX definition, so a projectile model animates exactly like a spawned Model FX (scale/translate/rotate over `initial` + `animations`, with easing). Animation time is the **projectile's age** in ticks — use it for one-shot transitions such as a scale-in on spawn; for continuous rotation use `rotate_degrees_per_tick` (animations are bounded by `start`/`end`). Two Model FX fields are unused here: `duration` (a projectile lives until impact) and `follow_entity` (the model is already rendered on the projectile); `positioning` is honored.
+
+### Multiple models
+
+List several entries in `models` to composite layered visuals — e.g. a motion-aligned core plus a camera-facing glow:
+
+```json
+"composite_model": {
+  "models": [
+    { "fx": { "model_id": "mymod:spell_projectile/fireball_core", "light_emission": "RADIATE" } },
+    { "orientation": "TOWARDS_CAMERA", "rotate_degrees_per_tick": 0,
+      "fx": { "model_id": "mymod:spell_projectile/fireball_glow", "light_emission": "GLOW", "scale": 1.5 } }
+  ]
+}
+```
+
+### Arrows
+
+The same structure drives custom arrow visuals via `arrow_perks.composite_model`. `use_held_item` is not available for arrows (they have no captured held item), so such entries are skipped.
+
+Dynamic lighting (`client_data.light_level` field) requires the LambDynamicLights mod.
+
+> **Deprecated:** the legacy single-model fields `deliver.projectile.projectile.client_data.model` and `arrow_perks.override_render` are superseded by `composite_model` and slated for removal. Migrate to `composite_model` with a single `models` entry (`rotate_degrees_per_tick` defaults to `2`, matching the old default, so behaviour is unchanged).
 
 ## Spell Effect Models
 
