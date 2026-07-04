@@ -78,13 +78,31 @@ This also allows bonus providers (such as Trinkets) to have equal bonuses for me
 
 ## Spell DPS Configuration
 
-Once attributes are set, each damaging spell's coefficient is tuned against a common yardstick:
+### How damage resolves
+
+A damaging impact deals:
+
+```
+damage = coefficient × Spell Power(school) × crit
+```
+
+`Spell Power(school)` is simply the value of that school's Spell Power attribute (e.g. `spell_power:fire`) on the caster. The **coefficient** — the only damage knob that lives in the spell definition — is nothing more than a multiplier on that attribute. This is why balancing is done in coefficient-space: one number scales the whole spell against the caster's gear.
+
+> If a `damage` impact omits `spell_power_coefficient`, it defaults to `1.0` (full Spell Power). Always set it explicitly.
+
+### The DPS yardstick
+
+Once attributes are set, each spell's coefficient is tuned against a common yardstick:
 
 ```
 DPS = coefficient / cast time
 ```
 
-This normalizes spells of different cast speeds onto one scale, so a slow, hard-hitting spell and a fast, weak one can be compared fairly. Guidelines:
+This normalizes spells of different cast speeds onto one scale, so a slow, hard-hitting spell and a fast, weak one can be compared fairly.
+
+> **Channeled spells are the exception.** Their coefficient is already a *per-second* value: total damage = `coefficient × Spell Power × channel duration`, so **DPS equals the coefficient directly**, regardless of the channel's tick count. The tick count only controls how the damage is *chunked* (fewer ticks = larger, less frequent hits) — it does **not** change total throughput. So for a channeled spell, read `DPS = coefficient`.
+
+Guidelines:
 
 - **DPS scales with tier.** A school's baseline single-target DPS climbs from ~`0.5` at T0 up to ~`1.0` at its top tier.
 - **Utility is paid for with damage.** Any spell carrying a rider — DoT, slow, snare, pierce, AoE, knockback — takes a lower coefficient to offset the added value. The stronger the effect, the deeper the cut (see Frost Nova).
