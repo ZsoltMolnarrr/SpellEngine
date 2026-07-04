@@ -16,6 +16,7 @@
 | [08 · Triggers](08-triggers.md) | Passive spell triggers — types, filters, conditions |
 | [09 · Visuals & Audio](09-visuals-and-audio.md) | Sounds, particles, projectile models, beam visuals |
 | [10 · Summons](10-summons.md) | Spell-summoned companion entities: behaviour, authoring, casting limits |
+| [11 · Content Development Guidelines](11-content-development-guidelines.md) | Conventions and balance guidance for authoring new content |
 
 ## Reference Implementations
 
