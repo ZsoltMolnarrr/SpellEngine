@@ -105,6 +105,13 @@ public class Spell {
             public static class Charge { public Charge() { }
                 /// Minimum charge ratio (0..1) required to fire on release. Below this, the cast fizzles.
                 public float min_release_ratio = 0.2F;
+                /// How strongly the charge ratio scales the spell's innate output (damage/heal/
+                /// knockback): the output multiplier is `1 - output_scaling * (1 - curve(ratio))`.
+                /// 1 (default) = output fully proportional to the curved charge ratio (bow-like);
+                /// 0 = constant output regardless of charge; values between dampen the swing
+                /// (e.g. 0.5 => a zero-charge release would still deal 50%). Base impact values
+                /// always represent a FULL charge.
+                public float output_scaling = 1F;
                 /// Shapes how the raw charge ratio maps to the scaling applied to `full_charge`.
                 public Curve curve = Curve.LINEAR;
                 /// The bonus applied at 100% charge, scaled toward zero as the (curved) ratio drops.

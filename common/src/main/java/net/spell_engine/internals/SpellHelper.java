@@ -278,6 +278,7 @@ public class SpellHelper {
         int incrementChannelTicks = 0;
         boolean shouldPerformImpact = true;
         Spell.Modifier chargeModifier = null;
+        var chargeRatio = 1F;
         Supplier<Collection<ServerPlayerEntity>> trackingPlayers = Suppliers.memoize(() -> { // Suppliers.memoize = Lazy
             return PlayerLookup.tracking(player);
         });
@@ -303,9 +304,12 @@ public class SpellHelper {
                 } else if (cast.resolvedType() == Spell.Active.Cast.Type.CHARGE && cast.charge != null) {
                     // `progress` is the charge ratio (already clamped to 0..1). Below the minimum it
                     // fizzles via channelMultiplier = 0 (reusing the delivery gate below); otherwise
-                    // the curved ratio scales the charge modifier carried on the ImpactContext.
+                    // the curved ratio drives the innate output scaling (weighted by `output_scaling`,
+                    // carried as ImpactContext.charge) and scales the charge bonus modifier.
                     if (progress >= cast.charge.min_release_ratio) {
-                        chargeModifier = SpellModifiers.scaledBy(cast.charge.bonus, cast.charge.curve.apply(progress));
+                        var curvedRatio = cast.charge.curve.apply(progress);
+                        chargeModifier = SpellModifiers.scaledBy(cast.charge.bonus, curvedRatio);
+                        chargeRatio = MathHelper.lerp(cast.charge.output_scaling, 1F, curvedRatio);
                         channelMultiplier = 1;
                     } else {
                         channelMultiplier = 0;
@@ -366,7 +370,8 @@ public class SpellHelper {
                         SpellPower.getSpellPower(spell.school, player),
                         focusMode(spell),
                         channelTickIndex)
-                        .chargeModifier(chargeModifier);
+                        .chargeModifier(chargeModifier)
+                        .charge(chargeRatio);
                 success = resolveAndDeliver(world, player, spellEntry, targetResult, context, completion);
                 caster.setChannelTickIndex(channelTickIndex + incrementChannelTicks);
             } else {
@@ -1114,44 +1119,48 @@ public class SpellHelper {
     public record ImpactContext(float channel, float distance, @Nullable Vec3d position,
                                 SpellPower.Result power, SpellTarget.FocusMode focusMode,
                                 int channelTickIndex, @Nullable int effectiveCasterId,
-                                @Nullable Spell.Modifier chargeModifier) {
+                                @Nullable Spell.Modifier chargeModifier, float charge) {
         public ImpactContext() {
-            this(1, 1, null, null, SpellTarget.FocusMode.DIRECT, 0, 0, null);
+            this(1, 1, null, null, SpellTarget.FocusMode.DIRECT, 0, 0, null, 1);
         }
 
         public ImpactContext(float channel, float distance, @Nullable Vec3d position,
                              SpellPower.Result power, SpellTarget.FocusMode focusMode,
                              int channelTickIndex) {
-            this(channel, distance, position, power, focusMode, channelTickIndex, 0, null);
+            this(channel, distance, position, power, focusMode, channelTickIndex, 0, null, 1);
         }
 
         public ImpactContext channeled(float multiplier) {
-            return new ImpactContext(multiplier, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier);
+            return new ImpactContext(multiplier, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier, charge);
         }
 
         public ImpactContext distance(float multiplier) {
-            return new ImpactContext(channel, multiplier, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier);
+            return new ImpactContext(channel, multiplier, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier, charge);
         }
 
         public ImpactContext position(Vec3d position) {
-            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier);
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier, charge);
         }
 
         public ImpactContext power(SpellPower.Result spellPower) {
-            return new ImpactContext(channel, distance, position, spellPower, focusMode, channelTickIndex, effectiveCasterId, chargeModifier);
+            return new ImpactContext(channel, distance, position, spellPower, focusMode, channelTickIndex, effectiveCasterId, chargeModifier, charge);
         }
 
         public ImpactContext target(SpellTarget.FocusMode focusMode) {
-            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier);
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier, charge);
         }
 
         public ImpactContext effectiveCaster(@Nullable LivingEntity effectiveCaster) {
             var id = effectiveCaster != null ? effectiveCaster.getId() : 0;
-            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, id, chargeModifier);
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, id, chargeModifier, charge);
         }
 
         public ImpactContext chargeModifier(@Nullable Spell.Modifier chargeModifier) {
-            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier);
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier, charge);
+        }
+
+        public ImpactContext charge(float charge) {
+            return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier, charge);
         }
 
         public @Nullable LivingEntity effectiveCaster(World world) {
@@ -1171,7 +1180,7 @@ public class SpellHelper {
         }
 
         public float total() {
-            return channel * distance;
+            return channel * distance * charge;
         }
     }
 
@@ -2225,6 +2234,15 @@ public class SpellHelper {
         var damageEffects = new ArrayList<EstimatedValue>();
         var healEffects = new ArrayList<EstimatedValue>();
         var isEquipped = AttributeModifierUtil.isItemStackEquipped(itemStack, caster);
+        // CHARGE casts: base impact values represent a full charge, so extend the displayed
+        // minimum down to the output of the weakest allowed release.
+        var chargeMinOutput = 1F;
+        if (spell.active != null && spell.active.cast != null
+                && spell.active.cast.resolvedType() == Spell.Active.Cast.Type.CHARGE
+                && spell.active.cast.charge != null) {
+            var charge = spell.active.cast.charge;
+            chargeMinOutput = MathHelper.lerp(charge.output_scaling, 1F, charge.curve.apply(charge.min_release_ratio));
+        }
         ArrayList<Spell.Impact> impacts = new ArrayList<>(spell.impacts);
         if (spell.modifiers != null) {
             for (var modifier : spell.modifiers) {
@@ -2267,13 +2285,13 @@ public class SpellHelper {
             switch (impact.action.type) {
                 case DAMAGE -> {
                     var damageData = impact.action.damage;
-                    var damage = new EstimatedValue(power.nonCriticalValue(), power.forcedCriticalValue())
+                    var damage = new EstimatedValue(power.nonCriticalValue() * chargeMinOutput, power.forcedCriticalValue())
                             .multiply(damageData.spell_power_coefficient);
                     damageEffects.add(damage);
                 }
                 case HEAL -> {
                     var healData = impact.action.heal;
-                    var healing = new EstimatedValue(power.nonCriticalValue(), power.forcedCriticalValue())
+                    var healing = new EstimatedValue(power.nonCriticalValue() * chargeMinOutput, power.forcedCriticalValue())
                             .multiply(healData.spell_power_coefficient);
                     healEffects.add(healing);
                 }

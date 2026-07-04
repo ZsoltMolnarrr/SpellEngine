@@ -45,9 +45,27 @@ cast bar completes.
 | `release_fx` | bool | `false` | Send release FX/animation on each channel tick |
 
 ### Charged
-`type: "CHARGE"` — the player holds to charge and may **release early**. The base spell always fires;
-on top of it, `charge.bonus` (a [spell modifier](06-impacts.md)) is applied **scaled by how long the
-spell was held**, mapped through `charge.curve`. "The longer you hold, the stronger it hits."
+`type: "CHARGE"` — the player holds to charge and may **release early**. Works like a bow: the
+spell's base impact values describe a **full charge**, and releasing earlier deals proportionally
+less. "The longer you hold, the stronger it hits."
+
+Two mechanics scale with the hold time (both mapped through `charge.curve`):
+
+1. **Innate output scaling** (on by default) — the spell's damage/heal/knockback output is
+   multiplied by the curved charge ratio. `output_scaling` controls how strongly:
+   ```
+   output multiplier = 1 - output_scaling * (1 - curve(charge ratio))
+   ```
+   With the default `1.0` the output is fully proportional to the curved ratio (a half-charge
+   LINEAR release deals half damage). Smaller values dampen the swing — e.g. `0.33` confines it
+   to the top third (a zero-charge release would still deal ~67%); `0` disables innate scaling
+   entirely (constant output regardless of hold time).
+2. **The `bonus` modifier** (optional) — a [spell modifier](06-impacts.md) describing extra,
+   non-output effects at 100% charge, scaled down toward zero for earlier releases. Use it for
+   things the output multiplier can't express: faster/bigger projectiles, added range, perks, etc.
+
+Because the listed impact values mean "full charge", tooltip damage estimation stays truthful:
+the `{damage}` range widens downward to the weakest allowed release automatically.
 
 ```json
 "cast": {
@@ -56,8 +74,8 @@ spell was held**, mapped through `charge.curve`. "The longer you hold, the stron
   "charge": {
     "curve": "EASE_IN_QUART",
     "min_release_ratio": 0.2,
+    "output_scaling": 0.33,
     "bonus": {
-      "power_modifier": { "power_multiplier": 1.5 },
       "projectile_launch": { "velocity": 0.8 },
       "projectile_scale_multiply": 1.0,
       "range_add": 32.0
@@ -69,18 +87,22 @@ spell was held**, mapped through `charge.curve`. "The longer you hold, the stron
 | `charge` field | Type | Default | Description |
 |---|---|---|---|
 | `min_release_ratio` | float | `0.2` | Below this charge ratio the cast fizzles (no impact, no cost) |
-| `curve` | enum | `LINEAR` | Maps raw charge ratio (0..1) to the bonus scaling factor |
+| `output_scaling` | float | `1.0` | How strongly the curved ratio scales innate output: `1` = fully proportional (bow-like), `0` = constant output |
+| `curve` | enum | `LINEAR` | Maps raw charge ratio (0..1) to the output/bonus scaling factor |
 | `bonus` | Modifier | `{}` | Bonus applied at 100% charge, scaled down toward 0 by the curved ratio |
 
+- Don't put `power_modifier` in `bonus` to make damage scale with charge — that's what
+  `output_scaling` is for, and unlike the bonus it is reflected in tooltip damage estimation.
 - The `bonus` reuses the spell-modifier vocabulary, so the same fields equipment/talents use drive
-  the charge — e.g. `power_modifier` (harder hit), `projectile_launch` (faster), `projectile_perks`
-  (pierce/ricochet), `projectile_scale_multiply` (bigger projectile render + hitbox), `range_add`,
-  effect amplifiers, etc. (`spell_pattern` is ignored; `impact_filters` still scope which impacts it boosts.)
+  the charge — e.g. `projectile_launch` (faster), `projectile_perks` (pierce/ricochet),
+  `projectile_scale_multiply` (bigger projectile render + hitbox), `range_add`, effect amplifiers,
+  etc. (`spell_pattern` is ignored; `impact_filters` still scope which impacts it boosts.)
 - A spell instantly cast by a temporary effect releases at full charge automatically.
 - `curve` values (per [easings.net](https://easings.net)): `LINEAR`, `EASE_IN_QUAD`, `EASE_OUT_QUAD`,
   `EASE_IN_OUT_QUAD`, `EASE_IN_QUART`, `EASE_OUT_QUART`, `EASE_IN_OUT_QUART`, `EASE_IN_EXPO`,
   `EASE_OUT_EXPO`, `EASE_IN_OUT_EXPO`. IN = slow start (rewards near-full charges), OUT = fast early
-  payoff, IN_OUT = slow at both ends.
+  payoff, IN_OUT = slow at both ends. The curve shapes both the innate output multiplier and the
+  `bonus` — e.g. `EASE_IN_QUART` keeps most of the payoff in the last stretch of the hold.
 
 ## Cast Fields
 
@@ -110,9 +132,8 @@ SpellBuilder.Casting.channel(spell, 2.0F, 4);        // CHANNEL (4 ticks over 2s
 
 var charge = SpellBuilder.Casting.charge(spell, 1.5F, Curve.EASE_IN_QUART); // CHARGE
 charge.min_release_ratio = 0.2F;
-charge.bonus.power_modifier = new Spell.Impact.Modifier();
-charge.bonus.power_modifier.power_multiplier = 1.5F;
-charge.bonus.projectile_scale_multiply = 1.0F;
+charge.output_scaling = 0.33F;                   // damage swings in the top third; 1 (default) = fully proportional
+charge.bonus.projectile_scale_multiply = 1.0F;   // non-output extras still go through `bonus`
 ```
 
 ## Release

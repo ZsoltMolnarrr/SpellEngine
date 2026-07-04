@@ -99,9 +99,14 @@ public class SpellBuilder {
             spell.active.cast.channel.ticks = ticks;
         }
 
-        /// Configures the spell as CHARGE: the player holds to charge and may release early, and the
-        /// returned `Charge` carries the bonus applied at full charge (scaled toward zero by the
-        /// curved release ratio). Configure `bonus`, `curve` and `min_release_ratio` on the result.
+        /// Configures the spell as CHARGE: the player holds to charge and may release early.
+        /// Base impact values represent a FULL charge; by default the spell's output (damage/heal/
+        /// knockback) scales proportionally to the curved charge ratio (bow-like; tooltips stay
+        /// truthful). Dampen or disable this with `output_scaling` on the result (1 = fully
+        /// proportional, 0 = constant output). The returned `Charge` also carries `bonus`, a
+        /// modifier applied at full charge (scaled toward zero by the curved release ratio) for
+        /// non-output scaling such as projectile velocity/scale or range. Configure `curve` and
+        /// `min_release_ratio` as needed.
         public static Spell.Active.Cast.Charge charge(Spell spell, float duration) {
             spell.active.cast = new Spell.Active.Cast();
             spell.active.cast.duration = duration;

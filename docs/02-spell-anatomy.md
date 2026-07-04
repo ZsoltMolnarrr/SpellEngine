@@ -74,11 +74,12 @@ Every spell (except MODIFIER) passes through the same pipeline when it fires. Un
 
 **ACTIVE** spells are initiated by the player. The `active.cast` block controls the interaction:
 
-| `cast.duration` | `cast.channel_ticks` | Mode |
+| `cast.duration` | `cast.type` | Mode |
 |---|---|---|
-| `0` | `0` | **Instant** — fires on key press |
-| `> 0` | `0` | **Charged** — hold to charge, fires on release |
-| `> 0` | `> 0` | **Channeled** — fires `channel_ticks` times spread over `duration` seconds |
+| `0` | — | **Instant** — fires on key press |
+| `> 0` | `STANDARD` | **Casted** — hold for the full duration, fires once on completion |
+| `> 0` | `CHANNEL` | **Channeled** — fires `channel.ticks` times spread over `duration` seconds |
+| `> 0` | `CHARGE` | **Charged** — hold to charge, may release early; output scales with the charge (bow-like) |
 
 **PASSIVE** spells fire automatically. The `passive.triggers` list defines the conditions — any matching trigger activates the spell. Chance, equipment requirements, and target/caster conditions can all be applied per trigger.
 
@@ -193,7 +194,7 @@ cast: instant → target: CASTER → deliver: STASH_EFFECT → impact: DAMAGE (f
   "active": {
     "cast": {
       "duration": 1.0,
-      "channel_ticks": 0,
+      "type": "STANDARD",
       "animation": { "id": "spell_engine:one_handed_projectile_charge" }
     }
   },
