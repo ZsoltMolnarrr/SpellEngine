@@ -76,6 +76,37 @@ This also allows bonus providers (such as Trinkets) to have equal bonuses for me
 
 (Exception example: Paladin armor gives flat spell power bonus, as paladins are meant to use any melee weapon without Spell Power flat bonus.)
 
+## Spell DPS Configuration
+
+Once attributes are set, each damaging spell's coefficient is tuned against a common yardstick:
+
+```
+DPS = coefficient / cast time
+```
+
+This normalizes spells of different cast speeds onto one scale, so a slow, hard-hitting spell and a fast, weak one can be compared fairly. Guidelines:
+
+- **DPS scales with tier.** A school's baseline single-target DPS climbs from ~`0.5` at T0 up to ~`1.0` at its top tier.
+- **Utility is paid for with damage.** Any spell carrying a rider — DoT, slow, snare, pierce, AoE, knockback — takes a lower coefficient to offset the added value. The stronger the effect, the deeper the cut (see Frost Nova).
+- **AoE gets a small budget bump.** Area spells rarely land full damage on every target, so their nominal DPS may sit slightly above the single-target line to compensate for falloff.
+
+Reference values across the Wizard schools:
+
+| School | Tier | Spell | Coeff | Cast (s) | DPS | Notes |
+|---|---|---|---|---|---|---|
+| Arcane | T0 | Bolt | 0.6 | 1.0 | 0.60 | baseline |
+| Arcane | T1 | Missile | 0.6 | 0.75 | 0.80 | fast cast |
+| Arcane | T2 | Blast | 0.9 | 1.5 | 0.60 | low per-cast; stacks Arcane Charge to ramp power |
+| Arcane | T2 | Beam | 1.0 | 1.0 | 1.00 | channeled |
+| Fire | T0 | Scorch | 0.6 | 1.2 | 0.50 | + fire DoT |
+| Fire | T1 | Ball | 0.9 | 1.5 | 0.60 | |
+| Fire | T2 | Breath | 0.8 | 1.0 | 0.80 | AoE — budgeted up to ~0.9 for falloff |
+| Fire | T3 | Meteor | 1.0 | 1.0 | 1.00 | |
+| Frost | T0 | Shard | 0.5 | 1.0 | 0.50 | pierces |
+| Frost | T1 | Bolt | 0.8 | 1.2 | 0.67 | cut to ~0.66 to pay for shatter + slow |
+| Frost | T2 | Nova | 0.2 | 1.0 | 0.20 | heavily cut for its snare effect |
+| Frost | T3 | Shield | — | — | — | utility, no damage |
+
 ## Case study #1 : Balancing Frost Death Knights
 
 Frost Death Knight is designed to be a class that is:
