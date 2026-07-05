@@ -200,7 +200,18 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                     }
                 }
                 case FALL -> {
-                    if (distanceTraveled >= (range * 0.98)) {
+                    var fallDistance = range * 0.98F;
+                    if (distanceTraveled >= fallDistance) {
+                        // Travel advances in whole velocity steps, so this threshold is overshot
+                        // by up to a full step (e.g. velocity 1.5 against a 9.8 threshold ends
+                        // 0.7 too low — below the aimed surface). Snap back along the travel
+                        // direction so the impact and its area FX land where the threshold was
+                        // actually crossed.
+                        var overshoot = distanceTraveled - fallDistance;
+                        var velocity = this.getVelocity();
+                        if (overshoot > 0 && velocity.lengthSquared() > 1e-6) {
+                            this.setPosition(this.getPos().subtract(velocity.normalize().multiply(overshoot)));
+                        }
                         finishFalling();
                         this.kill();
                         return;

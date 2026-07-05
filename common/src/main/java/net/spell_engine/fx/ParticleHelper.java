@@ -51,6 +51,40 @@ public class ParticleHelper {
         sendBatches(null, location, batches, 1, trackers, false);
     }
 
+    /// Like {@link #sendBatches(Entity, ParticleBatch[])}, but anchors the packet to the entity's
+    /// CURRENT server-side position (COORDINATE source) instead of the entity id. Use for one-shot
+    /// FX of entities that may die in the same tick (e.g. a falling projectile's impact burst):
+    /// an entity-anchored packet races the source entity's client-side simulation and removal —
+    /// the receiving client prefers its local entity position, which for a dying projectile can
+    /// be several blocks past the server's impact point.
+    public static void sendBatchesDetached(Entity sourceEntity, ParticleBatch[] batches) {
+        if (batches == null || batches.length == 0) {
+            return;
+        }
+        ArrayList<Packets.ParticleBatches.Spawn> spawns = new ArrayList<>();
+        for (var batch : batches) {
+            // Origins and orientation resolved server-side, exactly like the ENTITY source type.
+            // The entity id is still included so entity-bound particle resolution keeps working
+            // when the entity is present.
+            spawns.add(new Packets.ParticleBatches.Spawn(
+                    sourceEntity.getId(),
+                    sourceEntity.getYaw(),
+                    sourceEntity.getPitch(),
+                    origin(sourceEntity, batch.origin), batch));
+        }
+        var packet = new Packets.ParticleBatches(Packets.ParticleBatches.SourceType.COORDINATE, 1, spawns);
+        if (sourceEntity instanceof ServerPlayerEntity serverPlayer) {
+            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleBatches.ID)) {
+                ServerPlayNetworking.send(serverPlayer, packet);
+            }
+        }
+        PlayerLookup.tracking(sourceEntity).forEach(serverPlayer -> {
+            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleBatches.ID)) {
+                ServerPlayNetworking.send(serverPlayer, packet);
+            }
+        });
+    }
+
     public static void sendBatches(@Nullable Entity trackedEntity, @Nullable Vec3d location, ParticleBatch[] batches, float countMultiplier, Collection<ServerPlayerEntity> trackers, boolean includeSourceEntity) {
         if (batches == null || batches.length == 0) {
             return;

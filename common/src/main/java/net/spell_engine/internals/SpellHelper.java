@@ -1081,7 +1081,11 @@ public class SpellHelper {
         var result = applyAreaImpact(contextEntity.getWorld(), caster, targets, radius, area_impact.area, spellEntry, impacts,
                 context.target(SpellTarget.FocusMode.AREA), additionalTargetLookup, area_impact.execute_action_type);
         if (aoeSource != null) {
-            ParticleHelper.sendBatches(aoeSource, area_impact.particles);
+            // Anchored by coordinates rather than entity id: the source entity may die this very
+            // tick (e.g. a falling projectile finishing), and entity-anchored FX would re-resolve
+            // against its client-side position — racing the removal packet and placing the FX
+            // wherever the client's own simulation of the entity happens to be.
+            ParticleHelper.sendBatchesDetached(aoeSource, area_impact.particles);
         } else {
             ParticleHelper.sendBatches(center, caster, area_impact.particles);
         }
