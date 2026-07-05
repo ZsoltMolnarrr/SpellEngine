@@ -19,6 +19,7 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.entity.ConfigurableKnockback;
+import net.spell_engine.entity.SummonedEntity;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellTriggers;
 import net.spell_engine.internals.arrow.ArrowExtension;
@@ -29,6 +30,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -189,6 +191,22 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         }
         var spellId = spellEntry.getKey().get().getValue();
         this.addSpellId(spellId);
+    }
+
+    // MARK: Pass through owner's summons
+
+    /// A shooter's arrows pass through their own summons (e.g. an archer's arrows fly through
+    /// their Spirit Wolf) instead of colliding with them. Returning false here makes the hit
+    /// raycast skip the summon entirely, so the arrow continues to targets behind it. The summon
+    /// remains hittable by everyone else (`SummonedEntity.canHit` / `is_attackable`).
+    @Inject(method = "canHit", at = @At("HEAD"), cancellable = true)
+    private void canHit_HEAD_SpellEngine(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        if (entity instanceof SummonedEntity summon) {
+            var owner = arrow().getOwner();
+            if (owner != null && owner.getUuid().equals(summon.getOwnerUuid())) {
+                cir.setReturnValue(false);
+            }
+        }
     }
 
     // MARK: Apply impact effects
