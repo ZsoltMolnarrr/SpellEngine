@@ -1,0 +1,96 @@
+package net.spell_engine.entity;
+
+import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.render.entity.animation.Animation;
+import net.minecraft.client.render.entity.animation.Keyframe;
+import net.minecraft.client.render.entity.animation.Transformation;
+import net.minecraft.client.render.entity.model.SinglePartEntityModel;
+import net.minecraft.util.math.MathHelper;
+import org.joml.Vector3f;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Shared, client-side helpers for driving keyframe animations on summoned-entity models.
+ *
+ * <p>Only referenced from client render code (entity models), so despite touching client-only
+ * types it is never loaded on a dedicated server.
+ */
+public final class ModelAnimations {
+    private ModelAnimations() {}
+
+    /**
+     * Seamless-loop variant of vanilla
+     * {@link net.minecraft.client.render.entity.animation.AnimationHelper#animate}.
+     *
+     * <p>Vanilla treats a looping clip's boundary like a dead end: at the segment touching the first
+     * or last keyframe, catmull-rom <em>clamps</em> its outer neighbour ({@code max(0, start-1)} /
+     * {@code min(len-1, end+1)}) instead of borrowing from the opposite end of the loop, and any
+     * {@code LINEAR} final segment arrives at the seam pose with constant velocity and then instantly
+     * reverses. Both produce a velocity kink at the loop seam — a visible momentary hitch each cycle,
+     * most noticeable on the walk/run cycles of movable summons.
+     *
+     * <p>This is a verbatim port of vanilla's {@code animate} with one change: for a
+     * {@code .looping()} clip, the segment that touches keyframe {@code 0} or {@code len-1} is
+     * interpolated with catmull-rom whose outer neighbour <em>wraps</em> around the loop
+     * (pre-neighbour of {@code kf[0]} = {@code kf[len-2]}, post-neighbour of {@code kf[len-1]} =
+     * {@code kf[1]}). Because a looping clip's first and last keyframes share the same value, the
+     * seam then interpolates as a smooth rounded turnaround, identical in feel to an interior
+     * keyframe. Interior segments keep their authored interpolation, untouched. Non-looping clips
+     * are interpolated exactly as vanilla.
+     *
+     * <p>Drop-in for {@code SinglePartEntityModel.animateMovement}'s inner call — map
+     * {@code limbSwing} to {@code runningTime} (as {@code (long)(limbSwing * 50F)}) and
+     * {@code limbSwingAmount} to {@code scale}.
+     */
+    public static void seamlessLoop(SinglePartEntityModel<?> model, Animation animation, long runningTime, float scale, Vector3f temp) {
+        float lengthSeconds = animation.lengthInSeconds();
+        boolean looping = animation.looping();
+        float f = runningTime / 1000.0F;
+        if (looping) {
+            f %= lengthSeconds;
+        }
+        final float time = f;
+
+        for (Map.Entry<String, List<Transformation>> entry : animation.boneAnimations().entrySet()) {
+            List<Transformation> transformations = entry.getValue();
+            model.getChild(entry.getKey()).ifPresent(part -> {
+                for (Transformation transformation : transformations) {
+                    apply(part, transformation, time, looping, scale, temp);
+                }
+            });
+        }
+    }
+
+    private static void apply(ModelPart part, Transformation transformation, float time, boolean looping, float scale, Vector3f temp) {
+        Keyframe[] keyframes = transformation.keyframes();
+        int last = keyframes.length - 1;
+        int i = Math.max(0, MathHelper.binarySearch(0, keyframes.length, index -> time <= keyframes[index].timestamp()) - 1);
+        int j = Math.min(last, i + 1);
+        Keyframe from = keyframes[i];
+        Keyframe to = keyframes[j];
+        float delta = 0.0F;
+        if (j != i) {
+            delta = MathHelper.clamp((time - from.timestamp()) / (to.timestamp() - from.timestamp()), 0.0F, 1.0F);
+        }
+
+        // Only the boundary segment of a looping clip diverges from vanilla; everything else is
+        // interpolated exactly as authored (including LINEAR/CUBIC choice and vanilla's own clamping).
+        boolean touchesSeam = looping && last >= 2 && (i == 0 || j == last);
+        if (touchesSeam) {
+            Vector3f p0 = keyframes[i == 0 ? last - 1 : i - 1].target();       // wrap the pre-neighbour
+            Vector3f p1 = from.target();
+            Vector3f p2 = to.target();
+            Vector3f p3 = keyframes[j == last ? 1 : j + 1].target();           // wrap the post-neighbour
+            temp.set(
+                    MathHelper.catmullRom(delta, p0.x(), p1.x(), p2.x(), p3.x()) * scale,
+                    MathHelper.catmullRom(delta, p0.y(), p1.y(), p2.y(), p3.y()) * scale,
+                    MathHelper.catmullRom(delta, p0.z(), p1.z(), p2.z(), p3.z()) * scale
+            );
+        } else {
+            to.interpolation().apply(temp, delta, keyframes, i, j, scale);
+        }
+        transformation.target().apply(part, temp);
+    }
+}
