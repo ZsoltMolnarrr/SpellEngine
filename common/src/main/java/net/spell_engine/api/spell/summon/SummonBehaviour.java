@@ -2,6 +2,7 @@ package net.spell_engine.api.spell.summon;
 
 import com.google.common.base.Suppliers;
 import com.google.gson.Gson;
+import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.fx.ParticleBatch;
@@ -17,8 +18,9 @@ public class SummonBehaviour {
 
     /// Gson used for the deep copy below. A plain `Gson` round-trips a `SummonBehaviour` losslessly —
     /// it is the very same mechanism `SummonedEntity` uses to persist the behaviour to/from NBT, so
-    /// every field (including nested structs and lists) is known to serialize cleanly. The `transient`
-    /// `Supplier` fields in `Sounds` are intentionally skipped and lazily re-created on the copy.
+    /// every field (including nested structs and lists) is known to serialize cleanly. Any remaining
+    /// `transient` `Supplier` field (e.g. on `Action.MeleeAttack`) is intentionally skipped and
+    /// lazily re-created on the copy.
     private static final Gson GSON = new Gson();
 
     /// Returns a fully independent deep copy of this behaviour, sharing no mutable sub-structure with
@@ -47,13 +49,18 @@ public class SummonBehaviour {
         return copy;
     }
 
-    /// Parses a sound id string into a SoundEvent. Blank / unparseable → null.
-    /// Used by the lazy accessors in `Sounds` and `Action.MeleeAttack`.
+    /// Resolves a sound id string into its **registered** SoundEvent instance. Blank / unparseable /
+    /// unregistered → null. Used by the lazy accessors in `Action.MeleeAttack`.
+    ///
+    /// Returns the instance held in `Registries.SOUND_EVENT` (via `get`), NOT a fabricated
+    /// `SoundEvent.of(id)`: server-side playback resolves the event back through
+    /// `Registries.SOUND_EVENT.getEntry(value)` (an identity lookup), so a fabricated instance yields
+    /// a null RegistryEntry and NPEs in `ServerWorld.playSound`.
     @Nullable
     static SoundEvent parseSoundId(String soundId) {
         if (soundId == null || soundId.isBlank()) return null;
         Identifier id = Identifier.tryParse(soundId);
-        return id != null ? SoundEvent.of(id) : null;
+        return id != null ? Registries.SOUND_EVENT.get(id) : null;
     }
 
     // --- Spawn FX ---
@@ -240,15 +247,11 @@ public class SummonBehaviour {
         /// step sound (vanilla behaviour: stone-step on stone, wood-step on planks, etc.).
         public String step = "";
 
-        // Lazy SoundEvent for each id. The lambda reads the instance field each time the
-        // supplier is first invoked, so any value Gson installs into `spawn` / `despawn` /
-        // ... is picked up. `transient` keeps Gson from serializing the Suppliers themselves.
-        public final transient Supplier<SoundEvent> spawnEvent   = Suppliers.memoize(() -> parseSoundId(spawn));
-        public final transient Supplier<SoundEvent> despawnEvent = Suppliers.memoize(() -> parseSoundId(despawn));
-        public final transient Supplier<SoundEvent> hurtEvent    = Suppliers.memoize(() -> parseSoundId(hurt));
-        public final transient Supplier<SoundEvent> deathEvent   = Suppliers.memoize(() -> parseSoundId(death));
-        public final transient Supplier<SoundEvent> ambientEvent = Suppliers.memoize(() -> parseSoundId(ambient));
-        public final transient Supplier<SoundEvent> stepEvent    = Suppliers.memoize(() -> parseSoundId(step));
+        // NOTE: these are plain data (raw id strings) only. The lazy, memoized SoundEvent
+        // resolution lives on SummonedEntity, not here — a Gson-deserialized behaviour cannot be
+        // relied upon to carry live `transient Supplier` fields (allocation paths that skip field
+        // initializers leave them null, NPE-ing on first playback). See SummonedEntity's sound
+        // suppliers.
     }
 
     // --- Actions ---

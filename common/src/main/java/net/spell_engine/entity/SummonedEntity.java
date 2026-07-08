@@ -1,5 +1,6 @@
 package net.spell_engine.entity;
 
+import com.google.common.base.Suppliers;
 import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
 import net.minecraft.block.BlockState;
@@ -53,6 +54,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 public abstract class SummonedEntity extends GolemEntity implements SpellSummoned, Tameable {
 
@@ -202,11 +204,41 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         super.takeKnockback(strength, x, z);
     }
 
+    // --- Sounds ---
+    // Lazily-resolved, memoized SoundEvents for this summon's configured sound ids. These live on the
+    // entity rather than on the SummonBehaviour, because a Gson-deserialized behaviour (rebuilt from
+    // NBT/JSON) cannot be relied upon to carry live `transient Supplier` fields — allocation paths
+    // that bypass field initializers leave them null, which NPE'd on first playback. Each lambda reads
+    // `behaviour` lazily; every call site below only invokes `.get()` after guarding `behaviour != null`,
+    // so the memoized value is always resolved from an installed behaviour (and never cached as null
+    // prematurely).
+    private final Supplier<SoundEvent> spawnSound   = Suppliers.memoize(() -> resolveSound(behaviour != null ? behaviour.sounds.spawn   : null));
+    private final Supplier<SoundEvent> despawnSound = Suppliers.memoize(() -> resolveSound(behaviour != null ? behaviour.sounds.despawn : null));
+    private final Supplier<SoundEvent> hurtSound    = Suppliers.memoize(() -> resolveSound(behaviour != null ? behaviour.sounds.hurt    : null));
+    private final Supplier<SoundEvent> deathSound   = Suppliers.memoize(() -> resolveSound(behaviour != null ? behaviour.sounds.death   : null));
+    private final Supplier<SoundEvent> ambientSound = Suppliers.memoize(() -> resolveSound(behaviour != null ? behaviour.sounds.ambient : null));
+    private final Supplier<SoundEvent> stepSound    = Suppliers.memoize(() -> resolveSound(behaviour != null ? behaviour.sounds.step    : null));
+
+    /// Resolves a sound id string into its **registered** SoundEvent instance. Blank / unparseable /
+    /// unregistered → null.
+    ///
+    /// Must return the instance actually held in `Registries.SOUND_EVENT` (via `get`), NOT a freshly
+    /// fabricated `SoundEvent.of(id)`. Server-side playback (`World.playSound(SoundEvent)`) converts
+    /// the event back to a `RegistryEntry` through `Registries.SOUND_EVENT.getEntry(value)`, which
+    /// looks the value up in an *identity* map — a fabricated instance is never found, yielding a null
+    /// RegistryEntry that NPEs in `ServerWorld.playSound`. The registered instance resolves correctly.
+    @Nullable
+    private static SoundEvent resolveSound(@Nullable String soundId) {
+        if (soundId == null || soundId.isBlank()) return null;
+        Identifier id = Identifier.tryParse(soundId);
+        return id != null ? Registries.SOUND_EVENT.get(id) : null;
+    }
+
     @Override
     @Nullable
     protected SoundEvent getHurtSound(DamageSource source) {
         if (behaviour != null) {
-            SoundEvent custom = behaviour.sounds.hurtEvent.get();
+            SoundEvent custom = hurtSound.get();
             if (custom != null) return custom;
         }
         return super.getHurtSound(source);
@@ -216,7 +248,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     @Nullable
     protected SoundEvent getDeathSound() {
         if (behaviour != null) {
-            SoundEvent custom = behaviour.sounds.deathEvent.get();
+            SoundEvent custom = deathSound.get();
             if (custom != null) return custom;
         }
         return super.getDeathSound();
@@ -226,16 +258,27 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     @Nullable
     protected SoundEvent getAmbientSound() {
         if (behaviour != null) {
-            SoundEvent custom = behaviour.sounds.ambientEvent.get();
+            SoundEvent custom = ambientSound.get();
             if (custom != null) return custom;
         }
         return super.getAmbientSound();
     }
 
+    // Vanilla MobEntity.playAmbientSound() is `this.playSound(this.getAmbientSound())` with NO null
+    // guard — a null return reaches ServerWorld.playSound and NPEs on `sound.value()`. Summons treat
+    // the ambient sound as optional (blank / unregistered → null), so guard it here.
+    @Override
+    public void playAmbientSound() {
+        SoundEvent sound = getAmbientSound();
+        if (sound != null) {
+            playSound(sound, getSoundVolume(), getSoundPitch());
+        }
+    }
+
     @Override
     protected void playStepSound(BlockPos pos, BlockState state) {
         if (behaviour != null) {
-            SoundEvent custom = behaviour.sounds.stepEvent.get();
+            SoundEvent custom = stepSound.get();
             if (custom != null) {
                 // Mirrors the vanilla footstep volume scaling (15% of normal) so the sound
                 // doesn't dominate while the entity walks.
@@ -375,7 +418,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private void setPhase(byte phase) {
         byte previous = getDataTracker().get(PHASE);
         if (previous != phase && phase == PHASE_DESPAWNING && behaviour != null) {
-            playConfiguredSound(behaviour.sounds.despawnEvent.get());
+            playConfiguredSound(despawnSound.get());
         }
         getDataTracker().set(PHASE, phase);
         int endAge = switch (phase) {
@@ -897,7 +940,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
             if (pendingSpawnSound) {
                 pendingSpawnSound = false;
                 if (behaviour != null) {
-                    playConfiguredSound(behaviour.sounds.spawnEvent.get());
+                    playConfiguredSound(spawnSound.get());
                     emitSpawnFx();
                 }
             }

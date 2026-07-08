@@ -10,12 +10,14 @@ import java.util.Map;
 
 public final class CustomModelStatusEffect {
     public interface Renderer {
-        @Deprecated(forRemoval = true)
-        void renderEffect(int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack,
+        void renderEffect(int appliedAtAge, int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack,
                           VertexConsumerProvider vertexConsumers, int light);
-        default void renderEffect(int appliedAtAge, int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack,
+        /** @deprecated Implement {@link #renderEffect(int, int, LivingEntity, float, MatrixStack, VertexConsumerProvider, int)}
+         *  instead — it additionally receives {@code appliedAtAge}. Retained only for binary compatibility. */
+        @Deprecated(forRemoval = true)
+        default void renderEffect(int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack,
                           VertexConsumerProvider vertexConsumers, int light) {
-            renderEffect(amplifier, livingEntity, delta, matrixStack, vertexConsumers, light);
+            renderEffect(0, amplifier, livingEntity, delta, matrixStack, vertexConsumers, light);
         }
     }
     public record Args(boolean scaleWithEntity) {
