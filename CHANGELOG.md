@@ -5,6 +5,7 @@ Functional changes:
 - Fixed missing default translation for Spell Scroll item 
 - Fixed incorrect ordering of spell scrolls in creative menu
 - Fixed inaccurate landing position of meteor storm spells
+- Fixed spell cloud `impact_particles` not executed
 
 API changes:
 - Added true volumetric collision detection for spell projectiles

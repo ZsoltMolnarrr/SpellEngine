@@ -360,7 +360,11 @@ public class SpellCloud extends Entity implements Ownable {
     }
 
     protected void onImpactPerformed(LivingEntity owner, World world, Spell.Delivery.Cloud cloudData, SpellHelper.ImpactContext context) {
-        ParticleHelper.play(world, this, cloudData.impact_particles);
+        // Server-side call site: `ParticleHelper.play` bottoms out in `World.addParticle`, which is an
+        // empty method on anything but ClientWorld — it has to be broadcast instead. Detached (rather
+        // than entity-anchored) because a cloud whose `despawn_ticks` is 0 is discarded on this very
+        // tick, and the client would resolve the packet's entity id to nothing.
+        ParticleHelper.sendBatchesDetached(this, cloudData.impact_particles);
         this.impactsPerformed++;
     }
 
