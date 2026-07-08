@@ -241,7 +241,7 @@ public class SpellBuilder {
 
     /// Factory functions for {@link Spell.EntityPlacement}s and common multi-placement arrangements,
     /// to keep generator code declarative. Methods are tagged by the axis they affect: SPATIAL ones
-    /// (`point`, `ring`, `cross`, `diamond`, `row`, `ray`) build a layout and return a new list;
+    /// (`pointAtAngle`, `ring`, `cross`, `diamond`, `row`, `ray`) build a layout and return a new list;
     /// TIMING ones (`delayCascade`, `delayUniform`) adjust `delay_ticks` on an existing list in place.
     ///
     /// Geometry is relative to the caster's facing: a placement is positioned `distance` blocks away
@@ -261,15 +261,15 @@ public class SpellBuilder {
 
         /// SPATIAL: a single placement `distance` blocks from the caster, `yawOffset` degrees clockwise
         /// from its facing (0 = front, 90 = right, 180 = back, 270 = left).
-        public static Spell.EntityPlacement point(float distance, float yawOffset) {
+        public static Spell.EntityPlacement pointAtAngle(float distance, float yawOffset) {
             var placement = template();
             placement.location_offset_by_look = distance;
             placement.location_yaw_offset = yawOffset;
             return placement;
         }
         /// SPATIAL (with an initial spawn delay): a single placement, seeded with `delay` ticks.
-        public static Spell.EntityPlacement point(float distance, float yawOffset, int delay) {
-            var placement = point(distance, yawOffset);
+        public static Spell.EntityPlacement pointAtAngle(float distance, float yawOffset, int delay) {
+            var placement = pointAtAngle(distance, yawOffset);
             placement.delay_ticks = delay;
             return placement;
         }
