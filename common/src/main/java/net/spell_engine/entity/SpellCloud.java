@@ -93,6 +93,31 @@ public class SpellCloud extends Entity implements Ownable {
     public boolean isActive()     { return getDataTracker().get(PHASE_TRACKER) == PHASE_ACTIVE; }
     public boolean isDespawning() { return getDataTracker().get(PHASE_TRACKER) == PHASE_DESPAWNING; }
 
+    /// Server-side: cut the remaining lifetime short and enter DESPAWNING for `ticks`, after which
+    /// `tick()` discards this entity through the normal `age >= timeToLive` path.
+    ///
+    /// Encoding the wind-down in `timeToLive`/`despawnDuration` — rather than tracking a separate
+    /// "ending" flag — keeps the age-derived phase in `tick()` self-consistent (`age >= timeToLive -
+    /// despawnDuration` is true from this tick onward) and, since both fields are persisted, survives
+    /// an NBT round-trip.
+    ///
+    /// `ticks <= 0` discards immediately. Already despawning is a no-op, so the first caller wins:
+    /// a subclass may pick its own wind-down length from `onImpactPerformed` before the impact-cap
+    /// check in `tick()` falls back to the cloud's configured `despawn_ticks`.
+    protected void beginDespawn(int ticks) {
+        if (getWorld().isClient || isDespawning()) {
+            return;
+        }
+        if (ticks <= 0) {
+            this.discard();
+            return;
+        }
+        this.despawnDuration = ticks;
+        this.timeToLive = this.age + ticks;
+        // Publish now; waiting for the next tick would leak one frame of the ACTIVE pose.
+        setPhase(PHASE_DESPAWNING);
+    }
+
     /// Server-side: publishes the current phase and the absolute age at which it ends, so the client
     /// can drive the spawn/despawn scale without knowing the raw boundary fields (mirrors SummonedEntity).
     private void setPhase(byte phase) {
@@ -289,8 +314,7 @@ public class SpellCloud extends Entity implements Ownable {
 
         } else {
             // Server side tick
-            if (this.age >= this.timeToLive
-                    || (this.impactCap > 0 && this.impactsPerformed >= this.impactCap)) {
+            if (this.age >= this.timeToLive) {
                 this.discard();
                 return;
             }
@@ -319,12 +343,29 @@ public class SpellCloud extends Entity implements Ownable {
                     var performed = SpellHelper.lookupAndPerformAreaImpact(area_impact, spellEntry, owner,null,
                             this, spell.impacts, context.position(this.getPos()), true);
                     if (performed) {
-                        ParticleHelper.play(world, this, cloudData.impact_particles);
-                        this.impactsPerformed++;
+                        onImpactPerformed(owner, world, cloudData, context);
+                        if (this.impactCap > 0 && this.impactsPerformed >= this.impactCap) {
+                            // A spent cloud winds down through DESPAWNING rather than vanishing on
+                            // the spot, so its model gets a phase to animate in. A subclass that
+                            // already called `beginDespawn` from `onImpactPerformed` (e.g. to use a
+                            // longer, bespoke clip) makes this a no-op.
+                            beginDespawn(this.despawnDuration);
+                        }
+                    } else {
+                        onImpactFailed(owner, world, cloudData, context);
                     }
                 }
             }
         }
+    }
+
+    protected void onImpactPerformed(LivingEntity owner, World world, Spell.Delivery.Cloud cloudData, SpellHelper.ImpactContext context) {
+        ParticleHelper.play(world, this, cloudData.impact_particles);
+        this.impactsPerformed++;
+    }
+
+    protected void onImpactFailed(LivingEntity owner, World world, Spell.Delivery.Cloud cloudData, SpellHelper.ImpactContext context) {
+        // No-op by default; override in subclasses to handle failed impacts (e.g. play a sound).
     }
 
     @Nullable public Spell.Delivery.Cloud getCloudData() {
