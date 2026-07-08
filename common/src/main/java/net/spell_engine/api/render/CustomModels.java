@@ -6,6 +6,7 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
@@ -14,6 +15,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.Platform;
 import net.spell_engine.client.render.CustomModelRegistry;
 import net.spell_engine.mixin.client.render.ItemRendererAccessor;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -27,6 +29,19 @@ public class CustomModels {
 
     public static void render(RenderLayer renderLayer, ItemRenderer itemRenderer, Identifier modelId,
                               MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int seed) {
+        render(renderLayer, itemRenderer, modelId, null, matrices, vertexConsumers, light, seed);
+    }
+
+    /// Overload that applies an item {@link ModelTransformationMode} display transform to the resolved
+    /// baked model before drawing it. Pass {@code null} to render the raw model with no display
+    /// transform (the default behaviour of the sibling overload).
+    ///
+    /// Needed for held-item models: they are authored in item-display space, so the projectile
+    /// renderer applies `FIXED` (mirroring the legacy single-model path) to give them the base
+    /// orientation the projectile orientation math expects. Custom (non-item) models pass `null`.
+    public static void render(RenderLayer renderLayer, ItemRenderer itemRenderer, Identifier modelId,
+                              @Nullable ModelTransformationMode transformationMode,
+                              MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int seed) {
         var manager = MinecraftClient.getInstance().getBakedModelManager();
         BakedModel model;
         if (Platform.Fabric) { // Not outsourcing to Platform, to avoid dedicated server issues
@@ -39,6 +54,9 @@ public class CustomModels {
             if (!stack.isEmpty()) {
                 model = itemRenderer.getModel(stack, null, null, seed);
             }
+        }
+        if (transformationMode != null && model != null) {
+            model.getTransformation().getTransformation(transformationMode).apply(false, matrices);
         }
         renderModel(renderLayer, (ItemRendererAccessor) itemRenderer, matrices, vertexConsumers, light, model);
     }

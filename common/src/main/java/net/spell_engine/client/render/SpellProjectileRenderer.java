@@ -105,7 +105,11 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
             var modelId = model.use_held_item ? heldItemModelId : fx.model_id;
             if (modelId != null && !modelId.isEmpty()) {
                 var layer = SpellModelHelper.LAYERS.get(fx.light_emission);
-                CustomModels.render(layer, itemRenderer, Identifier.of(modelId), matrices, vertexConsumers, light, entity.getId());
+                // Held items are item models authored in item-display space; apply the FIXED (item-frame)
+                // display transform, as the legacy single-model path did, so their base orientation matches
+                // what the orientation math (e.g. ALONG_MOTION) expects. Custom fx.model_id models render raw.
+                var transformationMode = model.use_held_item ? ModelTransformationMode.FIXED : null;
+                CustomModels.render(layer, itemRenderer, Identifier.of(modelId), transformationMode, matrices, vertexConsumers, light, entity.getId());
             }
 
             matrices.pop();
