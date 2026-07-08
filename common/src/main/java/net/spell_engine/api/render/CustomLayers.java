@@ -106,7 +106,12 @@ public class CustomLayers extends RenderLayer {
             case NONE:
                 break;
         }
-        return RenderLayer.getEntityTranslucent(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
+        // Backface-culled, unlike the emissive layers above (and unlike vanilla's `getEntityTranslucent`,
+        // which sets DISABLE_CULLING). Solid, non-glowing spell models are ordinary geometry: a model
+        // built from zero-thickness panels carrying both an `up` and a `down` face renders those two
+        // quads coplanar, and without culling they z-fight and double-blend their translucent pixels.
+        // Culling picks the one facing the camera, which is what such a model is authored to expect.
+        return RenderLayer.getEntityTranslucentCull(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
     }
 
     public static RenderLayer spellObject(Identifier texture, LightEmission lightEmission, boolean translucent) {
