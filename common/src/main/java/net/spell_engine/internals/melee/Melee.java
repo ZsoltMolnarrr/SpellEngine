@@ -15,6 +15,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.Sound;
@@ -31,6 +32,7 @@ import net.spell_engine.mixin.entity.LivingEntityAccessor;
 import net.spell_engine.utils.AnimationHelper;
 import net.spell_engine.utils.AttributeModifierUtil;
 import net.spell_engine.utils.SoundHelper;
+import net.spell_power.api.SpellSchool;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -242,12 +244,34 @@ public class Melee {
         }
     }
 
+    /// Melee skills land their damage through vanilla `player.attack(...)`, which reads
+    /// `GENERIC_ATTACK_DAMAGE` — an attribute only the main hand contributes to. A spell of the
+    /// dual wielding school swings both weapons, so the power difference between the two schools is
+    /// expressed here as a damage multiplier over the single handed school.
+    ///
+    /// Returns the bonus fraction (`0` for every other school), not the multiplier itself, ready to
+    /// be handed to an `ADD_MULTIPLIED_TOTAL` modifier.
+    private static float dualWieldDamageBonus(PlayerEntity player, @Nullable Spell spell) {
+        if (spell == null || spell.school != ExternalSpellSchools.PHYSICAL_MELEE_DUAL) {
+            return 0F;
+        }
+        var query = new SpellSchool.QueryArgs(player);
+        var singleHanded = ExternalSpellSchools.PHYSICAL_MELEE.getValue(SpellSchool.Trait.POWER, query);
+        if (singleHanded <= 0) {
+            return 0F;
+        }
+        var dualWielded = ExternalSpellSchools.PHYSICAL_MELEE_DUAL.getValue(SpellSchool.Trait.POWER, query);
+        return (float) (dualWielded / singleHanded) - 1F;
+    }
+
     private static final Identifier DAMAGE_MODIFIER_ID = Identifier.of(SpellEngineMod.ID, "melee_attack");
+    private static final Identifier DUAL_WIELD_MODIFIER_ID = Identifier.of(SpellEngineMod.ID, "melee_attack_dual_wield");
     public static void performAttackAgainstTargets(ServerPlayerEntity player, AttackContext context, int[] targetIds) {
         var world = player.getWorld();
         var focusMode = focusMode();
         var attributeInstance = player.getAttributes().getCustomInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE);
         EntityAttributeModifier appliedDamageModifier = null;
+        EntityAttributeModifier appliedDualWieldModifier = null;
         try {
             var lastAttackTime = ((LivingEntityAccessor)player).spellEngine_getLastAttackedTicks();
             var targets = new ArrayList<Entity>();
@@ -261,6 +285,15 @@ public class Melee {
             var damageMultiplierBase = 0F;
             for (var modifier : modifiers) {
                 damageMultiplierBase += modifier.melee_damage_multiplier;
+            }
+            // Read before any temporary modifier lands, so it cannot inflate its own ratio. Kept as a
+            // separate modifier rather than summed into the one below: `ADD_MULTIPLIED_TOTAL`
+            // modifiers compose multiplicatively, so this way percentage bonuses scale the dual
+            // wielded swing instead of the main hand one.
+            var dualWieldBonus = dualWieldDamageBonus(player, spellEntry != null ? spellEntry.value() : null);
+            if (dualWieldBonus != 0 && attributeInstance != null) {
+                appliedDualWieldModifier = new EntityAttributeModifier(DUAL_WIELD_MODIFIER_ID, dualWieldBonus, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+                attributeInstance.addTemporaryModifier(appliedDualWieldModifier);
             }
             if (attack != null && attributeInstance != null) {
                 var damageModifierAmount = attack.damage_bonus + damageMultiplierBase;
@@ -311,6 +344,9 @@ public class Melee {
         }
         if (appliedDamageModifier != null) {
             attributeInstance.removeModifier(appliedDamageModifier);
+        }
+        if (appliedDualWieldModifier != null) {
+            attributeInstance.removeModifier(appliedDualWieldModifier);
         }
         ((SpellCasterEntity)player).setActiveMeleeSkill(null);
     }
