@@ -131,12 +131,17 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
                 }
                 velocity = velocity.normalize();
                 var directionBasedYaw = Math.toDegrees(Math.atan2(velocity.x, velocity.z)) + 180F;
-                if (orientation == Spell.ProjectileModelComposite.Orientation.ALONG_MOTION) {
-                    directionBasedYaw += 90;
-                }
                 var directionBasedPitch = Math.toDegrees(Math.asin(velocity.y));
                 matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees((float) directionBasedYaw));
                 matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees((float) directionBasedPitch));
+                if (orientation == Spell.ProjectileModelComposite.Orientation.ALONG_MOTION) {
+                    // ALONG_MOTION models lie along their local X axis, so folding the +90 into the
+                    // yaw would leave the pitch (applied around X) rotating the model about its own
+                    // length — no elevation, model stuck facing the horizon. Instead convert the X
+                    // length into the +Z "forward" that the yaw/pitch above already orient, applied
+                    // innermost (last) so it doesn't cancel the vertical component of the motion.
+                    matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(90F));
+                }
             }
         }
     }

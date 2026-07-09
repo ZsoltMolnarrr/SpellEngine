@@ -6,6 +6,7 @@ Functional changes:
 - Fixed incorrect ordering of spell scrolls in creative menu
 - Fixed inaccurate landing position of meteor storm spells
 - Fixed spell cloud `impact_particles` not executed
+- Fixed spell projectile `heldItem` render not respecting pitch
 
 API changes:
 - Added true volumetric collision detection for spell projectiles
