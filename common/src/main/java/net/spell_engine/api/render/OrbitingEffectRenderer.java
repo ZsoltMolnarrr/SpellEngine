@@ -25,8 +25,10 @@ public class OrbitingEffectRenderer implements CustomModelStatusEffect.Renderer 
         this.horizontalOffset = horizontalOffset;
     }
 
+    // `appliedAtWorldTime` ignored: the orbit angle is driven by the entity's own age, so a
+    // client/server age offset only shifts the (continuous, periodic) phase — invisible.
     @Override
-    public void renderEffect(int appliedAtAge, int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumers, int light) {
+    public void renderEffect(long appliedAtWorldTime, int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumers, int light) {
         matrixStack.push();
         var time = livingEntity.age + delta;
 

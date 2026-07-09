@@ -9,6 +9,7 @@ Functional changes:
 - Fixed spell projectile `heldItem` render not respecting pitch
 
 API changes:
+- BREAKING! - `CustomModelStatusEffect.Renderer` now has different arguments
 - Added true volumetric collision detection for spell projectiles
 - Added server-side entry point for entity spell casting (SpellHelper.java)
 - Added some new assets: player animations, particles, sounds

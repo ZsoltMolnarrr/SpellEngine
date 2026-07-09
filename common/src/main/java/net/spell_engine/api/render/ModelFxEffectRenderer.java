@@ -96,10 +96,14 @@ public class ModelFxEffectRenderer implements CustomModelStatusEffect.Renderer {
     }
 
     @Override
-    public void renderEffect(int appliedAtAge, int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack,
+    public void renderEffect(long appliedAtWorldTime, int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack,
                  VertexConsumerProvider vertexConsumers, int light) {
         var itemRenderer = MinecraftClient.getInstance().getItemRenderer();
-        float rawTime = livingEntity.age - appliedAtAge + delta;
+        // World time, not Entity.age: the server stamps `appliedAtWorldTime` in its clock, and the
+        // client's World.getTime() tracks it (shared origin, re-synced each second). Entity.age counts
+        // from whenever each side first saw the entity, so `age - appliedAtAge` could start deeply
+        // negative and skip the whole animation for seconds. See Synchronized.Effect.
+        float rawTime = (livingEntity.getWorld().getTime() - appliedAtWorldTime) + delta;
 
         if (followYaw) {
             float yaw = livingEntity.getYaw(delta);

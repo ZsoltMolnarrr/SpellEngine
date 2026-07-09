@@ -13,7 +13,12 @@ public interface Synchronized {
         ((Synchronized)effect).setSynchronized(isSynchronized);
     }
 
-    record Effect(StatusEffect effect, int amplifier, int appliedAtAge) { }
+    /// `appliedAtWorldTime` is the server's `World.getTime()` at the moment the effect was applied.
+    /// World time shares an origin and rate on both sides and is re-synced each second, so a client
+    /// can measure elapsed effect time against its own `World.getTime()` without the unbounded skew
+    /// that `Entity.age` carries (client and server age counters start whenever each side first sees
+    /// the entity).
+    record Effect(StatusEffect effect, int amplifier, long appliedAtWorldTime) { }
     static List<Effect> effectsOf(LivingEntity entity) {
         return ((Provider)entity).SpellEngine_syncedStatusEffects();
     }
