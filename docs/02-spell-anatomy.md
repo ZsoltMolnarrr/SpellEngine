@@ -28,7 +28,11 @@ Built-in schools from the [SpellPower](../../SpellPower) mod (namespace `spell_p
 | `spell_power:soul` | MAGIC |
 | `spell_power:generic` | MAGIC |
 | `spell_power:physical_melee` | MELEE |
+| `spell_power:physical_melee_dual` | MELEE |
 | `spell_power:physical_ranged` | ARCHERY |
+
+`physical_melee_dual` matches `physical_melee`, except its spell power also includes the off-hand
+weapon's damage. Use it for spells that strike with both held weapons.
 
 Custom schools can be registered in Java via `SpellSchools.register(...)`.
 

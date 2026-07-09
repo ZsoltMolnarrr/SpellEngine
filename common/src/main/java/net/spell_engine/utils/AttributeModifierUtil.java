@@ -34,12 +34,13 @@ public class AttributeModifierUtil {
 
     public static double flatBonusFrom(ItemStack itemStack, RegistryEntry<EntityAttribute> attribute) {
         var modifiers = itemStack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
+        double value = 0;
         for (var entry : modifiers.modifiers()) {
             if (entry.attribute().equals(attribute) && entry.modifier().operation() == EntityAttributeModifier.Operation.ADD_VALUE) {
-                return entry.modifier().value();
+                value += entry.modifier().value();
             }
         }
-        return 0;
+        return value;
     }
 
     public static double multipliersOf(RegistryEntry<EntityAttribute> attribute, LivingEntity entity) {

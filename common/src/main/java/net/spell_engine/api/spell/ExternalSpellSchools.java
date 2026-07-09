@@ -2,6 +2,7 @@ package net.spell_engine.api.spell;
 
 import net.fabric_extras.ranged_weapon.api.EntityAttributes_RangedWeapon;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageTypes;
@@ -13,6 +14,19 @@ import net.spell_power.api.SpellSchool;
 import net.spell_power.api.SpellSchools;
 
 public class ExternalSpellSchools {
+    /// The off-hand weapon's flat attack damage bonus, scaled by the wielder's multiplicative attack
+    /// damage modifiers. Held item modifiers are only contributed to the attribute container by the
+    /// main hand, so an off-hand weapon is invisible to `GENERIC_ATTACK_DAMAGE` and its bonus has to
+    /// be read off the stack, then scaled the same way the attribute would have scaled it.
+    private static double offHandAttackDamage(LivingEntity entity) {
+        var offHandStack = entity.getOffHandStack();
+        var weaponDamage = AttributeModifierUtil.flatBonusFrom(offHandStack, EntityAttributes.GENERIC_ATTACK_DAMAGE);
+        if (weaponDamage == 0) {
+            return 0;
+        }
+        return weaponDamage * AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_DAMAGE, entity);
+    }
+
     private static RegistryEntry<EntityAttribute> rangedDamageAttribute() {
         if (FabricLoader.getInstance().isModLoaded("ranged_weapon_api")) {
             return EntityAttributes_RangedWeapon.DAMAGE.entry;
@@ -23,6 +37,13 @@ public class ExternalSpellSchools {
 
     public static final SpellSchool PHYSICAL_MELEE = new SpellSchool(SpellSchool.Archetype.MELEE,
             Identifier.of(SpellPowerMod.ID, "physical_melee"),
+            0xb3b3b3,
+            DamageTypes.PLAYER_ATTACK,
+            EntityAttributes.GENERIC_ATTACK_DAMAGE);
+    /// Behaves as {@link #PHYSICAL_MELEE}, except its power also counts the off-hand weapon.
+    /// For spells that strike with both held weapons.
+    public static final SpellSchool PHYSICAL_MELEE_DUAL = new SpellSchool(SpellSchool.Archetype.MELEE,
+            Identifier.of(SpellPowerMod.ID, "physical_melee_dual"),
             0xb3b3b3,
             DamageTypes.PLAYER_ATTACK,
             EntityAttributes.GENERIC_ATTACK_DAMAGE);
@@ -58,6 +79,20 @@ public class ExternalSpellSchools {
         });
         SpellSchools.configureSpellHaste(PHYSICAL_MELEE);
         SpellSchools.register(PHYSICAL_MELEE);
+
+        // Same power as PHYSICAL_MELEE, plus the off-hand weapon. The attack damage attribute only
+        // accounts for the main hand, since vanilla weapons declare their modifiers for MAINHAND.
+        PHYSICAL_MELEE_DUAL.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {
+            return query.entity().getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
+        });
+        PHYSICAL_MELEE_DUAL.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {
+            return offHandAttackDamage(query.entity());
+        });
+        PHYSICAL_MELEE_DUAL.addSource(SpellSchool.Trait.HASTE, SpellSchool.Apply.ADD, query -> {
+            return AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, query.entity()) - 1.0;
+        });
+        SpellSchools.configureSpellHaste(PHYSICAL_MELEE_DUAL);
+        SpellSchools.register(PHYSICAL_MELEE_DUAL);
 
         if (FabricLoader.getInstance().isModLoaded("ranged_weapon_api")) {
             PHYSICAL_RANGED.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {

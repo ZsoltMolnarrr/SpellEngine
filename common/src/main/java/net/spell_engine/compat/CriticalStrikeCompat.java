@@ -23,6 +23,8 @@ public class CriticalStrikeCompat {
             // Using interface based querying instead of directly reading attributes,
             // to allow custom implementations of CriticalStriker.
 
+
+
             ExternalSpellSchools.PHYSICAL_RANGED.addSource(SpellSchool.Trait.CRIT_CHANCE, SpellSchool.Apply.ADD, query ->  {
                 if (query.entity() instanceof CriticalStriker criticalStriker) {
                     return criticalStriker.rng_criticalChance();
@@ -47,7 +49,18 @@ public class CriticalStrikeCompat {
                 }
                 return 0.0;
             });
-
+            ExternalSpellSchools.PHYSICAL_MELEE_DUAL.addSource(SpellSchool.Trait.CRIT_CHANCE, SpellSchool.Apply.ADD, query ->  {
+                if (query.entity() instanceof CriticalStriker criticalStriker) {
+                    return criticalStriker.rng_criticalChance();
+                }
+                return 0.0;
+            });
+            ExternalSpellSchools.PHYSICAL_MELEE_DUAL.addSource(SpellSchool.Trait.CRIT_DAMAGE, SpellSchool.Apply.ADD, query -> {
+                if (query.entity() instanceof CriticalStriker criticalStriker) {
+                    return criticalStriker.rng_criticalDamageMultiplier() - 1;
+                }
+                return 0.0;
+            });
 //            ExternalSpellSchools.PHYSICAL_RANGED.addSource(SpellSchool.Trait.CRIT_CHANCE, SpellSchool.Apply.ADD, query ->  {
 //                if (!query.entity().getAttributes().hasAttribute(CriticalStrikeAttributes.CHANCE.attributeEntry)) {
 //                    return 0.0;
