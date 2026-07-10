@@ -9,11 +9,10 @@ import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.fx.SpellEngineParticles;
-import net.spell_power.api.SpellSchools;
 import org.jetbrains.annotations.Nullable;
 
 @Environment(value= EnvType.CLIENT)
-public class SpellFlameParticle extends AbstractSlowingParticle {
+public class SpellFlameParticle extends AbstractSlowingParticle implements AppearanceAware {
     boolean glow = true;
     boolean translucent = false;
     private SpriteProvider spriteProviderForAnimation = null;
@@ -78,77 +77,105 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
         }
     }
 
-    @Environment(EnvType.CLIENT)
-    public static class FlameFactory implements ParticleFactory<SimpleParticleType> {
-        private final SpriteProvider spriteProvider;
+    // MARK: AppearanceAware
 
-        public FlameFactory(SpriteProvider spriteProvider) {
-            this.spriteProvider = spriteProvider;
-        }
+    @Override
+    public void applyColor(Color color) {
+        this.setColor(color.red(), color.green(), color.blue());
+    }
 
-        public Particle createParticle(SimpleParticleType SimpleParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
-            particle.setSprite(this.spriteProvider);
-            return particle;
-        }
+    @Override
+    public void multiplyAlpha(float factor) {
+        this.alpha *= factor;
+    }
+
+    @Override
+    public void multiplyScale(float factor) {
+        this.scale *= factor;
+    }
+
+    @Override
+    public void multiplyMaxAge(float factor) {
+        this.maxAge = (int) (this.maxAge * factor);
+    }
+
+    @Override
+    public void follow(@Nullable Entity entity) {
+        this.followEntity = entity;
+    }
+
+    // MARK: Factories
+
+    public static Config config() {
+        return new Config();
+    }
+
+    public static class Config {
+        boolean animated = false;
+        @Nullable Color color = null;
+        boolean randomDarken = false;
+        @Nullable Float scale = null;
+        float maxAgeFactor = 1F;
+        @Nullable Float alpha = null;
+        @Nullable Boolean glow = null;
+        @Nullable Float velocityMultiplier = null;
+        @Nullable Float gravityStrength = null;
+
+        public Config animated() { this.animated = true; return this; }
+        public Config color(Color color) { this.color = color; return this; }
+        public Config randomDarken() { this.randomDarken = true; return this; }
+        public Config scale(float scale) { this.scale = scale; return this; }
+        public Config maxAgeFactor(float maxAgeFactor) { this.maxAgeFactor = maxAgeFactor; return this; }
+        public Config alpha(float alpha) { this.alpha = alpha; return this; }
+        public Config glow(boolean glow) { this.glow = glow; return this; }
+        public Config velocityMultiplier(float velocityMultiplier) { this.velocityMultiplier = velocityMultiplier; return this; }
+        public Config gravityStrength(float gravityStrength) { this.gravityStrength = gravityStrength; return this; }
     }
 
     @Environment(EnvType.CLIENT)
-    public static class AnimatedFlameFactory implements ParticleFactory<SimpleParticleType> {
+    public static class ConfiguredFactory implements ParticleFactory<SimpleParticleType> {
         private final SpriteProvider spriteProvider;
+        private final Config config;
 
-        public AnimatedFlameFactory(SpriteProvider spriteProvider) {
+        public ConfiguredFactory(SpriteProvider spriteProvider, Config config) {
             this.spriteProvider = spriteProvider;
+            this.config = config;
         }
 
         public Particle createParticle(SimpleParticleType SimpleParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
             var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
             particle.setSprite(this.spriteProvider);
-            particle.spriteProviderForAnimation = this.spriteProvider;
-            return particle;
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static class ColoredAnimatedFactory implements ParticleFactory<SimpleParticleType> {
-        private final SpriteProvider spriteProvider;
-        private final Color color;
-        private final float scale;
-        protected float randomColorFloor = 0.5F;
-        protected float randomColorRange = 0.35F;
-
-        public ColoredAnimatedFactory(Color color, float scale, SpriteProvider spriteProvider) {
-            this.spriteProvider = spriteProvider;
-            this.color = color;
-            this.scale = scale;
-        }
-
-        public Particle createParticle(SimpleParticleType SimpleParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
-            particle.setSprite(this.spriteProvider);
-            particle.spriteProviderForAnimation = this.spriteProvider;
-
-            var red = color.red();
-            var green = color.green();
-            var blue = color.blue();
-            if (randomColorRange > 0) {
-                red = (clientWorld.random.nextFloat() * randomColorFloor + randomColorRange) * red;
-                green = (clientWorld.random.nextFloat() * randomColorFloor + randomColorRange) * green;
-                blue = (clientWorld.random.nextFloat() * randomColorFloor + randomColorRange) * blue;
+            if (config.animated) {
+                particle.spriteProviderForAnimation = this.spriteProvider;
             }
-            float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
-            particle.setColor(red, green, blue);
-            particle.scale = this.scale;
-            particle.setAlpha(1F);
+            var color = config.color;
+            if (color != null) {
+                if (config.randomDarken) {
+                    float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
+                    particle.setColor(color.red() * j, color.green() * j, color.blue() * j);
+                } else {
+                    particle.setColor(color.red(), color.green(), color.blue());
+                }
+            }
+            if (config.scale != null) {
+                particle.scale = config.scale;
+            }
+            if (config.maxAgeFactor != 1F) {
+                particle.maxAge = (int) (particle.maxAge * config.maxAgeFactor);
+            }
+            if (config.alpha != null) {
+                particle.setAlpha(config.alpha);
+            }
+            if (config.glow != null) {
+                particle.glow = config.glow;
+            }
+            if (config.velocityMultiplier != null) {
+                particle.velocityMultiplier = config.velocityMultiplier;
+            }
+            if (config.gravityStrength != null) {
+                particle.gravityStrength = config.gravityStrength;
+            }
             return particle;
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static class ElectricSparkFactory extends ColoredAnimatedFactory {
-        public ElectricSparkFactory(SpriteProvider spriteProvider) {
-            super(Color.ELECTRIC, 0.75F, spriteProvider);
-            randomColorRange = 0F;
         }
     }
 
@@ -170,20 +197,10 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
 
             particle.setAlpha(1F);
             // glow = true by default in SpellFlameParticle
-
+            particle.scale = 1F;
             particle.maxAge = texture.frames() > 1 ? texture.frames() : 40;
 
-            var appearance = particleType.getAppearance();
-            if (appearance != null) {
-                var color = appearance.color;
-                if (color != null) {
-                    particle.setColor(color.red(), color.green(), color.blue());
-                    particle.alpha *= color.alpha();
-                }
-                particle.scale = appearance.scale;
-                particle.followEntity = appearance.entityFollowed;
-            }
-
+            particle.applyAppearance(particleType.getAppearance());
             return particle;
         }
     }
@@ -215,46 +232,6 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
     }
 
     @Environment(EnvType.CLIENT)
-    public static class WeaknessSmokeFactory implements ParticleFactory<SimpleParticleType> {
-        private final SpriteProvider spriteProvider;
-        public Color color = Color.from(0x993333);
-        public WeaknessSmokeFactory(SpriteProvider spriteProvider) {
-            this.spriteProvider = spriteProvider;
-        }
-
-        public Particle createParticle(SimpleParticleType SimpleParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
-            particle.setSprite(this.spriteProvider);
-            float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
-            particle.setColor(color.red() * j, color.green() * j, color.blue() * j);
-            particle.spriteProviderForAnimation = this.spriteProvider;
-            particle.velocityMultiplier = 0.8F;
-            particle.setAlpha(0.7F);
-            particle.glow = false;
-            particle.gravityStrength = 0.01F;
-            return particle;
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static class MediumFlameFactory implements ParticleFactory<SimpleParticleType> {
-        private final SpriteProvider spriteProvider;
-
-        public MediumFlameFactory(SpriteProvider spriteProvider) {
-            this.spriteProvider = spriteProvider;
-        }
-
-        public Particle createParticle(SimpleParticleType SimpleParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
-            particle.setSprite(this.spriteProvider);
-            particle.spriteProviderForAnimation = this.spriteProvider;
-            particle.scale = 0.5F;
-            particle.maxAge *= 0.5;
-            return particle;
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
     public static class FrostShard implements ParticleFactory<SimpleParticleType> {
         private final SpriteProvider spriteProvider;
 
@@ -272,98 +249,6 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
             particle.velocityY *= clientWorld.random.nextFloat() * 0.2F + 0.9F;
             particle.maxAge = Math.round(clientWorld.random.nextFloat() * 3) + 5;
             return particle;
-        }
-    }
-
-    public static class ColorableFactory implements ParticleFactory<SimpleParticleType> {
-        private final SpriteProvider spriteProvider;
-        public Color color = Color.from(0xffffff);
-
-        public ColorableFactory(SpriteProvider spriteProvider, Color color) {
-            this.spriteProvider = spriteProvider;
-            this.color = color;
-        }
-
-        @Nullable
-        @Override
-        public Particle createParticle(SimpleParticleType SimpleParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
-            particle.setSprite(this.spriteProvider);
-            float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
-            particle.setColor(color.red() * j, color.green() * j, color.blue() * j);
-            return particle;
-        }
-    }
-
-
-    @Environment(EnvType.CLIENT)
-    public static class HealingFactory extends ColorableFactory {
-        public HealingFactory(SpriteProvider spriteProvider) {
-            super(spriteProvider, Color.from(SpellSchools.HEALING.color));
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static class HolyFactory extends ColorableFactory {
-        public HolyFactory(SpriteProvider spriteProvider) {
-            super(spriteProvider, Color.HOLY);
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static class NatureFactory extends ColorableFactory {
-        public NatureFactory(SpriteProvider spriteProvider) {
-            super(spriteProvider, Color.NATURE);
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static class WhiteFactory extends ColorableFactory {
-        public WhiteFactory(SpriteProvider spriteProvider) {
-            super(spriteProvider, Color.WHITE);
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static class NatureSlowingFactory extends NatureFactory {
-        public NatureSlowingFactory(SpriteProvider spriteProvider) {
-            super(spriteProvider);
-        }
-        @Override
-        public @Nullable Particle createParticle(SimpleParticleType SimpleParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var particle = (SpellFlameParticle)super.createParticle(SimpleParticleType, clientWorld, d, e, f, g, h, i);
-            particle.velocityMultiplier = 0.8F;
-            return particle;
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static class BuffFactory implements ParticleFactory<SimpleParticleType> {
-        private final SpriteProvider spriteProvider;
-        public Color color = Color.from(0xffffff);
-
-        public BuffFactory(SpriteProvider spriteProvider, Color color) {
-            this.spriteProvider = spriteProvider;
-            this.color = color;
-        }
-
-        @Nullable
-        @Override
-        public Particle createParticle(SimpleParticleType SimpleParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var particle = new SpellFlameParticle(clientWorld, d, e, f, g, h, i);
-            particle.setSprite(this.spriteProvider);
-            float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
-            particle.setColor(color.red() * j, color.green() * j, color.blue() * j);
-            particle.maxAge = 16;
-            particle.translucent = true;
-            return particle;
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    public static class BuffRageFactory extends BuffFactory {
-        public BuffRageFactory(SpriteProvider spriteProvider) {
-            super(spriteProvider, Color.RAGE);
         }
     }
 
@@ -385,24 +270,10 @@ public class SpellFlameParticle extends AbstractSlowingParticle {
             particle.scale = 0.4F;
             particle.alpha = 0.9F;
             particle.translucent = true;
-
-            particle.red = 1F;
-            particle.green = 1F;
-            particle.blue = 1F;
-
+            particle.setColor(1F, 1F, 1F);
             particle.maxAge = texture.frames() > 1 ? texture.frames() : 40;
 
-            TemplateParticleType.apply(particleType, particle);
-            var appearance = particleType.getAppearance();
-            if (appearance != null) {
-                var color = appearance.color;
-                if (color != null) {
-                    particle.alpha *= appearance.color.alpha();
-                }
-                particle.scale *= appearance.scale;
-                particle.followEntity = appearance.entityFollowed;
-            }
-
+            particle.applyAppearance(particleType.getAppearance());
             return particle;
         }
     }

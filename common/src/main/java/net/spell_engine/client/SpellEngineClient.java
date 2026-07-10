@@ -132,16 +132,18 @@ public class SpellEngineClient {
 
         // Elemental
 
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.flame.particleType(), SpellFlameParticle.FlameFactory::new);
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.flame_spark.particleType(), SpellFlameParticle.AnimatedFlameFactory::new);
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.flame_ground.particleType(), SpellFlameParticle.AnimatedFlameFactory::new);
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.flame_medium_a.particleType(), SpellFlameParticle.MediumFlameFactory::new);
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.flame_medium_b.particleType(), SpellFlameParticle.MediumFlameFactory::new);
+        register(SpellEngineParticles.flame, SpellFlameParticle.config());
+        register(SpellEngineParticles.flame_spark, SpellFlameParticle.config().animated());
+        register(SpellEngineParticles.flame_ground, SpellFlameParticle.config().animated());
+        var mediumFlame = SpellFlameParticle.config().animated().scale(0.5F).maxAgeFactor(0.5F);
+        register(SpellEngineParticles.flame_medium_a, mediumFlame);
+        register(SpellEngineParticles.flame_medium_b, mediumFlame);
         ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.snowflake.particleType(), SpellSnowflakeParticle.FrostFactory::new);
         ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.frost_shard.particleType(), SpellFlameParticle.FrostShard::new);
 
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.electric_arc_A.particleType(), SpellFlameParticle.ElectricSparkFactory::new);
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.electric_arc_B.particleType(), SpellFlameParticle.ElectricSparkFactory::new);
+        var electricSpark = SpellFlameParticle.config().animated().color(Color.ELECTRIC).scale(0.75F).alpha(1F);
+        register(SpellEngineParticles.electric_arc_A, electricSpark);
+        register(SpellEngineParticles.electric_arc_B, electricSpark);
 
         // Physical
 
@@ -149,7 +151,9 @@ public class SpellEngineClient {
 
         // Misc
 
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.weakness_smoke.particleType(), SpellFlameParticle.WeaknessSmokeFactory::new);
+        register(SpellEngineParticles.weakness_smoke, SpellFlameParticle.config().animated()
+                .color(Color.from(0x993333)).randomDarken()
+                .velocityMultiplier(0.8F).alpha(0.7F).glow(false).gravityStrength(0.01F));
 
         ParticleFactoryRegistry.getInstance().register(
                 SpellEngineParticles.shield_small.particleType(), (provider) -> new SpellUniversalParticle.Opaque(provider, SpellEngineParticles.MagicParticles.Motion.DECELERATE)
@@ -184,5 +188,10 @@ public class SpellEngineClient {
                     variant.entry().particleType(), (provider) -> new SpellUniversalParticle.MagicVariant(provider, variant)
             );
         }
+    }
+
+    private static void register(SpellEngineParticles.Entry entry, SpellFlameParticle.Config config) {
+        ParticleFactoryRegistry.getInstance().register(entry.particleType(),
+                provider -> new SpellFlameParticle.ConfiguredFactory(provider, config));
     }
 }

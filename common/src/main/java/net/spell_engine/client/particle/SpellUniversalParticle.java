@@ -7,10 +7,11 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.util.math.random.Random;
+import net.spell_engine.client.util.Color;
 import net.spell_engine.fx.SpellEngineParticles;
 import org.jetbrains.annotations.Nullable;
 
-public class SpellUniversalParticle extends SpriteBillboardParticle  {
+public class SpellUniversalParticle extends SpriteBillboardParticle implements AppearanceAware {
     private static final Random RANDOM = Random.create();
     private final SpriteProvider spriteProvider;
     private final SpellEngineParticles.MagicParticles.Motion motion;
@@ -109,6 +110,33 @@ public class SpellUniversalParticle extends SpriteBillboardParticle  {
         }
     }
 
+    // MARK: AppearanceAware
+
+    @Override
+    public void applyColor(Color color) {
+        this.setColor(color.red(), color.green(), color.blue());
+    }
+
+    @Override
+    public void multiplyAlpha(float factor) {
+        this.alpha *= factor;
+    }
+
+    @Override
+    public void multiplyScale(float factor) {
+        this.scale *= factor;
+    }
+
+    @Override
+    public void multiplyMaxAge(float factor) {
+        this.maxAge = (int) (this.maxAge * factor);
+    }
+
+    @Override
+    public void follow(@Nullable Entity entity) {
+        this.followEntity = entity;
+    }
+
 
     // MARK: Factories
 
@@ -140,17 +168,7 @@ public class SpellUniversalParticle extends SpriteBillboardParticle  {
                 }
             }
 
-            TemplateParticleType.apply(particleType, particle);
-            var appearance = particleType.getAppearance();
-            if (appearance != null) {
-                var color = appearance.color;
-                if (color != null) {
-                    particle.alpha *= appearance.color.alpha();
-                }
-                particle.scale *= appearance.scale;
-                particle.maxAge = (int) (particle.maxAge * appearance.max_age);
-                particle.followEntity = appearance.entityFollowed;
-            }
+            particle.applyAppearance(particleType.getAppearance());
 
             float j = clientWorld.random.nextFloat() * 0.5F + 0.35F;
             particle.setColor(particle.red * j, particle.green * j, particle.blue * j);

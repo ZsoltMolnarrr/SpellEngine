@@ -11,12 +11,13 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.spell_engine.client.util.Color;
 import net.spell_engine.fx.SpellEngineParticles;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class SpellAreaParticle extends SpriteBillboardParticle {
+public class SpellAreaParticle extends SpriteBillboardParticle implements AppearanceAware {
     @Nullable Entity followEntity;
     public SpellEngineParticles.Fading fading = SpellEngineParticles.Fading.NONE;
     public SpellEngineParticles.Orientation orientation = SpellEngineParticles.Orientation.HORIZONTAL;
@@ -53,6 +54,33 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
     @Override
     public int getBrightness(float tint) {
         return 255;
+    }
+
+    // MARK: AppearanceAware
+
+    @Override
+    public void applyColor(Color color) {
+        this.setColor(color.red(), color.green(), color.blue());
+    }
+
+    @Override
+    public void multiplyAlpha(float factor) {
+        this.alpha *= factor;
+    }
+
+    @Override
+    public void multiplyScale(float factor) {
+        this.scale *= factor;
+    }
+
+    @Override
+    public void multiplyMaxAge(float factor) {
+        this.maxAge = (int) (this.maxAge * factor);
+    }
+
+    @Override
+    public void follow(@Nullable Entity entity) {
+        this.followEntity = entity;
     }
 
     @Override
@@ -216,17 +244,7 @@ public class SpellAreaParticle extends SpriteBillboardParticle {
             }
             particle.scale = 1F;
 
-            TemplateParticleType.apply(particleType, particle);
-            var appearance = particleType.getAppearance();
-            if (appearance != null) {
-                var color = appearance.color;
-                if (color != null) {
-                    particle.alpha *= appearance.color.alpha();
-                }
-                particle.scale *= appearance.scale;
-                particle.maxAge = (int) (particle.maxAge * appearance.max_age);
-                particle.followEntity = appearance.entityFollowed;
-            }
+            particle.applyAppearance(particleType.getAppearance());
 
             particle.fading = fading;
             particle.scaleWithEntity = isAura;

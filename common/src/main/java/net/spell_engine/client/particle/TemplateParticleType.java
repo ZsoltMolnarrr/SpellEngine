@@ -53,6 +53,10 @@ public class TemplateParticleType extends ParticleType<TemplateParticleType> imp
         return copy;
     }
 
+    /** Applies only the color of the appearance, ignoring its alpha.
+     * The smoke factories depend on this: existing content colors smoke with RGBA values
+     * whose alpha component must not dim the particle.
+     * For full appearance support, implement {@link AppearanceAware} instead. */
     public static void apply(TemplateParticleType templateParticleType, Particle particle) {
         var appearance = templateParticleType.getAppearance();
         if (appearance != null) {

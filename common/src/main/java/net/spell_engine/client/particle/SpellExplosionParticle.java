@@ -7,9 +7,11 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleFactory;
 import net.minecraft.client.particle.SpriteProvider;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.particle.SimpleParticleType;
+import net.minecraft.entity.Entity;
+import net.spell_engine.client.util.Color;
+import org.jetbrains.annotations.Nullable;
 
-public class SpellExplosionParticle extends ExplosionLargeParticle {
+public class SpellExplosionParticle extends ExplosionLargeParticle implements AppearanceAware {
     protected SpellExplosionParticle(ClientWorld world, double x, double y, double z, double d, SpriteProvider spriteProvider) {
         super(world, x, y, z, d, spriteProvider);
     }
@@ -19,24 +21,31 @@ public class SpellExplosionParticle extends ExplosionLargeParticle {
         return 255;
     }
 
-    @Environment(EnvType.CLIENT)
-    public static class Factory implements ParticleFactory<SimpleParticleType> {
+    // MARK: AppearanceAware
 
-        private final SpriteProvider spriteProvider;
+    @Override
+    public void applyColor(Color color) {
+        this.setColor(color.red(), color.green(), color.blue());
+    }
 
-        public Factory(SpriteProvider spriteProvider) {
-            this.spriteProvider = spriteProvider;
-        }
+    @Override
+    public void multiplyAlpha(float factor) {
+        this.alpha *= factor;
+    }
 
-        public Particle createParticle(SimpleParticleType SimpleParticleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
-            var particle = new SpellExplosionParticle(clientWorld, d, e, f, g, this.spriteProvider);
-            particle.scale = 1.2F;
-            particle.red = 1F;
-            particle.green = 1F;
-            particle.blue = 1F;
-            particle.maxAge = 10;
-            return particle;
-        }
+    @Override
+    public void multiplyScale(float factor) {
+        this.scale *= factor;
+    }
+
+    @Override
+    public void multiplyMaxAge(float factor) {
+        this.maxAge = (int) (this.maxAge * factor);
+    }
+
+    @Override
+    public void follow(@Nullable Entity entity) {
+        // ExplosionLargeParticle has no entity following support
     }
 
     @Environment(EnvType.CLIENT)
@@ -51,22 +60,10 @@ public class SpellExplosionParticle extends ExplosionLargeParticle {
         public Particle createParticle(TemplateParticleType particleType, ClientWorld clientWorld, double d, double e, double f, double g, double h, double i) {
             var particle = new SpellExplosionParticle(clientWorld, d, e, f, g, this.spriteProvider);
             particle.scale = 1.2F;
-            particle.red = 1F;
-            particle.green = 1F;
-            particle.blue = 1F;
+            particle.setColor(1F, 1F, 1F);
             particle.maxAge = 10;
 
-            TemplateParticleType.apply(particleType, particle);
-            var appearance = particleType.getAppearance();
-            if (appearance != null) {
-                var color = appearance.color;
-                if (color != null) {
-                    particle.alpha *= appearance.color.alpha();
-                }
-                particle.scale *= appearance.scale;
-                // particle.followEntity = appearance.entityFollowed;
-            }
-
+            particle.applyAppearance(particleType.getAppearance());
             return particle;
         }
     }
