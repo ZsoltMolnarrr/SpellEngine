@@ -1230,7 +1230,13 @@ public class SpellHelper {
                     var result = performImpact(world, caster, target, spellEntry, impact, context, trackers);
                     if (result) {
                         performedActionTypes.add(impact.action.type);
-                        selectedIntent = intent;
+                        if (!impact.action.apply_to_caster) {
+                            // Caster-only impacts hit the caster, not the shared AOE targets, so they
+                            // must not define the intent that gates subsequent target impacts (mirrors
+                            // the apply_to_caster exemption in the mixed-intent filter above). Otherwise
+                            // e.g. a self-buff would cancel the damage dealt to everyone else.
+                            selectedIntent = intent;
+                        }
                     }
                 }
             }

@@ -1,6 +1,5 @@
 package net.spell_engine.fx;
 
-import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.SimpleParticleType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;

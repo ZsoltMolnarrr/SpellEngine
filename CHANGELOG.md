@@ -7,6 +7,7 @@ Functional changes:
 - Fixed inaccurate landing position of meteor storm spells
 - Fixed spell cloud `impact_particles` not executed
 - Fixed spell projectile `heldItem` render not respecting pitch
+- Fix Impact Action with "apply_to_caster" true, cancels all the other impacts #139
 
 API changes:
 - BREAKING! - `CustomModelStatusEffect.Renderer` now has different arguments
