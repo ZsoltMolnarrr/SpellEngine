@@ -668,6 +668,16 @@ public class SpellTooltip {
                 addToken("stash_duration", formattedNumber(stash.duration), tokenReplacements);
                 triggers.addAll(stash.triggers);
             }
+            // A melee attack's weapon damage_bonus has no impact-based estimate; expose it as a
+            // percentage token (0.5 -> "50%") from the first attack that carries one.
+            if (spell.deliver.melee != null) {
+                for (var attack : spell.deliver.melee.attacks) {
+                    if (attack.damage_bonus != 0) {
+                        addToken("weapon_damage_bonus", percent(attack.damage_bonus), tokenReplacements);
+                        break;
+                    }
+                }
+            }
         }
 
         ArrayList<Spell.Impact> impacts = new ArrayList<>();
