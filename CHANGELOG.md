@@ -54,6 +54,7 @@ API changes:
   - The longer the spell is charged, the stronger it becomes
   - Uses spell modifier pipeline to modify spell properties based on charge time
   - Reworked `spell.active.cast` data structure to accommodate this feature - some fields are now marked for removal
+- Added `KnockbackImmunity` effect API - status effects configured with this prevent taking knockback
 
 
 # 1.9.9
