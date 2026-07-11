@@ -1,8 +1,8 @@
 package net.spell_engine.internals.melee;
 
-import net.bettercombat.logic.TargetHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -10,6 +10,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
+import net.spell_engine.compat.MeleeCompat;
 import net.spell_engine.utils.VectorHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,7 +65,7 @@ public class TargetFinder {
                         && entity.isAttackable()
                         && entity != cursorTarget
                         // && TargetHelper.isHitAllowed(false, TargetHelper.getRelation(player, entity)) // isDirect: false due to not being the cursor target
-                        && (!entity.equals(player.getVehicle()) || TargetHelper.isAttackableMount(entity)))
+                        && (!entity.equals(player.getVehicle()) || isAttackableMount(entity)))
                 .collect(Collectors.toList());
         if (cursorTarget != null && cursorTarget.isAttackable()) {
             entities.add(cursorTarget);
@@ -72,6 +73,9 @@ public class TargetFinder {
         return entities;
     }
 
+    public static boolean isAttackableMount(Entity entity) {
+        return entity instanceof HostileEntity || MeleeCompat.isEntityHostileVehicle.apply(entity);
+    }
 
     public interface Filter {
         List<Entity> filter(List<Entity> entities);

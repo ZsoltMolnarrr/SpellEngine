@@ -1,9 +1,10 @@
 package net.spell_engine.compat;
 
 import net.bettercombat.api.EntityPlayer_BetterCombat;
-import net.bettercombat.api.WeaponAttributesHelper;
+import net.bettercombat.logic.TargetHelper;
 import net.bettercombat.logic.WeaponRegistry;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 
@@ -18,6 +19,7 @@ public class MeleeCompat {
         var isOffhand = false;
         return new Attack(isCombo, isOffhand);
     };
+    public static Function<Entity, Boolean> isEntityHostileVehicle = entity -> { return false; };
     public static void init() {
         if (FabricLoader.getInstance().isModLoaded("bettercombat")) {
             attackProperties = (player) -> {
@@ -36,6 +38,9 @@ public class MeleeCompat {
                     return attributes.isTwoHanded();
                 }
                 return false;
+            };
+            isEntityHostileVehicle = (entity) -> {
+                return TargetHelper.isEntityHostileVehicle(entity.getName().getString());
             };
         }
     }
