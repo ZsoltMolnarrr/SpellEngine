@@ -110,6 +110,16 @@ public class SpellEngineClient {
                         .copy().color(Color.PHYSICAL_BLUE.toRGBA()) })
         );
 
+        // Blood dripping off a bleeding entity; count scales with stacks, dripping a few times a second.
+        final var bleedParticles = new ParticleBatch(
+                SpellEngineParticles.dripping_blood.id().toString(),
+                ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER,
+                1F, 0.1F, 0.3F);
+        CustomParticleStatusEffect.register(
+                SpellEngineEffects.BLEED.effect,
+                new BuffParticleSpawner(new ParticleBatch[]{ bleedParticles })
+                        .withFrequency(5)
+        );
     }
 
     public static void registerParticleAppearances() {

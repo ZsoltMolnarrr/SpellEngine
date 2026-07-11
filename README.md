@@ -291,6 +291,25 @@ Fully data driven Spell Scrolls
 - Effect: negates spell cast rune cost 
 - Applicable: for items under the item tag `spell_engine:enchantable/spell_infinity`
 
+### Status Effects
+
+Harmful status effects that spells can apply as impacts.
+
+#### Stun
+
+- ID: `spell_engine:stun`
+- Effect: the target cannot move or act (attacking, using items and casting are all blocked)
+
+#### Immobilize
+
+- ID: `spell_engine:immobilize`
+- Effect: roots the target in place (no movement or jumping), but it can still act
+
+#### Bleed
+
+- ID: `spell_engine:bleed`
+- Effect: lethal damage over time that scales with the target's movement — while standing still it deals half of poison's damage, ramping up to double at full speed
+
 ## 🔧 Configuration
 
 Client side:

@@ -12,6 +12,7 @@ Functional changes:
 
 API changes:
 - BREAKING! - `CustomModelStatusEffect.Renderer` now has different arguments
+- Added new generic status effect: `spell_engine:bleed`
 - Added true volumetric collision detection for spell projectiles
 - Added server-side entry point for entity spell casting (SpellHelper.java)
 - Added some new assets: player animations, particles, sounds

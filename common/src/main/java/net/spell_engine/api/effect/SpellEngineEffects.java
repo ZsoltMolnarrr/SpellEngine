@@ -49,6 +49,12 @@ public class SpellEngineEffects {
             ))
     ));
 
+    public static Effects.Entry BLEED = add(new Effects.Entry(Identifier.of(SpellEngineMod.ID,"bleed"),
+            "Bleed",
+            "Losing health over time, worse while moving.",
+            new BleedStatusEffect(StatusEffectCategory.HARMFUL, 0xb30000)
+    ));
+
     public static void register() {
         ActionImpairing.configure(STUN.effect, EntityActionsAllowed.STUN);
 
