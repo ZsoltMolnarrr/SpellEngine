@@ -20,7 +20,8 @@ public class ExternalSpellSchools {
     /// be read off the stack, then scaled the same way the attribute would have scaled it.
     private static double offHandAttackDamage(LivingEntity entity) {
         var offHandStack = entity.getOffHandStack();
-        var weaponDamage = AttributeModifierUtil.flatBonusFrom(offHandStack, EntityAttributes.GENERIC_ATTACK_DAMAGE);
+        var weaponDamage = entity.getAttributeBaseValue(EntityAttributes.GENERIC_ATTACK_DAMAGE)
+                + AttributeModifierUtil.flatBonusFrom(offHandStack, EntityAttributes.GENERIC_ATTACK_DAMAGE);
         if (weaponDamage == 0) {
             return 0;
         }
