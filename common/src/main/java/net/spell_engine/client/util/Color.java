@@ -15,6 +15,15 @@ public record Color(float red, float green, float blue, float alpha) {
         return new Color(red, green, blue);
     }
 
+    /// Inverse of [#toARGB]
+    public static Color fromARGB(int argb) {
+        float alpha = ((float) ((argb >> 24) & 0xFF)) / 255F;
+        float red = ((float) ((argb >> 16) & 0xFF)) / 255F;
+        float green = ((float) ((argb >> 8) & 0xFF)) / 255F;
+        float blue = ((float) (argb & 0xFF)) / 255F;
+        return new Color(red, green, blue, alpha);
+    }
+
     public static Color fromRGBA(long rgba) {
         float red = ((float) ((rgba >> 24) & 0xFF)) / 255F;
         float green = ((float) ((rgba >> 16) & 0xFF)) / 255F;

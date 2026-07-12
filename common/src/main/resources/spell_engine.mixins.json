@@ -68,6 +68,7 @@
     "client.control.SpellCastingMovement",
     "client.control.SpellHotbarMinecraftClient",
     "client.render.EntityMixin",
+    "client.render.ImmediateItemGlowMixin",
     "client.render.InGameHudMixin",
     "client.render.ItemRendererAccessor",
     "client.render.LivingEntityModelFxRendererMixin",

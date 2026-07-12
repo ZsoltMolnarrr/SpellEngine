@@ -2,12 +2,18 @@ package net.spell_engine.api.render;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import net.spell_engine.client.util.Color;
+import org.joml.Matrix4f;
 
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class CustomLayers extends RenderLayer {
     public CustomLayers(String name, VertexFormat vertexFormat, VertexFormat.DrawMode drawMode, int expectedBufferSize, boolean hasCrumbling, boolean translucent, Runnable startAction, Runnable endAction) {
@@ -134,5 +140,87 @@ public class CustomLayers extends RenderLayer {
 
     public static RenderLayer create(String name, VertexFormat vertexFormat, VertexFormat.DrawMode drawMode, int expectedBufferSize, boolean hasCrumbling, boolean translucent, MultiPhaseParameters phases) {
         return RenderLayer.of(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent, phases);
+    }
+
+    // MARK: Item glow
+
+    /// Grayscale streaks, so `ColorModulator` can tint them to any color.
+    /// The vanilla glint texture is deeply purple, and the glint shader multiplies by it,
+    /// which would poison every color it is tinted with.
+    public static final Identifier ITEM_GLOW_TEXTURE = Identifier.of("spell_engine", "textures/misc/item_glow.png");
+    private static final float ITEM_GLOW_SCALE = 8F;
+
+    private static final Set<RenderLayer> itemGlowLayers = ConcurrentHashMap.newKeySet();
+
+    /// Layers returned by [#itemGlow], which need a dedicated buffer to draw in the correct order.
+    /// See `ImmediateItemGlowMixin`.
+    public static boolean isItemGlowLayer(RenderLayer layer) {
+        return itemGlowLayers.contains(layer);
+    }
+
+    /// Plain additive. The vanilla glint blends `SRC_COLOR, ONE`, squaring the source and
+    /// dimming it into the faint shimmer it is; adding it outright is what makes this glow burn.
+    private static final Transparency ITEM_GLOW_TRANSPARENCY = new Transparency("spell_engine_item_glow_transparency", () -> {
+        RenderSystem.enableBlend();
+        RenderSystem.blendFunc(GlStateManager.SrcFactor.ONE, GlStateManager.DstFactor.ONE);
+    }, () -> {
+        RenderSystem.disableBlend();
+        RenderSystem.defaultBlendFunc();
+    });
+
+    /// Color is baked into the layer (the glint shader takes it as a uniform, and the vertex format
+    /// carries no color channel), so layers are memoized per color to keep them batchable.
+    /// The set of colors is bounded by the combinations of registered glowing effects.
+    private static final Function<Integer, RenderLayer> ITEM_GLOW = Util.memoize(argb -> {
+        var layer = RenderLayer.of("spell_engine_item_glow",
+                VertexFormats.POSITION_TEXTURE,
+                VertexFormat.DrawMode.QUADS,
+                1536,
+                MultiPhaseParameters.builder()
+                        .program(GLINT_PROGRAM)
+                        .texture(new RenderPhase.Texture(ITEM_GLOW_TEXTURE, true, false))
+                        .writeMaskState(COLOR_MASK)
+                        .cull(DISABLE_CULLING)
+                        .depthTest(EQUAL_DEPTH_TEST)
+                        .transparency(ITEM_GLOW_TRANSPARENCY)
+                        .texturing(itemGlowTexturing(Color.fromARGB(argb)))
+                        .build(false));
+        itemGlowLayers.add(layer);
+        return layer;
+    });
+
+    public static RenderLayer itemGlow(Color color) {
+        return ITEM_GLOW.apply((int) color.toARGB());
+    }
+
+    private static RenderPhase.Texturing itemGlowTexturing(Color color) {
+        return new RenderPhase.Texturing("spell_engine_item_glow_texturing",
+                () -> {
+                    // Scrolls the streaks across the item, the same motion the vanilla glint uses
+                    var time = (long)(Util.getMeasuringTimeMs() * MinecraftClient.getInstance().options.getGlintSpeed().getValue() * 8.0);
+                    var x = (float)(time % 110000L) / 110000.0F;
+                    var y = (float)(time % 30000L) / 30000.0F;
+                    var textureMatrix = new Matrix4f().translation(-x, y, 0.0F);
+                    textureMatrix.rotateZ((float) (Math.PI / 18)).scale(ITEM_GLOW_SCALE);
+                    RenderSystem.setTextureMatrix(textureMatrix);
+
+                    // Opacity is folded into the color instead of the alpha, because the additive blend
+                    // scales by color, and the glint shader discards fragments below `alpha < 0.1`,
+                    // which would cut faint glows off entirely instead of fading them out.
+                    RenderSystem.setShaderColor(
+                            color.red() * color.alpha(),
+                            color.green() * color.alpha(),
+                            color.blue() * color.alpha(),
+                            1F);
+
+                    // The glint shader fades by this, and it follows the `Glint Strength` video setting.
+                    // This glow carries gameplay meaning, so it must not be dimmed away by a cosmetic option.
+                    RenderSystem.setShaderGlintAlpha(1F);
+                },
+                () -> {
+                    RenderSystem.resetTextureMatrix();
+                    RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
+                    RenderSystem.setShaderGlintAlpha(MinecraftClient.getInstance().options.getGlintStrength().getValue());
+                });
     }
 }
