@@ -105,6 +105,11 @@
       "spell_engine:generic_healing_release"
     ]
   },
+  "generic_healing_release_2": {
+    "sounds": [
+      "spell_engine:generic_healing_release_2"
+    ]
+  },
   "generic_lightning_casting": {
     "sounds": [
       "spell_engine:generic_lightning_casting"

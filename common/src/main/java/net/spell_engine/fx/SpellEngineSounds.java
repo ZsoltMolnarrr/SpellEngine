@@ -86,6 +86,7 @@ public class SpellEngineSounds {
 
     public static final Entry GENERIC_HEALING_CASTING = add(new Entry("generic_healing_casting"));
     public static final Entry GENERIC_HEALING_RELEASE = add(new Entry("generic_healing_release"));
+    public static final Entry GENERIC_HEALING_RELEASE_2 = add(new Entry("generic_healing_release_2"));
     public static final Entry GENERIC_HEALING_IMPACT_1 = add(new Entry("generic_healing_impact_1"));
     public static final Entry GENERIC_HEALING_IMPACT_2 = add(new Entry("generic_healing_impact_2"));
     public static final Entry GENERIC_HEALING_IMPACT_3 = add(new Entry("generic_healing_impact_3"));
