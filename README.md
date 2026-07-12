@@ -307,16 +307,16 @@ Built-in, class-agnostic melee weapon skills in the `rpg_series` namespace, read
 
 | Icon | Skill | ID | Description |
 |---|---|---|---|
-| <img src="common/src/main/resources/assets/rpg_series/textures/spell/whirlwind.png" width="32"> | Whirlwind | `rpg_series:whirlwind` | Channeled — spin in place, dealing damage each second to all nearby enemies while held. |
-| <img src="common/src/main/resources/assets/rpg_series/textures/spell/cleave.png" width="32"> | Cleave | `rpg_series:cleave` | Instant — a single spin attack that strikes every nearby enemy at once. |
-| <img src="common/src/main/resources/assets/rpg_series/textures/spell/ground_slam.png" width="32"> | Ground Slam | `rpg_series:ground_slam` | Charged — leap into the air and slam down, dealing damage in an area around the landing point. |
-| <img src="common/src/main/resources/assets/rpg_series/textures/spell/smash.png" width="32"> | Smash | `rpg_series:smash` | Charged — a heavy blow with strong knockback that disrupts the target, disabling its shield and item use. |
-| <img src="common/src/main/resources/assets/rpg_series/textures/spell/flurry.png" width="32"> | Flurry | `rpg_series:flurry` | Channeled — unleash a rapid two-slash combo while carried forward with momentum. |
-| <img src="common/src/main/resources/assets/rpg_series/textures/spell/swift_strikes.png" width="32"> | Swift Strikes | `rpg_series:swift_strikes` | Instant — a quick twin-strike combo. |
-| <img src="common/src/main/resources/assets/rpg_series/textures/spell/impale.png" width="32"> | Impale | `rpg_series:impale` | Charged — hurl your weapon forward like a spear, dealing damage and powerful knockback. |
-| <img src="common/src/main/resources/assets/rpg_series/textures/spell/fan_of_knives.png" width="32"> | Fan of Knives | `rpg_series:fan_of_knives` | Instant — throw a spread of blades in a cone that bounce off terrain. |
-| <img src="common/src/main/resources/assets/rpg_series/textures/spell/thrust.png" width="32"> | Thrust | `rpg_series:thrust` | Charged — lunge forward, striking every enemy along your path. |
-| <img src="common/src/main/resources/assets/rpg_series/textures/spell/swipe.png" width="32"> | Swipe | `rpg_series:swipe` | Instant — slide forward, striking every enemy along your path. |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/whirlwind.png" width="32"> | Whirlwind | `rpg_series:whirlwind` | Channeled — spin in place, dealing damage each second to all nearby enemies while held.<br>*Typically assigned to: double axes (war axes, great axes).* |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/cleave.png" width="32"> | Cleave | `rpg_series:cleave` | Instant — a single spin attack that strikes every nearby enemy at once.<br>*Typically assigned to: axes.* |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/ground_slam.png" width="32"> | Ground Slam | `rpg_series:ground_slam` | Charged — leap into the air and slam down, dealing damage in an area around the landing point.<br>*Typically assigned to: hammers (war hammers, mauls).* |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/smash.png" width="32"> | Smash | `rpg_series:smash` | Charged — a heavy blow with strong knockback that disrupts the target, disabling its shield and item use.<br>*Typically assigned to: maces (and flails).* |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/flurry.png" width="32"> | Flurry | `rpg_series:flurry` | Channeled — unleash a rapid two-slash combo while carried forward with momentum.<br>*Typically assigned to: claymores (greatswords).* |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/swift_strikes.png" width="32"> | Swift Strikes | `rpg_series:swift_strikes` | Instant — a quick twin-strike combo.<br>*Typically assigned to: swords (blades).* |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/impale.png" width="32"> | Impale | `rpg_series:impale` | Charged — hurl your weapon forward like a spear, dealing damage and powerful knockback.<br>*Typically assigned to: spears.* |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/fan_of_knives.png" width="32"> | Fan of Knives | `rpg_series:fan_of_knives` | Instant — throw a spread of blades in a cone that bounce off terrain.<br>*Typically assigned to: daggers (knives).* |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/thrust.png" width="32"> | Thrust | `rpg_series:thrust` | Charged — lunge forward, striking every enemy along your path.<br>*Typically assigned to: glaives.* |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/swipe.png" width="32"> | Swipe | `rpg_series:swipe` | Instant — slide forward, striking every enemy along your path.<br>*Typically assigned to: sickles.* |
 
 ## 🔧 Configuration
 
