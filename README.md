@@ -295,20 +295,28 @@ Fully data driven Spell Scrolls
 
 Harmful status effects that spells can apply as impacts.
 
-#### Stun
+| Icon | Effect | ID | Description |
+|---|---|---|---|
+| <img src="common/src/main/resources/assets/spell_engine/textures/mob_effect/stun.png" width="32"> | Stun | `spell_engine:stun` | The target cannot move or act — attacking, using items and casting are all blocked. |
+| <img src="common/src/main/resources/assets/spell_engine/textures/mob_effect/immobilize.png" width="32"> | Immobilize | `spell_engine:immobilize` | Roots the target in place (no movement or jumping), but it can still act. |
+| <img src="common/src/main/resources/assets/spell_engine/textures/mob_effect/bleed.png" width="32"> | Bleed | `spell_engine:bleed` | Lethal damage over time that scales with the target's movement — half of poison's damage while standing still, ramping up to double at full speed. |
 
-- ID: `spell_engine:stun`
-- Effect: the target cannot move or act (attacking, using items and casting are all blocked)
+### Weapon Skills
 
-#### Immobilize
+Built-in, class-agnostic melee weapon skills in the `rpg_series` namespace, ready to be assigned to any weapon (see [Spell assignments](#spell-assignments)). They cover spins, slams, lunges and thrown-weapon attacks.
 
-- ID: `spell_engine:immobilize`
-- Effect: roots the target in place (no movement or jumping), but it can still act
-
-#### Bleed
-
-- ID: `spell_engine:bleed`
-- Effect: lethal damage over time that scales with the target's movement — while standing still it deals half of poison's damage, ramping up to double at full speed
+| Icon | Skill | ID | Description |
+|---|---|---|---|
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/whirlwind.png" width="32"> | Whirlwind | `rpg_series:whirlwind` | Channeled — spin in place, dealing damage each second to all nearby enemies while held. |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/cleave.png" width="32"> | Cleave | `rpg_series:cleave` | Instant — a single spin attack that strikes every nearby enemy at once. |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/ground_slam.png" width="32"> | Ground Slam | `rpg_series:ground_slam` | Charged — leap into the air and slam down, dealing damage in an area around the landing point. |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/smash.png" width="32"> | Smash | `rpg_series:smash` | Charged — a heavy blow with strong knockback that disrupts the target, disabling its shield and item use. |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/flurry.png" width="32"> | Flurry | `rpg_series:flurry` | Channeled — unleash a rapid two-slash combo while carried forward with momentum. |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/swift_strikes.png" width="32"> | Swift Strikes | `rpg_series:swift_strikes` | Instant — a quick twin-strike combo. |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/impale.png" width="32"> | Impale | `rpg_series:impale` | Charged — hurl your weapon forward like a spear, dealing damage and powerful knockback. |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/fan_of_knives.png" width="32"> | Fan of Knives | `rpg_series:fan_of_knives` | Instant — throw a spread of blades in a cone that bounce off terrain. |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/thrust.png" width="32"> | Thrust | `rpg_series:thrust` | Charged — lunge forward, striking every enemy along your path. |
+| <img src="common/src/main/resources/assets/rpg_series/textures/spell/swipe.png" width="32"> | Swipe | `rpg_series:swipe` | Instant — slide forward, striking every enemy along your path. |
 
 ## 🔧 Configuration
 
