@@ -215,6 +215,7 @@ public class SpellEngineParticles {
     public static final TemplateEntry area_effect_474 = addAreaEffect(new TemplateEntry("area_effect_474", Texture.of("zone/effect_474", 11)));
     public static final TemplateEntry area_effect_574 = addAreaEffect(new TemplateEntry("area_effect_574", Texture.of("zone/effect_574", 13)));
     public static final TemplateEntry area_effect_609 = addAreaEffect(new TemplateEntry("area_effect_609", Texture.of("zone/effect_609", 13)));
+    public static final TemplateEntry area_effect_637 = addAreaEffect(new TemplateEntry("area_effect_637", Texture.of("zone/effect_637", 15)));
     public static final TemplateEntry area_effect_658 = addAreaEffect(new TemplateEntry("area_effect_658", Texture.of("zone/effect_658", 16)));
     public static final TemplateEntry area_effect_700 = addAreaEffect(new TemplateEntry("area_effect_700", Texture.of("zone/effect_700", 22)));
     public static final TemplateEntry area_effect_714 = addAreaEffect(new TemplateEntry("area_effect_714", Texture.of("zone/effect_714", 22)));
@@ -234,6 +235,7 @@ public class SpellEngineParticles {
     public static final TemplateEntry aura_effect_642 = addAreaEffect(new TemplateEntry("aura_effect_642", Texture.of("zone/effect_642", 14)).orientation(Orientation.VERTICAL));
     public static final TemplateEntry aura_effect_649 = addAreaEffect(new TemplateEntry("aura_effect_649", Texture.of("zone/effect_649", 13)).orientation(Orientation.VERTICAL));
     public static final TemplateEntry aura_effect_668 = addAreaEffect(new TemplateEntry("aura_effect_668", Texture.of("zone/effect_668", 16)).orientation(Orientation.VERTICAL));
+    public static final TemplateEntry aura_effect_676 = addAreaEffect(new TemplateEntry("aura_effect_676", Texture.of("zone/effect_676", 17)).orientation(Orientation.VERTICAL));
     public static final TemplateEntry aura_effect_691 = addAreaEffect(new TemplateEntry("aura_effect_691", Texture.of("zone/effect_691", 16)).orientation(Orientation.VERTICAL));
     public static final TemplateEntry aura_effect_716 = addAreaEffect(new TemplateEntry("aura_effect_716", Texture.of("zone/effect_716", 23)).orientation(Orientation.VERTICAL));
     public static final TemplateEntry aura_effect_728 = addAreaEffect(new TemplateEntry("aura_effect_728", Texture.of("zone/effect_728", 23)).orientation(Orientation.VERTICAL));
