@@ -99,6 +99,15 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     public static final TrackedData<String> EXISTENCE_PARTICLES =
             DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.STRING);
 
+    // Client-visible mirror of `behaviour.is_attackable`. The `behaviour` field is server-only (set at
+    // spawn / on NBT load, never synced), so the combat/targeting getters below can't read it on the
+    // client. Without this, client-side `canHit()` falls through to `super.canHit()` = true, and the
+    // client's own spell target search (TargetHelper.targetsFromArea/…, which filters on canHit) would
+    // highlight and select non-attackable summons — e.g. an AoE heal targeting a Lightwell. Synced here
+    // so both sides agree. Defaults true (matches the historical `behaviour == null` fallback).
+    public static final TrackedData<Boolean> IS_ATTACKABLE =
+            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+
     private static long packAnim(int variant, int duration, int startAge) {
         return ((long)(variant  & 0xFF))
              | (((long)(duration & 0xFFFF)) << 8)
@@ -157,24 +166,32 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         // return (behaviour == null || behaviour.movement.is_pushable) && super.isPushable();
     }
 
+    /// Whether this summon may be attacked/targeted. Reads the DataTracker mirror (see {@link #IS_ATTACKABLE})
+    /// rather than the server-only `behaviour` field, so it is correct on the client too — the client's
+    /// spell target search filters on `canHit()`, and a stale client-side `true` would wrongly select
+    /// non-attackable summons. Defaults true before `setBehaviour` runs.
+    public boolean isAttackableSummon() {
+        return getDataTracker().get(IS_ATTACKABLE);
+    }
+
     @Override
     public boolean isAttackable() {
-        return (behaviour == null || behaviour.is_attackable) && super.isAttackable();
+        return isAttackableSummon() && super.isAttackable();
     }
 
     @Override
     public boolean canHit() {
-        return (behaviour == null || behaviour.is_attackable) && super.canHit();
+        return isAttackableSummon() && super.canHit();
     }
 
     @Override
     public boolean damage(DamageSource source, float amount) {
-        return (behaviour == null || behaviour.is_attackable) && super.damage(source, amount);
+        return isAttackableSummon() && super.damage(source, amount);
     }
 
     @Override
     public boolean isInvulnerableTo(DamageSource damageSource) {
-        return (behaviour == null || !behaviour.is_attackable) && super.isInvulnerableTo(damageSource);
+        return !isAttackableSummon() && super.isInvulnerableTo(damageSource);
     }
 
     @Override
@@ -188,17 +205,17 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         // paths read the `invulnerable` *field* (still false), not this getter, so the
         // entity stays removable; and NBT persists the field, so nothing round-trips. Actual
         // damage immunity remains enforced by the damage()/isInvulnerableTo() overrides.
-        if (behaviour != null && !behaviour.is_attackable) return true;
+        if (!isAttackableSummon()) return true;
         return super.isInvulnerable();
     }
 
     @Override
     public boolean isImmuneToExplosion(Explosion explosion) {
-        return (behaviour == null || !behaviour.is_attackable) && super.isImmuneToExplosion(explosion);
+        return !isAttackableSummon() && super.isImmuneToExplosion(explosion);
     }
 
     public void takeKnockback(double strength, double x, double z) {
-        if (behaviour != null && !behaviour.is_attackable) {
+        if (!isAttackableSummon()) {
             return;
         }
         super.takeKnockback(strength, x, z);
@@ -459,6 +476,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
             this.applyAttributeScaling(owner);
         }
         getDataTracker().set(COLLISION_MODE, (byte) behaviour.movement.collision.ordinal());
+        getDataTracker().set(IS_ATTACKABLE, behaviour.is_attackable);
         // Sync the existence-particle config once so the client can spawn them locally (no per-tick
         // packets). Only the particle FX travels — not the whole behaviour.
         if (!behaviour.existence_particles.isEmpty()) {
@@ -797,6 +815,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         builder.add(OWNER_UUID, Optional.empty());
         builder.add(PHASE, PHASE_SPAWNING);
         builder.add(COLLISION_MODE, (byte) SummonBehaviour.Movement.CollisionMode.ALL.ordinal());
+        builder.add(IS_ATTACKABLE, true);
         // 0 = sentinel for "no override". When the behaviour later sets a non-null
         // Dimensions, setBehaviour replaces these with the override values and
         // getBaseDimensions starts returning them; otherwise it falls through to
