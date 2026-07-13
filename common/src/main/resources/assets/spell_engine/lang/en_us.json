@@ -117,6 +117,8 @@
   "effect.spell_engine.immobilize.description": "Cannot move or jump",
   "effect.spell_engine.bleed": "Bleed",
   "effect.spell_engine.bleed.description": "Losing health over time, worse while moving.",
+  "effect.spell_engine.energy": "Energy",
+  "effect.spell_engine.energy.description": "The held weapon burns with energy.",
 
   "text.autoconfig.spell_engine.title" : "Spell Engine",
 

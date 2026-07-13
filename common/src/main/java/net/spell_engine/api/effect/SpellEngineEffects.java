@@ -7,6 +7,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.config.AttributeModifier;
 import net.spell_engine.api.config.EffectConfig;
+import net.spell_engine.client.util.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,8 +56,18 @@ public class SpellEngineEffects {
             new BleedStatusEffect(StatusEffectCategory.HARMFUL, 0xb30000)
     ));
 
+    public static Effects.Entry ENERGY = add(new Effects.Entry(Identifier.of(SpellEngineMod.ID,"energy"),
+            "Energy",
+            "The held weapon burns with energy.",
+            new CustomStatusEffect(StatusEffectCategory.BENEFICIAL, 0xffffcc)
+    ));
+
+    /// Stacks reach full opacity at amplifier 9, the tenth stack
+    private static final float ENERGY_OPACITY_PER_STACK = 1F / 10F;
+
     public static void register() {
         ActionImpairing.configure(STUN.effect, EntityActionsAllowed.STUN);
+        GlowingItemStatusEffect.register(ENERGY.effect, Color.HOLY, ENERGY_OPACITY_PER_STACK);
 
         for (var entry: entries) {
             Synchronized.configure(entry.effect, true);
