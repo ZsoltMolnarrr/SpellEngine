@@ -262,9 +262,22 @@ public class CustomLayers extends RenderLayer {
         return textureMatrix;
     }
 
+    /// Shader color and glint alpha are global render state, and nothing restores them for us: the game
+    /// sets glint alpha exactly once, in the `MinecraftClient` constructor, and never touches it again.
+    /// Leaking a raised value from here would brighten every enchantment glint in the game, permanently.
+    /// So both are saved on the way in and put back on the way out, rather than reset to a presumed
+    /// default, which would quietly trample whatever another mod had set. Layer draws are sequential and
+    /// their setup and teardown are paired, so a single slot is enough to hold them.
+    private static final float[] shaderColorToRestore = new float[4];
+    private static float glintAlphaToRestore = 1F;
+
     private static RenderPhase.Texturing itemGlowTexturing(Color color) {
         return new RenderPhase.Texturing("spell_engine_item_glow_texturing",
                 () -> {
+                    // `getShaderColor` hands out the live array, not a copy of it
+                    System.arraycopy(RenderSystem.getShaderColor(), 0, shaderColorToRestore, 0, 4);
+                    glintAlphaToRestore = RenderSystem.getShaderGlintAlpha();
+
                     RenderSystem.setTextureMatrix(itemGlowTextureMatrix());
 
                     // Opacity is folded into the color instead of the alpha, because the additive blend
@@ -283,8 +296,10 @@ public class CustomLayers extends RenderLayer {
                 },
                 () -> {
                     RenderSystem.resetTextureMatrix();
-                    RenderSystem.setShaderColor(1F, 1F, 1F, 1F);
-                    RenderSystem.setShaderGlintAlpha(MinecraftClient.getInstance().options.getGlintStrength().getValue());
+                    RenderSystem.setShaderColor(
+                            shaderColorToRestore[0], shaderColorToRestore[1],
+                            shaderColorToRestore[2], shaderColorToRestore[3]);
+                    RenderSystem.setShaderGlintAlpha(glintAlphaToRestore);
                 });
     }
 }

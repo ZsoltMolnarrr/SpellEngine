@@ -31,7 +31,14 @@ public class ImmediateItemGlowMixin {
 
     @Inject(method = "getBuffer", at = @At("HEAD"))
     private void getBuffer_HEAD_SpellEngine_bufferItemGlowLayer(RenderLayer renderLayer, CallbackInfoReturnable<VertexConsumer> cir) {
-        if (!layerBuffers.containsKey(renderLayer) && CustomLayers.isItemGlowLayer(renderLayer)) {
+        // Not every `Immediate` can take one: those built by `VertexConsumerProvider.immediate(allocator)`
+        // hold an immutable empty map, and putting into one throws. The entity provider, the only one a
+        // held item is ever drawn through, is built with a populated mutable map, so an empty map here
+        // means we are somewhere we do not belong. Skipping costs the glow, not the game.
+        if (layerBuffers.isEmpty() || layerBuffers.containsKey(renderLayer)) {
+            return;
+        }
+        if (CustomLayers.isItemGlowLayer(renderLayer)) {
             layerBuffers.put(renderLayer, new BufferAllocator(renderLayer.getExpectedBufferSize()));
         }
     }
