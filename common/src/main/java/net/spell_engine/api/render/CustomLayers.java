@@ -150,6 +150,19 @@ public class CustomLayers extends RenderLayer {
     public static final Identifier ITEM_GLOW_TEXTURE = Identifier.of("spell_engine", "textures/misc/item_glow.png");
     private static final float ITEM_GLOW_SCALE = 8F;
 
+    /// How hard the glow is driven into the frame buffer.
+    ///
+    /// The additive glow cannot burn brighter than white: the frame buffer is fixed point, so the
+    /// fragment is clamped to `[0, 1]` before it is blended, and no shader can push past that (which
+    /// is also why an emissive program like [LightEmission#RADIATE] would buy nothing here - the item
+    /// is already lit full bright).
+    ///
+    /// Brightness past that point is bought with coverage instead of peak: a gain above `1` drives the
+    /// mid tones of the streaks up into the clamp, so more of the texture reaches full white and the
+    /// streaks read broader and hotter. Raise it to glow harder, at the cost of the streaks blowing out
+    /// into a flatter, more uniform sheen. Read live, so it can be tuned at runtime.
+    public static float itemGlowGain = 3F;
+
     private static final Set<RenderLayer> itemGlowLayers = ConcurrentHashMap.newKeySet();
 
     /// Layers returned by [#itemGlow], which need a dedicated buffer to draw in the correct order.
@@ -207,10 +220,11 @@ public class CustomLayers extends RenderLayer {
                     // Opacity is folded into the color instead of the alpha, because the additive blend
                     // scales by color, and the glint shader discards fragments below `alpha < 0.1`,
                     // which would cut faint glows off entirely instead of fading them out.
+                    var intensity = color.alpha() * itemGlowGain;
                     RenderSystem.setShaderColor(
-                            color.red() * color.alpha(),
-                            color.green() * color.alpha(),
-                            color.blue() * color.alpha(),
+                            color.red() * intensity,
+                            color.green() * intensity,
+                            color.blue() * intensity,
                             1F);
 
                     // The glint shader fades by this, and it follows the `Glint Strength` video setting.
