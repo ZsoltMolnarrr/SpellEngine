@@ -1,5 +1,6 @@
 package net.spell_engine.api.render;
 
+import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
@@ -14,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class CustomLayers extends RenderLayer {
     public CustomLayers(String name, VertexFormat vertexFormat, VertexFormat.DrawMode drawMode, int expectedBufferSize, boolean hasCrumbling, boolean translucent, Runnable startAction, Runnable endAction) {
@@ -204,6 +206,41 @@ public class CustomLayers extends RenderLayer {
 
     public static RenderLayer itemGlow(Color color) {
         return ITEM_GLOW.apply((int) color.toARGB());
+    }
+
+    /// An emissive coat of the item's own texture, laid over it in the glow color.
+    ///
+    /// This exists to be bloomed. Bloom is not something the game itself draws, it comes from shader
+    /// packs, which apply it to what they recognize as emissive - and they recognize it by the program.
+    /// The glint program is not one of them, so the shimmer alone will never bloom, no matter how bright
+    /// it burns. This pass is the same [LightEmission#RADIATE] program the beams reach for when a shader
+    /// pack is present, and it blooms for the same reason.
+    ///
+    /// The emissive program carries no `TextureMat`, so it cannot scroll the streaks the way the glint
+    /// does. It samples the block atlas instead, through the item's own UVs, which is why this coats the
+    /// item rather than shimmering across it. Color rides on the vertices (this format has a color
+    /// channel, unlike the glint's), so one layer serves every color.
+    private static final Supplier<RenderLayer> ITEM_GLOW_EMISSIVE = Suppliers.memoize(() -> {
+        var layer = RenderLayer.of("spell_engine_item_glow_emissive",
+                VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
+                VertexFormat.DrawMode.QUADS,
+                1536,
+                MultiPhaseParameters.builder()
+                        .program(ENTITY_TRANSLUCENT_EMISSIVE_PROGRAM)
+                        .texture(new RenderPhase.Texture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false, false))
+                        .writeMaskState(COLOR_MASK)
+                        .cull(ENABLE_CULLING)
+                        .depthTest(EQUAL_DEPTH_TEST)
+                        .transparency(ITEM_GLOW_TRANSPARENCY)
+                        .overlay(ENABLE_OVERLAY_COLOR)
+                        .lightmap(ENABLE_LIGHTMAP)
+                        .build(false));
+        itemGlowLayers.add(layer);
+        return layer;
+    });
+
+    public static RenderLayer itemGlowEmissive() {
+        return ITEM_GLOW_EMISSIVE.get();
     }
 
     private static RenderPhase.Texturing itemGlowTexturing(Color color) {

@@ -21,6 +21,9 @@ import net.spell_engine.Platform;
 import net.spell_engine.api.effect.GlowingItemStatusEffect;
 import net.spell_engine.api.render.CustomLayers;
 import net.spell_engine.api.spell.SpellDataComponents;
+import net.spell_engine.client.compatibility.ShaderCompatibility;
+import net.spell_engine.client.util.Color;
+import net.spell_engine.client.util.TintedVertexConsumer;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -95,6 +98,21 @@ public class ItemRendererMixin {
 
         // Drawn into the glow layer alongside the item's own, the way the glint is
         var glowing = VertexConsumers.union(vertexConsumers.getBuffer(CustomLayers.itemGlow(glow)), vertices);
+
+        // Bloom is a shader pack's doing, not the game's, and it only blooms what it reads as emissive.
+        // Without a pack, this pass would only wash the item out with a flat coat and buy nothing.
+        if (ShaderCompatibility.isShaderPackInUse()) {
+            // Opacity is folded into the color, as it is for the shimmer: the blend adds the source
+            // outright, so alpha is not a factor in it, and stacks would otherwise not dim the coat at all.
+            var tint = new Color(
+                    glow.red() * glow.alpha(),
+                    glow.green() * glow.alpha(),
+                    glow.blue() * glow.alpha(),
+                    1F);
+            var emissive = new TintedVertexConsumer(vertexConsumers.getBuffer(CustomLayers.itemGlowEmissive()), tint);
+            glowing = VertexConsumers.union(glowing, emissive);
+        }
+
         original.call(instance, model, stack, litLight, overlay, matrices, glowing);
     }
 
