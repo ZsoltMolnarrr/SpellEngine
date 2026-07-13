@@ -8,6 +8,8 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.config.AttributeModifier;
 import net.spell_engine.api.config.EffectConfig;
 import net.spell_engine.client.util.Color;
+import net.spell_power.api.SpellSchools;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,7 +69,7 @@ public class SpellEngineEffects {
 
     public static void register() {
         ActionImpairing.configure(STUN.effect, EntityActionsAllowed.STUN);
-        GlowingItemStatusEffect.register(ENERGY.effect, Color.HOLY, ENERGY_OPACITY_PER_STACK);
+        GlowingItemStatusEffect.register(ENERGY.effect, Color.from(SpellSchools.FIRE.color), ENERGY_OPACITY_PER_STACK);
 
         for (var entry: entries) {
             Synchronized.configure(entry.effect, true);

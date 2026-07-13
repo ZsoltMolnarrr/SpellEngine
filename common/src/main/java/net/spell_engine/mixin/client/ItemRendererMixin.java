@@ -23,7 +23,7 @@ import net.spell_engine.api.render.CustomLayers;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.client.compatibility.ShaderCompatibility;
 import net.spell_engine.client.util.Color;
-import net.spell_engine.client.util.TintedVertexConsumer;
+import net.spell_engine.client.util.ItemGlowVertexConsumer;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -109,7 +109,7 @@ public class ItemRendererMixin {
                     glow.green() * glow.alpha(),
                     glow.blue() * glow.alpha(),
                     1F);
-            var emissive = new TintedVertexConsumer(vertexConsumers.getBuffer(CustomLayers.itemGlowEmissive()), tint);
+            var emissive = new ItemGlowVertexConsumer(vertexConsumers.getBuffer(CustomLayers.itemGlowEmissive()), tint);
             glowing = VertexConsumers.union(glowing, emissive);
         }
 

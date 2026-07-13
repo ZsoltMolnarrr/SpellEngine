@@ -208,7 +208,7 @@ public class CustomLayers extends RenderLayer {
         return ITEM_GLOW.apply((int) color.toARGB());
     }
 
-    /// An emissive coat of the item's own texture, laid over it in the glow color.
+    /// The same streaks as [#itemGlow], drawn again through an emissive program.
     ///
     /// This exists to be bloomed. Bloom is not something the game itself draws, it comes from shader
     /// packs, which apply it to what they recognize as emissive - and they recognize it by the program.
@@ -216,10 +216,14 @@ public class CustomLayers extends RenderLayer {
     /// it burns. This pass is the same [LightEmission#RADIATE] program the beams reach for when a shader
     /// pack is present, and it blooms for the same reason.
     ///
-    /// The emissive program carries no `TextureMat`, so it cannot scroll the streaks the way the glint
-    /// does. It samples the block atlas instead, through the item's own UVs, which is why this coats the
-    /// item rather than shimmering across it. Color rides on the vertices (this format has a color
-    /// channel, unlike the glint's), so one layer serves every color.
+    /// The emissive program declares no `TextureMat`, so it cannot scroll its own texture the way the
+    /// glint does; it samples raw `UV0`, which for an item is its slice of the block atlas, and would
+    /// hold a still sliver of the streaks. The scroll is affine, and interpolating transformed UVs is the
+    /// same as transforming interpolated ones, so [net.spell_engine.client.util.ItemGlowVertexConsumer]
+    /// applies [#itemGlowTextureMatrix] to the UVs on the way in and lands the identical shimmer.
+    ///
+    /// Color rides on the vertices too (this format has a color channel, unlike the glint's), so a single
+    /// layer serves every color, rather than one baked layer per color.
     private static final Supplier<RenderLayer> ITEM_GLOW_EMISSIVE = Suppliers.memoize(() -> {
         var layer = RenderLayer.of("spell_engine_item_glow_emissive",
                 VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
@@ -227,7 +231,7 @@ public class CustomLayers extends RenderLayer {
                 1536,
                 MultiPhaseParameters.builder()
                         .program(ENTITY_TRANSLUCENT_EMISSIVE_PROGRAM)
-                        .texture(new RenderPhase.Texture(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, false, false))
+                        .texture(new RenderPhase.Texture(ITEM_GLOW_TEXTURE, true, false))
                         .writeMaskState(COLOR_MASK)
                         .cull(ENABLE_CULLING)
                         .depthTest(EQUAL_DEPTH_TEST)
@@ -243,16 +247,25 @@ public class CustomLayers extends RenderLayer {
         return ITEM_GLOW_EMISSIVE.get();
     }
 
+    /// Scrolls the streaks across the item, the same motion the vanilla glint uses.
+    ///
+    /// The glint shader applies this itself, through its `TextureMat` uniform. The emissive shader has
+    /// no such uniform, so the emissive pass has to apply this to its UVs on the CPU instead - see
+    /// [net.spell_engine.client.util.ItemGlowVertexConsumer]. Both read it from here, so the two passes
+    /// scroll as one instead of drifting apart.
+    public static Matrix4f itemGlowTextureMatrix() {
+        var time = (long)(Util.getMeasuringTimeMs() * MinecraftClient.getInstance().options.getGlintSpeed().getValue() * 8.0);
+        var x = (float)(time % 110000L) / 110000.0F;
+        var y = (float)(time % 30000L) / 30000.0F;
+        var textureMatrix = new Matrix4f().translation(-x, y, 0.0F);
+        textureMatrix.rotateZ((float) (Math.PI / 18)).scale(ITEM_GLOW_SCALE);
+        return textureMatrix;
+    }
+
     private static RenderPhase.Texturing itemGlowTexturing(Color color) {
         return new RenderPhase.Texturing("spell_engine_item_glow_texturing",
                 () -> {
-                    // Scrolls the streaks across the item, the same motion the vanilla glint uses
-                    var time = (long)(Util.getMeasuringTimeMs() * MinecraftClient.getInstance().options.getGlintSpeed().getValue() * 8.0);
-                    var x = (float)(time % 110000L) / 110000.0F;
-                    var y = (float)(time % 30000L) / 30000.0F;
-                    var textureMatrix = new Matrix4f().translation(-x, y, 0.0F);
-                    textureMatrix.rotateZ((float) (Math.PI / 18)).scale(ITEM_GLOW_SCALE);
-                    RenderSystem.setTextureMatrix(textureMatrix);
+                    RenderSystem.setTextureMatrix(itemGlowTextureMatrix());
 
                     // Opacity is folded into the color instead of the alpha, because the additive blend
                     // scales by color, and the glint shader discards fragments below `alpha < 0.1`,
