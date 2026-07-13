@@ -84,7 +84,7 @@ public class ItemRendererMixin {
                                                                 MatrixStack matrices, VertexConsumer vertices, Operation<Void> original,
                                                                 @Local(argsOnly = true) VertexConsumerProvider vertexConsumers) {
         var holder = SpellEngine_itemGlowHolder;
-        var glow = holder != null ? GlowingItemStatusEffect.resolve(holder) : null;
+        var glow = holder != null ? GlowingItemStatusEffect.resolve(holder, stack) : null;
         if (glow == null) {
             original.call(instance, model, stack, light, overlay, matrices, vertices);
             return;
@@ -96,7 +96,9 @@ public class ItemRendererMixin {
                 Math.max(LightmapTextureManager.getBlockLightCoordinates(light), Math.round(15 * glow.alpha())),
                 LightmapTextureManager.getSkyLightCoordinates(light));
 
-        // Drawn into the glow layer alongside the item's own, the way the glint is
+        // Drawn into the glow layer alongside the item's own, the way the glint is. This layer carries the
+        // luminance: its gain drives the streaks up into the clamp, which the emissive pass cannot do,
+        // since a vertex color has nowhere above 1 to go.
         var glowing = VertexConsumers.union(vertexConsumers.getBuffer(CustomLayers.itemGlow(glow)), vertices);
 
         // Bloom is a shader pack's doing, not the game's, and it only blooms what it reads as emissive.

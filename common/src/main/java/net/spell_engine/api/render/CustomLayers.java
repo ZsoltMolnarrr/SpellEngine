@@ -8,6 +8,8 @@ import net.minecraft.client.render.*;
 import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
+import net.spell_engine.client.compatibility.IrisCompatibility;
+import net.spell_engine.client.compatibility.ShaderCompatibility;
 import net.spell_engine.client.util.Color;
 import org.joml.Matrix4f;
 
@@ -173,6 +175,28 @@ public class CustomLayers extends RenderLayer {
         return itemGlowLayers.contains(layer);
     }
 
+    /// A glow layer only holds its place if it is drawn after the item, whose depth it tests against.
+    /// Vanilla and Iris each have to be told that in their own language, and neither infers it.
+    private static RenderLayer itemGlowLayer(RenderLayer layer) {
+        itemGlowLayers.add(layer);
+        if (!ShaderCompatibility.isVanillaRenderSystem()) {
+            // Guarded: the class must not resolve unless Iris is actually loaded
+            IrisCompatibility.markAsDecal(layer);
+        }
+        return layer;
+    }
+
+    /// `EQUAL` is not an ordering constraint here, it is the mask. Do not relax it to `LEQUAL`.
+    ///
+    /// An item is a flat quad, and all of its shape is alpha: its shader discards fragments below
+    /// `alpha < 0.1`, so no depth is written where the item is see through. The streak texture is opaque
+    /// everywhere and knows nothing of that shape, so only `EQUAL` confines it to the pixels the item
+    /// actually wrote. Under `LEQUAL` the streaks paint across the item's empty corners.
+    ///
+    /// It follows that the glow must be drawn *after* the item, or it finds no depth to match and every
+    /// fragment is rejected. Vanilla is told so by `ImmediateItemGlowMixin`, Iris by [IrisCompatibility].
+    private static final RenderPhase.DepthTest ITEM_GLOW_DEPTH_TEST = EQUAL_DEPTH_TEST;
+
     /// Plain additive. The vanilla glint blends `SRC_COLOR, ONE`, squaring the source and
     /// dimming it into the faint shimmer it is; adding it outright is what makes this glow burn.
     private static final Transparency ITEM_GLOW_TRANSPARENCY = new Transparency("spell_engine_item_glow_transparency", () -> {
@@ -196,34 +220,32 @@ public class CustomLayers extends RenderLayer {
                         .texture(new RenderPhase.Texture(ITEM_GLOW_TEXTURE, true, false))
                         .writeMaskState(COLOR_MASK)
                         .cull(DISABLE_CULLING)
-                        .depthTest(EQUAL_DEPTH_TEST)
+                        .depthTest(ITEM_GLOW_DEPTH_TEST)
                         .transparency(ITEM_GLOW_TRANSPARENCY)
                         .texturing(itemGlowTexturing(Color.fromARGB(argb)))
                         .build(false));
-        itemGlowLayers.add(layer);
-        return layer;
+        return itemGlowLayer(layer);
     });
 
     public static RenderLayer itemGlow(Color color) {
         return ITEM_GLOW.apply((int) color.toARGB());
     }
 
-    /// The same streaks as [#itemGlow], drawn again through an emissive program.
+    /// The same streaks as [#itemGlow], drawn again through an emissive program, purely to be bloomed.
     ///
-    /// This exists to be bloomed. Bloom is not something the game itself draws, it comes from shader
-    /// packs, which apply it to what they recognize as emissive - and they recognize it by the program.
-    /// The glint program is not one of them, so the shimmer alone will never bloom, no matter how bright
-    /// it burns. This pass is the same [LightEmission#RADIATE] program the beams reach for when a shader
-    /// pack is present, and it blooms for the same reason.
+    /// Bloom is not something the game draws - it comes from shader packs, which apply it to what they
+    /// recognize as emissive, and they recognize it by the program. The glint program is not one of them,
+    /// so the shimmer alone never blooms however bright it burns. This is the same [LightEmission#RADIATE]
+    /// program the beams switch to under a shader pack, and it blooms for the same reason.
     ///
-    /// The emissive program declares no `TextureMat`, so it cannot scroll its own texture the way the
-    /// glint does; it samples raw `UV0`, which for an item is its slice of the block atlas, and would
-    /// hold a still sliver of the streaks. The scroll is affine, and interpolating transformed UVs is the
-    /// same as transforming interpolated ones, so [net.spell_engine.client.util.ItemGlowVertexConsumer]
-    /// applies [#itemGlowTextureMatrix] to the UVs on the way in and lands the identical shimmer.
+    /// The emissive program declares no `TextureMat`, so it cannot scroll its texture the way the glint
+    /// does; it samples raw `UV0`, which for an item is its slice of the block atlas, and would hold a
+    /// still sliver of the streaks. The scroll is affine, so transforming the UVs per vertex is equivalent
+    /// to the shader transforming them per fragment: [net.spell_engine.client.util.ItemGlowVertexConsumer]
+    /// applies [#itemGlowTextureMatrix] on the way in and lands the identical shimmer.
     ///
-    /// Color rides on the vertices too (this format has a color channel, unlike the glint's), so a single
-    /// layer serves every color, rather than one baked layer per color.
+    /// Color rides on the vertices here (this format has a color channel, unlike the glint's), so one
+    /// layer serves every color.
     private static final Supplier<RenderLayer> ITEM_GLOW_EMISSIVE = Suppliers.memoize(() -> {
         var layer = RenderLayer.of("spell_engine_item_glow_emissive",
                 VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
@@ -234,13 +256,12 @@ public class CustomLayers extends RenderLayer {
                         .texture(new RenderPhase.Texture(ITEM_GLOW_TEXTURE, true, false))
                         .writeMaskState(COLOR_MASK)
                         .cull(ENABLE_CULLING)
-                        .depthTest(EQUAL_DEPTH_TEST)
+                        .depthTest(ITEM_GLOW_DEPTH_TEST)
                         .transparency(ITEM_GLOW_TRANSPARENCY)
                         .overlay(ENABLE_OVERLAY_COLOR)
                         .lightmap(ENABLE_LIGHTMAP)
                         .build(false));
-        itemGlowLayers.add(layer);
-        return layer;
+        return itemGlowLayer(layer);
     });
 
     public static RenderLayer itemGlowEmissive() {
