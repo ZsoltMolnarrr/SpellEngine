@@ -38,7 +38,7 @@ Particles use the `ParticleBatch` object. A batch spawns multiple particles at o
 |---|---|
 | `id` | Particle type identifier |
 | `shape` | Spawn shape: `SPHERE`, `PIPE`, `LINE`, `LINE_VERTICAL`, `PILLAR` |
-| `origin` | Anchor point: `CENTER`, `FEET`, `GROUND` |
+| `origin` | Anchor point: `CENTER`, `FEET`, `GROUND`, `LAUNCH_POINT`, `OVER_HEAD` (1.5x entity height, above the feet) |
 | `count` | Number of particles per batch |
 | `spread` | Positional spread radius |
 | `speed` | Particle velocity |

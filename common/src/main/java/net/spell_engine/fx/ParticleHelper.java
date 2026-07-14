@@ -27,6 +27,9 @@ import java.util.Random;
 public class ParticleHelper {
     private static Random rng = new Random();
 
+    /// Height multiplier for `Origin.OVER_HEAD`, measured from the entity's feet
+    private static final float OVER_HEAD_HEIGHT_FACTOR = 1.5F;
+
     public static void sendBatches(Entity trackedEntity, ParticleBatch[] batches) {
         sendBatches(trackedEntity, batches, true);
     }
@@ -283,6 +286,11 @@ public class ParticleHelper {
                     return entity.getPos().add(0, 0.1F, 0);
                 }
             }
+            case OVER_HEAD -> {
+                // `getHeight()` already carries the entity's scale: `LivingEntity` dimensions
+                // are `getBaseDimensions(pose).scaled(getScale())`
+                return entity.getPos().add(0, entity.getHeight() * OVER_HEAD_HEIGHT_FACTOR, 0);
+            }
         }
         assert true;
         return entity.getPos();
@@ -306,6 +314,9 @@ public class ParticleHelper {
                 } else {
                     return entityPos.add(0, 0.1F, 0);
                 }
+            }
+            case OVER_HEAD -> {
+                return entityPos.add(0, entityHeight * OVER_HEAD_HEIGHT_FACTOR, 0);
             }
         }
         assert true;

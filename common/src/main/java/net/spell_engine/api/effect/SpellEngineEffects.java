@@ -69,7 +69,7 @@ public class SpellEngineEffects {
 
     public static void register() {
         ActionImpairing.configure(STUN.effect, EntityActionsAllowed.STUN);
-        GlowingItemStatusEffect.register(ENERGY.effect, Color.from(SpellSchools.FIRE.color), ENERGY_OPACITY_PER_STACK);
+        GlowingItemStatusEffect.register(ENERGY.effect, Color.HOLY, ENERGY_OPACITY_PER_STACK);
 
         for (var entry: entries) {
             Synchronized.configure(entry.effect, true);

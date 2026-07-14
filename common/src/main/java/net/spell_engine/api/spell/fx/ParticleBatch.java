@@ -9,7 +9,8 @@ public class ParticleBatch { public ParticleBatch() { }
     @AlwaysGenerate
     public Origin origin = Origin.CENTER;
     public enum Origin {
-        FEET, CENTER, LAUNCH_POINT, GROUND
+        // Serialized by ordinal (see `Packets.ParticleBatches`), only append new cases
+        FEET, CENTER, LAUNCH_POINT, GROUND, OVER_HEAD
     }
     @AlwaysGenerate
     public Shape shape;
