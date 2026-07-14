@@ -116,6 +116,7 @@ dependencies {
 
     modCompileOnly("maven.modrinth:shoulder-surfing-reloaded:${project.shoulder_surfing_version}+${platform}")
     modCompileOnly("maven.modrinth:better-combat:${project.better_combat_version}-${platform}")
+//    modCompileOnly("net.bettercombat:bettercombat-${platform}:${project.better_combat_version}") { transitive = false }
     modCompileOnly("maven.modrinth:combat-roll:${project.combat_roll_version}-${platform}")
     modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${project.ftb_teams_version}")
     modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")

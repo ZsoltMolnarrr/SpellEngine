@@ -1,12 +1,17 @@
 package net.spell_engine.compat;
 
 import net.bettercombat.api.EntityPlayer_BetterCombat;
+import net.bettercombat.api.fx.TrailAppearance;
+import net.bettercombat.api.fx.TrailAppearanceOverride;
 import net.bettercombat.logic.TargetHelper;
 import net.bettercombat.logic.WeaponRegistry;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.spell_engine.api.effect.GlowingItemStatusEffect;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
+import net.spell_engine.client.util.Color;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
 
@@ -42,6 +47,44 @@ public class MeleeCompat {
             isEntityHostileVehicle = (entity) -> {
                 return TargetHelper.isEntityHostileVehicle(entity.getName().getString());
             };
+            try {
+                registerTrailAppearanceOverride();
+            } catch (Throwable ignored) {
+                // Better Combat only grew the trail override in 2.4.0, and an older one is entitled to be
+                // installed. Swings will not glow, which is no reason to take the rest of the compat down.
+            }
         }
+    }
+
+    /// Swing trails in the color of the weapon's glow, for as long as a glowing effect burns on its wielder.
+    ///
+    /// Kept apart from [#init] so that a Better Combat too old to carry [TrailAppearanceOverride] fails on
+    /// the call to this method, where it is caught, rather than while linking `init` itself, where it is not.
+    private static void registerTrailAppearanceOverride() {
+        TrailAppearanceOverride.register((attacker, stack, resolved) -> {
+            var glow = GlowingItemStatusEffect.resolve(attacker, stack);
+            if (glow == null) {
+                return null; // Nothing of ours to say, leave the trail as it was resolved
+            }
+            // A new appearance rather than a touch-up of the resolved one: what we are handed may be
+            // `TrailAppearance.DEFAULT` itself, shared and mutable, and writing to it would color
+            // every swing in the game.
+            return new TrailAppearance(glowing(resolved.primary, glow), glowing(resolved.secondary, glow));
+        });
+    }
+
+    /// A trail part in the color of the glow the weapon carries.
+    ///
+    /// The part keeps its own alpha, which is what tells the bright core of a trail from its faint edge,
+    /// and takes on the color only as far as the glow has come: a single stack barely tints it, a full
+    /// one carries it over completely. The same ramp the item itself glows on, so the two stay in step.
+    @Nullable
+    private static TrailAppearance.Part glowing(@Nullable TrailAppearance.Part part, Color glow) {
+        if (part == null) {
+            return null;
+        }
+        var base = Color.fromRGBA(part.color_rgba());
+        var tinted = base.blend(glow, glow.alpha()).alpha(base.alpha());
+        return new TrailAppearance.Part(tinted.toRGBA(), true);
     }
 }

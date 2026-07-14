@@ -83,6 +83,10 @@ dependencies {
 
     modCompileOnly("maven.modrinth:shoulder-surfing-reloaded:${project.shoulder_surfing_version}+${platform}")
     modCompileOnly("maven.modrinth:better-combat:${project.better_combat_version}-${platform}")
+    // From mavenLocal. Needs `transitive = false`: unlike the Modrinth jar, this one carries a POM, whose
+    // dependencies (Mod Menu and friends) resolve from repositories we do not declare. Compiling against
+    // its API needs the classes, not the graph behind them.
+//    modCompileOnly("net.bettercombat:bettercombat-${platform}:${project.better_combat_version}") { transitive = false }
     modCompileOnly("maven.modrinth:combat-roll:${project.combat_roll_version}-${platform}")
     modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${project.ftb_teams_version}")
     modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
