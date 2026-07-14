@@ -10,10 +10,32 @@ A spell JSON maps directly to the `Spell` Java class. Only fields you want to ov
 | `type` | enum | `ACTIVE` | `ACTIVE`, `PASSIVE`, or `MODIFIER` — see [Spell Types](#spell-types) |
 | `range` | float | `50` | Max target range in blocks |
 | `range_mechanic` | enum / null | `null` | Set to `"MELEE"` to use melee attack range instead of `range` |
-| `tier` | int | `1` | Sort/quality order (higher = better) |
-| `sub_tier` | int | `1` | Secondary sort order, between spells of the same `tier` |
-| `group` | string | `""` | Keeps related spells together where a catalog of them is browsed (spell binding table, creative menu), sorting ahead of `tier`. Use `"primary"` for the main weapon attack spell. |
+| `tier` | int | `1` | Quality (higher = better). Primary sort key — see [Sorting](#sorting) |
+| `sub_tier` | int | `1` | Secondary sort key, between spells of the same `tier` |
+| `group` | string | `""` | Thematic line a spell belongs to. Keeps related spells together when browsed — see [Sorting](#sorting) |
 | `learn` | object / null | `null` | If present, spell appears in the Spell Binding Table. |
+
+## Sorting
+
+Spells are sorted two different ways, depending on where they are read.
+
+**In a container** — the spell hotbar, an item tooltip — by `tier`, then `sub_tier`, then spell id. A container holds the spells of a single book or weapon, so only quality matters; `group` is ignored.
+
+**In a catalog** — the Spell Binding Table, the creative menu — by **namespace**, then **`group`**, then `tier`, then `sub_tier`, then spell id. A catalog lists the spells of every installed mod at once, so it is laid out like a library: each mod's spells together, and within a mod, each group together, in ascending quality.
+
+`group` is an arbitrary string; spells that share one are listed together, and groups are ordered alphabetically within their namespace. Two rules follow from that:
+
+- **Prefix the group with the class or book it belongs to.** Groups are read next to every other mod's, so a bare `protection` says nothing about whose protection it is, and two books that both pick that name would have their spells interleaved.
+- **A shared prefix keeps a book's lines adjacent**, since sorting is alphabetical: `arcane_evocation` and `arcane_sorcery` land side by side, while `evocation` and `sorcery` would be separated by every group in between.
+
+A typical class defines two groups, offering one spell from each at every tier — the player picks a line as they level:
+
+```
+priest_holy        heal (T0), holy_shock (T1), holy_beam (T2), circle_of_healing (T3), lightwell (T4)
+priest_discipline  ... barrier (T4)
+```
+
+Leaving `group` empty is fine for a spell that belongs to no line; it simply sorts ahead of every named group.
 
 ## Magic Schools
 
