@@ -33,16 +33,13 @@ public class Spell {
     /// Quality classifier, used for sorting spells, in an increasing order
     @AlwaysGenerate
     public int tier = 1;
-    /// Ordering classifier, used for sorting spells of the same tier, in an increasing order
-    public int order = 0;
-
-    /// Group classifier
-    /// Can be any arbitrary string, commonly used: `primary` (recommended for main attack or healing spells)
-    /// Spells with the same group override each other, prioritized by tier and rank
-    @Deprecated(forRemoval = true) @Nullable public String group;
-    /// Secondary quality classifier, used for sorting spells, in an increasing order
-    @Deprecated(forRemoval = true)
+    /// Secondary quality classifier, used for sorting spells of the same tier, in an increasing order
     public int sub_tier = 1;
+
+    /// Group classifier, used for keeping related spells together when a catalog of them is browsed
+    /// (spell binding table, creative menu), where it sorts ahead of `tier`
+    /// Can be any arbitrary string, commonly used: `primary` (recommended for main attack or healing spells)
+    public String group = "";
 
     /// If this can be obtained from Spell Binding Table, provide an object
     @Nullable public Learn learn;

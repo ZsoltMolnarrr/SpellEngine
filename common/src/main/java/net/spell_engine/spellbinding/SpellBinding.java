@@ -108,7 +108,7 @@ public class SpellBinding {
         final var finalScrollMode = scrollMode;
         return new OfferResult(Mode.SPELL,
                 spellMap.entrySet().stream()
-                .sorted(SpellContainerHelper.spellSorter)
+                .sorted(SpellContainerHelper.catalogSorter)
                 .map(entry -> {
                     var spell = entry.getValue();
                     if (finalScrollMode) {

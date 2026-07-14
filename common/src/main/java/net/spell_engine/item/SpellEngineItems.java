@@ -12,6 +12,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.tags.SpellTags;
 import net.spell_engine.compat.SlotModCompat;
@@ -79,7 +80,7 @@ public class SpellEngineItems {
                     .toList();
             for (var scrollTag: scrollTags) {
                 scrollTag.stream()
-                        .sorted(Comparator.comparing(a -> a.getKey().get().getValue().getNamespace() + "_" + a.value().tier  + "_" + a.value().order + "_" + a.getKey().get().getValue().getPath()))
+                        .sorted(SpellContainerHelper.catalogEntrySorter)
                         .forEach((entry) -> {
                             var scroll = new ItemStack(SCROLL.get());
                             ScrollItem.applySpell(scroll, entry, scrollTag.getTag());

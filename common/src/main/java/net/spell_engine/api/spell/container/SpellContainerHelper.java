@@ -142,17 +142,47 @@ public class SpellContainerHelper {
         itemStack.set(SpellDataComponents.SPELL_CONTAINER, modifiedContainer);
     }
 
-    public static final Comparator<Map.Entry<Identifier, Spell>> spellSorter = (spell1, spell2) -> {
-        float value1 = spell1.getValue().tier + ((float)spell1.getValue().order) * 0.1F;
-        float value2 = spell2.getValue().tier + ((float)spell2.getValue().order) * 0.1F;
-        if (value1 > value2) {
-            return 1;
-        } else if (value1 < value2) {
-            return -1;
-        } else {
-            return spell1.getKey().toString().compareTo(spell2.getKey().toString());
+    /// How the spells of a single container are ordered: by quality alone, since they are read as a
+    /// hotbar, where what a spell costs its wielder to reach matters more than where it came from.
+    public static final Comparator<Map.Entry<Identifier, Spell>> spellSorter = Comparator
+            .comparingInt((Map.Entry<Identifier, Spell> entry) -> entry.getValue().tier)
+            .thenComparingInt(entry -> entry.getValue().sub_tier)
+            .thenComparing(entry -> entry.getKey().toString());
+
+    /// How spells are ordered when a catalog of them is browsed - the spell binding table, the creative
+    /// menu. Unlike a container, a catalog holds the spells of every mod at once, so it is laid out like a
+    /// library: by mod, then by group, and only then by quality.
+    public static int compareInCatalog(Identifier id1, Spell spell1, Identifier id2, Spell spell2) {
+        var byNamespace = id1.getNamespace().compareTo(id2.getNamespace());
+        if (byNamespace != 0) {
+            return byNamespace;
         }
-    };
+        var byGroup = groupOf(spell1).compareTo(groupOf(spell2));
+        if (byGroup != 0) {
+            return byGroup;
+        }
+        var byTier = Integer.compare(spell1.tier, spell2.tier);
+        if (byTier != 0) {
+            return byTier;
+        }
+        var bySubTier = Integer.compare(spell1.sub_tier, spell2.sub_tier);
+        if (bySubTier != 0) {
+            return bySubTier;
+        }
+        return id1.getPath().compareTo(id2.getPath());
+    }
+
+    /// Defaults to empty, but JSON is free to spell the group out as `null`, which no ordering survives.
+    private static String groupOf(Spell spell) {
+        return spell.group != null ? spell.group : "";
+    }
+
+    public static final Comparator<Map.Entry<Identifier, Spell>> catalogSorter = (entry1, entry2) ->
+            compareInCatalog(entry1.getKey(), entry1.getValue(), entry2.getKey(), entry2.getValue());
+
+    public static final Comparator<RegistryEntry<Spell>> catalogEntrySorter = (entry1, entry2) ->
+            compareInCatalog(entry1.getKey().get().getValue(), entry1.value(),
+                    entry2.getKey().get().getValue(), entry2.value());
 
     public static boolean hasValidContainer(ItemStack itemStack) {
         return containerFromItemStack(itemStack) != null;

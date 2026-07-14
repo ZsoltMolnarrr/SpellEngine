@@ -10,8 +10,9 @@ A spell JSON maps directly to the `Spell` Java class. Only fields you want to ov
 | `type` | enum | `ACTIVE` | `ACTIVE`, `PASSIVE`, or `MODIFIER` — see [Spell Types](#spell-types) |
 | `range` | float | `50` | Max target range in blocks |
 | `range_mechanic` | enum / null | `null` | Set to `"MELEE"` to use melee attack range instead of `range` |
-| `tier` | int | `1` | Sort/quality order (higher = better). Used to resolve `group` conflicts. |
-| `group` | string / null | `null` | Spells in the same group override each other (prioritized by tier). Use `"primary"` for the main weapon attack spell. |
+| `tier` | int | `1` | Sort/quality order (higher = better) |
+| `sub_tier` | int | `1` | Secondary sort order, between spells of the same `tier` |
+| `group` | string | `""` | Keeps related spells together where a catalog of them is browsed (spell binding table, creative menu), sorting ahead of `tier`. Use `"primary"` for the main weapon attack spell. |
 | `learn` | object / null | `null` | If present, spell appears in the Spell Binding Table. |
 
 ## Magic Schools
@@ -194,7 +195,6 @@ cast: instant → target: CASTER → deliver: STASH_EFFECT → impact: DAMAGE (f
   "type": "ACTIVE",
   "range": 30,
   "tier": 2,
-  "group": null,
   "active": {
     "cast": {
       "duration": 1.0,
