@@ -55,6 +55,11 @@ API changes:
   - Uses spell modifier pipeline to modify spell properties based on charge time
   - Reworked `spell.active.cast` data structure to accommodate this feature - some fields are now marked for removal
 - Added `KnockbackImmunity` effect API - status effects configured with this prevent taking knockback
+- Added `GlowingItemStatusEffect` effect API - status effects configured with this make the held weapon glow, in a configurable color, much brighter than the enchantment glint
+  - Brightness scales with stacks (`opacityPerStack`), colors of multiple such effects blend
+  - Applies to weapons by default (items with main/off hand attribute modifiers), or to a given item tag
+  - Better Combat swing trails take on the glow color while active
+- Added `ParticleBatch.Origin`: `OVER_HEAD` case (spawning at 1.5x height of the entity)
 
 
 # 1.9.9
