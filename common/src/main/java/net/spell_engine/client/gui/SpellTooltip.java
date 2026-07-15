@@ -226,7 +226,7 @@ public class SpellTooltip {
         }
 
         List<Identifier> sortedSpellIds = spellMap.entrySet().stream()
-            .sorted(SpellContainerHelper.spellSorter)
+            .sorted(SpellContainerHelper.containerSorter)
             .map(entry -> entry.getKey())
             .collect(Collectors.toList());
 

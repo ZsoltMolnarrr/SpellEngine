@@ -13,61 +13,6 @@ import java.util.stream.Collectors;
 
 public class SpellContainerHelper {
 
-    // Construction helpers for common use cases
-    @Deprecated(forRemoval = true)
-    public static SpellContainer createForRangedWeapon() {
-        return createForWeapon(SpellContainer.ContentType.ARCHERY, List.of());
-    }
-    @Deprecated(forRemoval = true)
-    public static SpellContainer createForRangedWeapon(Identifier spellId) {
-        return createForWeapon(SpellContainer.ContentType.ARCHERY, List.of(spellId));
-    }
-    @Deprecated(forRemoval = true)
-    public static SpellContainer createForRangedWeapon(List<Identifier> spellIds) {
-        return createForWeapon(SpellContainer.ContentType.ARCHERY, spellIds);
-    }
-    @Deprecated(forRemoval = true)
-    public static SpellContainer createForMagicWeapon() {
-        return createForWeapon(SpellContainer.ContentType.MAGIC, List.of());
-    }
-    @Deprecated(forRemoval = true)
-    public static SpellContainer createForMagicWeapon(Identifier spellId) {
-        return createForWeapon(SpellContainer.ContentType.MAGIC, List.of(spellId));
-    }
-    @Deprecated(forRemoval = true)
-    public static SpellContainer createForMeleeWeapon() {
-        return createForWeapon(SpellContainer.ContentType.MAGIC, List.of());
-    }
-    @Deprecated(forRemoval = true)
-    public static SpellContainer createForMeleeWeapon(Identifier spellId) {
-        return createForWeapon(SpellContainer.ContentType.MAGIC, List.of(spellId));
-    }
-    @Deprecated(forRemoval = true)
-    public static SpellContainer createForWeapon(SpellContainer.ContentType contentType, List<Identifier> spellIds) {
-        var spellIdStrings = spellIds.stream().map(Identifier::toString).toList();
-        return new SpellContainer(contentType, "", "", 0, spellIdStrings);
-    }
-    @Deprecated(forRemoval = true)
-    public static SpellContainer createForShield(Identifier spellId) {
-        return createForShield(List.of(spellId));
-    }
-    @Deprecated(forRemoval = true)
-    public static SpellContainer createForShield(List<Identifier> spellIds) {
-        return new SpellContainer(SpellContainer.ContentType.MAGIC, "", "", "offhand", 0, spellIds.stream().map(Identifier::toString).toList());
-    }
-    @Deprecated(forRemoval = true)
-    public static SpellContainer createForRelic(Identifier spellId) {
-        return new SpellContainer(SpellContainer.ContentType.ANY, "", "", 0, List.of(spellId.toString()));
-    }
-    @Deprecated(forRemoval = true)
-    public static SpellContainer createForSpellHost(Identifier spellId) {
-        return new SpellContainer(SpellContainer.ContentType.MAGIC, "", "", 0, List.of(spellId.toString()));
-    }
-    @Deprecated(forRemoval = true)
-    public static SpellContainer createForModifier(Identifier spellId) {
-        return new SpellContainer(SpellContainer.ContentType.ANY, "", "", 0, List.of(spellId.toString()));
-    }
-
     // Read helpers
 
     public static SpellContainer containerFromItemStack(ItemStack itemStack) {
@@ -105,7 +50,7 @@ public class SpellContainerHelper {
             }
         }
         return spells.entrySet().stream()
-                .sorted(SpellContainerHelper.spellSorter)
+                .sorted(SpellContainerHelper.containerSorter)
                 .map(entry -> entry.getKey().toString())
                 .collect(Collectors.toList());
     }
@@ -142,9 +87,14 @@ public class SpellContainerHelper {
         itemStack.set(SpellDataComponents.SPELL_CONTAINER, modifiedContainer);
     }
 
+    // Sorting
+    //
+    // Two regimes, deliberately different. A *container* is read like a hotbar (one wielder, quality is all
+    // that matters), a *catalog* is browsed like a library (every mod's spells at once, laid out by origin).
+
     /// How the spells of a single container are ordered: by quality alone, since they are read as a
     /// hotbar, where what a spell costs its wielder to reach matters more than where it came from.
-    public static final Comparator<Map.Entry<Identifier, Spell>> spellSorter = Comparator
+    public static final Comparator<Map.Entry<Identifier, Spell>> containerSorter = Comparator
             .comparingInt((Map.Entry<Identifier, Spell> entry) -> entry.getValue().tier)
             .thenComparingInt(entry -> entry.getValue().sub_tier)
             .thenComparing(entry -> entry.getKey().toString());
@@ -179,12 +129,16 @@ public class SpellContainerHelper {
         return spell.group != null ? spell.group : "";
     }
 
+    /// `compareInCatalog` over map entries, for streams keyed by spell id.
     public static final Comparator<Map.Entry<Identifier, Spell>> catalogSorter = (entry1, entry2) ->
             compareInCatalog(entry1.getKey(), entry1.getValue(), entry2.getKey(), entry2.getValue());
 
+    /// `compareInCatalog` over registry entries, for streams straight off the spell registry.
     public static final Comparator<RegistryEntry<Spell>> catalogEntrySorter = (entry1, entry2) ->
             compareInCatalog(entry1.getKey().get().getValue(), entry1.value(),
                     entry2.getKey().get().getValue(), entry2.value());
+
+    // Container queries
 
     public static boolean hasValidContainer(ItemStack itemStack) {
         return containerFromItemStack(itemStack) != null;
