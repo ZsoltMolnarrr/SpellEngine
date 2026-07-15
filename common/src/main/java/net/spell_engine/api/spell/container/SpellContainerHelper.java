@@ -151,19 +151,21 @@ public class SpellContainerHelper {
 
     /// How spells are ordered when a catalog of them is browsed - the spell binding table, the creative
     /// menu. Unlike a container, a catalog holds the spells of every mod at once, so it is laid out like a
-    /// library: by mod, then by group, and only then by quality.
+    /// library: by mod, then by tier, and only within a tier by group. Tier leads group because the spell
+    /// binding table lays each tier out as its own row - the catalog is sorted flat and chunked into rows
+    /// by tier, so tier-adjacent spells must stay contiguous, with `group` merely ordering them inside a row.
     public static int compareInCatalog(Identifier id1, Spell spell1, Identifier id2, Spell spell2) {
         var byNamespace = id1.getNamespace().compareTo(id2.getNamespace());
         if (byNamespace != 0) {
             return byNamespace;
         }
-        var byGroup = groupOf(spell1).compareTo(groupOf(spell2));
-        if (byGroup != 0) {
-            return byGroup;
-        }
         var byTier = Integer.compare(spell1.tier, spell2.tier);
         if (byTier != 0) {
             return byTier;
+        }
+        var byGroup = groupOf(spell1).compareTo(groupOf(spell2));
+        if (byGroup != 0) {
+            return byGroup;
         }
         var bySubTier = Integer.compare(spell1.sub_tier, spell2.sub_tier);
         if (bySubTier != 0) {

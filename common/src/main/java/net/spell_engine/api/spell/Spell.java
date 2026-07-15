@@ -36,8 +36,8 @@ public class Spell {
     /// Secondary quality classifier, used for sorting spells of the same tier, in an increasing order
     public int sub_tier = 1;
 
-    /// Group classifier, used for keeping related spells together when a catalog of them is browsed
-    /// (spell binding table, creative menu), where it sorts ahead of `tier`
+    /// Group classifier, used for ordering related spells within a single tier when a catalog of them is
+    /// browsed (spell binding table, creative menu), where it sorts just below `tier`
     /// Can be any arbitrary string, commonly used: `primary` (recommended for main attack or healing spells)
     public String group = "";
 

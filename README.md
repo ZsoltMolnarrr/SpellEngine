@@ -258,6 +258,31 @@ Fully data driven Spell Books
 3. Add custom item model for the spell book:
   - `assets/NAMESPACE/models/item/spell_book/BOOK_NAME.json`
 
+Example - mixed Wizard spell book:
+`data/example_namespace/tags/spell/spell_book/example_book.json`
+```
+{
+  "values": [
+    "wizards:arcane_missile",
+    "wizards:arcane_beam",
+    "wizards:arcane_blink",
+    "wizards:fire_breath",
+    "wizards:fire_meteor",
+    "wizards:fire_wall",
+    "wizards:frost_nova",
+    "wizards:frost_shield",
+    "wizards:frost_blizzard"
+  ]
+}
+```
+(Step 2 and 3 were skipped)
+
+Result: 
+
+![custom_spell_book.png](.github/images/custom_spell_book.png)
+
+
+
 **Disabling spell books**
 1. Create a datapack, with an empty spell book tag for the spell book you want to disable.
 
