@@ -158,6 +158,39 @@ Spawns an entity at the target position. The entity can implement `SpellEntity.S
 ```
 Grants temporary immunity to a damage type (or all damage if `null`). `effect_any_harmful: true` also blocks harmful status effects.
 
+### VELOCITY
+Pushes the target's velocity — for knockbacks, pulls, and mobility launches. Synced to a player's own client, so it can move the caster too, not just other entities.
+```json
+"action": {
+  "type": "VELOCITY",
+  "velocity": {
+    "frame": "ORIGIN",
+    "push": { "x": 0.0, "y": 0.4, "z": 1.0 },
+    "power_coefficient": 0.0,
+    "reset_velocity": false,
+    "intent": "HARMFUL"
+  }
+}
+```
+The push is a vector interpreted in a reference `frame`. Its **Y is always world-up**; the horizontal X/Z are read relative to the frame:
+
+| `frame` | +Z axis | +X axis |
+|---|---|---|
+| `LOOK` | caster's facing (forward) | caster's right |
+| `ORIGIN` | away from the impact's origin — the area-of-effect centre (explosion / cloud / meteor landing), or the caster for a direct hit | tangent to the origin |
+
+So two fields express every direction: `(0,1,0)` = up, `(0,0,1)` = forward/away, `(0,0,-1)` = back/towards, `(0,0.4,1)` = knock away with a pop up, `(1,0,0)` = sideways/tangential.
+
+| Field | Meaning |
+|---|---|
+| `frame` | Reference frame for the horizontal axes: `LOOK` or `ORIGIN` |
+| `push` | Impulse in blocks/tick within the frame (its magnitude is the speed) |
+| `power_coefficient` | Scales `push` by `(1 + power_coefficient × spellPower)`, so the push grows with the impact's spell power (0 = fixed speed) |
+| `reset_velocity` | Zero the target's current velocity before applying, for a consistent launch regardless of prior motion |
+| `intent` | `HARMFUL` (knock/pull enemies) or `HELPFUL` (launch yourself/allies) — sets the impact's harmful/helpful classification and, when `HARMFUL`, applies the target's knockback resistance |
+
+`SpellBuilder.Impacts` helpers: `velocity(frame, push)`, `velocityUp(power)`, `knockback(power[, lift])`, `pull(power)`, `leap(forward, up)`.
+
 ### CUSTOM
 Calls a Java handler registered via `SpellHandlers.customImpact.put(id, handler)`.
 

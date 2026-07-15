@@ -165,6 +165,7 @@ Each impact has an `action.type`:
 | `COOLDOWN` | Modifies cooldowns of other spells |
 | `SPAWN` | Spawns an entity at the target |
 | `IMMUNITY` | Grants temporary damage immunity |
+| `VELOCITY` | Pushes the target's velocity (knockback, pull, launch) |
 | `CUSTOM` | Calls a Java-registered handler |
 
 A spell can have **multiple impacts** — they all fire in order on each hit. A heal spell might simultaneously apply a status effect. A damage spell might also set the target on fire.
