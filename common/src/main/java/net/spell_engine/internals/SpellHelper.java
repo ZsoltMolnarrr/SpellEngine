@@ -7,6 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -1760,6 +1761,59 @@ public class SpellHelper {
                         }
                     }
                 }
+                case VELOCITY -> {
+                    var data = impact.action.velocity;
+                    if (data != null) {
+                        var push = data.push;
+                        // The frame's horizontal +Z axis (unit, flat). For LOOK it is the caster's facing;
+                        // for ORIGIN it points away from the impact's origin (the area-of-effect centre —
+                        // explosion / cloud / meteor landing — or the caster for a direct hit). `push.y`
+                        // is applied as world-up regardless of frame.
+                        Vec3d zAxis;
+                        switch (data.frame) {
+                            case LOOK -> zAxis = Vec3d.fromPolar(0, caster.getYaw());
+                            case ORIGIN -> {
+                                var origin = context.hasOffset() ? context.position() : caster.getPos();
+                                var radial = new Vec3d(target.getX() - origin.x, 0, target.getZ() - origin.z);
+                                // Target sits exactly on the origin (e.g. a self-cast): fall back to the
+                                // caster's facing so the horizontal axes stay well-defined.
+                                zAxis = radial.lengthSquared() < 1.0e-6
+                                        ? Vec3d.fromPolar(0, caster.getYaw())
+                                        : radial.normalize();
+                            }
+                            default -> zAxis = new Vec3d(0, 0, 1);
+                        }
+                        var xAxis = new Vec3d(-zAxis.z, 0, zAxis.x); // rightward horizontal, ⟂ to zAxis
+                        var impulse = zAxis.multiply(push.z)
+                                .add(xAxis.multiply(push.x))
+                                .add(0, push.y, 0);
+                        // Grow with the impact's spell power (deterministic — a launch shouldn't randomly
+                        // vary the way crit-rolled damage does).
+                        impulse = impulse.multiply(1.0 + data.power_coefficient * power.baseValue());
+                        // A hostile shove is resisted by knockback resistance, just like a melee or
+                        // explosion knock. A helpful launch (e.g. lifting yourself) ignores it.
+                        if (data.intent == SpellTarget.Intent.HARMFUL && target instanceof LivingEntity livingTarget) {
+                            var resistance = livingTarget.getAttributeValue(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE);
+                            impulse = impulse.multiply(1.0 - resistance);
+                        }
+                        if (impulse.lengthSquared() > 0) {
+                            ///
+                            if (caster instanceof PlayerEntity player) {
+                                SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
+                            }
+                            ///
+                            if (data.reset_velocity) {
+                                target.setVelocity(Vec3d.ZERO);
+                            }
+                            target.addVelocity(impulse.x, impulse.y, impulse.z);
+                            // Force a velocity sync. For a player this reaches their own client too (via
+                            // EntityTrackerEntry.sendSyncPacket), which is required since player movement
+                            // is client-authoritative — the same path vanilla knockback rides on.
+                            target.velocityModified = true;
+                            success = true;
+                        }
+                    }
+                }
                 case SUMMON -> {
                     if (impact.action.summon != null) {
                         ///
@@ -2213,6 +2267,9 @@ public class SpellHelper {
                     return addHelpful && multiplierHelpful ? SpellTarget.Intent.HELPFUL : SpellTarget.Intent.HARMFUL;
                 }
                 return SpellTarget.Intent.HELPFUL;
+            }
+            case VELOCITY -> {
+                return action.velocity.intent;
             }
             case CUSTOM -> {
                 return action.custom.intent;

@@ -60,6 +60,11 @@ API changes:
   - Applies to weapons by default (items with main/off hand attribute modifiers), or to a given item tag
   - Better Combat swing trails take on the glow color while active
 - Added `ParticleBatch.Origin`: `OVER_HEAD` case (spawning at 1.5x height of the entity)
+- Added new impact type: `VELOCITY` — pushes the target's velocity, for knockbacks, pulls, and mobility launches
+  - Push is a `Vector3f` in a reference `frame` (`LOOK` = caster facing, `ORIGIN` = radial to the impact origin); the vector's Y is always world-up
+  - `power_coefficient` scales the push with the impact's spell power; `reset_velocity` zeroes prior motion first; hostile pushes respect knockback resistance
+  - Synced to a player's own client, so it moves the caster too (e.g. self-mobility), not just other entities
+  - `SpellBuilder.Impacts` helpers: `velocity`, `velocityUp`, `knockback`, `pull`, `leap`
 
 
 # 1.9.9

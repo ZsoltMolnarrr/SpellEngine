@@ -281,8 +281,6 @@ Result:
 
 ![custom_spell_book.png](.github/images/custom_spell_book.png)
 
-
-
 **Disabling spell books**
 1. Create a datapack, with an empty spell book tag for the spell book you want to disable.
 

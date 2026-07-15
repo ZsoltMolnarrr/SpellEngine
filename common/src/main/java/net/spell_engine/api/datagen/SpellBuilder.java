@@ -8,6 +8,8 @@ import net.spell_engine.api.entity.SpellEntityPredicates;
 import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.internals.target.SpellTarget;
+import org.joml.Vector3f;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.Sound;
@@ -838,6 +840,55 @@ public class SpellBuilder {
             fire.action.fire = new Spell.Impact.Action.Fire();
             fire.action.fire.duration = duration;
             return fire;
+        }
+
+        /// Pushes the target's velocity by `push` (blocks/tick) in the given reference `frame`. Tune the
+        /// rest (`power_coefficient`, `reset_velocity`, `intent`) on the returned action's `velocity`.
+        public static Spell.Impact velocity(Spell.Impact.Action.Velocity.Frame frame, Vector3f push) {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.VELOCITY;
+            impact.action.velocity = new Spell.Impact.Action.Velocity();
+            impact.action.velocity.frame = frame;
+            impact.action.velocity.push = push;
+            return impact;
+        }
+
+        /// Convenience for a straight-up launch (frame-independent, since Y is always world-up). Raw
+        /// geometry only — set `intent`/`apply_to_caster` on the result for a self-lift.
+        public static Spell.Impact velocityUp(float power) {
+            return velocity(Spell.Impact.Action.Velocity.Frame.LOOK, new Vector3f(0, power, 0));
+        }
+
+        /// Knockback: shoves the target horizontally away from the impact's origin (the area-of-effect
+        /// centre, or the caster for a direct hit), at `power` blocks/tick. Harmful — resisted by
+        /// knockback resistance.
+        public static Spell.Impact knockback(float power) {
+            return knockback(power, 0F);
+        }
+
+        /// Knockback with an upward pop: shoves the target away from the origin and lifts it by `lift`.
+        public static Spell.Impact knockback(float power, float lift) {
+            var impact = velocity(Spell.Impact.Action.Velocity.Frame.ORIGIN, new Vector3f(0, lift, power));
+            impact.action.velocity.intent = SpellTarget.Intent.HARMFUL;
+            return impact;
+        }
+
+        /// Pull: drags the target horizontally towards the impact's origin (a vortex / grab), at `power`
+        /// blocks/tick. Harmful — resisted by knockback resistance.
+        public static Spell.Impact pull(float power) {
+            var impact = velocity(Spell.Impact.Action.Velocity.Frame.ORIGIN, new Vector3f(0, 0, -power));
+            impact.action.velocity.intent = SpellTarget.Intent.HARMFUL;
+            return impact;
+        }
+
+        /// Leap: launches the caster the way they are facing (`forward`) with optional height (`up`),
+        /// for dash / jump mobility. Bound to the caster and marked helpful.
+        public static Spell.Impact leap(float forward, float up) {
+            var impact = velocity(Spell.Impact.Action.Velocity.Frame.LOOK, new Vector3f(0, up, forward));
+            impact.action.apply_to_caster = true;
+            impact.action.velocity.intent = SpellTarget.Intent.HELPFUL;
+            return impact;
         }
 
         public static Spell.Impact resetCooldownActive(String spellPattern) {

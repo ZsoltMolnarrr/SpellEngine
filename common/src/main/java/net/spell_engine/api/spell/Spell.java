@@ -15,6 +15,7 @@ import net.spell_engine.api.util.TriState;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_power.api.SpellSchool;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -600,6 +601,7 @@ public class Spell {
                 AGGRO,
                 DISRUPT,
                 IMMUNITY,
+                VELOCITY,
                 CUSTOM
             }
             public Damage damage;
@@ -754,6 +756,42 @@ public class Spell {
                 public boolean effect_any_harmful = false;
                 /// Duration of the invulnerability in ticks
                 public int duration_ticks = 20;
+            }
+
+            public Velocity velocity;
+            /// Pushes the target's velocity. Flexible enough for knockbacks, pulls, and mobility launches
+            /// (up / forwards / backwards / towards- or away-from-origin, or any mix). For players it is
+            /// synced to their own client, so it moves the caster too, not just other entities.
+            /// <p>
+            /// The push is a vector in a chosen reference {@link Frame}. Its Y component is always
+            /// world-up; its horizontal (X/Z) components are interpreted relative to the frame — so a
+            /// single vector + frame expresses all the directions without a large enum.
+            public static class Velocity { public Velocity() { }
+                public enum Frame {
+                    /// Horizontal axes follow the caster's facing: +Z is forward, +X is to the right
+                    /// (Y is world-up). Use for forwards/backwards launches.
+                    LOOK,
+                    /// Horizontal axes are radial to the impact's origin — the area-of-effect centre for
+                    /// an area impact (explosion, cloud, meteor landing), or the caster for a direct hit:
+                    /// +Z points away from the origin, +X is tangent to it (Y is world-up). Use for
+                    /// knock-away / pull-towards.
+                    ORIGIN
+                }
+                public Frame frame = Frame.ORIGIN;
+                /// Impulse in blocks per tick, within `frame`. Its magnitude is the speed, e.g.
+                /// (0,1,0)=up, (0,0,1)=forward/away, (0,0,-1)=back/towards, (0,0.4,1)=knock away with a
+                /// pop up, (1,0,0)=sideways/tangential.
+                public Vector3f push = new Vector3f(0, 0.5F, 0);
+                /// Scales `push` by (1 + power_coefficient * spellPower), so the push grows with the
+                /// impact's spell power. Left 0, the push is a fixed speed regardless of power.
+                public float power_coefficient = 0F;
+                /// Zero the target's current velocity before applying the impulse, for a consistent
+                /// launch regardless of prior motion (rather than adding to whatever it was doing).
+                public boolean reset_velocity = false;
+                /// Whether this counts as helping or harming the target, for target filtering and
+                /// knockback resistance. A pull or knock on enemies is HARMFUL; lifting yourself or an
+                /// ally is HELPFUL.
+                public SpellTarget.Intent intent = SpellTarget.Intent.HARMFUL;
             }
 
             public Custom custom;
