@@ -498,6 +498,14 @@ public class Spell {
                 public ParticleBatch[] particles = new ParticleBatch[]{};
                 public List<ModelEffect> model_fx = List.of();
             }
+            /// FX played once, server-side, as the cloud enters its wind-down (the DESPAWNING phase).
+            /// Not emitted when `despawn_ticks == 0`: such clouds skip DESPAWNING and vanish on the spot.
+            public Cloud.Despawn despawn = new Cloud.Despawn();
+            public static class Despawn {
+                public Sound sound;
+                public ParticleBatch[] particles = new ParticleBatch[]{};
+                public List<ModelEffect> model_fx = List.of();
+            }
         }
 
         public StashEffect stash_effect;

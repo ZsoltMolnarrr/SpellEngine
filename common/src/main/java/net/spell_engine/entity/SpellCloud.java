@@ -16,6 +16,8 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.fx.ParticleHelper;
+import net.spell_engine.fx.ModelEffectHelper;
+import net.spell_engine.utils.SoundHelper;
 import net.spell_engine.utils.SoundPlayerWorld;
 import org.jetbrains.annotations.Nullable;
 
@@ -123,6 +125,14 @@ public class SpellCloud extends Entity implements Ownable {
     private void setPhase(byte phase) {
         if (getDataTracker().get(PHASE_TRACKER) != phase) {
             getDataTracker().set(PHASE_TRACKER, phase);
+            // Fire the wind-down FX exactly on the ACTIVE -> DESPAWNING transition. This is the sole
+            // server-side choke point for phase changes (both the age-based expiry in `tick()` and
+            // `beginDespawn()` route through here), and the tracker guard makes it run once. Mirrors the
+            // spawn FX in SpellHelper.spawnClouds. `despawn_ticks == 0` clouds discard before reaching
+            // DESPAWNING, so they get no wind-down FX by design.
+            if (phase == PHASE_DESPAWNING) {
+                playDespawnFX();
+            }
         }
         int endOfPhaseAge = switch (phase) {
             case PHASE_SPAWNING   -> spawnDuration;
@@ -158,6 +168,23 @@ public class SpellCloud extends Entity implements Ownable {
             despawnAnimationState.stop();
         }
         idleAnimationState.setRunning(isActive(), this.age);
+    }
+
+    /// Server-side: emit the cloud's configured despawn FX (sound, particles, model effects), broadcast
+    /// to nearby clients. Symmetrical with the spawn FX in `SpellHelper.spawnClouds`.
+    private void playDespawnFX() {
+        var cloudData = getCloudData();
+        if (cloudData == null) {
+            return;
+        }
+        var despawn = cloudData.despawn;
+        if (despawn.sound != null) {
+            SoundHelper.playSound(getWorld(), this, despawn.sound);
+        }
+        if (despawn.particles != null) {
+            ParticleHelper.sendBatches(this, despawn.particles);
+        }
+        ModelEffectHelper.spawn(getWorld(), this.getPos(), this.getYaw(), despawn.model_fx, null);
     }
 
     private float calculateRadius() {
