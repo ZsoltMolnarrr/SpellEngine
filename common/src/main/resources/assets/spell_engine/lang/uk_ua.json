@@ -22,7 +22,7 @@
   "spell.tooltip.range.plural": "Діапазон: {range} блоків",
   "spell.tooltip.cooldown": "Відновлення: {duration} секунд",
   "spell.tooltip.cooldown.plural": "Відновлення: {duration} секунд",
-  "spell.tooltip.cooldown.proportional": "Час відновлення пропорційний часу використання",
+  "spell.tooltip.cooldown.proportional": "(Пропорційно використанню)",
   "spell.tooltip.ammo": "Потребує: {item}",
   "spell.tooltip.ammo.plural": "Потребує: {item} (x{count})",
   "spell.tooltip.hold_for_details": "(Утримуйте %1$s для подробиць)",

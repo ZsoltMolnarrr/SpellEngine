@@ -583,12 +583,11 @@ public class SpellTooltip {
 
         var cooldownDuration = SpellHelper.getCooldownDuration(player, spellEntry, itemStack);
         if (cooldownDuration > 0) {
-            String cooldown;
+            var cooldownKey = keyWithPlural("spell.tooltip.cooldown", cooldownDuration);
+            var cooldown = I18n.translate(cooldownKey).replace(placeholder(durationToken), formattedNumber(cooldownDuration));
             if (spell.cost.cooldown.proportional) {
-                cooldown = I18n.translate("spell.tooltip.cooldown.proportional");
-            } else {
-                var cooldownKey = keyWithPlural("spell.tooltip.cooldown", cooldownDuration);
-                cooldown = I18n.translate(cooldownKey).replace(placeholder(durationToken), formattedNumber(cooldownDuration));
+                // Proportional cooldowns grow with repeated use; the duration shown is the current value.
+                cooldown = cooldown + " " + I18n.translate("spell.tooltip.cooldown.proportional");
             }
             lines.add(indentation(indentLevel)
                     .append(Text.literal(cooldown))

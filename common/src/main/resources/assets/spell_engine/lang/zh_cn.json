@@ -56,7 +56,7 @@
   "spell.tooltip.range.melee.minus.plural": "范围：近战距离（-{range}格）",
   "spell.tooltip.cooldown": "冷却：{duration}秒",
   "spell.tooltip.cooldown.plural": "冷却：{duration}秒",
-  "spell.tooltip.cooldown.proportional": "冷却时间随使用次数增加",
+  "spell.tooltip.cooldown.proportional": "（随使用增加）",
   "spell.tooltip.ammo": "需要：{item}",
   "spell.tooltip.ammo.plural": "需要：{item}（{count}个）",
   "spell.tooltip.hold_for_details": "（按住 %1$s 查看详情）",

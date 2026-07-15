@@ -61,7 +61,7 @@
   "spell.tooltip.range.melee.minus.plural": "Range: Melee distance (-{range} blocks)",
   "spell.tooltip.cooldown": "Cooldown: {duration} second",
   "spell.tooltip.cooldown.plural": "Cooldown: {duration} seconds",
-  "spell.tooltip.cooldown.proportional": "Cooldown proportional to usage",
+  "spell.tooltip.cooldown.proportional": "(Scales with use)",
   "spell.tooltip.ammo": "Requires: {item}",
   "spell.tooltip.ammo.plural": "Requires: {item} ({count}x)",
   "spell.tooltip.hold_for_details": "[%1$s] to show details",

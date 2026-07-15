@@ -55,7 +55,7 @@
   "spell.tooltip.range.melee.minus.plural": "Alcance: Distância corpo a corpo (-{range} blocos)",
   "spell.tooltip.cooldown": "Tempo de recarga: {duration} segundo",
   "spell.tooltip.cooldown.plural": "Tempo de recarga: {duration} segundos",
-  "spell.tooltip.cooldown.proportional": "Tempo de recarga proporcional ao uso",
+  "spell.tooltip.cooldown.proportional": "(Proporcional ao uso)",
   "spell.tooltip.ammo": "Requer: {item}",
   "spell.tooltip.ammo.plural": "Requer: {item} (x{count})",
   "spell.tooltip.hold_for_details": "(Segure %1$s para mais detalhes)",

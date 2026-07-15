@@ -66,7 +66,7 @@
 
     "spell.tooltip.cooldown": "Tiempo de Reutilización: {duration} segundo",
     "spell.tooltip.cooldown.plural": "Tiempo de Reutilización: {duration} segundos",
-    "spell.tooltip.cooldown.proportional": "Tiempo de Reutilización proporcional al uso",
+    "spell.tooltip.cooldown.proportional": "(Proporcional al uso)",
     "spell.tooltip.ammo": "Requiere: {item}",
     "spell.tooltip.ammo.plural": "Requiere: {item} (x{count})",
     "spell.tooltip.hold_for_details": "(Mantén presionado %1$s para ver detalles)",

@@ -28,7 +28,7 @@
   "spell.tooltip.range.plural": "범위: {range}블록",
   "spell.tooltip.cooldown": "재사용 대기 시간: {duration}초",
   "spell.tooltip.cooldown.plural": "재사용 대기 시간: {duration}초",
-  "spell.tooltip.cooldown.proportional": "사용에 따른 비례 재사용 대기 시간",
+  "spell.tooltip.cooldown.proportional": "(사용에 비례)",
   "spell.tooltip.ammo": "필요한 아이템: {item}",
   "spell.tooltip.ammo.plural": "필요한 아이템: {item} (x{count})",
   "spell.tooltip.hold_for_details": "(세부 정보을 보려면 %1$s을(를) 누르세요)",

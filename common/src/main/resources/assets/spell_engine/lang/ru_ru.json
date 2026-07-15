@@ -28,7 +28,7 @@
   "spell.tooltip.range.plural": "Время восстановления: {range} блоков",
   "spell.tooltip.cooldown": "Время восстановления: {duration} секунд",
   "spell.tooltip.cooldown.plural": "Время восстановления: {duration} секунд",
-  "spell.tooltip.cooldown.proportional": "Время восстановления пропорционально использованию",
+  "spell.tooltip.cooldown.proportional": "(Пропорционально использованию)",
   "spell.tooltip.ammo": "Требуется: {item}",
   "spell.tooltip.ammo.plural": "Требуется: {item} (x{count})",
   "spell.tooltip.hold_for_details": "(Удерживайте %1$s для деталей)",

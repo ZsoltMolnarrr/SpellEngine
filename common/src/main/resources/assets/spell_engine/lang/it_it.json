@@ -28,7 +28,7 @@
   "spell.tooltip.range.plural": "Portata: {Portata} blocchi",
   "spell.tooltip.cooldown": "Recupero: {durata} secondi",
   "spell.tooltip.cooldown.plural": "Recupero: {durata} secondi",
-  "spell.tooltip.cooldown.proportional": "Tempo di recupero proporzionale all'utilizzo",
+  "spell.tooltip.cooldown.proportional": "(Proporzionale all'uso)",
   "spell.tooltip.ammo": "Richiede: {elemento}",
   "spell.tooltip.ammo.plural": "Richiede: {elemento} (x{conteg})",
   "spell.tooltip.hold_for_details": "(Tieni premuto %1$s per i dettagli)",

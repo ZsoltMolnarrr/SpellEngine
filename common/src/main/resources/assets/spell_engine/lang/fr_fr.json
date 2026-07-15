@@ -51,7 +51,7 @@
   "spell.tooltip.range.melee.minus.plural": "Portée : mêlée (-{range} blocs)",
   "spell.tooltip.cooldown": "Temps de recharge : {duration} seconde",
   "spell.tooltip.cooldown.plural": "Temps de recharge : {duration} secondes",
-  "spell.tooltip.cooldown.proportional": "Recharge proportionnelle à l’utilisation",
+  "spell.tooltip.cooldown.proportional": "(Proportionnel à l’usage)",
   "spell.tooltip.ammo": "Requiert : {item}",
   "spell.tooltip.ammo.plural": "Requiert : {item} ({count}x)",
   "spell.tooltip.hold_for_details": "[%1$s] pour afficher les détails",
