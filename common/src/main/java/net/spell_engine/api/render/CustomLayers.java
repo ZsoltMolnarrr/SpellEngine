@@ -121,8 +121,32 @@ public class CustomLayers extends RenderLayer {
         // built from zero-thickness panels carrying both an `up` and a `down` face renders those two
         // quads coplanar, and without culling they z-fight and double-blend their translucent pixels.
         // Culling picks the one facing the camera, which is what such a model is authored to expect.
-        return RenderLayer.getEntityTranslucentCull(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
+        return SPELL_OBJECT_CULL.apply(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE);
     }
+
+    /// The [LightEmission#NONE] layer: functionally identical to vanilla
+    /// [RenderLayer#getEntityTranslucentCull] (same program, transparency, culling, lightmap and
+    /// overlay), differing only in that it is built with `affectsOutline = false`.
+    ///
+    /// The vanilla layer sets `affectsOutline = true`, which pulls the model into the entity glow /
+    /// outline — under vanilla through [net.minecraft.client.render.OutlineVertexConsumerProvider]'s
+    /// affected-outline union, and under shader packs through the glowing-entity program. A spell model
+    /// riding on a glowing entity (a status-effect visual or a follow-entity attachment) is a decorative
+    /// overlay, not part of the entity's body, so it must not thicken the silhouette. The emissive
+    /// emission layers above already dodge this (their programs sit outside the glow pass); this brings
+    /// NONE in line. Memoized per texture, mirroring vanilla's layer factories.
+    private static final Function<Identifier, RenderLayer> SPELL_OBJECT_CULL = Util.memoize(texture -> {
+        MultiPhaseParameters multiPhaseParameters = MultiPhaseParameters.builder()
+                .program(ENTITY_TRANSLUCENT_CULL_PROGRAM)
+                .texture(new RenderPhase.Texture(texture, false, false))
+                .transparency(TRANSLUCENT_TRANSPARENCY)
+                .cull(ENABLE_CULLING)
+                .lightmap(ENABLE_LIGHTMAP)
+                .overlay(ENABLE_OVERLAY_COLOR)
+                .build(false);
+        return RenderLayer.of("spell_object_cull", VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
+                VertexFormat.DrawMode.QUADS, 1536, true, true, multiPhaseParameters);
+    });
 
     public static RenderLayer spellObject(Identifier texture, LightEmission lightEmission, boolean translucent) {
         RenderPhase.ShaderProgram shaderProgram = switch (lightEmission) {
