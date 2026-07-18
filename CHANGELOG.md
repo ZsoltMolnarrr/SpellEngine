@@ -20,6 +20,11 @@ API changes:
 - Spell data structure changes:
   - Added new root field `order`, for sorting spells on the hotbar and spell binding GUI
   - Added new trigger field `weapon_condition` — item pattern (id, `#tag` or `~regex`) the triggering attack's item must match: the firing weapon for `ARROW_SHOT`/`ARROW_IMPACT` (spell-fired arrows never match), the striking hand's item for `MELEE_IMPACT`, otherwise the caster's main-hand item
+- Added **Hybrid Power** — per-impact blending of multiple spell schools (`impacts[].power_blend`)
+  - Each component merges the listed aspects (`POWER`, `CRITICAL_CHANCE`, `CRITICAL_DAMAGE`) of another school's power into the impact's base school as a weighted average (base school weighs 1, component `weight` defaults to 1); any number of components allowed
+  - Lets hybrid classes scale a spell with several attributes (e.g. Attack Damage + Healing Power) without registering class-specific spell schools
+  - Applied identically in impact execution and tooltip damage/heal estimation — power resolution is now shared via `SpellHelper.resolveImpactPower()`
+  - `SpellBuilder.Impacts.powerBlend()` datagen helpers; authoring guide in `docs/06-impacts.md`, balancing guidance in `docs/11-content-development-guidelines.md`
 - Spell execution pipeline now supports performing impacts on other's behalf (ImpactContext.effectiveCaster field)
 - Fine-tuned some server config defaults related to owned entities
 - Added **Model FX** — animated 3D spell model effects spawned as world entities

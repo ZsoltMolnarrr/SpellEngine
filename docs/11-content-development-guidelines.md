@@ -108,6 +108,24 @@ Guidelines:
 - **Utility is paid for with damage.** Any spell carrying a rider — DoT, slow, snare, pierce, AoE, knockback — takes a lower coefficient to offset the added value. The stronger the effect, the deeper the cut (see Frost Nova).
 - **AoE gets a small budget bump.** Area spells rarely land full damage on every target, so their nominal DPS may sit slightly above the single-target line to compensate for falloff.
 
+### Hybrid spells
+
+Spells of hybrid classes (scaling with several attributes, e.g. Paladin retribution: Attack Damage +
+Healing Power) should use per-impact [`power_blend`](06-impacts.md#hybrid-power-power_blend) rather
+than a class-specific school — new schools multiply integration surface, blends compose existing ones.
+
+Because blending is a weighted average, blended power stays on the same scale as single-school power
+and the coefficient yardstick above applies unchanged. Balancing rules:
+
+- **Weight the widely-available attribute low.** If a component attribute is on gear every class
+  wears (e.g. Attack Damage from any weapon), a high weight lets a neighbouring specialist (Warrior)
+  power the hybrid spell nearly as well as the hybrid class — obsoleting the hybrid's own armor.
+  Keep such components at weight ≤ 1 (the averaging then caps the specialist at their share) and
+  verify with the clash math of Case study #1.
+- **The dilution is the class incentive.** An averaged blend is strongest only when *all* component
+  attributes are geared — exactly the hybrid class's own equipment. Do not "fix" a specialist's
+  diluted output by raising coefficients; that is the mechanism working.
+
 Reference values across the Wizard schools:
 
 | School | Tier | Spell | Coeff | Cast (s) | DPS | Notes |

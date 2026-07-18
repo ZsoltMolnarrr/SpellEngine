@@ -702,6 +702,23 @@ public class SpellBuilder {
     }
 
     public static class Impacts {
+        /// A `power_blend` component merging all aspects (power, crit chance, crit damage) of the
+        /// given school into the impact's base school power, at the given weight (base school = 1).
+        /// Assign to `impact.power_blend`, listing as many components as needed.
+        public static Spell.Impact.PowerBlend powerBlend(SpellSchool school, float weight) {
+            var blend = new Spell.Impact.PowerBlend();
+            blend.school = school;
+            blend.weight = weight;
+            return blend;
+        }
+
+        /// A `power_blend` component merging only the given aspects of the school's power.
+        public static Spell.Impact.PowerBlend powerBlend(SpellSchool school, float weight, Spell.Impact.PowerBlend.Aspect... aspects) {
+            var blend = powerBlend(school, weight);
+            blend.aspects = List.of(aspects);
+            return blend;
+        }
+
         public static Spell.Impact damage(float coefficient) {
             var impact = new Spell.Impact();
             impact.action = new Spell.Impact.Action();

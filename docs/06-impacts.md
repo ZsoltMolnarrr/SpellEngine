@@ -19,6 +19,7 @@
 |---|---|
 | `chance` | Probability to execute this impact (0–1). Rolled independently per impact. |
 | `school` | Override the spell school for power lookup on this impact only (uses spell school if null) |
+| `power_blend` | Blend other schools into this impact's power — see [Hybrid Power](#hybrid-power-power_blend) |
 | `action` | What happens — see action types below |
 | `particles` | Particles spawned at the target on impact |
 | `sound` | Sound played at the target on impact |
@@ -38,6 +39,46 @@ To apply a helpful effect to the caster as part of an otherwise harmful spell, s
 - `distance_multiplier` comes from `AREA` target dropoff (1.0 at centre, 0.0 at edge when using `SQUARED`).
 
 **School weaknesses.** Elemental weaknesses configured in `config/spell_engine/elemental_weaknesses.json` are automatically prepended to `target_modifiers` for the relevant school. They behave identically to per-impact conditions and can boost or reduce power for specific entity types without any extra data in the spell itself.
+
+## Hybrid Power (`power_blend`)
+
+For hybrid classes whose output should scale with more than one attribute (e.g. a paladin scaling
+holy damage off both Attack Damage and Healing Power), an impact can blend the power of additional
+schools into its base school. This composes existing schools per impact — no new school needs to be
+registered, so mods stay integration-friendly.
+
+```json
+"power_blend": [
+  { "school": "spell_power:physical_melee", "weight": 1.0 },
+  { "school": "spell_power:soul", "weight": 0.5, "aspects": ["POWER"] }
+]
+```
+
+| Field | Description |
+|---|---|
+| `school` | The school whose power is merged in |
+| `aspects` | Which parts of that school's power participate: `POWER`, `CRITICAL_CHANCE`, `CRITICAL_DAMAGE`. Default: all three. |
+| `weight` | This component's weight in the weighted average. Default `1`. |
+
+Each aspect is resolved as a **weighted average**, where the impact's base school (its `school`
+override, or the spell's school) always participates with weight 1. A component only contributes to
+the aspects it lists — unlisted aspects keep the base school's value, and the component's weight does
+not dilute them. Any number of components is allowed (bi-brid, tri-brid, …).
+
+Example: base school HEALING with power 4, blended with PHYSICAL_MELEE (attack damage 16) at
+weight 1 → effective power = `(4×1 + 16×1) / (1+1) = 10`.
+
+Because the result is an average rather than a sum, blended power stays on the same scale as
+single-school power — the [coefficient yardstick](11-content-development-guidelines.md#spell-dps-configuration)
+applies unchanged. The averaging also has a built-in gear check: a specialist stacking only one of
+the component attributes is always diluted by the other component's low value, so hybrid impacts are
+strongest exactly on hybrid builds.
+
+Blending order: the blend applies after `attribute` power overrides (the overridden value acts as
+the base component), and before spell modifiers (`power_modifier` bonuses multiply the blended
+total). Tooltip damage/heal estimation (`{damage}`/`{heal}` tokens) reflects the blend automatically.
+In Java, use `SpellBuilder.Impacts.powerBlend(school, weight)` and assign the list to
+`impact.power_blend`.
 
 ## Action Types
 

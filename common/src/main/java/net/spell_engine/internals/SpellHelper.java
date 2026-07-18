@@ -1277,6 +1277,87 @@ public class SpellHelper {
 
     private static final float knockbackDefaultStrength = 0.4F;
 
+    /// Resolves an impact's hybrid power: merges each `power_blend` component's school power into
+    /// `base` as a per-aspect weighted average. The base result participates with weight 1 in every
+    /// aspect; a component only contributes to (and only adds its weight to the denominator of) the
+    /// aspects it lists. Returns `base` untouched when there is nothing to blend.
+    public static SpellPower.Result blendedPower(SpellPower.Result base, @Nullable List<Spell.Impact.PowerBlend> blend, LivingEntity caster) {
+        if (blend == null || blend.isEmpty()) {
+            return base;
+        }
+        double power = base.baseValue();
+        double critChance = base.criticalChance();
+        double critDamage = base.criticalDamage();
+        double powerWeight = 1, critChanceWeight = 1, critDamageWeight = 1;
+        for (var component: blend) {
+            if (component.school == null || component.weight <= 0) {
+                continue;
+            }
+            var aspects = component.aspects;
+            if (aspects == null || aspects.isEmpty()) {
+                continue;
+            }
+            var other = SpellPower.getSpellPower(component.school, caster);
+            if (aspects.contains(Spell.Impact.PowerBlend.Aspect.POWER)) {
+                power += other.baseValue() * component.weight;
+                powerWeight += component.weight;
+            }
+            if (aspects.contains(Spell.Impact.PowerBlend.Aspect.CRITICAL_CHANCE)) {
+                critChance += other.criticalChance() * component.weight;
+                critChanceWeight += component.weight;
+            }
+            if (aspects.contains(Spell.Impact.PowerBlend.Aspect.CRITICAL_DAMAGE)) {
+                critDamage += other.criticalDamage() * component.weight;
+                critDamageWeight += component.weight;
+            }
+        }
+        return new SpellPower.Result(base.school(),
+                power / powerWeight,
+                critChance / critChanceWeight,
+                critDamage / critDamageWeight);
+    }
+
+    /// Resolves an impact's base power — shared by impact execution (`performImpact`) and
+    /// damage/heal output estimation (`estimate`), so both paths scale identically:
+    /// base school power (impact `school`, or the spell's school), then the `attribute` power
+    /// override, then `power_blend` merging.
+    /// `cached` is reused when it already holds the resolved school's power.
+    /// `attributeTarget` is the entity read by `attribute_from_target` (execution passes the
+    /// struck target; estimation passes null, falling back to the caster).
+    public static SpellPower.Result resolveImpactPower(Spell spell, Spell.Impact impact, LivingEntity caster,
+                                                       @Nullable SpellPower.Result cached, @Nullable Entity attributeTarget) {
+        var school = impact.school != null ? impact.school : spell.school;
+        var power = cached;
+        if (power == null || power.school() != school) {
+            power = SpellPower.getSpellPower(school, caster);
+        }
+        if (impact.attribute != null && !impact.attribute.isEmpty()) {
+            var attributeEntry = Registries.ATTRIBUTE.getEntry(Identifier.of(impact.attribute));
+            if (attributeEntry.isPresent()) {
+                var attribute = attributeEntry.get();
+                double value;
+                if (impact.attribute_from_target && attributeTarget instanceof LivingEntity livingEntity) {
+                    value = livingEntity.getAttributes().hasAttribute(attribute)
+                            ? livingEntity.getAttributeValue(attribute)
+                            : 0;
+                } else {
+                    value = caster.getAttributeValue(attribute);
+                }
+                power = new SpellPower.Result(power.school(), value, power.criticalChance(), power.criticalDamage());
+            }
+        }
+        return blendedPower(power, impact.power_blend, caster);
+    }
+
+    /// Clamps a power result to the impact action's `min_power`/`max_power` bounds.
+    public static SpellPower.Result clampedPower(SpellPower.Result power, Spell.Impact.Action action) {
+        if (power.baseValue() < action.min_power || power.baseValue() > action.max_power) {
+            var clampedValue = MathHelper.clamp(power.baseValue(), action.min_power, action.max_power);
+            return new SpellPower.Result(power.school(), clampedValue, power.criticalChance(), power.criticalDamage());
+        }
+        return power;
+    }
+
     private static boolean performImpact(World world, LivingEntity givenCaster, Entity target, RegistryEntry<Spell> spellEntry,
                                          Spell.Impact impact, ImpactContext context, Collection<ServerPlayerEntity> trackers) {
         if (!target.isAttackable()) {
@@ -1330,23 +1411,7 @@ public class SpellHelper {
             List<Spell.Modifier> spellModifiers = SpellModifiers.ofImpact(caster, spellEntry, impact, context.chargeModifier());
 
             double particleMultiplier = 1 * context.total();
-            var power = context.power();
-            if (power == null || power.school() != school) {
-                power = SpellPower.getSpellPower(school, caster);
-            }
-            if (impact.attribute != null) {
-                var attributeOverride = Registries.ATTRIBUTE.getEntry(Identifier.of(impact.attribute)).get();
-                double value;
-                if (impact.attribute_from_target
-                        && originalTarget instanceof LivingEntity livingEntity) {
-                    value = livingEntity.getAttributes().hasAttribute(attributeOverride)
-                            ? livingEntity.getAttributeValue(attributeOverride)
-                            : 0;
-                } else {
-                    value = caster.getAttributeValue(attributeOverride);
-                }
-                power = new SpellPower.Result(power.school(), value, power.criticalChance(), power.criticalDamage());
-            }
+            var power = resolveImpactPower(spell, impact, caster, context.power(), originalTarget);
 
             var powerModifiers = new ArrayList<>(conditionResult.modifiers());
             for (var spellModifier: spellModifiers) {
@@ -1362,10 +1427,7 @@ public class SpellHelper {
                     power.criticalChance() + bonusCritChance,
                     power.criticalDamage() + bonusCritDamage);
 
-            if (power.baseValue() < impact.action.min_power || power.baseValue() > impact.action.max_power) {
-                var clampedValue = MathHelper.clamp(power.baseValue(), impact.action.min_power, impact.action.max_power);
-                power = new SpellPower.Result(power.school(), clampedValue, power.criticalChance(), power.criticalDamage());
-            }
+            power = clampedPower(power, impact.action);
 
             // Action execution
 
@@ -2324,12 +2386,10 @@ public class SpellHelper {
         for (var impact: impacts) {
             var school = impact.school != null ? impact.school : spellSchool;
             var attribute = school.attributeEntry;
-            boolean attributeOverride = false;
             if (impact.attribute != null && !impact.attribute.isEmpty()) {
                 var optionalAttribute = Registries.ATTRIBUTE.getEntry(Identifier.of(impact.attribute));
                 if (optionalAttribute.isPresent()) {
                     attribute = optionalAttribute.get();
-                    attributeOverride = true;
                 }
             }
 
@@ -2340,18 +2400,11 @@ public class SpellHelper {
 
             SpellPower.Result power;
             if (useRealAttributes) {
-                power = SpellPower.getSpellPower(school, caster);
-                if (attributeOverride) {
-                    var value = caster.getAttributeValue(attribute);
-                    power = new SpellPower.Result(school, value, power.criticalChance(), power.criticalDamage());
-                }
+                power = resolveImpactPower(spell, impact, caster, null, null);
             } else {
                 power = new SpellPower.Result(school, flatBonusOnItemStack, 0, 1F);
             }
-            if (power.baseValue() < impact.action.min_power || power.baseValue() > impact.action.max_power) {
-                var clampedValue = MathHelper.clamp(power.baseValue(), impact.action.min_power, impact.action.max_power);
-                power = new SpellPower.Result(power.school(), clampedValue, power.criticalChance(), power.criticalDamage());
-            }
+            power = clampedPower(power, impact.action);
 
             switch (impact.action.type) {
                 case DAMAGE -> {
