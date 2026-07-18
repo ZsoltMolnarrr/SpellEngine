@@ -194,6 +194,7 @@ public class SpellEngineParticles {
     public static final TemplateEntry sign_aggro = addSignEffect(new TemplateEntry("sign_aggro", Texture.of("sign/aggro")));
     public static final TemplateEntry sign_arrow = addSignEffect(new TemplateEntry("sign_arrow", Texture.of("sign/arrow")));
     public static final TemplateEntry sign_cast = addSignEffect(new TemplateEntry("sign_cast", Texture.of("sign/cast")));
+    public static final TemplateEntry sign_crit = addSignEffect(new TemplateEntry("sign_crit", Texture.of("sign/crit")));
     public static final TemplateEntry sign_fist = addSignEffect(new TemplateEntry("sign_fist", Texture.of("sign/fist")));
     public static final TemplateEntry sign_hourglass = addSignEffect(new TemplateEntry("sign_hourglass", Texture.of("sign/hourglass")));
     public static final TemplateEntry sign_roll = addSignEffect(new TemplateEntry("sign_roll", Texture.of("sign/roll")));
