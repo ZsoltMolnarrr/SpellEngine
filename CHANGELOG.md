@@ -25,6 +25,8 @@ API changes:
   - Lets hybrid classes scale a spell with several attributes (e.g. Attack Damage + Healing Power) without registering class-specific spell schools
   - Applied identically in impact execution and tooltip damage/heal estimation — power resolution is now shared via `SpellHelper.resolveImpactPower()`
   - `SpellBuilder.Impacts.powerBlend()` datagen helpers; authoring guide in `docs/06-impacts.md`, balancing guidance in `docs/11-content-development-guidelines.md`
+- Status effect `REMOVE` impacts: new `ALL` selector (strips every matching effect at once, previously one per impact) and `movement_impairing` filter (classification-based, covers modded slows/snares); `SpellBuilder.Impacts.effectRemoveMovementImpairing()` helper for "freedom" dispels
+- Trigger `melee` condition gained a `critical` field — `MELEE_IMPACT` triggers can require (or exclude) critical strikes, enabling "on melee crit" passives
 - Spell execution pipeline now supports performing impacts on other's behalf (ImpactContext.effectiveCaster field)
 - Fine-tuned some server config defaults related to owned entities
 - Added **Model FX** — animated 3D spell model effects spawned as world entities

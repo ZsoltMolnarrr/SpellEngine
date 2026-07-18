@@ -664,12 +664,16 @@ public class Spell {
 
                 public Remove remove;
                 public static class Remove { public Remove() { }
-                    public enum Selector { RANDOM, FIRST }
+                    public enum Selector { RANDOM, FIRST, ALL }
                     /// Status effect id pattern
                     /// (Universal pattern matcher)
                     @Nullable public String id;
                     public Selector selector = Selector.RANDOM;
                     public boolean select_beneficial = false;
+                    /// When set, only effects whose movement-impairing classification matches are
+                    /// eligible (slows, snares, gravity changes — server-computed, covers modded
+                    /// effects too; see `StatusEffectClassification`)
+                    @Nullable public Boolean movement_impairing;
                 }
             }
 
@@ -1049,6 +1053,8 @@ public class Spell {
         public static class MeleeCondition { public MeleeCondition() { }
             @Nullable public Boolean is_combo;
             @Nullable public Boolean is_offhand;
+            /// Whether the triggering melee hit must (true) or must not (false) be a critical strike
+            @Nullable public Boolean critical;
         }
         /// Evaluated for: EFFECT_TICK
         public EffectCondition effect;

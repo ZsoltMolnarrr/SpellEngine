@@ -374,7 +374,7 @@ public class SpellTriggers {
             }
             case MELEE_IMPACT -> {
                 result = evaluateSpellCast(event.spell, trigger.spell)
-                        && evaluateMelee(event.melee, trigger.melee)
+                        && evaluateMelee(event, trigger.melee)
                         && evaluateDamage(trigger.damage, event);
             }
             case EFFECT_TICK -> {
@@ -494,18 +494,25 @@ public class SpellTriggers {
         return true;
     }
 
-    private static boolean evaluateMelee(@Nullable MeleeCompat.Attack melee, @Nullable Spell.Trigger.MeleeCondition condition) {
+    private static boolean evaluateMelee(Event event, @Nullable Spell.Trigger.MeleeCondition condition) {
         if (condition == null) {
             return true;
         }
-        if (melee == null) {
+        // Read off the event, not the melee attack properties, so it also works without Better Combat
+        if (condition.critical != null && condition.critical != event.criticalImpact) {
             return false;
         }
-        if (condition.is_combo != null && melee.isCombo() != condition.is_combo) {
-            return false;
-        }
-        if (condition.is_offhand != null && melee.isOffhand() != condition.is_offhand) {
-            return false;
+        if (condition.is_combo != null || condition.is_offhand != null) {
+            var melee = event.melee;
+            if (melee == null) {
+                return false;
+            }
+            if (condition.is_combo != null && melee.isCombo() != condition.is_combo) {
+                return false;
+            }
+            if (condition.is_offhand != null && melee.isOffhand() != condition.is_offhand) {
+                return false;
+            }
         }
         return true;
     }

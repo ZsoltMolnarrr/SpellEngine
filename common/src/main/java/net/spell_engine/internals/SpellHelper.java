@@ -1510,24 +1510,25 @@ public class SpellHelper {
                     var data = impact.action.status_effect;
                     if (target instanceof LivingEntity livingTarget) {
                         Optional<RegistryEntry<StatusEffect>> optionalEffect = Optional.empty();
+                        List<StatusEffectInstance> removalSelection = List.of();
                         if (data.remove != null) {
                             var effects = livingTarget.getStatusEffects()
                                     .stream().filter(instance ->
                                             instance.getEffectType().value().isBeneficial() == data.remove.select_beneficial
                                             && PatternMatching.matches(instance.getEffectType(), RegistryKeys.STATUS_EFFECT, data.remove.id)
+                                            && (data.remove.movement_impairing == null
+                                                || StatusEffectClassification.isMovementImpairing(instance.getEffectType()) == data.remove.movement_impairing)
                                     )
                                     .toList();
                             if (effects.isEmpty()) {
                                 return false;
                             }
-                            switch (data.remove.selector) {
-                                case RANDOM -> {
-                                    optionalEffect = Optional.of(effects.get(world.random.nextInt(effects.size()))).map(StatusEffectInstance::getEffectType);
-                                }
-                                case FIRST -> {
-                                    optionalEffect = Optional.of(effects.getFirst()).map(StatusEffectInstance::getEffectType);
-                                }
-                            }
+                            removalSelection = switch (data.remove.selector) {
+                                case RANDOM -> List.of(effects.get(world.random.nextInt(effects.size())));
+                                case FIRST -> List.of(effects.getFirst());
+                                case ALL -> effects;
+                            };
+                            optionalEffect = Optional.of(removalSelection.getFirst()).map(StatusEffectInstance::getEffectType);
                         } else {
                             var id = Identifier.of(data.effect_id);
                             optionalEffect = Optional.of(Registries.STATUS_EFFECT.getEntry(id).get());
@@ -1601,15 +1602,18 @@ public class SpellHelper {
                                 if (data.amplifier_cap > 0) {
                                     amplifier = Math.min(amplifier, data.amplifier_cap);
                                 }
-                                if (livingTarget.hasStatusEffect(effect)) {
+                                if (!removalSelection.isEmpty()) {
                                     ///
                                     if (caster instanceof PlayerEntity player) {
                                         SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
                                     }
                                     ///
-                                    var currentEffect = livingTarget.getStatusEffect(effect);
-                                    var newAmplifier = (amplifier > 0) ? (currentEffect.getAmplifier() - amplifier) : -1;
-                                    StatusEffectUtil.applyChanges(livingTarget, List.of(new StatusEffectUtil.Diff(currentEffect, newAmplifier)));
+                                    var diffs = new ArrayList<StatusEffectUtil.Diff>();
+                                    for (var instance: removalSelection) {
+                                        var newAmplifier = (amplifier > 0) ? (instance.getAmplifier() - amplifier) : -1;
+                                        diffs.add(new StatusEffectUtil.Diff(instance, newAmplifier));
+                                    }
+                                    StatusEffectUtil.applyChanges(livingTarget, diffs);
 
                                     success = true;
                                 }

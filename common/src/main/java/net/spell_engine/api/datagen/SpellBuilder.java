@@ -819,6 +819,22 @@ public class SpellBuilder {
             return cleanse;
         }
 
+        /// Removes ALL movement-impairing harmful effects from the target (a "freedom" dispel).
+        /// Eligibility comes from `StatusEffectClassification`, so modded slows/snares are covered.
+        public static Spell.Impact effectRemoveMovementImpairing() {
+            var impact = new Spell.Impact();
+            impact.action = new Spell.Impact.Action();
+            impact.action.type = Spell.Impact.Action.Type.STATUS_EFFECT;
+            impact.action.status_effect = new Spell.Impact.Action.StatusEffect();
+            impact.action.status_effect.apply_mode = Spell.Impact.Action.StatusEffect.ApplyMode.REMOVE;
+            impact.action.status_effect.remove = new Spell.Impact.Action.StatusEffect.Remove();
+            impact.action.status_effect.remove.selector = Spell.Impact.Action.StatusEffect.Remove.Selector.ALL;
+            impact.action.status_effect.remove.select_beneficial = false;
+            impact.action.status_effect.remove.movement_impairing = true;
+            impact.sound = new Sound(SpellEngineSounds.GENERIC_DISPEL_1.id());
+            return impact;
+        }
+
         public static Spell.Impact effectRemove(String effectIdString) {
             var impact = new Spell.Impact();
             impact.action = new Spell.Impact.Action();
