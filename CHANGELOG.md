@@ -19,6 +19,7 @@ API changes:
 - Added new external spell school `PHYSICAL_MELEE_DUAL`, providing the combined power value of main hand and offhand melee attacks
 - Spell data structure changes:
   - Added new root field `order`, for sorting spells on the hotbar and spell binding GUI
+  - Added new trigger field `weapon_condition` — item pattern (id, `#tag` or `~regex`) the triggering attack's item must match: the firing weapon for `ARROW_SHOT`/`ARROW_IMPACT` (spell-fired arrows never match), the striking hand's item for `MELEE_IMPACT`, otherwise the caster's main-hand item
 - Spell execution pipeline now supports performing impacts on other's behalf (ImpactContext.effectiveCaster field)
 - Fine-tuned some server config defaults related to owned entities
 - Added **Model FX** — animated 3D spell model effects spawned as world entities

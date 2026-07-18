@@ -5,6 +5,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.Vec3d;
@@ -348,6 +350,13 @@ public class SpellTriggers {
                 return false;
             }
         }
+        if (trigger.weapon_condition != null) {
+            var weapon = triggeringWeapon(event);
+            if (weapon == null || weapon.isEmpty()
+                    || !PatternMatching.matches(weapon.getItem().getRegistryEntry(), RegistryKeys.ITEM, trigger.weapon_condition)) {
+                return false;
+            }
+        }
 
         boolean result;
         switch (trigger.type) {
@@ -391,6 +400,28 @@ public class SpellTriggers {
             }
         }
         return result;
+    }
+
+    /// The item that performed the triggering attack, matched against `Trigger.weapon_condition`.
+    /// Arrows report the weapon they were actually fired from (null for spell-fired arrows),
+    /// melee attacks the hand that struck, everything else falls back to the caster's main hand.
+    @Nullable
+    private static ItemStack triggeringWeapon(Event event) {
+        switch (event.type) {
+            case ARROW_SHOT, ARROW_IMPACT -> {
+                if (event.arrow instanceof PersistentProjectileEntity projectile) {
+                    return projectile.getWeaponStack();
+                }
+                return null;
+            }
+            case MELEE_IMPACT -> {
+                var offhand = event.melee != null && event.melee.isOffhand();
+                return offhand ? event.player.getOffHandStack() : event.player.getMainHandStack();
+            }
+            default -> {
+                return event.player.getMainHandStack();
+            }
+        }
     }
 
     private static boolean evaluateSpellCast(@Nullable RegistryEntry<Spell> spellEntry, @Nullable Spell.Trigger.SpellCondition condition) {

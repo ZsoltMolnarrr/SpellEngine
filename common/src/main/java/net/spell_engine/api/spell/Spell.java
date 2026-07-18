@@ -980,6 +980,13 @@ public class Spell {
         /// Recommended use: EquipmentSlot.MAINHAND for weapon passives, so attacks with inactive hand don't trigger
         @Nullable public EquipmentSlot equipment_condition;
 
+        /// When a value is given, the item that performed the triggering attack must match this pattern:
+        /// - ARROW_SHOT, ARROW_IMPACT: the weapon the arrow was fired from (spell-fired arrows carry no weapon, so they never match)
+        /// - MELEE_IMPACT: the item in the hand performing the attack
+        /// - anything else: the caster's main-hand item
+        /// (Universal pattern matcher: `#` prefix checks tag, `~` prefix checks regex, `!` prefix negates, no prefix checks exact match)
+        @Nullable public String weapon_condition;
+
         @Nullable public List<TargetCondition> caster_conditions;
         @Nullable public List<TargetCondition> target_conditions;
 
