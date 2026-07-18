@@ -559,19 +559,20 @@ public class Spell {
         /// Magic school of this specific impact, if null then spell school is used
         @Nullable public SpellSchool school;
         /// Blends other schools into this impact's power ("hybrid" scaling).
-        /// Each component merges the listed aspects of its school's spell power into the base
+        /// Each component merges the enabled aspects of its school's spell power into the base
         /// school's power (the impact `school`, or the spell's school) as a weighted average,
-        /// where the base school always participates with weight 1. Aspects a component does not
-        /// list keep the base school's value. Any number of components is allowed (bi-/tri-brid…).
-        /// `null` or empty = no blending.
+        /// where the base school always participates with weight 1. Aspects a component leaves
+        /// disabled keep the base school's value undiluted. Any number of components is allowed
+        /// (bi-/tri-brid…). `null` or empty = no blending.
         @Nullable public List<PowerBlend> power_blend;
         public static class PowerBlend { public PowerBlend() { }
-            public enum Aspect { POWER, CRITICAL_CHANCE, CRITICAL_DAMAGE }
             /// The school whose power is merged into the base school's power
             public SpellSchool school;
             /// Aspects of this school's power participating in the weighted average.
-            /// Defaults to all aspects.
-            public List<Aspect> aspects = List.of(Aspect.POWER, Aspect.CRITICAL_CHANCE, Aspect.CRITICAL_DAMAGE);
+            /// All default to false — a component must enable at least one to have any effect.
+            public boolean power = false;
+            public boolean critical_chance = false;
+            public boolean critical_damage = false;
             /// Weight of this component in the weighted average (the base school weighs 1)
             public float weight = 1;
         }

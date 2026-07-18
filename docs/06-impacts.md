@@ -49,21 +49,21 @@ registered, so mods stay integration-friendly.
 
 ```json
 "power_blend": [
-  { "school": "spell_power:physical_melee", "weight": 1.0 },
-  { "school": "spell_power:soul", "weight": 0.5, "aspects": ["POWER"] }
+  { "school": "spell_power:physical_melee", "weight": 1.0, "power": true, "critical_chance": true },
+  { "school": "spell_power:soul", "weight": 0.5, "power": true }
 ]
 ```
 
 | Field | Description |
 |---|---|
 | `school` | The school whose power is merged in |
-| `aspects` | Which parts of that school's power participate: `POWER`, `CRITICAL_CHANCE`, `CRITICAL_DAMAGE`. Default: all three. |
+| `power`, `critical_chance`, `critical_damage` | Which aspects of that school's power participate. All default to `false` — enable at least one, or the component has no effect. |
 | `weight` | This component's weight in the weighted average. Default `1`. |
 
 Each aspect is resolved as a **weighted average**, where the impact's base school (its `school`
 override, or the spell's school) always participates with weight 1. A component only contributes to
-the aspects it lists — unlisted aspects keep the base school's value, and the component's weight does
-not dilute them. Any number of components is allowed (bi-brid, tri-brid, …).
+the aspects it enables — disabled aspects keep the base school's value, and the component's weight
+does not dilute them. Any number of components is allowed (bi-brid, tri-brid, …).
 
 Example: base school HEALING with power 4, blended with PHYSICAL_MELEE (attack damage 16) at
 weight 1 → effective power = `(4×1 + 16×1) / (1+1) = 10`.

@@ -1293,20 +1293,19 @@ public class SpellHelper {
             if (component.school == null || component.weight <= 0) {
                 continue;
             }
-            var aspects = component.aspects;
-            if (aspects == null || aspects.isEmpty()) {
+            if (!component.power && !component.critical_chance && !component.critical_damage) {
                 continue;
             }
             var other = SpellPower.getSpellPower(component.school, caster);
-            if (aspects.contains(Spell.Impact.PowerBlend.Aspect.POWER)) {
+            if (component.power) {
                 power += other.baseValue() * component.weight;
                 powerWeight += component.weight;
             }
-            if (aspects.contains(Spell.Impact.PowerBlend.Aspect.CRITICAL_CHANCE)) {
+            if (component.critical_chance) {
                 critChance += other.criticalChance() * component.weight;
                 critChanceWeight += component.weight;
             }
-            if (aspects.contains(Spell.Impact.PowerBlend.Aspect.CRITICAL_DAMAGE)) {
+            if (component.critical_damage) {
                 critDamage += other.criticalDamage() * component.weight;
                 critDamageWeight += component.weight;
             }
