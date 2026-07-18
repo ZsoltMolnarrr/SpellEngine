@@ -223,6 +223,9 @@ public class Spell {
         /// Bonus added to the launched projectile's render scale and hitbox. 0 = unchanged
         /// (final scale = 1 + sum of this across applied modifiers).
         public float projectile_scale_multiply = 0F;
+        /// Bonus added to a meteor delivery's `launch_radius` (the horizontal spread the falling
+        /// projectiles are scattered over around the target). 0 = unchanged
+        public float meteor_launch_radius_add = 0F;
         @Nullable public Impact.Modifier power_modifier;
         public int channel_ticks_add = 0;
         public float knockback_multiply_base = 0;

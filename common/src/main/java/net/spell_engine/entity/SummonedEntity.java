@@ -406,6 +406,19 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.model_fx, this);
     }
 
+    /// Server-side: emits the individual despawn FX once, when the entity enters its despawn phase.
+    /// Mirrors {@link #emitSpawnFx()}: particles go out as a tracker packet, model effects as
+    /// self-syncing entities, both at this entity.
+    private void emitDespawnFx() {
+        if (behaviour == null || behaviour.despawn_fx == null) return;
+        var fx = behaviour.despawn_fx;
+        var world = getWorld();
+        if (fx.particles != null && fx.particles.length > 0) {
+            ParticleHelper.sendBatches(this, fx.particles);
+        }
+        ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.model_fx, this);
+    }
+
     /// Client-side: spawns the configured existence particles locally on their interval, during the
     /// ACTIVE phase. No network traffic — the config was synced once via EXISTENCE_PARTICLES.
     private void spawnExistenceParticles() {
@@ -436,6 +449,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         byte previous = getDataTracker().get(PHASE);
         if (previous != phase && phase == PHASE_DESPAWNING && behaviour != null) {
             playConfiguredSound(despawnSound.get());
+            emitDespawnFx();
         }
         getDataTracker().set(PHASE, phase);
         int endAge = switch (phase) {

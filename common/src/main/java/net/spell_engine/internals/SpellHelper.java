@@ -947,6 +947,7 @@ public class SpellHelper {
         var mutableLaunchProperties = data.launch_properties.copy();
         var mutablePerks = projectileData.perks.copy();
         var scaleMultiplier = 1F;
+        var launchRadius = meteor.launch_radius;
 
         for (var modifier: SpellModifiers.of(caster, spellEntry, context.chargeModifier())) {
             if (modifier.projectile_launch != null) {
@@ -956,6 +957,7 @@ public class SpellHelper {
                 mutablePerks.mutatingCombine(modifier.projectile_perks);
             }
             scaleMultiplier += modifier.projectile_scale_multiply;
+            launchRadius += modifier.meteor_launch_radius_add;
         }
 
         var projectile = new SpellProjectile(world, caster,
@@ -980,9 +982,9 @@ public class SpellHelper {
         } else {
             projectile.setFollowedTarget(null);
         }
-        if (meteor.launch_radius > 0 && launchSequenceEligible(sequenceIndex, meteor.offset_requires_sequence)) {
+        if (launchRadius > 0 && launchSequenceEligible(sequenceIndex, meteor.offset_requires_sequence)) {
             var randomAngle = Math.toRadians(world.random.nextFloat() * 360);
-            var offset = (new Vec3d(meteor.launch_radius, 0, 0)).rotateY((float) randomAngle);
+            var offset = (new Vec3d(launchRadius, 0, 0)).rotateY((float) randomAngle);
             projectile.setPosition(projectile.getPos().add(offset));
         }
 

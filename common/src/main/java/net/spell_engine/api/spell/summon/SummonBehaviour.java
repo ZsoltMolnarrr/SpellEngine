@@ -69,6 +69,10 @@ public class SummonBehaviour {
     /// tick, alongside the spawn sound). Null = none.
     @Nullable public VFX spawn_fx = null;
 
+    /// One-shot FX emitted server-side when this individual summon enters its despawn phase
+    /// (alongside the despawn sound). Null = none.
+    @Nullable public VFX despawn_fx = null;
+
     // --- Existence FX ---
 
     /// Particle effects emitted on a tick interval for the duration of the summon's ACTIVE phase.
