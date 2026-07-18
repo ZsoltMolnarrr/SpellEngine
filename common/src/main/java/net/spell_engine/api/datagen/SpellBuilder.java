@@ -773,6 +773,15 @@ public class SpellBuilder {
             return impact;
         }
 
+        /// ADD-mode status effect whose per-application amplifier scales with the caster's spell power and
+        /// is left uncapped. Each application adds {@code amplifier + floor(coefficient * power)} stacks;
+        /// {@code amplifier_cap} 0 means no ceiling (see the ADD branch of {@code SpellHelper}).
+        public static Spell.Impact effectAdd_ScaledAmplifier(String effectIdString, float duration, int amplifier, float coefficient) {
+            var impact = effectAdd(effectIdString, duration, amplifier, 0);
+            impact.action.status_effect.amplifier_power_multiplier = coefficient;
+            return impact;
+        }
+
         public static Spell.Impact effectCleanse() {
             var cleanse = new Spell.Impact();
             cleanse.action = new Spell.Impact.Action();

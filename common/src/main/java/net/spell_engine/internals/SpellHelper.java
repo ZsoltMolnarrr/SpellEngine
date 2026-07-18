@@ -1509,7 +1509,9 @@ public class SpellHelper {
                                     if (currentEffect != null) {
                                         var currentAmplifier = currentEffect.getAmplifier();
                                         var incrementedAmplifier = currentAmplifier + increment;
-                                        newAmplifier = Math.min(incrementedAmplifier, cap);
+                                        // cap <= 0 means "no cap", matching the SET branch below. Without this
+                                        // guard a zero cap would clamp every stack back to 0.
+                                        newAmplifier = cap > 0 ? Math.min(incrementedAmplifier, cap) : incrementedAmplifier;
                                         if (!data.refresh_duration) {
                                             if (currentAmplifier == newAmplifier) {
                                                 return false;
