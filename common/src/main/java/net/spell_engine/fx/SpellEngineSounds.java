@@ -100,6 +100,8 @@ public class SpellEngineSounds {
     public static final Entry GENERIC_SOUL_CASTING = add(new Entry("generic_soul_casting"));
     public static final Entry GENERIC_SOUL_RELEASE = add(new Entry("generic_soul_release"));
     public static final Entry GENERIC_WIND_CHARGING = add(new Entry("generic_wind_charging"));
+    public static final Entry GENERIC_WIND_CASTING = add(new Entry("generic_wind_casting"));
+    public static final Entry GENERIC_WIND_GUST =  add(new Entry("generic_wind_gust").variants(3));
 
     public static final Entry STUN_GENERIC = add(new Entry("stun_generic"));
     public static final Entry GENERIC_DISPEL_1 = add(new Entry("generic_dispel_1"));
