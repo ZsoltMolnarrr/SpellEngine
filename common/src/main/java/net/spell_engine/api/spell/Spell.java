@@ -226,6 +226,9 @@ public class Spell {
         /// Bonus added to a meteor delivery's `launch_radius` (the horizontal spread the falling
         /// projectiles are scattered over around the target). 0 = unchanged
         public float meteor_launch_radius_add = 0F;
+        /// Particle batches played alongside the spell's release FX (anchored on the caster,
+        /// repeated per channel burst when the spell replays release FX). null = none
+        @Nullable public ParticleBatch[] release_particles = null;
         @Nullable public Impact.Modifier power_modifier;
         public int channel_ticks_add = 0;
         public float knockback_multiply_base = 0;

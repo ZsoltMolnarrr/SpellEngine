@@ -526,6 +526,11 @@ public class SpellHelper {
     private static void sendReleaseFx(World world, LivingEntity caster, RegistryEntry<Spell> spellEntry, float progress) {
         var spell = spellEntry.value();
         ParticleHelper.sendBatches(caster, spell.release.particles);
+        for (var modifier: SpellModifiers.of(caster, spellEntry, null)) {
+            if (modifier.release_particles != null) {
+                ParticleHelper.sendBatches(caster, modifier.release_particles);
+            }
+        }
         if (spell.release.particles_scaled_with_ranged != null) {
             ParticleBatch[] scaledParticles = new ParticleBatch[spell.release.particles_scaled_with_ranged.length];
             for (int i = 0; i < spell.release.particles_scaled_with_ranged.length; i++) {

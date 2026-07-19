@@ -130,6 +130,7 @@ public class SpellModifiers {
         copy.mutate_impacts = modifier.mutate_impacts;
         copy.impacts = modifier.impacts;
         copy.replacing_area_impact = modifier.replacing_area_impact;
+        copy.release_particles = modifier.release_particles;
         copy.impact_filters = modifier.impact_filters;
         copy.melee_attacks = modifier.melee_attacks;
         copy.additional_placements = modifier.additional_placements;
