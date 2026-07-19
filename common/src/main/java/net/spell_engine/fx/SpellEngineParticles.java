@@ -218,6 +218,7 @@ public class SpellEngineParticles {
     public static final TemplateEntry area_effect_609 = addAreaEffect(new TemplateEntry("area_effect_609", Texture.of("zone/effect_609", 13)));
     public static final TemplateEntry area_effect_637 = addAreaEffect(new TemplateEntry("area_effect_637", Texture.of("zone/effect_637", 15)));
     public static final TemplateEntry area_effect_658 = addAreaEffect(new TemplateEntry("area_effect_658", Texture.of("zone/effect_658", 16)));
+    public static final TemplateEntry area_effect_678 = addAreaEffect(new TemplateEntry("area_effect_678", Texture.of("zone/effect_678", 17)));
     public static final TemplateEntry area_effect_700 = addAreaEffect(new TemplateEntry("area_effect_700", Texture.of("zone/effect_700", 22)));
     public static final TemplateEntry area_effect_714 = addAreaEffect(new TemplateEntry("area_effect_714", Texture.of("zone/effect_714", 22)));
     public static final TemplateEntry area_effect_715 = addAreaEffect(new TemplateEntry("area_effect_715", Texture.of("zone/effect_715", 22)));
