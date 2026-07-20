@@ -1,7 +1,6 @@
 plugins {
     id 'com.gradleup.shadow'
-    id "com.matthewprenger.cursegradle" version "1.4.0"
-    id "com.modrinth.minotaur" version "2.+"
+    id "me.modmuss50.mod-publish-plugin" version "2.1.1"
 }
 
 def platform = project.name;
@@ -161,59 +160,60 @@ remapJar {
     atAccessWideners.add("spell_engine.accesswidener")
 }
 
-if(project.hasProperty('release_type')) {
-    tasks.register("publishMod") {
-        dependsOn(build)
-        finalizedBy(tasks.curseforge)
-        finalizedBy(tasks.modrinth)
-    }
+// Publishing is configured unconditionally: tasks only *run* when explicitly invoked
+// (e.g. `publishMod` in CI), and all credentials are lazy env providers, so a local
+// `build` — with none of the tokens present — is completely unaffected.
+def releaseTypeName = (project.findProperty('release_type') ?: 'beta').toString()
+
+// Keep the old task name so the existing workflow (`:neoforge:publishMod`) keeps working.
+// The plugin's own aggregate task is `publishMods` (plural).
+tasks.register("publishMod") {
+    dependsOn(build)
+    finalizedBy(tasks.named("publishMods"))
+}
+
+publishMods {
+    file = remapJar.archiveFile          // Loom production jar (NOT the dev-shadow jar)
+    changelog = providers.provider { changelog_last_section() }   // lazy: read only at publish
+    type = releaseTypeName == "release" ? me.modmuss50.mpp.ReleaseType.STABLE
+            : releaseTypeName == "alpha" ? me.modmuss50.mpp.ReleaseType.ALPHA
+            : me.modmuss50.mpp.ReleaseType.BETA
+    version = "${project.version}-${platform}"   // per-loader suffix → unique Modrinth version
+    displayName = "${project.version}"
+    modLoaders.add("neoforge")
 
     curseforge {
-        apiKey = System.getenv("CURSEFORGE_API_KEY")
-        project {
-            id = System.getenv("CURSEFORGE_PROJECT_ID")
-            changelog = changelog_last_section()
-            changelogType = 'markdown'
-            releaseType = release_type
-            addGameVersion "${project.minecraft_version}"
-            addGameVersion "${project.minecraft_compat_version}"
-            addGameVersion "NeoForge"
-
-            relations {
-                requiredDependency 'forgified-fabric-api'
-                requiredDependency 'cloth-config'
-                requiredDependency 'playeranimator'
-                requiredDependency 'spell-power'
-                requiredDependency 'accessories'
-            }
-
-            mainArtifact(remapJar)
-            afterEvaluate {
-                uploadTask.dependsOn(remapJar)
-            }
-            options {
-                forgeGradleIntegration = false
-            }
-        }
+        projectId = providers.environmentVariable("CURSEFORGE_PROJECT_ID")   // numeric id
+        accessToken = providers.environmentVariable("CURSEFORGE_API_KEY")
+        minecraftVersions.add(project.minecraft_version)
+        minecraftVersions.add(project.minecraft_compat_version)
+        client = true                    // >=1 of client/server REQUIRED by CurseForge (Error 1021)
+        server = true
+        changelogType = "markdown"
+        requires("forgified-fabric-api", "cloth-config", "playeranimator", "spell-power", "accessories")
     }
 
     modrinth {
-        token = System.getenv("MODRINTH_API_KEY")
-        projectId = System.getenv("MODRINTH_PROJECT_ID") // This can be the project ID or the slug. Either will work!
-        changelog = changelog_last_section()
-        versionName = "${version}" // You don't need to set this manually. Will fail if Modrinth has this version already
-        versionNumber = "${version}-${platform}" // You don't need to set this manually. Will fail if Modrinth has this version already
-        versionType = release_type // This is the default -- can also be `beta` or `alpha`
-        uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
-        gameVersions = ["${project.minecraft_version}", "${project.minecraft_compat_version}"] // Must be an array, even with only one version
-        loaders = ["neoforge"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
-        changelog = changelog_last_section()
-        dependencies { // A special DSL for creating dependencies
-            required.project 'forgified-fabric-api'
-            required.project 'cloth-config'
-            required.project 'playeranimator'
-            required.project 'spell-power'
-            required.project 'accessories'
-        }
+        projectId = providers.environmentVariable("MODRINTH_PROJECT_RAW_ID")
+        accessToken = providers.environmentVariable("MODRINTH_API_KEY")
+        minecraftVersions.add(project.minecraft_version)
+        minecraftVersions.add(project.minecraft_compat_version)
+        requires { slug = "forgified-fabric-api" }
+        requires { slug = "cloth-config" }
+        requires { slug = "playeranimator" }
+        requires { slug = "spell-power" }
+        requires { slug = "accessories" }
+    }
+
+    // Each platform publishes its own GitHub release under a distinct, platform-suffixed
+    // tag (e.g. `1.0.0+1.21.1-neoforge`), so the two publish jobs don't collide.
+    github {
+        repository = providers.environmentVariable("GH_OWNER")
+                .zip(providers.environmentVariable("GH_REPO")) { owner, repo -> "$owner/$repo" }
+        accessToken = providers.environmentVariable("GH_API_KEY")
+        tagName = "${project.version}-${platform}"
+        // `commitish` is REQUIRED by the plugin. GITHUB_SHA is set automatically by GitHub
+        // Actions to the triggering commit — valid even in a detached-HEAD checkout.
+        commitish = providers.environmentVariable("GITHUB_SHA")
     }
 }

@@ -1,8 +1,6 @@
 plugins {
     id 'com.gradleup.shadow'
-    id "com.matthewprenger.cursegradle" version "1.4.0"
-    id "com.github.breadmoirai.github-release" version "2.4.1"
-    id "com.modrinth.minotaur" version "2.+"
+    id "me.modmuss50.mod-publish-plugin" version "2.1.1"
 }
 
 def platform = project.name;
@@ -149,78 +147,60 @@ remapJar {
     inputFile.set shadowJar.archiveFile
 }
 
-if(project.hasProperty('release_type')) {
-    tasks.register("publishMod") {
-        dependsOn(build)
-        finalizedBy(tasks.curseforge)
-        finalizedBy(tasks.modrinth)
-        finalizedBy(tasks.githubRelease)
-    }
+// Publishing is configured unconditionally: tasks only *run* when explicitly invoked
+// (e.g. `publishMod` in CI), and all credentials are lazy env providers, so a local
+// `build` — with none of the tokens present — is completely unaffected.
+def releaseTypeName = (project.findProperty('release_type') ?: 'beta').toString()
+
+// Keep the old task name so the existing workflow (`:fabric:publishMod`) keeps working.
+// The plugin's own aggregate task is `publishMods` (plural).
+tasks.register("publishMod") {
+    dependsOn(build)
+    finalizedBy(tasks.named("publishMods"))
+}
+
+publishMods {
+    file = remapJar.archiveFile          // Loom production jar (NOT the dev-shadow jar)
+    changelog = providers.provider { changelog_last_section() }   // lazy: read only at publish
+    type = releaseTypeName == "release" ? me.modmuss50.mpp.ReleaseType.STABLE
+            : releaseTypeName == "alpha" ? me.modmuss50.mpp.ReleaseType.ALPHA
+            : me.modmuss50.mpp.ReleaseType.BETA
+    version = "${project.version}-${platform}"   // per-loader suffix → unique Modrinth version
+    displayName = "${project.version}"
+    modLoaders.add("fabric")
 
     curseforge {
-        apiKey = System.getenv("CURSEFORGE_API_KEY")
-        project {
-            id = System.getenv("CURSEFORGE_PROJECT_ID")
-            changelog = changelog_last_section()
-            changelogType = 'markdown'
-            releaseType = release_type
-            addGameVersion "${project.minecraft_version}"
-            addGameVersion "${project.minecraft_compat_version}"
-            addGameVersion "Fabric"
-
-            relations {
-                requiredDependency 'fabric-api'
-                requiredDependency 'cloth-config'
-                requiredDependency 'playeranimator'
-                requiredDependency 'spell-power'
-                requiredDependency 'trinkets'
-            }
-
-            mainArtifact(remapJar)
-            afterEvaluate {
-                uploadTask.dependsOn(remapJar)
-            }
-            options {
-                forgeGradleIntegration = false
-            }
-        }
+        projectId = providers.environmentVariable("CURSEFORGE_PROJECT_ID")   // numeric id
+        accessToken = providers.environmentVariable("CURSEFORGE_API_KEY")
+        minecraftVersions.add(project.minecraft_version)
+        minecraftVersions.add(project.minecraft_compat_version)
+        client = true                    // >=1 of client/server REQUIRED by CurseForge (Error 1021)
+        server = true
+        changelogType = "markdown"
+        requires("fabric-api", "cloth-config", "playeranimator", "spell-power", "trinkets")
     }
 
     modrinth {
-        token = System.getenv("MODRINTH_API_KEY")
-        projectId = System.getenv("MODRINTH_PROJECT_ID") // This can be the project ID or the slug. Either will work!
-        versionName = "${version}" // You don't need to set this manually. Will fail if Modrinth has this version already
-        versionNumber = "${version}-${platform}" // You don't need to set this manually. Will fail if Modrinth has this version already
-        versionType = release_type // This is the default -- can also be `beta` or `alpha`
-        uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
-        gameVersions = ["${project.minecraft_version}", "${project.minecraft_compat_version}"] // Must be an array, even with only one version
-        loaders = ["fabric"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
-        changelog = changelog_last_section()
-        dependencies { // A special DSL for creating dependencies
-            required.project "fabric-api"
-            required.project 'cloth-config'
-            required.project 'playeranimator'
-            required.project 'spell-power'
-            required.project 'trinkets'
-        }
+        projectId = providers.environmentVariable("MODRINTH_PROJECT_RAW_ID")
+        accessToken = providers.environmentVariable("MODRINTH_API_KEY")
+        minecraftVersions.add(project.minecraft_version)
+        minecraftVersions.add(project.minecraft_compat_version)
+        requires { slug = "fabric-api" }
+        requires { slug = "cloth-config" }
+        requires { slug = "playeranimator" }
+        requires { slug = "spell-power" }
+        requires { slug = "trinkets" }
     }
 
-    githubRelease {
-        token System.getenv("GH_API_KEY") // This is your personal access token with Repo permissions
-        owner System.getenv("GH_OWNER") // default is the last part of your group. Eg group: "com.github.breadmoirai" => owner: "breadmoirai"
-        repo System.getenv("GH_REPO") // by default this is set to your project name
-        tagName "${version}" // by default this is set to "v${project.version}"
-        targetCommitish System.getenv("GH_BRANCH") // by default this is set to "main"
-        releaseName "Release" // Release title, by default this is the same as the tagName
-        generateReleaseNotes false // Generate release notes automatically, if true and body is present, body will be pre-pended, if name is not given, one will be generated by the tag
-        // body.set "" // by default this is empty
-        draft false // by default this is true
-        prerelease release_type != "release" // by default this is false
-        // releaseAssets jar.destinationDir.listFiles // this points to which files you want to upload as assets with your release, by default this is empty
-        allowUploadToExisting false // Setting this to true will allow this plugin to upload artifacts to a release if it found an existing one. If overwrite is set to true, this option is ignored.
-        overwrite false // by default false; if set to true, will delete an existing release with the same tag and name
-        // dryRun true // by default false; you can use this to see what actions would be taken without making a release
-        apiEndpoint "https://api.github.com" // should only change for github enterprise users
-        client // This is the okhttp client used for http requests
+    // Each platform publishes its own GitHub release under a distinct, platform-suffixed
+    // tag (e.g. `1.0.0+1.21.1-fabric`), so the two publish jobs don't collide.
+    github {
+        repository = providers.environmentVariable("GH_OWNER")
+                .zip(providers.environmentVariable("GH_REPO")) { owner, repo -> "$owner/$repo" }
+        accessToken = providers.environmentVariable("GH_API_KEY")
+        tagName = "${project.version}-${platform}"
+        // `commitish` is REQUIRED by the plugin. GITHUB_SHA is set automatically by GitHub
+        // Actions to the triggering commit — valid even in a detached-HEAD checkout.
+        commitish = providers.environmentVariable("GITHUB_SHA")
     }
 }
