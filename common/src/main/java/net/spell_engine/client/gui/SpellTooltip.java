@@ -529,6 +529,14 @@ public class SpellTooltip {
                         lines.add(indentation(indentLevel)
                                 .append(Text.literal(chargeText))
                                 .formatted(Formatting.GOLD));
+                    } else if (active.cast.resolvedType() == Spell.Active.Cast.Type.CHANNEL) {
+                        // CHANNEL: the duration is the span over which the repeated deliveries are spread.
+                        var channelDuration = SpellHelper.getCastDuration(player, spell, itemStack);
+                        var channelKey = keyWithPlural("spell.tooltip.cast_channel", channelDuration);
+                        var channelText = I18n.translate(channelKey).replace(placeholder(durationToken), formattedNumber(channelDuration));
+                        lines.add(indentation(indentLevel)
+                                .append(Text.literal(channelText))
+                                .formatted(Formatting.GOLD));
                     } else {
                         var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
                         var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
