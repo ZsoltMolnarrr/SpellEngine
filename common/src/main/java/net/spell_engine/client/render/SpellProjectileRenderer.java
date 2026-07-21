@@ -11,6 +11,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.FlyingItemEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RotationAxis;
@@ -101,15 +102,28 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
             // modelFX animation (initial + animated transforms + fx.scale).
             ModelEffectOperations.applyTransforms(matrices, fx, age);
 
-            // Draw: held-item id when requested (resolved by CustomModels' item fallback), else fx.model_id.
-            var modelId = model.use_held_item ? heldItemModelId : fx.model_id;
-            if (modelId != null && !modelId.isEmpty()) {
-                var layer = SpellModelHelper.LAYERS.get(fx.light_emission);
-                // Held items are item models authored in item-display space; apply the FIXED (item-frame)
-                // display transform, as the legacy single-model path did, so their base orientation matches
-                // what the orientation math (e.g. ALONG_MOTION) expects. Custom fx.model_id models render raw.
-                var transformationMode = model.use_held_item ? ModelTransformationMode.FIXED : null;
-                CustomModels.render(layer, itemRenderer, Identifier.of(modelId), transformationMode, matrices, vertexConsumers, light, entity.getId());
+            var layer = SpellModelHelper.LAYERS.get(fx.light_emission);
+            if (model.use_held_item) {
+                // Held items MUST resolve through the item model path (itemRenderer.getModel(stack, ...)),
+                // exactly as the legacy single-model renderer did. Resolving them as a raw model Identifier
+                // via CustomModels.render breaks on NeoForge: getModel returns the missing-model placeholder
+                // (never null) for a bare item id — an item's model isn't registered under the `#standalone`
+                // variant the NeoForge branch looks up — so the item-stack fallback never fires and an
+                // empty/placeholder model is drawn. heldItemModelId is null for non-held projectiles (e.g.
+                // arrows via ProjectileEntityRendererMixin), which then correctly skip these models.
+                if (heldItemModelId != null && !heldItemModelId.isEmpty()) {
+                    var stack = Registries.ITEM.get(Identifier.of(heldItemModelId)).getDefaultStack();
+                    if (!stack.isEmpty()) {
+                        var itemModel = itemRenderer.getModel(stack, entity.getWorld(), null, entity.getId());
+                        // Item models are authored in item-display space; FIXED (item-frame) gives them the
+                        // base orientation the projectile orientation math (e.g. ALONG_MOTION) expects.
+                        itemModel.getTransformation().getTransformation(ModelTransformationMode.FIXED).apply(false, matrices);
+                        CustomModels.renderModel(layer, (ItemRendererAccessor) itemRenderer, matrices, vertexConsumers, light, itemModel);
+                    }
+                }
+            } else if (fx.model_id != null && !fx.model_id.isEmpty()) {
+                // Custom (non-item) fx models render raw, with no display transform.
+                CustomModels.render(layer, itemRenderer, Identifier.of(fx.model_id), null, matrices, vertexConsumers, light, entity.getId());
             }
 
             matrices.pop();
