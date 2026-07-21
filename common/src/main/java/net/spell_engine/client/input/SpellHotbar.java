@@ -229,6 +229,21 @@ public class SpellHotbar {
                             var needsToBeHeld = SpellHelper.isChanneled(casted.process().spell().value()) ?
                                     SpellEngineClient.config.holdToCastChannelled :
                                     SpellEngineClient.config.holdToCastCharged;
+                            if(slot.castMode().equals(SpellCast.Mode.CASTING)&& !SpellEngineClient.config.autoRelease && casted.process().progress(player.getWorld().getTime()) .ratio() >= 1){
+                                if ((!pressed && needsToBeHeld)
+                                        || (pressed && !needsToBeHeld
+                                        && isReleased(keyBinding, UseCase.START))) {
+                                    caster.releaseCharge();
+
+                                    if (!needsToBeHeld) {
+                                        debounce(keyBinding, UseCase.STOP);
+                                    }
+
+                                    handledThisTick = handle;
+                                    return handle;
+                                }
+                            }
+                            else
                             if (needsToBeHeld) {
                                 if (!pressed) {
                                     caster.cancelSpellCast();
@@ -258,7 +273,7 @@ public class SpellHotbar {
                     case CHARGED -> {
                         if (casted != null && casted.process().id().equals(slot.spell.getKey().get().getValue())) {
                             // The spell is already being charged
-                            if (SpellEngineClient.config.holdToCastCharged) {
+                            if (SpellEngineClient.config.holdToCastCharged ) {
                                 if (!pressed) {
                                     caster.releaseCharge();
                                     handledThisTick = handle;

@@ -8,6 +8,8 @@ import net.spell_engine.client.input.WrappedKeybinding;
 @Config(name = "client")
 public class ClientConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip
+    public boolean autoRelease = true;
+    @ConfigEntry.Gui.Tooltip
     public boolean renderBeamsHighLuminance = true;
     @ConfigEntry.Gui.Tooltip
     public boolean holdToCastChannelled = true;
