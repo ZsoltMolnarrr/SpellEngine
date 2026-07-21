@@ -1,3 +1,7 @@
+# 1.9.12
+
+- Spell tooltip channeling time 
+
 # 1.9.11
 
 - Fix spell projectile (`held_item`) model resolution

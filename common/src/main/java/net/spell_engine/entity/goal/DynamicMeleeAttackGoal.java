@@ -172,7 +172,7 @@ public class DynamicMeleeAttackGoal extends Goal {
             swingTick = 0;
             summonedEntity.onAttacking(target); // saves vanilla lastAttackTime = age
             summonedEntity.onAttackAnimated(config.duration, summonedEntity.pickVariant(config.animation_variants));
-            summonedEntity.playConfiguredSound(config.swingEvent.get());
+            summonedEntity.playConfiguredSound(config.swing_sound);
 //            SummonedEntity.LOGGER.info("[WindupMelee] attack-start entity={} target={} duration={} windup={}->tick{} radius={} interval={}",
 //                    summonedEntity.getId(), target.getId(),
 //                    config.duration, config.windup, windupTick(), config.radius, swingInterval());
@@ -224,7 +224,7 @@ public class DynamicMeleeAttackGoal extends Goal {
 
     private void performAttackImpact(LivingEntity primary) {
         // Played once per swing, before any tryAttack calls — AoE hits do not retrigger it.
-        summonedEntity.playConfiguredSound(config.impactEvent.get());
+        summonedEntity.playConfiguredSound(config.impact_sound);
         summonedEntity.tryAttack(primary);
         if (config.radius <= 0) return;
         // Scale the AoE radius with the entity's GENERIC_SCALE attribute so a larger

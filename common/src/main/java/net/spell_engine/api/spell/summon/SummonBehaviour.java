@@ -1,16 +1,12 @@
 package net.spell_engine.api.spell.summon;
 
-import com.google.common.base.Suppliers;
 import com.google.gson.Gson;
-import net.minecraft.registry.Registries;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.fx.VFX;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 public class SummonBehaviour {
 
@@ -47,20 +43,6 @@ public class SummonBehaviour {
             copy.lifespan.despawn_ticks  = Math.max(0, copy.lifespan.despawn_ticks  + despawnTicksAdd);
         }
         return copy;
-    }
-
-    /// Resolves a sound id string into its **registered** SoundEvent instance. Blank / unparseable /
-    /// unregistered → null. Used by the lazy accessors in `Action.MeleeAttack`.
-    ///
-    /// Returns the instance held in `Registries.SOUND_EVENT` (via `get`), NOT a fabricated
-    /// `SoundEvent.of(id)`: server-side playback resolves the event back through
-    /// `Registries.SOUND_EVENT.getEntry(value)` (an identity lookup), so a fabricated instance yields
-    /// a null RegistryEntry and NPEs in `ServerWorld.playSound`.
-    @Nullable
-    static SoundEvent parseSoundId(String soundId) {
-        if (soundId == null || soundId.isBlank()) return null;
-        Identifier id = Identifier.tryParse(soundId);
-        return id != null ? Registries.SOUND_EVENT.get(id) : null;
     }
 
     // --- Spawn FX ---
@@ -236,26 +218,25 @@ public class SummonBehaviour {
 
     public Sounds sounds = new Sounds();
     public static class Sounds {
-        /// Played once when the entity is summoned. Empty for none.
-        public String spawn = "";
-        /// Played once when the entity enters its despawn phase. Empty for none.
-        public String despawn = "";
-        /// Returned from `getHurtSound`. Empty falls back to the vanilla generic hurt sound.
-        public String hurt = "";
-        /// Returned from `getDeathSound`. Empty falls back to the vanilla generic death sound.
-        public String death = "";
-        /// Returned from `getAmbientSound` — vanilla's periodic mob-idle sound. Empty disables
+        /// Played once when the entity is summoned. Null for none.
+        @Nullable public Sound spawn = null;
+        /// Played once when the entity enters its despawn phase. Null for none.
+        @Nullable public Sound despawn = null;
+        /// Backs `getHurtSound`. Null falls back to the vanilla generic hurt sound.
+        @Nullable public Sound hurt = null;
+        /// Backs `getDeathSound`. Null falls back to the vanilla generic death sound.
+        @Nullable public Sound death = null;
+        /// Backs `getAmbientSound` — vanilla's periodic mob-idle sound. Null disables
         /// it (vanilla MobEntity default is also null, so no ambient noise plays).
-        public String ambient = "";
-        /// Played on each footstep from `playStepSound`. Empty falls back to the block's
+        @Nullable public Sound ambient = null;
+        /// Played on each footstep from `playStepSound`. Null falls back to the block's
         /// step sound (vanilla behaviour: stone-step on stone, wood-step on planks, etc.).
-        public String step = "";
+        @Nullable public Sound step = null;
 
-        // NOTE: these are plain data (raw id strings) only. The lazy, memoized SoundEvent
-        // resolution lives on SummonedEntity, not here — a Gson-deserialized behaviour cannot be
-        // relied upon to carry live `transient Supplier` fields (allocation paths that skip field
-        // initializers leave them null, NPE-ing on first playback). See SummonedEntity's sound
-        // suppliers.
+        // Each entry is an fx.Sound (id + volume + pitch + randomness). SoundEvent resolution and
+        // playback (honoring volume/pitch) live on SummonedEntity, not here — a Gson-deserialized
+        // behaviour cannot be relied upon to carry live `transient` fields (allocation paths that
+        // skip field initializers leave them null). See SummonedEntity's sound suppliers.
     }
 
     // --- Actions ---
@@ -307,22 +288,18 @@ public class SummonBehaviour {
             /// Radius around the primary target in which additional entities are also struck.
             /// 0 = single-target.
             public float radius = 0;
-            /// Sound played at swing start (e.g. `"minecraft:entity.player.attack.sweep"`).
-            /// Empty / blank disables it. Resolved via `SoundEvent.of(Identifier)`, so any
-            /// sound id present in a loaded sounds.json works.
-            public String swing_sound = "";
+            /// Sound played at swing start (e.g. `Sound.of(Identifier.of("minecraft:entity.player.attack.sweep"))`).
+            /// Null disables it. Its volume / pitch / randomness are honored on playback.
+            @Nullable public Sound swing_sound = null;
             /// Sound played once on a successful impact (when the swing reaches its windup
             /// tick with the target still in range). AoE radius hits do not retrigger it.
-            /// Empty / blank disables it.
-            public String impact_sound = "";
+            /// Null disables it. Its volume / pitch / randomness are honored on playback.
+            @Nullable public Sound impact_sound = null;
             /// Pool of animation variant numbers to choose from on each swing. One is picked
             /// uniformly at random and synced to the client via the entity's variant tracker;
             /// the model picks the matching animation (falling back to variant 1 when its
             /// own animation set doesn't have a match).
             public List<Integer> animation_variants = List.of(1);
-
-            public final transient Supplier<SoundEvent> swingEvent  = Suppliers.memoize(() -> parseSoundId(swing_sound));
-            public final transient Supplier<SoundEvent> impactEvent = Suppliers.memoize(() -> parseSoundId(impact_sound));
         }
 
         public static Entry spell(SpellCast spell_cast) {

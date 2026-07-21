@@ -34,6 +34,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import net.spell_engine.api.entity.TwoWayCollisionChecker;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.summon.AttributeScaling;
 import net.spell_engine.api.spell.summon.SpellSummoned;
@@ -222,22 +223,21 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     }
 
     // --- Sounds ---
-    // Lazily-resolved, memoized SoundEvents for this summon's configured sound ids. These live on the
-    // entity rather than on the SummonBehaviour, because a Gson-deserialized behaviour (rebuilt from
-    // NBT/JSON) cannot be relied upon to carry live `transient Supplier` fields — allocation paths
-    // that bypass field initializers leave them null, which NPE'd on first playback. Each lambda reads
-    // `behaviour` lazily; every call site below only invokes `.get()` after guarding `behaviour != null`,
-    // so the memoized value is always resolved from an installed behaviour (and never cached as null
-    // prematurely).
-    private final Supplier<SoundEvent> spawnSound   = Suppliers.memoize(() -> resolveSound(behaviour != null ? behaviour.sounds.spawn   : null));
-    private final Supplier<SoundEvent> despawnSound = Suppliers.memoize(() -> resolveSound(behaviour != null ? behaviour.sounds.despawn : null));
-    private final Supplier<SoundEvent> hurtSound    = Suppliers.memoize(() -> resolveSound(behaviour != null ? behaviour.sounds.hurt    : null));
-    private final Supplier<SoundEvent> deathSound   = Suppliers.memoize(() -> resolveSound(behaviour != null ? behaviour.sounds.death   : null));
-    private final Supplier<SoundEvent> ambientSound = Suppliers.memoize(() -> resolveSound(behaviour != null ? behaviour.sounds.ambient : null));
-    private final Supplier<SoundEvent> stepSound    = Suppliers.memoize(() -> resolveSound(behaviour != null ? behaviour.sounds.step    : null));
+    // Every configured summon sound is now an fx.Sound (id + volume + pitch + randomness); the id is
+    // resolved to a registered SoundEvent lazily and memoized here, on the entity rather than on the
+    // SummonBehaviour — a Gson-deserialized behaviour (rebuilt from NBT/JSON) cannot be relied upon to
+    // carry live `transient Supplier` fields (allocation paths that bypass field initializers leave
+    // them null, which NPE'd on first playback). Each lambda reads `behaviour` lazily; call sites only
+    // invoke `.get()` after guarding `behaviour != null`, so the memoized value is always resolved from
+    // an installed behaviour. Only hurt/death/ambient need memoized events (returned to vanilla's
+    // getXxxSound and used to re-identify the vanilla-emitted event in playSound); spawn/despawn/swing/
+    // impact/step are emitted directly from their fx.Sound at the call site.
+    private final Supplier<SoundEvent> hurtEvent    = Suppliers.memoize(() -> resolveEvent(behaviour != null ? behaviour.sounds.hurt    : null));
+    private final Supplier<SoundEvent> deathEvent   = Suppliers.memoize(() -> resolveEvent(behaviour != null ? behaviour.sounds.death   : null));
+    private final Supplier<SoundEvent> ambientEvent = Suppliers.memoize(() -> resolveEvent(behaviour != null ? behaviour.sounds.ambient : null));
 
-    /// Resolves a sound id string into its **registered** SoundEvent instance. Blank / unparseable /
-    /// unregistered → null.
+    /// Resolves an fx.Sound's id into its **registered** SoundEvent instance. Null Sound / null-or-blank
+    /// id / unparseable / unregistered → null.
     ///
     /// Must return the instance actually held in `Registries.SOUND_EVENT` (via `get`), NOT a freshly
     /// fabricated `SoundEvent.of(id)`. Server-side playback (`World.playSound(SoundEvent)`) converts
@@ -245,9 +245,9 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     /// looks the value up in an *identity* map — a fabricated instance is never found, yielding a null
     /// RegistryEntry that NPEs in `ServerWorld.playSound`. The registered instance resolves correctly.
     @Nullable
-    private static SoundEvent resolveSound(@Nullable String soundId) {
-        if (soundId == null || soundId.isBlank()) return null;
-        Identifier id = Identifier.tryParse(soundId);
+    private static SoundEvent resolveEvent(@Nullable Sound sound) {
+        if (sound == null || sound.id() == null || sound.id().isBlank()) return null;
+        Identifier id = Identifier.tryParse(sound.id());
         return id != null ? Registries.SOUND_EVENT.get(id) : null;
     }
 
@@ -255,7 +255,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     @Nullable
     protected SoundEvent getHurtSound(DamageSource source) {
         if (behaviour != null) {
-            SoundEvent custom = hurtSound.get();
+            SoundEvent custom = hurtEvent.get();
             if (custom != null) return custom;
         }
         return super.getHurtSound(source);
@@ -265,7 +265,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     @Nullable
     protected SoundEvent getDeathSound() {
         if (behaviour != null) {
-            SoundEvent custom = deathSound.get();
+            SoundEvent custom = deathEvent.get();
             if (custom != null) return custom;
         }
         return super.getDeathSound();
@@ -275,18 +275,37 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     @Nullable
     protected SoundEvent getAmbientSound() {
         if (behaviour != null) {
-            SoundEvent custom = ambientSound.get();
+            SoundEvent custom = ambientEvent.get();
             if (custom != null) return custom;
         }
         return super.getAmbientSound();
     }
 
+    // Vanilla emits the hurt and death sounds through the single-arg `playSound(SoundEvent)` (from
+    // `playHurtSound` and inline in `damage()`), which plays at `getSoundVolume()` — ignoring the
+    // fx.Sound's own volume/pitch. Intercept here: when the event is the one our configured hurt/death
+    // Sound resolves to, re-emit it honoring that Sound's volume/pitch/randomness. All other vanilla
+    // single-arg playSound calls pass straight through.
+    @Override
+    public void playSound(@Nullable SoundEvent sound) {
+        if (sound != null && behaviour != null) {
+            if (sound == hurtEvent.get())  { playConfiguredSound(behaviour.sounds.hurt);  return; }
+            if (sound == deathEvent.get()) { playConfiguredSound(behaviour.sounds.death); return; }
+        }
+        super.playSound(sound);
+    }
+
     // Vanilla MobEntity.playAmbientSound() is `this.playSound(this.getAmbientSound())` with NO null
     // guard — a null return reaches ServerWorld.playSound and NPEs on `sound.value()`. Summons treat
-    // the ambient sound as optional (blank / unregistered → null), so guard it here.
+    // the ambient sound as optional (null / unregistered → no sound), so guard it here and honor the
+    // configured fx.Sound's volume/pitch.
     @Override
     public void playAmbientSound() {
-        SoundEvent sound = getAmbientSound();
+        if (behaviour != null && resolveEvent(behaviour.sounds.ambient) != null) {
+            playConfiguredSound(behaviour.sounds.ambient);
+            return;
+        }
+        SoundEvent sound = super.getAmbientSound();
         if (sound != null) {
             playSound(sound, getSoundVolume(), getSoundPitch());
         }
@@ -295,22 +314,25 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     @Override
     protected void playStepSound(BlockPos pos, BlockState state) {
         if (behaviour != null) {
-            SoundEvent custom = stepSound.get();
+            Sound step = behaviour.sounds.step;
+            SoundEvent custom = resolveEvent(step);
             if (custom != null) {
-                // Mirrors the vanilla footstep volume scaling (15% of normal) so the sound
-                // doesn't dominate while the entity walks.
-                this.playSound(custom, 0.15F, 1.0F);
+                // Mirrors the vanilla footstep volume scaling (15% of normal) so the sound doesn't
+                // dominate while the entity walks, scaled further by the configured Sound's volume.
+                this.playSound(custom, 0.15F * step.volume(), step.randomizedPitch());
                 return;
             }
         }
         super.playStepSound(pos, state);
     }
 
-    /// Broadcasts a configured sound from this entity's position. Silent when `sound` is null.
-    public void playConfiguredSound(@Nullable SoundEvent sound) {
-        if (sound == null) return;
+    /// Broadcasts a configured fx.Sound from this entity's position, honoring its volume, pitch and
+    /// pitch-randomness. Silent when `sound` is null or its id is unset/unregistered.
+    public void playConfiguredSound(@Nullable Sound sound) {
+        SoundEvent event = resolveEvent(sound);
+        if (event == null) return;
         getWorld().playSound(null, getX(), getY(), getZ(),
-                sound, getSoundCategory(), 1.0F, 1.0F);
+                event, getSoundCategory(), sound.volume(), sound.randomizedPitch());
     }
 
     private SummonBehaviour.Movement.CollisionMode collisionMode() {
@@ -448,7 +470,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private void setPhase(byte phase) {
         byte previous = getDataTracker().get(PHASE);
         if (previous != phase && phase == PHASE_DESPAWNING && behaviour != null) {
-            playConfiguredSound(despawnSound.get());
+            playConfiguredSound(behaviour.sounds.despawn);
             emitDespawnFx();
         }
         getDataTracker().set(PHASE, phase);
@@ -973,7 +995,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
             if (pendingSpawnSound) {
                 pendingSpawnSound = false;
                 if (behaviour != null) {
-                    playConfiguredSound(spawnSound.get());
+                    playConfiguredSound(behaviour.sounds.spawn);
                     emitSpawnFx();
                 }
             }
