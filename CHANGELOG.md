@@ -1,8 +1,10 @@
 # 1.9.12
 
-- Spell tooltip channeling time 
-- Rework summoned entity sound data
 - Added invulnerability recheck after `PLAYER_DAMAGE_INCOMING.PRE` event
+- Added teleport fizzle mechanic 
+- Added Spell tooltip channeling time
+- Added Spell tooltip charged spell range
+- Rework summoned entity sound data
 - Removed centralized summoned entity configuration
 
 # 1.9.11

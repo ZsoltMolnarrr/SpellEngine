@@ -718,6 +718,17 @@ public class Spell {
                 public enum Mode { FORWARD, BEHIND_TARGET }
                 public Mode mode;
                 public int required_clearance_block_y = 1;
+                /// Minimum travel distance (in blocks, straight-line) required for the teleport to happen.
+                /// If the resolved destination is closer than this — or no safe destination exists at all —
+                /// the teleport is aborted ("fizzles"): the caster stays put and no cost/cooldown is paid.
+                /// A value of `0` (default) disables the check, preserving legacy behavior.
+                public float minimum_distance = 0;
+                /// FX played at the caster's position when the teleport fizzles (see `minimum_distance`).
+                @Nullable public Fizzle fizzle;
+                public static class Fizzle { public Fizzle() { }
+                    @Nullable public Sound sound;
+                    @Nullable public ParticleBatch[] particles;
+                }
                 public SpellTarget.Intent intent = SpellTarget.Intent.HELPFUL;
                 public Forward forward;
                 public static class Forward { public Forward() { }

@@ -148,6 +148,7 @@ public class SpellEngineSounds {
     // MARK: Item sounds
 
     public static final Entry SPELLBOOK_EQUIP = add(new Entry("spellbook_equip"));
+    public static final Entry NEGATIVE_FEEDBACK = add(new Entry("negative_feedback"));
 
     public static void register() {
         for (var entry: entries) {

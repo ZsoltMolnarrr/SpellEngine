@@ -1718,6 +1718,23 @@ public class SpellHelper {
                                 applyRotation = yaw;
                             }
                         }
+                        // Fizzle: when a `minimum_distance` is configured, abort the teleport if the resolved
+                        // destination would move the caster less than that many blocks (straight-line) — or if no
+                        // safe destination was found at all. Returning `false` here means the impact never
+                        // succeeds, so the delivery completion skips cost + cooldown (see `consumeSpellCost`).
+                        if (data.minimum_distance > 0 && teleportedEntity != null && startingPosition != null) {
+                            boolean farEnough = false;
+                            if (destination != null) {
+                                farEnough = destination.squaredDistanceTo(startingPosition) >= (data.minimum_distance * data.minimum_distance);
+                            }
+                            if (!farEnough) {
+                                if (data.fizzle != null) {
+                                    ParticleHelper.sendBatches(teleportedEntity, data.fizzle.particles, false);
+                                    SoundHelper.playSound(world, teleportedEntity, data.fizzle.sound);
+                                }
+                                return false;
+                            }
+                        }
                         if (destination != null && startingPosition != null && teleportedEntity != null) {
                             ParticleHelper.sendBatches(teleportedEntity, data.depart_particles, false);
                             ModelEffectHelper.spawn(world, startingPosition, teleportedEntity.getYaw(), data.depart_model_fx, teleportedEntity);
