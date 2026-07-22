@@ -3,6 +3,7 @@
 - Spell tooltip channeling time 
 - Rework summoned entity sound data
 - Added invulnerability recheck after `PLAYER_DAMAGE_INCOMING.PRE` event
+- Removed centralized summoned entity configuration
 
 # 1.9.11
 

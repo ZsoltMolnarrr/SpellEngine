@@ -1,17 +1,33 @@
 package net.spell_engine.api.spell.summon;
 
+import net.minecraft.util.Identifier;
+import net.tiny_config.versioning.VersionableConfig;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-/// Central, data-driven base-attribute config for summoned entities, shared across content mods.
+/// A data-driven base-attribute config-file model for summoned entities, reusable across content mods.
 ///
-/// Hosted by SpellEngine as a single config file (`config/spell_engine/summoned_entities.json`).
-/// {@link #entries} is keyed by the **full entity id** (`namespace:path`, e.g. `wizards:frost_elemental`),
-/// so entries from different mods never collide. Content mods seed their default entries via
-/// {@link SummonedEntities#registerAttributes}.
-public class SummonedEntityConfig {
+/// This is a *file model*, not a mandate: each content mod that wants file-backed config owns its own
+/// instance (e.g. `config/wizards/summoned_entities.json`) and controls its own {@code schema_version}
+/// independently of every other mod (it extends {@link VersionableConfig} so `ConfigManager.schemaVersion(int)`
+/// applies). {@link #entries} is keyed by the **full entity id** (`namespace:path`, e.g.
+/// `wizards:frost_elemental`).
+///
+/// SpellEngine's registration seam ({@link SummonedEntities#registerAttributes}) never touches this class:
+/// it speaks only `Function<Identifier, Entry>`. This model is merely one convenient *source* of that
+/// function — see {@link #entryFor} — leaving mods equally free to back the source with inline constants
+/// and skip config files (and TinyConfig) entirely.
+public class SummonedEntityConfig extends VersionableConfig {
     public LinkedHashMap<String, Entry> entries = new LinkedHashMap<>();
+
+    /// Resolves the entry for a full entity id, or {@code null} if this config has none. As a method
+    /// reference ({@code config::entryFor}) this is exactly the `Function<Identifier, Entry>` that
+    /// {@link SummonedEntities#registerAttributes} consumes.
+    public Entry entryFor(Identifier entityId) {
+        return entries.get(entityId.toString());
+    }
 
     public static class Entry {
         public CommonAttributes common = new CommonAttributes();
