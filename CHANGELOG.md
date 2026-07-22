@@ -1,6 +1,7 @@
 # 1.9.12
 
 - Spell tooltip channeling time 
+- Rework summoned entity sound data
 
 # 1.9.11
 

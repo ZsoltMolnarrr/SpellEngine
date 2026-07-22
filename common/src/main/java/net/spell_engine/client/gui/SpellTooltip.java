@@ -565,8 +565,9 @@ public class SpellTooltip {
             }
         }
 
+        var chargeRangeAdd = chargeRangeAdd(spell);
         if (spell.tooltip().show_range &&
-                (spell.range > 0 || spell.range_mechanic != null)) {
+                (spell.range > 0 || spell.range_mechanic != null || chargeRangeAdd != 0)) {
             String rangeText = "";
             if (spell.range_mechanic != null) {
                 switch (spell.range_mechanic) {
@@ -580,6 +581,16 @@ public class SpellTooltip {
                         }
                     }
                 }
+            } else if (chargeRangeAdd != 0) {
+                // CHARGE spell whose charge bonus scales range: show the span from the weakest allowed
+                // release to a full charge, e.g. "4 - 10". The charge modifier's range_add scales with
+                // the curved charge ratio (full at ratio 1), matching the runtime in getRange; the
+                // minimum uses the same `curve(min_release_ratio)` the damage line uses for its floor.
+                var charge = spell.active.cast.charge;
+                var minRange = spell.range + chargeRangeAdd * charge.curve.apply(charge.min_release_ratio);
+                var maxRange = spell.range + chargeRangeAdd;
+                var rangeKey = keyWithPlural("spell.tooltip.range", maxRange);
+                rangeText = I18n.translate(rangeKey).replace(placeholder(rangeToken), formattedRange(minRange, maxRange));
             } else {
                 var rangeKey = keyWithPlural("spell.tooltip.range", spell.range);
                 rangeText = I18n.translate(rangeKey).replace(placeholder(rangeToken), formattedNumber(spell.range));
@@ -899,6 +910,17 @@ public class SpellTooltip {
 
     private static MutableText indentation(int level) {
         return Text.literal(level > 0 ? " ".repeat(level) : "");
+    }
+
+    /// The charge bonus's `range_add` for a CHARGE spell — non-zero only when the charge modifier
+    /// actually scales the spell's range, which is the sole case where the range line shows a span.
+    private static float chargeRangeAdd(Spell spell) {
+        if (spell.active != null && spell.active.cast != null
+                && spell.active.cast.resolvedType() == Spell.Active.Cast.Type.CHARGE
+                && spell.active.cast.charge != null) {
+            return spell.active.cast.charge.bonus.range_add;
+        }
+        return 0;
     }
 
     private static String replaceDamageTokens(String text, String token, List<SpellHelper.EstimatedValue> values) {
