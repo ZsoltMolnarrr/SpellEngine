@@ -132,11 +132,10 @@ dependencies {
         modCompileOnly("maven.modrinth:trinkets:${project.trinkets_version}")
     } else {
         modCompileOnly("maven.modrinth:trinkets:${project.trinkets_version}")
-        modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:6.3.0")
-        modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-entity:6.3.0")
-
+        modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:6.1.3")
+        modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-entity:6.1.3")
     }
-    
+
     modCompileOnly("maven.modrinth:lambdynamiclights:${project.lamb_dynamic_lights_version}")
 }
 
