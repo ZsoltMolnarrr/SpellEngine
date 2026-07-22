@@ -363,9 +363,7 @@ Use **changing** dimensions if the summon ever scales with size (via attribute s
 
 ### 3.3 Base attributes
 
-You don't write `createMobAttributes`, and you don't roll your own config file. SpellEngine hosts a **single, shared base-attribute config** for every summon across every content mod — `config/spell_engine/summoned_entities.json` — keyed by the **full entity id** (`namespace:path`), so entries from different mods never collide. Server owners rebalance any summon's health/speed/damage by editing that one file.
-
-Your job is just to hand the engine the **defaults** for a new summon. Build a `SummonedEntityConfig.Entry` — the four common attributes plus any custom spell-school attributes — and register it with `SummonedEntities.registerAttributes`:
+You don't write `createMobAttributes`. Instead you describe a summon's defaults as a `SummonedEntityConfig.Entry` — the four common attributes plus any custom spell-school attributes — and register it with `SummonedEntities.registerAttributes`:
 
 ```java
 public static SummonedEntityConfig.Entry frostDefaults() {
@@ -377,16 +375,48 @@ public static SummonedEntityConfig.Entry frostDefaults() {
 }
 ```
 
+The register call takes the id, the `EntityType` you just built, and an **attribute source** — a plain `Function<Identifier, SummonedEntityConfig.Entry>` that yields the entry for a given entity id:
+
 ```java
-SummonedEntities.registerAttributes(FrostElementalEntity.ID, FrostElementalEntity.TYPE, frostDefaults());
+SummonedEntities.registerAttributes(FrostElementalEntity.ID, FrostElementalEntity.TYPE, id -> frostDefaults());
 ```
 
 What the helper does:
 
-- **Seeds, never overwrites.** If the config already has an entry for this id (an admin edited it), that entry wins; otherwise your defaults are inserted and the file is saved. So shipped defaults are a first-run fallback, not a hard-coded value.
-- **Builds the container** from the resolved entry (`SummonedEntity.createAttributes`) — the common attributes plus each custom spell-school attribute — and registers it for the type.
+- **Resolves the entry** by calling `source.apply(id)` and **builds the container** from it (`SummonedEntity.createAttributes`) — the common attributes plus each custom spell-school attribute — then registers it for the type. It throws if the source returns `null`.
+- **Nothing else.** SpellEngine holds no config state, no shared file, and never writes to disk. Where the entry comes from — a config file your mod owns, or an inline constant — is entirely your mod's business.
 
-> **Why pass the `EntityType`?** Earlier the helper took only the id and looked the type up in the registry, which forced you to call it *after* the type was registered. It now takes the type you just built, so **there is no ordering requirement** — register the attributes right where you create the type (as above). The id is only used as the config key.
+> **Why pass the `EntityType`?** Earlier the helper took only the id and looked the type up in the registry, which forced you to call it *after* the type was registered. It now takes the type you just built, so **there is no ordering requirement** — register the attributes right where you create the type (as above). The id is passed through to the source.
+
+#### Choosing an attribute source
+
+The `Function` is the decoupling seam: SpellEngine never learns *where* your defaults live. Two patterns cover every mod (both are in the class mods today):
+
+**A. Config file your mod owns** *(recommended for class-mod summons)* — gives server owners an editable file, and lets **your mod version that config independently** of SpellEngine and every other mod. Own a `ConfigManager<SummonedEntityConfig>` in your own directory, seed it from your entries' defaults, and inject `config.value::entryFor` (the built-in `entryFor(Identifier)` **is** the `Function`):
+
+```java
+// Declared AFTER the entity constants, so `entries` is populated when seededDefaults() runs.
+public static final ConfigManager<SummonedEntityConfig> summonConfig = new ConfigManager<>
+        ("summoned_entities", seededDefaults())
+        .builder()
+        .setDirectory(WizardsMod.ID)   // -> config/wizards/summoned_entities.json
+        .schemaVersion(1)              // bump to reset users' files after a defaults change
+        .sanitize(true)
+        .build();
+
+// in register(), after summonConfig.refresh():
+SummonedEntities.registerAttributes(entry.id, livingType, summonConfig.value::entryFor);
+```
+
+The config is keyed by the **full entity id** (`namespace:path`), so a mod's file can hold all its own summons without collision. Bumping just this mod's `schemaVersion` resets only this mod's file.
+
+**B. Inline constant** *(no config file)* — for summons you never intend to expose. Just hand the default straight in:
+
+```java
+SummonedEntities.registerAttributes(entry.id, livingType, id -> entry.summonConfig);
+```
+
+> **No TinyConfig required.** `registerAttributes` depends only on `java.util.function.Function` and the `Entry` DTO. `SummonedEntityConfig` (a `VersionableConfig`) is a *reusable file model* for pattern A — not part of the seam. Pattern B touches neither it nor TinyConfig.
 
 #### Custom spell-school attributes matter
 
