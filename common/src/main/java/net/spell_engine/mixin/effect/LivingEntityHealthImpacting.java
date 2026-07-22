@@ -49,6 +49,16 @@ public abstract class LivingEntityHealthImpacting {
             }
         }
 
+        // A fatal-damage (PRE) trigger fired above may have just granted immunity against this hit —
+        // e.g. a reactive "cheat death" that applies invulnerability the instant a blow would be
+        // lethal. `damage()` already checked `isInvulnerableTo` at its top, before this amount (and
+        // thus its fatality) was known, so re-check now: if the entity became immune to this source,
+        // cancel the current hit instead of applying it. Without this, such effects only protect
+        // against subsequent hits, never the triggering blow.
+        if (instance.isInvulnerableTo(source)) {
+            return; // skip applyDamage: this damage instance is cancelled
+        }
+
         original.call(instance, source, amount);
     }
 }
