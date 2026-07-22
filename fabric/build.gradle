@@ -128,12 +128,14 @@ dependencies {
     // Trinkets: Modrinth Maven serves minimal POMs (no transitive deps) and
     // TerraformersMC has been unreliable in CI. Use Modrinth on CI; use dev.emi
     // locally so runClient gets Trinkets' full transitive graph.
-//    if (System.getenv("CI")) {
-//        modCompileOnly("maven.modrinth:trinkets:${project.trinkets_version}")
-//    } else {
-//        modCompileOnly("dev.emi:trinkets:${project.trinkets_version}")
-//    }
-    modCompileOnly("dev.emi:trinkets:${project.trinkets_version}")
+    if (System.getenv("CI")) {
+        modCompileOnly("maven.modrinth:trinkets:${project.trinkets_version}")
+    } else {
+        modCompileOnly("maven.modrinth:trinkets:${project.trinkets_version}")
+        modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:6.3.0")
+        modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-entity:6.3.0")
+
+    }
     
     modCompileOnly("maven.modrinth:lambdynamiclights:${project.lamb_dynamic_lights_version}")
 }
