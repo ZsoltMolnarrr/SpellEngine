@@ -173,12 +173,11 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
     }
 
     @Override
-    public void applyArrowPerks(RegistryEntry<Spell> spellEntry) {
+    public void applyArrowPerks(RegistryEntry<Spell> spellEntry, Spell.ArrowPerks perks) {
         if(arrowPerksAlreadyApplied(spellEntry)) {
             return;
         }
         var arrow = arrow();
-        var perks = spellEntry.value().arrow_perks;
         if (perks != null) {
             if (perks.velocity_multiplier != 1.0F) {
                 arrow.setVelocity(arrow.getVelocity().multiply(perks.velocity_multiplier));

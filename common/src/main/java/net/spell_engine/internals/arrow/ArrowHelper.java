@@ -18,6 +18,7 @@ import net.spell_engine.utils.SoundHelper;
 import net.spell_engine.utils.WorldScheduler;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.mixin.item.RangedWeaponAccessor;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.function.Supplier;
@@ -114,12 +115,39 @@ public class ArrowHelper {
         }
     }
 
+    /// Resolves the perks an arrow is actually launched with: the spell's own `arrow_perks` with every
+    /// applicable modifier's `arrow_perks` merged on top. Returns null when neither defines any.
+    ///
+    /// Only the launch-time perks (`pierce`, `damage_multiplier`, `velocity_multiplier`) take effect from
+    /// a modifier, because those are stamped onto the arrow entity here. The hit-time fields
+    /// (`knockback`, `bypass_iframes`, `iframe_to_set`, `skip_arrow_damage`) are re-read straight off the
+    /// spell by `PersistentProjectileEntityMixin` once the arrow lands, so a modifier cannot reach them.
+    @Nullable
+    public static Spell.ArrowPerks effectiveArrowPerks(LivingEntity shooter, RegistryEntry<Spell> spellEntry) {
+        var base = spellEntry.value().arrow_perks;
+        if (!(shooter instanceof PlayerEntity player)) {
+            return base;
+        }
+        Spell.ArrowPerks effective = null;
+        for (var modifier: SpellModifiers.of(player, spellEntry)) {
+            if (modifier.arrow_perks == null) {
+                continue;
+            }
+            if (effective == null) {
+                // Copy, so the modifier never mutates the shared spell definition
+                effective = (base != null) ? base.copy() : Spell.ArrowPerks.EMPTY();
+            }
+            effective.mutatingCombine(modifier.arrow_perks);
+        }
+        return (effective != null) ? effective : base;
+    }
+
     public static void onArrowShot(ArrowExtension arrow, LivingEntity shooter, RegistryEntry<Spell> spellEntry,
                                    Supplier<Collection<ServerPlayerEntity>> trackers) {
-        if (spellEntry.value().arrow_perks != null) {
-            var arrowPerks = spellEntry.value().arrow_perks;
+        var arrowPerks = effectiveArrowPerks(shooter, spellEntry);
+        if (arrowPerks != null) {
             var world = shooter.getWorld();
-            arrow.applyArrowPerks(spellEntry);
+            arrow.applyArrowPerks(spellEntry, arrowPerks);
             ParticleHelper.sendBatches(shooter, arrowPerks.launch_particles, 1F, trackers.get());
             SoundHelper.playSound(world, shooter, arrowPerks.launch_sound);
         }

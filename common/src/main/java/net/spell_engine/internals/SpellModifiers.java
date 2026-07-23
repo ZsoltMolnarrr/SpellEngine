@@ -166,6 +166,15 @@ public class SpellModifiers {
             pl.velocity *= r;                            // (extra_launch_* are index/flag fields)
             copy.projectile_launch = pl;
         }
+        if (modifier.arrow_perks != null) {
+            var ap = modifier.arrow_perks.copy();
+            ap.pierce = Math.round(ap.pierce * r);
+            // Multipliers are scaled around their neutral 1, so r=0 leaves the arrow untouched
+            ap.damage_multiplier = 1 + (ap.damage_multiplier - 1) * r;
+            ap.velocity_multiplier = 1 + (ap.velocity_multiplier - 1) * r;
+            ap.knockback = 1 + (ap.knockback - 1) * r;
+            copy.arrow_perks = ap;
+        }
         if (modifier.projectile_perks != null) {
             var pk = modifier.projectile_perks.copy();
             pk.ricochet = Math.round(pk.ricochet * r);

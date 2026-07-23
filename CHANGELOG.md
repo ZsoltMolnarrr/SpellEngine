@@ -3,6 +3,7 @@
 - Summoned entities no longer suffocate
 - Improve summoned entity placements, to avoid placing them into solid blocks
 - Add spell modifier `teleport_distance_add` field
+- Add spell modifier `arrow_perks` field
 
 # 1.9.12
 

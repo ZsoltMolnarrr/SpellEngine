@@ -220,6 +220,11 @@ public class Spell {
 
         @Nullable public LaunchProperties projectile_launch;
         @Nullable public ProjectileData.Perks projectile_perks;
+        /// Perks merged into a `SHOOT_ARROW` spell's own `arrow_perks` at launch. This is the only
+        /// route a modifier has to an arrow: `SHOOT_ARROW` spells deal their damage through the bow
+        /// and `arrow_perks`, so impact-based fields (`power_modifier`, appended damage) never reach
+        /// them. null = unchanged
+        @Nullable public ArrowPerks arrow_perks;
         /// Bonus added to the launched projectile's render scale and hitbox. 0 = unchanged
         /// (final scale = 1 + sum of this across applied modifiers).
         public float projectile_scale_multiply = 0F;
@@ -934,6 +939,43 @@ public class Spell {
         @Nullable public ProjectileModel override_render;
         /// Multi-model successor to `override_render`. When present and non-empty, supersedes it.
         @Nullable public ProjectileModelComposite composite_model;
+
+        public ArrowPerks copy() {
+            ArrowPerks copy = new ArrowPerks();
+            copy.damage_multiplier = this.damage_multiplier;
+            copy.velocity_multiplier = this.velocity_multiplier;
+            copy.bypass_iframes = this.bypass_iframes;
+            copy.iframe_to_set = this.iframe_to_set;
+            copy.skip_arrow_damage = this.skip_arrow_damage;
+            copy.pierce = this.pierce;
+            copy.knockback = this.knockback;
+            copy.travel_particles = this.travel_particles;
+            copy.launch_particles = this.launch_particles;
+            copy.launch_sound = this.launch_sound;
+            copy.override_render = this.override_render;
+            copy.composite_model = this.composite_model;
+            return copy;
+        }
+
+        /// Merges a modifier's perks into this one. Counts add up, multipliers compound, and flags
+        /// latch on — so a modifier only ever grants perks, never revokes what the spell already has.
+        /// FX and model fields are left untouched: modifiers tune arrow behaviour, not its looks.
+        public void mutatingCombine(ArrowPerks other) {
+            this.damage_multiplier *= other.damage_multiplier;
+            this.velocity_multiplier *= other.velocity_multiplier;
+            this.knockback *= other.knockback;
+            this.pierce += other.pierce;
+            this.bypass_iframes = this.bypass_iframes || other.bypass_iframes;
+            this.skip_arrow_damage = this.skip_arrow_damage || other.skip_arrow_damage;
+            this.iframe_to_set = Math.max(this.iframe_to_set, other.iframe_to_set);
+        }
+
+        /// Neutral element for `mutatingCombine`: adds nothing on its own. Use this as the base of a
+        /// modifier's perks, since the field defaults (`damage_multiplier`/`knockback` of 1) are only
+        /// neutral because they multiply — an explicit factory keeps that intent readable.
+        public static ArrowPerks EMPTY() {
+            return new ArrowPerks();
+        }
     }
 
     /// Applied to the caster, once the spell casting process finishes
