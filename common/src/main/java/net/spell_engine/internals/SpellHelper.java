@@ -1687,7 +1687,12 @@ public class SpellHelper {
                                 var forward = data.forward;
                                 var look = target.getRotationVector();
                                 startingPosition = target.getPos();
-                                destination = TargetHelper.findTeleportDestination(teleportedEntity, look, forward.distance, data.required_clearance_block_y);
+                                var distance = forward.distance;
+                                for (var spellModifier: spellModifiers) {
+                                    distance += spellModifier.teleport_distance_add;
+                                }
+                                distance = Math.max(0, distance);
+                                destination = TargetHelper.findTeleportDestination(teleportedEntity, look, distance, data.required_clearance_block_y);
                                 var groundJustBelow = TargetHelper.findSolidBlockBelow(teleportedEntity, destination, target.getWorld(), -1.5F);
                                 if (groundJustBelow != null) {
                                     destination = groundJustBelow;

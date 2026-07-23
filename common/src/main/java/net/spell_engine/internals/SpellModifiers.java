@@ -140,6 +140,7 @@ public class SpellModifiers {
         copy.channel_ticks_add = Math.round(modifier.channel_ticks_add * r);
         copy.knockback_multiply_base = modifier.knockback_multiply_base * r;
         copy.spawn_duration_add = modifier.spawn_duration_add * r;
+        copy.teleport_distance_add = modifier.teleport_distance_add * r;
         copy.effect_amplifier_add = Math.round(modifier.effect_amplifier_add * r);
         copy.effect_amplifier_cap_add = Math.round(modifier.effect_amplifier_cap_add * r);
         copy.stash_amplifier_add = Math.round(modifier.stash_amplifier_add * r);

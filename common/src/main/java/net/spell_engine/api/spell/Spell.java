@@ -233,6 +233,8 @@ public class Spell {
         public int channel_ticks_add = 0;
         public float knockback_multiply_base = 0;
         public float spawn_duration_add = 0;
+        /// Blocks added to the distance traveled by a `TELEPORT` impact in `FORWARD` mode.
+        public float teleport_distance_add = 0;
         public int effect_amplifier_add = 0;
         public int effect_amplifier_cap_add = 0;
         public int stash_amplifier_add = 0;

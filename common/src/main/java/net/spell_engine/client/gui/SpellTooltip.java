@@ -733,7 +733,12 @@ public class SpellTooltip {
                         switch (teleport.mode) {
                             case FORWARD -> {
                                 var forward = teleport.forward;
-                                addToken(teleportDistanceToken, formattedNumber(forward.distance), tokenReplacements);
+                                // Distance reflects the player's equipped spell modifiers (matches SpellHelper TELEPORT).
+                                var distance = forward.distance;
+                                for (var modifier : SpellModifiers.of(player, spellEntry)) {
+                                    distance += modifier.teleport_distance_add;
+                                }
+                                addToken(teleportDistanceToken, formattedNumber(Math.max(0, distance)), tokenReplacements);
                             }
                         }
                     }
@@ -806,6 +811,9 @@ public class SpellTooltip {
             }
             if (modifier.spawn_duration_add != 0) {
                 addToken("spawn_duration_add", formattedNumber(modifier.spawn_duration_add), tokenReplacements);
+            }
+            if (modifier.teleport_distance_add != 0) {
+                addToken("teleport_distance_add", formattedNumber(modifier.teleport_distance_add), tokenReplacements);
             }
             if (modifier.cooldown_duration_deduct != 0) {
                 addToken("cooldown_duration_deduct", formattedNumber(modifier.cooldown_duration_deduct), tokenReplacements);
