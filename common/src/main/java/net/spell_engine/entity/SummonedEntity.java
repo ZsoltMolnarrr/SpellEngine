@@ -222,6 +222,23 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         super.takeKnockback(strength, x, z);
     }
 
+    /// Gates vanilla suffocation on the behaviour's `movement.suffocates` (default false = immune).
+    /// `isInsideWall()` has exactly one consumer in vanilla — the `inWall` damage in
+    /// `LivingEntity.baseTick` — so overriding it is a targeted opt-out with no other side effects.
+    ///
+    /// Worth knowing when setting `suffocates`: vanilla's check samples a thin slab at EYE level only
+    /// (eye height = `height * 0.85`), so a summon whose behaviour overrides `dimensions` to be taller
+    /// than the space it was placed in suffocates even with its feet in the clear.
+    ///
+    /// Reading the server-only `behaviour` field is safe here (unlike the combat getters above, which
+    /// need the DataTracker mirror): vanilla guards the call with `!world.isClient`, and both
+    /// `onSummonedBySpell` and `readCustomDataFromNbt` install the behaviour before the first tick.
+    /// A null behaviour falls through to immune, matching the field's default.
+    @Override
+    public boolean isInsideWall() {
+        return behaviour != null && behaviour.movement.suffocates && super.isInsideWall();
+    }
+
     // --- Sounds ---
     // Every configured summon sound is now an fx.Sound (id + volume + pitch + randomness); the id is
     // resolved to a registered SoundEvent lazily and memoized here, on the entity rather than on the

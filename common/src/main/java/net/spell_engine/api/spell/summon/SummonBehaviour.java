@@ -89,6 +89,12 @@ public class SummonBehaviour {
         /// Stationary if false
         public boolean can_move = true;
         public boolean affected_by_gravity = true;
+        /// Whether this summon takes suffocation damage while embedded in blocks. False (default)
+        /// makes it immune: a summon is positioned by the spell rather than by the player, so it can
+        /// end up inside terrain through no fault of its own — and a temporary pet ticking down to
+        /// death inside a wall is frustration with no gameplay upside. Set true only for summons
+        /// where being walled in should be a real risk.
+        public boolean suffocates = false;
 
         public Wander wander = new Wander();
         public static class Wander {

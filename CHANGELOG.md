@@ -1,3 +1,7 @@
+# 1.9.13
+
+- Summoned entities no longer suffocate
+
 # 1.9.12
 
 - Added invulnerability recheck after `PLAYER_DAMAGE_INCOMING.PRE` event
