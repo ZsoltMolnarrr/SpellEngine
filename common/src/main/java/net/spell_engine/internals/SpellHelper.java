@@ -25,6 +25,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
@@ -2246,6 +2247,44 @@ public class SpellHelper {
         return candidate;
     }
 
+    /// Maximum upward nudge, in blocks, applied to a placed entity that would otherwise land embedded
+    /// in terrain. Deliberately small: this is a safeguard against a bad placement, not a general
+    /// free-space search (which would also have to look sideways).
+    private static final int PLACEMENT_LIFT_LIMIT = 2;
+
+    /// Whether `box` is clear of **block** collisions for `entity`.
+    ///
+    /// Intentionally not `World.isSpaceEmpty`, which also counts *entity* collisions: placements are
+    /// routinely anchored on top of the caster (a zero look-offset puts the entity at their feet), and
+    /// an entity-aware check would read that overlap as "blocked" and nudge every such placement
+    /// skyward. Only terrain should move a placement.
+    private static boolean fitsBetweenBlocks(World world, Entity entity, Box box) {
+        for (var shape : world.getBlockCollisions(entity, box)) {
+            if (!shape.isEmpty()) return false;
+        }
+        return true;
+    }
+
+    /// Lifts `position` just enough to free `entity`'s bounding box from terrain, by at most
+    /// {@link #PLACEMENT_LIFT_LIMIT} blocks. Returns `position` unchanged when it already fits, when no
+    /// lift within the limit frees it, or when the entity ignores block collision entirely — `noClip`
+    /// entities (spell clouds, model effects) are placed inside geometry on purpose.
+    ///
+    /// Conservative by design: a placement that already works is never moved, so authored formations
+    /// keep their tuned geometry. Only vertical embedding is recovered — a look-offset pushed sideways
+    /// into a wall face is not resolved here (`EntityPlacement.line_of_sight` is the existing opt-in
+    /// for that case).
+    private static Vec3d liftedOutOfBlocks(World world, Entity entity, Vec3d position) {
+        if (entity.noClip) return position;
+        var dimensions = entity.getDimensions(entity.getPose());
+        if (fitsBetweenBlocks(world, entity, dimensions.getBoxAt(position))) return position;
+        for (int lift = 1; lift <= PLACEMENT_LIFT_LIMIT; lift++) {
+            var candidate = position.add(0, lift, 0);
+            if (fitsBetweenBlocks(world, entity, dimensions.getBoxAt(candidate))) return candidate;
+        }
+        return position;
+    }
+
     public static void applyEntityPlacement(Entity entity, Entity target, Vec3d initialPosition, Spell.EntityPlacement placement) {
         applyEntityPlacement(target.getWorld(), entity, target.getYaw(), target.getPitch(), target, initialPosition, placement);
     }
@@ -2276,6 +2315,10 @@ public class SpellHelper {
                 placedEntity.setPitch(targetedPitch);
             }
         }
+        // Safeguard against a placement that resolved inside terrain — a look-offset pushed into a
+        // wall, a formation slot fanned into a hillside, `force_onto_ground` finding a floor that is
+        // itself buried. No-op whenever the placement already fits.
+        position = liftedOutOfBlocks(world, placedEntity, position);
         placedEntity.setPosition(position.getX(), position.getY(), position.getZ());
     }
 

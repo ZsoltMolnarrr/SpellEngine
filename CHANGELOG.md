@@ -1,6 +1,7 @@
 # 1.9.13
 
 - Summoned entities no longer suffocate
+- Improve summoned entity placements, to avoid placing them into solid blocks
 
 # 1.9.12
 
