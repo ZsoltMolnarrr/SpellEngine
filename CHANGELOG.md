@@ -4,6 +4,8 @@
 - Improve summoned entity placements, to avoid placing them into solid blocks
 - Add spell modifier `teleport_distance_add` field
 - Add spell modifier `arrow_perks` field
+- Fix SummonedEntities attacking owner
+- Fix SummonedEntities being struck by teammate arrows
 
 # 1.9.12
 

@@ -23,6 +23,8 @@ import net.spell_engine.entity.SummonedEntity;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellTriggers;
 import net.spell_engine.internals.arrow.ArrowExtension;
+import net.spell_engine.internals.target.EntityRelation;
+import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.fx.ParticleHelper;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -194,15 +196,30 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
 
     // MARK: Pass through owner's summons
 
-    /// A shooter's arrows pass through their own summons (e.g. an archer's arrows fly through
-    /// their Spirit Wolf) instead of colliding with them. Returning false here makes the hit
-    /// raycast skip the summon entirely, so the arrow continues to targets behind it. The summon
-    /// remains hittable by everyone else (`SummonedEntity.canHit` / `is_attackable`).
+    /// A shooter's arrows pass through summons they have no business hitting, instead of colliding
+    /// with them: their own (e.g. an archer's arrows fly through their Spirit Wolf), and any summon
+    /// whose relation to the shooter resolves to ALLY or FRIENDLY — an ally's or a teammate's pets.
+    /// Returning false here makes the hit raycast skip the summon entirely, so the arrow continues to
+    /// targets behind it.
+    ///
+    /// Summons of HOSTILE / NEUTRAL parties stay hittable, as does any summon whose owner cannot be
+    /// resolved (an offline owner falls through to the config's fallback relation). `SummonedEntity`'s
+    /// own `canHit` / `is_attackable` gate still applies on top of this.
     @Inject(method = "canHit", at = @At("HEAD"), cancellable = true)
     private void canHit_HEAD_SpellEngine(Entity entity, CallbackInfoReturnable<Boolean> cir) {
-        if (entity instanceof SummonedEntity summon) {
-            var owner = arrow().getOwner();
-            if (owner != null && owner.getUuid().equals(summon.getOwnerUuid())) {
+        if (!(entity instanceof SummonedEntity summon)) return;
+        var owner = arrow().getOwner();
+        if (owner == null) return;
+        // Own summon: matched by owner UUID rather than by relation, so the shooter's arrows keep
+        // passing through their own pets even on a server that configures `player_relation_to_owned_pets`
+        // as something other than ALLY (the config comment invites exactly that, to allow pet friendly fire).
+        if (owner.getUuid().equals(summon.getOwnerUuid())) {
+            cir.setReturnValue(false);
+            return;
+        }
+        if (owner instanceof LivingEntity shooter) {
+            var relation = EntityRelations.getRelation(shooter, summon);
+            if (relation == EntityRelation.ALLY || relation == EntityRelation.FRIENDLY) {
                 cir.setReturnValue(false);
             }
         }
