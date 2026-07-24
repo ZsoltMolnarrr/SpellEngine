@@ -1,5 +1,5 @@
 {
-    "spell_engine.mod_name": "Motor de Hechizos",
+    "spell_engine.mod_name": "Spell Engine",
     "enchantment.spell_engine.spell_infinity": "Hechizo Infinito",
     "enchantment.spell_engine.spell_infinity.desc": "Los hechizos se lanzan gratis",
 
@@ -37,10 +37,16 @@
     "spell.tooltip.container.list.archery": "Habilidades:",
     "spell.tooltip.container.list.passives": "Pasivos:",
     "spell.tooltip.container.list.modifiers": "Modificadores:",
+    "spell.tooltip.summon.capabilities": "Capacidades:",
+    "spell.tooltip.summon.melee": "Ataques cuerpo a cuerpo",
     "spell.tooltip.container.limit": "({current}/{max})",
-    "spell.tooltip.cast_instant": "Lanzamiento Instantáneo",
-    "spell.tooltip.cast_time": "Tiempo de Lanzamiento: {duration} segundo",
-    "spell.tooltip.cast_time.plural": "Tiempo de Lanzamiento: {duration} segundos",
+    "spell.tooltip.cast_instant": "Lanzamiento instantáneo",
+    "spell.tooltip.cast_time": "Tiempo de lanzamiento: {duration} segundo",
+    "spell.tooltip.cast_time.plural": "Tiempo de lanzamiento: {duration} segundos",
+    "spell.tooltip.cast_charge": "Tiempo de carga: {duration} segundo",
+    "spell.tooltip.cast_charge.plural": "Tiempo de carga: {duration} segundos",
+    "spell.tooltip.cast_channel": "Canalizado durante: {duration} segundo",
+    "spell.tooltip.cast_channel.plural": "Canalizado durante: {duration} segundos",
 
     "spell.tooltip.trigger.base": "Activado por {trigger_list}",
     "spell.tooltip.trigger.arrow_shot": "disparo de flecha",
@@ -64,9 +70,9 @@
     "spell.tooltip.range.melee.minus": "Alcance: Distancia cuerpo a cuerpo (-{range} bloque)",
     "spell.tooltip.range.melee.minus.plural": "Alcance: Distancia cuerpo a cuerpo (-{range} bloques)",
 
-    "spell.tooltip.cooldown": "Tiempo de Reutilización: {duration} segundo",
-    "spell.tooltip.cooldown.plural": "Tiempo de Reutilización: {duration} segundos",
-    "spell.tooltip.cooldown.proportional": "(Proporcional al uso)",
+    "spell.tooltip.cooldown": "Tiempo de reutilización: {duration} segundo",
+    "spell.tooltip.cooldown.plural": "Tiempo de reutilización: {duration} segundos",
+    "spell.tooltip.cooldown.proportional": "(Se escala con el uso)",
     "spell.tooltip.ammo": "Requiere: {item}",
     "spell.tooltip.ammo.plural": "Requiere: {item} (x{count})",
     "spell.tooltip.hold_for_details": "(Mantén presionado %1$s para ver detalles)",
@@ -120,6 +126,10 @@
     "effect.spell_engine.stun.description": "No puede moverse ni actuar.",
     "effect.spell_engine.immobilize": "Inmovilizado",
     "effect.spell_engine.immobilize.description": "No puede moverse ni saltar",
+    "effect.spell_engine.bleed": "Sangrado",
+    "effect.spell_engine.bleed.description": "Pierdes vida con el tiempo, peor mientras te mueves.",
+    "effect.spell_engine.energy": "Energía",
+    "effect.spell_engine.energy.description": "El arma que sostienes arde con energía.",
 
     "text.autoconfig.spell_engine.title": "Motor de Hechizos",
 
