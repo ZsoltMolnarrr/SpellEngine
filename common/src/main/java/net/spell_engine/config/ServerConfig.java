@@ -108,6 +108,12 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     }};
     @Comment("Relation to self, and self owned pets (tamed entities), changing this to `FRIENDLY` will make it impossible to hit pets with weapons")
     public EntityRelation player_relation_to_owned_pets = EntityRelation.ALLY;
+    @Comment("""
+            Relation to a tamed entity whose owner cannot be resolved right now — the owner is offline,
+            or in another dimension. Defaults to `FRIENDLY`, which is what the same pet resolves to
+            while its owner IS present (via `player_relations` -> `minecraft:player`), so that relations
+            do not flip based on whether a pet's owner happens to be logged in.""")
+    public EntityRelation player_relation_to_absent_owner_pets = EntityRelation.FRIENDLY;
     @Comment("Relation to teammates (entities in the same team), changing this to `FRIENDLY` will automatically disable friendly fire for all teams")
     public EntityRelation player_relation_to_teammates = EntityRelation.FRIENDLY;
     @Comment("Relation to unspecified entities those are instance of PassiveEntity(Yarn)")

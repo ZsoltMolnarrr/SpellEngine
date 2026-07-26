@@ -37,11 +37,26 @@ public class EntityRelations {
             }
         }
         if (target instanceof Tameable tameable) {
-            var owner = tameable.getOwner();
-            if (owner != null) {
-                return attacker == owner
-                        ? config.player_relation_to_owned_pets
-                        : getRelation(attacker, owner);
+            // Ownership is resolved by UUID, NOT by `Tameable.getOwner()`. Vanilla's default
+            // implementation of that is `getWorld().getPlayerByUuid(uuid)`, which returns null
+            // whenever the owner is offline or in another dimension — on a server, the common case.
+            // Falling through on null dropped the pet into the generic `PassiveEntity` branch below,
+            // where `player_relation_to_passives` (HOSTILE by default) marked every unattended tamed
+            // animal as an enemy. Note that `AbstractHorseEntity` is `Tameable` too, so this is the
+            // branch that decides whether a player's horse is safe.
+            var ownerUuid = tameable.getOwnerUuid();
+            if (ownerUuid != null) {
+                if (ownerUuid.equals(attacker.getUuid())) {
+                    return config.player_relation_to_owned_pets;
+                }
+                var owner = tameable.getOwner();
+                if (owner != null) {
+                    return getRelation(attacker, owner);
+                }
+                // Owner is set but not present to be classified. Deliberately a return rather than a
+                // fall-through: the relation must not flip based on whether that player happens to
+                // be logged in.
+                return config.player_relation_to_absent_owner_pets;
             }
         }
         if (target instanceof AbstractDecorationEntity) {
