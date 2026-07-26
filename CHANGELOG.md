@@ -1,3 +1,7 @@
+# 1.9.14
+
+- Fix GlowingItemStatusEffect compatibility with Continuity
+
 # 1.9.13
 
 - Summoned entities no longer suffocate
