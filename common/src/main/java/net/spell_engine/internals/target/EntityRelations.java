@@ -59,8 +59,12 @@ public class EntityRelations {
                 return config.player_relation_to_absent_owner_pets;
             }
         }
+        // FRIENDLY, not NEUTRAL: paintings and item frames must stay out of area damage, and NEUTRAL
+        // no longer grants that (see TABLE_OF_ULTIMATE_JUSTICE). FRIENDLY keeps the exact behaviour
+        // they had — deliberately breakable by a direct hit, immune to a stray AoE — and the healing
+        // rows it additionally opts into are no-ops on a non-living entity.
         if (target instanceof AbstractDecorationEntity) {
-            return EntityRelation.NEUTRAL;
+            return EntityRelation.FRIENDLY;
         }
 
         for (var matcher: TEAM_MATCHERS.values()) {
@@ -125,10 +129,22 @@ public class EntityRelations {
     }
 
     // Make sure this complies with comment in `ServerConfig`
+    //
+    // NEUTRAL allows AREA DAMAGE. It reads as a monotone gradient: harm rises left to right, help
+    // falls, and every column is distinct. That last part is what makes NEUTRAL usable as a relation
+    // at all — while its two damage rows matched FRIENDLY's, NEUTRAL meant nothing more than
+    // "FRIENDLY, minus group heals", and there was no value in this enum meaning "fair game to
+    // damage, but not an enemy".
+    //
+    // That absence is what forced `player_relation_to_passives` to HOSTILE: not because anyone
+    // considers a cow an enemy, but because HOSTILE was the only column that let a player's AoE hit
+    // one. Summon AI then read that column — chosen purely for its damage permissions — as a
+    // statement of enmity, and hunted down livestock. Passives are NEUTRAL now, and HOSTILE means
+    // "enemy" and nothing else.
     private static final boolean[][] TABLE_OF_ULTIMATE_JUSTICE = {
             // ALLY     FRIENDLY        NEUTRAL HOSTILE MIXED
             { false,    true,           true,   true,   true }, // Direct Damage
-            { false,    false,          false,  true,   true }, // Area Damage
+            { false,    false,          true,   true,   true }, // Area Damage
             { true,     true,           true,   false,  true }, // Direct Healing
             { true,     true,           false,  false,  true }, // Area Healing
     };

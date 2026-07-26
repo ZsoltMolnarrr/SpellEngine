@@ -82,11 +82,11 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
             |                | ALLY  | FRIENDLY | NEUTRAL  | HOSTILE  | MIXED  |
             +----------------+-------+----------+----------+----------+--------+
             | DIRECT DAMAGE  | 🚫    | ✅       | ✅       | ✅       | ✅    |
-            | AREA DAMAGE    | 🚫    | 🚫       | 🚫       | ✅       | ✅    |
+            | AREA DAMAGE    | 🚫    | 🚫       | ✅       | ✅       | ✅    |
             | DIRECT HEALING | ✅    | ✅       | ✅       | 🚫       | ✅    |
             | AREA HEALING   | ✅    | ✅       | 🚫       | 🚫       | ✅    |
             +----------------+-------+----------+----------+----------+--------+
-            
+
             The various relation related configs are being checked in the following order:
             - `player_relations`
             - `player_relation_to_passives`
@@ -116,8 +116,12 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     public EntityRelation player_relation_to_absent_owner_pets = EntityRelation.FRIENDLY;
     @Comment("Relation to teammates (entities in the same team), changing this to `FRIENDLY` will automatically disable friendly fire for all teams")
     public EntityRelation player_relation_to_teammates = EntityRelation.FRIENDLY;
-    @Comment("Relation to unspecified entities those are instance of PassiveEntity(Yarn)")
-    public EntityRelation player_relation_to_passives = EntityRelation.HOSTILE;
+    @Comment("""
+            Relation to unspecified entities those are instance of PassiveEntity(Yarn) — cows, sheep,
+            horses and the like. `NEUTRAL` keeps them damageable by both direct and area spells, while
+            keeping them off the list of things summoned entities pick fights with. Set `HOSTILE` for
+            summons that should hunt animals on sight.""")
+    public EntityRelation player_relation_to_passives = EntityRelation.NEUTRAL;
     @Comment("Relation to unspecified entities those are instance of HostileEntity(Yarn)")
     public EntityRelation player_relation_to_hostiles = EntityRelation.HOSTILE;
     @Comment("Fallback relation")
