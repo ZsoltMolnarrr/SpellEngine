@@ -1,6 +1,7 @@
 # 1.9.14
 
 - Fix GlowingItemStatusEffect compatibility with Continuity
+- Improve Friend or Foe logic (summons vs tames)
 
 # 1.9.13
 
