@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Realiza un ataque giratorio, infligiendo {damage} de daño a los enemigos cercanos.",
+  "spell.rpg_series.cleave.name": "Tajo",
+  "spell.rpg_series.fan_of_knives.description": "Lanza varias de tus hojas en forma de cono, infligiendo {damage} de daño y rebotando en el terreno hasta {bounce} veces.",
+  "spell.rpg_series.fan_of_knives.name": "Abanico de Cuchillos",
+  "spell.rpg_series.flurry.description": "Mantené presionado para desatar una rápida serie de golpes, mientras también ganás impulso.",
+  "spell.rpg_series.flurry.name": "Aluvión",
+  "spell.rpg_series.ground_slam.description": "Salta en el aire y golpea el suelo, infligiendo {damage} de daño a los enemigos cercanos.",
+  "spell.rpg_series.ground_slam.name": "Golpe Sísmico",
+  "spell.rpg_series.impale.description": "Arroja tu arma hacia adelante, infligiendo {damage} de daño y un poderoso retroceso.",
+  "spell.rpg_series.impale.name": "Empalar",
+  "spell.rpg_series.smash.description": "Asesta un golpe con un poderoso retroceso, inhabilitando el uso de escudos y objetos del objetivo.",
+  "spell.rpg_series.smash.name": "Aplastar",
+  "spell.rpg_series.swift_strikes.description": "Desata una rápida serie de golpes.",
+  "spell.rpg_series.swift_strikes.name": "Golpes Rápidos",
+  "spell.rpg_series.swipe.description": "Deslizate hacia adelante con tu arma, golpeando a todos los enemigos en tu camino.",
+  "spell.rpg_series.swipe.name": "Barrido",
+  "spell.rpg_series.thrust.description": "Arremeté hacia adelante con tu arma, golpeando a todos los enemigos en tu camino.",
+  "spell.rpg_series.thrust.name": "Estocada",
+  "spell.rpg_series.whirlwind.description": "Mantené presionado para girar, infligiendo {damage} de daño por segundo a los enemigos cercanos.",
+  "spell.rpg_series.whirlwind.name": "Torbellino"
+}
