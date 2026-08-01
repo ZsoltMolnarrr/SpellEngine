@@ -158,9 +158,38 @@ Sends an `AttackAvailable` packet to the client, which performs OBB (oriented bo
 
 `MELEE` works with [`CHARGE` casts](03-casting.md#charged). The charge ratio is resolved on release, travels with the swing through the client round trip, and scales **both** halves of a melee skill's output: the vanilla weapon swing and the spell's own impacts. Below `min_release_ratio` the cast fizzles before any swing is scheduled.
 
-Only the innate output scaling applies — `min_release_ratio`, `output_scaling` and `curve`. The `charge.bonus` modifier is **ignored** for melee delivery, so charge cannot add swings, momentum, slipperiness or range.
+By default that damage scaling is the *only* thing hold time changes. Everything else about a swing — its timing, geometry and FX — stays exactly as authored, which is usually what you want:
+
+| | Fields |
+|---|---|
+| Scales with charge | the weapon swing, plus impact damage / healing / knockback |
+| Fixed | `duration`, `delay`, `attack_speed_multiplier`, `additional_strikes`, `additional_strike_delay`, `movement_speed`, `hitbox.*`, `animation`, sounds, particles, `model_fx` |
+
+`damage_bonus` is the one per-attack field that interacts: it and the charge become separate `ADD_MULTIPLIED_TOTAL` attribute modifiers, so they compose multiplicatively — a `damage_bonus: 0.5` swing at half charge deals `0.5 × 1.5 = 0.75×`, not `1.0×`.
 
 Since a partial release cuts weapon damage directly, `output_scaling` is worth tuning down (`0.33`–`0.5`) unless you want a fully bow-like skill.
+
+#### Opting extra fields into charge
+
+To make something *other* than damage scale with hold time, list it in [`charge.bonus`](03-casting.md#charged). The modifier is the opt-in: only fields you write there scale, everything else stays fixed, so there is no per-field switch to set.
+
+```json
+"charge": {
+  "curve": "EASE_IN_QUART",
+  "bonus": {
+    "melee_momentum_add": 0.6,      // longer lunge the longer you hold
+    "range_add": 1.5,               // more reach, and a proportionally bigger hitbox
+    "effect_amplifier_add": 2       // stronger debuff on the impact
+  }
+}
+```
+
+Available for melee: `melee_momentum_add`, `melee_slipperiness_add`, `melee_damage_multiplier`, `range_add`, plus the impact-level fields (`power_modifier`, `effect_amplifier_add`, `effect_duration_add`, `knockback_multiply_base`, `spawn_duration_add`, `teleport_distance_add`).
+
+Two limits:
+
+- **`melee_attacks` is ignored** in `charge.bonus`. An attack list has no magnitude to scale, so it would appear in full at any release above `min_release_ratio` — charge therefore never adds swings.
+- `range_add` grows the hitbox **uniformly** (its dimensions are multiplied by range). `hitbox.arc` is angular and has no modifier, so a charged swing cannot widen its cone.
 
 | Field | Description |
 |---|---|

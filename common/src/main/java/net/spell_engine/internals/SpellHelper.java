@@ -280,7 +280,7 @@ public class SpellHelper {
         int incrementChannelTicks = 0;
         boolean shouldPerformImpact = true;
         Spell.Modifier chargeModifier = null;
-        var chargeRatio = 1F;
+        var curvedRatio = 1F;
         Supplier<Collection<ServerPlayerEntity>> trackingPlayers = Suppliers.memoize(() -> { // Suppliers.memoize = Lazy
             return PlayerLookup.tracking(player);
         });
@@ -306,12 +306,11 @@ public class SpellHelper {
                 } else if (cast.resolvedType() == Spell.Active.Cast.Type.CHARGE && cast.charge != null) {
                     // `progress` is the charge ratio (already clamped to 0..1). Below the minimum it
                     // fizzles via channelMultiplier = 0 (reusing the delivery gate below); otherwise
-                    // the curved ratio drives the innate output scaling (weighted by `output_scaling`,
-                    // carried as ImpactContext.charge) and scales the charge bonus modifier.
+                    // the curved ratio scales the charge bonus modifier and is carried on the
+                    // ImpactContext, which applies `output_scaling` to it on read.
                     if (progress >= cast.charge.min_release_ratio) {
-                        var curvedRatio = cast.charge.curve.apply(progress);
+                        curvedRatio = cast.charge.curve.apply(progress);
                         chargeModifier = SpellModifiers.scaledBy(cast.charge.bonus, curvedRatio);
-                        chargeRatio = MathHelper.lerp(cast.charge.output_scaling, 1F, curvedRatio);
                         channelMultiplier = 1;
                     } else {
                         channelMultiplier = 0;
@@ -373,7 +372,7 @@ public class SpellHelper {
                         focusMode(spell),
                         channelTickIndex)
                         .chargeModifier(chargeModifier)
-                        .charge(chargeRatio);
+                        .charge(curvedRatio);
                 success = resolveAndDeliver(world, player, spellEntry, targetResult, context, completion);
                 caster.setChannelTickIndex(channelTickIndex + incrementChannelTicks);
             } else {
@@ -731,7 +730,8 @@ public class SpellHelper {
                         }
                         if (attacker instanceof ServerPlayerEntity serverPlayer) {
                             // Map to resolved MeleeAttack structures
-                            var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, attacks, spellEntry, context.charge());
+                            var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, attacks, spellEntry,
+                                    context.charge(), context.chargeModifier());
                             // Send AttackAvailable packet to client
                             var packet = new Packets.AttackAvailable(spellId, meleeAttacks);
                             ServerPlayNetworking.send(serverPlayer, packet);
@@ -1129,6 +1129,38 @@ public class SpellHelper {
         return anyPerformed;
     }
 
+    /// The `charge` config of a CHARGE cast, or null for every other spell and cast type.
+    @Nullable public static Spell.Active.Cast.Charge chargeConfigOf(@Nullable Spell spell) {
+        if (spell == null || spell.active == null || spell.active.cast == null
+                || spell.active.cast.resolvedType() != Spell.Active.Cast.Type.CHARGE) {
+            return null;
+        }
+        return spell.active.cast.charge;
+    }
+
+    @Nullable public static Spell.Active.Cast.Charge chargeConfigOf(@Nullable RegistryEntry<Spell> spellEntry) {
+        return spellEntry == null ? null : chargeConfigOf(spellEntry.value());
+    }
+
+    /// Innate output multiplier of a release at `curvedRatio` — the sole place `output_scaling` is
+    /// applied, so the call sites (impacts, melee swings, tooltip estimates) cannot drift apart.
+    /// Returns `1` for anything that does not charge.
+    public static float chargeOutputMultiplier(@Nullable Spell spell, float curvedRatio) {
+        var charge = chargeConfigOf(spell);
+        return charge == null ? 1F : MathHelper.lerp(charge.output_scaling, 1F, curvedRatio);
+    }
+
+    public static float chargeOutputMultiplier(@Nullable RegistryEntry<Spell> spellEntry, float curvedRatio) {
+        return chargeOutputMultiplier(spellEntry == null ? null : spellEntry.value(), curvedRatio);
+    }
+
+    /// `charge` is `curve(hold ratio)` of a CHARGE release — curved, but deliberately NOT weighted by
+    /// `output_scaling`. That weighting is applied on read, by `total`, so the unweighted ratio stays
+    /// the single source of truth: `output_scaling = 0` would otherwise flatten it to a constant `1`
+    /// and erase the hold time, which deliveries that resume on a later call stack (MELEE) still
+    /// need. **It is therefore not an output multiplier — scale damage with `total(spellEntry)`, not
+    /// with this.** `chargeModifier` is the charge bonus already scaled by the same ratio, memoized
+    /// here rather than rebuilt per impact. Both are inert (`1` / null) for other casts.
     public record ImpactContext(float channel, float distance, @Nullable Vec3d position,
                                 SpellPower.Result power, SpellTarget.FocusMode focusMode,
                                 int channelTickIndex, @Nullable int effectiveCasterId,
@@ -1192,8 +1224,8 @@ public class SpellHelper {
             return channel != 1;
         }
 
-        public float total() {
-            return channel * distance * charge;
+        public float total(@Nullable RegistryEntry<Spell> spellEntry) {
+            return channel * distance * chargeOutputMultiplier(spellEntry, charge);
         }
     }
 
@@ -1415,7 +1447,7 @@ public class SpellHelper {
 
             List<Spell.Modifier> spellModifiers = SpellModifiers.ofImpact(caster, spellEntry, impact, context.chargeModifier());
 
-            double particleMultiplier = 1 * context.total();
+            double particleMultiplier = 1 * context.total(spellEntry);
             var power = resolveImpactPower(spell, impact, caster, context.power(), originalTarget);
 
             var powerModifiers = new ArrayList<>(conditionResult.modifiers());
@@ -1444,7 +1476,7 @@ public class SpellHelper {
                         extraKnockback += spellModifier.knockback_multiply_base;
                     }
 
-                    var knockbackMultiplier = Math.max(0F, damageData.knockback * context.total() * extraKnockback);
+                    var knockbackMultiplier = Math.max(0F, damageData.knockback * context.total(spellEntry) * extraKnockback);
                     var vulnerability = SpellPower.Vulnerability.none;
                     var timeUntilRegen = target.timeUntilRegen;
                     if (target instanceof LivingEntity livingEntity) {
@@ -1459,7 +1491,7 @@ public class SpellHelper {
                     critical = result.isCritical();
                     var amount = result.amount();
                     amount *= damageData.spell_power_coefficient;
-                    amount *= context.total();
+                    amount *= context.total(spellEntry);
                     particleMultiplier = power.criticalDamage() + vulnerability.criticalDamageBonus();
 
                     ///
@@ -1495,7 +1527,7 @@ public class SpellHelper {
                         critical = result.isCritical();
                         var amount = result.amount();
                         amount *= healData.spell_power_coefficient;
-                        amount *= context.total();
+                        amount *= context.total(spellEntry);
                         if (context.isChanneled()) {
                             amount *= SpellPower.getHaste(caster, school);
                         }
@@ -2443,11 +2475,9 @@ public class SpellHelper {
         // CHARGE casts: base impact values represent a full charge, so extend the displayed
         // minimum down to the output of the weakest allowed release.
         var chargeMinOutput = 1F;
-        if (spell.active != null && spell.active.cast != null
-                && spell.active.cast.resolvedType() == Spell.Active.Cast.Type.CHARGE
-                && spell.active.cast.charge != null) {
-            var charge = spell.active.cast.charge;
-            chargeMinOutput = MathHelper.lerp(charge.output_scaling, 1F, charge.curve.apply(charge.min_release_ratio));
+        var charge = chargeConfigOf(spell);
+        if (charge != null) {
+            chargeMinOutput = chargeOutputMultiplier(spell, charge.curve.apply(charge.min_release_ratio));
         }
         ArrayList<Spell.Impact> impacts = new ArrayList<>(spell.impacts);
         if (spell.modifiers != null) {

@@ -68,10 +68,12 @@ public class Melee {
     public record AttackContext(
         Identifier spellId,
         String attackId,
-        /// Output multiplier of the CHARGE cast this attack was released from, in `0..1`
-        /// (already curved and weighted by `output_scaling`). Always `1` for every other cast type.
-        /// Travels with the attack through the client round trip, so overlapping deliveries cannot
-        /// mix up each other's charge.
+        /// `curve(hold ratio)` of the CHARGE cast this attack was released from, in `0..1`;
+        /// always `1` for every other cast type. Travels with the attack through the client round
+        /// trip, so overlapping deliveries cannot mix up each other's charge.
+        ///
+        /// Same unweighted value `SpellHelper.ImpactContext` carries, under the same name — the
+        /// output multiplier and the charge bonus are both rebuilt from it by `resolveCharge`.
         float charge
     ) {
         public static final AttackContext EMPTY = new AttackContext(Identifier.of("spell_engine", "empty"), "empty", 1F);
@@ -120,8 +122,18 @@ public class Melee {
 
     public static CombinedAttacks allAttacksOf(PlayerEntity caster, List<Spell.Delivery.Melee.Attack> meleeDataAttacks,
                                                                  RegistryEntry<Spell> spellEntry) {
+        return allAttacksOf(caster, meleeDataAttacks, spellEntry, null);
+    }
+
+    /// `chargeModifier` is the charge bonus scaled by the curved ratio, or null outside CHARGE casts.
+    /// It never contributes `melee_attacks` (stripped in `SpellModifiers.scaledBy`), so the returned
+    /// attack list — and therefore every attack id — is identical with or without it. That is what
+    /// lets `resolveAttackData` map an `AttackContext` back to its attack on the return leg.
+    public static CombinedAttacks allAttacksOf(PlayerEntity caster, List<Spell.Delivery.Melee.Attack> meleeDataAttacks,
+                                                                 RegistryEntry<Spell> spellEntry,
+                                                                 @Nullable Spell.Modifier chargeModifier) {
         var attacks = new ArrayList<>(meleeDataAttacks);
-        var modifiers = SpellModifiers.of(caster, spellEntry);
+        var modifiers = SpellModifiers.of(caster, spellEntry, chargeModifier);
         for (var modifier: modifiers) {
             if (modifier.melee_attacks != null) {
                 for (var attack : modifier.melee_attacks) {
@@ -137,20 +149,21 @@ public class Melee {
      * This flattens and resolves all server-side calculations (haste, etc.)
      */
     public static List<Attack> createMeleeAttacks(ServerPlayerEntity caster, List<Spell.Delivery.Melee.Attack> meleeDataAttacks,
-                                                  RegistryEntry<Spell> spellEntry, float charge) {
+                                                  RegistryEntry<Spell> spellEntry, float curvedRatio,
+                                                  @Nullable Spell.Modifier chargeModifier) {
         var attacks = new ArrayList<Attack>();
         var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, caster);
         var spellId = spellEntry.getKey().get().getValue();
-        var allAttacks = allAttacksOf(caster, meleeDataAttacks, spellEntry);
+        var allAttacks = allAttacksOf(caster, meleeDataAttacks, spellEntry, chargeModifier);
         for (var attack : allAttacks.attacks()) {
             // Calculate haste-affected duration
-            var meleeAttack = convert(caster, spellId, attack, attackSpeedMultiplier, allAttacks.spellModifiers(), charge);
+            var meleeAttack = convert(caster, spellId, attack, attackSpeedMultiplier, allAttacks.spellModifiers(), curvedRatio, chargeModifier);
             attacks.add(meleeAttack);
         }
         return attacks;
     }
 
-    private static Attack convert(ServerPlayerEntity caster, Identifier spellId, Spell.Delivery.Melee.Attack attack, double attackSpeedMultiplier, List<Spell.Modifier> spellModifiers, float charge) {
+    private static Attack convert(ServerPlayerEntity caster, Identifier spellId, Spell.Delivery.Melee.Attack attack, double attackSpeedMultiplier, List<Spell.Modifier> spellModifiers, float curvedRatio, @Nullable Spell.Modifier chargeModifier) {
         var speed = (float) (attack.attack_speed_multiplier * attackSpeedMultiplier);
         float duration = attack.duration > 0
                 // `getAttackCooldownProgressPerTick` is poorly named, it actually returns the attack cooldown in ticks
@@ -158,7 +171,10 @@ public class Melee {
                 : Math.max(caster.getAttackCooldownProgressPerTick() * (1F / speed), 1);
         float delay = duration * attack.delay;
         var spell = SpellRegistry.from(caster.getWorld()).getEntry(spellId);
-        var range = spell.isPresent() ? SpellHelper.getRange(caster, spell.get()) : (float)caster.getEntityInteractionRange();
+        // Must stay in step with the server side distance guard in `performAttackAgainstTargets`,
+        // which resolves the same range: a hitbox grown by `range_add` here but not there would
+        // find targets the server then rejects.
+        var range = spell.isPresent() ? SpellHelper.getRange(caster, spell.get(), chargeModifier) : (float)caster.getEntityInteractionRange();
 
         var momentumBonus = 0F;
         var slipBonus = 0F;
@@ -182,8 +198,22 @@ public class Melee {
                 range,
                 attack.hitbox,
                 attack.animation,
-                new AttackContext(spellId, attack.id, charge)
+                new AttackContext(spellId, attack.id, curvedRatio)
         );
+    }
+
+    /// Rebuilds what `SpellHelper.performSpell` resolved when the cast was released, from the curved
+    /// ratio the attack carries. Both are pure functions of static spell data, so the return leg
+    /// reconstructs them rather than transporting them.
+    private record ResolvedCharge(float outputMultiplier, @Nullable Spell.Modifier modifier) {
+        static final ResolvedCharge NONE = new ResolvedCharge(1F, null);
+    }
+    private static ResolvedCharge resolveCharge(@Nullable RegistryEntry<Spell> spellEntry, float curvedRatio) {
+        var charge = SpellHelper.chargeConfigOf(spellEntry);
+        if (charge == null) { return ResolvedCharge.NONE; }
+        return new ResolvedCharge(
+                SpellHelper.chargeOutputMultiplier(spellEntry, curvedRatio),
+                SpellModifiers.scaledBy(charge.bonus, curvedRatio));
     }
 
     @Nullable public static Spell.Delivery.Melee.Attack resolveAttackData(PlayerEntity attacker, World world, @Nullable AttackContext context) {
@@ -230,11 +260,17 @@ public class Melee {
 
     public static void broadcastAttackFx(ServerPlayerEntity player, AttackContext attackContext) {
         var world = player.getWorld();
-        var attackData = resolveAttackData(player, world, attackContext);
+        var resolved = resolveAttackData(player, world, attackContext.spellId(), attackContext.attackId());
+        var attackData = resolved != null ? resolved.attack() : null;
         if (attackData != null) {
             // Saving the attack on server side - mainly for the slipperiness
             var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player);
-            var attack = convert(player, attackContext.spellId(), attackData, attackSpeedMultiplier, List.of(), attackContext.charge());
+            var curvedRatio = MathHelper.clamp(attackContext.charge(), 0F, 1F); // Client supplied
+            var charge = resolveCharge(resolved.spell(), curvedRatio);
+            // The full modifier list (not `List.of()`): the slipperiness stored here drives server
+            // side movement, so it has to match the value the client is already sliding with.
+            var modifiers = allAttacksOf(player, resolved.melee().attacks, resolved.spell(), charge.modifier()).spellModifiers();
+            var attack = convert(player, attackContext.spellId(), attackData, attackSpeedMultiplier, modifiers, curvedRatio, charge.modifier());
             ((SpellCasterEntity) player).setMeleeSkillAttack(new ActiveAttack(attack, player.age, player.getMainHandStack().getItem()));
             // Sending fx to clients - animation, sound, particles
             var trackers = PlayerLookup.tracking(player);
@@ -281,7 +317,7 @@ public class Melee {
         EntityAttributeModifier appliedDualWieldModifier = null;
         EntityAttributeModifier appliedChargeModifier = null;
         // Arrived from the client, so it is never trusted as-is.
-        var charge = MathHelper.clamp(context.charge(), 0F, 1F);
+        var curvedRatio = MathHelper.clamp(context.charge(), 0F, 1F);
         try {
             var lastAttackTime = ((LivingEntityAccessor)player).spellEngine_getLastAttackedTicks();
             var targets = new ArrayList<Entity>();
@@ -291,7 +327,9 @@ public class Melee {
             var attack = resolvedContext.attack();
             Sound impactSound = null;
             int impactSoundLimit = 0;
-            var modifiers = SpellModifiers.of(player, spellEntry);
+            var resolvedCharge = resolveCharge(spellEntry, curvedRatio);
+            var charge = resolvedCharge.outputMultiplier();
+            var modifiers = SpellModifiers.of(player, spellEntry, resolvedCharge.modifier());
             var damageMultiplierBase = 0F;
             for (var modifier : modifiers) {
                 damageMultiplierBase += modifier.melee_damage_multiplier;
@@ -323,7 +361,7 @@ public class Melee {
                 impactSound = attack.impact_sound;
                 impactSoundLimit = attack.impact_sound_cap > 0 ? attack.impact_sound_cap : 999;
             }
-            var attackRange = spellEntry != null ? SpellHelper.getRange(player, spellEntry) : (float)player.getEntityInteractionRange();
+            var attackRange = spellEntry != null ? SpellHelper.getRange(player, spellEntry, resolvedCharge.modifier()) : (float)player.getEntityInteractionRange();
 
             for (int targetId : targetIds) {
                 var target = world.getEntityById(targetId);
@@ -355,7 +393,8 @@ public class Melee {
             if (!targets.isEmpty()) {
                 var impactContext = new SpellHelper.ImpactContext()
                         .position(player.getPos())
-                        .charge(charge);
+                        .charge(curvedRatio)
+                        .chargeModifier(resolvedCharge.modifier());
                 SpellHelper.meleeImpact(player, targets, spellEntry, impactContext);
             }
             ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(lastAttackTime);

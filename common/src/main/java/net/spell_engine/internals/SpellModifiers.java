@@ -132,7 +132,12 @@ public class SpellModifiers {
         copy.replacing_area_impact = modifier.replacing_area_impact;
         copy.release_particles = modifier.release_particles;
         copy.impact_filters = modifier.impact_filters;
-        copy.melee_attacks = modifier.melee_attacks;
+        // Deliberately dropped, not copied: an attack list has no magnitude to scale, so it would
+        // appear in full at any ratio above `min_release_ratio` — "release at 21%, get the whole
+        // extra swing". Charge therefore never adds melee attacks. Dropping it here also keeps the
+        // attack ids resolvable from `AttackContext` on the way back from the client, which relies
+        // on `allAttacksOf` producing the same list on both legs of the round trip.
+        copy.melee_attacks = null;
         copy.additional_placements = modifier.additional_placements;
         copy.summon_attribute_scaling = modifier.summon_attribute_scaling;
         // Scaled top-level magnitudes
