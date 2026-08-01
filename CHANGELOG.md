@@ -1,3 +1,8 @@
+# 1.9.15
+
+- Added support for `CHARGE` casting mode for spells with `MELEE` delivery
+- 
+
 # 1.9.14
 
 - Fix GlowingItemStatusEffect compatibility with Continuity

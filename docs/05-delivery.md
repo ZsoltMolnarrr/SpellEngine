@@ -154,6 +154,14 @@ Sends an `AttackAvailable` packet to the client, which performs OBB (oriented bo
 
 `attacks` is a list — each entry is one swing. For channeled spells, the channel tick index cycles through the attacks list (e.g. alternating left/right slashes for a flurry skill).
 
+### Charged melee
+
+`MELEE` works with [`CHARGE` casts](03-casting.md#charged). The charge ratio is resolved on release, travels with the swing through the client round trip, and scales **both** halves of a melee skill's output: the vanilla weapon swing and the spell's own impacts. Below `min_release_ratio` the cast fizzles before any swing is scheduled.
+
+Only the innate output scaling applies — `min_release_ratio`, `output_scaling` and `curve`. The `charge.bonus` modifier is **ignored** for melee delivery, so charge cannot add swings, momentum, slipperiness or range.
+
+Since a partial release cuts weapon damage directly, `output_scaling` is worth tuning down (`0.33`–`0.5`) unless you want a fully bow-like skill.
+
 | Field | Description |
 |---|---|
 | `damage_bonus` | Additive damage multiplier on top of the spell's normal impact damage |

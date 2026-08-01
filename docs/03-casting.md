@@ -98,6 +98,10 @@ the `{damage}` range widens downward to the weakest allowed release automaticall
   `projectile_scale_multiply` (bigger projectile render + hitbox), `range_add`, effect amplifiers,
   etc. (`spell_pattern` is ignored; `impact_filters` still scope which impacts it boosts.)
 - A spell instantly cast by a temporary effect releases at full charge automatically.
+- **`MELEE` delivery supports charging, but only the innate output scaling** — `min_release_ratio`,
+  `output_scaling` and `curve` all apply, and the charge scales both the weapon swing and the
+  spell's impacts. The `bonus` modifier is **ignored** for melee. See
+  [Delivery · MELEE](05-delivery.md#melee).
 - `curve` values (per [easings.net](https://easings.net)): `LINEAR`, `EASE_IN_QUAD`, `EASE_OUT_QUAD`,
   `EASE_IN_OUT_QUAD`, `EASE_IN_QUART`, `EASE_OUT_QUART`, `EASE_IN_OUT_QUART`, `EASE_IN_EXPO`,
   `EASE_OUT_EXPO`, `EASE_IN_OUT_EXPO`. IN = slow start (rewards near-full charges), OUT = fast early

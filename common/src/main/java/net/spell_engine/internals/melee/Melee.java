@@ -12,6 +12,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
@@ -66,14 +67,19 @@ public class Melee {
      */
     public record AttackContext(
         Identifier spellId,
-        String attackId
+        String attackId,
+        /// Output multiplier of the CHARGE cast this attack was released from, in `0..1`
+        /// (already curved and weighted by `output_scaling`). Always `1` for every other cast type.
+        /// Travels with the attack through the client round trip, so overlapping deliveries cannot
+        /// mix up each other's charge.
+        float charge
     ) {
-        public static final AttackContext EMPTY = new AttackContext(Identifier.of("spell_engine", "empty"), "empty");
+        public static final AttackContext EMPTY = new AttackContext(Identifier.of("spell_engine", "empty"), "empty", 1F);
         /**
          * Create context for a specific attack
          */
-        public static AttackContext of(Identifier spellId, String attackId) {
-            return new AttackContext(spellId, attackId);
+        public static AttackContext of(Identifier spellId, String attackId, float charge) {
+            return new AttackContext(spellId, attackId, charge);
         }
     }
 
@@ -131,20 +137,20 @@ public class Melee {
      * This flattens and resolves all server-side calculations (haste, etc.)
      */
     public static List<Attack> createMeleeAttacks(ServerPlayerEntity caster, List<Spell.Delivery.Melee.Attack> meleeDataAttacks,
-                                                  RegistryEntry<Spell> spellEntry) {
+                                                  RegistryEntry<Spell> spellEntry, float charge) {
         var attacks = new ArrayList<Attack>();
         var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, caster);
         var spellId = spellEntry.getKey().get().getValue();
         var allAttacks = allAttacksOf(caster, meleeDataAttacks, spellEntry);
         for (var attack : allAttacks.attacks()) {
             // Calculate haste-affected duration
-            var meleeAttack = convert(caster, spellId, attack, attackSpeedMultiplier, allAttacks.spellModifiers());
+            var meleeAttack = convert(caster, spellId, attack, attackSpeedMultiplier, allAttacks.spellModifiers(), charge);
             attacks.add(meleeAttack);
         }
         return attacks;
     }
 
-    private static Attack convert(ServerPlayerEntity caster, Identifier spellId, Spell.Delivery.Melee.Attack attack, double attackSpeedMultiplier, List<Spell.Modifier> spellModifiers) {
+    private static Attack convert(ServerPlayerEntity caster, Identifier spellId, Spell.Delivery.Melee.Attack attack, double attackSpeedMultiplier, List<Spell.Modifier> spellModifiers, float charge) {
         var speed = (float) (attack.attack_speed_multiplier * attackSpeedMultiplier);
         float duration = attack.duration > 0
                 // `getAttackCooldownProgressPerTick` is poorly named, it actually returns the attack cooldown in ticks
@@ -176,7 +182,7 @@ public class Melee {
                 range,
                 attack.hitbox,
                 attack.animation,
-                new AttackContext(spellId, attack.id)
+                new AttackContext(spellId, attack.id, charge)
         );
     }
 
@@ -228,7 +234,7 @@ public class Melee {
         if (attackData != null) {
             // Saving the attack on server side - mainly for the slipperiness
             var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player);
-            var attack = convert(player, attackContext.spellId(), attackData, attackSpeedMultiplier, List.of());
+            var attack = convert(player, attackContext.spellId(), attackData, attackSpeedMultiplier, List.of(), attackContext.charge());
             ((SpellCasterEntity) player).setMeleeSkillAttack(new ActiveAttack(attack, player.age, player.getMainHandStack().getItem()));
             // Sending fx to clients - animation, sound, particles
             var trackers = PlayerLookup.tracking(player);
@@ -266,12 +272,16 @@ public class Melee {
 
     private static final Identifier DAMAGE_MODIFIER_ID = Identifier.of(SpellEngineMod.ID, "melee_attack");
     private static final Identifier DUAL_WIELD_MODIFIER_ID = Identifier.of(SpellEngineMod.ID, "melee_attack_dual_wield");
+    private static final Identifier CHARGE_MODIFIER_ID = Identifier.of(SpellEngineMod.ID, "melee_attack_charge");
     public static void performAttackAgainstTargets(ServerPlayerEntity player, AttackContext context, int[] targetIds) {
         var world = player.getWorld();
         var focusMode = focusMode();
         var attributeInstance = player.getAttributes().getCustomInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE);
         EntityAttributeModifier appliedDamageModifier = null;
         EntityAttributeModifier appliedDualWieldModifier = null;
+        EntityAttributeModifier appliedChargeModifier = null;
+        // Arrived from the client, so it is never trusted as-is.
+        var charge = MathHelper.clamp(context.charge(), 0F, 1F);
         try {
             var lastAttackTime = ((LivingEntityAccessor)player).spellEngine_getLastAttackedTicks();
             var targets = new ArrayList<Entity>();
@@ -294,6 +304,15 @@ public class Melee {
             if (dualWieldBonus != 0 && attributeInstance != null) {
                 appliedDualWieldModifier = new EntityAttributeModifier(DUAL_WIELD_MODIFIER_ID, dualWieldBonus, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
                 attributeInstance.addTemporaryModifier(appliedDualWieldModifier);
+            }
+            // Melee skills land their damage through vanilla `player.attack(...)`, which the
+            // `ImpactContext` never reaches, so a partial CHARGE release scales the swing here.
+            // Kept separate for the same reason as the dual wield bonus: `ADD_MULTIPLIED_TOTAL`
+            // modifiers compose multiplicatively, so the charge scales the whole swing rather
+            // than being diluted by the flat bonuses below.
+            if (charge != 1F && attributeInstance != null) {
+                appliedChargeModifier = new EntityAttributeModifier(CHARGE_MODIFIER_ID, charge - 1F, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+                attributeInstance.addTemporaryModifier(appliedChargeModifier);
             }
             if (attack != null && attributeInstance != null) {
                 var damageModifierAmount = attack.damage_bonus + damageMultiplierBase;
@@ -335,7 +354,8 @@ public class Melee {
 
             if (!targets.isEmpty()) {
                 var impactContext = new SpellHelper.ImpactContext()
-                        .position(player.getPos());
+                        .position(player.getPos())
+                        .charge(charge);
                 SpellHelper.meleeImpact(player, targets, spellEntry, impactContext);
             }
             ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(lastAttackTime);
@@ -347,6 +367,9 @@ public class Melee {
         }
         if (appliedDualWieldModifier != null) {
             attributeInstance.removeModifier(appliedDualWieldModifier);
+        }
+        if (appliedChargeModifier != null) {
+            attributeInstance.removeModifier(appliedChargeModifier);
         }
         ((SpellCasterEntity)player).setActiveMeleeSkill(null);
     }

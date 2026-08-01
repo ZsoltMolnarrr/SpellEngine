@@ -126,11 +126,9 @@ public class SummonBehaviour {
     public static class Targeting {
         public boolean revenge = true;
         public boolean attack_with_owner = true;
-        /// When `attack_with_owner` is true, how many times the owner must hit the SAME
-        /// target before the summon switches to (mirrors) it. 1 (default) switches on the
-        /// owner's first hit — the prior behaviour. Higher values keep the summon committed
-        /// to its own target until the owner has clearly focused one enemy.
-        public int attack_with_owner_hits = 1;
+        /// Number of consecutive hits the owner has to do on the same entity,
+        /// in order to make this summon target that entity
+        public int attack_with_owner_hits = 1; // TODO `retarget_hits`
         /// What kind of target the entity auto-acquires when nothing else is set.
         ///   NONE     — no auto-targeting; relies on revenge / attack_with_owner only
         ///   HOSTILE  — acquires nearby hostile mobs (attacker pets)

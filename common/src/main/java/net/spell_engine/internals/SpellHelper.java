@@ -731,7 +731,7 @@ public class SpellHelper {
                         }
                         if (attacker instanceof ServerPlayerEntity serverPlayer) {
                             // Map to resolved MeleeAttack structures
-                            var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, attacks, spellEntry);
+                            var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, attacks, spellEntry, context.charge());
                             // Send AttackAvailable packet to client
                             var packet = new Packets.AttackAvailable(spellId, meleeAttacks);
                             ServerPlayNetworking.send(serverPlayer, packet);

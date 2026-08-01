@@ -438,13 +438,15 @@ public class Packets {
         public void write(PacketByteBuf buffer) {
             buffer.writeString(attackContext.spellId().toString());
             buffer.writeString(attackContext.attackId());
+            buffer.writeFloat(attackContext.charge());
             buffer.writeIntArray(targetIds);
         }
 
         public static AttackPerform read(PacketByteBuf buffer) {
             var spellId = Identifier.of(buffer.readString());
             var attackId = buffer.readString();
-            var context = new Melee.AttackContext(spellId, attackId);
+            var charge = buffer.readFloat();
+            var context = new Melee.AttackContext(spellId, attackId, charge);
             var targetIds = buffer.readIntArray();
             return new AttackPerform(context, targetIds);
         }
@@ -463,12 +465,14 @@ public class Packets {
         public void write(PacketByteBuf buffer) {
             buffer.writeString(attackContext.spellId().toString());
             buffer.writeString(attackContext.attackId());
+            buffer.writeFloat(attackContext.charge());
         }
 
         public static AttackFxBroadcast read(PacketByteBuf buffer) {
             var spellId = Identifier.of(buffer.readString());
             var attackId = buffer.readString();
-            return new AttackFxBroadcast(new Melee.AttackContext(spellId, attackId));
+            var charge = buffer.readFloat();
+            return new AttackFxBroadcast(new Melee.AttackContext(spellId, attackId, charge));
         }
     }
 }
