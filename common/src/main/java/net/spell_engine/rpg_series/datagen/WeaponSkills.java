@@ -307,13 +307,19 @@ public class WeaponSkills {
     private static Entry IMPALE() {
         var id = Identifier.of(NAMESPACE, "impale");
         var title = "Impale";
-        var description = "Throws your weapon forwards, dealing {damage} damage and powerful knockback.";
+        var description = "Throws your weapon forwards, dealing {damage} damage and powerful knockback. The longer the throw is charged, the harder it hits and the further it flies.";
         var spell = SpellBuilder.createMeleeSpell();
         spell.range_mechanic = null;
-        spell.range = 20;
+        spell.range = 16;
 
-        SpellBuilder.Casting.cast(spell, 0.75F, "spell_engine:weapon_spearthrow_ready");
-        spell.active.cast.animation.speed = 1.5F;
+        // Charged throw, mirroring Ice Lance: base impact values are the FULL-charge payout,
+        // output_scaling puts the zero-charge floor at 0.4x, and the bonus adds range on top.
+        var charge = SpellBuilder.Casting.charge(spell, 1F, Spell.Active.Cast.Charge.Curve.EASE_IN_QUART);
+        charge.min_release_ratio = 0.2F;
+        charge.output_scaling = 0.6F;
+        charge.bonus.range_add = 16;                  // 16 -> 32 blocks at full charge
+
+        spell.active.cast.animation = PlayerAnimation.of("spell_engine:weapon_spearthrow_ready");
         spell.release.animation = PlayerAnimation.of("spell_engine:weapon_spearthrow_toss");
         spell.release.sound = Sound.of(SpellEngineSounds.WEAPON_SPEAR_THROW.id());
         spell.release.animation.speed = 1.5F;

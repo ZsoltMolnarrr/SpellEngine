@@ -1,14 +1,21 @@
 {
   "school": "spell_power:physical_melee",
-  "range": 20.0,
+  "range": 16.0,
   "tier": 1,
   "learn": {},
   "active": {
     "cast": {
-      "duration": 0.75,
+      "duration": 1.0,
+      "type": "CHARGE",
+      "charge": {
+        "output_scaling": 0.6,
+        "curve": "EASE_IN_QUART",
+        "bonus": {
+          "range_add": 16.0
+        }
+      },
       "animation": {
-        "id": "spell_engine:weapon_spearthrow_ready",
-        "speed": 1.5
+        "id": "spell_engine:weapon_spearthrow_ready"
       }
     }
   },

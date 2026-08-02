@@ -3,6 +3,7 @@
 - Added support for `CHARGE` casting mode for spells with `MELEE` delivery, supports
   - damage scaling by charge (default)
   - tweaks via spell modifiers
+- Impale spell is now charged instead of casted
 
 # 1.9.14
 

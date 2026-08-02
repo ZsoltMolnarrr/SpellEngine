@@ -7,7 +7,7 @@
   "spell.rpg_series.flurry.name": "Flurry",
   "spell.rpg_series.ground_slam.description": "Leaps into the air and slams into the ground, dealing {damage} damage to nearby enemies.",
   "spell.rpg_series.ground_slam.name": "Ground Slam",
-  "spell.rpg_series.impale.description": "Throws your weapon forwards, dealing {damage} damage and powerful knockback.",
+  "spell.rpg_series.impale.description": "Throws your weapon forwards, dealing {damage} damage and powerful knockback. The longer the throw is charged, the harder it hits and the further it flies.",
   "spell.rpg_series.impale.name": "Impale",
   "spell.rpg_series.smash.description": "Delivers a strike with powerful knockback, disabling shield and item usage of target.",
   "spell.rpg_series.smash.name": "Smash",
