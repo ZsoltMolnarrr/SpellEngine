@@ -1,7 +1,8 @@
 # 1.9.15
 
-- Added support for `CHARGE` casting mode for spells with `MELEE` delivery
-- 
+- Added support for `CHARGE` casting mode for spells with `MELEE` delivery, supports
+  - damage scaling by charge (default)
+  - tweaks via spell modifiers
 
 # 1.9.14
 
