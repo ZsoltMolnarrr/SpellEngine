@@ -66,21 +66,17 @@ public class ModelPredicateHelper {
 
     private static void injectModelPredicate(Map<Item, Map<Identifier, ModelPredicateProvider>> all, Item item, Identifier id, ModelPredicateProvider customPredicate) {
         var itemSpecific = all.get(item);
-        if (itemSpecific == null) {
-            return;
-        }
-        var existingPredicate = itemSpecific.get(id);
-        if (existingPredicate == null) {
-            return;
-        }
+        // Modded ranged weapons may have none or only some of the vanilla predicates registered.
+        // Falling back to `null` here (instead of bailing out) keeps the skill animation working on such items.
+        final var existingPredicate = (itemSpecific != null) ? itemSpecific.get(id) : null;
         ModelPredicateProviderRegistry.register(item, id, (stack, world, entity, seed) -> {
-            if (customPredicate != null) {
-                var result = customPredicate.call(stack, world, entity, seed);
-                if (result >= 0.0f) {
-                    return result;
-                }
+            var result = customPredicate.call(stack, world, entity, seed);
+            if (result >= 0.0f) {
+                return result;
             }
-            return existingPredicate.call(stack, world, entity, seed);
+            return (existingPredicate != null)
+                    ? existingPredicate.call(stack, world, entity, seed)
+                    : 0.0F; // No vanilla predicate for this item, behave as `off`
         });
     }
 
