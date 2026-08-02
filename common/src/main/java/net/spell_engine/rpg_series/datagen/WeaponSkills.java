@@ -238,7 +238,7 @@ public class WeaponSkills {
 
         var cut_2 = new Spell.Delivery.Melee.Attack();
         cut_2.attack_speed_multiplier = 2F;
-        cut_1.delay = 0.3F;
+        cut_2.delay = 0.3F;
         cut_2.hitbox = new Spell.Delivery.Melee.HitBox();
         cut_2.hitbox.arc = 120;
         cut_2.hitbox.height = 0.2F;

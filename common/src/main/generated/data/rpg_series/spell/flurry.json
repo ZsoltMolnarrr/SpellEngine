@@ -47,6 +47,7 @@
         },
         {
           "attack_speed_multiplier": 2.0,
+          "delay": 0.3,
           "forward_momentum": 0.8,
           "hitbox": {
             "height": 0.2,

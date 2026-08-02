@@ -252,6 +252,11 @@ public class SpellHelper {
         // Allow clients to specify their haste without validation
         // var details = SpellHelper.getCastTimeDetails(player, spell);
         var process = new SpellCast.Process(player, spellEntry, itemStack.getItem(), speed, length, player.getWorld().getTime());
+        // Every channel starts counting from zero. `clearCasting` resets too, but it is not reached
+        // on every path: cancelling a cast to start another one (`cancelSpellCast(false)`) sends no
+        // cast sync packet, leaving only the RELEASE request, which early-returns when
+        // `attemptCasting` fails. Resetting here makes a stale index impossible to inherit.
+        ((SpellCasterEntity) player).setChannelTickIndex(0);
         SpellCastSyncHelper.setCasting(player, process);
         SoundHelper.playSound(player.getWorld(), player, spell.active.cast.start_sound);
     }
@@ -374,7 +379,19 @@ public class SpellHelper {
                         .chargeModifier(chargeModifier)
                         .charge(curvedRatio);
                 success = resolveAndDeliver(world, player, spellEntry, targetResult, context, completion);
-                caster.setChannelTickIndex(channelTickIndex + incrementChannelTicks);
+                // Only a channel tick of the spell actually being cast may touch the counter.
+                // Without the guard every other action lands here with both locals left at zero
+                // (TRIGGER takes the defaults, RELEASE of a non-channeled spell never sets them),
+                // so a passive proc or an unrelated cast would silently reset the index mid-channel
+                // and repeat the swing the previous tick already performed. The cast process match
+                // keeps a channel request naming another spell from shifting this one's index —
+                // only one spell can be cast at a time, so anything else is out of band.
+                var castProcess = caster.getSpellCastProcess();
+                if (incrementChannelTicks > 0
+                        && castProcess != null
+                        && castProcess.id().equals(spellId)) {
+                    caster.setChannelTickIndex(channelTickIndex + incrementChannelTicks);
+                }
             } else {
                 if (finished && completion != null) {
                     // Channel release

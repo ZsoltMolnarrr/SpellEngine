@@ -4,6 +4,7 @@
   - damage scaling by charge (default)
   - tweaks via spell modifiers
 - Impale spell is now charged instead of casted
+- Fixed channel tick counting interference with some passive spells
 
 # 1.9.14
 
