@@ -14,6 +14,7 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.fx.Easing;
 import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleGroupEffect;
@@ -84,19 +85,24 @@ public abstract class SpellGenerator implements DataProvider {
         var gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(Spell.class, new DefaultValueSkippingSerializer<>(Spell.class))
-                .registerTypeAdapter(ParticleGroupEffect.class, new DefaultValueSkippingSerializer<>(ParticleGroupEffect.class))
-                .registerTypeAdapter(ParticleGroupEffect.Particle.class, new DefaultValueSkippingSerializer<>(ParticleGroupEffect.Particle.class))
-                .registerTypeAdapter(ParticleGroupEffect.Batch.class, new DefaultValueSkippingSerializer<>(ParticleGroupEffect.Batch.class))
                 .registerTypeAdapter(Sound.class, new DefaultValueSkippingSerializer<>(Sound.class))
                 .registerTypeAdapter(PlayerAnimation.class, new DefaultValueSkippingSerializer<>(PlayerAnimation.class))
                 .registerTypeAdapter(ModelEffect.class, new DefaultValueSkippingSerializer<>(ModelEffect.class))
                 // SummonBehaviour (referenced by the SUMMON impact) is a separate top-level type, so
                 // its tree isn't covered by getAllNestedClasses(Spell.class) — register it explicitly.
-                .registerTypeAdapter(SummonBehaviour.class, new DefaultValueSkippingSerializer<>(SummonBehaviour.class));
+                .registerTypeAdapter(SummonBehaviour.class, new DefaultValueSkippingSerializer<>(SummonBehaviour.class))
+                // Same for ParticleGroupEffect and its `particle`/`batch` blocks: both are top-level
+                // types under api.spell.fx. Without these, every effect serialized all ~30 fields of
+                // Particle and Batch, defaults included.
+                .registerTypeAdapter(ParticleGroupEffect.class, new DefaultValueSkippingSerializer<>(ParticleGroupEffect.class))
+                .registerTypeAdapter(Easing.Curve.class, new DefaultValueSkippingSerializer<>(Easing.Curve.class));
         for (var nestedClass : getAllNestedClasses(Spell.class)) {
             gson = gson.registerTypeAdapter(nestedClass, new DefaultValueSkippingSerializer<>(nestedClass));
         }
         for (var nestedClass : getAllNestedClasses(SummonBehaviour.class)) {
+            gson = gson.registerTypeAdapter(nestedClass, new DefaultValueSkippingSerializer<>(nestedClass));
+        }
+        for (var nestedClass : getAllNestedClasses(ParticleGroupEffect.class)) {
             gson = gson.registerTypeAdapter(nestedClass, new DefaultValueSkippingSerializer<>(nestedClass));
         }
         return gson.create();
