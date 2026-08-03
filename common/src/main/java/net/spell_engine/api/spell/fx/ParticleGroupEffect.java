@@ -8,9 +8,12 @@ import java.util.function.Consumer;
 /// Describes a single visual effect made of particles. Successor of [ParticleBatch].
 ///
 /// The structure is split along the boundary where a particle starts existing:
+/// - [#id] selects which registered particle type to spawn, and therefore which
+///   factory handles it.
 /// - [Particle] is everything one particle needs to look and behave a certain way.
-///   It is the complete payload handed to the particle factory, which is why a single
-///   generic factory can serve every particle in the mod.
+///   It is the complete payload handed to that factory, which is why a single
+///   generic factory can serve every particle in the mod. It carries no id of its
+///   own, so it can be transmitted and applied wholesale.
 /// - [Batch] is everything resolved *before* any particle exists: how many to make,
 ///   where to place them, and what velocity to hand them. Pure geometry, never seen
 ///   by the factory.
@@ -19,6 +22,16 @@ import java.util.function.Consumer;
 /// GSON and for bloat-free builder functions. Use [#copy()] before mutating one that
 /// came out of a registered spell.
 public class ParticleGroupEffect { public ParticleGroupEffect() { }
+    /// Id of a registered particle type, e.g. `spell_engine:magic_spell`.
+    ///
+    /// Vanilla and third-party ids (`minecraft:flame`, `minecraft:crit`, …) are
+    /// supported and behave as they do in V1: the [Batch] geometry places and
+    /// launches them, and the entire [Particle] block is ignored, because their
+    /// factories know nothing about our payload. Around 30 call sites rely on this.
+    /// Register a [Particle]-controllable equivalent instead if a vanilla particle
+    /// needs colouring, scaling or a lifetime change.
+    public String id;
+
     @AlwaysGenerate
     public Particle particle = new Particle();
     @AlwaysGenerate
@@ -26,33 +39,43 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
 
     // MARK: - Particle
 
-    /// Per-particle appearance and behaviour — the factory payload.
+    /// Per-particle appearance and motion — the complete factory payload.
+    ///
+    /// Deliberately carries no particle id: the id lives on the enclosing
+    /// [ParticleGroupEffect] and selects the factory, so this block can be handed
+    /// over and applied as one whole structure.
     ///
     /// Fields left at their defaults inherit from the registered particle entry and
     /// from the [Motion] preset, so a typical effect only sets a handful of them.
+    ///
+    /// Ignored entirely when [ParticleGroupEffect#id] names a particle this mod did
+    /// not register.
     public static class Particle { public Particle() { }
-        /// Id of a registered particle type, e.g. `spell_engine:magic_spell`
-        public String id;
 
-        // MARK: Lifetime & sprite playback
+        // MARK: Playback
 
-        /// Lifetime in ticks. Independent of the texture's frame count — an 8 frame
-        /// sprite can live 40 ticks (see [#playback]).
-        @AlwaysGenerate
-        public int max_age = 20;
-
-        /// Random lifetime variation as a fraction of [#max_age].
-        /// `0.25` gives each particle a lifetime in `[0.75, 1.25] * max_age`.
-        public float max_age_variance = 0F;
-
-        /// Sprite animation speed in frames per tick.
-        /// `1` advances one frame per tick, `0.5` holds each frame for two ticks,
-        /// `0` freezes on the first frame, negative values play the sequence backwards.
-        public float playback = 1F;
-
-        /// When true the sprite sequence restarts after its last frame instead of
-        /// holding it for the remainder of the lifetime.
-        public boolean loop = false;
+        /// Speed the particle's whole timeline runs at, relative to the timing the
+        /// registered entry defines for itself — its texture frame count when
+        /// animated, or a static value when not.
+        ///
+        /// The sprite animation always plays through exactly once across the lifetime,
+        /// so one value governs both: `2.5` on a 16 frame entry plays those 16 frames
+        /// at 2.5x, over a 6 tick life. Playback rate and lifetime are the same knob
+        /// seen from two sides, so there is one field rather than two.
+        ///
+        /// `1` is the entry's own timing, `2.5` a quicker flash of the same texture,
+        /// `0.5` a lingering one. Reusing one entry at several speeds is the point.
+        ///
+        /// **Negative values run the sequence backwards** at that speed — `-1` is the
+        /// entry's own timing in reverse. It flips whatever order the entry considers
+        /// normal, so a texture registered with the reverse order flag plays forwards
+        /// under a negative value.
+        ///
+        /// Single-frame entries have no sequence to reverse, so only the magnitude
+        /// applies to those.
+        ///
+        /// `0` would never advance and is treated as `1`.
+        public float playback_speed = 1F;
 
         // MARK: Appearance
 
@@ -64,20 +87,12 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
         /// per-particle variation most hand-written factories bake in today.
         public float color_variance = 0F;
 
-        /// Opacity at spawn.
+        /// Peak opacity — the value held between the fade in and fade out ramps.
         public float opacity = 1F;
 
-        /// Fades [#opacity] to invisible across the lifetime, shaped by this curve.
-        /// The curve encodes both how fast and how late the fade happens, so no
-        /// separate duration is needed:
-        ///
-        /// | Value | Result |
-        /// |---|---|
-        /// | `null` | never fades — holds [#opacity], then vanishes. V1 `Fading.NONE` |
-        /// | `LINEAR` | steady fade across the whole lifetime |
-        /// | `EASE_IN_QUINT` / `EASE_IN_EXPO` | holds solid, then drops away near the end. V1 `Fading.OUT` |
-        /// | `EASE_OUT_*` | drops away immediately, then lingers faintly |
-        @Nullable public Easing opacity_easing = null;
+        /// Fade envelope, multiplying [#opacity] over the lifetime.
+        /// `null` = holds [#opacity] for the whole lifetime, then vanishes.
+        @Nullable public Easing.Curve opacity_curve = null;
 
         /// Size at spawn.
         public float scale = 1F;
@@ -100,7 +115,6 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
         @Nullable public Easing scale_easing = null;
 
         /// How the sprite quad is oriented in the world.
-        @AlwaysGenerate
         public Facing facing = Facing.CAMERA;
 
         /// When true the particle renders at full brightness, ignoring world light.
@@ -133,16 +147,14 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
 
         // MARK: Builders
 
-        public Particle id(String id) { this.id = id; return this; }
-        public Particle maxAge(int max_age) { this.max_age = max_age; return this; }
-        public Particle maxAge(int max_age, float variance) { this.max_age = max_age; this.max_age_variance = variance; return this; }
-        public Particle playback(float playback) { this.playback = playback; return this; }
-        public Particle loop(boolean loop) { this.loop = loop; return this; }
+        public Particle playbackSpeed(float playback_speed) { this.playback_speed = playback_speed; return this; }
+        /// Flips the sequence direction, keeping the current speed.
+        public Particle reversed() { this.playback_speed = -this.playback_speed; return this; }
         public Particle color(long color) { this.color = color; return this; }
         public Particle colorVariance(float color_variance) { this.color_variance = color_variance; return this; }
         public Particle opacity(float opacity) { this.opacity = opacity; return this; }
-        public Particle opacityEasing(@Nullable Easing opacity_easing) { this.opacity_easing = opacity_easing; return this; }
-        public Particle opacity(float opacity, @Nullable Easing opacity_easing) { this.opacity = opacity; this.opacity_easing = opacity_easing; return this; }
+        public Particle opacityCurve(@Nullable Easing.Curve opacity_curve) { this.opacity_curve = opacity_curve; return this; }
+        public Particle opacity(float opacity, @Nullable Easing.Curve opacity_curve) { this.opacity = opacity; this.opacity_curve = opacity_curve; return this; }
         public Particle scale(float scale) { this.scale = scale; return this; }
         public Particle scale(float scale, float variance) { this.scale = scale; this.scale_variance = variance; return this; }
         /// Scales linearly to `scale_multiplier` times its spawn size across the lifetime.
@@ -160,15 +172,11 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
 
         public Particle copy() {
             var copy = new Particle();
-            copy.id = this.id;
-            copy.max_age = this.max_age;
-            copy.max_age_variance = this.max_age_variance;
-            copy.playback = this.playback;
-            copy.loop = this.loop;
+            copy.playback_speed = this.playback_speed;
             copy.color = this.color;
             copy.color_variance = this.color_variance;
             copy.opacity = this.opacity;
-            copy.opacity_easing = this.opacity_easing;
+            copy.opacity_curve = this.opacity_curve != null ? this.opacity_curve.copy() : null;
             copy.scale = this.scale;
             copy.scale_variance = this.scale_variance;
             copy.scale_multiplier = this.scale_multiplier;
@@ -258,7 +266,8 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
 
         /// Vertical offset from [#anchor], in units of the source entity's height.
         /// `0` = feet, `0.5` = center, `1` = top of the head, `1.5` = above the head.
-        /// Replaces the V1 `Origin` enum's height cases.
+        /// Replaces the V1 `Origin` enum's height cases — note V1 `FEET` is
+        /// `height * 0.1`, so it ports to `0.1`, not `0`.
         public float vertical_origin = 0.5F;
 
         /// Whether [#shape] is laid out along world axes or rotated into the
@@ -389,9 +398,11 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
     /// particle and batch settings.
     public static ParticleGroupEffect of(String particleId) {
         var effect = new ParticleGroupEffect();
-        effect.particle.id = particleId;
+        effect.id = particleId;
         return effect;
     }
+
+    public ParticleGroupEffect id(String id) { this.id = id; return this; }
 
     /// Configures the [Particle] block in place.
     ///
@@ -415,6 +426,7 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
     /// which must be treated as immutable.
     public ParticleGroupEffect copy() {
         var copy = new ParticleGroupEffect();
+        copy.id = this.id;
         copy.particle = this.particle.copy();
         copy.batch = this.batch.copy();
         return copy;

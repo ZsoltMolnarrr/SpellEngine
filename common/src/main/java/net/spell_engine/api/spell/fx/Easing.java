@@ -1,5 +1,7 @@
 package net.spell_engine.api.spell.fx;
 
+import org.jetbrains.annotations.Nullable;
+
 /// Conventional easing functions from [easings.net](https://easings.net)
 public enum Easing {
     LINEAR,
@@ -108,6 +110,119 @@ public enum Easing {
         } else {
             x -= 2.625F / d1;
             return n1 * x * x + 0.984375F;
+        }
+    }
+
+    // MARK: - Curve
+
+    /// A ramp up / hold / ramp down envelope over a normalized duration.
+    ///
+    /// Produces a `0..1` multiplier to apply to any base value that should ease in at
+    /// the start of its life, hold, and ease back out at the end — particle opacity,
+    /// a model effect's scale, a shader strength, an overlay alpha. It is deliberately
+    /// duration-agnostic: callers supply progress as `0..1`, so the same curve works
+    /// for a 6 tick particle and a 200 tick aura.
+    ///
+    /// Both ramps run between `0` and the full value, so only their shape and the
+    /// length of the hold need describing. [#hold] is the held fraction; whatever is
+    /// left over is split evenly between whichever ramps are present.
+    ///
+    /// ```
+    ///        ┌─────────┐              in = EASE_OUT_SINE
+    ///       /           \             out = LINEAR
+    ///      /             \            hold = 0.4
+    ///  ───┘               └───
+    ///  0   .3     .7      1.0
+    /// ```
+    ///
+    /// Common shapes:
+    ///
+    /// | Intent | Setup |
+    /// |---|---|
+    /// | never changes | use `null` instead of a curve |
+    /// | ease in, then stay | `in = LINEAR, hold = 0.7` |
+    /// | stay, then ease out | `out = LINEAR, hold = 0.7` |
+    /// | ease in and out | `in = LINEAR, out = LINEAR, hold = 0.4` |
+    /// | pure triangle | `in`, `out` set, `hold = 0` |
+    ///
+    /// Those three reproduce the particle system's legacy `Fading` enum exactly,
+    /// whose ramp length was a hardcoded `0.3`. Here the ramp length is authorable
+    /// and each ramp can have its own shape.
+    public static class Curve { public Curve() { }
+        /// Shape of the ramp from `0` up to the full value.
+        /// `null` = starts at the full value, no ramp in.
+        @Nullable
+        public Easing in = null;
+
+        /// Shape of the ramp from the full value back down to `0`.
+        /// `null` = holds the full value all the way to the end.
+        @Nullable public Easing out = null;
+
+        /// Fraction of the duration the value is held constant at full.
+        /// The remaining `1 - hold` is split evenly between the ramps that are set,
+        /// so with both `in` and `out` present each ramp takes `(1 - hold) / 2`.
+        /// `0` with both ramps set is a pure triangle — up for half, down for half.
+        public float hold = 0F;
+
+        /// Evaluate at normalized `progress` (`0` at the start, `1` at the end).
+        /// Returns the `0..1` multiplier to apply to the base value.
+        public float sample(float progress) {
+            var t = clamp01(progress);
+            var ramps = 1F - clamp01(hold);
+            if (ramps <= 0F || (in == null && out == null)) {
+                return 1F;
+            }
+            float rampIn = 0F;
+            float rampOut = 0F;
+            if (in != null && out != null) {
+                rampIn = ramps * 0.5F;
+                rampOut = ramps * 0.5F;
+            } else if (in != null) {
+                rampIn = ramps;
+            } else {
+                rampOut = ramps;
+            }
+            if (rampIn > 0F && t < rampIn) {
+                return apply(in, t / rampIn);
+            }
+            var outStart = 1F - rampOut;
+            if (rampOut > 0F && t > outStart) {
+                return 1F - apply(out, (t - outStart) / rampOut);
+            }
+            return 1F;
+        }
+
+        private static float clamp01(float value) {
+            return value < 0F ? 0F : (value > 1F ? 1F : value);
+        }
+
+        // MARK: Builders
+
+        /// Ramps up over the first `1 - hold` of the duration, then holds.
+        public static Curve fadeIn(Easing in, float hold) {
+            return new Curve().in(in).hold(hold);
+        }
+
+        /// Holds, then ramps down over the last `1 - hold` of the duration.
+        public static Curve fadeOut(Easing out, float hold) {
+            return new Curve().out(out).hold(hold);
+        }
+
+        /// Ramps up, holds at full for `hold` of the duration, then ramps down.
+        public static Curve fadeInOut(Easing in, Easing out, float hold) {
+            return new Curve().in(in).out(out).hold(hold);
+        }
+
+        public Curve in(@Nullable Easing in) { this.in = in; return this; }
+        public Curve out(@Nullable Easing out) { this.out = out; return this; }
+        public Curve hold(float hold) { this.hold = hold; return this; }
+
+        public Curve copy() {
+            var copy = new Curve();
+            copy.in = this.in;
+            copy.out = this.out;
+            copy.hold = this.hold;
+            return copy;
         }
     }
 }
