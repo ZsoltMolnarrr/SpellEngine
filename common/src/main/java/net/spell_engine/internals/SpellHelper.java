@@ -37,7 +37,7 @@ import net.spell_engine.api.effect.StatusEffectClassification;
 import net.spell_engine.api.entity.LivingEntityImmunity;
 import net.spell_engine.api.spell.weakness.SpellSchoolWeakness;
 import net.spell_engine.api.spell.fx.ModelEffect;
-import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.ParticleGroupEffect;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.fx.VFX;
 import net.spell_engine.api.spell.summon.AttributeScaling;
@@ -549,11 +549,13 @@ public class SpellHelper {
             }
         }
         if (spell.release.particles_scaled_with_ranged != null) {
-            ParticleBatch[] scaledParticles = new ParticleBatch[spell.release.particles_scaled_with_ranged.length];
-            for (int i = 0; i < spell.release.particles_scaled_with_ranged.length; i++) {
-                var particles = spell.release.particles_scaled_with_ranged[i];
-                var range = getRange(caster, spellEntry);
-                scaledParticles[i] = particles.copy().scale(range);
+            var range = getRange(caster, spellEntry);
+            var scaledParticles = new ArrayList<ParticleGroupEffect>(spell.release.particles_scaled_with_ranged.size());
+            for (var effect : spell.release.particles_scaled_with_ranged) {
+                // Matches V1: the range overwrites the authored scale, it does not compose with it
+                var copy = effect.copy();
+                copy.particle.scale = range;
+                scaledParticles.add(copy);
             }
             ParticleHelper.sendBatches(caster, scaledParticles);
         }
@@ -2257,7 +2259,7 @@ public class SpellHelper {
     }
 
     private static void emitSummonGroupFx(ServerWorld world, LivingEntity caster, Vec3d anchor, VFX fx) {
-        if (fx.particles != null && fx.particles.length > 0) {
+        if (fx.particles != null && !fx.particles.isEmpty()) {
             ParticleHelper.sendBatches(anchor, caster, fx.particles);
         }
         ModelEffectHelper.spawn(world, anchor, caster.getYaw(), fx.model_fx);

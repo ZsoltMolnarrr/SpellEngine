@@ -4,7 +4,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ModelEffect;
-import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.ParticleGroupEffect;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.fx.VFX;
 import net.spell_engine.api.spell.summon.AttributeScaling;
@@ -188,7 +188,7 @@ public class Spell {
             public float movement_speed = 0.2F;
             public Sound start_sound;
             public Sound sound;
-            public ParticleBatch[] particles = new ParticleBatch[]{};
+            public List<ParticleGroupEffect> particles = List.of();
         }
     }
 
@@ -233,7 +233,7 @@ public class Spell {
         public float meteor_launch_radius_add = 0F;
         /// Particle batches played alongside the spell's release FX (anchored on the caster,
         /// repeated per channel burst when the spell replays release FX). null = none
-        @Nullable public ParticleBatch[] release_particles = null;
+        @Nullable public List<ParticleGroupEffect> release_particles = null;
         @Nullable public Impact.Modifier power_modifier;
         public int channel_ticks_add = 0;
         public float knockback_multiply_base = 0;
@@ -287,8 +287,8 @@ public class Spell {
     public Release release = new Release();
     public static class Release { public Release() { }
         public PlayerAnimation animation;
-        public ParticleBatch[] particles;
-        public ParticleBatch[] particles_scaled_with_ranged;
+        public List<ParticleGroupEffect> particles;
+        public List<ParticleGroupEffect> particles_scaled_with_ranged;
         /// Amount added to the release `sound` pitch, scaled by the charge ratio (CHARGE casts only).
         /// e.g. `0.5` raises the pitch by up to +0.5 at full charge.
         public float pitch_shift = 0F;
@@ -333,7 +333,7 @@ public class Spell {
             public long inner_color_rgba = 0xFFFFFFFFL;
             public float width = 0.1F;
             public float flow = 1;
-            public ParticleBatch[] block_hit_particles = new ParticleBatch[]{};
+            public List<ParticleGroupEffect> block_hit_particles = List.of();
         }
 
         public Area area;
@@ -448,7 +448,7 @@ public class Spell {
                 /// The maximum number of times the impact sound to be played, to avoid overwhelming the audio channel when hitting lots of targets.
                 /// Zero means no limit.
                 public int impact_sound_cap = 3;
-                public ParticleBatch[] particles = new ParticleBatch[]{};
+                public List<ParticleGroupEffect> particles = List.of();
                 public List<ModelEffect> model_fx = List.of();
             }
             public static class HitBox {
@@ -482,7 +482,7 @@ public class Spell {
             public int impact_tick_interval = 5;
             /// The number of times impacts can be performed, zero means unlimited
             public int impact_cap = 0;
-            public ParticleBatch[] impact_particles = new ParticleBatch[]{};
+            public List<ParticleGroupEffect> impact_particles = List.of();
 
             /// Base spawn delay
             public int delay_ticks = 0;
@@ -494,11 +494,11 @@ public class Spell {
             public Cloud.ClientData client_data = new Cloud.ClientData();
             public static class ClientData {
                 public int light_level = 0;
-                public ParticleBatch[] particles = new ParticleBatch[]{};
+                public List<ParticleGroupEffect> particles = List.of();
                 public int particle_spawn_interval = 1;
                 /// Particles to be spawned at the interval of `particle_spawn_interval`
                 /// Useful for ground particles with fixed animation duration
-                public ParticleBatch[] interval_particles = new ParticleBatch[]{};
+                public List<ParticleGroupEffect> interval_particles = List.of();
                 /// Legacy single cloud model. Superseded by `model_fx`.
                 @Deprecated(forRemoval = true)
                 public ProjectileModel model;
@@ -509,7 +509,7 @@ public class Spell {
             public Cloud.Spawn spawn = new Cloud.Spawn();
             public static class Spawn {
                 public Sound sound;
-                public ParticleBatch[] particles = new ParticleBatch[]{};
+                public List<ParticleGroupEffect> particles = List.of();
                 public List<ModelEffect> model_fx = List.of();
             }
             /// FX played once, server-side, as the cloud enters its wind-down (the DESPAWNING phase).
@@ -517,7 +517,7 @@ public class Spell {
             public Cloud.Despawn despawn = new Cloud.Despawn();
             public static class Despawn {
                 public Sound sound;
-                public ParticleBatch[] particles = new ParticleBatch[]{};
+                public List<ParticleGroupEffect> particles = List.of();
                 public List<ModelEffect> model_fx = List.of();
             }
         }
@@ -734,7 +734,7 @@ public class Spell {
                 @Nullable public Fizzle fizzle;
                 public static class Fizzle { public Fizzle() { }
                     @Nullable public Sound sound;
-                    @Nullable public ParticleBatch[] particles;
+                    @Nullable public List<ParticleGroupEffect> particles;
                 }
                 public SpellTarget.Intent intent = SpellTarget.Intent.HELPFUL;
                 public Forward forward;
@@ -745,9 +745,9 @@ public class Spell {
                 public static class BehindTarget { public BehindTarget() { }
                     public float distance = 1.5F;
                 }
-                @Nullable public ParticleBatch[] depart_particles;
+                @Nullable public List<ParticleGroupEffect> depart_particles;
                 @Nullable public List<ModelEffect> depart_model_fx;
-                @Nullable public ParticleBatch[] arrive_particles;
+                @Nullable public List<ParticleGroupEffect> arrive_particles;
                 @Nullable public List<ModelEffect> arrive_model_fx;
             }
 
@@ -915,7 +915,7 @@ public class Spell {
             }
         }
 
-        public ParticleBatch[] particles = new ParticleBatch[]{};
+        public List<ParticleGroupEffect> particles = List.of();
         public Sound sound;
         public List<ModelEffect> model_fx = List.of();
     }
@@ -931,8 +931,8 @@ public class Spell {
         public boolean skip_arrow_damage = false;
         public int pierce = 0;
         public float knockback = 1;
-        public ParticleBatch[] travel_particles = new ParticleBatch[]{};
-        public ParticleBatch[] launch_particles = new ParticleBatch[]{};
+        public List<ParticleGroupEffect> travel_particles = List.of();
+        public List<ParticleGroupEffect> launch_particles = List.of();
         @Nullable public Sound launch_sound;
         /// Legacy single override model. Superseded by `composite_model`.
         @Deprecated(forRemoval = true)
@@ -1147,7 +1147,7 @@ public class Spell {
             public float power_cap = 0;
         }
         public Target.Area area = new Target.Area();
-        public ParticleBatch[] particles = new ParticleBatch[]{};
+        public List<ParticleGroupEffect> particles = List.of();
         @Nullable
         public Sound sound;
         public List<ModelEffect> model_fx = List.of();
@@ -1284,7 +1284,7 @@ public class Spell {
             /// 14 - torch
             /// 10 - soul torch
             public int light_level = 0;
-            public ParticleBatch[] travel_particles = new ParticleBatch[]{};
+            public List<ParticleGroupEffect> travel_particles = List.of();
             /// Legacy single projectile model. Superseded by `composite_model`.
             @Deprecated(forRemoval = true)
             public ProjectileModel model;

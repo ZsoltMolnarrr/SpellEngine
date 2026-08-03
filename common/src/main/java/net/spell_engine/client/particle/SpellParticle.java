@@ -126,13 +126,15 @@ public class SpellParticle extends SpriteBillboardParticle {
         // MARK: Appearance
 
         float darken = 1F - this.random.nextFloat() * MathHelper.clamp(config.color_variance, 0F, 1F);
+        float colorAlpha = 1F;
         if (config.color >= 0) {
             var color = Color.fromRGBA(config.color);
             this.setColor(color.red() * darken, color.green() * darken, color.blue() * darken);
+            colorAlpha = color.alpha();
         } else {
             this.setColor(darken, darken, darken);
         }
-        this.baseOpacity = config.opacity;
+        this.baseOpacity = config.opacity * colorAlpha;
         this.opacityCurve = config.opacity_curve;
         this.alpha = baseOpacity * (opacityCurve != null ? opacityCurve.sample(0F) : 1F);
 
@@ -222,8 +224,12 @@ public class SpellParticle extends SpriteBillboardParticle {
         return glow ? 255 : super.getBrightness(tint);
     }
 
+    /// -90 and not +90: particle sheets render with backface culling, and vanilla's
+    /// corner winding rotated by +90 would leave the quad facing down — invisible
+    /// from above. (V1 `SpellAreaParticle` used +90 with mirrored corner winding,
+    /// which is the same visible face.)
     private static final Rotator GROUND_ROTATOR = (quaternion, camera, tickDelta) ->
-            quaternion.rotationX((float) Math.toRadians(90));
+            quaternion.rotationX((float) Math.toRadians(-90));
 
     private final Rotator velocityRotator = (quaternion, camera, tickDelta) -> {
         var direction = new Vector3f((float) this.velocityX, (float) this.velocityY, (float) this.velocityZ);

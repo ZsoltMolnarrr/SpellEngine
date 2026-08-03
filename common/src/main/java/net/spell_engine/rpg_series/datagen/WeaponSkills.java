@@ -5,7 +5,7 @@ import net.spell_engine.api.datagen.SpellBuilder;
 import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
-import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.ParticleGroupEffect;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.fx.SpellEngineParticles;
@@ -39,22 +39,19 @@ public class WeaponSkills {
         spell.active.cast.animation_pitch = false;
         spell.active.cast.animation_spin = -18F;
         spell.active.cast.sound = Sound.withRandomness(SpellEngineSounds.WHIRLWIND.id(), 0F);
-        spell.active.cast.particles = new ParticleBatch[]{
-                new ParticleBatch(SpellEngineParticles.smoke_medium.id().toString(),
-                        ParticleBatch.Shape.WIDE_PIPE, ParticleBatch.Origin.FEET,
-                        1, 0.1F, 0.2F),
-                new ParticleBatch("campfire_cosy_smoke",
-                        ParticleBatch.Shape.WIDE_PIPE, ParticleBatch.Origin.FEET,
-                        0.1F, 0.01F, 0.1F)
-        };
+        spell.active.cast.particles = List.of(
+                ParticleGroupEffect.of(SpellEngineParticles.smoke_medium.id().toString())
+                        .batch(b -> b.shape(ParticleGroupEffect.Shape.PIPE).widthFactor(2F)
+                                .verticalOrigin(0.1F).speed(0.1F, 0.2F)),
+                ParticleGroupEffect.of("campfire_cosy_smoke")
+                        .batch(b -> b.shape(ParticleGroupEffect.Shape.PIPE).widthFactor(2F)
+                                .verticalOrigin(0.1F).count(0.1F).speed(0.01F, 0.1F)));
 
         spell.release.sound = new Sound(SpellEngineSounds.WEAPON_THROW.id());
-        spell.release.particles = new ParticleBatch[]{
-                new ParticleBatch(SpellEngineParticles.smoke_medium.id().toString(),
-                        ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET,
-                        25, 0.15F, 0.15F)
-                        .preSpawnTravel(1)
-        };
+        spell.release.particles = List.of(
+                ParticleGroupEffect.of(SpellEngineParticles.smoke_medium.id().toString())
+                        .batch(b -> b.shape(ParticleGroupEffect.Shape.CIRCLE).verticalOrigin(0.1F)
+                                .count(25).speed(0.15F).preTravel(1)));
 
         spell.target.type = Spell.Target.Type.AREA;
         spell.target.area = new Spell.Target.Area();
@@ -66,11 +63,10 @@ public class WeaponSkills {
         damage.action.damage = new Spell.Impact.Action.Damage();
         damage.action.damage.spell_power_coefficient = 1.2F;
         damage.action.damage.knockback = 0.8F;
-        damage.particles = new ParticleBatch[]{
-                new ParticleBatch("crit",
-                        ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER,
-                        30, 0.2F, 0.7F)
-        };
+        damage.particles = List.of(
+                ParticleGroupEffect.of("crit")
+                        .batch(b -> b.shape(ParticleGroupEffect.Shape.SPHERE)
+                                .count(30).speed(0.2F, 0.7F)));
         spell.impacts = List.of(damage);
 
         SpellBuilder.Cost.cooldown(spell, 30);
@@ -98,17 +94,13 @@ public class WeaponSkills {
         spell.target.area.distance_dropoff = Spell.Target.Area.DropoffCurve.NONE;
         spell.target.area.vertical_range_multiplier = 0.5F;
 
-        spell.release.particles_scaled_with_ranged = new ParticleBatch[]{
-                new ParticleBatch(SpellEngineParticles.area_swirl.id().toString(),
-                        ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER,
-                        1, 0.0F, 0.F)
-                        .scale(0.8F)
-                        .followEntity(true),
-                new ParticleBatch(SpellEngineParticles.smoke_medium.id().toString(),
-                        ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET,
-                        25, 0.15F, 0.15F)
-                        .preSpawnTravel(1)
-        };
+        spell.release.particles_scaled_with_ranged = List.of(
+                ParticleGroupEffect.of(SpellEngineParticles.area_swirl.id().toString())
+                        .particle(p -> p.scale(0.8F).attachment(ParticleGroupEffect.Attachment.POSITION))
+                        .batch(b -> b.shape(ParticleGroupEffect.Shape.SPHERE)),
+                ParticleGroupEffect.of(SpellEngineParticles.smoke_medium.id().toString())
+                        .batch(b -> b.shape(ParticleGroupEffect.Shape.CIRCLE).verticalOrigin(0.1F)
+                                .count(25).speed(0.15F).preTravel(1)));
 
         spell.deliver.delay = 2;
 
@@ -146,20 +138,16 @@ public class WeaponSkills {
 
         spell.area_impact = new Spell.AreaImpact();
         spell.area_impact.radius = 3F;
-        spell.area_impact.particles = new ParticleBatch[]{
-                new ParticleBatch(SpellEngineParticles.smoke_medium.id().toString(),
-                        ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET,
-                        25, 0.2F, 0.2F)
-                        .preSpawnTravel(1),
-                new ParticleBatch(SpellEngineParticles.smoke_medium.id().toString(),
-                        ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET,
-                        25, 0.3F, 0.3F)
-                        .preSpawnTravel(2),
-                new ParticleBatch(SpellEngineParticles.smoke_medium.id().toString(),
-                        ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET,
-                        25, 0.4F, 0.4F)
-                        .preSpawnTravel(4)
-        };
+        spell.area_impact.particles = List.of(
+                ParticleGroupEffect.of(SpellEngineParticles.smoke_medium.id().toString())
+                        .batch(b -> b.shape(ParticleGroupEffect.Shape.CIRCLE).verticalOrigin(0.1F)
+                                .count(25).speed(0.2F).preTravel(1)),
+                ParticleGroupEffect.of(SpellEngineParticles.smoke_medium.id().toString())
+                        .batch(b -> b.shape(ParticleGroupEffect.Shape.CIRCLE).verticalOrigin(0.1F)
+                                .count(25).speed(0.3F).preTravel(2)),
+                ParticleGroupEffect.of(SpellEngineParticles.smoke_medium.id().toString())
+                        .batch(b -> b.shape(ParticleGroupEffect.Shape.CIRCLE).verticalOrigin(0.1F)
+                                .count(25).speed(0.4F).preTravel(4)));
         spell.area_impact.sound = new Sound(SpellEngineSounds.WEAPON_GROUND_SLAM.id());
 
         SpellBuilder.Cost.cooldown(spell, 12);

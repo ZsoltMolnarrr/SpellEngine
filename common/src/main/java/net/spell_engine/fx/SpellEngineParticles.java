@@ -123,7 +123,7 @@ public class SpellEngineParticles {
             .defaults(p -> p.render(Render.LIT).scale(0.15F, 0.33F).drag(0.96F).collides(true)
                     .color(Color.FROST.toRGBA()).colorVariance(0.65F)));
     public static final Entry snowflake = add(new Entry("snowflake", Texture.vanilla("generic", 8, true))
-            .defaults(p -> p.color(Color.FROST.toRGBA()).opacity(0.75F).gravity(0.225F).drag(1F).collides(true).playbackSpeed(0.4F)));
+            .defaults(p -> p.scale(0.11F, 0.33F).color(Color.FROST.toRGBA()).opacity(0.75F).gravity(0.225F).drag(1F).collides(true).playbackSpeed(0.4F)));
     public static final Entry lightning_arc_A = add(new Entry("lightning_arc_a", Texture.of("elemental/lightning_arc_a", 8))
             .defaults(p -> p.render(Render.LIT).scale(1F)));
     public static final Entry lightning_arc_B = add(new Entry("lightning_arc_b", Texture.of("elemental/lightning_arc_b", 8))
@@ -136,7 +136,7 @@ public class SpellEngineParticles {
     // MARK: - Physical / misc
 
     public static final Entry smoke_medium = add(new Entry("smoke_medium", Texture.of("smoke_medium", 9))
-            .defaults(p -> p.render(Render.LIT).glow(false).colorVariance(0.65F).opacity(0.8F)
+            .defaults(p -> p.render(Render.LIT).glow(false).scale(0.15F, 0.33F).colorVariance(0.65F).opacity(0.8F)
                     .drag(0.8F).gravity(-0.01F).collides(true).playbackSpeed(0.5F)));
     public static final Entry smoke_large = add(new Entry("smoke_large", Texture.vanilla("big_smoke", 12))
             .defaults(p -> p.glow(false).scale(3F).opacity(0.9F).gravity(0F).drag(1F).collides(true).playbackSpeed(0.12F)));
@@ -145,11 +145,11 @@ public class SpellEngineParticles {
     public static final Entry shield_small = add(new Entry("shield_small", Texture.of("shield_small")).lifetime(16)
             .defaults(p -> p.motion(Motion.DECELERATE).scale(0.15F, 0.33F).colorVariance(0.3F)));
     public static final Entry dripping_blood = add(new Entry("dripping_blood", Texture.vanilla("drip_hang"))
-            .defaults(p -> p.glow(false).color(Color.from(0x590000).toRGBA()).gravity(0.8F).collides(true)));
+            .defaults(p -> p.glow(false).scale(0.11F, 0.33F).color(Color.from(0x590000).toRGBA()).gravity(0.8F).collides(true)));
 
     @Deprecated
     public static final Entry weakness_smoke = add(new Entry("weakness_smoke", Texture.of("smoke_medium", 9))
-            .defaults(p -> p.render(Render.LIT).glow(false).color(Color.from(0x993333).toRGBA()).colorVariance(0.65F)
+            .defaults(p -> p.render(Render.LIT).glow(false).scale(0.15F, 0.33F).color(Color.from(0x993333).toRGBA()).colorVariance(0.65F)
                     .opacity(0.7F).drag(0.8F).gravity(0.01F).collides(true).playbackSpeed(0.5F)));
 
     // MARK: - Signs
@@ -220,18 +220,6 @@ public class SpellEngineParticles {
     // motion from the effect payload.
 
     public static class MagicParticles {
-        public enum Shape { SPELL, SPARK, STRIPE, ARCANE, FROST, HOLY, HEAL, SKULL }
-
-        /// V1 compile shim. Motion is part of the effect payload now
-        /// (`particle.motion(...)`), not the particle id.
-        @Deprecated
-        public enum Motion {
-            FLOAT, ASCEND, DECELERATE, BURST;
-            public ParticleGroupEffect.Motion toMotion() {
-                return ParticleGroupEffect.Motion.valueOf(name());
-            }
-        }
-
         private static Entry magic(String name, Texture texture, float opacity, float playbackSpeed) {
             return add(new Entry("magic_" + name, texture).lifetime(16)
                     .defaults(p -> p.motion(ParticleGroupEffect.Motion.FLOAT)
@@ -245,26 +233,6 @@ public class SpellEngineParticles {
         public static final Entry holy = magic("holy", Texture.of("magic/holy"), 0.75F, 1F);
         public static final Entry heal = magic("heal", Texture.of("magic/heal"), 0.75F, 1F);
         public static final Entry skull = magic("skull", Texture.of("magic/skull"), 0.75F, 1F);
-
-        public static Entry get(Shape shape) {
-            return switch (shape) {
-                case SPELL -> spell;
-                case SPARK -> spark;
-                case STRIPE -> stripe;
-                case ARCANE -> arcane;
-                case FROST -> frost;
-                case HOLY -> holy;
-                case HEAL -> heal;
-                case SKULL -> skull;
-            };
-        }
-
-        /// V1 compile shim: the motion argument is ignored — set it on the effect
-        /// payload instead (`particle.motion(...)`).
-        @Deprecated
-        public static Entry get(Shape shape, Motion motion) {
-            return get(shape);
-        }
 
         static void initialize() { }
     }

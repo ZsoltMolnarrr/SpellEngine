@@ -439,7 +439,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         if (behaviour == null || behaviour.spawn_fx == null) return;
         var fx = behaviour.spawn_fx;
         var world = getWorld();
-        if (fx.particles != null && fx.particles.length > 0) {
+        if (fx.particles != null && !fx.particles.isEmpty()) {
             ParticleHelper.sendBatches(this, fx.particles);
         }
         ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.model_fx, this);
@@ -452,7 +452,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         if (behaviour == null || behaviour.despawn_fx == null) return;
         var fx = behaviour.despawn_fx;
         var world = getWorld();
-        if (fx.particles != null && fx.particles.length > 0) {
+        if (fx.particles != null && !fx.particles.isEmpty()) {
             ParticleHelper.sendBatches(this, fx.particles);
         }
         ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.model_fx, this);
@@ -464,7 +464,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         if (clientExistenceParticles == null || !isActive()) return;
         var world = getWorld();
         for (var ep : clientExistenceParticles) {
-            if (ep == null || ep.particles == null || ep.particles.length == 0 || ep.interval_ticks <= 0) {
+            if (ep == null || ep.particles == null || ep.particles.isEmpty() || ep.interval_ticks <= 0) {
                 continue;
             }
             if (((this.age - ep.offset_ticks) % ep.interval_ticks) == 0) {

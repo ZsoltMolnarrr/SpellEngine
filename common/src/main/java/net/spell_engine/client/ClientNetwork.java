@@ -28,7 +28,7 @@ public class ClientNetwork {
             context.responseSender().sendPacket(new Packets.Ack(ServerNetwork.SpellRegistrySyncTask.name));
         });
 
-        ClientPlayNetworking.registerGlobalReceiver(Packets.ParticleBatches.PACKET_ID, (packet, context) -> {
+        ClientPlayNetworking.registerGlobalReceiver(Packets.ParticleEffects.PACKET_ID, (packet, context) -> {
             var client = context.client();
             var instructions = ParticleHelper.convertToInstructions(client.world, packet);
             client.execute(() -> {

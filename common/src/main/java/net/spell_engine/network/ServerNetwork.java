@@ -72,7 +72,7 @@ public class ServerNetwork {
         PayloadTypeRegistry.playS2C().register(Packets.SpellCooldown.PACKET_ID, Packets.SpellCooldown.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.SpellCooldownSync.PACKET_ID, Packets.SpellCooldownSync.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.SpellMessage.PACKET_ID, Packets.SpellMessage.CODEC);
-        PayloadTypeRegistry.playS2C().register(Packets.ParticleBatches.PACKET_ID, Packets.ParticleBatches.CODEC);
+        PayloadTypeRegistry.playS2C().register(Packets.ParticleEffects.PACKET_ID, Packets.ParticleEffects.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.SpellAnimation.PACKET_ID, Packets.SpellAnimation.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.SpellContainerSync.PACKET_ID, Packets.SpellContainerSync.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.AttackAvailable.PACKET_ID, Packets.AttackAvailable.CODEC);

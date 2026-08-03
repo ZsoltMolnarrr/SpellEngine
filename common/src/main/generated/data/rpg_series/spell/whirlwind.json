@@ -23,20 +23,30 @@
       },
       "particles": [
         {
-          "particle_id": "spell_engine:smoke_medium",
-          "origin": "FEET",
-          "shape": "WIDE_PIPE",
-          "count": 1.0,
-          "min_speed": 0.1,
-          "max_speed": 0.2
+          "id": "spell_engine:smoke_medium",
+          "particle": {},
+          "batch": {
+            "count": 1.0,
+            "shape": "PIPE",
+            "anchor": "ENTITY",
+            "vertical_origin": 0.1,
+            "min_speed": 0.1,
+            "max_speed": 0.2,
+            "width_factor": 2.0
+          }
         },
         {
-          "particle_id": "campfire_cosy_smoke",
-          "origin": "FEET",
-          "shape": "WIDE_PIPE",
-          "count": 0.1,
-          "min_speed": 0.01,
-          "max_speed": 0.1
+          "id": "campfire_cosy_smoke",
+          "particle": {},
+          "batch": {
+            "count": 0.1,
+            "shape": "PIPE",
+            "anchor": "ENTITY",
+            "vertical_origin": 0.1,
+            "min_speed": 0.01,
+            "max_speed": 0.1,
+            "width_factor": 2.0
+          }
         }
       ]
     }
@@ -44,13 +54,17 @@
   "release": {
     "particles": [
       {
-        "particle_id": "spell_engine:smoke_medium",
-        "origin": "FEET",
-        "shape": "CIRCLE",
-        "count": 25.0,
-        "min_speed": 0.15,
-        "max_speed": 0.15,
-        "pre_spawn_travel": 1.0
+        "id": "spell_engine:smoke_medium",
+        "particle": {},
+        "batch": {
+          "count": 25.0,
+          "shape": "CIRCLE",
+          "anchor": "ENTITY",
+          "vertical_origin": 0.1,
+          "min_speed": 0.15,
+          "max_speed": 0.15,
+          "pre_travel": 1.0
+        }
       }
     ],
     "sound": {
@@ -74,12 +88,15 @@
       },
       "particles": [
         {
-          "particle_id": "crit",
-          "origin": "CENTER",
-          "shape": "SPHERE",
-          "count": 30.0,
-          "min_speed": 0.2,
-          "max_speed": 0.7
+          "id": "crit",
+          "particle": {},
+          "batch": {
+            "count": 30.0,
+            "shape": "SPHERE",
+            "anchor": "ENTITY",
+            "min_speed": 0.2,
+            "max_speed": 0.7
+          }
         }
       ]
     }

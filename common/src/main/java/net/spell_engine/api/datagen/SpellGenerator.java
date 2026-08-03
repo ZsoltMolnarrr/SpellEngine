@@ -16,7 +16,7 @@ import net.minecraft.util.Util;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
-import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.ParticleGroupEffect;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.api.util.AlwaysGenerate;
@@ -84,7 +84,9 @@ public abstract class SpellGenerator implements DataProvider {
         var gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .registerTypeAdapter(Spell.class, new DefaultValueSkippingSerializer<>(Spell.class))
-                .registerTypeAdapter(ParticleBatch.class, new DefaultValueSkippingSerializer<>(ParticleBatch.class))
+                .registerTypeAdapter(ParticleGroupEffect.class, new DefaultValueSkippingSerializer<>(ParticleGroupEffect.class))
+                .registerTypeAdapter(ParticleGroupEffect.Particle.class, new DefaultValueSkippingSerializer<>(ParticleGroupEffect.Particle.class))
+                .registerTypeAdapter(ParticleGroupEffect.Batch.class, new DefaultValueSkippingSerializer<>(ParticleGroupEffect.Batch.class))
                 .registerTypeAdapter(Sound.class, new DefaultValueSkippingSerializer<>(Sound.class))
                 .registerTypeAdapter(PlayerAnimation.class, new DefaultValueSkippingSerializer<>(PlayerAnimation.class))
                 .registerTypeAdapter(ModelEffect.class, new DefaultValueSkippingSerializer<>(ModelEffect.class))

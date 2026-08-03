@@ -10,9 +10,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.spell_engine.api.spell.fx.ParticleBatch;
 import net.spell_engine.api.spell.fx.ParticleGroupEffect;
-import net.spell_engine.client.util.Color;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.network.Packets;
 import net.spell_engine.utils.TargetHelper;
@@ -24,25 +22,30 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
+/// Spawns and broadcasts [ParticleGroupEffect]s.
+///
+/// The [ParticleGroupEffect.Batch] block is resolved here — placement, count and
+/// initial velocity — while the [ParticleGroupEffect.Particle] block travels
+/// untouched to the client factory. One geometry core serves both the local
+/// spawn path ([#play]) and the network receive path ([#convertToInstructions]).
 public class ParticleHelper {
-    private static Random rng = new Random();
+    private static final Random rng = new Random();
 
-    /// Height multiplier for `Origin.OVER_HEAD`, measured from the entity's feet
-    private static final float OVER_HEAD_HEIGHT_FACTOR = 1.5F;
+    // MARK: - Server → client broadcasting
 
-    public static void sendBatches(Entity trackedEntity, ParticleBatch[] batches) {
-        sendBatches(trackedEntity, batches, true);
+    public static void sendBatches(Entity trackedEntity, List<ParticleGroupEffect> effects) {
+        sendBatches(trackedEntity, effects, true);
     }
 
-    public static void sendBatches(Entity trackedEntity, ParticleBatch[] batches, boolean includeSourceEntity) {
-        sendBatches(trackedEntity, null, batches, 1, PlayerLookup.tracking(trackedEntity), includeSourceEntity);
+    public static void sendBatches(Entity trackedEntity, List<ParticleGroupEffect> effects, boolean includeSourceEntity) {
+        sendBatches(trackedEntity, null, effects, 1, PlayerLookup.tracking(trackedEntity), includeSourceEntity);
     }
 
-    public static void sendBatches(Entity trackedEntity, ParticleBatch[] batches, float countMultiplier, Collection<ServerPlayerEntity> trackers) {
-        sendBatches(trackedEntity, null, batches, countMultiplier, trackers, true);
+    public static void sendBatches(Entity trackedEntity, List<ParticleGroupEffect> effects, float countMultiplier, Collection<ServerPlayerEntity> trackers) {
+        sendBatches(trackedEntity, null, effects, countMultiplier, trackers, true);
     }
 
-    public static void sendBatches(Vec3d location, LivingEntity caster, ParticleBatch[] batches) {
+    public static void sendBatches(Vec3d location, LivingEntity caster, List<ParticleGroupEffect> effects) {
         Collection<ServerPlayerEntity> trackers;
         if (caster instanceof ServerPlayerEntity serverPlayer) {
             var array = new ArrayList<ServerPlayerEntity>(PlayerLookup.tracking(caster));
@@ -51,59 +54,59 @@ public class ParticleHelper {
         } else {
             trackers = PlayerLookup.tracking(caster);
         }
-        sendBatches(null, location, batches, 1, trackers, false);
+        sendBatches(null, location, effects, 1, trackers, false);
     }
 
-    /// Like {@link #sendBatches(Entity, ParticleBatch[])}, but anchors the packet to the entity's
+    /// Like {@link #sendBatches(Entity, List)}, but anchors the packet to the entity's
     /// CURRENT server-side position (COORDINATE source) instead of the entity id. Use for one-shot
     /// FX of entities that may die in the same tick (e.g. a falling projectile's impact burst):
     /// an entity-anchored packet races the source entity's client-side simulation and removal —
     /// the receiving client prefers its local entity position, which for a dying projectile can
     /// be several blocks past the server's impact point.
-    public static void sendBatchesDetached(Entity sourceEntity, ParticleBatch[] batches) {
-        if (batches == null || batches.length == 0) {
+    public static void sendBatchesDetached(Entity sourceEntity, List<ParticleGroupEffect> effects) {
+        if (effects == null || effects.isEmpty()) {
             return;
         }
-        ArrayList<Packets.ParticleBatches.Spawn> spawns = new ArrayList<>();
-        for (var batch : batches) {
+        ArrayList<Packets.ParticleEffects.Spawn> spawns = new ArrayList<>();
+        for (var effect : effects) {
             // Origins and orientation resolved server-side, exactly like the ENTITY source type.
             // The entity id is still included so entity-bound particle resolution keeps working
             // when the entity is present.
-            spawns.add(new Packets.ParticleBatches.Spawn(
+            spawns.add(new Packets.ParticleEffects.Spawn(
                     sourceEntity.getId(),
                     sourceEntity.getYaw(),
                     sourceEntity.getPitch(),
-                    origin(sourceEntity, batch.origin), batch));
+                    origin(sourceEntity, effect.batch), effect));
         }
-        var packet = new Packets.ParticleBatches(Packets.ParticleBatches.SourceType.COORDINATE, 1, spawns);
+        var packet = new Packets.ParticleEffects(Packets.ParticleEffects.SourceType.COORDINATE, 1, spawns);
         if (sourceEntity instanceof ServerPlayerEntity serverPlayer) {
-            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleBatches.ID)) {
+            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleEffects.ID)) {
                 ServerPlayNetworking.send(serverPlayer, packet);
             }
         }
         PlayerLookup.tracking(sourceEntity).forEach(serverPlayer -> {
-            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleBatches.ID)) {
+            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleEffects.ID)) {
                 ServerPlayNetworking.send(serverPlayer, packet);
             }
         });
     }
 
-    public static void sendBatches(@Nullable Entity trackedEntity, @Nullable Vec3d location, ParticleBatch[] batches, float countMultiplier, Collection<ServerPlayerEntity> trackers, boolean includeSourceEntity) {
-        if (batches == null || batches.length == 0) {
+    public static void sendBatches(@Nullable Entity trackedEntity, @Nullable Vec3d location, List<ParticleGroupEffect> effects, float countMultiplier, Collection<ServerPlayerEntity> trackers, boolean includeSourceEntity) {
+        if (effects == null || effects.isEmpty()) {
             return;
         }
         int sourceEntityId = 0;
-        var sourceType = Packets.ParticleBatches.SourceType.COORDINATE;
+        var sourceType = Packets.ParticleEffects.SourceType.COORDINATE;
         if (trackedEntity != null) {
             sourceEntityId = trackedEntity.getId();
-            sourceType = Packets.ParticleBatches.SourceType.ENTITY;
+            sourceType = Packets.ParticleEffects.SourceType.ENTITY;
         }
-        ArrayList<Packets.ParticleBatches.Spawn> spawns = new ArrayList<>();
-        for(var batch : batches) {
+        ArrayList<Packets.ParticleEffects.Spawn> spawns = new ArrayList<>();
+        for (var effect : effects) {
             Vec3d sourceLocation = Vec3d.ZERO;
             switch (sourceType) {
                 case ENTITY -> {
-                    sourceLocation = origin(trackedEntity, batch.origin);
+                    sourceLocation = origin(trackedEntity, effect.batch);
                 }
                 case COORDINATE -> {
                     if (location != null) {
@@ -117,146 +120,83 @@ public class ParticleHelper {
                 yaw = trackedEntity.getYaw();
                 pitch = trackedEntity.getPitch();
             }
-            spawns.add(new Packets.ParticleBatches.Spawn(
+            spawns.add(new Packets.ParticleEffects.Spawn(
                     includeSourceEntity ? sourceEntityId : 0,
                     yaw,
                     pitch,
-                    sourceLocation, batch));
+                    sourceLocation, effect));
         }
-        var packet = new Packets.ParticleBatches(sourceType, countMultiplier, spawns);
+        var packet = new Packets.ParticleEffects(sourceType, countMultiplier, spawns);
         if (trackedEntity instanceof ServerPlayerEntity serverPlayer) {
-            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleBatches.ID)) {
+            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleEffects.ID)) {
                 ServerPlayNetworking.send(serverPlayer, packet);
             }
         }
         trackers.forEach(serverPlayer -> {
-            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleBatches.ID)) {
+            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleEffects.ID)) {
                 ServerPlayNetworking.send(serverPlayer, packet);
             }
         });
     }
 
-    public static void play(World world, Entity source, ParticleBatch[] batches) {
-        if (batches == null) {
+    // MARK: - Local (client-side) spawning
+
+    public static void play(World world, Entity source, List<ParticleGroupEffect> effects) {
+        if (effects == null) {
             return;
         }
-        for (var batch: batches) {
-            play(world, source, 0, 0, batch);
+        for (var effect : effects) {
+            play(world, source, 0, 0, effect);
         }
     }
 
-    public static void play(World world, Entity source, ParticleBatch batch) {
-        play(world, source, 0, 0, batch);
+    public static void play(World world, Entity source, ParticleGroupEffect effect) {
+        play(world, source, 0, 0, effect);
     }
 
-    public static void play(World world, Entity entity, float yaw, float pitch, ParticleBatch batch) {
-        play(world, entity.age, origin(entity, batch.origin), entity.getWidth(), yaw, pitch, batch, entity);
+    public static void play(World world, Entity entity, float yaw, float pitch, ParticleGroupEffect effect) {
+        play(world, entity.age, origin(entity, effect.batch), entity.getWidth(), yaw, pitch, effect, entity);
     }
 
-    /// V1 → V2 bridge: maps the legacy batch's appearance fields onto a
-    /// [ParticleGroupEffect.Particle] payload for the generic factory.
-    /// Removed together with [ParticleBatch] when the V2 spawn pipeline lands.
-    private static ParticleEffect resolveParticleType(ParticleBatch batch, @Nullable Entity sourceEntity) {
-        var id = Identifier.of(batch.particle_id);
-        var particle = (ParticleEffect) Registries.PARTICLE_TYPE.get(id);
-
-        if (particle instanceof ParticleGroupEffectType groupType) {
-            ParticleGroupEffect.Particle payload = null;
-            if (batch.color_rgba >= 0 || batch.scale != 1F || batch.max_age != 1F || batch.follow_entity) {
-                payload = new ParticleGroupEffect.Particle();
-                if (batch.color_rgba >= 0) {
-                    payload.color = batch.color_rgba;
-                    // V1 applied the color's alpha component as an alpha multiplier
-                    payload.opacity = Color.fromRGBA(batch.color_rgba).alpha();
-                }
-                if (batch.scale != 1F) {
-                    payload.scale = batch.scale;
-                }
-                if (batch.max_age != 1F && batch.max_age > 0F) {
-                    // V1 max_age was a lifetime multiplier; V2 playback speed is its inverse
-                    payload.playback_speed = 1F / batch.max_age;
-                }
-                if (batch.follow_entity) {
-                    payload.attachment = ParticleGroupEffect.Attachment.POSITION;
-                }
-            }
-            particle = groupType.spawnable(payload, sourceEntity);
-        }
-        return particle;
-    }
-
-    public static void play(World world, long time, Vec3d origin, float width, float yaw, float pitch, ParticleBatch batch, @Nullable Entity sourceEntity) {
+    public static void play(World world, long time, Vec3d origin, float width, float yaw, float pitch, ParticleGroupEffect effect, @Nullable Entity sourceEntity) {
         try {
-            var particle = resolveParticleType(batch, sourceEntity);
-
-            var count = batch.count;
-            if (batch.count < 1) {
-                count = rng.nextFloat() < batch.count ? 1 : 0;
-            }
-            for(int i = 0; i < count; ++i) {
-                var direction = direction(batch, time, yaw, pitch);
-                var particleSpecificOrigin = origin.add(offset(width, batch.extent, batch.shape, direction.normalize(), batch.rotation, yaw, pitch));
-                if (batch.pre_spawn_travel != 0) {
-                    particleSpecificOrigin = particleSpecificOrigin.add(direction.multiply(batch.pre_spawn_travel));
-                }
-                if (batch.invert) {
-                    direction = direction.negate();
-                }
-                world.addParticle(particle, true,
-                        particleSpecificOrigin.x, particleSpecificOrigin.y, particleSpecificOrigin.z,
-                        direction.x, direction.y, direction.z);
+            var instructions = new ArrayList<SpawnInstruction>();
+            emit(time, origin, width, yaw, pitch, effect, 1F, sourceEntity, instructions);
+            for (var instruction : instructions) {
+                instruction.perform(world);
             }
         } catch (Exception e) {
-            System.err.println("Failed to play particle batch - " + e.getMessage());
+            System.err.println("Failed to play particle effect - " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    public static List<SpawnInstruction> convertToInstructions(World world, Packets.ParticleBatches packet) {
+    // MARK: - Network receive path
+
+    public static List<SpawnInstruction> convertToInstructions(World world, Packets.ParticleEffects packet) {
         var instructions = new ArrayList<SpawnInstruction>();
         var sourceType = packet.sourceType();
-        for(var spawn: packet.spawns()) {
-            float yaw = spawn.yaw();
-            float pitch = spawn.pitch();
-            var batch = spawn.batch();
+        for (var spawn : packet.spawns()) {
+            var effect = spawn.effect();
             var origin = Vec3d.ZERO;
             float width = 0.5F;
             Entity sourceEntity = world.getEntityById(spawn.sourceEntityId());
             switch (sourceType) {
                 case ENTITY -> {
                     origin = sourceEntity != null
-                            ? origin(sourceEntity, batch.origin)
-                            : origin(world, spawn.sourceLocation(), 2, batch.origin);
+                            ? origin(sourceEntity, effect.batch)
+                            : origin(world, spawn.sourceLocation(), 2, effect.batch);
                 }
                 case COORDINATE -> {
                     origin = spawn.sourceLocation();
                 }
             }
-
-            var particle = resolveParticleType(batch, sourceEntity);
-
-            var count = batch.count;
-            if (batch.count < 1) {
-                count = rng.nextFloat() < batch.count ? 1 : 0;
-            }
-            for(int i = 0; i < count; ++i) {
-                var direction = direction(batch, world.getTime(), yaw, pitch);
-                var particleSpecificOrigin = origin.add(offset(width, batch.extent, batch.shape, direction.normalize(), batch.rotation, yaw, pitch));
-                if (batch.pre_spawn_travel != 0) {
-                    particleSpecificOrigin = particleSpecificOrigin.add(direction.multiply(batch.pre_spawn_travel));
-                }
-                if (batch.invert) {
-                    direction = direction.negate();
-                }
-                instructions.add(new SpawnInstruction(particle, sourceEntity,
-                        particleSpecificOrigin.x, particleSpecificOrigin.y, particleSpecificOrigin.z,
-                        direction.x, direction.y, direction.z));
-            }
+            emit(world.getTime(), origin, width, spawn.yaw(), spawn.pitch(), effect, packet.countMultiplier(), sourceEntity, instructions);
         }
         return instructions;
     }
 
-    public record SpawnInstruction(ParticleEffect particle, @Nullable Entity sourceEntity,
+    public record SpawnInstruction(ParticleEffect particle,
                                    double positionX, double positionY, double positionZ,
                                    double velocityX, double velocityY, double velocityZ) {
         public void perform(World world) {
@@ -270,13 +210,46 @@ public class ParticleHelper {
         }
     }
 
-    private static Vec3d origin(Entity entity, ParticleBatch.Origin origin) {
-        switch (origin) {
-            case FEET -> {
-                return entity.getPos().add(0, entity.getHeight() * 0.1F, 0);
+    // MARK: - Geometry core
+
+    /// Resolves one effect's batch into spawn instructions.
+    /// Shared by the local and the network path.
+    private static void emit(long time, Vec3d origin, float width, float yaw, float pitch,
+                             ParticleGroupEffect effect, float countMultiplier,
+                             @Nullable Entity sourceEntity, List<SpawnInstruction> output) {
+        var registryEntry = Registries.PARTICLE_TYPE.get(Identifier.of(effect.id));
+        if (registryEntry == null) {
+            return;
+        }
+        var particle = (ParticleEffect) registryEntry;
+        if (particle instanceof ParticleGroupEffectType groupType) {
+            particle = groupType.spawnable(effect.particle, sourceEntity);
+        }
+
+        var batch = effect.batch;
+        var count = batch.count * countMultiplier;
+        if (count < 1) {
+            count = rng.nextFloat() < count ? 1 : 0;
+        }
+        for (int i = 0; i < count; ++i) {
+            var direction = direction(batch, time, yaw, pitch);
+            var particleSpecificOrigin = origin.add(offset(width, batch, direction.normalize(), yaw, pitch));
+            if (batch.pre_travel != 0) {
+                particleSpecificOrigin = particleSpecificOrigin.add(direction.multiply(batch.pre_travel));
             }
-            case CENTER -> {
-                return entity.getPos().add(0, entity.getHeight() * 0.5F, 0);
+            if (batch.invert) {
+                direction = direction.negate();
+            }
+            output.add(new SpawnInstruction(particle,
+                    particleSpecificOrigin.x, particleSpecificOrigin.y, particleSpecificOrigin.z,
+                    direction.x, direction.y, direction.z));
+        }
+    }
+
+    private static Vec3d origin(Entity entity, ParticleGroupEffect.Batch batch) {
+        switch (batch.anchor) {
+            case ENTITY -> {
+                return entity.getPos().add(0, entity.getHeight() * batch.vertical_origin, 0);
             }
             case LAUNCH_POINT -> {
                 if (entity instanceof LivingEntity livingEntity) {
@@ -293,23 +266,14 @@ public class ParticleHelper {
                     return entity.getPos().add(0, 0.1F, 0);
                 }
             }
-            case OVER_HEAD -> {
-                // `getHeight()` already carries the entity's scale: `LivingEntity` dimensions
-                // are `getBaseDimensions(pose).scaled(getScale())`
-                return entity.getPos().add(0, entity.getHeight() * OVER_HEAD_HEIGHT_FACTOR, 0);
-            }
         }
-        assert true;
         return entity.getPos();
     }
 
-    private static Vec3d origin(World world, Vec3d entityPos, float entityHeight, ParticleBatch.Origin origin) {
-        switch (origin) {
-            case FEET -> {
-                return entityPos.add(0, entityHeight * 0.1F, 0);
-            }
-            case CENTER -> {
-                return entityPos.add(0, entityHeight * 0.5F, 0);
+    private static Vec3d origin(World world, Vec3d entityPos, float entityHeight, ParticleGroupEffect.Batch batch) {
+        switch (batch.anchor) {
+            case ENTITY -> {
+                return entityPos.add(0, entityHeight * batch.vertical_origin, 0);
             }
             case LAUNCH_POINT -> {
                 return entityPos.add(0, entityHeight * 0.75F, 0);
@@ -322,58 +286,46 @@ public class ParticleHelper {
                     return entityPos.add(0, 0.1F, 0);
                 }
             }
-            case OVER_HEAD -> {
-                return entityPos.add(0, entityHeight * OVER_HEAD_HEIGHT_FACTOR, 0);
-            }
         }
-        assert true;
         return entityPos;
     }
 
-    private static Vec3d offset(float width, float extent, ParticleBatch.Shape shape, Vec3d direction,
-                                ParticleBatch.Rotation rotation, float yaw, float pitch) {
+    private static Vec3d offset(float width, ParticleGroupEffect.Batch batch, Vec3d direction, float yaw, float pitch) {
         var offset = Vec3d.ZERO;
-        if (extent >= ParticleBatch.EXTENT_TRESHOLD) {
-            width = 0;
-            extent -= ParticleBatch.EXTENT_TRESHOLD;
-        }
-        switch (shape) {
+        // `width_factor` scales the entity's contribution; `0` makes `extent` absolute
+        // (replaces the V1 EXTENT_TRESHOLD sentinel), `2` reproduces V1 WIDE_PIPE.
+        var radius = width * 0.5F * batch.width_factor;
+        switch (batch.shape) {
             case LINE_VERTICAL, CIRCLE, CONE, SPHERE -> {
-                if (extent > 0) {
-                    offset = direction.multiply(extent);
+                if (batch.extent > 0) {
+                    offset = direction.multiply(batch.extent);
                 }
                 return offset;
             }
             case PIPE -> {
-                var size = width * 0.5F + extent;
+                var size = radius + batch.extent;
                 var angle = (float) Math.toRadians(rng.nextFloat() * 360F);
-                offset = new Vec3d(size,0,0).rotateY(angle);
-            }
-            case WIDE_PIPE -> {
-                var size = width + extent;
-                var angle = (float) Math.toRadians(rng.nextFloat() * 360F);
-                offset = new Vec3d(size,0,0).rotateY(angle);
+                offset = new Vec3d(size, 0, 0).rotateY(angle);
             }
             case PILLAR -> {
-                var x = (width * 0.5F + extent) * rng.nextFloat();
+                var x = (radius + batch.extent) * rng.nextFloat();
                 var angle = (float) Math.toRadians(rng.nextFloat() * 360F);
-                offset = new Vec3d(x,0,0).rotateY(angle);
+                offset = new Vec3d(x, 0, 0).rotateY(angle);
+            }
+            case LINE -> {
+                return offset;
             }
         }
 
-        if (rotation != null) {
-            switch (rotation) {
-                case LOOK -> {
-                    offset = offset
-                            .rotateX((float) Math.toRadians(-1 * (pitch + 90)))
-                            .rotateY((float) Math.toRadians(-yaw));
-                }
-            }
+        if (batch.alignment == ParticleGroupEffect.Alignment.LOOK) {
+            offset = offset
+                    .rotateX((float) Math.toRadians(-1 * (pitch + 90)))
+                    .rotateY((float) Math.toRadians(-yaw));
         }
         return offset;
     }
 
-    private static Vec3d direction(ParticleBatch batch, long time, float yaw, float pitch) {
+    private static Vec3d direction(ParticleGroupEffect.Batch batch, long time, float yaw, float pitch) {
         var direction = Vec3d.ZERO;
 
         float rotateAroundX = 0;
@@ -392,7 +344,7 @@ public class ParticleHelper {
                 direction = new Vec3d(0, 0, randomInRange(batch.min_speed, batch.max_speed))
                         .rotateY((float) Math.toRadians(rng.nextFloat() * 360F));
             }
-            case LINE_VERTICAL, PILLAR, PIPE, WIDE_PIPE -> {
+            case LINE_VERTICAL, PILLAR, PIPE -> {
                 direction = new Vec3d(0, randomInRange(batch.min_speed, batch.max_speed), 0);
             }
             case SPHERE -> {
@@ -401,31 +353,27 @@ public class ParticleHelper {
                         .rotateY((float) Math.toRadians(rng.nextFloat() * 360F));
             }
         }
-        if (batch.rotation != null) {
-            switch (batch.rotation) {
-                case LOOK -> {
-                    // Find actual rotation
-                    float pRot = -pitch;
-                    float yRot = yaw * (-1F);
+        if (batch.alignment == ParticleGroupEffect.Alignment.LOOK) {
+            // Find actual rotation
+            float pRot = -pitch;
+            float yRot = yaw * (-1F);
 
-                    direction = direction
-                            .rotateX((float) Math.toRadians(pRot - 90 + rotateAroundX))
-                            .rotateY((float) Math.toRadians(yRot + rotateAroundY));
+            direction = direction
+                    .rotateX((float) Math.toRadians(pRot - 90 + rotateAroundX))
+                    .rotateY((float) Math.toRadians(yRot + rotateAroundY));
 
-                    if (batch.roll > 0) {
-                        var axis = VectorHelper.axisFromRotation(yRot, pRot).negate();
-                        var diff = ((time * batch.roll) % 360) + batch.roll_offset;
-                        direction = VectorHelper.rotateAround(direction, axis, diff);
-                    }
-                }
+            if (batch.roll_per_tick != 0) {
+                var axis = VectorHelper.axisFromRotation(yRot, pRot).negate();
+                var diff = ((time * batch.roll_per_tick) % 360) + batch.roll_offset;
+                direction = VectorHelper.rotateAround(direction, axis, diff);
             }
         } else {
             direction = direction
                     .rotateX((float) Math.toRadians(rotateAroundX))
                     .rotateY((float) Math.toRadians(rotateAroundY));
 
-            if (batch.roll > 0) {
-                var diff = ((time * batch.roll) % 360) + batch.roll_offset;
+            if (batch.roll_per_tick != 0) {
+                var diff = ((time * batch.roll_per_tick) % 360) + batch.roll_offset;
                 direction = direction.rotateY((float) Math.toRadians(diff));
             }
         }
@@ -436,14 +384,5 @@ public class ParticleHelper {
     private static float randomInRange(float min, float max) {
         float range = max - min;
         return min + (range * rng.nextFloat());
-    }
-
-    private static float randomSignedInRange(float min, float max) {
-        var rand = rng.nextFloat();
-        var range = max - min;
-        float sign = (rand > 0.5F) ? 1 : (-1);
-        var base = sign * min;
-        var varied = sign * range * rand;
-        return base + varied;
     }
 }

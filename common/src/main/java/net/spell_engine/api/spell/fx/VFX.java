@@ -10,6 +10,6 @@ import java.util.List;
 /// entities — unlike continuous effects, which are typically spawned client-side to avoid per-tick
 /// network traffic.
 public class VFX {
-    public ParticleBatch[] particles = new ParticleBatch[]{};
+    public List<ParticleGroupEffect> particles = List.of();
     public List<ModelEffect> model_fx = List.of();
 }

@@ -10,7 +10,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.container.SpellContainer;
-import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.ParticleGroupEffect;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.internals.SpellCooldownManager;
 import net.spell_engine.internals.casting.SpellCast;
@@ -195,21 +195,27 @@ public class Packets {
         }
     }
 
-    public record ParticleBatches(SourceType sourceType, float countMultiplier, List<Spawn> spawns) implements CustomPayload {
+    public record ParticleEffects(SourceType sourceType, float countMultiplier, List<Spawn> spawns) implements CustomPayload {
         public static Identifier ID = Identifier.of(SpellEngineMod.ID, "particle_effects");
-        public static final CustomPayload.Id<ParticleBatches> PACKET_ID = new CustomPayload.Id<>(ID);
-        public static final PacketCodec<RegistryByteBuf, ParticleBatches> CODEC = PacketCodec.of(ParticleBatches::write, ParticleBatches::read);
+        public static final CustomPayload.Id<ParticleEffects> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<RegistryByteBuf, ParticleEffects> CODEC = PacketCodec.of(ParticleEffects::write, ParticleEffects::read);
         @Override
         public Id<? extends CustomPayload> getId() {
             return PACKET_ID;
         }
 
         public enum SourceType { ENTITY, COORDINATE }
-        public record Spawn(int sourceEntityId, float yaw, float pitch, Vec3d sourceLocation, ParticleBatch batch) { }
+        public record Spawn(int sourceEntityId, float yaw, float pitch, Vec3d sourceLocation, ParticleGroupEffect effect) { }
 
+        // The effect ships as GSON (same as `SpellContainerSync`): self-describing named
+        // fields, so enums are no longer serialized by ordinal and none of them is
+        // append-only. `countMultiplier` is a real packet field applied at spawn time,
+        // instead of being baked into the counts at write time.
+        private static final Gson gson = new Gson();
 
         public void write(RegistryByteBuf buffer) {
             buffer.writeInt(sourceType.ordinal());
+            buffer.writeFloat(countMultiplier);
             buffer.writeInt(spawns.size());
             for (var spawn: spawns) {
                 buffer.writeInt(spawn.sourceEntityId);
@@ -218,56 +224,13 @@ public class Packets {
                 buffer.writeDouble(spawn.sourceLocation.x);
                 buffer.writeDouble(spawn.sourceLocation.y);
                 buffer.writeDouble(spawn.sourceLocation.z);
-                write(spawn.batch, buffer, countMultiplier);
+                buffer.writeString(gson.toJson(spawn.effect));
             }
         }
 
-        private static void write(ParticleBatch batch, PacketByteBuf buffer, float countMultiplier) {
-            buffer.writeString(batch.particle_id);
-            buffer.writeInt(batch.shape.ordinal());
-            buffer.writeInt(batch.origin.ordinal());
-            buffer.writeInt(batch.rotation != null ? batch.rotation.ordinal() : -1);
-            buffer.writeFloat(batch.roll);
-            buffer.writeFloat(batch.roll_offset);
-            buffer.writeFloat(batch.count * countMultiplier);
-            buffer.writeFloat(batch.min_speed);
-            buffer.writeFloat(batch.max_speed);
-            buffer.writeFloat(batch.angle);
-            buffer.writeFloat(batch.extent);
-            buffer.writeFloat(batch.pre_spawn_travel);
-            buffer.writeBoolean(batch.invert);
-
-            buffer.writeLong(batch.color_rgba);
-            buffer.writeFloat(batch.scale);
-            buffer.writeBoolean(batch.follow_entity);
-            buffer.writeFloat(batch.max_age);
-        }
-
-        private static ParticleBatch readBatch(RegistryByteBuf buffer) {
-            return new ParticleBatch(
-                    buffer.readString(),
-                    ParticleBatch.Shape.values()[buffer.readInt()],
-                    ParticleBatch.Origin.values()[buffer.readInt()],
-                    ParticleBatch.Rotation.from(buffer.readInt()),
-                    buffer.readFloat(),
-                    buffer.readFloat(),
-                    buffer.readFloat(),
-                    buffer.readFloat(),
-                    buffer.readFloat(),
-                    buffer.readFloat(),
-                    buffer.readFloat(),
-                    buffer.readFloat(),
-                    buffer.readBoolean(),
-
-                    buffer.readLong(),
-                    buffer.readFloat(),
-                    buffer.readBoolean(),
-                    buffer.readFloat()
-            );
-        }
-
-        public static ParticleBatches read(RegistryByteBuf buffer) {
+        public static ParticleEffects read(RegistryByteBuf buffer) {
             var sourceType = SourceType.values()[buffer.readInt()];
+            var countMultiplier = buffer.readFloat();
             var spawnCount = buffer.readInt();
             var spawns = new ArrayList<Spawn>();
             for (int i = 0; i < spawnCount; ++i) {
@@ -276,10 +239,10 @@ public class Packets {
                         buffer.readFloat(),
                         buffer.readFloat(),
                         new Vec3d(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()),
-                        readBatch(buffer)
+                        gson.fromJson(buffer.readString(), ParticleGroupEffect.class)
                 ));
             }
-            return new ParticleBatches(sourceType, 1, spawns);
+            return new ParticleEffects(sourceType, countMultiplier, spawns);
         }
     }
 

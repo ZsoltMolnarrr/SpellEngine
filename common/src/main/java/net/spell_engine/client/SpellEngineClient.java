@@ -18,7 +18,7 @@ import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.api.item.set.EquipmentSetTooltip;
 import net.spell_engine.api.render.BuffParticleSpawner;
 import net.spell_engine.api.render.StunParticleSpawner;
-import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.ParticleGroupEffect;
 import net.spell_engine.client.compatibility.CompatFeatures;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.particle.*;
@@ -96,28 +96,24 @@ public class SpellEngineClient {
                 SpellEngineEffects.STUN.effect,
                 new StunParticleSpawner()
         );
-        final var magicSnareParticles = new ParticleBatch(
-                SpellEngineParticles.MagicParticles.get(
-                        SpellEngineParticles.MagicParticles.Shape.SPARK,
-                        SpellEngineParticles.MagicParticles.Motion.DECELERATE).id().toString(),
-                ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET,
-                2F, 0.15F, 0.15F)
-                .preSpawnTravel(5)
-                .invert();
+        final var magicSnareParticles = ParticleGroupEffect
+                .of(SpellEngineParticles.MagicParticles.spark.id().toString())
+                .particle(p -> p.motion(ParticleGroupEffect.Motion.DECELERATE)
+                        .color(Color.PHYSICAL_BLUE.toRGBA()))
+                .batch(b -> b.shape(ParticleGroupEffect.Shape.CIRCLE).verticalOrigin(0.1F)
+                        .count(2F).speed(0.15F).preTravel(5).invert(true));
         CustomParticleStatusEffect.register(
                 SpellEngineEffects.IMMOBILIZE.effect,
-                new BuffParticleSpawner(new ParticleBatch[]{ magicSnareParticles
-                        .copy().color(Color.PHYSICAL_BLUE.toRGBA()) })
+                new BuffParticleSpawner(magicSnareParticles)
         );
 
         // Blood dripping off a bleeding entity; count scales with stacks, dripping a few times a second.
-        final var bleedParticles = new ParticleBatch(
-                SpellEngineParticles.dripping_blood.id().toString(),
-                ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER,
-                1F, 0.1F, 0.3F);
+        final var bleedParticles = ParticleGroupEffect
+                .of(SpellEngineParticles.dripping_blood.id().toString())
+                .batch(b -> b.shape(ParticleGroupEffect.Shape.SPHERE).speed(0.1F, 0.3F));
         CustomParticleStatusEffect.register(
                 SpellEngineEffects.BLEED.effect,
-                new BuffParticleSpawner(new ParticleBatch[]{ bleedParticles })
+                new BuffParticleSpawner(bleedParticles)
                         .withFrequency(5)
         );
     }

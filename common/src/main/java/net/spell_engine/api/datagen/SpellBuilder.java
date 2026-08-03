@@ -11,7 +11,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.target.SpellTarget;
 import org.joml.Vector3f;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
-import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.ParticleGroupEffect;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.client.util.Color;
@@ -124,7 +124,7 @@ public class SpellBuilder {
         }
 
         public static void visuals(Spell spell,
-                                       @Nullable String playerAnimation, @Nullable ParticleBatch[] particles, @Nullable Sound sound) {
+                                       @Nullable String playerAnimation, @Nullable List<ParticleGroupEffect> particles, @Nullable Sound sound) {
             if (spell.active.cast == null) {
                 spell.active.cast = new Spell.Active.Cast();
             }
@@ -139,7 +139,7 @@ public class SpellBuilder {
 
     public static class Release {
         public static void visuals(Spell spell,
-                                   @Nullable String playerAnimation, @Nullable ParticleBatch[] particles, @Nullable Sound sound) {
+                                   @Nullable String playerAnimation, @Nullable List<ParticleGroupEffect> particles, @Nullable Sound sound) {
             spell.release = new Spell.Release();
             if (playerAnimation != null) {
                 spell.release.animation = PlayerAnimation.of(playerAnimation);
@@ -218,7 +218,7 @@ public class SpellBuilder {
             return placement;
         }
 
-        public static Spell.Delivery.Cloud cloud(float timeToLive, float radius, Identifier spawnSound, int light_level, ParticleBatch[] presenceParticles) {
+        public static Spell.Delivery.Cloud cloud(float timeToLive, float radius, Identifier spawnSound, int light_level, List<ParticleGroupEffect> presenceParticles) {
             var cloud = new Spell.Delivery.Cloud();
             cloud.volume = new Spell.AreaImpact();
             cloud.volume.area.vertical_range_multiplier = 0.3F;
@@ -1082,48 +1082,43 @@ public class SpellBuilder {
     }
 
     public static class Particles {
-        public static ParticleBatch popUpSign(Identifier signId, Color color) {
-            return new ParticleBatch(signId.toString(),
-                    ParticleBatch.Shape.LINE_VERTICAL, ParticleBatch.Origin.CENTER,
-                    1, 0.8F, 0.8F)
-                    .scale(0.8F)
-                    .color(color.toRGBA())
-                    .followEntity(true);
+        public static ParticleGroupEffect popUpSign(Identifier signId, Color color) {
+            return ParticleGroupEffect.of(signId.toString())
+                    .particle(p -> p.scale(0.8F).color(color.toRGBA())
+                            .attachment(ParticleGroupEffect.Attachment.POSITION))
+                    .batch(b -> b.shape(ParticleGroupEffect.Shape.LINE_VERTICAL).speed(0.8F));
         }
 
-        public static ParticleBatch area(Identifier id) {
-            return new ParticleBatch(id.toString(),
-                    ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.GROUND,
-                    1, 0, 0);
+        public static ParticleGroupEffect area(Identifier id) {
+            return ParticleGroupEffect.of(id.toString())
+                    .batch(b -> b.shape(ParticleGroupEffect.Shape.SPHERE)
+                            .anchor(ParticleGroupEffect.Anchor.GROUND));
         }
 
-        public static ParticleBatch aura(Identifier id) {
-            return new ParticleBatch(
-                    id.toString(),
-                    ParticleBatch.Shape.LINE, ParticleBatch.Origin.CENTER,
-                    1, 0, 0)
-                    .followEntity(true);
+        public static ParticleGroupEffect aura(Identifier id) {
+            // V1 aura_* entries were camera-facing twins of the area entries;
+            // the facing override is what makes an area texture an aura now
+            return ParticleGroupEffect.of(id.toString())
+                    .particle(p -> p.facing(ParticleGroupEffect.Facing.CAMERA)
+                            .attachment(ParticleGroupEffect.Attachment.POSITION))
+                    .batch(b -> b.shape(ParticleGroupEffect.Shape.LINE));
         }
 
-        public static ParticleBatch[] zoneMagic(long color, Identifier contour, List<Identifier> fillers, float multiplier) {
-            var particles = new ArrayList<ParticleBatch>();
-            particles.add(
-                    new ParticleBatch(
-                            contour.toString(),
-                            ParticleBatch.Shape.PIPE, ParticleBatch.Origin.GROUND,
-                            3 * multiplier, 0.05F, 0.15F)
-                            .color(color)
-            );
+        public static List<ParticleGroupEffect> zoneMagic(long color, Identifier contour, List<Identifier> fillers, float multiplier) {
+            var particles = new ArrayList<ParticleGroupEffect>();
+            particles.add(ParticleGroupEffect.of(contour.toString())
+                    .particle(p -> p.color(color))
+                    .batch(b -> b.shape(ParticleGroupEffect.Shape.PIPE)
+                            .anchor(ParticleGroupEffect.Anchor.GROUND)
+                            .count(3 * multiplier).speed(0.05F, 0.15F)));
             for (var filler : fillers) {
-                particles.add(
-                        new ParticleBatch(
-                                filler.toString(),
-                                ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.GROUND,
-                                3 * multiplier, 0.05F, 0.1F)
-                                .color(color)
-                );
+                particles.add(ParticleGroupEffect.of(filler.toString())
+                        .particle(p -> p.color(color))
+                        .batch(b -> b.shape(ParticleGroupEffect.Shape.PILLAR)
+                                .anchor(ParticleGroupEffect.Anchor.GROUND)
+                                .count(3 * multiplier).speed(0.05F, 0.1F)));
             }
-            return particles.toArray(new ParticleBatch[0]);
+            return particles;
         }
     }
 
@@ -1204,20 +1199,15 @@ public class SpellBuilder {
             cloud.spawn.sound = new Sound(SpellEngineSounds.GENERIC_FIRE_IGNITE.id().toString());
             cloud.client_data = new Spell.Delivery.Cloud.ClientData();
             cloud.client_data.light_level = 15;
-            cloud.client_data.particles = new ParticleBatch[] {
-                    new ParticleBatch(SpellEngineParticles.flame_ground.id().toString(),
-                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
-                            3, 0, 0),
-                    new ParticleBatch(SpellEngineParticles.flame_medium_a.id().toString(),
-                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
-                            2, 0.02F, 0.1F),
-                    new ParticleBatch(SpellEngineParticles.flame_medium_b.id().toString(),
-                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
-                            1, 0.02F, 0.1F),
-                    new ParticleBatch(SpellEngineParticles.flame_spark.id().toString(),
-                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
-                            3, 0.03F, 0.2F),
-            };
+            cloud.client_data.particles = List.of(
+                    ParticleGroupEffect.of(SpellEngineParticles.flame_ground.id().toString())
+                            .batch(b -> b.shape(ParticleGroupEffect.Shape.PILLAR).verticalOrigin(0.1F).count(3)),
+                    ParticleGroupEffect.of(SpellEngineParticles.flame_medium_a.id().toString())
+                            .batch(b -> b.shape(ParticleGroupEffect.Shape.PILLAR).verticalOrigin(0.1F).count(2).speed(0.02F, 0.1F)),
+                    ParticleGroupEffect.of(SpellEngineParticles.flame_medium_b.id().toString())
+                            .batch(b -> b.shape(ParticleGroupEffect.Shape.PILLAR).verticalOrigin(0.1F).count(1).speed(0.02F, 0.1F)),
+                    ParticleGroupEffect.of(SpellEngineParticles.flame_spark.id().toString())
+                            .batch(b -> b.shape(ParticleGroupEffect.Shape.PILLAR).verticalOrigin(0.1F).count(3).speed(0.03F, 0.2F)));
             spell.deliver.clouds = List.of(cloud);
 
             var damage = new Spell.Impact();
@@ -1230,14 +1220,11 @@ public class SpellBuilder {
             damage.action.damage.knockback = 0.2F;
             damage.action.damage.spell_power_coefficient = coefficient;
             damage.sound = new Sound(SpellEngineSounds.GENERIC_FIRE_IMPACT_1.id().toString());
-            damage.particles = new ParticleBatch[]{
-                    new ParticleBatch(SpellEngineParticles.flame.id().toString(),
-                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
-                            20, 0.05F, 0.15F),
-                    new ParticleBatch(SpellEngineParticles.flame_medium_a.id().toString(),
-                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
-                            20, 0.05F, 0.15F),
-            };
+            damage.particles = List.of(
+                    ParticleGroupEffect.of(SpellEngineParticles.flame.id().toString())
+                            .batch(b -> b.shape(ParticleGroupEffect.Shape.PILLAR).verticalOrigin(0.1F).count(20).speed(0.05F, 0.15F)),
+                    ParticleGroupEffect.of(SpellEngineParticles.flame_medium_a.id().toString())
+                            .batch(b -> b.shape(ParticleGroupEffect.Shape.PILLAR).verticalOrigin(0.1F).count(20).speed(0.05F, 0.15F)));
             spell.impacts = List.of(damage);
         }
 
@@ -1250,13 +1237,10 @@ public class SpellBuilder {
             var area_impact = new Spell.AreaImpact();
             area_impact.radius = radius;
             area_impact.area.distance_dropoff = Spell.Target.Area.DropoffCurve.SQUARED;
-            area_impact.particles = new ParticleBatch[]{
-                    new ParticleBatch(
-                            SpellEngineParticles.fire_explosion.id().toString(),
-                            ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER,
-                            1, 0, 0)
-                            .scale(scale)
-            };
+            area_impact.particles = List.of(
+                    ParticleGroupEffect.of(SpellEngineParticles.fire_explosion.id().toString())
+                            .particle(p -> p.scale(scale))
+                            .batch(b -> b.shape(ParticleGroupEffect.Shape.SPHERE)));
             area_impact.sound = new Sound(SpellEngineSounds.GENERIC_FIRE_IMPACT_1.id());
             return area_impact;
         }
@@ -1273,35 +1257,26 @@ public class SpellBuilder {
             cloud.spawn.sound = new Sound(SpellEngineSounds.POISON_CLOUD_SPAWN.id().toString());
             cloud.client_data = new Spell.Delivery.Cloud.ClientData();
             cloud.client_data.light_level = 0;
-            cloud.client_data.particles = new ParticleBatch[] {
-                    new ParticleBatch(SpellEngineParticles.smoke_large.id().toString(),
-                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
-                            1, 0.01F, 0.02F)
-                            .color(0x99FF66AAL),
-                    new ParticleBatch(SpellEngineParticles.smoke_large.id().toString(),
-                            ParticleBatch.Shape.PILLAR, ParticleBatch.Origin.FEET,
-                            1, 0.01F, 0.02F)
-                            .color(0x33DD33EE),
-            };
+            cloud.client_data.particles = List.of(
+                    ParticleGroupEffect.of(SpellEngineParticles.smoke_large.id().toString())
+                            .particle(p -> p.color(0x99FF66AAL))
+                            .batch(b -> b.shape(ParticleGroupEffect.Shape.PILLAR).verticalOrigin(0.1F).speed(0.01F, 0.02F)),
+                    ParticleGroupEffect.of(SpellEngineParticles.smoke_large.id().toString())
+                            .particle(p -> p.color(0x33DD33EE))
+                            .batch(b -> b.shape(ParticleGroupEffect.Shape.PILLAR).verticalOrigin(0.1F).speed(0.01F, 0.02F)));
             spell.deliver.clouds = List.of(cloud);
 
             var impact = SpellBuilder.Impacts.effectAdd("poison", effectDuration, 1, effectAmplifierCap);
             impact.action.status_effect.amplifier_cap_power_multiplier = coefficient;
             impact.action.status_effect.show_particles = true;
 
-            impact.particles = new ParticleBatch[]{
-                    new ParticleBatch(SpellEngineParticles.smoke_large.id().toString(),
-                            ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER,
-                            0.5F, 0.01F, 0.02F)
-                            .color(0x33DD33AA),
-                    new ParticleBatch(
-                            SpellEngineParticles.MagicParticles.get(
-                                    SpellEngineParticles.MagicParticles.Shape.SKULL,
-                                    SpellEngineParticles.MagicParticles.Motion.DECELERATE).id().toString(),
-                            ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER,
-                            3, 0.1F, 0.2F)
-                            .color(0x33DD33AA)
-            };
+            impact.particles = List.of(
+                    ParticleGroupEffect.of(SpellEngineParticles.smoke_large.id().toString())
+                            .particle(p -> p.color(0x33DD33AAL))
+                            .batch(b -> b.shape(ParticleGroupEffect.Shape.SPHERE).count(0.5F).speed(0.01F, 0.02F)),
+                    ParticleGroupEffect.of(SpellEngineParticles.MagicParticles.skull.id().toString())
+                            .particle(p -> p.color(0x33DD33AAL).motion(ParticleGroupEffect.Motion.DECELERATE))
+                            .batch(b -> b.shape(ParticleGroupEffect.Shape.SPHERE).count(3).speed(0.1F, 0.2F)));
             spell.impacts = List.of(impact);
         }
     }

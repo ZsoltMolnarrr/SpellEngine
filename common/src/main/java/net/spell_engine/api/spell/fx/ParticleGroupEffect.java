@@ -5,7 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-/// Describes a single visual effect made of particles. Successor of [ParticleBatch].
+/// Describes a single visual effect made of particles.
 ///
 /// The structure is split along the boundary where a particle starts existing:
 /// - [#id] selects which registered particle type to spawn, and therefore which
@@ -80,6 +80,8 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
         // MARK: Appearance
 
         /// Tint, packed RGBA. `-1` leaves the texture untinted.
+        /// The alpha component multiplies [#opacity], so a translucent RGBA color
+        /// dims the particle — pass `FF` alpha for pure tinting.
         public long color = -1;
 
         /// Random darkening applied once at spawn, `0..1`.
