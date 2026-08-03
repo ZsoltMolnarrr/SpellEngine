@@ -2,6 +2,7 @@ package net.spell_engine.api.render;
 
 import net.minecraft.entity.LivingEntity;
 import net.spell_engine.api.effect.CustomParticleStatusEffect;
+import net.spell_engine.api.spell.fx.ParticleGroupBuilder;
 import net.spell_engine.api.spell.fx.ParticleGroupEffect;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.fx.ParticleHelper;
@@ -31,15 +32,12 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
     }
 
     public static ParticleGroupEffect defaultBatch(String particleId, float particleCount, float min_speed, float max_speed, long color) {
-        var effect = ParticleGroupEffect.of(particleId)
-                .batch(b -> b.shape(ParticleGroupEffect.Shape.PIPE).widthFactor(2F)
-                        .verticalOrigin(0.1F)
-                        .count(particleCount).speed(min_speed, max_speed)
-                        .extent(-0.2F));
+        var builder = ParticleGroupBuilder.of(particleId);
         if (color != 0) {
-            effect.particle.color = color;
+            builder.color(color);
         }
-        return effect;
+        return builder.batch(ParticleGroupBuilder.Batches.casting(particleCount, max_speed)
+                .andThen(b -> b.speed(min_speed, max_speed).extent(-0.2F)));
     }
 
     public BuffParticleSpawner(List<String> particleIds, float particleCount, float min_speed, float max_speed) {
@@ -64,11 +62,9 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
 
     public BuffParticleSpawner withGroundEffect(String particleId, Color color, int frequency) {
         this.groundFrequency = frequency;
-        this.groundEffect = ParticleGroupEffect.of(particleId)
-                .particle(p -> p.color(color.toRGBA())
-                        .attachment(ParticleGroupEffect.Attachment.POSITION))
-                .batch(b -> b.shape(ParticleGroupEffect.Shape.SPHERE)
-                        .anchor(ParticleGroupEffect.Anchor.GROUND));
+        this.groundEffect = ParticleGroupBuilder.of(particleId)
+                .color(color).attached()
+                .batch(ParticleGroupBuilder.Batches.ground(1));
         return this;
     }
 

@@ -403,22 +403,17 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
 
     // MARK: - Builders
 
-    /// Starts an effect for the given registered particle id, with default
-    /// particle and batch settings.
-    public static ParticleGroupEffect of(String particleId) {
-        var effect = new ParticleGroupEffect();
-        effect.id = particleId;
-        return effect;
-    }
-
-    public ParticleGroupEffect id(String id) { this.id = id; return this; }
+    /// Authoring goes through [ParticleGroupBuilder], which owns the starting points
+    /// (`of`, `magic`, `zone`, `aura`), the named appearance and motion methods, and
+    /// the [ParticleGroupBuilder.Batches] presets. What remains here are the two
+    /// escape hatches for reaching a finished effect's blocks, plus [#copy()].
 
     /// Configures the [Particle] block in place.
     ///
     /// ```java
-    /// ParticleGroupEffect.of("spell_engine:magic_spell_ascend")
-    ///     .particle(p -> p.scale(0.5F).color(Color.ARCANE.toRGBA()).motion(Motion.ASCEND))
-    ///     .batch(b -> b.count(8).shape(Shape.PIPE).speed(0.05F, 0.1F));
+    /// ParticleGroupBuilder.of(SpellEngineParticles.flame)
+    ///     .batch(Batches.impact(12, 0.3F))
+    ///     .particle(p -> p.collides(true));
     /// ```
     public ParticleGroupEffect particle(Consumer<Particle> configure) {
         configure.accept(this.particle);
