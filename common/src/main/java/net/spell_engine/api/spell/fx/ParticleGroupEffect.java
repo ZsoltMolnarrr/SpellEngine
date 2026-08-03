@@ -115,20 +115,27 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
         @Nullable public Easing scale_easing = null;
 
         /// How the sprite quad is oriented in the world.
-        public Facing facing = Facing.CAMERA;
+        /// `null` inherits the registered entry's default ([Facing#CAMERA] if the
+        /// entry defines none).
+        @Nullable public Facing facing = null;
 
         /// When true the particle renders at full brightness, ignoring world light.
         /// Purely a brightness override — it does not affect [#render].
-        public boolean glow = true;
+        /// `null` inherits the registered entry's default (`true` if the entry
+        /// defines none).
+        @Nullable public Boolean glow = null;
 
         /// Which particle render sheet to draw on.
-        public Render render = Render.TRANSLUCENT;
+        /// `null` inherits the registered entry's default ([Render#TRANSLUCENT] if
+        /// the entry defines none).
+        @Nullable public Render render = null;
 
         // MARK: Motion
 
         /// Preset supplying the default [#gravity], [#drag] and spawn velocity shaping.
-        @AlwaysGenerate
-        public Motion motion = Motion.STATIC;
+        /// `null` inherits the registered entry's default ([Motion#STATIC] if the
+        /// entry defines none).
+        @Nullable public Motion motion = null;
 
         /// Downward acceleration per tick. Negative values rise.
         /// `null` inherits from [#motion].
@@ -161,10 +168,10 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
         public Particle scaleMultiplier(float scale_multiplier) { this.scale_multiplier = scale_multiplier; this.scale_easing = Easing.LINEAR; return this; }
         public Particle scaleMultiplier(float scale_multiplier, Easing easing) { this.scale_multiplier = scale_multiplier; this.scale_easing = easing; return this; }
         public Particle scaleEasing(@Nullable Easing scale_easing) { this.scale_easing = scale_easing; return this; }
-        public Particle facing(Facing facing) { this.facing = facing; return this; }
-        public Particle glow(boolean glow) { this.glow = glow; return this; }
-        public Particle render(Render render) { this.render = render; return this; }
-        public Particle motion(Motion motion) { this.motion = motion; return this; }
+        public Particle facing(@Nullable Facing facing) { this.facing = facing; return this; }
+        public Particle glow(@Nullable Boolean glow) { this.glow = glow; return this; }
+        public Particle render(@Nullable Render render) { this.render = render; return this; }
+        public Particle motion(@Nullable Motion motion) { this.motion = motion; return this; }
         public Particle gravity(@Nullable Float gravity) { this.gravity = gravity; return this; }
         public Particle drag(@Nullable Float drag) { this.drag = drag; return this; }
         public Particle collides(boolean collides) { this.collides = collides; return this; }

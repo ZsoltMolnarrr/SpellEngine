@@ -1,0 +1,316 @@
+package net.spell_engine.client.particle;
+
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleFactory;
+import net.minecraft.client.particle.ParticleTextureSheet;
+import net.minecraft.client.particle.SpriteBillboardParticle;
+import net.minecraft.client.particle.SpriteProvider;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.VertexConsumer;
+import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+import net.spell_engine.api.spell.fx.Easing;
+import net.spell_engine.api.spell.fx.ParticleGroupEffect;
+import net.spell_engine.client.util.Color;
+import net.spell_engine.fx.ParticleGroupEffectType;
+import net.spell_engine.fx.SpellEngineParticles;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+
+/// The single particle implementation behind every Spell Engine particle.
+///
+/// All appearance and behaviour comes from data: the registered
+/// [SpellEngineParticles.Entry] supplies defaults, the spawning
+/// [ParticleGroupEffect.Particle] payload overrides them, and [Factory#resolve]
+/// merges the two. This replaces the V1 zoo of hand-written particle classes
+/// (flame, universal, area, smoke, snowflake, explosion, shifted) and their
+/// per-entry factory wiring.
+@Environment(EnvType.CLIENT)
+public class SpellParticle extends SpriteBillboardParticle {
+    private final SpriteProvider spriteProvider;
+    private final int frameCount;
+    private final boolean reversedPlayback;
+
+    private final ParticleGroupEffect.Facing facing;
+    private final ParticleGroupEffect.Render render;
+    private final boolean glow;
+    private final float pivot;
+
+    @Nullable private final Easing.Curve opacityCurve;
+    @Nullable private final Easing scaleEasing;
+    private final float scaleMultiplier;
+    private final float baseOpacity;
+    private final float spawnScale;
+
+    private final ParticleGroupEffect.Attachment attachment;
+    @Nullable private final Entity followEntity;
+    private Vec3d followDiff = Vec3d.ZERO;
+    private boolean skipRender = false;
+
+    protected SpellParticle(ClientWorld world, double x, double y, double z,
+                            double velocityX, double velocityY, double velocityZ,
+                            SpriteProvider spriteProvider,
+                            SpellEngineParticles.Entry entry,
+                            ParticleGroupEffect.Particle config,
+                            @Nullable Entity sourceEntity) {
+        super(world, x, y, z);
+        this.spriteProvider = spriteProvider;
+        this.frameCount = entry.texture().frames();
+        this.pivot = entry.pivot();
+
+        this.facing = config.facing != null ? config.facing : ParticleGroupEffect.Facing.CAMERA;
+        this.render = config.render != null ? config.render : ParticleGroupEffect.Render.TRANSLUCENT;
+        this.glow = config.glow != null ? config.glow : true;
+        var motion = config.motion != null ? config.motion : ParticleGroupEffect.Motion.STATIC;
+
+        // MARK: Motion preset (constants ported from V1 SpellUniversalParticle)
+
+        this.collidesWithWorld = config.collides;
+        switch (motion) {
+            case STATIC -> {
+                this.velocityX = velocityX;
+                this.velocityY = velocityY;
+                this.velocityZ = velocityZ;
+                this.velocityMultiplier = 1F;
+                this.gravityStrength = 0F;
+            }
+            case FLOAT, DECELERATE -> {
+                this.velocityMultiplier = motion == ParticleGroupEffect.Motion.DECELERATE ? 0.768F : 0.96F;
+                this.gravityStrength = 0F;
+                this.velocityX = velocityX + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
+                this.velocityY = velocityY + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
+                this.velocityZ = velocityZ + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
+                this.x += (this.random.nextFloat() - this.random.nextFloat()) * 0.05F;
+                this.y += (this.random.nextFloat() - this.random.nextFloat()) * 0.05F;
+                this.z += (this.random.nextFloat() - this.random.nextFloat()) * 0.05F;
+                this.setPos(this.x, this.y, this.z);
+            }
+            case ASCEND -> {
+                this.velocityMultiplier = 0.96F;
+                this.gravityStrength = -0.1F;
+                this.ascending = true;
+                this.velocityX = velocityX * (velocityX == 0 && velocityZ == 0 ? 0.1F : 1F)
+                        + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
+                this.velocityY = velocityY * 0.2F + 0.02F;
+                this.velocityZ = velocityZ * (velocityX == 0 && velocityZ == 0 ? 0.1F : 1F)
+                        + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
+            }
+            case BURST -> {
+                this.velocityMultiplier = 0.7F;
+                this.gravityStrength = 0.5F;
+                this.velocityX = velocityX * 0.4F + (this.random.nextFloat() - this.random.nextFloat()) * 0.02F;
+                this.velocityY = velocityY * 0.4F + (this.random.nextFloat() - this.random.nextFloat()) * 0.02F;
+                this.velocityZ = velocityZ * 0.4F + (this.random.nextFloat() - this.random.nextFloat()) * 0.02F;
+            }
+        }
+        if (config.gravity != null) {
+            this.gravityStrength = config.gravity;
+        }
+        if (config.drag != null) {
+            this.velocityMultiplier = config.drag;
+        }
+
+        // MARK: Lifetime & playback
+
+        float playbackSpeed = config.playback_speed == 0F ? 1F : config.playback_speed;
+        this.reversedPlayback = playbackSpeed < 0F;
+        this.maxAge = Math.max(1, Math.round(entry.lifetime() / Math.abs(playbackSpeed)));
+
+        // MARK: Appearance
+
+        float darken = 1F - this.random.nextFloat() * MathHelper.clamp(config.color_variance, 0F, 1F);
+        if (config.color >= 0) {
+            var color = Color.fromRGBA(config.color);
+            this.setColor(color.red() * darken, color.green() * darken, color.blue() * darken);
+        } else {
+            this.setColor(darken, darken, darken);
+        }
+        this.baseOpacity = config.opacity;
+        this.opacityCurve = config.opacity_curve;
+        this.alpha = baseOpacity * (opacityCurve != null ? opacityCurve.sample(0F) : 1F);
+
+        float scaleVariance = MathHelper.clamp(config.scale_variance, 0F, 1F);
+        this.spawnScale = config.scale * (1F + (this.random.nextFloat() * 2F - 1F) * scaleVariance);
+        this.scale = spawnScale;
+        this.scaleEasing = config.scale_easing;
+        this.scaleMultiplier = config.scale_multiplier;
+
+        // MARK: Attachment
+
+        this.attachment = config.attachment;
+        this.followEntity = attachment != ParticleGroupEffect.Attachment.NONE ? sourceEntity : null;
+        if (followEntity != null) {
+            this.followDiff = new Vec3d(this.x - followEntity.getX(), this.y - followEntity.getY(), this.z - followEntity.getZ());
+        }
+
+        updateSprite();
+        updateSkipRender();
+    }
+
+    // MARK: Ticking
+
+    @Override
+    public void tick() {
+        super.tick();
+        if (this.dead) {
+            return;
+        }
+        float progress = (float) this.age / (float) this.maxAge;
+        updateSprite();
+        this.alpha = baseOpacity * (opacityCurve != null ? opacityCurve.sample(progress) : 1F);
+        float eased = scaleEasing != null
+                ? MathHelper.lerp(Easing.apply(scaleEasing, progress), 1F, scaleMultiplier)
+                : 1F;
+        float entityScale = attachment == ParticleGroupEffect.Attachment.POSITION_SCALED
+                && followEntity instanceof LivingEntity livingEntity
+                ? livingEntity.getScale() : 1F;
+        this.scale = spawnScale * eased * entityScale;
+        updateSkipRender();
+    }
+
+    private void updateSprite() {
+        if (frameCount > 1) {
+            int frameAge = reversedPlayback ? (this.maxAge - this.age) : this.age;
+            this.setSprite(spriteProvider.getSprite(MathHelper.clamp(frameAge, 0, this.maxAge), this.maxAge));
+        } else if (this.sprite == null) {
+            this.setSprite(spriteProvider);
+        }
+    }
+
+    @Override
+    public void move(double dx, double dy, double dz) {
+        if (followEntity != null && !followEntity.isRemoved()) {
+            // Following: accumulate own motion into the offset, then track the entity
+            this.followDiff = followDiff.add(dx, dy, dz);
+            var position = followEntity.getPos().add(followDiff);
+            this.setPos(position.x, position.y, position.z);
+        } else {
+            super.move(dx, dy, dz);
+        }
+    }
+
+    // MARK: Rendering
+
+    /// V1 `SpellAreaParticle.checkSkip`: a camera-facing quad attached to the camera
+    /// entity would fill the screen in first person.
+    private void updateSkipRender() {
+        var client = MinecraftClient.getInstance();
+        this.skipRender = facing == ParticleGroupEffect.Facing.CAMERA
+                && followEntity != null
+                && followEntity == client.getCameraEntity()
+                && client.options.getPerspective().isFirstPerson();
+    }
+
+    @Override
+    public ParticleTextureSheet getType() {
+        return switch (render) {
+            case OPAQUE -> ParticleTextureSheet.PARTICLE_SHEET_OPAQUE;
+            case TRANSLUCENT -> ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT;
+            case LIT -> ParticleTextureSheet.PARTICLE_SHEET_LIT;
+        };
+    }
+
+    @Override
+    public int getBrightness(float tint) {
+        return glow ? 255 : super.getBrightness(tint);
+    }
+
+    private static final Rotator GROUND_ROTATOR = (quaternion, camera, tickDelta) ->
+            quaternion.rotationX((float) Math.toRadians(90));
+
+    private final Rotator velocityRotator = (quaternion, camera, tickDelta) -> {
+        var direction = new Vector3f((float) this.velocityX, (float) this.velocityY, (float) this.velocityZ);
+        if (direction.lengthSquared() < 1.0E-6F) {
+            quaternion.set(camera.getRotation());
+        } else {
+            direction.normalize();
+            quaternion.rotationTo(0F, 1F, 0F, direction.x, direction.y, direction.z);
+        }
+    };
+
+    @Override
+    public Rotator getRotator() {
+        return switch (facing) {
+            case CAMERA -> Rotator.ALL_AXIS;
+            case UPRIGHT -> Rotator.Y_AND_W_ONLY;
+            case GROUND -> GROUND_ROTATOR;
+            case VELOCITY -> velocityRotator;
+        };
+    }
+
+    @Override
+    public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
+        if (skipRender) {
+            return;
+        }
+        super.buildGeometry(vertexConsumer, camera, tickDelta);
+    }
+
+    /// Applies the entry's pivot: shifts the quad vertically in units of its size
+    /// (V1 `ShiftedParticle`, used by `roots` to stand on the ground).
+    @Override
+    protected void method_60374(VertexConsumer vertexConsumer, Quaternionf quaternionf, float x, float y, float z, float tickDelta) {
+        super.method_60374(vertexConsumer, quaternionf, x, y + pivot * this.getSize(tickDelta), z, tickDelta);
+    }
+
+    // MARK: Factory
+
+    @Environment(EnvType.CLIENT)
+    public static class Factory implements ParticleFactory<ParticleGroupEffectType> {
+        private final SpriteProvider spriteProvider;
+        private final SpellEngineParticles.Entry entry;
+
+        public Factory(SpriteProvider spriteProvider, SpellEngineParticles.Entry entry) {
+            this.spriteProvider = spriteProvider;
+            this.entry = entry;
+        }
+
+        @Override
+        public Particle createParticle(ParticleGroupEffectType type, ClientWorld world,
+                                       double x, double y, double z,
+                                       double velocityX, double velocityY, double velocityZ) {
+            var resolved = resolve(entry, type.payload());
+            return new SpellParticle(world, x, y, z, velocityX, velocityY, velocityZ,
+                    spriteProvider, entry, resolved, type.sourceEntity());
+        }
+
+        /// Merges the entry's defaults with a spawn payload.
+        /// Multiplicative fields (`scale`, `opacity`, `playback_speed`) compose;
+        /// nullable and sentinel fields override when set.
+        public static ParticleGroupEffect.Particle resolve(SpellEngineParticles.Entry entry,
+                                                           @Nullable ParticleGroupEffect.Particle payload) {
+            var base = entry.defaults();
+            if (payload == null) {
+                return base;
+            }
+            var resolved = base.copy();
+            resolved.playback_speed = base.playback_speed * (payload.playback_speed == 0F ? 1F : payload.playback_speed);
+            resolved.opacity = base.opacity * payload.opacity;
+            resolved.scale = base.scale * payload.scale;
+            if (payload.color != -1) { resolved.color = payload.color; }
+            if (payload.color_variance != 0F) { resolved.color_variance = payload.color_variance; }
+            if (payload.opacity_curve != null) { resolved.opacity_curve = payload.opacity_curve; }
+            if (payload.scale_variance != 0F) { resolved.scale_variance = payload.scale_variance; }
+            if (payload.scale_easing != null) {
+                resolved.scale_easing = payload.scale_easing;
+                resolved.scale_multiplier = payload.scale_multiplier;
+            }
+            if (payload.facing != null) { resolved.facing = payload.facing; }
+            if (payload.glow != null) { resolved.glow = payload.glow; }
+            if (payload.render != null) { resolved.render = payload.render; }
+            if (payload.motion != null) { resolved.motion = payload.motion; }
+            if (payload.gravity != null) { resolved.gravity = payload.gravity; }
+            if (payload.drag != null) { resolved.drag = payload.drag; }
+            if (payload.collides) { resolved.collides = true; }
+            if (payload.attachment != ParticleGroupEffect.Attachment.NONE) { resolved.attachment = payload.attachment; }
+            return resolved;
+        }
+    }
+}

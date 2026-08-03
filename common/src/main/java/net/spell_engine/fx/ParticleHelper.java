@@ -11,7 +11,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.fx.ParticleBatch;
-import net.spell_engine.client.particle.TemplateParticleEffect;
+import net.spell_engine.api.spell.fx.ParticleGroupEffect;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.network.Packets;
@@ -153,27 +153,34 @@ public class ParticleHelper {
         play(world, entity.age, origin(entity, batch.origin), entity.getWidth(), yaw, pitch, batch, entity);
     }
 
+    /// V1 → V2 bridge: maps the legacy batch's appearance fields onto a
+    /// [ParticleGroupEffect.Particle] payload for the generic factory.
+    /// Removed together with [ParticleBatch] when the V2 spawn pipeline lands.
     private static ParticleEffect resolveParticleType(ParticleBatch batch, @Nullable Entity sourceEntity) {
         var id = Identifier.of(batch.particle_id);
         var particle = (ParticleEffect) Registries.PARTICLE_TYPE.get(id);
 
-        if (particle instanceof TemplateParticleEffect templateParticleEffect) {
-            var copy = templateParticleEffect.copy();
-            var appearance = copy.createOrDefaultAppearance();
-            if (batch.color_rgba >= 0) {
-                appearance.color = Color.fromRGBA(batch.color_rgba);
+        if (particle instanceof ParticleGroupEffectType groupType) {
+            ParticleGroupEffect.Particle payload = null;
+            if (batch.color_rgba >= 0 || batch.scale != 1F || batch.max_age != 1F || batch.follow_entity) {
+                payload = new ParticleGroupEffect.Particle();
+                if (batch.color_rgba >= 0) {
+                    payload.color = batch.color_rgba;
+                    // V1 applied the color's alpha component as an alpha multiplier
+                    payload.opacity = Color.fromRGBA(batch.color_rgba).alpha();
+                }
+                if (batch.scale != 1F) {
+                    payload.scale = batch.scale;
+                }
+                if (batch.max_age != 1F && batch.max_age > 0F) {
+                    // V1 max_age was a lifetime multiplier; V2 playback speed is its inverse
+                    payload.playback_speed = 1F / batch.max_age;
+                }
+                if (batch.follow_entity) {
+                    payload.attachment = ParticleGroupEffect.Attachment.POSITION;
+                }
             }
-            if (batch.follow_entity) {
-                appearance.entityFollowed = sourceEntity;
-            }
-            if (batch.scale != 1) {
-                appearance.scale = batch.scale;
-            }
-            if (batch.origin == ParticleBatch.Origin.GROUND) {
-                appearance.grounded = true;
-            }
-            appearance.max_age = batch.max_age;
-            particle = copy;
+            particle = groupType.spawnable(payload, sourceEntity);
         }
         return particle;
     }

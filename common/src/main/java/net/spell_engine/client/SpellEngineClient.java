@@ -123,85 +123,11 @@ public class SpellEngineClient {
     }
 
     public static void registerParticleAppearances() {
-        /* Adds our particle textures to vanilla's Texture Atlas so it can be shown properly.
-         * Modify the namespace and particle id accordingly.
-         *
-         * This is only used if you plan to add your own textures for the particle. Otherwise, remove  this.*/
-//        ClientSpriteRegistryCallback.event(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).register(((atlasTexture, registry) -> {
-//            for(var entry: Particles.all()) {
-//                if (entry.usesCustomTexture) {
-//                    registry.register(entry.id);
-//                }
-//            }
-//        }));
-
-        /* Registers our particle client-side.
-         * First argument is our particle's instance, created previously on ExampleMod.
-         * Second argument is the particle's factory. The factory controls how the particle behaves.
-         * In this example, we'll use FlameParticle's Factory.*/
-
-        // Elemental
-
-        register(SpellEngineParticles.flame, SpellFlameParticle.config());
-        register(SpellEngineParticles.flame_spark, SpellFlameParticle.config().animated());
-        register(SpellEngineParticles.flame_ground, SpellFlameParticle.config().animated());
-        var mediumFlame = SpellFlameParticle.config().animated().scale(0.5F).maxAgeFactor(0.5F);
-        register(SpellEngineParticles.flame_medium_a, mediumFlame);
-        register(SpellEngineParticles.flame_medium_b, mediumFlame);
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.snowflake.particleType(), SpellSnowflakeParticle.FrostFactory::new);
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.frost_shard.particleType(), SpellFlameParticle.FrostShard::new);
-
-        var electricSpark = SpellFlameParticle.config().animated().color(Color.ELECTRIC).scale(0.75F).alpha(1F);
-        register(SpellEngineParticles.electric_arc_A, electricSpark);
-        register(SpellEngineParticles.electric_arc_B, electricSpark);
-
-        // Physical
-
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.smoke_medium.particleType(), SpellFlameParticle.SmokeFactory::new);
-
-        // Misc
-
-        register(SpellEngineParticles.weakness_smoke, SpellFlameParticle.config().animated()
-                .color(Color.from(0x993333)).randomDarken()
-                .velocityMultiplier(0.8F).alpha(0.7F).glow(false).gravityStrength(0.01F));
-
-        ParticleFactoryRegistry.getInstance().register(
-                SpellEngineParticles.shield_small.particleType(), (provider) -> new SpellUniversalParticle.Opaque(provider, SpellEngineParticles.MagicParticles.Motion.DECELERATE)
-        );
-
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.dripping_blood.particleType(), SpellSnowflakeParticle.DrippingBloodFactory::new);
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.roots.particleType(), ShiftedParticle.RootsFactory::new);
-
-        // Macro, billboard, whatever
-
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.fire_explosion.particleType(), SpellExplosionParticle.TemplateFactory::new);
-
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.smoke_large.particleType(), SpellSmokeParticle.CosySmokeFactory::new);
-
-        var lightningArcA = SpellEngineParticles.lightning_arc_A;
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.lightning_arc_A.particleType(), (provider) -> new SpellFlameParticle.GlowingTemplateFactory(provider, lightningArcA.texture()));
-        var lightningArcB = SpellEngineParticles.lightning_arc_B;
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.lightning_arc_B.particleType(), (provider) -> new SpellFlameParticle.GlowingTemplateFactory(provider, lightningArcB.texture()));
-
-        for (var entry: SpellEngineParticles.areaEffects()) {
-            ParticleFactoryRegistry.getInstance().register(
-                    entry.particleType(), (provider) -> new SpellAreaParticle.Factory(provider, entry.texture(), entry.fading(), entry.orientation())
-            );
+        // One generic factory serves every entry: appearance and behaviour are
+        // resolved from the entry's defaults + the spawning effect's payload.
+        for (var entry: SpellEngineParticles.entries()) {
+            ParticleFactoryRegistry.getInstance().register(entry.type(),
+                    (provider) -> new SpellParticle.Factory(provider, entry));
         }
-        for (var entry: SpellEngineParticles.signEffects()) {
-            ParticleFactoryRegistry.getInstance().register(
-                    entry.particleType(), (provider) -> new SpellFlameParticle.SignFactory(provider, entry.texture())
-            );
-        }
-        for (var variant: SpellEngineParticles.MagicParticles.all) {
-            ParticleFactoryRegistry.getInstance().register(
-                    variant.entry().particleType(), (provider) -> new SpellUniversalParticle.MagicVariant(provider, variant)
-            );
-        }
-    }
-
-    private static void register(SpellEngineParticles.Entry entry, SpellFlameParticle.Config config) {
-        ParticleFactoryRegistry.getInstance().register(entry.particleType(),
-                provider -> new SpellFlameParticle.ConfiguredFactory(provider, config));
     }
 }
