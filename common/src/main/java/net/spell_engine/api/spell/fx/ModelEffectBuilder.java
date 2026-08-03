@@ -115,14 +115,14 @@ public class ModelEffectBuilder {
     // --- Scale animations ---
 
     /** Grows the model from scale 0 to full over [start, end] ticks. */
-    public ModelEffectBuilder scaleIn(int start, int end, ModelEffect.Easing easing) {
+    public ModelEffectBuilder scaleIn(int start, int end, Easing easing) {
         ensureBaseScale();
         effect.animations.add(anim("scale", 1, 1, 1, start, end, easing));
         return this;
     }
 
     /** Shrinks the model from full scale to 0 over [start, end] ticks. */
-    public ModelEffectBuilder scaleOut(int start, int end, ModelEffect.Easing easing) {
+    public ModelEffectBuilder scaleOut(int start, int end, Easing easing) {
         ensureBaseScale();
         effect.animations.add(anim("scale", -1, -1, -1, start, end, easing));
         return this;
@@ -132,14 +132,14 @@ public class ModelEffectBuilder {
 
     /** Animates rotation by the given per-axis degrees over [start, end] ticks. */
     public ModelEffectBuilder rotate(float xDeg, float yDeg, float zDeg,
-                                     int start, int end, ModelEffect.Easing easing) {
+                                     int start, int end, Easing easing) {
         effect.animations.add(anim("rotate", xDeg, yDeg, zDeg, start, end, easing));
         return this;
     }
 
     /** Animates translation by the given per-axis block offset over [start, end] ticks. */
     public ModelEffectBuilder translate(float x, float y, float z,
-                                        int start, int end, ModelEffect.Easing easing) {
+                                        int start, int end, Easing easing) {
         effect.animations.add(anim("translate", x, y, z, start, end, easing));
         return this;
     }
@@ -153,10 +153,10 @@ public class ModelEffectBuilder {
      * required so the translation direction rotates with the orbit angle (rotate transforms the
      * coordinate frame that translate operates in).</p>
      */
-    public ModelEffectBuilder orbit(float radius, float degrees, int start, int end, ModelEffect.Easing easing) {
+    public ModelEffectBuilder orbit(float radius, float degrees, int start, int end, Easing easing) {
         effect.animations.add(anim("rotate", 0, degrees, 0, start, end, easing));
         // end == start makes progress always 1 → constant radius regardless of time.
-        effect.animations.add(anim("translate", 0, 0, -radius, 0, 0, ModelEffect.Easing.LINEAR));
+        effect.animations.add(anim("translate", 0, 0, -radius, 0, 0, Easing.LINEAR));
         return this;
     }
 
@@ -242,7 +242,7 @@ public class ModelEffectBuilder {
          * }</pre>
          */
         public static List<ModelEffect> orbiters(String modelId, int count, float radius,
-                                                  float totalAngle, int duration, ModelEffect.Easing easing) {
+                                                  float totalAngle, int duration, Easing easing) {
             return create(modelId)
                     .followEntity()
                     .duration(duration)
@@ -275,11 +275,11 @@ public class ModelEffectBuilder {
             int end = sinkStart + riseTime;
             builder.duration(end)
                     .initialTranslate(0, -buryDepth, 0)
-                    .translate(0, buryDepth, 0, 0, riseTime, ModelEffect.Easing.EASE_OUT_ELASTIC)
-                    .translate(0, -buryDepth, 0, sinkStart, end, ModelEffect.Easing.EASE_IN_ELASTIC);
+                    .translate(0, buryDepth, 0, 0, riseTime, Easing.EASE_OUT_ELASTIC)
+                    .translate(0, -buryDepth, 0, sinkStart, end, Easing.EASE_IN_ELASTIC);
             if (withScale) {
-                builder.scaleIn(0, riseTime, ModelEffect.Easing.EASE_OUT_ELASTIC)
-                        .scaleOut(sinkStart, end, ModelEffect.Easing.EASE_IN_ELASTIC);
+                builder.scaleIn(0, riseTime, Easing.EASE_OUT_ELASTIC)
+                        .scaleOut(sinkStart, end, Easing.EASE_IN_ELASTIC);
             }
             return builder;
         }
@@ -340,7 +340,7 @@ public class ModelEffectBuilder {
     }
 
     private static ModelEffect.Animation anim(String op, float x, float y, float z,
-                                               int start, int end, ModelEffect.Easing easing) {
+                                               int start, int end, Easing easing) {
         var a = new ModelEffect.Animation();
         a.operation = op; a.x = x; a.y = y; a.z = z;
         a.start = start; a.end = end; a.easing = easing;
