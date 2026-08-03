@@ -296,6 +296,9 @@ public class ParticleHelper {
         // (replaces the V1 EXTENT_TRESHOLD sentinel), `2` reproduces V1 WIDE_PIPE.
         var radius = width * 0.5F * batch.width_factor;
         switch (batch.shape) {
+            case NONE -> {
+                return Vec3d.ZERO;
+            }
             case LINE_VERTICAL, CIRCLE, CONE, SPHERE -> {
                 if (batch.extent > 0) {
                     offset = direction.multiply(batch.extent);
@@ -331,6 +334,10 @@ public class ParticleHelper {
         float rotateAroundX = 0;
         float rotateAroundY = 0;
         switch (batch.shape) {
+            case NONE -> {
+                // Placed, not thrown: no velocity, and nothing for roll/pre_travel to act on
+                return Vec3d.ZERO;
+            }
             case LINE -> {
                 direction = new Vec3d(0, 0, randomInRange(batch.min_speed, batch.max_speed));
                 pitch = -pitch; // Inverting pitch, do not remove, it makes things work :D

@@ -77,6 +77,13 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
         /// `0` would never advance and is treated as `1`.
         public float playback_speed = 1F;
 
+        /// Random lifetime spread, `0..1`, as a fraction of the resolved lifetime.
+        /// `0.5` gives each particle a life in `[0.5x, 1.5x]`.
+        ///
+        /// Without it a batch dies all at once, which reads as mechanical — V1 rolled
+        /// a random lifetime inside every motion preset for exactly this reason.
+        public float lifetime_variance = 0F;
+
         // MARK: Appearance
 
         /// Tint, packed RGBA. `-1` leaves the texture untinted.
@@ -157,6 +164,7 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
         // MARK: Builders
 
         public Particle playbackSpeed(float playback_speed) { this.playback_speed = playback_speed; return this; }
+        public Particle lifetimeVariance(float lifetime_variance) { this.lifetime_variance = lifetime_variance; return this; }
         /// Flips the sequence direction, keeping the current speed.
         public Particle reversed() { this.playback_speed = -this.playback_speed; return this; }
         public Particle color(long color) { this.color = color; return this; }
@@ -182,6 +190,7 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
         public Particle copy() {
             var copy = new Particle();
             copy.playback_speed = this.playback_speed;
+            copy.lifetime_variance = this.lifetime_variance;
             copy.color = this.color;
             copy.color_variance = this.color_variance;
             copy.opacity = this.opacity;
@@ -229,20 +238,35 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
         LIT
     }
 
-    /// Preset motion behaviour, supplying defaults for gravity, drag and how the
-    /// batch-provided spawn velocity is shaped.
+    /// Preset motion behaviour, supplying defaults for gravity, drag, how the
+    /// batch-provided spawn velocity is shaped, and how long the particle lives
+    /// relative to its entry's own lifetime.
     /// Explicit [Particle#gravity] / [Particle#drag] override the preset.
     public enum Motion {
         /// Keeps its spawn velocity unchanged. No gravity, no drag.
-        STATIC,
+        STATIC(1F),
         /// Gentle randomised drift with mild drag.
-        FLOAT,
+        FLOAT(1F),
         /// Rises steadily against gravity.
-        ASCEND,
+        ASCEND(1F),
         /// Strong drag — travels a short distance then comes to a halt.
-        DECELERATE,
+        DECELERATE(1F),
         /// Thrown outward hard, then pulled down by gravity.
-        BURST
+        /// Short-lived: a burst is over quickly, so it lives a fraction of the
+        /// time the same texture would under any other motion.
+        BURST(0.5F),
+        /// Falls under gravity while drifting sideways, damping as it settles —
+        /// snow, ash, embers. Scatters each particle's spawn velocity noticeably,
+        /// and sinks faster than it drifts.
+        DRIFT(1F);
+
+        /// Multiplies the entry's lifetime. See [Particle#playback_speed], which
+        /// this composes with.
+        public final float lifetime_factor;
+
+        Motion(float lifetime_factor) {
+            this.lifetime_factor = lifetime_factor;
+        }
     }
 
     /// How a particle tracks the entity it was spawned from.
@@ -363,6 +387,11 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
     /// Spawn placement and initial velocity pattern.
     /// V1 `WIDE_PIPE` is gone — it is `PIPE` with [Batch#width_factor] `2`.
     public enum Shape {
+        /// Exactly on the origin, with no velocity. For effects that are a single
+        /// placed billboard rather than a spray — explosions, ground decals, auras.
+        /// [Batch#min_speed], [Batch#max_speed], [Batch#extent] and
+        /// [Batch#pre_travel] are all ignored.
+        NONE,
         /// Outward along the horizontal plane, in a random direction.
         CIRCLE,
         /// Upward, from a random point *within* the radius.

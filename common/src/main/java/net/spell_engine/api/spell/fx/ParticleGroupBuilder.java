@@ -177,6 +177,13 @@ public class ParticleGroupBuilder {
         return this;
     }
 
+    /// Random lifetime spread, `0..1`. `0.5` gives each particle a life in
+    /// `[0.5x, 1.5x]`, so a batch thins out instead of vanishing all at once.
+    public ParticleGroupBuilder lifetimeVariance(float amount) {
+        effect.particle.lifetimeVariance(amount);
+        return this;
+    }
+
     public ParticleGroupBuilder facing(ParticleGroupEffect.Facing facing) {
         effect.particle.facing(facing);
         return this;
@@ -309,18 +316,25 @@ public class ParticleGroupBuilder {
                     .verticalOrigin(FEET).preTravel(preTravel);
         }
 
-        /// Placed flat on the floor below the source, with no spawn velocity.
+        /// Placed flat on the floor below the source, motionless.
         public static Consumer<ParticleGroupEffect.Batch> ground(float count) {
-            return b -> b.shape(ParticleGroupEffect.Shape.SPHERE)
-                    .count(count).speed(0F)
+            return b -> b.shape(ParticleGroupEffect.Shape.NONE)
+                    .count(count)
                     .anchor(ParticleGroupEffect.Anchor.GROUND);
         }
 
-        /// Placed on the source itself with no spawn velocity — for attached auras.
-        public static Consumer<ParticleGroupEffect.Batch> still(float count) {
-            return b -> b.shape(ParticleGroupEffect.Shape.SPHERE)
-                    .count(count).speed(0F)
+        /// Placed on the source itself, motionless — auras, explosions, any effect
+        /// that is one billboard sitting where you put it rather than a spray.
+        public static Consumer<ParticleGroupEffect.Batch> placed(float count) {
+            return b -> b.shape(ParticleGroupEffect.Shape.NONE)
+                    .count(count)
                     .verticalOrigin(CENTER);
+        }
+
+        /// @deprecated renamed to [#placed(float)], which says what it does.
+        @Deprecated
+        public static Consumer<ParticleGroupEffect.Batch> still(float count) {
+            return placed(count);
         }
 
         /// A sign or icon drifting up above the entity's head.

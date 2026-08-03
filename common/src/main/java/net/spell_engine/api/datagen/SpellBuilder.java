@@ -1239,7 +1239,7 @@ public class SpellBuilder {
             area_impact.particles = List.of(
                     ParticleGroupBuilder.of(SpellEngineParticles.fire_explosion)
                             .scale(scale)
-                            .batch(ParticleGroupBuilder.Batches.still(1)));
+                            .batch(ParticleGroupBuilder.Batches.placed(1)));
             area_impact.sound = new Sound(SpellEngineSounds.GENERIC_FIRE_IMPACT_1.id());
             return area_impact;
         }

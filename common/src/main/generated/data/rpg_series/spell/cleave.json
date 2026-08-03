@@ -22,7 +22,7 @@
         },
         "batch": {
           "count": 1.0,
-          "shape": "SPHERE",
+          "shape": "NONE",
           "anchor": "ENTITY"
         }
       },

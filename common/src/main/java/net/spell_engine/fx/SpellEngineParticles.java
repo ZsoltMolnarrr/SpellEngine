@@ -105,10 +105,14 @@ public class SpellEngineParticles {
         return entry;
     }
 
+    /// `SpellSchools.FROST.color` — noticeably paler than SpellEngine's own
+    /// [Color#FROST] (`0x66ccff`). V1's snowflake factory used this one.
+    private static final Color FROST_PALE = Color.from(0xccffff);
+
     // MARK: - Elemental
 
     public static final Entry fire_explosion = add(new Entry("fire_explosion", Texture.of("elemental/fire_explosion", 10))
-            .defaults(p -> p.render(Render.LIT).scale(2F)));
+            .defaults(p -> p.render(Render.LIT).scale(1.2F)));
     public static final Entry flame = add(new Entry("flame", Texture.vanilla("flame")).lifetime(16)
             .defaults(p -> p.render(Render.LIT).scale(0.15F, 0.33F).drag(0.96F).collides(true)));
     public static final Entry flame_spark = add(new Entry("flame_spark", Texture.of("elemental/flame_spark", 8))
@@ -123,7 +127,8 @@ public class SpellEngineParticles {
             .defaults(p -> p.render(Render.LIT).scale(0.15F, 0.33F).drag(0.96F).collides(true)
                     .color(Color.FROST.toRGBA()).colorVariance(0.65F)));
     public static final Entry snowflake = add(new Entry("snowflake", Texture.vanilla("generic", 8, true))
-            .defaults(p -> p.scale(0.11F, 0.33F).color(Color.FROST.toRGBA()).opacity(0.75F).gravity(0.225F).drag(1F).collides(true).playbackSpeed(0.4F)));
+            .defaults(p -> p.motion(Motion.DRIFT).scale(0.15F, 0.33F).color(FROST_PALE.toRGBA())
+                    .opacity(0.75F).collides(true).playbackSpeed(0.2F).lifetimeVariance(0.5F)));
     public static final Entry lightning_arc_A = add(new Entry("lightning_arc_a", Texture.of("elemental/lightning_arc_a", 8))
             .defaults(p -> p.render(Render.LIT).scale(1F)));
     public static final Entry lightning_arc_B = add(new Entry("lightning_arc_b", Texture.of("elemental/lightning_arc_b", 8))
@@ -223,7 +228,8 @@ public class SpellEngineParticles {
         private static Entry magic(String name, Texture texture, float opacity, float playbackSpeed) {
             return add(new Entry("magic_" + name, texture).lifetime(16)
                     .defaults(p -> p.motion(ParticleGroupEffect.Motion.FLOAT)
-                            .scale(0.11F, 0.33F).colorVariance(0.65F).opacity(opacity).playbackSpeed(playbackSpeed)));
+                            .scale(0.11F, 0.33F).colorVariance(0.65F).opacity(opacity)
+                            .playbackSpeed(playbackSpeed).lifetimeVariance(0.5F)));
         }
         public static final Entry spell = magic("spell", Texture.vanilla("spell", 8, true), 1F, 0.5F);
         public static final Entry spark = magic("spark", Texture.vanilla("generic_0"), 0.75F, 1F);

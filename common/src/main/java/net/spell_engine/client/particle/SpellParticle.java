@@ -49,6 +49,7 @@ public class SpellParticle extends SpriteBillboardParticle {
     private final float baseOpacity;
     private final float spawnScale;
 
+    private final ParticleGroupEffect.Motion motion;
     private final ParticleGroupEffect.Attachment attachment;
     @Nullable private final Entity followEntity;
     private Vec3d followDiff = Vec3d.ZERO;
@@ -69,6 +70,7 @@ public class SpellParticle extends SpriteBillboardParticle {
         this.render = config.render != null ? config.render : ParticleGroupEffect.Render.TRANSLUCENT;
         this.glow = config.glow != null ? config.glow : true;
         var motion = config.motion != null ? config.motion : ParticleGroupEffect.Motion.STATIC;
+        this.motion = motion;
 
         // MARK: Motion preset (constants ported from V1 SpellUniversalParticle)
 
@@ -109,6 +111,16 @@ public class SpellParticle extends SpriteBillboardParticle {
                 this.velocityY = velocityY * 0.4F + (this.random.nextFloat() - this.random.nextFloat()) * 0.02F;
                 this.velocityZ = velocityZ * 0.4F + (this.random.nextFloat() - this.random.nextFloat()) * 0.02F;
             }
+            case DRIFT -> {
+                // Vanilla SnowflakeParticle's motion: a wide random scatter, gravity,
+                // and per-axis damping that bleeds vertical speed faster than lateral,
+                // so particles fan out as they settle rather than dropping in a line.
+                this.velocityMultiplier = 1F;
+                this.gravityStrength = 0.225F;
+                this.velocityX = velocityX + (Math.random() * 2.0 - 1.0) * 0.05F;
+                this.velocityY = velocityY + (Math.random() * 2.0 - 1.0) * 0.05F;
+                this.velocityZ = velocityZ + (Math.random() * 2.0 - 1.0) * 0.05F;
+            }
         }
         if (config.gravity != null) {
             this.gravityStrength = config.gravity;
@@ -121,7 +133,9 @@ public class SpellParticle extends SpriteBillboardParticle {
 
         float playbackSpeed = config.playback_speed == 0F ? 1F : config.playback_speed;
         this.reversedPlayback = playbackSpeed < 0F;
-        this.maxAge = Math.max(1, Math.round(entry.lifetime() / Math.abs(playbackSpeed)));
+        float lifetimeRoll = 1F + (this.random.nextFloat() * 2F - 1F) * MathHelper.clamp(config.lifetime_variance, 0F, 1F);
+        this.maxAge = Math.max(1, Math.round(
+                entry.lifetime() * motion.lifetime_factor * lifetimeRoll / Math.abs(playbackSpeed)));
 
         // MARK: Appearance
 
@@ -163,6 +177,12 @@ public class SpellParticle extends SpriteBillboardParticle {
         super.tick();
         if (this.dead) {
             return;
+        }
+        if (motion == ParticleGroupEffect.Motion.DRIFT) {
+            // Per-axis, so it cannot be expressed through the scalar `drag` field
+            this.velocityX *= 0.95F;
+            this.velocityY *= 0.9F;
+            this.velocityZ *= 0.95F;
         }
         float progress = (float) this.age / (float) this.maxAge;
         updateSprite();
@@ -304,6 +324,7 @@ public class SpellParticle extends SpriteBillboardParticle {
             if (payload.color_variance != 0F) { resolved.color_variance = payload.color_variance; }
             if (payload.opacity_curve != null) { resolved.opacity_curve = payload.opacity_curve; }
             if (payload.scale_variance != 0F) { resolved.scale_variance = payload.scale_variance; }
+            if (payload.lifetime_variance != 0F) { resolved.lifetime_variance = payload.lifetime_variance; }
             if (payload.scale_easing != null) {
                 resolved.scale_easing = payload.scale_easing;
                 resolved.scale_multiplier = payload.scale_multiplier;
