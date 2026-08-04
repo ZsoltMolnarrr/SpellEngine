@@ -64,6 +64,25 @@ public class Fx {
             return this;
         }
 
+        /// List overloads, for callers whose effects come from a helper or a loop rather
+        /// than a literal. Kept separate from the varargs forms so a no-arg `of()` stays
+        /// unambiguous.
+        public Visuals particles(List<ParticleGroup> particles) {
+            this.particles = particles;
+            return this;
+        }
+
+        public Visuals models(List<ModelEffect> models) {
+            this.models = models;
+            return this;
+        }
+
+        public static Visuals ofParticles(List<ParticleGroup> particles) {
+            var fx = new Visuals();
+            fx.particles = particles;
+            return fx;
+        }
+
         public boolean isEmpty() {
             return particles.isEmpty() && models.isEmpty();
         }

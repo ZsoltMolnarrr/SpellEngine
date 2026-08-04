@@ -19,6 +19,11 @@ New shape:
   asking for one an unbinding site cannot provide keeps its authored size and warns once,
   rather than inventing a number.
 
+Added:
+
+- `Fx.Visuals.ofParticles(List)`, `.particles(List)` and `.models(List)` — list forms alongside
+  the varargs, for authoring helpers that return a list rather than a literal.
+
 Renamed:
 
 - `ParticleGroupEffect` → `ParticleGroup`, and its nested `Particle` → `Appearance` (JSON key
