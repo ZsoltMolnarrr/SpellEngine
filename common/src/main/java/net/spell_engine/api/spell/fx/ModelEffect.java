@@ -8,6 +8,11 @@ public class ModelEffect { public ModelEffect() { }
     public String model_id;
     public LightEmission light_emission = LightEmission.GLOW;
     public float scale = 1F;
+    /// A contextual magnitude {@link #scale} is multiplied by at emit time — the spell's
+    /// range, for a model whose size should follow it. {@link Fx.ScaleWith#NONE} (the default)
+    /// uses {@link #scale} as authored, which stays a coefficient rather than being replaced.
+    /// Resolved by {@link Fx.Visuals#resolved}, which copies only the effects that ask for it.
+    public Fx.ScaleWith scale_with = Fx.ScaleWith.NONE;
     /// Duration in ticks the model persists
     public int duration = 20;
     public Positioning positioning = new Positioning();
@@ -33,6 +38,7 @@ public class ModelEffect { public ModelEffect() { }
         copy.model_id = this.model_id;
         copy.light_emission = this.light_emission;
         copy.scale = this.scale;
+        copy.scale_with = this.scale_with;
         copy.duration = this.duration;
         copy.positioning = this.positioning;
         copy.follow_entity = this.follow_entity;

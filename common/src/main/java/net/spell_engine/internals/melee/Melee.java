@@ -21,6 +21,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellHelper;
@@ -281,8 +282,9 @@ public class Melee {
                 AnimationHelper.sendAnimationExcluding(player, trackers, SpellCast.Animation.RELEASE, attackData.animation, speed);
             }
             SoundHelper.playSound(player.getWorld(), player, attackData.swing_sound);
-            ParticleHelper.sendBatches(player, attackData.particles, 1, trackers);
-            ModelEffectHelper.spawn(player.getWorld(), player.getPos(), player.getYaw(), attackData.model_fx, player);
+            var swingVisuals = attackData.visuals.resolved(Fx.Context.NONE);
+            ParticleHelper.sendBatches(player, swingVisuals.particles, 1, trackers);
+            ModelEffectHelper.spawn(player.getWorld(), player.getPos(), player.getYaw(), swingVisuals.models, player);
         }
     }
 

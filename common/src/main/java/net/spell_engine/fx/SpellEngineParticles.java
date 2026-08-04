@@ -128,7 +128,9 @@ public class SpellEngineParticles {
                     .color(Color.FROST.toRGBA()).colorVariance(0.65F)));
     public static final Entry snowflake = add(new Entry("snowflake", Texture.vanilla("generic", 8, true))
             .defaults(p -> p.motion(Motion.DRIFT).scale(0.15F, 0.33F).color(FROST_PALE.toRGBA())
-                    .opacity(0.75F).collides(true).playbackSpeed(0.2F).lifetimeVariance(0.5F)));
+                    .opacity(0.75F).collides(true).playbackSpeed(0.2F).lifetimeVariance(0.5F)
+                    // +10% over DRIFT's vanilla 0.225 — falls a touch harder than snow
+                    .gravity(0.2475F)));
     public static final Entry lightning_arc_A = add(new Entry("lightning_arc_a", Texture.of("elemental/lightning_arc_a", 8))
             .defaults(p -> p.render(Render.LIT).scale(1F)));
     public static final Entry lightning_arc_B = add(new Entry("lightning_arc_b", Texture.of("elemental/lightning_arc_b", 8))
@@ -221,33 +223,24 @@ public class SpellEngineParticles {
     public static final Entry area_effect_748 = areaEffect(748, 24);
 
     // MARK: - Magic
-    // V1 registered shape × motion = 32 types; V2 registers the 8 shapes and takes
-    // motion from the effect payload.
+    // V1 registered shape x motion = 32 types; V2 registers the 8 shapes and takes
+    // motion from the effect payload — pick one with
+    // `ParticleGroupBuilder.magic(entry, motion)`.
 
-    public static class MagicParticles {
-        private static Entry magic(String name, Texture texture, float opacity, float playbackSpeed) {
-            return add(new Entry("magic_" + name, texture).lifetime(16)
-                    .defaults(p -> p.motion(ParticleGroupEffect.Motion.FLOAT)
-                            .scale(0.11F, 0.33F).colorVariance(0.65F).opacity(opacity)
-                            .playbackSpeed(playbackSpeed).lifetimeVariance(0.5F)));
-        }
-        public static final Entry spell = magic("spell", Texture.vanilla("spell", 8, true), 1F, 0.5F);
-        public static final Entry spark = magic("spark", Texture.vanilla("generic_0"), 0.75F, 1F);
-        public static final Entry stripe = magic("stripe", Texture.of("magic/vertical_stripe", 8), 1F, 0.5F);
-        public static final Entry arcane = magic("arcane", Texture.of("magic/arcane"), 0.75F, 1F);
-        public static final Entry frost = magic("frost", Texture.of("magic/frost"), 0.75F, 1F);
-        public static final Entry holy = magic("holy", Texture.of("magic/holy"), 0.75F, 1F);
-        public static final Entry heal = magic("heal", Texture.of("magic/heal"), 0.75F, 1F);
-        public static final Entry skull = magic("skull", Texture.of("magic/skull"), 0.75F, 1F);
-
-        static void initialize() { }
+    private static Entry magic(String name, Texture texture, float opacity, float playbackSpeed) {
+        return add(new Entry("magic_" + name, texture).lifetime(16)
+                .defaults(p -> p.motion(Motion.FLOAT)
+                        .scale(0.11F, 0.33F).colorVariance(0.65F).opacity(opacity)
+                        .playbackSpeed(playbackSpeed).lifetimeVariance(0.5F)));
     }
-
-    static {
-        // Force the nested class's entries into the list before anyone iterates it
-        // (registration, datagen, client factory wiring).
-        MagicParticles.initialize();
-    }
+    public static final Entry magic_spell = magic("spell", Texture.vanilla("spell", 8, true), 1F, 0.5F);
+    public static final Entry magic_spark = magic("spark", Texture.vanilla("generic_0"), 0.75F, 1F);
+    public static final Entry magic_stripe = magic("stripe", Texture.of("magic/vertical_stripe", 8), 1F, 0.5F);
+    public static final Entry magic_arcane = magic("arcane", Texture.of("magic/arcane"), 0.75F, 1F);
+    public static final Entry magic_frost = magic("frost", Texture.of("magic/frost"), 0.75F, 1F);
+    public static final Entry magic_holy = magic("holy", Texture.of("magic/holy"), 0.75F, 1F);
+    public static final Entry magic_heal = magic("heal", Texture.of("magic/heal"), 0.75F, 1F);
+    public static final Entry magic_skull = magic("skull", Texture.of("magic/skull"), 0.75F, 1F);
 
     public static void register() {
         for (var entry: entries) {

@@ -39,7 +39,7 @@ import net.spell_engine.api.spell.weakness.SpellSchoolWeakness;
 import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.api.spell.fx.ParticleGroupEffect;
 import net.spell_engine.api.spell.fx.Sound;
-import net.spell_engine.api.spell.fx.VFX;
+import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.summon.AttributeScaling;
 import net.spell_engine.api.spell.summon.SpellSummoned;
 import net.spell_engine.api.spell.summon.SummonBehaviour;
@@ -308,7 +308,7 @@ public class SpellHelper {
                 if (isChanneled(spell)) {
                     shouldPerformImpact = false;
                     channelMultiplier = 1;
-                } else if (cast.resolvedType() == Spell.Active.Cast.Type.CHARGE && cast.charge != null) {
+                } else if (cast.type == Spell.Active.Cast.Type.CHARGE && cast.charge != null) {
                     // `progress` is the charge ratio (already clamped to 0..1). Below the minimum it
                     // fizzles via channelMultiplier = 0 (reusing the delivery gate below); otherwise
                     // the curved ratio scales the charge bonus modifier and is carried on the
@@ -398,16 +398,6 @@ public class SpellHelper {
                     completion.accept(new DeliveryCompletion(true));
                 }
             }
-//            if (finished && success) {
-//                ParticleHelper.sendBatches(player, spell.release.particles);
-//                SoundHelper.playSound(world, player, spell.release.sound);
-//                AnimationHelper.sendAnimation(player, trackingPlayers.get(), SpellCast.Animation.RELEASE, spell.release.animation, castingSpeed);
-//
-//                consumeSpellCost(player, progress, spellSource, spellId, spell, heldItemStack, ammoResult, false);
-//
-//                var args = new SpellEvents.SpellCastEvent.Args(player, spellEntry, targets, action, progress);
-//                SpellEvents.SPELL_CAST.invoke((listener) -> listener.onSpellCast(args));
-//            }
         }
     }
 
@@ -542,44 +532,35 @@ public class SpellHelper {
 
     private static void sendReleaseFx(World world, LivingEntity caster, RegistryEntry<Spell> spellEntry, float progress) {
         var spell = spellEntry.value();
-        ParticleHelper.sendBatches(caster, spell.release.particles);
+        // The caster's own reach is the one magnitude a release can honestly describe, so it is
+        // the only one bound here; effects asking for anything else fall back to their authored size.
+        var context = Fx.Context.ofRange(getRange(caster, spellEntry));
+        emitVisuals(world, caster, spell.release.visuals, context);
         for (var modifier: SpellModifiers.of(caster, spellEntry, null)) {
-            if (modifier.release_particles != null) {
-                ParticleHelper.sendBatches(caster, modifier.release_particles);
+            if (modifier.release != null) {
+                emitVisuals(world, caster, modifier.release, context);
             }
-        }
-        if (spell.release.particles_scaled_with_ranged != null) {
-            var range = getRange(caster, spellEntry);
-            var scaledParticles = new ArrayList<ParticleGroupEffect>(spell.release.particles_scaled_with_ranged.size());
-            for (var effect : spell.release.particles_scaled_with_ranged) {
-                // Matches V1: the range overwrites the authored scale, it does not compose with it
-                var copy = effect.copy();
-                copy.particle.scale = range;
-                scaledParticles.add(copy);
-            }
-            ParticleHelper.sendBatches(caster, scaledParticles);
         }
         var releaseSound = spell.release.sound;
         // For CHARGE casts, shift the release sound's pitch by the charge ratio (`progress`).
         if (releaseSound != null
                 && spell.release.pitch_shift != 0
                 && spell.active != null
-                && spell.active.cast.resolvedType() == Spell.Active.Cast.Type.CHARGE) {
+                && spell.active.cast.type == Spell.Active.Cast.Type.CHARGE) {
             releaseSound = releaseSound.shiftPitch(spell.release.pitch_shift * progress);
         }
         SoundHelper.playSound(world, caster, releaseSound);
-        ModelEffectHelper.spawn(world, caster.getPos(), caster.getYaw(), spell.release.model_fx, caster);
-        var scaledModelFx = spell.release.model_fx_scaled_with_ranged;
-        if (scaledModelFx != null && !scaledModelFx.isEmpty()) {
-            var range = getRange(caster, spellEntry);
-            var scaledModels = new ArrayList<ModelEffect>(scaledModelFx.size());
-            for (var effect : scaledModelFx) {
-                var scaled = effect.copy();
-                scaled.scale *= range;
-                scaledModels.add(scaled);
-            }
-            ModelEffectHelper.spawn(world, caster.getPos(), caster.getYaw(), scaledModels, caster);
+    }
+
+    /// Emits a visual bundle anchored on `caster`, resolving each effect's contextual scaling
+    /// first. Scaled and unscaled effects go out together, in one particle batch.
+    private static void emitVisuals(World world, LivingEntity caster, Fx.Visuals visuals, Fx.Context context) {
+        if (visuals == null || visuals.isEmpty()) {
+            return;
         }
+        var resolved = visuals.resolved(context);
+        ParticleHelper.sendBatches(caster, resolved.particles);
+        ModelEffectHelper.spawn(world, caster.getPos(), caster.getYaw(), resolved.models, caster);
     }
 
     private static void consumeAttemptCost(PlayerEntity player, RegistryEntry<Spell> spellEntry) {
@@ -1108,18 +1089,19 @@ public class SpellHelper {
         }
         var result = applyAreaImpact(contextEntity.getWorld(), caster, targets, radius, area_impact.area, spellEntry, impacts,
                 context.target(SpellTarget.FocusMode.AREA), additionalTargetLookup, area_impact.execute_action_type);
+        var areaVisuals = area_impact.visuals.resolved(Fx.Context.NONE);
         if (aoeSource != null) {
             // Anchored by coordinates rather than entity id: the source entity may die this very
             // tick (e.g. a falling projectile finishing), and entity-anchored FX would re-resolve
             // against its client-side position — racing the removal packet and placing the FX
             // wherever the client's own simulation of the entity happens to be.
-            ParticleHelper.sendBatchesDetached(aoeSource, area_impact.particles);
+            ParticleHelper.sendBatchesDetached(aoeSource, areaVisuals.particles);
         } else {
-            ParticleHelper.sendBatches(center, caster, area_impact.particles);
+            ParticleHelper.sendBatches(center, caster, areaVisuals.particles);
         }
 
         SoundHelper.playSound(contextEntity.getWorld(), contextEntity, area_impact.sound);
-        ModelEffectHelper.spawn(contextEntity.getWorld(), center, caster.getYaw(), area_impact.model_fx,
+        ModelEffectHelper.spawn(contextEntity.getWorld(), center, caster.getYaw(), areaVisuals.models,
                 contextEntity instanceof LivingEntity le ? le : null);
         return result;
     }
@@ -1151,7 +1133,7 @@ public class SpellHelper {
     /// The `charge` config of a CHARGE cast, or null for every other spell and cast type.
     @Nullable public static Spell.Active.Cast.Charge chargeConfigOf(@Nullable Spell spell) {
         if (spell == null || spell.active == null || spell.active.cast == null
-                || spell.active.cast.resolvedType() != Spell.Active.Cast.Type.CHARGE) {
+                || spell.active.cast.type != Spell.Active.Cast.Type.CHARGE) {
             return null;
         }
         return spell.active.cast.charge;
@@ -1786,15 +1768,21 @@ public class SpellHelper {
                             }
                             if (!farEnough) {
                                 if (data.fizzle != null) {
-                                    ParticleHelper.sendBatches(teleportedEntity, data.fizzle.particles, false);
+                                    var fizzleVisuals = data.fizzle.visuals.resolved(Fx.Context.NONE);
+                                    ParticleHelper.sendBatches(teleportedEntity, fizzleVisuals.particles, false);
+                                    ModelEffectHelper.spawn(world, teleportedEntity.getPos(), teleportedEntity.getYaw(),
+                                            fizzleVisuals.models, teleportedEntity);
                                     SoundHelper.playSound(world, teleportedEntity, data.fizzle.sound);
                                 }
                                 return false;
                             }
                         }
                         if (destination != null && startingPosition != null && teleportedEntity != null) {
-                            ParticleHelper.sendBatches(teleportedEntity, data.depart_particles, false);
-                            ModelEffectHelper.spawn(world, startingPosition, teleportedEntity.getYaw(), data.depart_model_fx, teleportedEntity);
+                            if (data.depart != null) {
+                                var departVisuals = data.depart.resolved(Fx.Context.NONE);
+                                ParticleHelper.sendBatches(teleportedEntity, departVisuals.particles, false);
+                                ModelEffectHelper.spawn(world, startingPosition, teleportedEntity.getYaw(), departVisuals.models, teleportedEntity);
+                            }
                             world.emitGameEvent(GameEvent.TELEPORT, startingPosition, GameEvent.Emitter.of(teleportedEntity));
 
                             if (applyRotation != null
@@ -1812,8 +1800,11 @@ public class SpellHelper {
                             }
                             success = true;
 
-                            ParticleHelper.sendBatches(teleportedEntity, data.arrive_particles, false);
-                            ModelEffectHelper.spawn(world, teleportedEntity.getPos(), teleportedEntity.getYaw(), data.arrive_model_fx, teleportedEntity);
+                            if (data.arrive != null) {
+                                var arriveVisuals = data.arrive.resolved(Fx.Context.NONE);
+                                ParticleHelper.sendBatches(teleportedEntity, arriveVisuals.particles, false);
+                                ModelEffectHelper.spawn(world, teleportedEntity.getPos(), teleportedEntity.getYaw(), arriveVisuals.models, teleportedEntity);
+                            }
                         }
                     }
                 }
@@ -1991,14 +1982,15 @@ public class SpellHelper {
                 }
             }
             if (success) {
-                if (impact.particles != null) {
+                var impactVisuals = impact.visuals.resolved(Fx.Context.NONE);
+                if (!impactVisuals.particles.isEmpty()) {
                     float countMultiplier = critical ? (float) particleMultiplier : 1F;
-                    ParticleHelper.sendBatches(target, impact.particles, countMultiplier * caster.getScale(), trackers);
+                    ParticleHelper.sendBatches(target, impactVisuals.particles, countMultiplier * caster.getScale(), trackers);
                 }
                 if (impact.sound != null) {
                     SoundHelper.playSound(world, target, impact.sound);
                 }
-                ModelEffectHelper.spawn(world, target.getPos(), caster.getYaw(), impact.model_fx,
+                ModelEffectHelper.spawn(world, target.getPos(), caster.getYaw(), impactVisuals.models,
                         target instanceof LivingEntity le ? le : null);
                 if (targetWasAlive && caster instanceof PlayerEntity player) {
                     var finalTarget = target;
@@ -2139,11 +2131,9 @@ public class SpellHelper {
                     if (sound != null) {
                         SoundHelper.playSound(world, entity, sound);
                     }
-                    var particles = cloud.spawn.particles;
-                    if (particles != null) {
-                        ParticleHelper.sendBatches(entity, particles);
-                    }
-                    ModelEffectHelper.spawn(world, entity.getPos(), entity.getYaw(), cloud.spawn.model_fx, null);
+                    var spawnVisuals = cloud.spawn.visuals.resolved(Fx.Context.NONE);
+                    ParticleHelper.sendBatches(entity, spawnVisuals.particles);
+                    ModelEffectHelper.spawn(world, entity.getPos(), entity.getYaw(), spawnVisuals.models, null);
                 });
 
                 if (cloud.placement_delay_stacks) {
@@ -2258,11 +2248,12 @@ public class SpellHelper {
         }
     }
 
-    private static void emitSummonGroupFx(ServerWorld world, LivingEntity caster, Vec3d anchor, VFX fx) {
-        if (fx.particles != null && !fx.particles.isEmpty()) {
-            ParticleHelper.sendBatches(anchor, caster, fx.particles);
+    private static void emitSummonGroupFx(ServerWorld world, LivingEntity caster, Vec3d anchor, Fx.Visuals fx) {
+        var visuals = fx.resolved(Fx.Context.NONE);
+        if (!visuals.particles.isEmpty()) {
+            ParticleHelper.sendBatches(anchor, caster, visuals.particles);
         }
-        ModelEffectHelper.spawn(world, anchor, caster.getYaw(), fx.model_fx);
+        ModelEffectHelper.spawn(world, anchor, caster.getYaw(), visuals.models);
     }
 
     private static void playSummonSound(ServerWorld world, Vec3d pos, Sound sound) {

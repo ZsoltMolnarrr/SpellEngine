@@ -78,13 +78,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         this.context = context;
 
         var projectileData = projectileData();
-        if (projectileData.client_data != null && projectileData.client_data.model != null) {
-            var model = projectileData.client_data.model;
-            if (model.use_held_item) {
-                setItemStackModel(caster.getMainHandStack());
-            }
-        }
-        // New multi-model path: capture the held item once if any composite model wants it.
+        // Capture the held item once if any model wants to render as it.
         if (projectileData.client_data != null && projectileData.client_data.composite_model != null
                 && projectileData.client_data.composite_model.models.stream().anyMatch(m -> m.use_held_item)) {
             setItemStackModel(caster.getMainHandStack());
@@ -700,15 +694,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     // MARK: FlyingSpellEntity
 
-    public Spell.ProjectileModel renderData() {
-        var data = projectileData();
-        if (data != null && data.client_data != null) {
-            return data.client_data.model;
-        }
-        return null;
-    }
-
-    /// New multi-model render data; null when the projectile uses the legacy single model.
+    /// The models this projectile renders as; null when it defines none.
     public Spell.ProjectileModelComposite renderModels() {
         var data = projectileData();
         if (data != null && data.client_data != null) {
@@ -723,12 +709,11 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         return this.getDataTracker().get(TRACKER_ITEM_MODEL_ID);
     }
 
+    /// Required by `FlyingItemEntity`. Spell projectiles draw themselves through
+    /// `composite_model` rather than as an item stack, so there is nothing to hand back —
+    /// models that render as the caster's held item go through `heldItemModelId()` instead.
     @Override
     public ItemStack getStack() {
-        var data = projectileData();
-        if (data != null && data.client_data != null && data.client_data.model != null) {
-            return Registries.ITEM.get(Identifier.of(data.client_data.model.model_id)).getDefaultStack();
-        }
         return ItemStack.EMPTY;
     }
 

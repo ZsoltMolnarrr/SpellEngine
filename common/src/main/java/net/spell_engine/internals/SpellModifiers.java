@@ -130,7 +130,7 @@ public class SpellModifiers {
         copy.mutate_impacts = modifier.mutate_impacts;
         copy.impacts = modifier.impacts;
         copy.replacing_area_impact = modifier.replacing_area_impact;
-        copy.release_particles = modifier.release_particles;
+        copy.release = modifier.release;
         copy.impact_filters = modifier.impact_filters;
         // Deliberately dropped, not copied: an attack list has no magnitude to scale, so it would
         // appear in full at any ratio above `min_release_ratio` — "release at 21%, get the whole

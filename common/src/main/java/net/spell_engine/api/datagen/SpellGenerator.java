@@ -15,6 +15,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.Easing;
+import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleGroupEffect;
@@ -95,6 +96,10 @@ public abstract class SpellGenerator implements DataProvider {
                 // types under api.spell.fx. Without these, every effect serialized all ~30 fields of
                 // Particle and Batch, defaults included.
                 .registerTypeAdapter(ParticleGroupEffect.class, new DefaultValueSkippingSerializer<>(ParticleGroupEffect.class))
+                // Same again for the FX bundle every one-shot site now carries: it lives under
+                // api.spell.fx rather than inside Spell, so without this an untouched `visuals`
+                // would write out `{"particles": [], "models": []}` at every site that has one.
+                .registerTypeAdapter(Fx.Visuals.class, new DefaultValueSkippingSerializer<>(Fx.Visuals.class))
                 .registerTypeAdapter(Easing.Curve.class, new DefaultValueSkippingSerializer<>(Easing.Curve.class));
         for (var nestedClass : getAllNestedClasses(Spell.class)) {
             gson = gson.registerTypeAdapter(nestedClass, new DefaultValueSkippingSerializer<>(nestedClass));

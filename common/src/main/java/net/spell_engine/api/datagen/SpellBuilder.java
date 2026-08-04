@@ -10,6 +10,7 @@ import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.target.SpellTarget;
 import org.joml.Vector3f;
+import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleGroupBuilder;
 import net.spell_engine.api.spell.fx.ParticleGroupEffect;
@@ -146,7 +147,7 @@ public class SpellBuilder {
                 spell.release.animation = PlayerAnimation.of(playerAnimation);
             }
             if (particles != null) {
-                spell.release.particles = particles;
+                spell.release.visuals.particles = particles;
             }
             if (sound != null) {
                 spell.release.sound = sound;
@@ -1126,8 +1127,8 @@ public class SpellBuilder {
     /// them is reached by mutating the result directly (orientation, spin, `fx.positioning`,
     /// `fx.initial` / `fx.animations` for modelFX animation, additional models, ...).
     ///
-    /// Defaults mirror the legacy {@link Spell.ProjectileModel} (GLOW, scale 1, spin 2°/tick,
-    /// TOWARDS_MOTION), so a single-model composite reproduces the old look with no extra config.
+    /// Defaults are the common case for a plain projectile (GLOW, scale 1, spin 2°/tick,
+    /// TOWARDS_MOTION), so a single-model composite needs no extra config.
     public static class ProjectileModels {
         /// A single model element from a model id (scale 1, GLOW, spins at 2°/tick, faces its motion).
         public static Spell.ProjectileModelComposite.Model model(String modelId) {
@@ -1219,7 +1220,7 @@ public class SpellBuilder {
             damage.action.damage.knockback = 0.2F;
             damage.action.damage.spell_power_coefficient = coefficient;
             damage.sound = new Sound(SpellEngineSounds.GENERIC_FIRE_IMPACT_1.id().toString());
-            damage.particles = List.of(
+            damage.visuals = Fx.Visuals.of(
                     ParticleGroupBuilder.of(SpellEngineParticles.flame)
                             .batch(ParticleGroupBuilder.Batches.cloud(20, 0.15F).andThen(b -> b.speed(0.05F, 0.15F))),
                     ParticleGroupBuilder.of(SpellEngineParticles.flame_medium_a)
@@ -1236,7 +1237,7 @@ public class SpellBuilder {
             var area_impact = new Spell.AreaImpact();
             area_impact.radius = radius;
             area_impact.area.distance_dropoff = Spell.Target.Area.DropoffCurve.SQUARED;
-            area_impact.particles = List.of(
+            area_impact.visuals = Fx.Visuals.of(
                     ParticleGroupBuilder.of(SpellEngineParticles.fire_explosion)
                             .scale(scale)
                             .batch(ParticleGroupBuilder.Batches.placed(1)));
@@ -1269,11 +1270,11 @@ public class SpellBuilder {
             impact.action.status_effect.amplifier_cap_power_multiplier = coefficient;
             impact.action.status_effect.show_particles = true;
 
-            impact.particles = List.of(
+            impact.visuals = Fx.Visuals.of(
                     ParticleGroupBuilder.of(SpellEngineParticles.smoke_large)
                             .color(0x33DD33AAL)
                             .batch(ParticleGroupBuilder.Batches.impact(0.5F, 0.02F).andThen(b -> b.speed(0.01F, 0.02F))),
-                    ParticleGroupBuilder.magic(SpellEngineParticles.MagicParticles.skull, ParticleGroupEffect.Motion.DECELERATE)
+                    ParticleGroupBuilder.magic(SpellEngineParticles.magic_skull, ParticleGroupEffect.Motion.DECELERATE)
                             .color(0x33DD33AAL)
                             .batch(ParticleGroupBuilder.Batches.impact(3, 0.2F).andThen(b -> b.speed(0.1F, 0.2F))));
             spell.impacts = List.of(impact);

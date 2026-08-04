@@ -12,6 +12,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.SpellHelper;
@@ -181,10 +182,9 @@ public class SpellCloud extends Entity implements Ownable {
         if (despawn.sound != null) {
             SoundHelper.playSound(getWorld(), this, despawn.sound);
         }
-        if (despawn.particles != null) {
-            ParticleHelper.sendBatches(this, despawn.particles);
-        }
-        ModelEffectHelper.spawn(getWorld(), this.getPos(), this.getYaw(), despawn.model_fx, null);
+        var despawnVisuals = despawn.visuals.resolved(Fx.Context.NONE);
+        ParticleHelper.sendBatches(this, despawnVisuals.particles);
+        ModelEffectHelper.spawn(getWorld(), this.getPos(), this.getYaw(), despawnVisuals.models, null);
     }
 
     private float calculateRadius() {
@@ -391,7 +391,7 @@ public class SpellCloud extends Entity implements Ownable {
         // empty method on anything but ClientWorld — it has to be broadcast instead. Detached (rather
         // than entity-anchored) because a cloud whose `despawn_ticks` is 0 is discarded on this very
         // tick, and the client would resolve the packet's entity id to nothing.
-        ParticleHelper.sendBatchesDetached(this, cloudData.impact_particles);
+        ParticleHelper.sendBatchesDetached(this, cloudData.impact.resolved(Fx.Context.NONE).particles);
         this.impactsPerformed++;
     }
 

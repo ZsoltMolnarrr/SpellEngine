@@ -1,3 +1,38 @@
+# Unreleased
+
+**Breaking.** FX API reworked into one shape for every one-shot visual, with declarative
+contextual sizing. No compatibility shim — existing spell JSON and Java authoring must be
+updated. All legacy FX fields and the older paths they superseded are deleted outright.
+
+New shape:
+
+- Every one-shot FX site carries a single `visuals` bundle (`Fx.Visuals`: `particles` +
+  `models`) with `sound` beside it: `release`, `impacts[]`, `area_impact`,
+  `deliver.melee.attacks[]`, `deliver.clouds[].spawn` and `.despawn`, `teleport.fizzle`, and
+  `arrow_perks.launch_visuals`. Continuous/ambient particle lists (casting, cloud presence,
+  projectile trails) are unchanged — they describe a state, not a moment.
+- Effects size themselves by a magnitude only known at emit time: `scale_with = RANGE` on a
+  `ParticleGroupEffect.Particle` or `ModelEffect`, with the authored `scale` kept as a
+  coefficient. Because the declaration sits on the individual effect, one bundle can mix
+  range-scaled and fixed-size effects.
+- Emission sites bind only the magnitudes they can honestly supply (`Fx.Context`); an effect
+  asking for one an unbinding site cannot provide keeps its authored size and warns once,
+  rather than inventing a number.
+
+Removed:
+
+- `particles` / `model_fx` at every site above — move them into `visuals`.
+- `release.scaled_with_ranged` — put the effects in `visuals` and set `scale_with = RANGE` on
+  the ones that should follow the spell's range. **Note the semantic change:** the old field
+  *replaced* a particle's scale with the range, whereas `scale_with` *multiplies* by it, so a
+  particle ported from it wants `scale = 1`. Models already multiplied and port as-is.
+- `arrow_perks.launch_particles` → `arrow_perks.launch_visuals`.
+- `Spell.ProjectileModel` and the single-model render paths reaching it —
+  `ProjectileData.Client.model`, `Cloud.ClientData.model`, `ArrowPerks.override_render`.
+  Use `composite_model` (projectiles, arrows) and `model_fx` (clouds).
+- `Cast.channel_ticks` / `Cast.channeled_release_fx` and the `resolvedType()` resolver they
+  needed. Use `cast.type = CHANNEL` with a `channel` block, and read `cast.type` directly.
+
 # 1.9.15
 
 - Added support for `CHARGE` casting mode for spells with `MELEE` delivery, supports

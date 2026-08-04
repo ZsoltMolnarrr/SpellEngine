@@ -98,7 +98,7 @@ public class SpellEngineClient {
                 new StunParticleSpawner()
         );
         final var magicSnareParticles = ParticleGroupBuilder
-                .magic(SpellEngineParticles.MagicParticles.spark, ParticleGroupEffect.Motion.DECELERATE, Color.PHYSICAL_BLUE)
+                .magic(SpellEngineParticles.magic_spark, ParticleGroupEffect.Motion.DECELERATE, Color.PHYSICAL_BLUE)
                 .batch(ParticleGroupBuilder.Batches.shockwave(2F, 0.15F, 5)
                         .andThen(b -> b.invert(true)));
         CustomParticleStatusEffect.register(

@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 /// The two phases mirror the structure being built, and the split is strict:
 ///
 /// ```java
-/// ParticleGroupBuilder.magic(MagicParticles.arcane, Motion.ASCEND)  // what a particle is
+/// ParticleGroupBuilder.magic(magic_arcane, Motion.ASCEND)  // what a particle is
 ///     .color(Color.ARCANE)                                          // ...and how it looks
 ///     .batch(Batches.casting(8, 0.1F));                             // how many, and where
 /// ```
@@ -77,7 +77,7 @@ public class ParticleGroupBuilder {
     ///
     /// V1 registered the 8x4 product of shapes and motions as 32 separate particle
     /// types, so motion was fixed at registration. Choosing it here is the whole
-    /// reason that collapsed to 8 — see [SpellEngineParticles.MagicParticles].
+    /// reason that collapsed to 8 — see [SpellEngineParticles].
     public static ParticleGroupBuilder magic(SpellEngineParticles.Entry entry, ParticleGroupEffect.Motion motion) {
         return of(entry).motion(motion);
     }
@@ -142,6 +142,21 @@ public class ParticleGroupBuilder {
 
     public ParticleGroupBuilder scale(float scale, float variance) {
         effect.particle.scale(scale, variance);
+        return this;
+    }
+
+    /// Sizes this effect by a magnitude resolved where it is emitted, keeping whatever
+    /// [#scale] was authored as a coefficient on top of it. Only bundles emitted as an
+    /// [Fx.Visuals] resolve this, and only at sites that bind the requested variable.
+    ///
+    /// ```java
+    /// // Ring drawn at the full reach of the swing
+    /// ParticleGroupBuilder.of(SpellEngineParticles.wave)
+    ///     .scaleWith(Fx.ScaleWith.RANGE)
+    ///     .batch(Batches.impact(1, 0F));
+    /// ```
+    public ParticleGroupBuilder scaleWith(Fx.ScaleWith scaleWith) {
+        effect.particle.scaleWith(scaleWith);
         return this;
     }
 

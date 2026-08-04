@@ -35,5 +35,6 @@ For complex, real-world spell definitions see these content mods:
 - [`SpellBuilder.java`](../common/src/main/java/net/spell_engine/api/datagen/SpellBuilder.java) — Java factory helpers
 - [`SpellGenerator.java`](../common/src/main/java/net/spell_engine/api/datagen/SpellGenerator.java) — datagen base class
 - [`SpellEngineSounds.java`](../common/src/main/java/net/spell_engine/fx/SpellEngineSounds.java) — built-in sound ids
-- [`SpellEngineParticles.java`](../common/src/main/java/net/spell_engine/fx/SpellEngineParticles.java) — built-in particle ids
+- [`SpellEngineParticles.java`](../common/src/main/java/net/spell_engine/fx/SpellEngineParticles.java) — built-in particle ids and their defaults
+- [`ParticleGroupBuilder.java`](../common/src/main/java/net/spell_engine/api/spell/fx/ParticleGroupBuilder.java) — fluent particle effect authoring + batch presets
 - [`player_animations/`](../common/src/main/resources/assets/spell_engine/player_animations/) — built-in animation ids

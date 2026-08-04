@@ -521,7 +521,7 @@ public class SpellTooltip {
                         lines.add(indentation(indentLevel)
                                 .append(Text.translatable("spell.tooltip.cast_instant"))
                                 .formatted(Formatting.GOLD));
-                    } else if (active.cast.resolvedType() == Spell.Active.Cast.Type.CHARGE) {
+                    } else if (active.cast.type == Spell.Active.Cast.Type.CHARGE) {
                         // CHARGE: the duration is the time to reach full charge (releasable earlier).
                         var chargeDuration = SpellHelper.getCastDuration(player, spell, itemStack);
                         var chargeKey = keyWithPlural("spell.tooltip.cast_charge", chargeDuration);
@@ -529,7 +529,7 @@ public class SpellTooltip {
                         lines.add(indentation(indentLevel)
                                 .append(Text.literal(chargeText))
                                 .formatted(Formatting.GOLD));
-                    } else if (active.cast.resolvedType() == Spell.Active.Cast.Type.CHANNEL) {
+                    } else if (active.cast.type == Spell.Active.Cast.Type.CHANNEL) {
                         // CHANNEL: the duration is the span over which the repeated deliveries are spread.
                         var channelDuration = SpellHelper.getCastDuration(player, spell, itemStack);
                         var channelKey = keyWithPlural("spell.tooltip.cast_channel", channelDuration);
@@ -924,7 +924,7 @@ public class SpellTooltip {
     /// actually scales the spell's range, which is the sole case where the range line shows a span.
     private static float chargeRangeAdd(Spell spell) {
         if (spell.active != null && spell.active.cast != null
-                && spell.active.cast.resolvedType() == Spell.Active.Cast.Type.CHARGE
+                && spell.active.cast.type == Spell.Active.Cast.Type.CHARGE
                 && spell.active.cast.charge != null) {
             return spell.active.cast.charge.bonus.range_add;
         }

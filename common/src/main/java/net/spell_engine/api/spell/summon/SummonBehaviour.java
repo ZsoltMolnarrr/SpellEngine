@@ -3,7 +3,7 @@ package net.spell_engine.api.spell.summon;
 import com.google.gson.Gson;
 import net.spell_engine.api.spell.fx.ParticleGroupEffect;
 import net.spell_engine.api.spell.fx.Sound;
-import net.spell_engine.api.spell.fx.VFX;
+import net.spell_engine.api.spell.fx.Fx;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -49,11 +49,11 @@ public class SummonBehaviour {
 
     /// One-shot FX emitted server-side when this individual summon enters the world (on its first
     /// tick, alongside the spawn sound). Null = none.
-    @Nullable public VFX spawn_fx = null;
+    @Nullable public Fx.Visuals spawn_fx = null;
 
     /// One-shot FX emitted server-side when this individual summon enters its despawn phase
     /// (alongside the despawn sound). Null = none.
-    @Nullable public VFX despawn_fx = null;
+    @Nullable public Fx.Visuals despawn_fx = null;
 
     // --- Existence FX ---
 

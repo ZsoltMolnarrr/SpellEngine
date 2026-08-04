@@ -52,21 +52,23 @@
     }
   },
   "release": {
-    "particles": [
-      {
-        "id": "spell_engine:smoke_medium",
-        "particle": {},
-        "batch": {
-          "count": 25.0,
-          "shape": "CIRCLE",
-          "anchor": "ENTITY",
-          "vertical_origin": 0.1,
-          "min_speed": 0.15,
-          "max_speed": 0.15,
-          "pre_travel": 1.0
+    "visuals": {
+      "particles": [
+        {
+          "id": "spell_engine:smoke_medium",
+          "particle": {},
+          "batch": {
+            "count": 25.0,
+            "shape": "CIRCLE",
+            "anchor": "ENTITY",
+            "vertical_origin": 0.1,
+            "min_speed": 0.15,
+            "max_speed": 0.15,
+            "pre_travel": 1.0
+          }
         }
-      }
-    ],
+      ]
+    },
     "sound": {
       "id": "spell_engine:weapon_throw"
     }
@@ -86,19 +88,21 @@
           "knockback": 0.8
         }
       },
-      "particles": [
-        {
-          "id": "crit",
-          "particle": {},
-          "batch": {
-            "count": 30.0,
-            "shape": "SPHERE",
-            "anchor": "ENTITY",
-            "min_speed": 0.2,
-            "max_speed": 0.7
+      "visuals": {
+        "particles": [
+          {
+            "id": "crit",
+            "particle": {},
+            "batch": {
+              "count": 30.0,
+              "shape": "SPHERE",
+              "anchor": "ENTITY",
+              "min_speed": 0.2,
+              "max_speed": 0.7
+            }
           }
-        }
-      ]
+        ]
+      }
     }
   ],
   "cost": {

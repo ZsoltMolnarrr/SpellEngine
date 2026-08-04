@@ -11,6 +11,8 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.fx.Fx;
+import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellModifiers;
@@ -148,7 +150,9 @@ public class ArrowHelper {
         if (arrowPerks != null) {
             var world = shooter.getWorld();
             arrow.applyArrowPerks(spellEntry, arrowPerks);
-            ParticleHelper.sendBatches(shooter, arrowPerks.launch_particles, 1F, trackers.get());
+            var launchVisuals = arrowPerks.launch_visuals.resolved(Fx.Context.NONE);
+            ParticleHelper.sendBatches(shooter, launchVisuals.particles, 1F, trackers.get());
+            ModelEffectHelper.spawn(world, shooter.getPos(), shooter.getYaw(), launchVisuals.models, shooter);
             SoundHelper.playSound(world, shooter, arrowPerks.launch_sound);
         }
     }

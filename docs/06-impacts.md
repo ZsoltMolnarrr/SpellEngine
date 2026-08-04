@@ -21,7 +21,7 @@
 | `school` | Override the spell school for power lookup on this impact only (uses spell school if null) |
 | `power_blend` | Blend other schools into this impact's power — see [Hybrid Power](#hybrid-power-power_blend) |
 | `action` | What happens — see action types below |
-| `particles` | Particles spawned at the target on impact |
+| `particles` | Particles spawned at the target on impact — see [Particles](09-visuals-and-audio.md#particles) |
 | `sound` | Sound played at the target on impact |
 | `target_modifiers` | Conditions that gate or modify power — see [Conditional Execution](#conditional-execution) |
 

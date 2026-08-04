@@ -47,6 +47,9 @@ public class ModelEffectBuilder {
     // --- Basic properties ---
 
     public ModelEffectBuilder scale(float scale) { effect.scale = scale; return this; }
+    /** Sizes the model by a magnitude resolved where it is emitted, with {@link #scale} kept as a
+     * coefficient on top of it. Resolved only for models emitted as part of an {@link Fx.Visuals}. */
+    public ModelEffectBuilder scaleWith(Fx.ScaleWith scaleWith) { effect.scale_with = scaleWith; return this; }
     public ModelEffectBuilder duration(int ticks) { effect.duration = ticks; return this; }
     public ModelEffectBuilder light(LightEmission emission) { effect.light_emission = emission; return this; }
     public ModelEffectBuilder followEntity() { effect.follow_entity = true; return this; }

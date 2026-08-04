@@ -5,6 +5,7 @@ import net.spell_engine.api.datagen.SpellBuilder;
 import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
+import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.fx.ParticleGroupBuilder;
 import net.spell_engine.api.spell.fx.ParticleGroupEffect;
 import net.spell_engine.api.spell.fx.Sound;
@@ -47,7 +48,7 @@ public class WeaponSkills {
                         .batch(ParticleGroupBuilder.Batches.casting(0.1F, 0.1F).andThen(b -> b.speed(0.01F, 0.1F))));
 
         spell.release.sound = new Sound(SpellEngineSounds.WEAPON_THROW.id());
-        spell.release.particles = List.of(
+        spell.release.visuals = Fx.Visuals.of(
                 ParticleGroupBuilder.of(SpellEngineParticles.smoke_medium)
                         .batch(ParticleGroupBuilder.Batches.shockwave(25, 0.15F, 1)));
 
@@ -61,7 +62,7 @@ public class WeaponSkills {
         damage.action.damage = new Spell.Impact.Action.Damage();
         damage.action.damage.spell_power_coefficient = 1.2F;
         damage.action.damage.knockback = 0.8F;
-        damage.particles = List.of(
+        damage.visuals = Fx.Visuals.of(
                 ParticleGroupBuilder.of("crit")
                         .batch(ParticleGroupBuilder.Batches.impact(30, 0.7F).andThen(b -> b.speed(0.2F, 0.7F))));
         spell.impacts = List.of(damage);
@@ -91,10 +92,11 @@ public class WeaponSkills {
         spell.target.area.distance_dropoff = Spell.Target.Area.DropoffCurve.NONE;
         spell.target.area.vertical_range_multiplier = 0.5F;
 
-        spell.release.particles_scaled_with_ranged = List.of(
+        // The swirl is drawn at the full reach of the swing; the smoke ring keeps its authored size.
+        spell.release.visuals = Fx.Visuals.of(
                 ParticleGroupBuilder.of(SpellEngineParticles.area_swirl)
-                        .scale(0.8F).attached()
-                        .batch(ParticleGroupBuilder.Batches.still(1)),
+                        .scaleWith(Fx.ScaleWith.RANGE).attached()
+                        .batch(ParticleGroupBuilder.Batches.placed(1)),
                 ParticleGroupBuilder.of(SpellEngineParticles.smoke_medium)
                         .batch(ParticleGroupBuilder.Batches.shockwave(25, 0.15F, 1)));
 
@@ -134,7 +136,7 @@ public class WeaponSkills {
 
         spell.area_impact = new Spell.AreaImpact();
         spell.area_impact.radius = 3F;
-        spell.area_impact.particles = List.of(
+        spell.area_impact.visuals = Fx.Visuals.of(
                 ParticleGroupBuilder.of(SpellEngineParticles.smoke_medium)
                         .batch(ParticleGroupBuilder.Batches.shockwave(25, 0.2F, 1)),
                 ParticleGroupBuilder.of(SpellEngineParticles.smoke_medium)

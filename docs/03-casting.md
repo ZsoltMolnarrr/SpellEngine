@@ -122,7 +122,7 @@ the `{damage}` range widens downward to the weakest allowed release automaticall
 | `movement_speed` | float | `0.2` | Movement speed multiplier while casting |
 | `start_sound` | Sound | `null` | Played once at cast start |
 | `sound` | Sound | `null` | Looped during cast |
-| `particles` | array | `[]` | Particles emitted during cast |
+| `particles` | array | `[]` | Particles emitted during cast — see [Particles](09-visuals-and-audio.md#particles) |
 
 > **Deprecated:** the flat `channel_ticks` / `channeled_release_fx` fields still work (they take
 > priority when set, for backward compatibility) but are superseded by `type: CHANNEL` + `channel`.

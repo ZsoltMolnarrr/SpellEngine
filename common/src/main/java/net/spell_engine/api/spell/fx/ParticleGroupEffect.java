@@ -106,6 +106,19 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
         /// Size at spawn.
         public float scale = 1F;
 
+        /// A contextual magnitude [#scale] is multiplied by at emit time — the spell's
+        /// range, for an effect whose size should follow it. [Fx.ScaleWith#NONE] (the
+        /// default) uses [#scale] as authored.
+        ///
+        /// The authored [#scale] stays a coefficient rather than being replaced, so
+        /// `scale(0.5F)` with [Fx.ScaleWith#RANGE] draws at half the range. Resolved by
+        /// [Fx.Visuals#resolved], which copies only the effects that ask for it — so one
+        /// bundle can freely mix scaled and unscaled effects.
+        ///
+        /// Sites that emit plain particle lists rather than an [Fx.Visuals] (casting
+        /// particles, a cloud's ambient particles, projectile trails) never resolve this.
+        public Fx.ScaleWith scale_with = Fx.ScaleWith.NONE;
+
         /// Random size variation as a fraction of [#scale]. `0.25` gives each
         /// particle a size in `[0.75, 1.25] * scale`.
         public float scale_variance = 0F;
@@ -174,6 +187,7 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
         public Particle opacity(float opacity, @Nullable Easing.Curve opacity_curve) { this.opacity = opacity; this.opacity_curve = opacity_curve; return this; }
         public Particle scale(float scale) { this.scale = scale; return this; }
         public Particle scale(float scale, float variance) { this.scale = scale; this.scale_variance = variance; return this; }
+        public Particle scaleWith(Fx.ScaleWith scale_with) { this.scale_with = scale_with; return this; }
         /// Scales linearly to `scale_multiplier` times its spawn size across the lifetime.
         public Particle scaleMultiplier(float scale_multiplier) { this.scale_multiplier = scale_multiplier; this.scale_easing = Easing.LINEAR; return this; }
         public Particle scaleMultiplier(float scale_multiplier, Easing easing) { this.scale_multiplier = scale_multiplier; this.scale_easing = easing; return this; }
@@ -196,6 +210,7 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
             copy.opacity = this.opacity;
             copy.opacity_curve = this.opacity_curve != null ? this.opacity_curve.copy() : null;
             copy.scale = this.scale;
+            copy.scale_with = this.scale_with;
             copy.scale_variance = this.scale_variance;
             copy.scale_multiplier = this.scale_multiplier;
             copy.scale_easing = this.scale_easing;

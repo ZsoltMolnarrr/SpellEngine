@@ -223,7 +223,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 var isFinished = spellCastTicks >= process.length();
                 // CHARGE spells are not auto-released at full: the player may hold the charge
                 // indefinitely and releases manually (key-up, via SpellHotbar -> releaseCharge).
-                if (isFinished && cast.resolvedType() != Spell.Active.Cast.Type.CHARGE) {
+                if (isFinished && cast.type != Spell.Active.Cast.Type.CHARGE) {
                     // Release spell
                     releaseSpellCast(process, SpellCast.Action.RELEASE);
                 }

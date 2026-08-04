@@ -33,6 +33,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import net.spell_engine.api.entity.TwoWayCollisionChecker;
+import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.registry.SpellRegistry;
@@ -437,12 +438,12 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     /// go out as a tracker packet, model effects as self-syncing entities, both at this entity.
     private void emitSpawnFx() {
         if (behaviour == null || behaviour.spawn_fx == null) return;
-        var fx = behaviour.spawn_fx;
+        var fx = behaviour.spawn_fx.resolved(Fx.Context.NONE);
         var world = getWorld();
-        if (fx.particles != null && !fx.particles.isEmpty()) {
+        if (!fx.particles.isEmpty()) {
             ParticleHelper.sendBatches(this, fx.particles);
         }
-        ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.model_fx, this);
+        ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.models, this);
     }
 
     /// Server-side: emits the individual despawn FX once, when the entity enters its despawn phase.
@@ -450,12 +451,12 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     /// self-syncing entities, both at this entity.
     private void emitDespawnFx() {
         if (behaviour == null || behaviour.despawn_fx == null) return;
-        var fx = behaviour.despawn_fx;
+        var fx = behaviour.despawn_fx.resolved(Fx.Context.NONE);
         var world = getWorld();
-        if (fx.particles != null && !fx.particles.isEmpty()) {
+        if (!fx.particles.isEmpty()) {
             ParticleHelper.sendBatches(this, fx.particles);
         }
-        ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.model_fx, this);
+        ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.models, this);
     }
 
     /// Client-side: spawns the configured existence particles locally on their interval, during the

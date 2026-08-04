@@ -152,7 +152,7 @@ public class SpellCast {
                 if (SpellHelper.isChanneled(spell)) {
                     return CHANNEL;
                 }
-                if (spell.active.cast.resolvedType() == Spell.Active.Cast.Type.CHARGE) {
+                if (spell.active.cast.type == Spell.Active.Cast.Type.CHARGE) {
                     return CHARGED;
                 }
                 return CASTING;
