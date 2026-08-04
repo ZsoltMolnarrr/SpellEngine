@@ -12,12 +12,19 @@ New shape:
   `arrow_perks.launch_visuals`. Continuous/ambient particle lists (casting, cloud presence,
   projectile trails) are unchanged — they describe a state, not a moment.
 - Effects size themselves by a magnitude only known at emit time: `scale_with = RANGE` on a
-  `ParticleGroupEffect.Particle` or `ModelEffect`, with the authored `scale` kept as a
+  `ParticleGroup.Appearance` or `ModelEffect`, with the authored `scale` kept as a
   coefficient. Because the declaration sits on the individual effect, one bundle can mix
   range-scaled and fixed-size effects.
 - Emission sites bind only the magnitudes they can honestly supply (`Fx.Context`); an effect
   asking for one an unbinding site cannot provide keeps its authored size and warns once,
   rather than inventing a number.
+
+Renamed:
+
+- `ParticleGroupEffect` → `ParticleGroup`, and its nested `Particle` → `Appearance` (JSON key
+  `particle` → `appearance`). The supporting registered type `ParticleGroupEffectType` →
+  `ParticleGroupType`. `ParticleGroupBuilder.particle(...)` — the escape hatch for fields
+  without a named builder method — is now `.appearance(...)`.
 
 Removed:
 

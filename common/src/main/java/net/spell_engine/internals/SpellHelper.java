@@ -37,7 +37,7 @@ import net.spell_engine.api.effect.StatusEffectClassification;
 import net.spell_engine.api.entity.LivingEntityImmunity;
 import net.spell_engine.api.spell.weakness.SpellSchoolWeakness;
 import net.spell_engine.api.spell.fx.ModelEffect;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.summon.AttributeScaling;

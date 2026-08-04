@@ -313,6 +313,32 @@ Optional **audio for key moments** in the summon's life. Leave any blank to fall
 | `ambient` | Periodic idle noise. |
 | `step` | Each footstep. |
 
+### 2.9b Visual FX
+
+The visual counterparts to the sounds above. `spawn_fx` and `despawn_fx` are
+one-shot **moments** — each an `Fx.Visuals` bundle of particles and models, emitted
+server-side at that entity. `existence_particles` is a **presence**: it repeats while
+the summon is alive, and is spawned client-side from a config synced once, so it
+costs no per-tick network traffic.
+
+| Field | Emitted |
+|---|---|
+| `spawn_fx` | Once, as the summon enters the world |
+| `despawn_fx` | Once, as it begins winding down |
+| `existence_particles[]` | Every `interval_ticks` while ACTIVE, offset by `offset_ticks` |
+
+```java
+behaviour.spawn_fx = Fx.Visuals.of(
+        ParticleGroupBuilder.of(SpellEngineParticles.magic_arcane)
+                .batch(ParticleGroupBuilder.Batches.impact(15, 0.5F)));
+```
+
+A summon *group* — several entities from one cast — can also play a single shared
+moment at the group's anchor, authored on the spell rather than the behaviour:
+`impacts[].action.summon.group_spawn_fx` with `group_spawn_sound` beside it.
+
+See [Particles](09-visuals-and-audio.md#particles) for the effect structure itself.
+
 ### 2.10 Dimensions
 
 Overrides the summon's **hitbox size** when you need it to differ from the registered model — e.g. a compact box for a floating turret.
@@ -494,7 +520,7 @@ A summon's model can't just be dropped in. It must be **exported as Java** and w
 
 When a summon casts, it does **not** go through the normal player casting path. It uses a separate, server-side, **single-shot** entry point (`SpellHelper.targetAndPerformSpell`) that resolves a target from the summon's facing and runs the spell's delivery once. That design causes three hard limits:
 
-**Only active, non-channeled spells fire.** Before a cast even starts, channeled spells are rejected outright (any spell with `channel_ticks > 0`), and so are passive/modifier spells. This is structural, not an oversight: channeling means *repeated, timed* deliveries spread across the cast, and the summon path has no loop to drive them — it fires exactly once.
+**Only active, non-channeled spells fire.** Before a cast even starts, channeled spells are rejected outright (any spell whose cast resolves to a non-zero channel tick count — i.e. `type: CHANNEL` with `channel.ticks > 0`), and so are passive/modifier spells. This is structural, not an oversight: channeling means *repeated, timed* deliveries spread across the cast, and the summon path has no loop to drive them — it fires exactly once.
 
 - ✅ **Instant** spells — fire immediately.
 - ✅ **Charged** spells — the summon waits the full cast time, then fires once at **full** strength (no partial-charge scaling).

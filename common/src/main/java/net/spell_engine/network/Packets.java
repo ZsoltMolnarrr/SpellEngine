@@ -10,7 +10,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.container.SpellContainer;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.internals.SpellCooldownManager;
 import net.spell_engine.internals.casting.SpellCast;
@@ -205,7 +205,7 @@ public class Packets {
         }
 
         public enum SourceType { ENTITY, COORDINATE }
-        public record Spawn(int sourceEntityId, float yaw, float pitch, Vec3d sourceLocation, ParticleGroupEffect effect) { }
+        public record Spawn(int sourceEntityId, float yaw, float pitch, Vec3d sourceLocation, ParticleGroup effect) { }
 
         // The effect ships as GSON (same as `SpellContainerSync`): self-describing named
         // fields, so enums are no longer serialized by ordinal and none of them is
@@ -239,7 +239,7 @@ public class Packets {
                         buffer.readFloat(),
                         buffer.readFloat(),
                         new Vec3d(buffer.readDouble(), buffer.readDouble(), buffer.readDouble()),
-                        gson.fromJson(buffer.readString(), ParticleGroupEffect.class)
+                        gson.fromJson(buffer.readString(), ParticleGroup.class)
                 ));
             }
             return new ParticleEffects(sourceType, countMultiplier, spawns);

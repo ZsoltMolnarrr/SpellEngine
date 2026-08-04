@@ -21,12 +21,12 @@ Sounds can appear at multiple points:
 
 ## Particles
 
-A particle effect is a `ParticleGroupEffect`. It has three parts:
+A particle effect is a `ParticleGroup`. It has three parts:
 
 ```json
 {
   "id": "spell_engine:magic_spell",
-  "particle": { "color": 4284940287, "motion": "ASCEND" },
+  "appearance": { "color": 4284940287, "motion": "ASCEND" },
   "batch":    { "shape": "PIPE", "count": 8, "min_speed": 0.05, "max_speed": 0.1 }
 }
 ```
@@ -34,10 +34,10 @@ A particle effect is a `ParticleGroupEffect`. It has three parts:
 | Part | Meaning |
 |---|---|
 | `id` | Which registered particle to spawn — picks the texture and its defaults |
-| `particle` | What one particle looks like and how it moves. Sent to the client as one payload |
+| `appearance` | What one particle looks like and how it moves. Sent to the client as one payload |
 | `batch` | How many to spawn, where to place them, what velocity to give them. Resolved before any particle exists |
 
-The split is the rule of thumb for finding a field: *"is this about one particle, or about the group?"* Colour, size, fade and motion are `particle`. Count, shape, placement and speed are `batch`.
+The split is the rule of thumb for finding a field: *"is this about one particle, or about the whole group?"* Colour, size, fade and motion are `appearance`. Count, shape, placement and speed are `batch`.
 
 ### Authoring in Java
 
@@ -94,7 +94,7 @@ Three fields **multiply** with the entry's value instead of replacing it:
 
 Everything else overrides outright. Built-in particles are listed in [`SpellEngineParticles.java`](../common/src/main/java/net/spell_engine/fx/SpellEngineParticles.java).
 
-### `particle` fields
+### `appearance` fields
 
 | Field | Default | Description |
 |---|---|---|
@@ -175,7 +175,7 @@ Everything else overrides outright. Built-in particles are listed in [`SpellEngi
 
 ### Vanilla particles
 
-Vanilla and third-party ids (`"minecraft:flame"`, `"crit"`, `"smoke"`) work, but only the `batch` geometry applies — their factories know nothing about our payload, so the entire `particle` block is ignored. Register an equivalent if you need colouring, scaling or a lifetime change.
+Vanilla and third-party ids (`"minecraft:flame"`, `"crit"`, `"smoke"`) work, but only the `batch` geometry applies — their factories know nothing about our payload, so the entire `appearance` block is ignored. Register an equivalent if you need colouring, scaling or a lifetime change.
 
 ### Where particles can appear
 
@@ -199,6 +199,16 @@ Moments (`visuals.particles` + `visuals.models`):
 | `impacts[].action.teleport.fizzle.visuals` | Where an aborted teleport leaves the caster |
 | `arrow_perks.launch_visuals` | On the shooter, as an arrow leaves |
 | `target.beam.block_hit` | Where a beam meets a solid block |
+| `impacts[].action.summon.group_spawn_fx` | Once per summoned group, at the group's anchor |
+| `modifiers[].release` | Added to the release of any spell a modifier matches |
+
+Two more live on a summon's behaviour rather than on the spell — see
+[Summons](10-summons.md):
+
+| Location | Description |
+|---|---|
+| `spawn_fx` | Per summoned entity, as it enters the world |
+| `despawn_fx` | Per summoned entity, as it begins winding down |
 
 Presences (plain lists):
 
@@ -209,6 +219,7 @@ Presences (plain lists):
 | `deliver.clouds[].client_data.interval_particles` | Interval particles on cloud |
 | `deliver.projectile.projectile.client_data.travel_particles` | While projectile is in flight |
 | `arrow_perks.travel_particles` | While an affected arrow is in flight |
+| `existence_particles[].particles` | On a summon's behaviour, per interval while it lives |
 
 ### Sizing an effect by the spell's range
 

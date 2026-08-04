@@ -7,7 +7,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.fx.ParticleGroupBuilder;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.fx.SpellEngineParticles;

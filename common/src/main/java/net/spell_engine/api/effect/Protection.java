@@ -8,7 +8,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.sound.SoundEvent;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.utils.SoundHelper;
 import net.spell_engine.utils.StatusEffectUtil;
@@ -22,7 +22,7 @@ import java.util.Map;
  * DISCLAIMER: This API only works on PlayerEntities (due to performance)
  */
 public class Protection {
-    public record Pop(List<ParticleGroupEffect> particles, @Nullable SoundEvent sound) { }
+    public record Pop(List<ParticleGroup> particles, @Nullable SoundEvent sound) { }
     public record Entry(RegistryEntry<StatusEffect> effectEntry, TagKey<DamageType> protects,
                         int decrement, Pop onDecrement, Pop onRemove) { }
     public static final Map<RegistryKey<StatusEffect>, Entry> PROTECTIONS = new HashMap<>();

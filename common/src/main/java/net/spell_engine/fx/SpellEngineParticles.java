@@ -5,10 +5,10 @@ import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.fx.Easing;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect.Facing;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect.Motion;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect.Render;
+import net.spell_engine.api.spell.fx.ParticleGroup;
+import net.spell_engine.api.spell.fx.ParticleGroup.Facing;
+import net.spell_engine.api.spell.fx.ParticleGroup.Motion;
+import net.spell_engine.api.spell.fx.ParticleGroup.Render;
 import net.spell_engine.client.util.Color;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 ///
 /// Each [Entry] is one texture plus the natural defaults of the particle rendered
 /// from it — its lifetime, render sheet, base scale, colouring and motion. A
-/// [ParticleGroupEffect] references an entry by id and overrides only what the
+/// [ParticleGroup] references an entry by id and overrides only what the
 /// call site needs; the single generic factory ([net.spell_engine.client.particle.SpellParticle])
 /// resolves entry defaults + effect payload into the final appearance.
 ///
@@ -70,8 +70,8 @@ public class SpellEngineParticles {
         /// Vertical render offset of the sprite quad, in units of particle size.
         /// `1` makes a quad stand on its position instead of being centered on it.
         private float pivot = 0F;
-        private final ParticleGroupEffect.Particle defaults = new ParticleGroupEffect.Particle();
-        private final ParticleGroupEffectType type = new ParticleGroupEffectType();
+        private final ParticleGroup.Appearance defaults = new ParticleGroup.Appearance();
+        private final ParticleGroupType type = new ParticleGroupType();
 
         Entry(String name, Texture texture) {
             this(Identifier.of(SpellEngineMod.ID, name), texture);
@@ -84,16 +84,16 @@ public class SpellEngineParticles {
 
         public Identifier id() { return id; }
         public Texture texture() { return texture; }
-        public ParticleGroupEffectType type() { return type; }
+        public ParticleGroupType type() { return type; }
         /// The entry's natural lifetime in ticks: the texture's frame count when
         /// animated, otherwise the statically configured value (default 20).
         public int lifetime() { return texture.frames() > 1 ? texture.frames() : lifetime; }
         public float pivot() { return pivot; }
-        public ParticleGroupEffect.Particle defaults() { return defaults; }
+        public ParticleGroup.Appearance defaults() { return defaults; }
 
         Entry lifetime(int lifetime) { this.lifetime = lifetime; return this; }
         Entry pivot(float pivot) { this.pivot = pivot; return this; }
-        Entry defaults(Consumer<ParticleGroupEffect.Particle> configure) { configure.accept(this.defaults); return this; }
+        Entry defaults(Consumer<ParticleGroup.Appearance> configure) { configure.accept(this.defaults); return this; }
     }
 
     private static final ArrayList<Entry> entries = new ArrayList<>();

@@ -1,7 +1,7 @@
 package net.spell_engine.api.spell.summon;
 
 import com.google.gson.Gson;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.fx.Fx;
 import org.jetbrains.annotations.Nullable;
@@ -63,7 +63,7 @@ public class SummonBehaviour {
     /// mirroring SpellCloud's `client_data` particles.
     public List<ExistenceParticles> existence_particles = List.of();
     public static class ExistenceParticles {
-        public List<ParticleGroupEffect> particles = List.of();
+        public List<ParticleGroup> particles = List.of();
         /// Emit every N ticks of entity age (1 = every tick). Values <= 0 disable this entry.
         public int interval_ticks = 20;
         /// Tick offset within the interval, so multiple entries can be phase-shifted.

@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 /// The structure is split along the boundary where a particle starts existing:
 /// - [#id] selects which registered particle type to spawn, and therefore which
 ///   factory handles it.
-/// - [Particle] is everything one particle needs to look and behave a certain way.
+/// - [Appearance] is everything one particle needs to look and behave a certain way.
 ///   It is the complete payload handed to that factory, which is why a single
 ///   generic factory can serve every particle in the mod. It carries no id of its
 ///   own, so it can be transmitted and applied wholesale.
@@ -21,36 +21,36 @@ import java.util.function.Consumer;
 /// Parsed effects must be treated as immutable — the mutable fields exist only for
 /// GSON and for bloat-free builder functions. Use [#copy()] before mutating one that
 /// came out of a registered spell.
-public class ParticleGroupEffect { public ParticleGroupEffect() { }
+public class ParticleGroup { public ParticleGroup() { }
     /// Id of a registered particle type, e.g. `spell_engine:magic_spell`.
     ///
     /// Vanilla and third-party ids (`minecraft:flame`, `minecraft:crit`, …) are
     /// supported and behave as they do in V1: the [Batch] geometry places and
-    /// launches them, and the entire [Particle] block is ignored, because their
+    /// launches them, and the entire [Appearance] block is ignored, because their
     /// factories know nothing about our payload. Around 30 call sites rely on this.
-    /// Register a [Particle]-controllable equivalent instead if a vanilla particle
+    /// Register a [Appearance]-controllable equivalent instead if a vanilla particle
     /// needs colouring, scaling or a lifetime change.
     public String id;
 
     @AlwaysGenerate
-    public Particle particle = new Particle();
+    public Appearance appearance = new Appearance();
     @AlwaysGenerate
     public Batch batch = new Batch();
 
-    // MARK: - Particle
+    // MARK: - Appearance
 
     /// Per-particle appearance and motion — the complete factory payload.
     ///
     /// Deliberately carries no particle id: the id lives on the enclosing
-    /// [ParticleGroupEffect] and selects the factory, so this block can be handed
+    /// [ParticleGroup] and selects the factory, so this block can be handed
     /// over and applied as one whole structure.
     ///
     /// Fields left at their defaults inherit from the registered particle entry and
     /// from the [Motion] preset, so a typical effect only sets a handful of them.
     ///
-    /// Ignored entirely when [ParticleGroupEffect#id] names a particle this mod did
+    /// Ignored entirely when [ParticleGroup#id] names a particle this mod did
     /// not register.
-    public static class Particle { public Particle() { }
+    public static class Appearance { public Appearance() { }
 
         // MARK: Playback
 
@@ -176,33 +176,33 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
 
         // MARK: Builders
 
-        public Particle playbackSpeed(float playback_speed) { this.playback_speed = playback_speed; return this; }
-        public Particle lifetimeVariance(float lifetime_variance) { this.lifetime_variance = lifetime_variance; return this; }
+        public Appearance playbackSpeed(float playback_speed) { this.playback_speed = playback_speed; return this; }
+        public Appearance lifetimeVariance(float lifetime_variance) { this.lifetime_variance = lifetime_variance; return this; }
         /// Flips the sequence direction, keeping the current speed.
-        public Particle reversed() { this.playback_speed = -this.playback_speed; return this; }
-        public Particle color(long color) { this.color = color; return this; }
-        public Particle colorVariance(float color_variance) { this.color_variance = color_variance; return this; }
-        public Particle opacity(float opacity) { this.opacity = opacity; return this; }
-        public Particle opacityCurve(@Nullable Easing.Curve opacity_curve) { this.opacity_curve = opacity_curve; return this; }
-        public Particle opacity(float opacity, @Nullable Easing.Curve opacity_curve) { this.opacity = opacity; this.opacity_curve = opacity_curve; return this; }
-        public Particle scale(float scale) { this.scale = scale; return this; }
-        public Particle scale(float scale, float variance) { this.scale = scale; this.scale_variance = variance; return this; }
-        public Particle scaleWith(Fx.ScaleWith scale_with) { this.scale_with = scale_with; return this; }
+        public Appearance reversed() { this.playback_speed = -this.playback_speed; return this; }
+        public Appearance color(long color) { this.color = color; return this; }
+        public Appearance colorVariance(float color_variance) { this.color_variance = color_variance; return this; }
+        public Appearance opacity(float opacity) { this.opacity = opacity; return this; }
+        public Appearance opacityCurve(@Nullable Easing.Curve opacity_curve) { this.opacity_curve = opacity_curve; return this; }
+        public Appearance opacity(float opacity, @Nullable Easing.Curve opacity_curve) { this.opacity = opacity; this.opacity_curve = opacity_curve; return this; }
+        public Appearance scale(float scale) { this.scale = scale; return this; }
+        public Appearance scale(float scale, float variance) { this.scale = scale; this.scale_variance = variance; return this; }
+        public Appearance scaleWith(Fx.ScaleWith scale_with) { this.scale_with = scale_with; return this; }
         /// Scales linearly to `scale_multiplier` times its spawn size across the lifetime.
-        public Particle scaleMultiplier(float scale_multiplier) { this.scale_multiplier = scale_multiplier; this.scale_easing = Easing.LINEAR; return this; }
-        public Particle scaleMultiplier(float scale_multiplier, Easing easing) { this.scale_multiplier = scale_multiplier; this.scale_easing = easing; return this; }
-        public Particle scaleEasing(@Nullable Easing scale_easing) { this.scale_easing = scale_easing; return this; }
-        public Particle facing(@Nullable Facing facing) { this.facing = facing; return this; }
-        public Particle glow(@Nullable Boolean glow) { this.glow = glow; return this; }
-        public Particle render(@Nullable Render render) { this.render = render; return this; }
-        public Particle motion(@Nullable Motion motion) { this.motion = motion; return this; }
-        public Particle gravity(@Nullable Float gravity) { this.gravity = gravity; return this; }
-        public Particle drag(@Nullable Float drag) { this.drag = drag; return this; }
-        public Particle collides(boolean collides) { this.collides = collides; return this; }
-        public Particle attachment(Attachment attachment) { this.attachment = attachment; return this; }
+        public Appearance scaleMultiplier(float scale_multiplier) { this.scale_multiplier = scale_multiplier; this.scale_easing = Easing.LINEAR; return this; }
+        public Appearance scaleMultiplier(float scale_multiplier, Easing easing) { this.scale_multiplier = scale_multiplier; this.scale_easing = easing; return this; }
+        public Appearance scaleEasing(@Nullable Easing scale_easing) { this.scale_easing = scale_easing; return this; }
+        public Appearance facing(@Nullable Facing facing) { this.facing = facing; return this; }
+        public Appearance glow(@Nullable Boolean glow) { this.glow = glow; return this; }
+        public Appearance render(@Nullable Render render) { this.render = render; return this; }
+        public Appearance motion(@Nullable Motion motion) { this.motion = motion; return this; }
+        public Appearance gravity(@Nullable Float gravity) { this.gravity = gravity; return this; }
+        public Appearance drag(@Nullable Float drag) { this.drag = drag; return this; }
+        public Appearance collides(boolean collides) { this.collides = collides; return this; }
+        public Appearance attachment(Attachment attachment) { this.attachment = attachment; return this; }
 
-        public Particle copy() {
-            var copy = new Particle();
+        public Appearance copy() {
+            var copy = new Appearance();
             copy.playback_speed = this.playback_speed;
             copy.lifetime_variance = this.lifetime_variance;
             copy.color = this.color;
@@ -452,30 +452,30 @@ public class ParticleGroupEffect { public ParticleGroupEffect() { }
     /// the [ParticleGroupBuilder.Batches] presets. What remains here are the two
     /// escape hatches for reaching a finished effect's blocks, plus [#copy()].
 
-    /// Configures the [Particle] block in place.
+    /// Configures the [Appearance] block in place.
     ///
     /// ```java
     /// ParticleGroupBuilder.of(SpellEngineParticles.flame)
     ///     .batch(Batches.impact(12, 0.3F))
-    ///     .particle(p -> p.collides(true));
+    ///     .appearance(a -> a.collides(true));
     /// ```
-    public ParticleGroupEffect particle(Consumer<Particle> configure) {
-        configure.accept(this.particle);
+    public ParticleGroup appearance(Consumer<Appearance> configure) {
+        configure.accept(this.appearance);
         return this;
     }
 
     /// Configures the [Batch] block in place.
-    public ParticleGroupEffect batch(Consumer<Batch> configure) {
+    public ParticleGroup batch(Consumer<Batch> configure) {
         configure.accept(this.batch);
         return this;
     }
 
     /// Deep copy. Use before mutating an effect obtained from a registered spell,
     /// which must be treated as immutable.
-    public ParticleGroupEffect copy() {
-        var copy = new ParticleGroupEffect();
+    public ParticleGroup copy() {
+        var copy = new ParticleGroup();
         copy.id = this.id;
-        copy.particle = this.particle.copy();
+        copy.appearance = this.appearance.copy();
         copy.batch = this.batch.copy();
         return copy;
     }

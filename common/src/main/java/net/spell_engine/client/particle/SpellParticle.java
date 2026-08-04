@@ -16,9 +16,9 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.api.spell.fx.Easing;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.client.util.Color;
-import net.spell_engine.fx.ParticleGroupEffectType;
+import net.spell_engine.fx.ParticleGroupType;
 import net.spell_engine.fx.SpellEngineParticles;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
@@ -28,7 +28,7 @@ import org.joml.Vector3f;
 ///
 /// All appearance and behaviour comes from data: the registered
 /// [SpellEngineParticles.Entry] supplies defaults, the spawning
-/// [ParticleGroupEffect.Particle] payload overrides them, and [Factory#resolve]
+/// [ParticleGroup.Appearance] payload overrides them, and [Factory#resolve]
 /// merges the two. This replaces the V1 zoo of hand-written particle classes
 /// (flame, universal, area, smoke, snowflake, explosion, shifted) and their
 /// per-entry factory wiring.
@@ -38,8 +38,8 @@ public class SpellParticle extends SpriteBillboardParticle {
     private final int frameCount;
     private final boolean reversedPlayback;
 
-    private final ParticleGroupEffect.Facing facing;
-    private final ParticleGroupEffect.Render render;
+    private final ParticleGroup.Facing facing;
+    private final ParticleGroup.Render render;
     private final boolean glow;
     private final float pivot;
 
@@ -49,8 +49,8 @@ public class SpellParticle extends SpriteBillboardParticle {
     private final float baseOpacity;
     private final float spawnScale;
 
-    private final ParticleGroupEffect.Motion motion;
-    private final ParticleGroupEffect.Attachment attachment;
+    private final ParticleGroup.Motion motion;
+    private final ParticleGroup.Attachment attachment;
     @Nullable private final Entity followEntity;
     private Vec3d followDiff = Vec3d.ZERO;
     private boolean skipRender = false;
@@ -59,17 +59,17 @@ public class SpellParticle extends SpriteBillboardParticle {
                             double velocityX, double velocityY, double velocityZ,
                             SpriteProvider spriteProvider,
                             SpellEngineParticles.Entry entry,
-                            ParticleGroupEffect.Particle config,
+                            ParticleGroup.Appearance config,
                             @Nullable Entity sourceEntity) {
         super(world, x, y, z);
         this.spriteProvider = spriteProvider;
         this.frameCount = entry.texture().frames();
         this.pivot = entry.pivot();
 
-        this.facing = config.facing != null ? config.facing : ParticleGroupEffect.Facing.CAMERA;
-        this.render = config.render != null ? config.render : ParticleGroupEffect.Render.TRANSLUCENT;
+        this.facing = config.facing != null ? config.facing : ParticleGroup.Facing.CAMERA;
+        this.render = config.render != null ? config.render : ParticleGroup.Render.TRANSLUCENT;
         this.glow = config.glow != null ? config.glow : true;
-        var motion = config.motion != null ? config.motion : ParticleGroupEffect.Motion.STATIC;
+        var motion = config.motion != null ? config.motion : ParticleGroup.Motion.STATIC;
         this.motion = motion;
 
         // MARK: Motion preset (constants ported from V1 SpellUniversalParticle)
@@ -84,7 +84,7 @@ public class SpellParticle extends SpriteBillboardParticle {
                 this.gravityStrength = 0F;
             }
             case FLOAT, DECELERATE -> {
-                this.velocityMultiplier = motion == ParticleGroupEffect.Motion.DECELERATE ? 0.768F : 0.96F;
+                this.velocityMultiplier = motion == ParticleGroup.Motion.DECELERATE ? 0.768F : 0.96F;
                 this.gravityStrength = 0F;
                 this.velocityX = velocityX + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
                 this.velocityY = velocityY + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
@@ -161,7 +161,7 @@ public class SpellParticle extends SpriteBillboardParticle {
         // MARK: Attachment
 
         this.attachment = config.attachment;
-        this.followEntity = attachment != ParticleGroupEffect.Attachment.NONE ? sourceEntity : null;
+        this.followEntity = attachment != ParticleGroup.Attachment.NONE ? sourceEntity : null;
         if (followEntity != null) {
             this.followDiff = new Vec3d(this.x - followEntity.getX(), this.y - followEntity.getY(), this.z - followEntity.getZ());
         }
@@ -178,7 +178,7 @@ public class SpellParticle extends SpriteBillboardParticle {
         if (this.dead) {
             return;
         }
-        if (motion == ParticleGroupEffect.Motion.DRIFT) {
+        if (motion == ParticleGroup.Motion.DRIFT) {
             // Per-axis, so it cannot be expressed through the scalar `drag` field
             this.velocityX *= 0.95F;
             this.velocityY *= 0.9F;
@@ -190,7 +190,7 @@ public class SpellParticle extends SpriteBillboardParticle {
         float eased = scaleEasing != null
                 ? MathHelper.lerp(Easing.apply(scaleEasing, progress), 1F, scaleMultiplier)
                 : 1F;
-        float entityScale = attachment == ParticleGroupEffect.Attachment.POSITION_SCALED
+        float entityScale = attachment == ParticleGroup.Attachment.POSITION_SCALED
                 && followEntity instanceof LivingEntity livingEntity
                 ? livingEntity.getScale() : 1F;
         this.scale = spawnScale * eased * entityScale;
@@ -224,7 +224,7 @@ public class SpellParticle extends SpriteBillboardParticle {
     /// entity would fill the screen in first person.
     private void updateSkipRender() {
         var client = MinecraftClient.getInstance();
-        this.skipRender = facing == ParticleGroupEffect.Facing.CAMERA
+        this.skipRender = facing == ParticleGroup.Facing.CAMERA
                 && followEntity != null
                 && followEntity == client.getCameraEntity()
                 && client.options.getPerspective().isFirstPerson();
@@ -289,7 +289,7 @@ public class SpellParticle extends SpriteBillboardParticle {
     // MARK: Factory
 
     @Environment(EnvType.CLIENT)
-    public static class Factory implements ParticleFactory<ParticleGroupEffectType> {
+    public static class Factory implements ParticleFactory<ParticleGroupType> {
         private final SpriteProvider spriteProvider;
         private final SpellEngineParticles.Entry entry;
 
@@ -299,7 +299,7 @@ public class SpellParticle extends SpriteBillboardParticle {
         }
 
         @Override
-        public Particle createParticle(ParticleGroupEffectType type, ClientWorld world,
+        public Particle createParticle(ParticleGroupType type, ClientWorld world,
                                        double x, double y, double z,
                                        double velocityX, double velocityY, double velocityZ) {
             var resolved = resolve(entry, type.payload());
@@ -310,8 +310,8 @@ public class SpellParticle extends SpriteBillboardParticle {
         /// Merges the entry's defaults with a spawn payload.
         /// Multiplicative fields (`scale`, `opacity`, `playback_speed`) compose;
         /// nullable and sentinel fields override when set.
-        public static ParticleGroupEffect.Particle resolve(SpellEngineParticles.Entry entry,
-                                                           @Nullable ParticleGroupEffect.Particle payload) {
+        public static ParticleGroup.Appearance resolve(SpellEngineParticles.Entry entry,
+                                                           @Nullable ParticleGroup.Appearance payload) {
             var base = entry.defaults();
             if (payload == null) {
                 return base;
@@ -336,7 +336,7 @@ public class SpellParticle extends SpriteBillboardParticle {
             if (payload.gravity != null) { resolved.gravity = payload.gravity; }
             if (payload.drag != null) { resolved.drag = payload.drag; }
             if (payload.collides) { resolved.collides = true; }
-            if (payload.attachment != ParticleGroupEffect.Attachment.NONE) { resolved.attachment = payload.attachment; }
+            if (payload.attachment != ParticleGroup.Attachment.NONE) { resolved.attachment = payload.attachment; }
             return resolved;
         }
     }

@@ -10,7 +10,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.network.Packets;
 import net.spell_engine.utils.TargetHelper;
@@ -22,10 +22,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
-/// Spawns and broadcasts [ParticleGroupEffect]s.
+/// Spawns and broadcasts [ParticleGroup]s.
 ///
-/// The [ParticleGroupEffect.Batch] block is resolved here — placement, count and
-/// initial velocity — while the [ParticleGroupEffect.Particle] block travels
+/// The [ParticleGroup.Batch] block is resolved here — placement, count and
+/// initial velocity — while the [ParticleGroup.Appearance] block travels
 /// untouched to the client factory. One geometry core serves both the local
 /// spawn path ([#play]) and the network receive path ([#convertToInstructions]).
 public class ParticleHelper {
@@ -33,19 +33,19 @@ public class ParticleHelper {
 
     // MARK: - Server → client broadcasting
 
-    public static void sendBatches(Entity trackedEntity, List<ParticleGroupEffect> effects) {
+    public static void sendBatches(Entity trackedEntity, List<ParticleGroup> effects) {
         sendBatches(trackedEntity, effects, true);
     }
 
-    public static void sendBatches(Entity trackedEntity, List<ParticleGroupEffect> effects, boolean includeSourceEntity) {
+    public static void sendBatches(Entity trackedEntity, List<ParticleGroup> effects, boolean includeSourceEntity) {
         sendBatches(trackedEntity, null, effects, 1, PlayerLookup.tracking(trackedEntity), includeSourceEntity);
     }
 
-    public static void sendBatches(Entity trackedEntity, List<ParticleGroupEffect> effects, float countMultiplier, Collection<ServerPlayerEntity> trackers) {
+    public static void sendBatches(Entity trackedEntity, List<ParticleGroup> effects, float countMultiplier, Collection<ServerPlayerEntity> trackers) {
         sendBatches(trackedEntity, null, effects, countMultiplier, trackers, true);
     }
 
-    public static void sendBatches(Vec3d location, LivingEntity caster, List<ParticleGroupEffect> effects) {
+    public static void sendBatches(Vec3d location, LivingEntity caster, List<ParticleGroup> effects) {
         Collection<ServerPlayerEntity> trackers;
         if (caster instanceof ServerPlayerEntity serverPlayer) {
             var array = new ArrayList<ServerPlayerEntity>(PlayerLookup.tracking(caster));
@@ -63,7 +63,7 @@ public class ParticleHelper {
     /// an entity-anchored packet races the source entity's client-side simulation and removal —
     /// the receiving client prefers its local entity position, which for a dying projectile can
     /// be several blocks past the server's impact point.
-    public static void sendBatchesDetached(Entity sourceEntity, List<ParticleGroupEffect> effects) {
+    public static void sendBatchesDetached(Entity sourceEntity, List<ParticleGroup> effects) {
         if (effects == null || effects.isEmpty()) {
             return;
         }
@@ -91,7 +91,7 @@ public class ParticleHelper {
         });
     }
 
-    public static void sendBatches(@Nullable Entity trackedEntity, @Nullable Vec3d location, List<ParticleGroupEffect> effects, float countMultiplier, Collection<ServerPlayerEntity> trackers, boolean includeSourceEntity) {
+    public static void sendBatches(@Nullable Entity trackedEntity, @Nullable Vec3d location, List<ParticleGroup> effects, float countMultiplier, Collection<ServerPlayerEntity> trackers, boolean includeSourceEntity) {
         if (effects == null || effects.isEmpty()) {
             return;
         }
@@ -141,7 +141,7 @@ public class ParticleHelper {
 
     // MARK: - Local (client-side) spawning
 
-    public static void play(World world, Entity source, List<ParticleGroupEffect> effects) {
+    public static void play(World world, Entity source, List<ParticleGroup> effects) {
         if (effects == null) {
             return;
         }
@@ -150,15 +150,15 @@ public class ParticleHelper {
         }
     }
 
-    public static void play(World world, Entity source, ParticleGroupEffect effect) {
+    public static void play(World world, Entity source, ParticleGroup effect) {
         play(world, source, 0, 0, effect);
     }
 
-    public static void play(World world, Entity entity, float yaw, float pitch, ParticleGroupEffect effect) {
+    public static void play(World world, Entity entity, float yaw, float pitch, ParticleGroup effect) {
         play(world, entity.age, origin(entity, effect.batch), entity.getWidth(), yaw, pitch, effect, entity);
     }
 
-    public static void play(World world, long time, Vec3d origin, float width, float yaw, float pitch, ParticleGroupEffect effect, @Nullable Entity sourceEntity) {
+    public static void play(World world, long time, Vec3d origin, float width, float yaw, float pitch, ParticleGroup effect, @Nullable Entity sourceEntity) {
         try {
             var instructions = new ArrayList<SpawnInstruction>();
             emit(time, origin, width, yaw, pitch, effect, 1F, sourceEntity, instructions);
@@ -215,15 +215,15 @@ public class ParticleHelper {
     /// Resolves one effect's batch into spawn instructions.
     /// Shared by the local and the network path.
     private static void emit(long time, Vec3d origin, float width, float yaw, float pitch,
-                             ParticleGroupEffect effect, float countMultiplier,
+                             ParticleGroup effect, float countMultiplier,
                              @Nullable Entity sourceEntity, List<SpawnInstruction> output) {
         var registryEntry = Registries.PARTICLE_TYPE.get(Identifier.of(effect.id));
         if (registryEntry == null) {
             return;
         }
         var particle = (ParticleEffect) registryEntry;
-        if (particle instanceof ParticleGroupEffectType groupType) {
-            particle = groupType.spawnable(effect.particle, sourceEntity);
+        if (particle instanceof ParticleGroupType groupType) {
+            particle = groupType.spawnable(effect.appearance, sourceEntity);
         }
 
         var batch = effect.batch;
@@ -246,7 +246,7 @@ public class ParticleHelper {
         }
     }
 
-    private static Vec3d origin(Entity entity, ParticleGroupEffect.Batch batch) {
+    private static Vec3d origin(Entity entity, ParticleGroup.Batch batch) {
         switch (batch.anchor) {
             case ENTITY -> {
                 return entity.getPos().add(0, entity.getHeight() * batch.vertical_origin, 0);
@@ -270,7 +270,7 @@ public class ParticleHelper {
         return entity.getPos();
     }
 
-    private static Vec3d origin(World world, Vec3d entityPos, float entityHeight, ParticleGroupEffect.Batch batch) {
+    private static Vec3d origin(World world, Vec3d entityPos, float entityHeight, ParticleGroup.Batch batch) {
         switch (batch.anchor) {
             case ENTITY -> {
                 return entityPos.add(0, entityHeight * batch.vertical_origin, 0);
@@ -290,7 +290,7 @@ public class ParticleHelper {
         return entityPos;
     }
 
-    private static Vec3d offset(float width, ParticleGroupEffect.Batch batch, Vec3d direction, float yaw, float pitch) {
+    private static Vec3d offset(float width, ParticleGroup.Batch batch, Vec3d direction, float yaw, float pitch) {
         var offset = Vec3d.ZERO;
         // `width_factor` scales the entity's contribution; `0` makes `extent` absolute
         // (replaces the V1 EXTENT_TRESHOLD sentinel), `2` reproduces V1 WIDE_PIPE.
@@ -320,7 +320,7 @@ public class ParticleHelper {
             }
         }
 
-        if (batch.alignment == ParticleGroupEffect.Alignment.LOOK) {
+        if (batch.alignment == ParticleGroup.Alignment.LOOK) {
             offset = offset
                     .rotateX((float) Math.toRadians(-1 * (pitch + 90)))
                     .rotateY((float) Math.toRadians(-yaw));
@@ -328,7 +328,7 @@ public class ParticleHelper {
         return offset;
     }
 
-    private static Vec3d direction(ParticleGroupEffect.Batch batch, long time, float yaw, float pitch) {
+    private static Vec3d direction(ParticleGroup.Batch batch, long time, float yaw, float pitch) {
         var direction = Vec3d.ZERO;
 
         float rotateAroundX = 0;
@@ -360,7 +360,7 @@ public class ParticleHelper {
                         .rotateY((float) Math.toRadians(rng.nextFloat() * 360F));
             }
         }
-        if (batch.alignment == ParticleGroupEffect.Alignment.LOOK) {
+        if (batch.alignment == ParticleGroup.Alignment.LOOK) {
             // Find actual rotation
             float pRot = -pitch;
             float yRot = yaw * (-1F);

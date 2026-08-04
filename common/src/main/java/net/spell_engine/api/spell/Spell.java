@@ -4,7 +4,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ModelEffect;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.summon.AttributeScaling;
@@ -172,7 +172,7 @@ public class Spell {
             public float movement_speed = 0.2F;
             public Sound start_sound;
             public Sound sound;
-            public List<ParticleGroupEffect> particles = List.of();
+            public List<ParticleGroup> particles = List.of();
         }
     }
 
@@ -480,11 +480,11 @@ public class Spell {
             public Cloud.ClientData client_data = new Cloud.ClientData();
             public static class ClientData {
                 public int light_level = 0;
-                public List<ParticleGroupEffect> particles = List.of();
+                public List<ParticleGroup> particles = List.of();
                 public int particle_spawn_interval = 1;
                 /// Particles to be spawned at the interval of `particle_spawn_interval`
                 /// Useful for ground particles with fixed animation duration
-                public List<ParticleGroupEffect> interval_particles = List.of();
+                public List<ParticleGroup> interval_particles = List.of();
                 /// Animatable cloud models, each driven by the modelFX system.
                 public List<ModelEffect> model_fx = List.of();
             }
@@ -916,7 +916,7 @@ public class Spell {
         public boolean skip_arrow_damage = false;
         public int pierce = 0;
         public float knockback = 1;
-        public List<ParticleGroupEffect> travel_particles = List.of();
+        public List<ParticleGroup> travel_particles = List.of();
         /// Played on the shooter as the arrow leaves.
         public Fx.Visuals launch_visuals = new Fx.Visuals();
         @Nullable public Sound launch_sound;
@@ -1267,7 +1267,7 @@ public class Spell {
             /// 14 - torch
             /// 10 - soul torch
             public int light_level = 0;
-            public List<ParticleGroupEffect> travel_particles = List.of();
+            public List<ParticleGroup> travel_particles = List.of();
             /// The models this projectile renders as.
             public ProjectileModelComposite composite_model;
         }

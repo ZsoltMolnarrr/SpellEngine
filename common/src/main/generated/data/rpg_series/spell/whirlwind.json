@@ -24,7 +24,7 @@
       "particles": [
         {
           "id": "spell_engine:smoke_medium",
-          "particle": {},
+          "appearance": {},
           "batch": {
             "count": 1.0,
             "shape": "PIPE",
@@ -37,7 +37,7 @@
         },
         {
           "id": "campfire_cosy_smoke",
-          "particle": {},
+          "appearance": {},
           "batch": {
             "count": 0.1,
             "shape": "PIPE",
@@ -56,7 +56,7 @@
       "particles": [
         {
           "id": "spell_engine:smoke_medium",
-          "particle": {},
+          "appearance": {},
           "batch": {
             "count": 25.0,
             "shape": "CIRCLE",
@@ -92,7 +92,7 @@
         "particles": [
           {
             "id": "crit",
-            "particle": {},
+            "appearance": {},
             "batch": {
               "count": 30.0,
               "shape": "SPHERE",

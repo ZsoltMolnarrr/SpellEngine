@@ -13,7 +13,7 @@ import org.joml.Vector3f;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ParticleGroupBuilder;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.client.util.Color;
@@ -126,7 +126,7 @@ public class SpellBuilder {
         }
 
         public static void visuals(Spell spell,
-                                       @Nullable String playerAnimation, @Nullable List<ParticleGroupEffect> particles, @Nullable Sound sound) {
+                                       @Nullable String playerAnimation, @Nullable List<ParticleGroup> particles, @Nullable Sound sound) {
             if (spell.active.cast == null) {
                 spell.active.cast = new Spell.Active.Cast();
             }
@@ -141,7 +141,7 @@ public class SpellBuilder {
 
     public static class Release {
         public static void visuals(Spell spell,
-                                   @Nullable String playerAnimation, @Nullable List<ParticleGroupEffect> particles, @Nullable Sound sound) {
+                                   @Nullable String playerAnimation, @Nullable List<ParticleGroup> particles, @Nullable Sound sound) {
             spell.release = new Spell.Release();
             if (playerAnimation != null) {
                 spell.release.animation = PlayerAnimation.of(playerAnimation);
@@ -220,7 +220,7 @@ public class SpellBuilder {
             return placement;
         }
 
-        public static Spell.Delivery.Cloud cloud(float timeToLive, float radius, Identifier spawnSound, int light_level, List<ParticleGroupEffect> presenceParticles) {
+        public static Spell.Delivery.Cloud cloud(float timeToLive, float radius, Identifier spawnSound, int light_level, List<ParticleGroup> presenceParticles) {
             var cloud = new Spell.Delivery.Cloud();
             cloud.volume = new Spell.AreaImpact();
             cloud.volume.area.vertical_range_multiplier = 0.3F;
@@ -1084,38 +1084,38 @@ public class SpellBuilder {
     }
 
     public static class Particles {
-        public static ParticleGroupEffect popUpSign(Identifier signId, Color color) {
+        public static ParticleGroup popUpSign(Identifier signId, Color color) {
             return ParticleGroupBuilder.of(signId)
                     .scale(0.8F).color(color).attached()
                     .batch(ParticleGroupBuilder.Batches.popUp()
                             .andThen(b -> b.verticalOrigin(ParticleGroupBuilder.Batches.CENTER).speed(0.8F)));
         }
 
-        public static ParticleGroupEffect area(Identifier id) {
+        public static ParticleGroup area(Identifier id) {
             return ParticleGroupBuilder.zone(id)
                     .batch(ParticleGroupBuilder.Batches.ground(1));
         }
 
-        public static ParticleGroupEffect aura(Identifier id) {
+        public static ParticleGroup aura(Identifier id) {
             // V1 aura_* entries were camera-facing twins of the area entries;
             // the facing override is what makes an area texture an aura now
             return ParticleGroupBuilder.aura(id)
                     .attached()
-                    .batch(b -> b.shape(ParticleGroupEffect.Shape.LINE));
+                    .batch(b -> b.shape(ParticleGroup.Shape.LINE));
         }
 
-        public static List<ParticleGroupEffect> zoneMagic(long color, Identifier contour, List<Identifier> fillers, float multiplier) {
-            var particles = new ArrayList<ParticleGroupEffect>();
+        public static List<ParticleGroup> zoneMagic(long color, Identifier contour, List<Identifier> fillers, float multiplier) {
+            var particles = new ArrayList<ParticleGroup>();
             particles.add(ParticleGroupBuilder.zone(contour)
                     .color(color)
-                    .batch(b -> b.shape(ParticleGroupEffect.Shape.PIPE)
-                            .anchor(ParticleGroupEffect.Anchor.GROUND)
+                    .batch(b -> b.shape(ParticleGroup.Shape.PIPE)
+                            .anchor(ParticleGroup.Anchor.GROUND)
                             .count(3 * multiplier).speed(0.05F, 0.15F)));
             for (var filler : fillers) {
                 particles.add(ParticleGroupBuilder.zone(filler)
                         .color(color)
-                        .batch(b -> b.shape(ParticleGroupEffect.Shape.PILLAR)
-                                .anchor(ParticleGroupEffect.Anchor.GROUND)
+                        .batch(b -> b.shape(ParticleGroup.Shape.PILLAR)
+                                .anchor(ParticleGroup.Anchor.GROUND)
                                 .count(3 * multiplier).speed(0.05F, 0.1F)));
             }
             return particles;
@@ -1201,7 +1201,7 @@ public class SpellBuilder {
             cloud.client_data.light_level = 15;
             cloud.client_data.particles = List.of(
                     ParticleGroupBuilder.of(SpellEngineParticles.flame_ground)
-                            .batch(b -> b.shape(ParticleGroupEffect.Shape.PILLAR).verticalOrigin(0.1F).count(3)),
+                            .batch(b -> b.shape(ParticleGroup.Shape.PILLAR).verticalOrigin(0.1F).count(3)),
                     ParticleGroupBuilder.of(SpellEngineParticles.flame_medium_a)
                             .batch(ParticleGroupBuilder.Batches.cloud(2, 0.1F).andThen(b -> b.speed(0.02F, 0.1F))),
                     ParticleGroupBuilder.of(SpellEngineParticles.flame_medium_b)
@@ -1274,7 +1274,7 @@ public class SpellBuilder {
                     ParticleGroupBuilder.of(SpellEngineParticles.smoke_large)
                             .color(0x33DD33AAL)
                             .batch(ParticleGroupBuilder.Batches.impact(0.5F, 0.02F).andThen(b -> b.speed(0.01F, 0.02F))),
-                    ParticleGroupBuilder.magic(SpellEngineParticles.magic_skull, ParticleGroupEffect.Motion.DECELERATE)
+                    ParticleGroupBuilder.magic(SpellEngineParticles.magic_skull, ParticleGroup.Motion.DECELERATE)
                             .color(0x33DD33AAL)
                             .batch(ParticleGroupBuilder.Batches.impact(3, 0.2F).andThen(b -> b.speed(0.1F, 0.2F))));
             spell.impacts = List.of(impact);

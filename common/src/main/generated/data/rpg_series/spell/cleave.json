@@ -17,7 +17,7 @@
       "particles": [
         {
           "id": "spell_engine:area_swirl",
-          "particle": {
+          "appearance": {
             "scale_with": "RANGE",
             "attachment": "POSITION"
           },
@@ -29,7 +29,7 @@
         },
         {
           "id": "spell_engine:smoke_medium",
-          "particle": {},
+          "appearance": {},
           "batch": {
             "count": 25.0,
             "shape": "CIRCLE",

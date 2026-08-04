@@ -19,7 +19,7 @@ import net.spell_engine.api.item.set.EquipmentSetTooltip;
 import net.spell_engine.api.render.BuffParticleSpawner;
 import net.spell_engine.api.render.StunParticleSpawner;
 import net.spell_engine.api.spell.fx.ParticleGroupBuilder;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.client.compatibility.CompatFeatures;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.particle.*;
@@ -98,7 +98,7 @@ public class SpellEngineClient {
                 new StunParticleSpawner()
         );
         final var magicSnareParticles = ParticleGroupBuilder
-                .magic(SpellEngineParticles.magic_spark, ParticleGroupEffect.Motion.DECELERATE, Color.PHYSICAL_BLUE)
+                .magic(SpellEngineParticles.magic_spark, ParticleGroup.Motion.DECELERATE, Color.PHYSICAL_BLUE)
                 .batch(ParticleGroupBuilder.Batches.shockwave(2F, 0.15F, 5)
                         .andThen(b -> b.invert(true)));
         CustomParticleStatusEffect.register(

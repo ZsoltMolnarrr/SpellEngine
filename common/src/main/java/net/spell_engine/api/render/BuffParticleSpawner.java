@@ -3,7 +3,7 @@ package net.spell_engine.api.render;
 import net.minecraft.entity.LivingEntity;
 import net.spell_engine.api.effect.CustomParticleStatusEffect;
 import net.spell_engine.api.spell.fx.ParticleGroupBuilder;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.fx.ParticleHelper;
 import org.jetbrains.annotations.Nullable;
@@ -12,26 +12,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
-    private final List<ParticleGroupEffect> particles;
-    @Nullable private ParticleGroupEffect groundEffect;
+    private final List<ParticleGroup> particles;
+    @Nullable private ParticleGroup groundEffect;
     private int groundFrequency = 0;
     private int frequency = 0;
     private boolean invertedFrequency = false;
     private boolean scaleWithAmplifier = true;
 
-    public static ParticleGroupEffect defaultBatch(String particleId, float particleCount) {
+    public static ParticleGroup defaultBatch(String particleId, float particleCount) {
         return defaultBatch(particleId, particleCount, 0);
     }
 
-    public static ParticleGroupEffect defaultBatch(String particleId, float particleCount, long color) {
+    public static ParticleGroup defaultBatch(String particleId, float particleCount, long color) {
         return defaultBatch(particleId, particleCount, 0.11F, 0.12F, color);
     }
 
-    public static ParticleGroupEffect defaultBatch(String particleId, float particleCount, float min_speed, float max_speed) {
+    public static ParticleGroup defaultBatch(String particleId, float particleCount, float min_speed, float max_speed) {
         return defaultBatch(particleId, particleCount, min_speed, max_speed, 0);
     }
 
-    public static ParticleGroupEffect defaultBatch(String particleId, float particleCount, float min_speed, float max_speed, long color) {
+    public static ParticleGroup defaultBatch(String particleId, float particleCount, float min_speed, float max_speed, long color) {
         var builder = ParticleGroupBuilder.of(particleId);
         if (color != 0) {
             builder.color(color);
@@ -41,7 +41,7 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
     }
 
     public BuffParticleSpawner(List<String> particleIds, float particleCount, float min_speed, float max_speed) {
-        var particles = new ArrayList<ParticleGroupEffect>(particleIds.size());
+        var particles = new ArrayList<ParticleGroup>(particleIds.size());
         for (var particleId : particleIds) {
             particles.add(defaultBatch(particleId, particleCount, min_speed, max_speed));
         }
@@ -56,7 +56,7 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
         this(particleId, particleCount, 0.11F, 0.12F);
     }
 
-    public BuffParticleSpawner(ParticleGroupEffect... particles) {
+    public BuffParticleSpawner(ParticleGroup... particles) {
         this.particles = List.of(particles);
     }
 
@@ -90,11 +90,11 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
                 || (!invertedFrequency ? (time % frequency == 0) : (time % (frequency / (amplifier + 1)) == 0));
         if (spawn) {
             var scale = this.scaleWithAmplifier ? (amplifier + 1) : 1;
-            List<ParticleGroupEffect> scaledParticles;
+            List<ParticleGroup> scaledParticles;
             if (scale == 1) {
                 scaledParticles = particles;
             } else {
-                var copies = new ArrayList<ParticleGroupEffect>(particles.size());
+                var copies = new ArrayList<ParticleGroup>(particles.size());
                 for (var effect : particles) {
                     var copy = effect.copy();
                     copy.batch.count *= scale;

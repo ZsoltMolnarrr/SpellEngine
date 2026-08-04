@@ -9,7 +9,7 @@
   "chance": 1.0,
   "school": null,
   "action": { "type": "DAMAGE", "damage": { "spell_power_coefficient": 1.0 } },
-  "particles": [ { ... } ],
+  "visuals": { "particles": [ { ... } ], "models": [ { ... } ] },
   "sound": { "id": "..." },
   "target_modifiers": [ { ... } ]
 }
@@ -21,7 +21,7 @@
 | `school` | Override the spell school for power lookup on this impact only (uses spell school if null) |
 | `power_blend` | Blend other schools into this impact's power — see [Hybrid Power](#hybrid-power-power_blend) |
 | `action` | What happens — see action types below |
-| `particles` | Particles spawned at the target on impact — see [Particles](09-visuals-and-audio.md#particles) |
+| `visuals` | Particles and models spawned at the target on impact — see [Particles](09-visuals-and-audio.md#particles) |
 | `sound` | Sound played at the target on impact |
 | `target_modifiers` | Conditions that gate or modify power — see [Conditional Execution](#conditional-execution) |
 
@@ -245,7 +245,7 @@ Calls a Java handler registered via `SpellHandlers.customImpact.put(id, handler)
 "area_impact": {
   "radius": 4.0,
   "area": { "distance_dropoff": "SQUARED" },
-  "particles": [ { ... } ],
+  "visuals": { "particles": [ { ... } ], "models": [ { ... } ] },
   "sound": { "id": "..." },
   "triggering_action_type": null,
   "execute_action_type": null,

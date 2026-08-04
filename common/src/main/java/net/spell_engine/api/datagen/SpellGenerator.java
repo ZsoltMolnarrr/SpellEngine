@@ -18,7 +18,7 @@ import net.spell_engine.api.spell.fx.Easing;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
-import net.spell_engine.api.spell.fx.ParticleGroupEffect;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.api.util.AlwaysGenerate;
@@ -92,10 +92,10 @@ public abstract class SpellGenerator implements DataProvider {
                 // SummonBehaviour (referenced by the SUMMON impact) is a separate top-level type, so
                 // its tree isn't covered by getAllNestedClasses(Spell.class) — register it explicitly.
                 .registerTypeAdapter(SummonBehaviour.class, new DefaultValueSkippingSerializer<>(SummonBehaviour.class))
-                // Same for ParticleGroupEffect and its `particle`/`batch` blocks: both are top-level
+                // Same for ParticleGroup and its `particle`/`batch` blocks: both are top-level
                 // types under api.spell.fx. Without these, every effect serialized all ~30 fields of
                 // Particle and Batch, defaults included.
-                .registerTypeAdapter(ParticleGroupEffect.class, new DefaultValueSkippingSerializer<>(ParticleGroupEffect.class))
+                .registerTypeAdapter(ParticleGroup.class, new DefaultValueSkippingSerializer<>(ParticleGroup.class))
                 // Same again for the FX bundle every one-shot site now carries: it lives under
                 // api.spell.fx rather than inside Spell, so without this an untouched `visuals`
                 // would write out `{"particles": [], "models": []}` at every site that has one.
@@ -107,7 +107,7 @@ public abstract class SpellGenerator implements DataProvider {
         for (var nestedClass : getAllNestedClasses(SummonBehaviour.class)) {
             gson = gson.registerTypeAdapter(nestedClass, new DefaultValueSkippingSerializer<>(nestedClass));
         }
-        for (var nestedClass : getAllNestedClasses(ParticleGroupEffect.class)) {
+        for (var nestedClass : getAllNestedClasses(ParticleGroup.class)) {
             gson = gson.registerTypeAdapter(nestedClass, new DefaultValueSkippingSerializer<>(nestedClass));
         }
         return gson.create();

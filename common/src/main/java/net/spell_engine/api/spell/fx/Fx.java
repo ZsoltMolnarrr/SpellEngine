@@ -45,16 +45,16 @@ public class Fx {
     ///
     /// Succeeds the standalone `VFX` class.
     public static class Visuals { public Visuals() { }
-        public List<ParticleGroupEffect> particles = List.of();
+        public List<ParticleGroup> particles = List.of();
         public List<ModelEffect> models = List.of();
 
-        public static Visuals of(ParticleGroupEffect... particles) {
+        public static Visuals of(ParticleGroup... particles) {
             var fx = new Visuals();
             fx.particles = List.of(particles);
             return fx;
         }
 
-        public Visuals particles(ParticleGroupEffect... particles) {
+        public Visuals particles(ParticleGroup... particles) {
             this.particles = List.of(particles);
             return this;
         }
@@ -104,7 +104,7 @@ public class Fx {
     /// A magnitude, resolved where the effect is emitted, that an effect's authored
     /// `scale` is multiplied by.
     ///
-    /// Declared on the effect itself — [ParticleGroupEffect.Particle#scale_with] and
+    /// Declared on the effect itself — [ParticleGroup.Appearance#scale_with] and
     /// [ModelEffect#scale_with] — so a single bundle can mix scaled and unscaled
     /// effects. The authored `scale` always acts as a coefficient: final size is
     /// `scale * resolved value`, never a replacement.
@@ -167,14 +167,14 @@ public class Fx {
 
     /// Applies [ScaleWith] to every particle effect asking for it, copying only those.
     /// Returns the input list unchanged (same instance) when nothing asks for scaling.
-    public static List<ParticleGroupEffect> scaleParticles(List<ParticleGroupEffect> effects, Context context) {
+    public static List<ParticleGroup> scaleParticles(List<ParticleGroup> effects, Context context) {
         if (effects == null || effects.isEmpty()) {
             return effects;
         }
-        ArrayList<ParticleGroupEffect> scaled = null;
+        ArrayList<ParticleGroup> scaled = null;
         for (int i = 0; i < effects.size(); i++) {
             var effect = effects.get(i);
-            var scaleWith = effect.particle.scale_with;
+            var scaleWith = effect.appearance.scale_with;
             if (scaleWith == null || scaleWith == ScaleWith.NONE) {
                 if (scaled != null) { scaled.add(effect); }
                 continue;
@@ -184,8 +184,8 @@ public class Fx {
                 scaled.addAll(effects.subList(0, i));
             }
             var copy = effect.copy();
-            copy.particle.scale *= context.resolve(scaleWith, effect.id);
-            copy.particle.scale_with = ScaleWith.NONE; // resolved; nothing downstream should re-apply it
+            copy.appearance.scale *= context.resolve(scaleWith, effect.id);
+            copy.appearance.scale_with = ScaleWith.NONE; // resolved; nothing downstream should re-apply it
             scaled.add(copy);
         }
         return scaled != null ? scaled : effects;
