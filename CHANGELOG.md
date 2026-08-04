@@ -1,49 +1,40 @@
 # Unreleased
 
-**Breaking.** FX API reworked into one shape for every one-shot visual, with declarative
-contextual sizing. No compatibility shim — existing spell JSON and Java authoring must be
-updated. All legacy FX fields and the older paths they superseded are deleted outright.
+**Breaking** — the particle and FX APIs are reworked, with no compatibility shim. Existing spell JSON and Java authoring must be updated. See the [1.10 Migration Guide](docs/MIGRATION_1.10.md).
 
-New shape:
+- Particle system rebuilt around data: orientation, motion, colour, scale, lifetime and fading are now chosen per use instead of being fixed at registration
+- One-shot FX is bundled — every site describing a moment carries a single `visuals` (particles + models) with `sound` beside it
+- Effects can size themselves by a magnitude only known where they are emitted, so one bundle can mix range-scaled and fixed-size effects
+- Legacy single-model projectile/cloud rendering and the flat channelling fields are removed
 
-- Every one-shot FX site carries a single `visuals` bundle (`Fx.Visuals`: `particles` +
-  `models`) with `sound` beside it: `release`, `impacts[]`, `area_impact`,
-  `deliver.melee.attacks[]`, `deliver.clouds[].spawn` and `.despawn`, `teleport.fizzle`, and
-  `arrow_perks.launch_visuals`. Continuous/ambient particle lists (casting, cloud presence,
-  projectile trails) are unchanged — they describe a state, not a moment.
-- Effects size themselves by a magnitude only known at emit time: `scale_with = RANGE` on a
-  `ParticleGroup.Appearance` or `ModelEffect`, with the authored `scale` kept as a
-  coefficient. Because the declaration sits on the individual effect, one bundle can mix
-  range-scaled and fixed-size effects.
-- Emission sites bind only the magnitudes they can honestly supply (`Fx.Context`); an effect
-  asking for one an unbinding site cannot provide keeps its authored size and warns once,
-  rather than inventing a number.
-
-Added:
-
-- `Fx.Visuals.ofParticles(List)`, `.particles(List)` and `.models(List)` — list forms alongside
-  the varargs, for authoring helpers that return a list rather than a literal.
-
-Renamed:
-
-- `ParticleGroupEffect` → `ParticleGroup`, and its nested `Particle` → `Appearance` (JSON key
-  `particle` → `appearance`). The supporting registered type `ParticleGroupEffectType` →
-  `ParticleGroupType`. `ParticleGroupBuilder.particle(...)` — the escape hatch for fields
-  without a named builder method — is now `.appearance(...)`.
-
-Removed:
-
-- `particles` / `model_fx` at every site above — move them into `visuals`.
-- `release.scaled_with_ranged` — put the effects in `visuals` and set `scale_with = RANGE` on
-  the ones that should follow the spell's range. **Note the semantic change:** the old field
-  *replaced* a particle's scale with the range, whereas `scale_with` *multiplies* by it, so a
-  particle ported from it wants `scale = 1`. Models already multiplied and port as-is.
-- `arrow_perks.launch_particles` → `arrow_perks.launch_visuals`.
-- `Spell.ProjectileModel` and the single-model render paths reaching it —
-  `ProjectileData.Client.model`, `Cloud.ClientData.model`, `ArrowPerks.override_render`.
-  Use `composite_model` (projectiles, arrows) and `model_fx` (clouds).
-- `Cast.channel_ticks` / `Cast.channeled_release_fx` and the `resolvedType()` resolver they
-  needed. Use `cast.type = CHANNEL` with a `channel` block, and read `cast.type` directly.
+API Changes:
+- `ParticleBatch` replaced by `ParticleGroup`: `id` + `appearance` (one particle) + `batch` (how many, where, what velocity)
+  - Unset fields inherit the registered particle's own defaults; `scale`, `opacity` and `playback_speed` multiply with them
+  - New appearance fields: `facing` (`CAMERA`/`GROUND`/`UPRIGHT`/`VELOCITY`), `motion` presets with `gravity`/`drag` overrides, `render`/`glow`, `opacity_curve`, `scale_multiplier`/`scale_easing`, `color_variance`/`scale_variance`/`lifetime_variance`, `playback_speed` (negative reverses), `collides`
+  - New batch shape `NONE` for a single placed, motionless billboard
+  - `batch.count` is now a rate: `1`+ is a count per emission, below `1` a period (`0.25` = one every 4th tick, continuous FX only)
+  - Restored the per-particle lifetime randomness the pre-1.10 particle classes had — 11 elemental/smoke entries were spawning and dying in lockstep
+  - Added `batch.chance` (`0..1`) — the dedicated probability field, replacing the old sub-`1` `count` overload
+  - `BuffParticleSpawner.spacing(EVEN | RANDOM)` decides what a leftover fractional density looks like; defaults to `RANDOM`, matching pre-1.10 buff particles
+  - `origin` splits into `anchor` + `vertical_origin`; `WIDE_PIPE` becomes `PIPE` + `width_factor`; `rotation` becomes `alignment`; `max_age` becomes `playback_speed` (reciprocal)
+  - Added `ParticleGroupBuilder` for authoring, with reusable batch layout presets
+- `SpellEngineParticles`: `Entry` and `TemplateEntry` merged into one entry type carrying its own defaults; category lists replaced by a single `entries()`
+  - Removed the 14 `aura_effect_*` entries — use the matching `area_effect_*` id with `facing = CAMERA`
+  - Removed the 32 `magic_<shape>_<motion>` entries — use the 8 `magic_<shape>` entries and set `motion` on the effect
+  - `MagicParticles` nested class flattened into `SpellEngineParticles.magic_*` fields
+- Added `Fx.Visuals` (particles + models), replacing `VFX`
+  - `visuals` on `release`, `impacts[]`, `area_impact`, `deliver.melee.attacks[]`, `deliver.clouds[].spawn`/`.despawn`, `teleport.fizzle`, `arrow_perks.launch_visuals`
+  - `deliver.clouds[].impact`, `target.beam.block_hit`, `teleport.depart`/`.arrive`, `modifiers[].release`
+  - Continuous particle lists are unchanged — they describe a state, not a moment
+  - List forms `ofParticles(List)`, `.particles(List)`, `.models(List)` alongside the varargs
+- Added `Fx.ScaleWith` + `Fx.Context`: `scale_with = RANGE` on a `ParticleGroup.Appearance` or `ModelEffect` multiplies its authored `scale` by a magnitude bound at the emission site. Sites bind only what they can supply; an unbound request keeps the authored size and warns once
+- Renamed `ParticleGroupEffect` → `ParticleGroup`, its nested `Particle` → `Appearance` (JSON key `particle` → `appearance`), `ParticleGroupEffectType` → `ParticleGroupType`, and `ParticleGroupBuilder.particle(...)` → `.appearance(...)`
+- Renamed `ModelEffect.Easing` → top-level `Easing`, now shared with particle opacity curves
+- Removed `particles` / `model_fx` at every one-shot site — move them into `visuals`
+- Removed `release.scaled_with_ranged` — use `scale_with = RANGE`. Note the semantic change: the old field *replaced* a particle's scale with the range, whereas `scale_with` *multiplies* by it, so a particle ported from it wants `scale = 1`. Models already multiplied and port as-is
+- Removed `arrow_perks.launch_particles` — use `arrow_perks.launch_visuals`
+- Removed `Spell.ProjectileModel` and the single-model render paths reaching it (`ProjectileData.Client.model`, `Cloud.ClientData.model`, `ArrowPerks.override_render`) — use `composite_model` for projectiles and arrows, `model_fx` for clouds
+- Removed `Cast.channel_ticks` / `Cast.channeled_release_fx` and the `resolvedType()` resolver — use `cast.type = CHANNEL` with a `channel` block, and read `cast.type` directly
 
 # 1.9.15
 

@@ -18,6 +18,20 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
     private int frequency = 0;
     private boolean invertedFrequency = false;
     private boolean scaleWithAmplifier = true;
+    private Spacing spacing = Spacing.RANDOM;
+
+    /// How a density below one particle per tick is realised.
+    ///
+    /// Amplifier scaling multiplies the density either way, so this only decides what a
+    /// leftover fraction looks like: `0.25` is one particle every fourth tick under
+    /// [#EVEN], or a quarter chance on each tick under [#RANDOM].
+    public enum Spacing {
+        /// Regular — the particle lands on every Nth tick. Reads as a steady pulse.
+        EVEN,
+        /// Random — each tick rolls independently. Reads as a scatter, and is how buff
+        /// particles behaved before 1.10, so it stays the default here.
+        RANDOM
+    }
 
     public static ParticleGroup defaultBatch(String particleId, float particleCount) {
         return defaultBatch(particleId, particleCount, 0);
@@ -68,6 +82,12 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
         return this;
     }
 
+    /// See [Spacing]. Defaults to [Spacing#RANDOM].
+    public BuffParticleSpawner spacing(Spacing spacing) {
+        this.spacing = spacing;
+        return this;
+    }
+
     public BuffParticleSpawner scaleWithAmplifier(boolean scaleWithAmplifier) {
         this.scaleWithAmplifier = scaleWithAmplifier;
         return this;
@@ -83,6 +103,16 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
         return this;
     }
 
+    private boolean hasFractionalCount(int scale) {
+        for (var effect : particles) {
+            var scaled = effect.batch.count * scale;
+            if (scaled > 0F && scaled < 1F) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void spawnParticles(LivingEntity livingEntity, int amplifier) {
         var time = livingEntity.age;
@@ -90,14 +120,21 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
                 || (!invertedFrequency ? (time % frequency == 0) : (time % (frequency / (amplifier + 1)) == 0));
         if (spawn) {
             var scale = this.scaleWithAmplifier ? (amplifier + 1) : 1;
+            var needsRoll = spacing == Spacing.RANDOM && hasFractionalCount(scale);
             List<ParticleGroup> scaledParticles;
-            if (scale == 1) {
+            if (scale == 1 && !needsRoll) {
                 scaledParticles = particles;
             } else {
                 var copies = new ArrayList<ParticleGroup>(particles.size());
                 for (var effect : particles) {
                     var copy = effect.copy();
                     copy.batch.count *= scale;
+                    // Scale first, then decide what any leftover fraction means: a period
+                    // (EVEN) or an independent roll per tick (RANDOM).
+                    if (spacing == Spacing.RANDOM && copy.batch.count > 0F && copy.batch.count < 1F) {
+                        copy.batch.chance *= copy.batch.count;
+                        copy.batch.count = 1F;
+                    }
                     copies.add(copy);
                 }
                 scaledParticles = copies;

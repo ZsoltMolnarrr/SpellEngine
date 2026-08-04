@@ -144,7 +144,8 @@ Everything else overrides outright. Built-in particles are listed in [`SpellEngi
 
 | Field | Default | Description |
 |---|---|---|
-| `count` | `1.0` | Number of particles. Below `1` it is a spawn chance — `0.25` spawns one a quarter of the time |
+| `count` | `1.0` | Particles per tick. `1`+ is a count per emission; below `1` it is a period — `0.25` emits one every 4th tick. The sub-`1` form needs a tick loop, so it only applies to continuous FX |
+| `chance` | `1.0` | Probability the batch emits at all, `0..1`. Works everywhere, and composes with a fractional `count` |
 | `shape` | `CIRCLE` | Placement and initial velocity pattern — see below |
 | `anchor` | `ENTITY` | `ENTITY`, `GROUND` (first solid block below), `LAUNCH_POINT` (the caster's hand) |
 | `vertical_origin` | `0.5` | Offset from the anchor, in units of the source's height. `0` feet, `0.5` centre, `1` head, `1.5` above |

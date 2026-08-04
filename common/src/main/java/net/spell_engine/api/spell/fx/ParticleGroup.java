@@ -299,10 +299,24 @@ public class ParticleGroup { public ParticleGroup() { }
     /// How many particles to spawn, where to place them, and what velocity to give them.
     /// Resolved before any particle exists — never reaches the particle factory.
     public static class Batch { public Batch() { }
-        /// Number of particles to spawn. Values below `1` are treated as a spawn
-        /// chance, e.g. `0.25` spawns one particle a quarter of the time.
+        /// How often this batch emits, as a rate.
+        ///
+        /// `1` and above is a count: that many particles per emission. Below `1` it is a
+        /// period — `0.25` emits one particle every 4th tick — so the field reads as
+        /// "particles per tick" throughout.
+        ///
+        /// The sub-`1` form only applies where there is a tick loop to count: casting
+        /// particles, a cloud's ambient particles, projectile trails. A one-shot site
+        /// (impact, release, cloud spawn) emits once and has no next tick, so a fractional
+        /// count there simply emits. Use [#chance] to make a one-shot occasional.
         @AlwaysGenerate
         public float count = 1F;
+
+        /// Probability that this batch emits at all, `0..1`. `1` always emits.
+        ///
+        /// Unlike a fractional [#count] this works everywhere, and the two compose: a
+        /// continuous effect can emit on every 4th tick and only half the time.
+        public float chance = 1F;
 
         /// Spawn placement and initial velocity pattern.
         @AlwaysGenerate
@@ -363,6 +377,7 @@ public class ParticleGroup { public ParticleGroup() { }
         // MARK: Builders
 
         public Batch count(float count) { this.count = count; return this; }
+        public Batch chance(float chance) { this.chance = chance; return this; }
         public Batch shape(Shape shape) { this.shape = shape; return this; }
         public Batch anchor(Anchor anchor) { this.anchor = anchor; return this; }
         public Batch verticalOrigin(float vertical_origin) { this.vertical_origin = vertical_origin; return this; }
@@ -382,6 +397,7 @@ public class ParticleGroup { public ParticleGroup() { }
         public Batch copy() {
             var copy = new Batch();
             copy.count = this.count;
+            copy.chance = this.chance;
             copy.shape = this.shape;
             copy.anchor = this.anchor;
             copy.vertical_origin = this.vertical_origin;

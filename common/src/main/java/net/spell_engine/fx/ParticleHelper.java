@@ -161,7 +161,7 @@ public class ParticleHelper {
     public static void play(World world, long time, Vec3d origin, float width, float yaw, float pitch, ParticleGroup effect, @Nullable Entity sourceEntity) {
         try {
             var instructions = new ArrayList<SpawnInstruction>();
-            emit(time, origin, width, yaw, pitch, effect, 1F, sourceEntity, instructions);
+            emit(time, origin, width, yaw, pitch, effect, 1F, true, sourceEntity, instructions);
             for (var instruction : instructions) {
                 instruction.perform(world);
             }
@@ -191,7 +191,7 @@ public class ParticleHelper {
                     origin = spawn.sourceLocation();
                 }
             }
-            emit(world.getTime(), origin, width, spawn.yaw(), spawn.pitch(), effect, packet.countMultiplier(), sourceEntity, instructions);
+            emit(world.getTime(), origin, width, spawn.yaw(), spawn.pitch(), effect, packet.countMultiplier(), false, sourceEntity, instructions);
         }
         return instructions;
     }
@@ -214,8 +214,11 @@ public class ParticleHelper {
 
     /// Resolves one effect's batch into spawn instructions.
     /// Shared by the local and the network path.
+    /// `continuous` marks the per-tick path (casting, cloud ambience, trails), where a
+    /// fractional [ParticleGroup.Batch#count] means "one every N ticks". One-shot emissions
+    /// pass `false`: they happen at an instant, with no next tick to skip to.
     private static void emit(long time, Vec3d origin, float width, float yaw, float pitch,
-                             ParticleGroup effect, float countMultiplier,
+                             ParticleGroup effect, float countMultiplier, boolean continuous,
                              @Nullable Entity sourceEntity, List<SpawnInstruction> output) {
         var registryEntry = Registries.PARTICLE_TYPE.get(Identifier.of(effect.id));
         if (registryEntry == null) {
@@ -227,9 +230,26 @@ public class ParticleHelper {
         }
 
         var batch = effect.batch;
-        var count = batch.count * countMultiplier;
-        if (count < 1) {
-            count = rng.nextFloat() < count ? 1 : 0;
+        if (batch.chance < 1F && rng.nextFloat() >= batch.chance) {
+            return;
+        }
+        float count;
+        if (batch.count < 1F) {
+            // A period, not a count. Only meaningful on the continuous path — a one-shot
+            // has no next tick to wait for, so it just emits.
+            if (batch.count <= 0F) {
+                return;
+            }
+            if (continuous) {
+                var period = Math.max(1, Math.round(1F / batch.count));
+                if (Math.floorMod(time, period) != 0) {
+                    return;
+                }
+            }
+            count = 1;
+        } else {
+            // The multiplier scales a count; it has no meaning against a period.
+            count = batch.count * countMultiplier;
         }
         for (int i = 0; i < count; ++i) {
             var direction = direction(batch, time, yaw, pitch);
