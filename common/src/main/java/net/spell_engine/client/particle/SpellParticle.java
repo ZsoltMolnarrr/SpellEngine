@@ -281,9 +281,21 @@ public class SpellParticle extends SpriteBillboardParticle {
 
     /// Applies the entry's pivot: shifts the quad vertically in units of its size
     /// (V1 `ShiftedParticle`, used by `roots` to stand on the ground).
+    ///
+    /// [Facing#GROUND] quads lie flat and, being backface-culled like every particle
+    /// sheet, vanish the moment the camera drops below them. Area effects read as decals
+    /// on the floor, so they should be visible from underneath too — a second quad,
+    /// flipped 180° about an in-plane axis, presents the opposite face. The two are
+    /// coplanar but never both drawn from one side (whichever faces away is culled), so
+    /// there is no z-fighting; the underside simply shows the texture mirrored.
     @Override
     protected void method_60374(VertexConsumer vertexConsumer, Quaternionf quaternionf, float x, float y, float z, float tickDelta) {
-        super.method_60374(vertexConsumer, quaternionf, x, y + pivot * this.getSize(tickDelta), z, tickDelta);
+        float shiftedY = y + pivot * this.getSize(tickDelta);
+        super.method_60374(vertexConsumer, quaternionf, x, shiftedY, z, tickDelta);
+        if (facing == ParticleGroup.Facing.GROUND) {
+            var backFace = new Quaternionf(quaternionf).rotateX((float) Math.PI);
+            super.method_60374(vertexConsumer, backFace, x, shiftedY, z, tickDelta);
+        }
     }
 
     // MARK: Factory
