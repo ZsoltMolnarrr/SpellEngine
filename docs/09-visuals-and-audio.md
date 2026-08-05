@@ -116,7 +116,7 @@ Everything else overrides outright. Built-in particles are listed in [`SpellEngi
 | `gravity` | preset | Downward acceleration per tick. Negative values rise |
 | `drag` | preset | Fraction of velocity kept each tick |
 | `collides` | `false` | Collides with blocks instead of passing through |
-| `attachment` | `NONE` | `POSITION` rides the source entity, `POSITION_SCALED` also scales with it |
+| `attachment` | `NONE` | `POSITION` rides the source entity keeping its spawn offset, `POSITION_SCALED` also scales with it, `POSITION_FROM_FEET` rides from the entity's position discarding that offset (pre-1.10 sign/flame behaviour) |
 
 **Motion presets** supply gravity, drag, spawn-velocity shaping and a lifetime factor:
 

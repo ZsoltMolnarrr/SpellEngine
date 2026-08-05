@@ -152,8 +152,12 @@ public class SpellEngineParticles {
     public static final Entry smoke_medium = add(new Entry("smoke_medium", Texture.of("smoke_medium", 9))
             .defaults(p -> p.render(Render.LIT).glow(false).scale(0.15F, 0.33F).colorVariance(0.65F).opacity(0.8F)
                     .drag(0.8F).gravity(-0.01F).collides(true).playbackSpeed(0.46F).lifetimeVariance(0.55F)));
+    // V1 built this one on vanilla's `BillboardParticle.scale(float)`, which *multiplies* the random
+    // base size (`0.1..0.2`, mean `0.15`) rather than setting it — so its `scale(3F)` rendered at
+    // `0.3..0.6`, not `3`. Here `scale` is absolute, so the multiplier becomes `0.15 * 3` with the
+    // vanilla base's own +/-33% as the variance.
     public static final Entry smoke_large = add(new Entry("smoke_large", Texture.vanilla("big_smoke", 12))
-            .defaults(p -> p.glow(false).scale(3F).opacity(0.9F).gravity(0F).drag(1F).collides(true)
+            .defaults(p -> p.glow(false).scale(0.45F, 0.33F).opacity(0.9F).gravity(0F).drag(1F).collides(true)
                     .playbackSpeed(0.115F).lifetimeVariance(0.24F)));
     public static final Entry roots = add(new Entry("roots", Texture.of("roots", 14)).pivot(1F)
             .defaults(p -> p.render(Render.OPAQUE).glow(false).scale(0.25F).gravity(0.225F).drag(0.95F)
@@ -161,7 +165,8 @@ public class SpellEngineParticles {
     public static final Entry shield_small = add(new Entry("shield_small", Texture.of("shield_small")).lifetime(16)
             .defaults(p -> p.motion(Motion.DECELERATE).scale(0.15F, 0.33F).colorVariance(0.3F)));
     public static final Entry dripping_blood = add(new Entry("dripping_blood", Texture.vanilla("drip_hang"))
-            .defaults(p -> p.glow(false).scale(0.11F, 0.33F).color(Color.from(0x590000).toRGBA()).gravity(0.8F).collides(true)));
+            .defaults(p -> p.motion(Motion.DRIFT).glow(false).scale(0.11F, 0.33F)
+                    .color(Color.from(0x590000).toRGBA()).gravity(0.8F).collides(true)));
 
     @Deprecated
     public static final Entry weakness_smoke = add(new Entry("weakness_smoke", Texture.of("smoke_medium", 9))

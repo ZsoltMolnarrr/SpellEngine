@@ -162,7 +162,7 @@ public class SpellParticle extends SpriteBillboardParticle {
 
         this.attachment = config.attachment;
         this.followEntity = attachment != ParticleGroup.Attachment.NONE ? sourceEntity : null;
-        if (followEntity != null) {
+        if (followEntity != null && attachment != ParticleGroup.Attachment.POSITION_FROM_FEET) {
             this.followDiff = new Vec3d(this.x - followEntity.getX(), this.y - followEntity.getY(), this.z - followEntity.getZ());
         }
 
