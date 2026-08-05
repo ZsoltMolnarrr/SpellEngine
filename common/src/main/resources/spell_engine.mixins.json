@@ -16,7 +16,6 @@
     "arrow.RangedWeaponQuiverMixin",
     "client.ItemStackTooltipAccessor",
     "criteria.EnchantedItemCriterionMixin",
-    "effect.EntityImmunityMixin",
     "effect.LivingEntityEffectRemoval",
     "effect.LivingEntityHealthImpacting",
     "effect.LivingEntityKnockbackImmunity",

@@ -35,6 +35,8 @@ API Changes:
 - Removed `arrow_perks.launch_particles` — use `arrow_perks.launch_visuals`
 - Removed `Spell.ProjectileModel` and the single-model render paths reaching it (`ProjectileData.Client.model`, `Cloud.ClientData.model`, `ArrowPerks.override_render`) — use `composite_model` for projectiles and arrows, `model_fx` for clouds
 - Removed `Cast.channel_ticks` / `Cast.channeled_release_fx` and the `resolvedType()` resolver — use `cast.type = CHANNEL` with a `channel` block, and read `cast.type` directly
+- Removed the long-deprecated `EntityImmunity` API (interface + `Entity` mixin) — use `LivingEntityImmunity`, which covers damage types, tags and status effects
+- Removed the deprecated `RemoveOnHit.configure(StatusEffect, boolean)` overload — pass a `RemoveOnHit.Trigger` (`ANY_HIT` matches the old `true`)
 
 # 1.9.15
 
