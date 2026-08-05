@@ -291,15 +291,7 @@ public class ParticleGroup { public ParticleGroup() { }
         /// Moves with the entity, preserving the offset it spawned at.
         POSITION,
         /// Like [#POSITION], and additionally scales with the entity's own scale.
-        POSITION_SCALED,
-        /// Rides the entity from its **feet**, discarding the offset it spawned at.
-        ///
-        /// Reproduces what the pre-1.10 flame/sign particle class did: it began tracking
-        /// with a zero offset, so on its first move the particle snapped to the entity's
-        /// position and travelled from there. A sign authored at chest height therefore
-        /// rose from the feet, roughly a block lower than its spawn point suggests.
-        /// Kept because content is tuned around it — prefer [#POSITION] for new work.
-        POSITION_FROM_FEET
+        POSITION_SCALED
     }
 
     // MARK: - Batch

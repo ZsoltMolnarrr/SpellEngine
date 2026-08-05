@@ -14,7 +14,6 @@ API Changes:
   - New batch shape `NONE` for a single placed, motionless billboard
   - `batch.count` is now a rate: `1`+ is a count per emission, below `1` a period (`0.25` = one every 4th tick, continuous FX only)
   - Restored the per-particle lifetime randomness the pre-1.10 particle classes had — 11 elemental/smoke entries were spawning and dying in lockstep
-  - Added attachment mode `POSITION_FROM_FEET`, reproducing the pre-1.10 sign/flame follow behaviour (tracked from a zero offset, so particles rose from the entity's feet)
   - Added `batch.chance` (`0..1`) — the dedicated probability field, replacing the old sub-`1` `count` overload
   - `BuffParticleSpawner.spacing(EVEN | RANDOM)` decides what a leftover fractional density looks like; defaults to `RANDOM`, matching pre-1.10 buff particles
   - `origin` splits into `anchor` + `vertical_origin`; `WIDE_PIPE` becomes `PIPE` + `width_factor`; `rotation` becomes `alignment`; `max_age` becomes `playback_speed` (reciprocal)

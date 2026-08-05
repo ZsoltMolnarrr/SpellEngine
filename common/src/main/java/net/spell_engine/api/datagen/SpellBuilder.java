@@ -1087,10 +1087,10 @@ public class SpellBuilder {
         public static ParticleGroup popUpSign(Identifier signId, Color color) {
             return ParticleGroupBuilder.of(signId)
                     .scale(0.8F).color(color)
-                    // V1 signs tracked from a zero offset, so they rose from the feet
-                    .attached(ParticleGroup.Attachment.POSITION_FROM_FEET)
+                    // Spawn at the feet and rise, following the entity
+                    .attached()
                     .batch(ParticleGroupBuilder.Batches.popUp()
-                            .andThen(b -> b.verticalOrigin(ParticleGroupBuilder.Batches.CENTER).speed(0.8F)));
+                            .andThen(b -> b.verticalOrigin(0F).speed(0.8F)));
         }
 
         public static ParticleGroup area(Identifier id) {
