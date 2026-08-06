@@ -21,6 +21,8 @@ import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellChoice;
+import net.spell_engine.api.spell.tooltip.TooltipTokens;
+import static net.spell_engine.api.spell.tooltip.TooltipTokens.*;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.tags.SpellEngineItemTags;
@@ -42,25 +44,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class SpellTooltip {
-    public static final String damageToken = "damage";
-    public static final String healToken = "heal";
-    public static final String rangeToken = "range";
-    public static final String durationToken = "duration";
-    public static final String itemToken = "item";
-    public static final String effectDurationToken = "effect_duration";
-    public static final String effectAmplifierToken = "effect_amplifier";
-    public static final String effectAmplifierCapToken = "effect_amplifier_cap";
-    public static final String impactRangeToken = "impact_range";
-    public static final String teleportDistanceToken = "teleport_distance";
-    public static final String countToken = "count";
-    public static final String impact_chance = "impact_chance";
-    public static final String trigger_chance = "trigger_chance";
-    public static final String trigger_list = "trigger_list";
-    public static final String additional_placement_count = "additional_placement_count";
-    public static final String summonDurationToken = "summon_duration";
-    public static final String summonCountToken = "summon_count";
-    public static final String summonGroupCountToken = "summon_group_count";
-    public static String placeholder(String token) { return "{" + token + "}"; }
+    // Token names live in the dependency-free `TooltipTokens`, statically imported above so they can
+    // be referenced unqualified here. This delegate preserves the `SpellTooltip.placeholder(...)` API.
+    public static String placeholder(String token) { return TooltipTokens.placeholder(token); }
 
     // Constant token-start matcher; compiling per-tooltip-frame was a needless cost.
     private static final Pattern TOKEN_PATTERN = Pattern.compile("\\{[a-z]{3}");
@@ -932,19 +918,17 @@ public class SpellTooltip {
     }
 
     private static String replaceDamageTokens(String text, String token, List<SpellHelper.EstimatedValue> values) {
-        boolean indexTokens = values.size() > 1;
         for (int i = 0; i < values.size(); ++i) {
             var range = values.get(i);
-            var actualToken = indexTokens ? placeholder(token + "_" + (i + 1)) : placeholder(token);
+            var actualToken = TooltipTokens.placeholder(token, i, values.size());
             text = text.replace(actualToken, formattedRange(range.min(), range.max()));
         }
         return text;
     }
 
     public static String replaceTokens(String text, String token, List<String> values) {
-        boolean indexTokens = values.size() > 1;
         for (int i = 0; i < values.size(); ++i) {
-            var actualToken = indexTokens ? placeholder(token + "_" + (i + 1)) : placeholder(token);
+            var actualToken = TooltipTokens.placeholder(token, i, values.size());
             text = text.replace(actualToken, values.get(i));
         }
         return text;
