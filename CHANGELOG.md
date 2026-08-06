@@ -24,6 +24,8 @@ API Changes:
   - Removed the 14 `aura_effect_*` entries — use the matching `area_effect_*` id with `facing = CAMERA`
   - Removed the 32 `magic_<shape>_<motion>` entries — use the 8 `magic_<shape>` entries and set `motion` on the effect
   - `MagicParticles` nested class flattened into `SpellEngineParticles.magic_*` fields
+  - Removed the redundant `weakness_smoke` entry — it was `smoke_medium` with a baked tint; set `color`/`opacity`/`gravity` on `smoke_medium` per use instead
+  - Removed the redundant `electric_arc_*` entries and textures — they duplicated `lightning_arc_*`; use the `ParticleGroupBuilder.electricArc(lightning_arc_A/B)` starting point, which reproduces their tuned look
 - Added `Fx.Visuals` (particles + models), replacing `VFX`
   - `visuals` on `release`, `impacts[]`, `area_impact`, `deliver.melee.attacks[]`, `deliver.clouds[].spawn`/`.despawn`, `teleport.fizzle`, `arrow_perks.launch_visuals`
   - `deliver.clouds[].impact`, `target.beam.block_hit`, `teleport.depart`/`.arrive`, `modifiers[].release`

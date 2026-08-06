@@ -116,6 +116,16 @@ public class ParticleGroupBuilder {
                 .attached(ParticleGroup.Attachment.POSITION_SCALED);
     }
 
+    /// The electric-arc look, rebuilt on the visually identical `lightning_arc_*`
+    /// textures: an [Color#ELECTRIC] tint, smaller and colliding, with the slow playback
+    /// and lifetime spread the retired `electric_arc_*` entries baked into themselves.
+    /// Pass [SpellEngineParticles#lightning_arc_A] or [SpellEngineParticles#lightning_arc_B].
+    public static ParticleGroupBuilder electricArc(SpellEngineParticles.Entry lightningArc) {
+        return of(lightningArc)
+                .scale(0.75F).color(Color.ELECTRIC).drag(0.96F).collides()
+                .playbackSpeed(0.41F).lifetimeVariance(0.55F);
+    }
+
     // MARK: - Appearance
 
     public ParticleGroupBuilder color(long rgba) {
