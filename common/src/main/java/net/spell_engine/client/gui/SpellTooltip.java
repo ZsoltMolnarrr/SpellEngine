@@ -860,10 +860,10 @@ public class SpellTooltip {
 
         description = replaceEffectTokens(description);
 
-        var mutator = descriptionMutators.get(spellId);
-        if (mutator != null) {
-            var args = new DescriptionMutator.Args(description, player, spellEntry);
-            description = mutator.mutate(args);
+        var custom = TooltipTokens.customFor(spellId);
+        if (custom != null) {
+            var args = new TooltipTokens.Custom.Args(description, player, spellEntry);
+            description = custom.resolve(args);
         }
         return description;
     }
@@ -1066,15 +1066,20 @@ public class SpellTooltip {
         }
     }
 
+    /// @deprecated Moved to the server-safe {@link TooltipTokens.Custom}; register via
+    /// {@link TooltipTokens#registerCustom}. Kept as a bridge so existing content compiles until migrated.
+    @Deprecated
     public interface DescriptionMutator {
         record Args(String description, PlayerEntity player, RegistryEntry<Spell> spellEntry) { }
         String mutate(Args args);
     }
 
-    private static final Map<Identifier, DescriptionMutator> descriptionMutators = new HashMap<>();
-
+    /// @deprecated Use {@link TooltipTokens#registerCustom} with a {@link TooltipTokens.Custom}. This
+    /// bridges a legacy handler into the same registry.
+    @Deprecated
     public static void addDescriptionMutator(Identifier spellId, DescriptionMutator handler) {
-        descriptionMutators.put(spellId, handler);
+        TooltipTokens.registerCustom(spellId, args ->
+                handler.mutate(new DescriptionMutator.Args(args.description(), args.player(), args.spellEntry())));
     }
 
     // Resolved spell entries depend only on the loaded spell registry, never on the player or

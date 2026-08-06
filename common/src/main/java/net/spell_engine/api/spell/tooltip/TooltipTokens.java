@@ -2,8 +2,14 @@ package net.spell_engine.api.spell.tooltip;
 
 import com.ibm.icu.text.DecimalFormat;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
+import net.spell_engine.api.spell.Spell;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /// Canonical, dependency-free definitions of the description tokens the spell tooltip understands,
 /// plus the value-formatting primitives used to render them.
@@ -182,5 +188,30 @@ public final class TooltipTokens {
             }
         }
         return "";
+    }
+
+    // MARK: Custom (programmatic) tokens
+
+    /// The imperative escape hatch beside the declarative token builders: content registers a `Custom`
+    /// per spell id for a value the `{...}` tokens can't express, and the renderer invokes [#resolve]
+    /// with the description (after all declarative tokens are resolved), taking whatever it returns.
+    ///
+    /// Deliberately references only shared types (`Spell`, `PlayerEntity`, `RegistryEntry`), so it — and
+    /// the content that implements it — never pulls in client-only code.
+    public interface Custom {
+        String resolve(Args args);
+        record Args(String description, PlayerEntity player, RegistryEntry<Spell> spellEntry) { }
+    }
+
+    private static final Map<Identifier, Custom> customs = new HashMap<>();
+
+    /// Registers a [Custom] handler for a spell's description. Safe to call from data-definition code.
+    public static void registerCustom(Identifier spellId, Custom custom) {
+        customs.put(spellId, custom);
+    }
+
+    /// The [Custom] handler registered for `spellId`, or `null`. Read by the tooltip renderer.
+    public static @Nullable Custom customFor(Identifier spellId) {
+        return customs.get(spellId);
     }
 }

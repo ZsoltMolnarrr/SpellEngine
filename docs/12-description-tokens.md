@@ -121,3 +121,23 @@ left visible in the tooltip for debugging rather than blanked.
 See [`SpellTooltip.computeEffectToken`](../common/src/main/java/net/spell_engine/client/gui/SpellTooltip.java)
 for the resolver and [`TooltipTokens.Format`](../common/src/main/java/net/spell_engine/api/spell/tooltip/TooltipTokens.java)
 for the builder and formatting.
+
+---
+
+## Custom tokens (the programmatic escape hatch)
+
+When a value can't be expressed by any declarative token, register a `TooltipTokens.Custom` for the
+spell id. The renderer calls it *after* every declarative token is resolved, passing the current
+description (plus the viewing player and spell entry) and taking whatever it returns:
+
+```java
+TooltipTokens.registerCustom(spellId, args ->
+        args.description().replace("{threshold}", TooltipTokens.percent(0.5F)));
+```
+
+`Custom` lives in `TooltipTokens` and references only shared types, so it is safe to implement and
+register from data-definition code — no client class is touched. Prefer a declarative token when one
+fits; reach for `Custom` only for genuinely bespoke values.
+
+> The old `SpellTooltip.DescriptionMutator` / `SpellTooltip.addDescriptionMutator` are deprecated
+> bridges into the same registry — migrate them to `Custom` / `registerCustom`.
