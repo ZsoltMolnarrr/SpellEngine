@@ -132,8 +132,9 @@ public final class TooltipTokens {
     /// Producing one deterministic string per meaning is what lets the renderer memoise resolution
     /// keyed on the raw token text — semantically-equal tokens are byte-equal.
     ///
-    /// @param attribute which of the effect's modifiers to read; `null` means "the sole modifier"
-    ///                  (deterministic only when the effect has exactly one).
+    /// @param attribute which of the effect's modifiers to read; `null` falls back to the effect's
+    ///                  *first* modifier. Since the effect's modifier map is unordered, name the
+    ///                  attribute explicitly when the effect has several modifiers that differ in value.
     public static String effect(Identifier effectId, int amplifier, @Nullable Identifier attribute, Format format) {
         boolean hasFormat = format != Format.SIGNED;
         boolean hasAttribute = attribute != null;

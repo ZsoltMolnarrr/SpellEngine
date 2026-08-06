@@ -52,10 +52,12 @@ directly, so `0` is the base level. "The value at N stacks" is amplifier `N − 
 
 ### Attribute selection
 
-A modifier is selected by its **attribute id**. A blank attribute field selects the effect's sole
-modifier — which is only deterministic when the effect has exactly one (the effect's modifier map is
-unordered, so there is no reliable "first"). An effect with several modifiers, such as Frostbite
-(movement **and** attack speed), must name the attribute; use one token per value you want to show.
+A modifier is selected by its **attribute id**. A blank attribute field falls back to the effect's
+**first** modifier, so a multi-modifier effect still resolves rather than showing the literal token.
+The effect's modifier map is unordered, so "first" is not guaranteed to be the declared-first — which
+is fine when the modifiers share a value (e.g. a relic that boosts several spell schools by the same
+amount), but when they **differ**, name the attribute explicitly. An effect like Frostbite (movement
+**and** attack speed) that wants both values shown needs one token per attribute.
 
 ### Format — sign only
 

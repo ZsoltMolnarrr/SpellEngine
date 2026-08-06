@@ -973,8 +973,11 @@ public class SpellTooltip {
     /// Resolves an effect token body (`<effect_id>|<amplifier>|<attribute>|<format>`) into a
     /// formatted value, or `null` if it can't be resolved. Reads the configured attribute modifiers
     /// straight off the vanilla status effect — amplifier scaling (`base × (amplifier+1)`) is applied
-    /// by `forEachAttributeModifier`. A blank attribute field selects the effect's sole modifier
-    /// (only deterministic when it has exactly one, since the effect's modifier map is unordered).
+    /// by `forEachAttributeModifier`. A blank attribute field falls back to the effect's *first*
+    /// modifier, so a multi-modifier effect still resolves rather than showing the literal token.
+    /// The status effect's modifier map is unordered, so "first" is not guaranteed to be the config's
+    /// declared-first — fine when the modifiers share a value, but name the attribute explicitly when
+    /// they differ.
     private static @Nullable String computeEffectToken(String body) {
         var parts = body.split(Pattern.quote(TooltipTokens.effectTokenSeparator), -1);
         if (parts.length == 0 || parts[0].isBlank()) {
@@ -999,7 +1002,8 @@ public class SpellTooltip {
         var attributeId = (parts.length > 2 && !parts[2].isBlank()) ? parts[2] : null;
         var format = TooltipTokens.Format.parse(parts.length > 3 ? parts[3] : null);
 
-        var modifiers = new HashMap<String, EntityAttributeModifier>();
+        // LinkedHashMap so "first" is the first modifier `forEachAttributeModifier` yields.
+        var modifiers = new LinkedHashMap<String, EntityAttributeModifier>();
         effect.forEachAttributeModifier(amplifier, (attribute, modifier) ->
                 attribute.getKey().ifPresent(key -> modifiers.put(key.getValue().toString(), modifier)));
 
@@ -1007,7 +1011,8 @@ public class SpellTooltip {
         if (attributeId != null) {
             chosen = modifiers.get(attributeId);
         } else {
-            chosen = modifiers.size() == 1 ? modifiers.values().iterator().next() : null;
+            // Blank attribute: fall back to the first modifier rather than refusing when several exist.
+            chosen = modifiers.isEmpty() ? null : modifiers.values().iterator().next();
         }
         if (chosen == null) {
             return null;
