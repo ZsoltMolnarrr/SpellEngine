@@ -8,6 +8,9 @@
 - Legacy single-model projectile/cloud rendering and the flat channelling fields are removed
 
 API Changes:
+
+Completely reworked particle effect system:
+
 - `ParticleBatch` replaced by `ParticleGroup`: `id` + `appearance` (one particle) + `batch` (how many, where, what velocity)
   - Unset fields inherit the registered particle's own defaults; `scale`, `opacity` and `playback_speed` multiply with them
   - New appearance fields: `facing` (`CAMERA`/`GROUND`/`UPRIGHT`/`VELOCITY`), `motion` presets with `gravity`/`drag` overrides, `render`/`glow`, `opacity_curve`, `scale_multiplier`/`scale_easing`, `color_variance`/`scale_variance`/`lifetime_variance`, `playback_speed` (negative reverses), `collides`
