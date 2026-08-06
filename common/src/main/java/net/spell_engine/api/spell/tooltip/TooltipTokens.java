@@ -169,6 +169,14 @@ public final class TooltipTokens {
         return String.valueOf((int) (chance * 100)) + '%';
     }
 
+    /// A percentage baked directly into a description literal (as opposed to a `{token}` resolved at
+    /// render time). The description is a lang value and `I18n.translate` feeds it to `String.format`,
+    /// so a literal `%` must be doubled (`%%` → `%`) or it renders as "Format error". Token
+    /// percentages injected after translation must NOT use this.
+    public static String bakedPercent(float chance) {
+        return percent(chance).replace("%", "%%");
+    }
+
     public static String formattedNumber(float number) {
         return NUMBER_FORMAT.get().format(number);
     }
