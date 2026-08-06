@@ -75,4 +75,4 @@ These open-source mods use Spell Engine and serve as real-world examples for bot
 | Display name | lang key `spell.MOD_ID.SPELL_ID.name` |
 | Description | lang key `spell.MOD_ID.SPELL_ID.description` |
 
-The description supports value tokens — see [`SpellTooltip.java`](../common/src/main/java/net/spell_engine/client/gui/SpellTooltip.java) for available tokens (e.g. `{damage}`, `{heal}`).
+The description supports value tokens (e.g. `{damage}`, `{heal}`, and the parametric `{effect|...}`) — see [Description Tokens](12-description-tokens.md).

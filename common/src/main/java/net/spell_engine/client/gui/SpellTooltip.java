@@ -1,6 +1,5 @@
 package net.spell_engine.client.gui;
 
-import com.ibm.icu.text.DecimalFormat;
 import net.fabricmc.fabric.mixin.client.keybinding.KeyBindingAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
@@ -10,6 +9,7 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.MutableText;
@@ -51,13 +51,13 @@ public class SpellTooltip {
     // Constant token-start matcher; compiling per-tooltip-frame was a needless cost.
     private static final Pattern TOKEN_PATTERN = Pattern.compile("\\{[a-z]{3}");
 
-    // DecimalFormat is expensive to construct (loads locale/symbol data) and formattedNumber
-    // is called many times per tooltip frame. Reuse one per thread (tooltips may be built off-thread).
-    private static final ThreadLocal<DecimalFormat> NUMBER_FORMAT = ThreadLocal.withInitial(() -> {
-        var formatter = new DecimalFormat();
-        formatter.setMaximumFractionDigits(1);
-        return formatter;
-    });
+    // Parametric effect-value token: `{effect|<effect_id>|<amplifier>|<attribute>|<format>}`. The
+    // prefix doubles as a cheap `String.contains` gate so the regex only runs for descriptions that
+    // actually carry one. Built from the shared TooltipTokens constants so both sides agree.
+    private static final String EFFECT_TOKEN_PREFIX =
+            "{" + TooltipTokens.effectToken + TooltipTokens.effectTokenSeparator; // "{effect|"
+    private static final Pattern EFFECT_TOKEN_PATTERN =
+            Pattern.compile(Pattern.quote(EFFECT_TOKEN_PREFIX) + "([^}]*)}");
 
     public static void addSpellLines(ItemStack itemStack, TooltipType tooltipType, List<Text> lines) {
         var player = MinecraftClient.getInstance().player;
@@ -857,7 +857,9 @@ public class SpellTooltip {
             var values = entry.getValue();
             description = replaceTokens(description, token, values);
         }
- 
+
+        description = replaceEffectTokens(description);
+
         var mutator = descriptionMutators.get(spellId);
         if (mutator != null) {
             var args = new DescriptionMutator.Args(description, player, spellEntry);
@@ -934,23 +936,94 @@ public class SpellTooltip {
         return text;
     }
 
+    /// Replaces every `{effect|...}` token in the description with its resolved value. Guarded by a
+    /// cheap `contains` check so the regex only runs when a token is actually present. Each distinct
+    /// token is resolved at most once (memoised); the matcher scans the original text while
+    /// replacements accumulate into the returned string.
+    private static String replaceEffectTokens(String text) {
+        if (!text.contains(EFFECT_TOKEN_PREFIX)) {
+            return text;
+        }
+        var matcher = EFFECT_TOKEN_PATTERN.matcher(text);
+        Set<String> replaced = null;
+        while (matcher.find()) {
+            var literal = matcher.group();  // "{effect|...}" — the exact substring to replace
+            var body = matcher.group(1);    // "<effect_id>|<amplifier>|<attribute>|<format>"
+            if (replaced == null) {
+                replaced = new HashSet<>();
+            }
+            if (!replaced.add(literal)) {
+                continue; // a repeated token: its first occurrence already replaced all copies
+            }
+            text = text.replace(literal, resolveEffectToken(literal, body));
+        }
+        return text;
+    }
+
+    /// Returns the display string for an effect token, memoised on its (canonical) body. Unresolvable
+    /// tokens cache the original `literal`, so replacing it is a no-op and it stays visible for
+    /// debugging rather than being re-parsed every frame.
+    private static synchronized String resolveEffectToken(String literal, String body) {
+        return resolvedEffectTokens.computeIfAbsent(body, key -> {
+            var resolved = computeEffectToken(key);
+            return resolved != null ? resolved : literal;
+        });
+    }
+
+    /// Resolves an effect token body (`<effect_id>|<amplifier>|<attribute>|<format>`) into a
+    /// formatted value, or `null` if it can't be resolved. Reads the configured attribute modifiers
+    /// straight off the vanilla status effect — amplifier scaling (`base × (amplifier+1)`) is applied
+    /// by `forEachAttributeModifier`. A blank attribute field selects the effect's sole modifier
+    /// (only deterministic when it has exactly one, since the effect's modifier map is unordered).
+    private static @Nullable String computeEffectToken(String body) {
+        var parts = body.split(Pattern.quote(TooltipTokens.effectTokenSeparator), -1);
+        if (parts.length == 0 || parts[0].isBlank()) {
+            return null;
+        }
+        var effectId = Identifier.tryParse(parts[0]);
+        if (effectId == null) {
+            return null;
+        }
+        var effect = Registries.STATUS_EFFECT.get(effectId);
+        if (effect == null) {
+            return null;
+        }
+        int amplifier = 0;
+        if (parts.length > 1 && !parts[1].isBlank()) {
+            try {
+                amplifier = Integer.parseInt(parts[1].trim());
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        var attributeId = (parts.length > 2 && !parts[2].isBlank()) ? parts[2] : null;
+        var format = TooltipTokens.Format.parse(parts.length > 3 ? parts[3] : null);
+
+        var modifiers = new HashMap<String, EntityAttributeModifier>();
+        effect.forEachAttributeModifier(amplifier, (attribute, modifier) ->
+                attribute.getKey().ifPresent(key -> modifiers.put(key.getValue().toString(), modifier)));
+
+        EntityAttributeModifier chosen;
+        if (attributeId != null) {
+            chosen = modifiers.get(attributeId);
+        } else {
+            chosen = modifiers.size() == 1 ? modifiers.values().iterator().next() : null;
+        }
+        if (chosen == null) {
+            return null;
+        }
+        return format.render((float) chosen.value(), chosen.operation());
+    }
+
+    // Value-formatting primitives live in the dependency-free `TooltipTokens` (so the effect-token
+    // format resolver can reach them without loading this client-only class). These delegates
+    // preserve the existing `SpellTooltip.percent/bonus/formattedNumber` public API.
     public static String percent(float chance) {
-        return String.valueOf((int) (chance * 100)) + '%';
+        return TooltipTokens.percent(chance);
     }
 
     public static String bonus(float amount, EntityAttributeModifier.Operation operation) {
-        switch (operation) {
-            case ADD_VALUE -> {
-                return formattedNumber(amount);
-            }
-            case ADD_MULTIPLIED_BASE -> {
-                return percent(amount);
-            }
-            case ADD_MULTIPLIED_TOTAL -> {
-                return percent(amount - 1F);
-            }
-        }
-        return "";
+        return TooltipTokens.bonus(amount, operation);
     }
 
     public static String formattedRange(double min, double max) {
@@ -961,7 +1034,7 @@ public class SpellTooltip {
     }
 
     public static String formattedNumber(float number) {
-        return NUMBER_FORMAT.get().format(number);
+        return TooltipTokens.formattedNumber(number);
     }
 
     public static String keyWithPlural(String key, float value) {
@@ -1012,12 +1085,20 @@ public class SpellTooltip {
     private static Registry<Spell> resolvedRegistry;
     private static final Map<String, Optional<RegistryEntry<Spell>>> resolvedSpells = new HashMap<>();
 
+    // Effect-value tokens resolve to a value that depends only on the status-effect registry (the
+    // configured attribute modifiers), never on the player — so, like resolved spells, each token
+    // body resolves once and is reused until a registry resync. Keyed by the token *body* (canonical,
+    // so byte-equality == semantic equality); an unresolvable body caches the original literal so the
+    // replacement is a harmless no-op and isn't re-attempted every frame. Cleared beside resolvedSpells.
+    private static final Map<String, String> resolvedEffectTokens = new HashMap<>();
+
     @SuppressWarnings("unchecked")
     private static synchronized @Nullable RegistryEntry<Spell> resolveSpell(World world, String idString) {
         var registry = SpellRegistry.from(world);
         if (registry != resolvedRegistry) {
             resolvedRegistry = registry;
             resolvedSpells.clear();
+            resolvedEffectTokens.clear();
         }
         return resolvedSpells.computeIfAbsent(idString, key -> {
             var id = Identifier.tryParse(key);

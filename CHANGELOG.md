@@ -45,6 +45,12 @@ Completely reworked particle effect system:
 - Removed the long-deprecated `EntityImmunity` API (interface + `Entity` mixin) — use `LivingEntityImmunity`, which covers damage types, tags and status effects
 - Removed the deprecated `RemoveOnHit.configure(StatusEffect, boolean)` overload — pass a `RemoveOnHit.Trigger` (`ANY_HIT` matches the old `true`)
 
+Description tokens:
+
+- Added the parametric effect token `{effect|<effect_id>|<amplifier>|<attribute>|<format>}` — reads a status effect's attribute modifier straight off the registry, with amplifier scaling (`base × (amplifier + 1)`), attribute selection by id (blank = the effect's sole modifier), and a sign-only `format` (`abs`, `+`; percentage-vs-flat comes from the modifier's operation). Resolution is player-independent and memoised until a registry resync. See [Description Tokens](docs/12-description-tokens.md)
+- Added `TooltipTokens` — a dependency-free, server-safe home for token names, the `effect(...)` builders and the value-formatting primitives (`percent`, `bonus`, `formattedNumber`), so descriptions can be built from data definitions without touching the client-only `SpellTooltip`. `SpellTooltip` keeps its former token/format API as delegates
+- Effect tokens make an effect's non-first modifier addressable and replace the per-spell `DescriptionMutator` pattern for effect values (e.g. Frostbite can now show both its movement- and attack-speed values)
+
 # 1.9.15
 
 - Added support for `CHARGE` casting mode for spells with `MELEE` delivery, supports

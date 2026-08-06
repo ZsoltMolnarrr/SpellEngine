@@ -20,6 +20,7 @@
 | [09 · Visuals & Audio](09-visuals-and-audio.md) | Sounds, particles, projectile models, beam visuals |
 | [10 · Summons](10-summons.md) | Spell-summoned companion entities: behaviour, authoring, casting limits |
 | [11 · Content Development Guidelines](11-content-development-guidelines.md) | Conventions and balance guidance for authoring new content |
+| [12 · Description Tokens](12-description-tokens.md) | Value placeholders in descriptions — simple tokens and the parametric effect token |
 | [↗ 1.10 Migration Guide](MIGRATION_1.10.md) | Breaking changes from 1.9: particle system rework, bundled FX, range scaling |
 
 ## Reference Implementations
