@@ -291,7 +291,14 @@ public class ParticleGroup { public ParticleGroup() { }
         /// Moves with the entity, preserving the offset it spawned at.
         POSITION,
         /// Like [#POSITION], and additionally scales with the entity's own scale.
-        POSITION_SCALED
+        POSITION_SCALED,
+        /// Follows the entity horizontally, but pins its height to the ground below
+        /// rather than to the entity's own Y. A flat decal stays flush with the floor
+        /// as the entity jumps or falls — instead of rising on a jump, or sinking into
+        /// the ground on landing when it was spawned mid-air. Intended for
+        /// [Facing#GROUND] area effects. The ground is re-probed each tick, so the
+        /// decal also rides terrain the entity walks over.
+        POSITION_HORIZONTAL
     }
 
     // MARK: - Batch

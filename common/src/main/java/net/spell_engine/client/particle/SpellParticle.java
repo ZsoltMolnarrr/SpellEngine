@@ -20,6 +20,7 @@ import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.fx.ParticleGroupType;
 import net.spell_engine.fx.SpellEngineParticles;
+import net.spell_engine.utils.TargetHelper;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -53,6 +54,7 @@ public class SpellParticle extends SpriteBillboardParticle {
     private final ParticleGroup.Attachment attachment;
     @Nullable private final Entity followEntity;
     private Vec3d followDiff = Vec3d.ZERO;
+    private double groundY;
     private boolean skipRender = false;
 
     protected SpellParticle(ClientWorld world, double x, double y, double z,
@@ -165,6 +167,9 @@ public class SpellParticle extends SpriteBillboardParticle {
         if (followEntity != null) {
             this.followDiff = new Vec3d(this.x - followEntity.getX(), this.y - followEntity.getY(), this.z - followEntity.getZ());
         }
+        // Seed the ground cache with the spawn height (a GROUND-anchored batch already
+        // resolves to the floor), so the first frame is correct before any re-probe.
+        this.groundY = this.y;
 
         updateSprite();
         updateSkipRender();
@@ -186,7 +191,7 @@ public class SpellParticle extends SpriteBillboardParticle {
         }
         float progress = (float) this.age / (float) this.maxAge;
         updateSprite();
-        this.alpha = baseOpacity * (opacityCurve != null ? opacityCurve.sample(progress) : 1F);
+        this.alpha = baseOpacity * (opacityCurve != null ? opacityCurve.sample(progress) : 1F) * elevationFade();
         float eased = scaleEasing != null
                 ? MathHelper.lerp(Easing.apply(scaleEasing, progress), 1F, scaleMultiplier)
                 : 1F;
@@ -212,10 +217,49 @@ public class SpellParticle extends SpriteBillboardParticle {
             // Following: accumulate own motion into the offset, then track the entity
             this.followDiff = followDiff.add(dx, dy, dz);
             var position = followEntity.getPos().add(followDiff);
-            this.setPos(position.x, position.y, position.z);
+            double y = attachment == ParticleGroup.Attachment.POSITION_HORIZONTAL
+                    ? groundBelow(position.x, position.z)
+                    : position.y;
+            this.setPos(position.x, y, position.z);
         } else {
             super.move(dx, dy, dz);
         }
+    }
+
+    // MARK: Ground pinning
+
+    /// Probe distances for [ParticleGroup.Attachment#POSITION_HORIZONTAL], relative to
+    /// the entity's feet. The upward slack catches ground up to a step higher than the
+    /// entity; the downward reach finds the floor while the entity is airborne.
+    private static final float GROUND_PROBE_UP = 1F;
+    private static final float GROUND_PROBE_DOWN = 6F;
+    /// Lift off the surface, matching the `GROUND` anchor's own `+0.1` in ParticleHelper.
+    private static final double GROUND_LIFT = 0.1;
+
+    /// The floor height directly under a horizontal position. A miss (a gap, an overhang,
+    /// the void) holds the last known height rather than dropping the particle to y=0.
+    private double groundBelow(double x, double z) {
+        var from = new Vec3d(x, followEntity.getY() + GROUND_PROBE_UP, z);
+        var hit = TargetHelper.findSolidBelow(followEntity, from, followEntity.getWorld(),
+                -(GROUND_PROBE_UP + GROUND_PROBE_DOWN));
+        if (hit != null) {
+            groundY = hit.y + GROUND_LIFT;
+        }
+        return groundY;
+    }
+
+    /// Fades a ground-pinned decal out as its entity climbs away from the floor it sits
+    /// on: full opacity while grounded, reaching zero once the entity is two body
+    /// heights up. Keeps a rune from lingering at full strength under a player who has
+    /// jumped or been launched far overhead. Only [ParticleGroup.Attachment#POSITION_HORIZONTAL]
+    /// is affected; every other particle returns `1`.
+    private float elevationFade() {
+        if (attachment != ParticleGroup.Attachment.POSITION_HORIZONTAL || followEntity == null) {
+            return 1F;
+        }
+        float fadeReach = 2F * Math.max(followEntity.getHeight(), 0.1F);
+        float gap = (float) (followEntity.getY() - groundY);
+        return 1F - MathHelper.clamp(gap / fadeReach, 0F, 1F);
     }
 
     // MARK: Rendering

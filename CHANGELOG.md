@@ -11,6 +11,8 @@ API Changes:
 - `ParticleBatch` replaced by `ParticleGroup`: `id` + `appearance` (one particle) + `batch` (how many, where, what velocity)
   - Unset fields inherit the registered particle's own defaults; `scale`, `opacity` and `playback_speed` multiply with them
   - New appearance fields: `facing` (`CAMERA`/`GROUND`/`UPRIGHT`/`VELOCITY`), `motion` presets with `gravity`/`drag` overrides, `render`/`glow`, `opacity_curve`, `scale_multiplier`/`scale_easing`, `color_variance`/`scale_variance`/`lifetime_variance`, `playback_speed` (negative reverses), `collides`
+  - `facing = GROUND` quads now render double-sided, so flat area decals are visible from below as well as above
+  - Added attachment mode `POSITION_HORIZONTAL` — follows the entity horizontally but pins its height to the ground below, re-probed each tick, so flat area decals stay flush with the floor through jumps, falls and terrain
   - New batch shape `NONE` for a single placed, motionless billboard
   - `batch.count` is now a rate: `1`+ is a count per emission, below `1` a period (`0.25` = one every 4th tick, continuous FX only)
   - Restored the per-particle lifetime randomness the pre-1.10 particle classes had — 11 elemental/smoke entries were spawning and dying in lockstep

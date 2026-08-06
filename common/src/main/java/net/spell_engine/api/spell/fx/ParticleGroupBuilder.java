@@ -243,6 +243,13 @@ public class ParticleGroupBuilder {
         return attached(ParticleGroup.Attachment.POSITION);
     }
 
+    /// Makes particles follow the entity horizontally while staying pinned to the ground
+    /// below — for flat area decals that must ignore the entity's jumps and falls.
+    /// Pair with [Batches#ground(float)] and [ParticleGroup.Facing#GROUND].
+    public ParticleGroupBuilder attachedToGround() {
+        return attached(ParticleGroup.Attachment.POSITION_HORIZONTAL);
+    }
+
     public ParticleGroupBuilder attached(ParticleGroup.Attachment attachment) {
         effect.appearance.attachment(attachment);
         return this;

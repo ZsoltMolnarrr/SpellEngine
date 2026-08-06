@@ -77,7 +77,7 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
     public BuffParticleSpawner withGroundEffect(String particleId, Color color, int frequency) {
         this.groundFrequency = frequency;
         this.groundEffect = ParticleGroupBuilder.of(particleId)
-                .color(color).attached()
+                .color(color).attachedToGround()
                 .batch(ParticleGroupBuilder.Batches.ground(1));
         return this;
     }
