@@ -1079,8 +1079,15 @@ public class SpellHelper {
 
     public static boolean lookupAndPerformAreaImpact(Spell.AreaImpact area_impact, RegistryEntry<Spell> spellEntry, LivingEntity caster, Entity exclude, @Nullable Entity aoeSource,
                                                   List<Spell.Impact> impacts, ImpactContext context, boolean additionalTargetLookup) {
+        return lookupAndPerformAreaImpact(area_impact, spellEntry, caster, exclude, aoeSource, impacts, context, additionalTargetLookup, null);
+    }
+
+    /// `radiusOverride` replaces the configured (power-scaled) radius when non-null — used by growing
+    /// clouds, whose effective radius changes over their lifetime. The parsed spell stays immutable.
+    public static boolean lookupAndPerformAreaImpact(Spell.AreaImpact area_impact, RegistryEntry<Spell> spellEntry, LivingEntity caster, Entity exclude, @Nullable Entity aoeSource,
+                                                  List<Spell.Impact> impacts, ImpactContext context, boolean additionalTargetLookup, @Nullable Float radiusOverride) {
         var center = context.position();
-        var radius = area_impact.combinedRadius(context.power().baseValue());
+        var radius = radiusOverride != null ? radiusOverride : area_impact.combinedRadius(context.power().baseValue());
 
         var contextEntity = aoeSource != null ? aoeSource : caster;
         var targets = TargetHelper.targetsFromArea(contextEntity.getWorld(), aoeSource, center, contextEntity.getRotationVector(), radius, area_impact.area, null);

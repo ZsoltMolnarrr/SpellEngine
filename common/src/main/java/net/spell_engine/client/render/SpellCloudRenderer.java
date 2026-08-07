@@ -42,6 +42,14 @@ public class SpellCloudRenderer<T extends SpellCloud> extends EntityRenderer<T> 
                                MatrixStack matrixStack, VertexConsumerProvider vertexConsumers, int light) {
         matrixStack.push();
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-1F * entity.getYaw() + 180F));
+        // Grow the model with the cloud's radius. Applied about the ground origin (before the 0.5 lift)
+        // so the model scales up from where it sits. `getRenderScale` interpolates within the tick, so a
+        // discrete growth step doesn't pop; it's 1.0 for a non-growing cloud, leaving existing clouds
+        // untouched.
+        float renderScale = entity.getRenderScale(tickDelta);
+        if (renderScale != 1F) {
+            matrixStack.scale(renderScale, renderScale, renderScale);
+        }
         matrixStack.translate(0, 0.5, 0); // Compensate for translate within CustomModels.render
 
         float age = entity.age + tickDelta;

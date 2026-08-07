@@ -463,6 +463,22 @@ public class Spell {
             /// Active-phase duration (when impacts fire). Total life = spawn_ticks + this*20 + despawn_ticks.
             public float time_to_live_seconds = 0;
 
+            /// Optional: grow (or shrink) the cloud's radius over its lifetime, on top of `volume`'s base
+            /// radius. Both the visual size (particle field + model) and the area-of-effect radius follow.
+            /// Disabled unless both `radius_step` and `duration_ticks` are non-zero.
+            public Growth growth = new Growth();
+            public static class Growth { public Growth() {}
+                /// Radius added each step. Negative shrinks (radius is floored at 0). 0 disables growth.
+                public float radius_step = 0F;
+                /// Ticks between growth steps (the growth frequency).
+                public int step_interval = 1;
+                /// Absolute age in ticks (from spawn) at which growth begins.
+                public int start_tick = 0;
+                /// How long growth runs, in ticks. 0 disables growth; a negative value grows for the
+                /// cloud's whole (finite) life.
+                public int duration_ticks = 0;
+            }
+
             /// The number of ticks between looking for targets and trying to apply impact
             public int impact_tick_interval = 5;
             /// The number of times impacts can be performed, zero means unlimited

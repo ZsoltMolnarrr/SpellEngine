@@ -79,7 +79,7 @@ public class SpellCloud extends Entity implements Ownable {
         }
         this.getDataTracker().set(SPELL_ID_TRACKER, this.spellId.toString());
         this.getDataTracker().set(DATA_INDEX_TRACKER, this.dataIndex);
-        this.getDataTracker().set(RADIUS_TRACKER, calculateRadius());
+        this.getDataTracker().set(RADIUS_TRACKER, radiusForAge(this.age));
 
         // Carve the lifetime into spawning / active / despawning, like a summoned entity.
         // `time_to_live_seconds` is the ACTIVE duration; spawn/despawn bracket it.
@@ -156,6 +156,20 @@ public class SpellCloud extends Entity implements Ownable {
     public final AnimationState idleAnimationState    = new AnimationState();
     public final AnimationState despawnAnimationState = new AnimationState();
 
+    // Client-side: last two per-tick radius snapshots, lerped in the renderer so a growth step doesn't pop.
+    private float prevRenderRadius = -1F;
+    private float renderRadius = -1F;
+
+    /// Client-side model scale, interpolated within the tick so growth animates smoothly. 1.0 when the
+    /// cloud isn't growing, leaving non-growing clouds rendered exactly as before.
+    public float getRenderScale(float tickDelta) {
+        var data = getCloudData();
+        if (data == null || renderRadius < 0F) return 1F;
+        var g = data.growth;
+        if (g == null || g.radius_step == 0F || g.duration_ticks == 0 || data.volume.radius <= 0F) return 1F;
+        return net.minecraft.util.math.MathHelper.lerp(tickDelta, prevRenderRadius, renderRadius) / data.volume.radius;
+    }
+
     /// Client-side: keeps the three lifecycle animation states in sync with the current phase.
     private void setupAnimationStates() {
         spawnAnimationState.setRunning(isSpawning(), this.age);
@@ -187,7 +201,8 @@ public class SpellCloud extends Entity implements Ownable {
         ModelEffectHelper.spawn(getWorld(), this.getPos(), this.getYaw(), despawnVisuals.models, null);
     }
 
-    private float calculateRadius() {
+    /// The cloud's radius before any lifetime growth: the configured base plus power scaling.
+    private float baseRadius() {
         var cloudData = getCloudData();
         if (cloudData != null) {
             var radius = cloudData.volume.radius;
@@ -198,6 +213,32 @@ public class SpellCloud extends Entity implements Ownable {
         } else {
             return 0F;
         }
+    }
+
+    /// The effective radius at a given age, applying `growth` on top of `baseRadius()`. A pure function
+    /// of age (base is age-independent), so it needs no extra synced/persisted state and stays consistent
+    /// across an NBT round-trip. Growth is off unless both `radius_step` and `duration_ticks` are non-zero;
+    /// `duration_ticks < 0` grows for the whole life. Result is floored at 0 so shrinking can't go negative.
+    private float radiusForAge(int age) {
+        var base = baseRadius();
+        var cloudData = getCloudData();
+        if (cloudData == null) {
+            return base;
+        }
+        var growth = cloudData.growth;
+        if (growth == null || growth.radius_step == 0F || growth.duration_ticks == 0 || growth.step_interval <= 0) {
+            return base;
+        }
+        int elapsed = age - growth.start_tick;
+        if (elapsed <= 0) {
+            return base;
+        }
+        if (growth.duration_ticks > 0) {
+            elapsed = Math.min(elapsed, growth.duration_ticks);
+        }
+        int steps = elapsed / growth.step_interval;
+        float radius = base + steps * growth.radius_step;
+        return Math.max(radius, 0F);
     }
 
     public EntityDimensions getDimensions(EntityPose pose) {
@@ -314,6 +355,9 @@ public class SpellCloud extends Entity implements Ownable {
         var world = this.getWorld();
         if (world.isClient) {
             // Client side tick
+            float trackedRadius = getDataTracker().get(RADIUS_TRACKER);
+            prevRenderRadius = renderRadius < 0F ? trackedRadius : renderRadius;
+            renderRadius = trackedRadius;
             setupAnimationStates();
             var clientData = cloudData.client_data;
             var spawnParticles = clientData.particle_spawn_interval <= 1 || (this.age % clientData.particle_spawn_interval) == 0;
@@ -356,6 +400,14 @@ public class SpellCloud extends Entity implements Ownable {
                 phase = PHASE_ACTIVE;
             }
             setPhase(phase);
+            // Lifetime growth: recompute the radius from the current age and republish it only when it
+            // actually changes (i.e. on a growth-step boundary), so rendering/collision follow and sync
+            // traffic stays minimal. `radiusForAge` is a no-op unless `growth` is configured.
+            float grownRadius = radiusForAge(this.age);
+            if (grownRadius != getDataTracker().get(RADIUS_TRACKER)) {
+                getDataTracker().set(RADIUS_TRACKER, grownRadius);
+                calculateDimensions();
+            }
             if (phase == PHASE_ACTIVE && (this.age % cloudData.impact_tick_interval) == 0) {
                 // Impact tick due
                 var area_impact = cloudData.volume;
@@ -368,7 +420,7 @@ public class SpellCloud extends Entity implements Ownable {
                         context = new SpellHelper.ImpactContext();
                     }
                     var performed = SpellHelper.lookupAndPerformAreaImpact(area_impact, spellEntry, owner,null,
-                            this, spell.impacts, context.position(this.getPos()), true);
+                            this, spell.impacts, context.position(this.getPos()), true, grownRadius);
                     if (performed) {
                         onImpactPerformed(owner, world, cloudData, context);
                         if (this.impactCap > 0 && this.impactsPerformed >= this.impactCap) {
