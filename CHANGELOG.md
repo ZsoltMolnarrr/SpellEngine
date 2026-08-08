@@ -1,6 +1,7 @@
 # 1.19.16
 
 - Attempted to fix status effect and model effect tracker sync #202
+- Fix spell binding table spell ordering, so tier 5 (LNE) spells no longer show on top
 
 # 1.9.15
 
