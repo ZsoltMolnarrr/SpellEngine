@@ -240,6 +240,22 @@ public class Spell {
         /// Additional cloud or entity spawn placements
         public List<EntityPlacement> additional_placements = List.of();
 
+        /// Adjustments to a `CLOUD` delivery, snapshotted onto the cloud entity at spawn (summed across
+        /// all applied modifiers). Reuses the `Delivery.Cloud.Growth` shape so the growth block reads
+        /// identically to the one authored on the spell.
+        public Cloud cloud = new Cloud();
+        public static class Cloud { public Cloud() {}
+            /// Added to the cloud's base impact radius (blocks). Summed across modifiers. Grows the
+            /// area of effect, the entity hitbox and the visuals.
+            public float radius_add = 0F;
+            /// A growth contribution. Its magnitudes (`radius_step`, `duration_ticks`) are summed onto
+            /// the cloud's own growth — so several modifiers stack, and supplying both can attach growth
+            /// to a cloud that had none. Its timing (`step_interval`, `start_tick`) only applies when the
+            /// cloud has no growth of its own (i.e. when attaching); an already-growing cloud keeps its
+            /// own cadence.
+            public Delivery.Cloud.Growth growth = new Delivery.Cloud.Growth();
+        }
+
         // Summon impact (`Impact.Action.Summon`) modifiers.
         /// Additional owner-scaled attribute bonuses, merged into the summon's `attribute_scaling`.
         /// Entries are combined by `attribute_id` (summing their owner modifiers), so a modifier

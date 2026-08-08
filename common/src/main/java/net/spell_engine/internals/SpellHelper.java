@@ -2092,9 +2092,28 @@ public class SpellHelper {
         List<Spell.Modifier> spellModifiers = SpellModifiers.of(caster, spellEntry, context.chargeModifier());
         float extraTimeToLive = 0;
         var extraPlacements = new ArrayList<Spell.EntityPlacement>();
+        // Summed cloud bonus, snapshotted onto each cloud below. Magnitudes accumulate; growth timing is
+        // taken from the first modifier that actually contributes growth (see radiusForAge merge rules).
+        var cloudModifier = new Spell.Modifier.Cloud();
+        boolean cloudTimingSet = false;
         for (var spellModifier: spellModifiers) {
             extraTimeToLive += spellModifier.spawn_duration_add;
             extraPlacements.addAll(spellModifier.additional_placements);
+            var cm = spellModifier.cloud;
+            if (cm != null) {
+                cloudModifier.radius_add += cm.radius_add;
+                cloudModifier.growth.radius_step += cm.growth.radius_step;
+                if (cm.growth.duration_ticks < 0 || cloudModifier.growth.duration_ticks < 0) {
+                    cloudModifier.growth.duration_ticks = -1; // "whole life" sentinel wins over any span
+                } else {
+                    cloudModifier.growth.duration_ticks += cm.growth.duration_ticks;
+                }
+                if (!cloudTimingSet && cm.growth.radius_step != 0F) {
+                    cloudModifier.growth.step_interval = cm.growth.step_interval;
+                    cloudModifier.growth.start_tick = cm.growth.start_tick;
+                    cloudTimingSet = true;
+                }
+            }
         }
 
         var index = 0;
@@ -2119,7 +2138,7 @@ public class SpellHelper {
                     entity = new SpellCloud(world);
                 }
                 entity.setOwner(caster);
-                entity.onCreatedFromSpell(spellEntry.getKey().get().getValue(), cloud, context, cloud.time_to_live_seconds + extraTimeToLive);
+                entity.onCreatedFromSpell(spellEntry.getKey().get().getValue(), cloud, context, cloud.time_to_live_seconds + extraTimeToLive, cloudModifier);
 
                 if (target != null) {
                     applyEntityPlacement(entity, target, target.getPos(), placement);
