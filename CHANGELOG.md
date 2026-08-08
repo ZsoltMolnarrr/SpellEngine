@@ -1,3 +1,7 @@
+# 1.19.16
+
+- Attempted to fix status effect and model effect tracker sync #202
+
 # 1.9.15
 
 - Added support for `CHARGE` casting mode for spells with `MELEE` delivery, supports

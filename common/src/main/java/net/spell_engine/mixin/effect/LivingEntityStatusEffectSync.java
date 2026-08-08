@@ -29,7 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@Mixin(LivingEntity.class)
+// priority < 1000: applied early so SE's TrackedData fields get stable ids (cf. PlayerEntityMixin 555).
+@Mixin(value = LivingEntity.class, priority = 556)
 public abstract class LivingEntityStatusEffectSync extends Entity implements Synchronized.Provider, ModelEffectAttachment.Provider {
     @Shadow @Final private Map<RegistryEntry<StatusEffect>, StatusEffectInstance> activeStatusEffects;
 
@@ -111,8 +112,12 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
             var json = dataTracker.get(SPELL_ENGINE_MODEL_FX);
             SpellEngine_attachedModelFx.clear();
             if (json != null && !json.isEmpty()) {
-                List<ModelEffectAttachment.Entry> parsed = SpellEngine_gson.fromJson(json, SpellEngine_entryListType);
-                if (parsed != null) SpellEngine_attachedModelFx.addAll(parsed);
+                // Guard against an id-desynced slot feeding non-JSON here: degrade instead of
+                // throwing on the network thread and disconnecting the player.
+                try {
+                    List<ModelEffectAttachment.Entry> parsed = SpellEngine_gson.fromJson(json, SpellEngine_entryListType);
+                    if (parsed != null) SpellEngine_attachedModelFx.addAll(parsed);
+                } catch (RuntimeException ignored) { }
             }
         }
     }
@@ -160,19 +165,22 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
     private List<Synchronized.Effect> SpellEngine_decodeStatusEffects() {
         var string = dataTracker.get(SPELL_ENGINE_SYNCED_EFFECTS);
         var effects = new ArrayList<Synchronized.Effect>();
-        for (var effect : string.split("-")) {
-            var components = effect.split(":");
-            if (components.length != 3) {
-                continue;
+        // Guard against a foreign payload in an id-desynced slot: bail on the whole thing.
+        try {
+            for (var effect : string.split("-")) {
+                var components = effect.split(":");
+                if (components.length != 3) {
+                    continue;
+                }
+                int rawId = Integer.valueOf(components[0]);
+                int amplifier = Integer.valueOf(components[1]);
+                long appliedAtWorldTime = Long.valueOf(components[2]);
+                var statusEffect = Registries.STATUS_EFFECT.get(rawId);
+                if (statusEffect != null) {
+                    effects.add(new Synchronized.Effect(statusEffect, amplifier, appliedAtWorldTime));
+                }
             }
-            int rawId = Integer.valueOf(components[0]);
-            int amplifier = Integer.valueOf(components[1]);
-            long appliedAtWorldTime = Long.valueOf(components[2]);
-            var statusEffect = Registries.STATUS_EFFECT.get(rawId);
-            if (statusEffect != null) {
-                effects.add(new Synchronized.Effect(statusEffect, amplifier, appliedAtWorldTime));
-            }
-        }
+        } catch (RuntimeException ignored) { }
         return effects;
     }
 
