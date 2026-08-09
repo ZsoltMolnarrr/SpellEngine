@@ -84,12 +84,17 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
                 player.stopUsingItem();
                 itemUseCooldown = 1;
             }
-            if ( (handled.isSuccessfulAttempt() || ((SpellCasterClient)player).isCastingSpell())
-                    && handled.keyBinding() == options.useKey) {
-                useKeySpellCastingLock = true;
+            if (handled != null && handled.keyBinding() == options.useKey) {
+                if (handled.isSuccessfulAttempt()
+                        || ((SpellCasterClient) player).isCastingSpell()
+                        || handled.attempt() == null) {
+                    useKeySpellCastingLock = true;
+                }
             }
         }
-        if (useKeySpellCastingLock && !options.useKey.isPressed()) {
+        if (useKeySpellCastingLock
+                && !options.useKey.isPressed()
+                && !((SpellCasterClient) player).isCastingSpell()) {
             useKeySpellCastingLock = false;
         }
         if (((SpellCasterClient)player).isCastingSpell()) {

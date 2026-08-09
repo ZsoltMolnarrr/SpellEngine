@@ -123,7 +123,8 @@
   "effect.spell_engine.energy.description": "The held weapon burns with energy.",
 
   "text.autoconfig.spell_engine.title" : "Spell Engine",
-
+  "text.autoconfig.spell_engine.option.client.autoRelease" : "Auto Release",
+  "text.autoconfig.spell_engine.option.client.autoRelease.@Tooltip" : "As soon as spells are done casting, release if possible. Does not affect CHARGED or CHANNELED spells.",
   "text.autoconfig.spell_engine.option.client.renderBeamsHighLuminance" : "High luminance beams",
   "text.autoconfig.spell_engine.option.client.renderBeamsHighLuminance.@Tooltip" : "Render spell beams with high luminance, for better spectacular visual effects",
   "text.autoconfig.spell_engine.option.client.holdToCastChannelled" : "Hold to cast CHANNELLED spells",
