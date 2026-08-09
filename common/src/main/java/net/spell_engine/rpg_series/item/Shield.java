@@ -1,6 +1,7 @@
 package net.spell_engine.rpg_series.item;
 
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.minecraft.component.ComponentChanges;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.Item;
@@ -195,6 +196,16 @@ public class Shield {
         public Entry withSpellChoices(String pool) {
             this.spellContainer = this.spellContainer.withBindingPool(Identifier.of(pool));
             this.spellChoice = SpellChoice.of(pool);
+            return this;
+        }
+
+        /// Registers component changes to apply to this item when `spellId` is chosen from the pool.
+        /// Lets the chosen spell drive the item's appearance (`custom_model_data`, `custom_name`, ...).
+        public Entry applyOnChoice(String spellId, ComponentChanges changes) {
+            if (this.spellChoice == null) {
+                this.spellChoice = SpellChoice.EMPTY;
+            }
+            this.spellChoice = this.spellChoice.withApplyOnChoice(Identifier.of(spellId), changes);
             return this;
         }
 
