@@ -1225,6 +1225,53 @@ public class Spell {
         public int travel_sound_interval = 20;
         @Nullable public Sound travel_sound;
 
+        /// Optional flight physics for `FLY` projectiles. null = legacy motion: constant
+        /// velocity, no gravity, no drag. Ignored by `FALL` (meteor) delivery, which keeps
+        /// its straight-line descent.
+        @Nullable public Motion motion;
+        public static class Motion { public Motion() { }
+            /// Downward acceleration in blocks/tick². 0 = none. Negative floats the projectile up.
+            /// Reference: vanilla arrow ~0.05, thrown potion 0.03.
+            public float gravity = 0F;
+            /// Fraction of speed *lost* per tick in air (and any medium not covered below).
+            /// 0 = constant speed (default), 0.01 = gentle decay, 1 = stops instantly.
+            /// Values above 1 clamp to a full stop (never reverse the projectile).
+            public float drag = 0F;
+            /// Drag while inside ANY fluid — water, lava, or a modded fluid such as honey
+            /// (anything reporting a non-empty `FluidState`). 0 = inherit `drag`; any positive
+            /// value overrides it. This is the easy knob: most spells just want "slower in liquids".
+            public float drag_fluid = 0F;
+            /// Per-fluid fine-tuning. First entry whose `fluid` matches the current medium wins;
+            /// no match falls back to `drag_fluid` (then `drag`).
+            public List<FluidOverride> fluid_overrides = List.of();
+            public static class FluidOverride { public FluidOverride() { }
+                /// Fluid selector, using the shared `PatternMatching` syntax: exact id
+                /// (`minecraft:lava`), fluid tag (`#c:honey`), regex (`~.*lava`), negation
+                /// (`!minecraft:water`), or any (`*`). Note vanilla still/flowing fluids have
+                /// distinct ids — prefer a tag (e.g. `#minecraft:water`) to catch both.
+                public String fluid = "";
+                /// Fraction of speed lost per tick in this medium (0 = none).
+                public float drag = 0F;
+                /// Multiplies `gravity` while in this medium (1 = unchanged, 0 = neutrally
+                /// buoyant, negative = bobs upward).
+                public float gravity_multiply = 1F;
+            }
+            /// Expire the projectile (impact-less kill) once its speed decays below this
+            /// (blocks/tick). 0 = disabled. Recommended when `drag` < 1 and `gravity` == 0,
+            /// otherwise a decelerating projectile stalls and hovers until the age cap.
+            public float min_speed = 0F;
+
+            public Motion copy() {
+                Motion copy = new Motion();
+                copy.gravity = this.gravity;
+                copy.drag = this.drag;
+                copy.drag_fluid = this.drag_fluid;
+                copy.fluid_overrides = this.fluid_overrides;
+                copy.min_speed = this.min_speed;
+                return copy;
+            }
+        }
+
         public Perks perks = new Perks();
         public static class Perks { public Perks() { }
             /// How many entities projectile can ricochet to

@@ -45,6 +45,15 @@ Completely reworked particle effect system:
 - Removed the long-deprecated `EntityImmunity` API (interface + `Entity` mixin) — use `LivingEntityImmunity`, which covers damage types, tags and status effects
 - Removed the deprecated `RemoveOnHit.configure(StatusEffect, boolean)` overload — pass a `RemoveOnHit.Trigger` (`ANY_HIT` matches the old `true`)
 
+Projectile flight physics:
+
+- Added optional `ProjectileData.motion` for `FLY` projectiles (ignored by `FALL`/meteor delivery, which keeps its straight-line descent) — `null` leaves the classic constant-velocity, gravity-free flight unchanged
+  - `gravity` — downward acceleration in blocks/tick² (negative floats the projectile up), applied before drag each tick, so projectiles now arc and pitch along their trajectory
+  - `drag` — fraction of speed *lost* per tick, so `0` = constant speed, `0.01` = gentle decay, `1` = instant stop (values above `1` clamp to a stop rather than reversing). Note this reads the opposite way to Minecraft's internal retained-fraction convention
+  - `min_speed` — expires a decelerating projectile (impact-less) once it slows below this, so drag without gravity doesn't leave it hovering until the age cap
+  - Medium-aware drag: `drag_fluid` applies inside any fluid — vanilla or modded (honey, …), detected generically via the block's `FluidState` — and `fluid_overrides[]` fine-tune per fluid with their own `drag` and a `gravity_multiply` (for buoyancy). Fluid selectors use the shared `PatternMatching` syntax (`#tag`, `~regex`, `!negate`, `*`, exact id)
+  - Retired the long-dead `getDrag()` path, whose computed drag was never applied to velocity
+
 Description tokens:
 
 - Added the parametric effect token `{effect|<effect_id>|<amplifier>|<attribute>|<format>}` — reads a status effect's attribute modifier straight off the registry, with amplifier scaling (`base × (amplifier + 1)`), attribute selection by id (blank falls back to the effect's first modifier), and a sign-only `format` (`abs`, `+`; percentage-vs-flat comes from the modifier's operation). Resolution is player-independent and memoised until a registry resync. See [Description Tokens](docs/12-description-tokens.md)

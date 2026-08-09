@@ -13,6 +13,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
@@ -31,6 +32,7 @@ import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.fx.ParticleHelper;
+import net.spell_engine.utils.PatternMatching;
 import net.spell_engine.utils.SoundHelper;
 import net.spell_engine.utils.VectorHelper;
 import net.spell_power.api.SpellPower;
@@ -256,19 +258,23 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             // Travel
             if (!skipTravel) {
                 this.followTarget();
+                // Flight physics (gravity/drag) run after homing and before the move, so homing
+                // aims first and drag then damps the whole velocity (vanilla order). May expire
+                // the projectile via `min_speed`.
+                applyMotion();
+                if (this.isRemoved()) {
+                    return;
+                }
                 Vec3d velocity = this.getVelocity();
                 double d = this.getX() + velocity.x;
                 double e = this.getY() + velocity.y;
                 double f = this.getZ() + velocity.z;
                 ProjectileUtil.setRotationFromVelocity(this, 0.2F);
 
-                float g = this.getDrag();
                 if (this.isTouchingWater()) {
                     for(int i = 0; i < 4; ++i) {
-                        float h = 0.25F;
                         this.getWorld().addParticle(ParticleTypes.BUBBLE, d - velocity.x * 0.25, e - velocity.y * 0.25, f - velocity.z * 0.25, velocity.x, velocity.y, velocity.z);
                     }
-                    g = 0.8F;
                 }
 
                 var data = projectileData();
@@ -466,8 +472,55 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         }
     }
 
-    protected float getDrag() {
-        return 0.95F;
+    /// Applies optional flight physics (`Spell.ProjectileData.Motion`) to the velocity for this
+    /// tick: gravity, then medium-dependent drag. FLY behaviour only — FALL (meteor) keeps its
+    /// straight-line descent, and its `range * 0.98` fall-distance math must not be perturbed.
+    /// May `kill()` the projectile when its speed decays below `min_speed`.
+    private void applyMotion() {
+        if (getBehaviour() != Behaviour.FLY) {
+            return;
+        }
+        var data = projectileData();
+        if (data == null || data.motion == null) {
+            return;
+        }
+        var motion = data.motion;
+
+        // Resolve the current medium by sampling the FluidState at the projectile's block.
+        // Empty = air; any non-empty state (water, lava, modded honey, ...) counts as a fluid.
+        // `drag` here is the fraction of speed lost per tick (0 = constant speed).
+        float drag = motion.drag;
+        float gravityMultiply = 1F;
+        var fluidState = getWorld().getFluidState(getBlockPos());
+        if (!fluidState.isEmpty()) {
+            boolean matched = false;
+            var fluidEntry = fluidState.getFluid().getRegistryEntry();
+            for (var override : motion.fluid_overrides) {
+                if (PatternMatching.matches(fluidEntry, RegistryKeys.FLUID, override.fluid)) {
+                    drag = override.drag;
+                    gravityMultiply = override.gravity_multiply;
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched && motion.drag_fluid > 0F) {
+                drag = motion.drag_fluid;
+            }
+        }
+
+        var velocity = this.getVelocity();
+        if (motion.gravity != 0F) {
+            velocity = velocity.subtract(0, motion.gravity * gravityMultiply, 0);
+        }
+        if (drag != 0F) {
+            // Retained fraction; clamp at 0 so drag > 1 fully stops rather than reversing.
+            velocity = velocity.multiply(Math.max(0F, 1F - drag));
+        }
+        this.setVelocity(velocity);
+
+        if (motion.min_speed > 0F && velocity.length() < motion.min_speed) {
+            this.kill();
+        }
     }
 
     @Override
