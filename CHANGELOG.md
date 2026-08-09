@@ -7,6 +7,9 @@
 - Effects can size themselves by a magnitude only known where they are emitted, so one bundle can mix range-scaled and fixed-size effects
 - Legacy single-model projectile/cloud rendering and the flat channelling fields are removed
 
+Functional changes:
+- Fixed Spell Projectile velocity change upon bounce from terrain 
+
 API Changes:
 
 Completely reworked particle effect system:

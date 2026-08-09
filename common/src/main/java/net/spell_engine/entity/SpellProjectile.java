@@ -669,7 +669,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
         // Set the new position and velocity
         this.setPos(finalPosition.getX(), finalPosition.getY(), finalPosition.getZ());
-        this.setVelocity(newDirection.multiply(speed));
+        // Reflection preserves magnitude, so `newDirection` already has length == `speed`.
+        // Re-normalize before applying the speed to avoid squaring it on every bounce.
+        this.setVelocity(newDirection.normalize().multiply(speed));
         ProjectileUtil.setRotationFromVelocity(this, 0.2F);
 
         this.perks.bounce -= 1;
