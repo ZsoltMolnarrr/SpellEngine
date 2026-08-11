@@ -1,7 +1,7 @@
 package net.spell_engine.api.spell;
+import net.spell_engine.Platform;
 
 import net.fabric_extras.ranged_weapon.api.EntityAttributes_RangedWeapon;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -29,7 +29,7 @@ public class ExternalSpellSchools {
     }
 
     private static RegistryEntry<EntityAttribute> rangedDamageAttribute() {
-        if (FabricLoader.getInstance().isModLoaded("ranged_weapon_api")) {
+        if (Platform.util().isModLoaded("ranged_weapon_api")) {
             return EntityAttributes_RangedWeapon.DAMAGE.entry;
         } else {
             return EntityAttributes.GENERIC_ATTACK_DAMAGE; // Vanilla attack damage used as fallback
@@ -95,7 +95,7 @@ public class ExternalSpellSchools {
         SpellSchools.configureSpellHaste(PHYSICAL_MELEE_DUAL);
         SpellSchools.register(PHYSICAL_MELEE_DUAL);
 
-        if (FabricLoader.getInstance().isModLoaded("ranged_weapon_api")) {
+        if (Platform.util().isModLoaded("ranged_weapon_api")) {
             PHYSICAL_RANGED.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {
                 return query.entity().getAttributeValue(EntityAttributes_RangedWeapon.DAMAGE.entry);
             });

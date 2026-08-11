@@ -1,7 +1,6 @@
 package net.spell_engine.client.render;
 
 import net.minecraft.client.item.ModelPredicateProvider;
-import net.minecraft.client.item.ModelPredicateProviderRegistry;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -69,7 +68,7 @@ public class ModelPredicateHelper {
         // Modded ranged weapons may have none or only some of the vanilla predicates registered.
         // Falling back to `null` here (instead of bailing out) keeps the skill animation working on such items.
         final var existingPredicate = (itemSpecific != null) ? itemSpecific.get(id) : null;
-        ModelPredicateProviderRegistry.register(item, id, (stack, world, entity, seed) -> {
+        ModelPredicateProviderRegistryAccessor.register_SpellEngine(item, id, (stack, world, entity, seed) -> {
             var result = customPredicate.call(stack, world, entity, seed);
             if (result >= 0.0f) {
                 return result;

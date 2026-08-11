@@ -1,8 +1,8 @@
 package net.spell_engine.compat.accessories;
+import net.spell_engine.Platform;
 
 import io.wispforest.accessories.api.events.AccessoryChangeCallback;
 import io.wispforest.accessories.api.AccessoriesCapability;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
@@ -25,7 +25,7 @@ public class AccessoriesCompat {
         intialized = true;
         // Seems like Fabric specific query works better on NeoForge :)
         // as pure neo query doesn't have data at early runtime
-        enabled = FabricLoader.getInstance().isModLoaded(MOD_ID);
+        enabled = Platform.util().isModLoaded(MOD_ID);
         if (!enabled) {
             return enabled;
         }

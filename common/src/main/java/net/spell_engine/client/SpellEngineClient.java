@@ -3,13 +3,9 @@ package net.spell_engine.client;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
-import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.minecraft.client.particle.ParticleFactory;
 import net.minecraft.client.particle.SpriteProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
@@ -36,16 +32,9 @@ import net.spell_engine.client.util.Color;
 import net.spell_engine.config.ClientConfig;
 import net.spell_engine.config.ClientConfigWrapper;
 import net.spell_engine.config.HudConfig;
-import net.spell_engine.entity.SpellCloud;
-import net.spell_engine.entity.SpellModelEffect;
-import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.rpg_series.client.RPGSeriesCoreClient;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
-import net.spell_engine.spellbinding.SpellBindingScreen;
-import net.spell_engine.spellbinding.SpellBindingScreenHandler;
-import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreen;
-import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
 import net.tiny_config.ConfigManager;
 
 public class SpellEngineClient {
@@ -59,16 +48,14 @@ public class SpellEngineClient {
             .validate(HudConfig::isValid)
             .build();
 
-    /// Loader-neutral client init. Loader-specific registration (entity renderers, particle
-    /// appearances, tooltips, client-started, world render) is invoked from each loader's client
-    /// entrypoint via the hooks below, so this stays free of any loader client API.
+    /// Loader-neutral client init. Loader-specific registration (particle appearances, tooltips,
+    /// client-started, world render) is invoked from each loader's client entrypoint via the hooks
+    /// below, so this stays free of any loader client API.
     public static void init() {
         AutoConfig.register(ClientConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ClientConfigWrapper.class).getConfig().client;
         hudConfig.refresh();
 
-        HandledScreens.register(SpellBindingScreenHandler.HANDLER_TYPE, SpellBindingScreen::new);
-        HandledScreens.register(SpellChoiceScreenHandler.HANDLER_TYPE, SpellChoiceScreen::new);
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
         CompatFeatures.initialize();
         registerEffectParticles();
@@ -80,11 +67,6 @@ public class SpellEngineClient {
     // MARK: - Loader-invoked registration hooks
 
     @FunctionalInterface
-    public interface EntityRendererRegistrar {
-        <T extends Entity> void register(EntityType<? extends T> type, EntityRendererFactory<T> factory);
-    }
-
-    @FunctionalInterface
     public interface ParticleAppearanceRegistrar {
         <T extends ParticleEffect> void register(ParticleType<T> type, SpriteFactory<T> factory);
     }
@@ -94,14 +76,6 @@ public class SpellEngineClient {
     @FunctionalInterface
     public interface SpriteFactory<T extends ParticleEffect> {
         ParticleFactory<T> create(SpriteProvider spriteProvider);
-    }
-
-    /// Register Spell Engine's entity renderers. Fabric calls this during client init; NeoForge
-    /// from `EntityRenderersEvent.RegisterRenderers`.
-    public static void registerEntityRenderers(EntityRendererRegistrar registrar) {
-        registrar.register(SpellProjectile.ENTITY_TYPE, SpellProjectileRenderer::new);
-        registrar.register(SpellCloud.ENTITY_TYPE, SpellCloudRenderer::new);
-        registrar.register(SpellModelEffect.ENTITY_TYPE, SpellModelEffectRenderer::new);
     }
 
     /// Ran once the client has started (registries frozen). Fabric: `ClientLifecycleEvents.CLIENT_STARTED`;

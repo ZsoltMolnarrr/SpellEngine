@@ -1,11 +1,11 @@
 package net.spell_engine.compat;
+import net.spell_engine.Platform;
 
 import net.bettercombat.api.EntityPlayer_BetterCombat;
 import net.bettercombat.api.fx.TrailAppearance;
 import net.bettercombat.api.fx.TrailAppearanceOverride;
 import net.bettercombat.logic.TargetHelper;
 import net.bettercombat.logic.WeaponRegistry;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.api.effect.GlowingItemStatusEffect;
@@ -26,7 +26,7 @@ public class MeleeCompat {
     };
     public static Function<Entity, Boolean> isEntityHostileVehicle = entity -> { return false; };
     public static void init() {
-        if (FabricLoader.getInstance().isModLoaded("bettercombat")) {
+        if (Platform.util().isModLoaded("bettercombat")) {
             attackProperties = (player) -> {
                 var attack = ((EntityPlayer_BetterCombat) player).getCurrentAttack();
                 if (attack != null) {

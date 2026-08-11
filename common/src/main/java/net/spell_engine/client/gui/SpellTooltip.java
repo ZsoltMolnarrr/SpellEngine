@@ -1,6 +1,6 @@
 package net.spell_engine.client.gui;
 
-import net.fabricmc.fabric.mixin.client.keybinding.KeyBindingAccessor;
+import net.spell_engine.mixin.client.control.KeybindingAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.resource.language.I18n;
@@ -347,7 +347,7 @@ public class SpellTooltip {
         // some loaders like to call these concurrently
         if (client.isOnThread()) {
             return InputUtil.isKeyPressed(client.getWindow().getHandle(),
-                    ((KeyBindingAccessor) keybinding).fabric_getBoundKey().getCode());
+                    ((KeybindingAccessor) keybinding).spellEngine_getBoundKey().getCode());
         }
         return false;
     }

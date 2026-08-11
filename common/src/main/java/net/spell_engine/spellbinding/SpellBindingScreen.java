@@ -2,8 +2,6 @@ package net.spell_engine.spellbinding;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.DialogScreen;
@@ -33,7 +31,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-@Environment(value= EnvType.CLIENT)
 public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler> {
     private static final Identifier Pl = Identifier.of(SpellEngineMod.ID, "textures/gui/" + SpellBinding.name + ".png");
     private static final Identifier PLACEHOLDER_SPELL_BOOK = Identifier.of(SpellEngineMod.ID, "item/placeholder/spell_book");

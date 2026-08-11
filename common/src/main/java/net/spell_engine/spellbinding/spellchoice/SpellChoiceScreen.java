@@ -1,8 +1,6 @@
 package net.spell_engine.spellbinding.spellchoice;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.entity.player.PlayerInventory;
@@ -17,7 +15,6 @@ import net.spell_engine.client.util.SpellRender;
 import java.util.ArrayList;
 import java.util.List;
 
-@Environment(value = EnvType.CLIENT)
 public class SpellChoiceScreen extends HandledScreen<SpellChoiceScreenHandler> {
     private static final int SPELL_ICON_SIZE = 16;
     private static final int ICON_SPACING = 16;

@@ -2,7 +2,6 @@ package net.spell_engine.internals.melee;
 import net.spell_engine.Platform;
 
 import com.google.common.base.Suppliers;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -257,7 +256,7 @@ public class Melee {
         return result.entities.stream().map(Entity::getId).toList();
     }
 
-    private static final Supplier<Boolean> REPLAY = Suppliers.memoize(() -> FabricLoader.getInstance().isModLoaded("replaymod"));
+    private static final Supplier<Boolean> REPLAY = Suppliers.memoize(() -> Platform.util().isModLoaded("replaymod"));
 
     public static void broadcastAttackFx(ServerPlayerEntity player, AttackContext attackContext) {
         var world = player.getWorld();

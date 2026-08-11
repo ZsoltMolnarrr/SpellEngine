@@ -1,7 +1,5 @@
 package net.spell_engine.client.particle;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleFactory;
@@ -33,7 +31,6 @@ import org.joml.Vector3f;
 /// merges the two. This replaces the V1 zoo of hand-written particle classes
 /// (flame, universal, area, smoke, snowflake, explosion, shifted) and their
 /// per-entry factory wiring.
-@Environment(EnvType.CLIENT)
 public class SpellParticle extends SpriteBillboardParticle {
     private final SpriteProvider spriteProvider;
     private final int frameCount;
@@ -344,7 +341,6 @@ public class SpellParticle extends SpriteBillboardParticle {
 
     // MARK: Factory
 
-    @Environment(EnvType.CLIENT)
     public static class Factory implements ParticleFactory<ParticleGroupType> {
         private final SpriteProvider spriteProvider;
         private final SpellEngineParticles.Entry entry;

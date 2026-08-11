@@ -1,7 +1,7 @@
 package net.spell_engine.rpg_series.item;
+import net.spell_engine.Platform;
 
 import net.spell_engine.PlatformEvents;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.type.AttributeModifierSlot;
@@ -84,7 +84,7 @@ public class Weapon {
             if (requiredMod == null || requiredMod.isEmpty()) {
                 return true;
             }
-            return FabricLoader.getInstance().isModLoaded(requiredMod);
+            return Platform.util().isModLoaded(requiredMod);
         }
 
         public String name() {

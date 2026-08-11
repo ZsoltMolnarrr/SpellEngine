@@ -10,7 +10,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.spell_engine.Platform;
 import net.spell_engine.neoforge.compat.NeoForgeCompatFeatures;
@@ -23,7 +23,9 @@ public class PlatformImpl {
     public static class NeoForgeUtil implements Platform.Util {
         @Override
         public boolean isModLoaded(String modid) {
-            return ModList.get().isLoaded(modid);
+            // LoadingModList (not ModList): populated during mod discovery, before any constructor runs,
+            // so early compat gates in static initializers / init match Fabric's "resolved up front" timing.
+            return LoadingModList.get().getModFileById(modid) != null;
         }
 
         @Override
