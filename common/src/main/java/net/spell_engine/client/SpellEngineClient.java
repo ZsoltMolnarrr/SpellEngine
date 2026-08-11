@@ -3,15 +3,23 @@ package net.spell_engine.client;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
-import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
+import net.minecraft.client.particle.ParticleFactory;
+import net.minecraft.client.particle.SpriteProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
+import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleType;
 import net.minecraft.registry.Registries;
+import net.minecraft.text.Text;
+
+import java.util.List;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.CustomParticleStatusEffect;
 import net.spell_engine.api.effect.SpellEngineEffects;
@@ -51,34 +59,61 @@ public class SpellEngineClient {
             .validate(HudConfig::isValid)
             .build();
 
+    /// Loader-neutral client init. Loader-specific registration (entity renderers, particle
+    /// appearances, tooltips, client-started, world render) is invoked from each loader's client
+    /// entrypoint via the hooks below, so this stays free of any loader client API.
     public static void init() {
         AutoConfig.register(ClientConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ClientConfigWrapper.class).getConfig().client;
         hudConfig.refresh();
 
-        ClientNetwork.initializeHandlers();
-
-        ClientLifecycleEvents.CLIENT_STARTED.register((client) -> {
-            injectRangedWeaponModelPredicates();
-        });
-
         HandledScreens.register(SpellBindingScreenHandler.HANDLER_TYPE, SpellBindingScreen::new);
         HandledScreens.register(SpellChoiceScreenHandler.HANDLER_TYPE, SpellChoiceScreen::new);
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
         CompatFeatures.initialize();
-        BeamRenderer.setup();
         registerEffectParticles();
-
-        ItemTooltipCallback.EVENT.register((itemStack, tooltipContext, tooltipType, lines) -> {
-            SpellTooltip.addSpellLines(itemStack, tooltipType, lines);
-            EquipmentSetTooltip.appendLines(itemStack, lines);
-        });
-        EntityRendererRegistry.register(SpellProjectile.ENTITY_TYPE, SpellProjectileRenderer::new);
-        EntityRendererRegistry.register(SpellCloud.ENTITY_TYPE, SpellCloudRenderer::new);
-        EntityRendererRegistry.register(SpellModelEffect.ENTITY_TYPE, SpellModelEffectRenderer::new);
         ModelEffectOperations.registerDefaults();
 
         RPGSeriesCoreClient.init();
+    }
+
+    // MARK: - Loader-invoked registration hooks
+
+    @FunctionalInterface
+    public interface EntityRendererRegistrar {
+        <T extends Entity> void register(EntityType<? extends T> type, EntityRendererFactory<T> factory);
+    }
+
+    @FunctionalInterface
+    public interface ParticleAppearanceRegistrar {
+        <T extends ParticleEffect> void register(ParticleType<T> type, SpriteFactory<T> factory);
+    }
+
+    /// Loader-neutral equivalent of the vanilla (private) `ParticleManager.SpriteAwareFactory` and
+    /// Fabric's `PendingParticleFactory`: builds a particle factory from a sprite provider.
+    @FunctionalInterface
+    public interface SpriteFactory<T extends ParticleEffect> {
+        ParticleFactory<T> create(SpriteProvider spriteProvider);
+    }
+
+    /// Register Spell Engine's entity renderers. Fabric calls this during client init; NeoForge
+    /// from `EntityRenderersEvent.RegisterRenderers`.
+    public static void registerEntityRenderers(EntityRendererRegistrar registrar) {
+        registrar.register(SpellProjectile.ENTITY_TYPE, SpellProjectileRenderer::new);
+        registrar.register(SpellCloud.ENTITY_TYPE, SpellCloudRenderer::new);
+        registrar.register(SpellModelEffect.ENTITY_TYPE, SpellModelEffectRenderer::new);
+    }
+
+    /// Ran once the client has started (registries frozen). Fabric: `ClientLifecycleEvents.CLIENT_STARTED`;
+    /// NeoForge: `FMLClientSetupEvent`.
+    public static void onClientStarted() {
+        injectRangedWeaponModelPredicates();
+    }
+
+    /// Append Spell Engine tooltip lines. Fabric: `ItemTooltipCallback`; NeoForge: `ItemTooltipEvent`.
+    public static void addTooltipLines(ItemStack itemStack, TooltipType tooltipType, List<Text> lines) {
+        SpellTooltip.addSpellLines(itemStack, tooltipType, lines);
+        EquipmentSetTooltip.appendLines(itemStack, lines);
     }
 
     private static void injectRangedWeaponModelPredicates() {
@@ -117,12 +152,14 @@ public class SpellEngineClient {
         );
     }
 
-    public static void registerParticleAppearances() {
+    /// Register the particle appearance factories. Fabric: `ParticleFactoryRegistry`; NeoForge:
+    /// `RegisterParticleProvidersEvent`.
+    public static void registerParticleAppearances(ParticleAppearanceRegistrar registrar) {
         // One generic factory serves every entry: appearance and behaviour are
         // resolved from the entry's defaults + the spawning effect's payload.
         for (var entry: SpellEngineParticles.entries()) {
-            ParticleFactoryRegistry.getInstance().register(entry.type(),
-                    (provider) -> new SpellParticle.Factory(provider, entry));
+            registrar.register(entry.type(),
+                    (SpriteProvider provider) -> new SpellParticle.Factory(provider, entry));
         }
     }
 }

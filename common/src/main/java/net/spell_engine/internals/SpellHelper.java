@@ -1,8 +1,7 @@
 package net.spell_engine.internals;
+import net.spell_engine.Platform;
 
 import com.google.common.base.Suppliers;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -287,7 +286,7 @@ public class SpellHelper {
         Spell.Modifier chargeModifier = null;
         var curvedRatio = 1F;
         Supplier<Collection<ServerPlayerEntity>> trackingPlayers = Suppliers.memoize(() -> { // Suppliers.memoize = Lazy
-            return PlayerLookup.tracking(player);
+            return Platform.tracking(player);
         });
         switch (action) {
             case CHANNEL -> {
@@ -447,7 +446,7 @@ public class SpellHelper {
                 // Very specific attempt failure display, generic solution would be very difficult
                 if (!success && aim.required && firstTarget.isEmpty()) {
                     if (caster instanceof ServerPlayerEntity serverPlayer) {
-                        ServerPlayNetworking.send(serverPlayer, new Packets.SpellMessage("hud.cast_attempt_error.missing_target", Formatting.RED));
+                        Platform.util().networkS2C_Send(serverPlayer, new Packets.SpellMessage("hud.cast_attempt_error.missing_target", Formatting.RED));
                     }
                 }
             }
@@ -734,7 +733,7 @@ public class SpellHelper {
                                     context.charge(), context.chargeModifier());
                             // Send AttackAvailable packet to client
                             var packet = new Packets.AttackAvailable(spellId, meleeAttacks);
-                            ServerPlayNetworking.send(serverPlayer, packet);
+                            Platform.util().networkS2C_Send(serverPlayer, packet);
                             delivered = true;
                         }
                     }
@@ -1244,7 +1243,7 @@ public class SpellHelper {
     public static boolean performImpacts(World world, LivingEntity caster, @Nullable Entity target, Entity aoeSource,
                                          RegistryEntry<Spell> spellEntry, List<Spell.Impact> impacts, ImpactContext context,
                                          boolean additionalTargetLookup, @Nullable Spell.Impact.Action.Type filteredAction) {
-        var trackers = target != null ? PlayerLookup.tracking(target) : null;
+        var trackers = target != null ? Platform.tracking(target) : null;
         SpellTarget.Intent selectedIntent = null;
 
         var extendedImpacts = SpellModifiers.extendedImpactsOf(caster, spellEntry);

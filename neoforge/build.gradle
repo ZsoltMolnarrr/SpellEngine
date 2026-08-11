@@ -98,15 +98,14 @@ dependencies {
     neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
-    modImplementation "org.sinytra.forgified-fabric-api:forgified-fabric-api:${project.forgified_fabric_api_version}"
 
     modImplementation("dev.kosmx.player-anim:player-animation-lib-forge:${project.player_anim_version}")
     modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${project.cloth_config_version}")
 
     include(modImplementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}"))
 //    modImplementation("net.tiny_config:tiny_config-${platform}:${project.tiny_config_version}")
-    modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
-//    modImplementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
+//    modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
+    modImplementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
     modImplementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
 //    modImplementation("net.foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
     modCompileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
@@ -186,7 +185,7 @@ publishMods {
         client = true                    // >=1 of client/server REQUIRED by CurseForge (Error 1021)
         server = true
         changelogType = "markdown"
-        requires("forgified-fabric-api", "cloth-config", "playeranimator", "spell-power", "accessories")
+        requires("cloth-config", "playeranimator", "spell-power", "accessories")
     }
 
     modrinth {
@@ -194,7 +193,6 @@ publishMods {
         accessToken = providers.environmentVariable("MODRINTH_API_KEY")
         minecraftVersions.add(project.minecraft_version)
         minecraftVersions.add(project.minecraft_compat_version)
-        requires { slug = "forgified-fabric-api" }
         requires { slug = "cloth-config" }
         requires { slug = "playeranimator" }
         requires { slug = "spell-power" }

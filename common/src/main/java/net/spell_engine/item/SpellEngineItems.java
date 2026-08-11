@@ -1,7 +1,6 @@
 package net.spell_engine.item;
 
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.spell_engine.PlatformEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
@@ -25,7 +24,9 @@ public class SpellEngineItems {
     public static class Group {
         public static Identifier ID = Identifier.of(SpellEngineMod.ID, "generic");
         public static RegistryKey<ItemGroup> KEY = RegistryKey.of(Registries.ITEM_GROUP.getKey(), ID);
-        public static ItemGroup SPELLS = FabricItemGroup.builder()
+        // Vanilla ItemGroup.Builder (loader-neutral) replaces FabricItemGroup.builder(); row/column
+        // are irrelevant for a separately registered group.
+        public static ItemGroup SPELLS = new ItemGroup.Builder(ItemGroup.Row.TOP, 0)
                 .icon(() -> new ItemStack(SpellBindingBlock.ITEM))
                 .displayName(Text.translatable("itemGroup." + SpellEngineMod.ID + ".general"))
                 .build();
@@ -50,10 +51,10 @@ public class SpellEngineItems {
         Registry.register(Registries.ITEM, SpellBinding.ID, SpellBindingBlock.ITEM);
         Registry.register(Registries.ITEM, ScrollItem.ID, SCROLL.get());
         Registry.register(Registries.ITEM, UniversalSpellBookItem.ID, SPELL_BOOK.get());
-        ItemGroupEvents.modifyEntriesEvent(Group.KEY).register(content -> {
+        PlatformEvents.onItemGroupModify(Group.KEY, (content, context) -> {
             content.add(SpellBindingBlock.ITEM);
 
-            var registryWrapper = content.getContext().lookup().getWrapperOrThrow(SpellRegistry.KEY);
+            var registryWrapper = context.lookup().getWrapperOrThrow(SpellRegistry.KEY);
 
             // Spell book variants from tags
             var spellBookTags = registryWrapper.streamTags()

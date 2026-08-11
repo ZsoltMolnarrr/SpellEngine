@@ -1,6 +1,6 @@
 package net.spell_engine.rpg_series.item;
 
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.spell_engine.PlatformEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.component.ComponentChanges;
@@ -257,7 +257,7 @@ public class Weapon {
             var item = entry.create(entry.material, settings);
             Registry.register(Registries.ITEM, entry.id(), item);
         }
-        ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register(content -> {
+        PlatformEvents.onItemGroupModify(itemGroupKey, (content, context) -> {
             for(var entry: entries) {
                 content.add(entry.item());
             }

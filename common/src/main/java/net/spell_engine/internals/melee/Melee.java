@@ -1,7 +1,7 @@
 package net.spell_engine.internals.melee;
+import net.spell_engine.Platform;
 
 import com.google.common.base.Suppliers;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -274,7 +274,7 @@ public class Melee {
             var attack = convert(player, attackContext.spellId(), attackData, attackSpeedMultiplier, modifiers, curvedRatio, charge.modifier());
             ((SpellCasterEntity) player).setMeleeSkillAttack(new ActiveAttack(attack, player.age, player.getMainHandStack().getItem()));
             // Sending fx to clients - animation, sound, particles
-            var trackers = PlayerLookup.tracking(player);
+            var trackers = Platform.tracking(player);
             float speed = (float) (attackData.attack_speed_multiplier * AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player));
             if (REPLAY.get()) {
                 AnimationHelper.sendAnimation(player, trackers, SpellCast.Animation.RELEASE, attackData.animation, speed);

@@ -1,7 +1,6 @@
 package net.spell_engine.fx;
 
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.spell_engine.Platform;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.particle.ParticleEffect;
@@ -38,7 +37,7 @@ public class ParticleHelper {
     }
 
     public static void sendBatches(Entity trackedEntity, List<ParticleGroup> effects, boolean includeSourceEntity) {
-        sendBatches(trackedEntity, null, effects, 1, PlayerLookup.tracking(trackedEntity), includeSourceEntity);
+        sendBatches(trackedEntity, null, effects, 1, Platform.tracking(trackedEntity), includeSourceEntity);
     }
 
     public static void sendBatches(Entity trackedEntity, List<ParticleGroup> effects, float countMultiplier, Collection<ServerPlayerEntity> trackers) {
@@ -48,11 +47,11 @@ public class ParticleHelper {
     public static void sendBatches(Vec3d location, LivingEntity caster, List<ParticleGroup> effects) {
         Collection<ServerPlayerEntity> trackers;
         if (caster instanceof ServerPlayerEntity serverPlayer) {
-            var array = new ArrayList<ServerPlayerEntity>(PlayerLookup.tracking(caster));
+            var array = new ArrayList<ServerPlayerEntity>(Platform.tracking(caster));
             array.add(serverPlayer);
             trackers = array;
         } else {
-            trackers = PlayerLookup.tracking(caster);
+            trackers = Platform.tracking(caster);
         }
         sendBatches(null, location, effects, 1, trackers, false);
     }
@@ -80,13 +79,13 @@ public class ParticleHelper {
         }
         var packet = new Packets.ParticleEffects(Packets.ParticleEffects.SourceType.COORDINATE, 1, spawns);
         if (sourceEntity instanceof ServerPlayerEntity serverPlayer) {
-            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleEffects.ID)) {
-                ServerPlayNetworking.send(serverPlayer, packet);
+            if (Platform.util().networkS2C_CanSend(serverPlayer, Packets.ParticleEffects.ID)) {
+                Platform.util().networkS2C_Send(serverPlayer, packet);
             }
         }
-        PlayerLookup.tracking(sourceEntity).forEach(serverPlayer -> {
-            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleEffects.ID)) {
-                ServerPlayNetworking.send(serverPlayer, packet);
+        Platform.tracking(sourceEntity).forEach(serverPlayer -> {
+            if (Platform.util().networkS2C_CanSend(serverPlayer, Packets.ParticleEffects.ID)) {
+                Platform.util().networkS2C_Send(serverPlayer, packet);
             }
         });
     }
@@ -128,13 +127,13 @@ public class ParticleHelper {
         }
         var packet = new Packets.ParticleEffects(sourceType, countMultiplier, spawns);
         if (trackedEntity instanceof ServerPlayerEntity serverPlayer) {
-            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleEffects.ID)) {
-                ServerPlayNetworking.send(serverPlayer, packet);
+            if (Platform.util().networkS2C_CanSend(serverPlayer, Packets.ParticleEffects.ID)) {
+                Platform.util().networkS2C_Send(serverPlayer, packet);
             }
         }
         trackers.forEach(serverPlayer -> {
-            if (ServerPlayNetworking.canSend(serverPlayer, Packets.ParticleEffects.ID)) {
-                ServerPlayNetworking.send(serverPlayer, packet);
+            if (Platform.util().networkS2C_CanSend(serverPlayer, Packets.ParticleEffects.ID)) {
+                Platform.util().networkS2C_Send(serverPlayer, packet);
             }
         });
     }

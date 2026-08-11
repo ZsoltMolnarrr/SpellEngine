@@ -1,7 +1,7 @@
 package net.spell_engine.rpg_series.item;
 
 import net.fabric_extras.ranged_weapon.api.RangedConfig;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.spell_engine.PlatformEvents;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -169,7 +169,7 @@ public class RangedWeapon {
             var item = entry.create(settings, config);
             Registry.register(Registries.ITEM, entry.id, item);
         }
-        ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register((content) -> {
+        PlatformEvents.onItemGroupModify(itemGroupKey, (content, context) -> {
             for (var entry: entries) {
                 content.add(entry.registeredItem);
             }

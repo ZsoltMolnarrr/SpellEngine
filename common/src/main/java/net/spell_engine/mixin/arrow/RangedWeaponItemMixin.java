@@ -1,9 +1,9 @@
 package net.spell_engine.mixin.arrow;
+import net.spell_engine.Platform;
 
 import com.google.common.base.Suppliers;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
@@ -39,7 +39,7 @@ public class RangedWeaponItemMixin {
 
             // Apply arrow modification
 
-            var trackers = Suppliers.memoize(() -> PlayerLookup.tracking(shooter));
+            var trackers = Suppliers.memoize(() -> Platform.tracking(shooter));
             for (var spellEntry: shotContext.activeSpells) {
                 ArrowHelper.onArrowShot(arrow, shooter, spellEntry, trackers);
             }

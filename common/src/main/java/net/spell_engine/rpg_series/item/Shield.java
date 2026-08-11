@@ -1,6 +1,6 @@
 package net.spell_engine.rpg_series.item;
 
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.spell_engine.PlatformEvents;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -272,7 +272,7 @@ public class Shield {
         }
 
         // Add to item group
-        ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register((content) -> {
+        PlatformEvents.onItemGroupModify(itemGroupKey, (content, context) -> {
             for (var shield : shields) {
                 content.add(shield);
             }

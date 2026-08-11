@@ -1,8 +1,8 @@
 package net.spell_engine.internals.delivery;
 
 import com.google.common.base.Suppliers;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.spell_engine.Platform;
+import net.spell_engine.PlatformEvents;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.Registries;
 import net.minecraft.server.MinecraftServer;
@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class SpellStashHelper {
     public static void init() {
-        ServerLifecycleEvents.SERVER_STARTING.register(SpellStashHelper::link);
+        PlatformEvents.onServerStarting(SpellStashHelper::link);
     }
 
     private static void link(MinecraftServer minecraftServer) {
@@ -106,7 +106,7 @@ public class SpellStashHelper {
                             var arrow = event.arrow;
                             if (arrow != null) {
                                 var shooter = event.player;
-                                var trackers = Suppliers.memoize(() -> PlayerLookup.tracking(shooter));
+                                var trackers = Suppliers.memoize(() -> Platform.tracking(shooter));
                                 ArrowHelper.onArrowShot(arrow, shooter, spellEntry, trackers);
                             }
                         }

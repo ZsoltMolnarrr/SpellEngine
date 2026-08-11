@@ -1,6 +1,6 @@
 package net.spell_engine.client.input;
+import net.spell_engine.Platform;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.option.KeyBinding;
@@ -312,7 +312,7 @@ public class SpellHotbar {
         Identifier idToSync = null;
         if (!Objects.equals(idToSync, lastSyncedSpellId)) {
             // System.out.println("Syncing item use skill: " + idToSync);
-            ClientPlayNetworking.send(new Packets.SpellCastSync(idToSync, 1, 1000));
+            Platform.util().networkC2S_Send(new Packets.SpellCastSync(idToSync, 1, 1000));
             lastSyncedSpellId = idToSync;
         }
     }

@@ -1,6 +1,6 @@
 package net.spell_engine.internals;
 
-import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.spell_engine.PlatformEvents;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.RegistryEntryReferenceArgumentType;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -16,7 +16,7 @@ import java.util.Collection;
 
 public class SpellEngineCommands {
     public static void register() {
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+        PlatformEvents.onCommandRegistration((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("spell_cooldown")
                     .requires(source -> source.hasPermissionLevel(2))
                     .then(CommandManager.literal("reset").then(

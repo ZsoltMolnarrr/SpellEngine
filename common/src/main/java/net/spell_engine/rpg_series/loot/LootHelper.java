@@ -2,9 +2,7 @@ package net.spell_engine.rpg_series.loot;
 
 import net.minecraft.item.Item;
 import net.minecraft.loot.LootPool;
-import net.minecraft.loot.LootTable;
 import net.minecraft.loot.condition.KilledByPlayerLootCondition;
-import net.minecraft.loot.condition.LootConditionTypes;
 import net.minecraft.loot.entry.ItemEntry;
 import net.minecraft.loot.function.EnchantWithLevelsLootFunction;
 import net.minecraft.loot.provider.number.BinomialLootNumberProvider;
@@ -73,7 +71,7 @@ public class LootHelper {
         LootHelper.TAG_CACHE.save();
     }
 
-    public static void configureV2(RegistryWrapper.WrapperLookup registries, Identifier lootTableId, LootTable.Builder tableBuilder, LootConfig config, HashMap<String, Item> entries) {
+    public static void configure(RegistryWrapper.WrapperLookup registries, Identifier lootTableId, java.util.function.Consumer<LootPool> poolSink, LootConfig config, HashMap<String, Item> entries) {
         boolean isEntityLootTable = lootTableId.getPath().startsWith("entities");
         var tableId = lootTableId.toString();
         var pool = config.injectors.get(tableId);
@@ -150,7 +148,7 @@ public class LootHelper {
                 lootPoolBuilder.with(lootEntry);
             }
         }
-        tableBuilder.pool(lootPoolBuilder.build());
+        poolSink.accept(lootPoolBuilder.build());
     }
 
     private static LootNumberProvider numberProvider(float min, float max) {

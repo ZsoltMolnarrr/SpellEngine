@@ -1,6 +1,6 @@
 package net.spell_engine.api.entity;
+import net.spell_engine.Platform;
 
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -60,7 +60,7 @@ public class EvasionLogic {
     public static void onEvade(LivingEntity entity, float damage, DamageSource source) {
         // System.out.println("SpellEngine: " + entity.getName().getString() + " evaded damage from " + source.getName() + "!");
         if (entity instanceof ServerPlayerEntity player) {
-            var tracker = PlayerLookup.tracking(player);
+            var tracker = Platform.tracking(player);
             AnimationHelper.sendAnimation(player, tracker, SpellCast.Animation.MISC, evadeAnimation, 1F);
         }
         entity.getWorld().playSound(null, entity.getX(), entity.getY(), entity.getZ(), SpellEngineSounds.DODGE.soundEvent(), entity.getSoundCategory(), 1.0F, evadeSound.randomizedPitch());

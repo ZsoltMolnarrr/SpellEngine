@@ -4,7 +4,9 @@ import net.minecraft.registry.RegistryKeys;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.registries.DataPackRegistryEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.SpellEngineEffects;
@@ -24,6 +26,14 @@ public final class NeoForgeMod {
         // and supplied here, the only point NeoForge accepts them. Works for every mod's summons since
         // the buffer is static and this event accepts any entity type.
         modBus.addListener(EntityAttributeCreationEvent.class, SummonedEntityAttributeRegistrar::onCreateAttributes);
+        // Synced datapack registries buffered during common init (replaces DynamicRegistries.registerSynced).
+        modBus.addListener(DataPackRegistryEvent.NewRegistry.class, SyncedDataRegistrar::onNewRegistry);
+        // Creative-tab entries buffered during common init (replaces Fabric's ItemGroupEvents).
+        modBus.addListener(BuildCreativeModeTabContentsEvent.class, NeoForgeMod::onBuildCreativeTabContents);
+    }
+
+    private static void onBuildCreativeTabContents(BuildCreativeModeTabContentsEvent event) {
+        PlatformEventsImpl.dispatchItemGroup(event.getTabKey(), event, event.getParameters());
     }
 
     public static void register(RegisterEvent event) {

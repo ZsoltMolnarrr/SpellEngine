@@ -1,6 +1,6 @@
 package net.spell_engine.mixin.client;
+import net.spell_engine.Platform;
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
@@ -91,7 +91,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 speed = newValue.speed();
                 length = newValue.length();
             }
-            ClientPlayNetworking.send(new Packets.SpellCastSync(id, speed, length));
+            Platform.util().networkC2S_Send(new Packets.SpellCastSync(id, speed, length));
         }
     }
 
@@ -169,7 +169,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             if (SpellHelper.isChanneled(process.spell().value())) {
                 var player = player();
                 var progress = process.progress(player.getWorld().getTime());
-                ClientPlayNetworking.send(new Packets.SpellRequest(SpellCast.Action.RELEASE, process.id(), progress.ratio(), new int[]{}, null));
+                Platform.util().networkC2S_Send(new Packets.SpellRequest(SpellCast.Action.RELEASE, process.id(), progress.ratio(), new int[]{}, null));
             }
         }
 
@@ -246,7 +246,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             i += 1;
         }
 
-        ClientPlayNetworking.send(new Packets.SpellRequest(action, spellId, progress.ratio(), targetIDs, location));
+        Platform.util().networkC2S_Send(new Packets.SpellRequest(action, spellId, progress.ratio(), targetIDs, location));
         switch (action) {
             case CHANNEL -> {
                 if (progress.ratio() >= 1) {
@@ -331,7 +331,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             var animationSpeed = attack.speed() * attack.animation().speed;
             ((AnimatablePlayer)this).playSpellAnimation(SpellCast.Animation.RELEASE, attack.animation().id, animationSpeed);
             var packet = new Packets.AttackFxBroadcast(attack.context());
-            ClientPlayNetworking.send(packet);
+            Platform.util().networkC2S_Send(packet);
         }
     }
     @Unique
@@ -347,7 +347,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             var targetIds = targets.stream().mapToInt(Integer::intValue).toArray();
             var context = attack.context() != null ? attack.context() : Melee.AttackContext.EMPTY;
             var packet = new Packets.AttackPerform(context, targetIds);
-            ClientPlayNetworking.send(packet);
+            Platform.util().networkC2S_Send(packet);
         }
     }
 

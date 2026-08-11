@@ -7,10 +7,15 @@
 - Effects can size themselves by a magnitude only known where they are emitted, so one bundle can mix range-scaled and fixed-size effects
 - Legacy single-model projectile/cloud rendering and the flat channelling fields are removed
 
-Functional changes:
-- Fixed Spell Projectile velocity change upon bounce from terrain 
+## Functional changes
 
-API Changes:
+- Fixed Spell Projectile velocity change upon bounce from terrain
+
+## Notable setup changes
+
+- Removed Forgified Fabric API dependency for the NeoForge version, now all platform API calls are fully native
+
+## API Changes
 
 - `spell_choice` component gains `apply_on_choice`: a map of chosen spell id → data-component changes, applied to the item when that spell is picked (e.g. `custom_model_data`/`custom_name`), so the choice can drive the item's appearance.
 

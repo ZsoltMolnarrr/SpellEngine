@@ -1,7 +1,5 @@
 package net.spell_engine.client.render;
 
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -74,22 +72,27 @@ public class BeamRenderer extends RenderLayer {
         );
     }
 
-    public static void setup() {
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
-            VertexConsumerProvider.Immediate vcProvider = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
-            renderAllInWorld(context, context.matrixStack(), vcProvider, context.camera(), LightmapTextureManager.MAX_LIGHT_COORDINATE, context.tickCounter().getTickDelta(true));
-        });
+    /// Beam world-render pass. Loader-neutral: takes the pose stack, camera and partial tick from
+    /// whatever event the loader fires. Fabric: `WorldRenderEvents.AFTER_TRANSLUCENT`; NeoForge:
+    /// `RenderLevelStageEvent` (AFTER_TRANSLUCENT_BLOCKS).
+    public static void renderAfterTranslucent(MatrixStack matrices, Camera camera, float tickDelta) {
+        VertexConsumerProvider.Immediate vcProvider = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
+        renderAllInWorld(matrices, vcProvider, camera, LightmapTextureManager.MAX_LIGHT_COORDINATE, tickDelta);
     }
 
-    public static void renderAllInWorld(WorldRenderContext context, MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, Camera camera, int light, float delta) {
-        var focusedEntity = context.camera().getFocusedEntity();
+    public static void renderAllInWorld(MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, Camera camera, int light, float delta) {
+        var focusedEntity = camera.getFocusedEntity();
         if (focusedEntity == null) {
             return;
         }
 
+        var world = MinecraftClient.getInstance().world;
+        if (world == null) {
+            return;
+        }
         var renderDistance = MinecraftClient.getInstance().options.getViewDistance().getValue() * 24; // 24 = 16 * 1.5F
         var squaredRenderDistance = renderDistance * renderDistance;
-        var players = context.world().getPlayers()
+        var players = world.getPlayers()
                 .stream().filter(player ->
                         player.squaredDistanceTo(focusedEntity) < squaredRenderDistance
                 && ((SpellCasterEntity)player).getBeam() != null)

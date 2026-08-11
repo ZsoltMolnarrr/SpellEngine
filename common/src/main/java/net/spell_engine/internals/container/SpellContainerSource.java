@@ -1,6 +1,6 @@
 package net.spell_engine.internals.container;
+import net.spell_engine.Platform;
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -65,7 +65,7 @@ public class SpellContainerSource {
         if (!player.getWorld().isClient) {
             var containers = ((Owner)player).serverSideSpellContainers();
             var packet = new Packets.SpellContainerSync(containers);
-            ServerPlayNetworking.send((ServerPlayerEntity) player, packet);
+            Platform.util().networkS2C_Send((ServerPlayerEntity) player, packet);
             setDirty(player, MAIN_HAND);
         }
     }

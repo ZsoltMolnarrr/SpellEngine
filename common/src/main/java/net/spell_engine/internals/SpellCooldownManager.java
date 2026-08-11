@@ -1,7 +1,7 @@
 package net.spell_engine.internals;
+import net.spell_engine.Platform;
 
 import com.google.common.collect.Maps;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -166,13 +166,13 @@ public class SpellCooldownManager {
 
     protected void cooldownSet(Identifier spell, int duration) {
         if (owner instanceof ServerPlayerEntity serverPlayer) {
-            ServerPlayNetworking.send(serverPlayer, new Packets.SpellCooldown(spell, duration));
+            Platform.util().networkS2C_Send(serverPlayer, new Packets.SpellCooldown(spell, duration));
         }
     }
 
     protected void cooldownCleared(Identifier spell) {
         if (owner instanceof ServerPlayerEntity serverPlayer) {
-            ServerPlayNetworking.send(serverPlayer, new Packets.SpellCooldown(spell, 0));
+            Platform.util().networkS2C_Send(serverPlayer, new Packets.SpellCooldown(spell, 0));
         }
     }
 
@@ -212,7 +212,7 @@ public class SpellCooldownManager {
 
     public void pushSync() {
         if (owner instanceof ServerPlayerEntity serverPlayer) {
-            ServerPlayNetworking.send(serverPlayer, new Packets.SpellCooldownSync(this.tick, Map.copyOf(this.entries)));
+            Platform.util().networkS2C_Send(serverPlayer, new Packets.SpellCooldownSync(this.tick, Map.copyOf(this.entries)));
         }
     }
 

@@ -1,11 +1,9 @@
 package net.spell_engine.rpg_series;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.item.v1.EnchantmentEvents;
-import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
-import net.fabricmc.fabric.api.util.TriState;
 import net.minecraft.enchantment.Enchantments;
+import net.spell_engine.PlatformEvents;
 import net.spell_engine.api.item.weapon.StaffItem;
+import net.spell_engine.api.util.TriState;
 import net.spell_engine.rpg_series.loot.LootConfig;
 import net.spell_engine.rpg_series.loot.LootHelper;
 import net.spell_engine.rpg_series.config.Defaults;
@@ -37,23 +35,23 @@ public class RPGSeriesCore {
         lootEquipmentConfig.refresh();
         lootScrollsConfig.refresh();
         LootHelper.TAG_CACHE.refresh();
-        LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) -> {
-            LootHelper.configureV2(registries, key.getValue(), tableBuilder, lootEquipmentConfig.value, new HashMap<>());
-            LootHelper.configureV2(registries, key.getValue(), tableBuilder, lootScrollsConfig.value, new HashMap<>());
+        PlatformEvents.onLootTableModify(context -> {
+            LootHelper.configure(context.registries(), context.tableId(), context::addPool, lootEquipmentConfig.value, new HashMap<>());
+            LootHelper.configure(context.registries(), context.tableId(), context::addPool, lootScrollsConfig.value, new HashMap<>());
         });
-        ServerLifecycleEvents.SERVER_STARTED.register((server) -> {
+        PlatformEvents.onServerStarted((server) -> {
             LootHelper.updateTagCache(lootEquipmentConfig.value);
         });
-        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, serverResourceManager, success) -> {
+        PlatformEvents.onDataPackReloadComplete(() -> {
             LootHelper.updateTagCache(lootEquipmentConfig.value);
         });
 
         var staffEnchantments = Set.of(Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING);
-        EnchantmentEvents.ALLOW_ENCHANTING.register((enchantment, target, enchantingContext) -> {
+        PlatformEvents.onAllowEnchanting((enchantment, target) -> {
             if (target.getItem() instanceof StaffItem && staffEnchantments.contains(enchantment.getKey().get())) {
-                return TriState.TRUE;
+                return TriState.ALLOW;
             }
-            return TriState.DEFAULT;
+            return TriState.PASS;
         });
     }
 }
