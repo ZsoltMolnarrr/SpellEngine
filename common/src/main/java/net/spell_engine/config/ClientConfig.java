@@ -8,8 +8,6 @@ import net.spell_engine.client.input.WrappedKeybinding;
 @Config(name = "client")
 public class ClientConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip
-    public boolean renderBeamsHighLuminance = true;
-    @ConfigEntry.Gui.Tooltip
     public boolean holdToCastChannelled = true;
     @ConfigEntry.Gui.Tooltip
     public boolean holdToCastCharged = true;
@@ -35,11 +33,12 @@ public class ClientConfig implements ConfigData {
     public WrappedKeybinding.VanillaAlternative spell_hotbar_8_defer = WrappedKeybinding.VanillaAlternative.HOTBAR_KEY_8;
     @ConfigEntry.Gui.Tooltip
     public WrappedKeybinding.VanillaAlternative spell_hotbar_9_defer = WrappedKeybinding.VanillaAlternative.HOTBAR_KEY_9;
-
     @ConfigEntry.Gui.Tooltip
     public boolean sneakingByPassSpellHotbar = false;
     @ConfigEntry.Gui.Tooltip
     public boolean useKeyHighPriority = false;
+    @ConfigEntry.Gui.Tooltip
+    public boolean renderBeamsHighLuminance = true;
     @ConfigEntry.Gui.Tooltip
     public boolean highlightTarget = true;
     @ConfigEntry.Gui.Tooltip
