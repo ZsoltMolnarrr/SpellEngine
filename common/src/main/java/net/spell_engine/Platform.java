@@ -39,6 +39,10 @@ public class Platform {
 
     public interface Util {
         boolean isModLoaded(String modid);
+        /// Whether the game is running in a development environment (dev workspace / loom run),
+        /// as opposed to a packaged production install. Fabric: `FabricLoader.isDevelopmentEnvironment()`;
+        /// NeoForge: `!FMLLoader.isProduction()`. Kept here so `common` needs no loader API for the check.
+        boolean isDevelopmentEnvironment();
         void awakeSlotModCompat();
         void sendVanillaPacket_S2C(ServerPlayerEntity player, Packet<?> packet);
         /// Registers a summoned entity's default attribute container with the loader. Fabric registers

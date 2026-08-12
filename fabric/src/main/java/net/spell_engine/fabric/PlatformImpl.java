@@ -30,6 +30,11 @@ public class PlatformImpl {
         }
 
         @Override
+        public boolean isDevelopmentEnvironment() {
+            return FabricLoader.getInstance().isDevelopmentEnvironment();
+        }
+
+        @Override
         public void awakeSlotModCompat() {
             FabricCompatFeatures.initSlotCompat();
         }
