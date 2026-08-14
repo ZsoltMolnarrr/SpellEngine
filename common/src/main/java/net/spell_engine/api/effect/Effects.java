@@ -48,7 +48,7 @@ public class Effects {
                 effects.put(key, entry.config);
             }
 
-            var modifiers = ConfigUtil.modifiersFrom(entry.id, entry.config.attributes());
+            var modifiers = ConfigUtil.modifiersFrom(entry.id, entry.config.selectedAttributes());
             for (var modifier : modifiers) {
                 entry.effect
                         .addAttributeModifier(modifier.attribute(),

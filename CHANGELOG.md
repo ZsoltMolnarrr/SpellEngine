@@ -21,7 +21,6 @@
 - `spell_choice` component gains `apply_on_choice`: a map of chosen spell id → data-component changes, applied to the item when that spell is picked (e.g. `custom_model_data`/`custom_name`), so the choice can drive the item's appearance.
 
 Completely reworked particle effect system:
-
 - `ParticleBatch` replaced by `ParticleGroup`: `id` + `appearance` (one particle) + `batch` (how many, where, what velocity)
   - Unset fields inherit the registered particle's own defaults; `scale`, `opacity` and `playback_speed` multiply with them
   - New appearance fields: `facing` (`CAMERA`/`GROUND`/`UPRIGHT`/`VELOCITY`), `motion` presets with `gravity`/`drag` overrides, `render`/`glow`, `opacity_curve`, `scale_multiplier`/`scale_easing`, `color_variance`/`scale_variance`/`lifetime_variance`, `playback_speed` (negative reverses), `collides`
@@ -57,7 +56,6 @@ Completely reworked particle effect system:
 - Removed the deprecated `RemoveOnHit.configure(StatusEffect, boolean)` overload — pass a `RemoveOnHit.Trigger` (`ANY_HIT` matches the old `true`)
 
 Projectile flight physics:
-
 - Added optional `ProjectileData.motion` for `FLY` projectiles (ignored by `FALL`/meteor delivery, which keeps its straight-line descent) — `null` leaves the classic constant-velocity, gravity-free flight unchanged
   - `gravity` — downward acceleration in blocks/tick² (negative floats the projectile up), applied before drag each tick, so projectiles now arc and pitch along their trajectory
   - `drag` — fraction of speed *lost* per tick, so `0` = constant speed, `0.01` = gentle decay, `1` = instant stop (values above `1` clamp to a stop rather than reversing). Note this reads the opposite way to Minecraft's internal retained-fraction convention
@@ -66,11 +64,14 @@ Projectile flight physics:
   - Retired the long-dead `getDrag()` path, whose computed drag was never applied to velocity
 
 Description tokens:
-
 - Added the parametric effect token `{effect|<effect_id>|<amplifier>|<attribute>|<format>}` — reads a status effect's attribute modifier straight off the registry, with amplifier scaling (`base × (amplifier + 1)`), attribute selection by id (blank falls back to the effect's first modifier), and a sign-only `format` (`abs`, `+`; percentage-vs-flat comes from the modifier's operation). Resolution is player-independent and memoised until a registry resync. See [Description Tokens](docs/12-description-tokens.md)
 - Added `TooltipTokens` — a dependency-free, server-safe home for token names, the `effect(...)` builders and the value-formatting primitives (`percent`, `bonus`, `formattedNumber`), so descriptions can be built from data definitions without touching the client-only `SpellTooltip`. `SpellTooltip` keeps its former token/format API as delegates
 - Effect tokens make an effect's non-first modifier addressable and replace the per-spell `DescriptionMutator` pattern for effect values (e.g. Frostbite can now show both its movement- and attack-speed values)
 - Moved the programmatic description escape hatch to the server-safe `TooltipTokens.Custom` (register via `TooltipTokens.registerCustom`) so content that still needs it no longer references client-only code. The old `SpellTooltip.DescriptionMutator` / `addDescriptionMutator` remain as deprecated bridges into the same registry
+
+Other changes:
+- Moved all content config types (`WeaponConfig`, `ArmorSetConfig`, etc...) into `rpg_series` package scope
+- `EffectConfig` now supports `ConditionalAttributes`
 
 # 1.9.15
 

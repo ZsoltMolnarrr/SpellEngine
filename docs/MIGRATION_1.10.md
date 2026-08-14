@@ -4,6 +4,9 @@
 **breaking with no compatibility shim**: old fields are deleted, not deprecated. Existing
 spell JSON and Java authoring must be updated.
 
+It also **relocates a non-spell package** — equipment config moves out of `api.*` — which is a
+compile-only break for downstream mods (§6).
+
 Everything else in the spell API is unchanged.
 
 ---
@@ -251,7 +254,61 @@ authored size and warns once rather than inventing a number.
 
 ---
 
-## 6. Migration checklist
+## 6. Package relocations
+
+Not every 1.10 break is about FX. This line also **relocates packages that never belonged
+where they sat**. A relocation is a **pure move**: the classes are byte-for-byte identical —
+same names, fields, signatures and behaviour — only their package, and therefore their `import`
+line, changes. It breaks compilation in downstream mods and nowhere else. There is no runtime
+component and no data component; spell JSON, resource packs and generated files are untouched.
+
+### Moves in 1.10
+
+| From | To | What moved |
+|---|---|---|
+| `net.spell_engine.api.config` | `net.spell_engine.rpg_series.config` | Equipment/attribute config: `WeaponConfig`, `ArmorSetConfig`, `ShieldConfig`, `EffectConfig`, `AttributeModifier`, `ConditionalAttributes`, `ConfigFile`, `ConfigUtil` |
+
+**Why.** `api.*` is the spell-authoring API; none of these eight classes describe a spell. They
+configure weapon / armor / shield stats and attribute modifiers, and are consumed by the item
+API that already lives under `net.spell_engine.rpg_series.item`. Moving them beside their only
+structural owner puts equipment config in the equipment package and drops an `rpg_series → api`
+back-reference that inverted the intended layering. `rpg_series` is an equally public surface —
+downstream mods already import `rpg_series.item.*` — so nothing becomes less reachable.
+
+### Fixing a downstream mod
+
+Every reference was a plain `import` — no wildcard imports, no fully-qualified inline uses — so
+the fix is one substitution across the mod's Java sources:
+
+```bash
+grep -rl 'net\.spell_engine\.api\.config' <mod>/ | grep -v /build/ | grep '\.java$' \
+  | xargs sed -i '' 's/net\.spell_engine\.api\.config/net.spell_engine.rpg_series.config/g'
+```
+
+Then set `spell_engine_version` to the 1.10 build that contains the move and rebuild. A
+relocation can only surface as an unresolved-import / `cannot find symbol` compile error, so a
+clean `:fabric:compileJava` on each consumer is the whole verification. Grep for the old package
+name first to confirm nothing lingers.
+
+> Within SpellEngine, `rpg_series.config.Defaults` was renamed to `LootDefaults` in the same
+> pass, to disambiguate it from the incoming equipment-config classes. It is SE-internal — no
+> downstream mod imported it — so it needs no action outside SpellEngine.
+
+### Recipe for any future move
+
+This is the template for every package relocation this line ships, not a one-off:
+
+1. The classes move **unchanged** — never fold a rename or signature change into a move; keep the
+   two as separate, individually reviewable steps.
+2. Downstream is a **mechanical import rewrite** — the two-line grep/sed above, retargeted at the
+   old and new package names.
+3. **Confirm with a grep** for the old package name before building.
+4. **Verify by compiling** each consumer — a move has no runtime or data surface, so if it
+   compiles, it is done.
+
+---
+
+## 7. Migration checklist
 
 1. **Particle construction** — replace every `new ParticleBatch(...)` with
    `ParticleGroupBuilder`. Work through the [field mapping](#field-mapping); watch
@@ -266,7 +323,10 @@ authored size and warns once rather than inventing a number.
 5. **Range scaling** — move `scaled_with_ranged` effects into `visuals` with
    `scale_with = RANGE`, and **reset their `scale` to 1**.
 6. **Legacy models / channelling** — see [other removals](#5-other-removals-in-110).
-7. **Rebuild and re-run datagen**, then diff the generated JSON. The generated files are the
+7. **Package imports** — rewrite `net.spell_engine.api.config.*` imports to
+   `net.spell_engine.rpg_series.config.*`, then bump `spell_engine_version`. See
+   [package relocations](#6-package-relocations).
+8. **Rebuild and re-run datagen**, then diff the generated JSON. The generated files are the
    real contract; a field that silently stopped serialising shows up there.
 
 ### Vanilla particle ids still work
