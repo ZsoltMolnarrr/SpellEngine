@@ -141,7 +141,7 @@ public class LootHelper {
                 if (spellBind != null && spellBind.isValid()) {
                     var function = SpellBindRandomlyLootFunction.builder(
                             spellBind.pool,
-                            numberProvider(spellBind.tier_min, spellBind.tier_max),
+                            numberProvider(tierBound(spellBind.tier_min), tierBound(spellBind.tier_max)),
                             numberProvider(spellBind.count_min, spellBind.count_max));
                     lootEntry.apply(function);
                 }
@@ -149,6 +149,15 @@ public class LootHelper {
             }
         }
         poolSink.accept(lootPoolBuilder.build());
+    }
+
+    /// Resolves a nullable tier bound to the value the loot function expects.
+    /// `null` — and any negative value, for backwards compatibility with older config
+    /// files that used `-1` as the sentinel — both mean "no tier limit", which
+    /// {@link net.spell_engine.spellbinding.SpellBindRandomlyLootFunction} reads as a
+    /// negative tier (any tier).
+    private static float tierBound(Integer tier) {
+        return (tier == null || tier < 0) ? -1 : tier;
     }
 
     private static LootNumberProvider numberProvider(float min, float max) {

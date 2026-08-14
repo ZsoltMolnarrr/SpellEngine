@@ -60,8 +60,12 @@ public class LootConfig {
             public SpellBind spell_bind = null;
             public static class SpellBind { public SpellBind() { }
                 public String pool;
-                public int tier_min = -1;
-                public int tier_max = -1;
+                /// Lowest spell tier that can be bound. `null` (or a negative value, for
+                /// backwards compatibility with older config files) means no lower tier limit.
+                public Integer tier_min = null;
+                /// Highest spell tier that can be bound. `null` (or a negative value, for
+                /// backwards compatibility with older config files) means no upper tier limit.
+                public Integer tier_max = null;
                 public int count_min = 1;
                 public int count_max = 1;
 
