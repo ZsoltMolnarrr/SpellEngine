@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Voert een draaiaanval uit en brengt {damage} schade toe aan nabije vijanden.",
+  "spell.rpg_series.cleave.name": "Kliefslag",
+  "spell.rpg_series.fan_of_knives.description": "Werpt meerdere van je messen in een kegelvorm, brengt {damage} schade toe en ketst tot {bounce} keer af op het terrein.",
+  "spell.rpg_series.fan_of_knives.name": "Waaier van Messen",
+  "spell.rpg_series.flurry.description": "Houd ingedrukt om een snelle reeks slagen los te laten, terwijl je ook momentum opbouwt.",
+  "spell.rpg_series.flurry.name": "Slagvlaag",
+  "spell.rpg_series.ground_slam.description": "Springt de lucht in en slaat neer op de grond, en brengt {damage} schade toe aan nabije vijanden.",
+  "spell.rpg_series.ground_slam.name": "Grondslag",
+  "spell.rpg_series.impale.description": "Werpt je wapen naar voren, brengt {damage} schade toe en veroorzaakt krachtige terugstoot. Hoe langer de worp wordt opgeladen, hoe harder hij raakt en hoe verder hij vliegt.",
+  "spell.rpg_series.impale.name": "Doorboring",
+  "spell.rpg_series.smash.description": "Levert een slag af met krachtige terugstoot, waardoor het doelwit tijdelijk geen schild of voorwerpen kan gebruiken.",
+  "spell.rpg_series.smash.name": "Verplettering",
+  "spell.rpg_series.swift_strikes.description": "Laat een snelle reeks slagen los.",
+  "spell.rpg_series.swift_strikes.name": "Snelle Slagen",
+  "spell.rpg_series.swipe.description": "Glijd naar voren met je wapen en raak alle vijanden op je pad.",
+  "spell.rpg_series.swipe.name": "Zwaai",
+  "spell.rpg_series.thrust.description": "Stoot naar voren met je wapen en raak alle vijanden op je pad.",
+  "spell.rpg_series.thrust.name": "Stoot",
+  "spell.rpg_series.whirlwind.description": "Houd ingedrukt om rond te draaien en {damage} schade per seconde toe te brengen aan nabije vijanden.",
+  "spell.rpg_series.whirlwind.name": "Wervelwind"
+}

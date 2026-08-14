@@ -184,5 +184,15 @@
   "advancements.rpg_series.classes.title": "Escolha seu caminho",
   "advancements.rpg_series.classes.description": "Visite uma Mesa de Vinculação de Feitiços para criar seu primeiro Livro de Feitiços!",
   "advancements.rpg_series.misc_items.title": "Itens Mágicos",
-  "advancements.rpg_series.misc_items.description": "Descubra vários itens essenciais para lançar feitiços!"
+  "advancements.rpg_series.misc_items.description": "Descubra vários itens essenciais para lançar feitiços!",
+  "spell.tooltip.summon.capabilities": "Capacidades:",
+  "spell.tooltip.summon.melee": "Ataques corpo a corpo",
+  "spell.tooltip.cast_charge": "Tempo de carga: {duration} segundo",
+  "spell.tooltip.cast_charge.plural": "Tempo de carga: {duration} segundos",
+  "spell.tooltip.cast_channel": "Canalizado por: {duration} segundo",
+  "spell.tooltip.cast_channel.plural": "Canalizado por: {duration} segundos",
+  "effect.spell_engine.bleed": "Sangramento",
+  "effect.spell_engine.bleed.description": "Perde vida ao longo do tempo, pior enquanto se move.",
+  "effect.spell_engine.energy": "Energia",
+  "effect.spell_engine.energy.description": "A arma empunhada arde em energia."
 }

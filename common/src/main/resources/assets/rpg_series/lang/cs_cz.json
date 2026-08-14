@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Provede otočný útok a způsobí {damage} poškození blízkým nepřátelům.",
+  "spell.rpg_series.cleave.name": "Sek",
+  "spell.rpg_series.fan_of_knives.description": "Vrhne několik vašich čepelí v kuželu, které způsobí {damage} poškození a odrazí se od terénu až {bounce}krát.",
+  "spell.rpg_series.fan_of_knives.name": "Vějíř nožů",
+  "spell.rpg_series.flurry.description": "Podržte pro spuštění rychlé série úderů a zároveň získejte zrychlení.",
+  "spell.rpg_series.flurry.name": "Příval úderů",
+  "spell.rpg_series.ground_slam.description": "Vyskočí do vzduchu a dopadne na zem, čímž způsobí {damage} poškození blízkým nepřátelům.",
+  "spell.rpg_series.ground_slam.name": "Úder o zem",
+  "spell.rpg_series.impale.description": "Vrhne vaši zbraň vpřed, čímž způsobí {damage} poškození a silné odhození. Čím déle je hod nabíjen, tím tvrději zasáhne a tím dál doletí.",
+  "spell.rpg_series.impale.name": "Probodnutí",
+  "spell.rpg_series.smash.description": "Zasadí úder se silným odhozením, který zablokuje cíli použití štítu a předmětů.",
+  "spell.rpg_series.smash.name": "Drtivý úder",
+  "spell.rpg_series.swift_strikes.description": "Spustí rychlou sérii úderů.",
+  "spell.rpg_series.swift_strikes.name": "Rychlé údery",
+  "spell.rpg_series.swipe.description": "Sklouzněte se zbraní vpřed a zasáhněte všechny nepřátele na své cestě.",
+  "spell.rpg_series.swipe.name": "Švih",
+  "spell.rpg_series.thrust.description": "Vrhněte se zbraní vpřed a zasáhněte všechny nepřátele na své cestě.",
+  "spell.rpg_series.thrust.name": "Výpad",
+  "spell.rpg_series.whirlwind.description": "Podržte pro roztočení, které způsobí {damage} poškození za sekundu blízkým nepřátelům.",
+  "spell.rpg_series.whirlwind.name": "Vichřice"
+}

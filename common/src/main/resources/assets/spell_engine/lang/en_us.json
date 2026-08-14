@@ -137,7 +137,7 @@
   "text.autoconfig.spell_engine.option.client.spell_hotbar_1_defer" : "Spell Hotbar Slot 1 fallback",
   "text.autoconfig.spell_engine.option.client.spell_hotbar_1_defer.@Tooltip" : "Spell Hotbar Slot 1 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
   "text.autoconfig.spell_engine.option.client.spell_hotbar_2_defer" : "Spell Hotbar Slot 2 fallback",
-  "text.autoconfig.spell_engine.option.client.spell_hotbar_2_defer.@Tooltip" : "Spell Hotbar Slot 1 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
+  "text.autoconfig.spell_engine.option.client.spell_hotbar_2_defer.@Tooltip" : "Spell Hotbar Slot 2 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
   "text.autoconfig.spell_engine.option.client.spell_hotbar_3_defer" : "Spell Hotbar Slot 3 fallback",
   "text.autoconfig.spell_engine.option.client.spell_hotbar_3_defer.@Tooltip" : "Spell Hotbar Slot 3 to use the selected vanilla keybind, when unassigned in Options/Controls/Key Binds",
   "text.autoconfig.spell_engine.option.client.spell_hotbar_4_defer" : "Spell Hotbar Slot 4 fallback",

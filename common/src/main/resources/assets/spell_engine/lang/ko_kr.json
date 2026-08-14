@@ -7,12 +7,10 @@
   "tutorial.spell_hotbar.title": "사용자 지정 주문 단축 바",
   "tutorial.spell_hotbar.description": "%1$s을(를) 누르세요",
   "tutorial.spell_hotbar.unbound": "키를 설정하세요!",
-
   "spell.spell_engine.use_item.name": "아이템 사용",
   "spell.spell_engine.use_item.description": "소지한 아이템 중 하나를 사용합니다.",
   "spell.spell_engine.use_offhand_item.name": "보조 손 아이템 사용",
   "spell.spell_engine.use_offhand_item.description": "보조 손에 있는 아이템을 사용합니다.",
-
   "spell.group.primary": "(기본 주문)",
   "spell.tooltip.container.access.spell": "장착된 주문서에서 주문을 시전합니다",
   "spell.tooltip.container.access.archery": "장착된 주문서에서 궁술 기술을 사용합니다",
@@ -33,7 +31,6 @@
   "spell.tooltip.ammo.plural": "필요한 아이템: {item} (x{count})",
   "spell.tooltip.hold_for_details": "(세부 정보을 보려면 %1$s을(를) 누르세요)",
   "spell.tooltip.spell_binding_tip": "(주문 부여대를 사용하여 주문 추가)",
-
   "gui.spell_engine.config_menu": "주문 엔진 설정",
   "gui.spell_engine.close": "닫기",
   "gui.spell_engine.settings": "설정",
@@ -44,14 +41,12 @@
   "gui.spell_engine.target": "대상",
   "gui.spell_engine.icon": "아이콘",
   "gui.spell_engine.bar_width": "바 너비",
-
   "hud.leave_spell_hotbar": "나가려면 %1$s을(를) 누르세요",
   "hud.cast_attempt_error.missing_item": "%1$s 누락됨",
   "hud.cast_attempt_error.on_cooldown": "재사용 대기 중",
   "hud.action_impaired.silence": "침묵",
   "hud.action_impaired.incapacitate": "무력화",
   "hud.action_impaired.stun": "기절",
-
   "keybindings.spell_engine.tooltip_details": "주문 세부 정보 도구 설명",
   "keybindings.spell_engine.bypass_spell_hotbar": "주문 단축 바 무시",
   "keybindings.spell_engine.spell_hotbar_1": "주문 단축 바 슬롯 1",
@@ -63,11 +58,8 @@
   "keybindings.spell_engine.spell_hotbar_7": "주문 단축 바 슬롯 7",
   "keybindings.spell_engine.spell_hotbar_8": "주문 단축 바 슬롯 8",
   "keybindings.spell_engine.spell_hotbar_9": "주문 단축 바 슬롯 9",
-
   "trinkets.slot.spell.book": "주문서",
-
   "text.autoconfig.spell_engine.title": "주문 엔진",
-
   "text.autoconfig.spell_engine.option.client.holdToCastChannelled": "채널링 주문은 누르고 시전",
   "text.autoconfig.spell_engine.option.client.holdToCastChannelled.@Tooltip": "이 설정은 채널링 주문에만 적용됩니다! 활성화 시, 키를 누르고 있는 동안 시전이 지속되며, 비활성화 시 키를 다시 눌러야 시전이 멈춥니다.",
   "text.autoconfig.spell_engine.option.client.holdToCastCharged": "충전 주문은 누르고 시전",
@@ -114,7 +106,6 @@
   "text.autoconfig.spell_engine.option.client.showSpellCastErrors.@Tooltip": "주문 시전 시도 실패에 대한 오류 메시지를 HUD에 표시합니다.",
   "text.autoconfig.spell_engine.option.client.shoulderSurfingAdaptiveWhileUse": "주문 시 어깨 서핑 적응형 커서",
   "text.autoconfig.spell_engine.option.client.shoulderSurfingAdaptiveWhileUse.@Tooltip": "주문 시전 아이템에 대해 주문 시전 중에만 어깨 서핑 적응형 커서를 허용합니다.",
-
   "gui.spell_engine.spell_binding": "주문 부여",
   "gui.spell_engine.spell_binding.title": "주문 부여",
   "block.spell_engine.spell_binding": "주문 부여대",
@@ -123,7 +114,6 @@
   "gui.spell_engine.spell_binding.no_more_slots": "주문 슬롯 없음",
   "gui.spell_engine.spell_binding.available": "주문 부여",
   "gui.spell_engine.spell_binding.level_req_fail": "레벨 요구 사항: %s",
-
   "advancements.rpg_series.root.title": "주문",
   "advancements.rpg_series.root.description": "마법 전투의 예술을 발견하세요!",
   "advancements.rpg_series.enchant_spell_infinity.title": "무료 에너지",
@@ -134,7 +124,6 @@
   "advancements.rpg_series.spellbinder.description": "적합한 마법 무기에 주문을 부여하세요",
   "advancements.rpg_series.classes.title": "당신의 길을 선택하세요",
   "advancements.rpg_series.classes.description": "주문 부여대를 방문하여 첫 번째 주문서를 만드세요!",
-
   "itemGroup.spell_engine.general": "주문",
   "item.spell_engine.scroll": "주문서",
   "item.spell_engine.scroll.table_hint": "주문 결속 탁자를 사용해 마법책에 부착 가능",
@@ -186,5 +175,31 @@
   "equipment_set.logic.bonus.count": "(%s) 세트 효과: ",
   "equipment_set.test.fire_power": "불타는 예복",
   "advancements.rpg_series.misc_items.title": "마법 아이템",
-  "advancements.rpg_series.misc_items.description": "주문 시전에 필수적인 다양한 아이템을 발견하세요!"
+  "advancements.rpg_series.misc_items.description": "주문 시전에 필수적인 다양한 아이템을 발견하세요!",
+  "item.spell_engine.spell_scroll": "주문 두루마리",
+  "item.spell_engine.spell_book": "주문서",
+  "spell.tooltip.choice.list.spell": "주문 선택:",
+  "spell.tooltip.choice.list.skill": "스킬 선택:",
+  "spell.tooltip.container.access.any": "스킬 사용 가능",
+  "spell.tooltip.container.list.passives": "패시브:",
+  "spell.tooltip.container.list.modifiers": "수정자:",
+  "spell.tooltip.summon.capabilities": "능력:",
+  "spell.tooltip.summon.melee": "근접 공격",
+  "spell.tooltip.cast_charge": "충전 시간: {duration}초",
+  "spell.tooltip.cast_charge.plural": "충전 시간: {duration}초",
+  "spell.tooltip.cast_channel": "채널링 시간: {duration}초",
+  "spell.tooltip.cast_channel.plural": "채널링 시간: {duration}초",
+  "effect.spell_engine.immobilize": "속박",
+  "effect.spell_engine.immobilize.description": "이동하거나 점프할 수 없습니다.",
+  "effect.spell_engine.bleed": "출혈",
+  "effect.spell_engine.bleed.description": "시간이 지남에 따라 체력을 잃으며, 이동 중에는 더 심해집니다.",
+  "effect.spell_engine.energy": "에너지",
+  "effect.spell_engine.energy.description": "들고 있는 무기가 에너지로 불타오릅니다.",
+  "gui.spell_engine.spell_binding.tier_conflict": "이미 이 등급의 다른 주문이 귀속되어 있습니다",
+  "gui.spell_engine.spell_binding.create": "생성",
+  "gui.spell_engine.spell_binding.unbind_dialog.title": "%s 귀속 해제",
+  "gui.spell_engine.spell_binding.unbind_dialog.subtitle": "정말 하시겠습니까?",
+  "gui.spell_engine.spell_binding.unbind_dialog.confirm": "귀속 해제",
+  "gui.spell_engine.spell_binding.unbind_dialog.cancel": "취소",
+  "gui.spell_engine.choose_for_item": "%s에 사용할 주문 선택"
 }

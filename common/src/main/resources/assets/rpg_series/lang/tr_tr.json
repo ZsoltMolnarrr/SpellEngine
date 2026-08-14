@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Yakındaki düşmanlara {damage} hasar veren bir dönüş saldırısı gerçekleştirir.",
+  "spell.rpg_series.cleave.name": "Yarma",
+  "spell.rpg_series.fan_of_knives.description": "Bıçaklarınızdan birkaçını koni şeklinde fırlatarak {damage} hasar verir ve araziden en fazla {bounce} kez sekerek devam eder.",
+  "spell.rpg_series.fan_of_knives.name": "Bıçak Yelpazesi",
+  "spell.rpg_series.flurry.description": "Basılı tutarak hızlı bir dizi vuruş gerçekleştirin ve aynı zamanda ivme kazanın.",
+  "spell.rpg_series.flurry.name": "Vuruş Fırtınası",
+  "spell.rpg_series.ground_slam.description": "Havaya sıçrayıp yere çakılarak yakındaki düşmanlara {damage} hasar verir.",
+  "spell.rpg_series.ground_slam.name": "Yer Darbesi",
+  "spell.rpg_series.impale.description": "Silahınızı ileri fırlatarak {damage} hasar verir ve güçlü bir geri tepme uygular. Fırlatma ne kadar uzun şarj edilirse, o kadar sert vurur ve o kadar uzağa uçar.",
+  "spell.rpg_series.impale.name": "Şişleme",
+  "spell.rpg_series.smash.description": "Güçlü bir geri tepmeyle vuruş yaparak hedefin kalkan ve eşya kullanımını devre dışı bırakır.",
+  "spell.rpg_series.smash.name": "Ezme",
+  "spell.rpg_series.swift_strikes.description": "Hızlı bir dizi vuruş gerçekleştirin.",
+  "spell.rpg_series.swift_strikes.name": "Hızlı Vuruşlar",
+  "spell.rpg_series.swipe.description": "Silahınızla ileri kayarak yolunuzdaki tüm düşmanlara vurun.",
+  "spell.rpg_series.swipe.name": "Savurma",
+  "spell.rpg_series.thrust.description": "Silahınızla ileri atılarak yolunuzdaki tüm düşmanlara vurun.",
+  "spell.rpg_series.thrust.name": "Hamle",
+  "spell.rpg_series.whirlwind.description": "Basılı tutarak dönün, yakındaki düşmanlara saniyede {damage} hasar verin.",
+  "spell.rpg_series.whirlwind.name": "Kasırga"
+}

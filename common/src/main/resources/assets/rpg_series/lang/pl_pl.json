@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Wykonuje obrotowy atak, zadając {damage} obrażeń pobliskim wrogom.",
+  "spell.rpg_series.cleave.name": "Rozłup",
+  "spell.rpg_series.fan_of_knives.description": "Rzuca kilka twoich ostrzy w stożku, zadając {damage} obrażeń, odbijając się od terenu do {bounce} razy.",
+  "spell.rpg_series.fan_of_knives.name": "Wachlarz Noży",
+  "spell.rpg_series.flurry.description": "Przytrzymaj, aby wyzwolić serię szybkich ciosów, jednocześnie zyskując rozpęd.",
+  "spell.rpg_series.flurry.name": "Nawałnica",
+  "spell.rpg_series.ground_slam.description": "Skacze w powietrze i uderza w ziemię, zadając {damage} obrażeń pobliskim wrogom.",
+  "spell.rpg_series.ground_slam.name": "Uderzenie o Ziemię",
+  "spell.rpg_series.impale.description": "Rzuca twoją broń do przodu, zadając {damage} obrażeń i potężne odrzucenie. Im dłużej ładowany jest rzut, tym mocniej trafia i tym dalej leci.",
+  "spell.rpg_series.impale.name": "Przebicie",
+  "spell.rpg_series.smash.description": "Zadaje cios z potężnym odrzuceniem, blokując użycie tarczy i przedmiotów przez cel.",
+  "spell.rpg_series.smash.name": "Roztrzaskanie",
+  "spell.rpg_series.swift_strikes.description": "Wyzwól serię szybkich ciosów.",
+  "spell.rpg_series.swift_strikes.name": "Szybkie Ciosy",
+  "spell.rpg_series.swipe.description": "Poślizgnij się do przodu z bronią, trafiając wszystkich wrogów na swojej drodze.",
+  "spell.rpg_series.swipe.name": "Zamach",
+  "spell.rpg_series.thrust.description": "Wypad do przodu z bronią, trafiając wszystkich wrogów na swojej drodze.",
+  "spell.rpg_series.thrust.name": "Pchnięcie",
+  "spell.rpg_series.whirlwind.description": "Przytrzymaj, aby zawirować, zadając {damage} obrażeń na sekundę pobliskim wrogom.",
+  "spell.rpg_series.whirlwind.name": "Wichura"
+}

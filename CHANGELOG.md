@@ -10,6 +10,7 @@
 ## Functional changes
 
 - Fixed Spell Projectile velocity change upon bounce from terrain
+- Fully translated content, now supporting 20 languages
 
 ## Notable setup changes
 

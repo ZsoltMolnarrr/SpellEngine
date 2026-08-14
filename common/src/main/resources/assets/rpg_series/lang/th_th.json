@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "โจมตีแบบหมุนตัว สร้างดาเมจ {damage} ให้ศัตรูที่อยู่ใกล้เคียง",
+  "spell.rpg_series.cleave.name": "ฟันหมุน",
+  "spell.rpg_series.fan_of_knives.description": "ขว้างมีดของคุณหลายเล่มเป็นรูปกรวย สร้างดาเมจ {damage} และกระดอนจากภูมิประเทศได้สูงสุด {bounce} ครั้ง",
+  "spell.rpg_series.fan_of_knives.name": "พัดมีด",
+  "spell.rpg_series.flurry.description": "กดค้างเพื่อปล่อยชุดโจมตีที่รวดเร็ว พร้อมเพิ่มโมเมนตัมไปด้วย",
+  "spell.rpg_series.flurry.name": "รัวโจมตี",
+  "spell.rpg_series.ground_slam.description": "กระโดดขึ้นไปในอากาศแล้วทุ่มลงพื้น สร้างดาเมจ {damage} ให้ศัตรูที่อยู่ใกล้เคียง",
+  "spell.rpg_series.ground_slam.name": "ทุ่มพื้น",
+  "spell.rpg_series.impale.description": "ขว้างอาวุธของคุณไปข้างหน้า สร้างดาเมจ {damage} พร้อมแรงผลักที่รุนแรง ยิ่งชาร์จการขว้างนานเท่าไร แรงกระแทกก็ยิ่งมากและระยะการบินก็ยิ่งไกลขึ้น",
+  "spell.rpg_series.impale.name": "เสียบทะลุ",
+  "spell.rpg_series.smash.description": "โจมตีด้วยแรงผลักที่รุนแรง ทำให้เป้าหมายไม่สามารถใช้โล่หรือไอเทมได้ชั่วคราว",
+  "spell.rpg_series.smash.name": "ทุบกระหน่ำ",
+  "spell.rpg_series.swift_strikes.description": "ปล่อยชุดโจมตีที่รวดเร็ว",
+  "spell.rpg_series.swift_strikes.name": "โจมตีรวดเร็ว",
+  "spell.rpg_series.swipe.description": "เลื่อนตัวไปข้างหน้าพร้อมอาวุธ โจมตีศัตรูทุกตัวตลอดเส้นทาง",
+  "spell.rpg_series.swipe.name": "ปาดฟัน",
+  "spell.rpg_series.thrust.description": "พุ่งตัวไปข้างหน้าพร้อมอาวุธ โจมตีศัตรูทุกตัวตลอดเส้นทาง",
+  "spell.rpg_series.thrust.name": "พุ่งแทง",
+  "spell.rpg_series.whirlwind.description": "กดค้างเพื่อหมุนตัวรอบทิศทาง สร้างดาเมจ {damage} ต่อวินาที ให้ศัตรูที่อยู่ใกล้เคียง",
+  "spell.rpg_series.whirlwind.name": "พายุหมุน"
+}

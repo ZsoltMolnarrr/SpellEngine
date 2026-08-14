@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Выполняет атаку с разворотом, нанося {damage} урона находящимся рядом врагам.",
+  "spell.rpg_series.cleave.name": "Раскол",
+  "spell.rpg_series.fan_of_knives.description": "Веером бросает несколько ваших клинков, нанося {damage} урона, отскакивая от поверхностей до {bounce} раз.",
+  "spell.rpg_series.fan_of_knives.name": "Веер ножей",
+  "spell.rpg_series.flurry.description": "Удерживайте, чтобы обрушить серию быстрых ударов, попутно набирая инерцию.",
+  "spell.rpg_series.flurry.name": "Шквал",
+  "spell.rpg_series.ground_slam.description": "Подпрыгивает в воздух и обрушивается на землю, нанося {damage} урона находящимся рядом врагам.",
+  "spell.rpg_series.ground_slam.name": "Удар о землю",
+  "spell.rpg_series.impale.description": "Бросает ваше оружие вперёд, нанося {damage} урона и мощный отброс. Чем дольше заряжен бросок, тем сильнее удар и дальше полёт.",
+  "spell.rpg_series.impale.name": "Пронзание",
+  "spell.rpg_series.smash.description": "Наносит удар с мощным отбросом, отключая использование щита и предметов у цели.",
+  "spell.rpg_series.smash.name": "Сокрушение",
+  "spell.rpg_series.swift_strikes.description": "Обрушивает серию быстрых ударов.",
+  "spell.rpg_series.swift_strikes.name": "Быстрые удары",
+  "spell.rpg_series.swipe.description": "Скользит вперёд с оружием, поражая всех врагов на своём пути.",
+  "spell.rpg_series.swipe.name": "Взмах",
+  "spell.rpg_series.thrust.description": "Делает выпад вперёд с оружием, поражая всех врагов на своём пути.",
+  "spell.rpg_series.thrust.name": "Выпад",
+  "spell.rpg_series.whirlwind.description": "Удерживайте, чтобы вращаться, нанося {damage} урона в секунду находящимся рядом врагам.",
+  "spell.rpg_series.whirlwind.name": "Смерч"
+}

@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Effectue une attaque tournoyante, infligeant {damage} points de dégâts aux ennemis proches.",
+  "spell.rpg_series.cleave.name": "Pourfendre",
+  "spell.rpg_series.fan_of_knives.description": "Lance plusieurs de vos lames en cône, infligeant {damage} points de dégâts, rebondissant sur le terrain jusqu’à {bounce} fois.",
+  "spell.rpg_series.fan_of_knives.name": "Pluie de lames",
+  "spell.rpg_series.flurry.description": "Maintenez pour déchaîner une rapide série de coups, tout en gagnant en élan.",
+  "spell.rpg_series.flurry.name": "Rafale",
+  "spell.rpg_series.ground_slam.description": "Bondit dans les airs et s’écrase au sol, infligeant {damage} points de dégâts aux ennemis proches.",
+  "spell.rpg_series.ground_slam.name": "Fracas au sol",
+  "spell.rpg_series.impale.description": "Lance votre arme vers l’avant, infligeant {damage} points de dégâts et une puissante repoussée. Plus le lancer est chargé longtemps, plus il frappe fort et plus il vole loin.",
+  "spell.rpg_series.impale.name": "Empalement",
+  "spell.rpg_series.smash.description": "Assène un coup avec une puissante repoussée, empêchant la cible d’utiliser bouclier et objets.",
+  "spell.rpg_series.smash.name": "Fracasser",
+  "spell.rpg_series.swift_strikes.description": "Déchaîne une rapide série de coups.",
+  "spell.rpg_series.swift_strikes.name": "Frappes rapides",
+  "spell.rpg_series.swipe.description": "Glissez vers l’avant avec votre arme, frappant tous les ennemis sur votre chemin.",
+  "spell.rpg_series.swipe.name": "Balayage",
+  "spell.rpg_series.thrust.description": "Élancez-vous vers l’avant avec votre arme, frappant tous les ennemis sur votre chemin.",
+  "spell.rpg_series.thrust.name": "Estoc",
+  "spell.rpg_series.whirlwind.description": "Maintenez pour tournoyer sur vous-même, infligeant {damage} points de dégâts par seconde aux ennemis proches.",
+  "spell.rpg_series.whirlwind.name": "Tourbillon"
+}

@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "회전 공격을 하여 주변의 적에게 {damage}의 피해를 입힙니다.",
+  "spell.rpg_series.cleave.name": "쪼개기",
+  "spell.rpg_series.fan_of_knives.description": "부채꼴로 여러 개의 칼날을 던져 {damage}의 피해를 입히며, 지형에 최대 {bounce}회까지 튕겨나갑니다.",
+  "spell.rpg_series.fan_of_knives.name": "칼날 부채",
+  "spell.rpg_series.flurry.description": "누르고 있으면 빠른 연속 공격을 가하며, 동시에 가속도를 얻습니다.",
+  "spell.rpg_series.flurry.name": "연타",
+  "spell.rpg_series.ground_slam.description": "공중으로 도약한 뒤 바닥에 내리쳐 주변의 적에게 {damage}의 피해를 입힙니다.",
+  "spell.rpg_series.ground_slam.name": "지면 강타",
+  "spell.rpg_series.impale.description": "무기를 앞으로 던져 {damage}의 피해와 강력한 넉백을 입힙니다. 오래 충전할수록 더 강하게 적중하고 더 멀리 날아갑니다.",
+  "spell.rpg_series.impale.name": "관통",
+  "spell.rpg_series.smash.description": "강력한 넉백을 동반한 타격을 가해 대상의 방패 및 아이템 사용을 무력화합니다.",
+  "spell.rpg_series.smash.name": "강타",
+  "spell.rpg_series.swift_strikes.description": "빠른 연속 공격을 가합니다.",
+  "spell.rpg_series.swift_strikes.name": "신속한 연타",
+  "spell.rpg_series.swipe.description": "무기를 들고 앞으로 미끄러지듯 돌진하여 경로상의 모든 적을 타격합니다.",
+  "spell.rpg_series.swipe.name": "휩쓸기",
+  "spell.rpg_series.thrust.description": "무기를 들고 앞으로 돌진하여 경로상의 모든 적을 타격합니다.",
+  "spell.rpg_series.thrust.name": "찌르기",
+  "spell.rpg_series.whirlwind.description": "누르고 있으면 회전하며 주변의 적에게 초당 {damage}의 피해를 입힙니다.",
+  "spell.rpg_series.whirlwind.name": "회오리베기"
+}

@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Виконує атаку з обертанням, завдаючи {damage} шкоди ворогам поблизу.",
+  "spell.rpg_series.cleave.name": "Розкол",
+  "spell.rpg_series.fan_of_knives.description": "Кидає кілька ваших клинків віялом, завдаючи {damage} шкоди й відбиваючись від перешкод до {bounce} разів.",
+  "spell.rpg_series.fan_of_knives.name": "Віяло ножів",
+  "spell.rpg_series.flurry.description": "Утримуйте, щоб завдати серію швидких ударів, водночас набираючи інерцію.",
+  "spell.rpg_series.flurry.name": "Шквал",
+  "spell.rpg_series.ground_slam.description": "Стрибає у повітря та вдаряє об землю, завдаючи {damage} шкоди ворогам поблизу.",
+  "spell.rpg_series.ground_slam.name": "Удар об землю",
+  "spell.rpg_series.impale.description": "Кидає вашу зброю вперед, завдаючи {damage} шкоди та потужного відкидання. Що довше заряджається кидок, то сильніший удар і то далі він летить.",
+  "spell.rpg_series.impale.name": "Проштрикнення",
+  "spell.rpg_series.smash.description": "Завдає удару з потужним відкиданням, позбавляючи ціль можливості використовувати щит і предмети.",
+  "spell.rpg_series.smash.name": "Розтрощення",
+  "spell.rpg_series.swift_strikes.description": "Завдайте серію швидких ударів.",
+  "spell.rpg_series.swift_strikes.name": "Швидкі удари",
+  "spell.rpg_series.swipe.description": "Ковзніть вперед зі зброєю, вражаючи всіх ворогів на своєму шляху.",
+  "spell.rpg_series.swipe.name": "Змах",
+  "spell.rpg_series.thrust.description": "Зробіть випад вперед зі зброєю, вражаючи всіх ворогів на своєму шляху.",
+  "spell.rpg_series.thrust.name": "Випад",
+  "spell.rpg_series.whirlwind.description": "Утримуйте, щоб обертатися, завдаючи {damage} шкоди за секунду ворогам поблизу.",
+  "spell.rpg_series.whirlwind.name": "Вихор"
+}
