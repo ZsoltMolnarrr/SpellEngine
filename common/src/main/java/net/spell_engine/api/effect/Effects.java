@@ -5,8 +5,8 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
-import net.spell_engine.api.config.ConfigUtil;
-import net.spell_engine.api.config.EffectConfig;
+import net.spell_engine.rpg_series.config.ConfigUtil;
+import net.spell_engine.rpg_series.config.EffectConfig;
 
 import java.util.List;
 import java.util.Map;

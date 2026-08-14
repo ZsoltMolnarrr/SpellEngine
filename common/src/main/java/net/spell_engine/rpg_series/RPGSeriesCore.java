@@ -6,7 +6,7 @@ import net.spell_engine.api.item.weapon.StaffItem;
 import net.spell_engine.api.util.TriState;
 import net.spell_engine.rpg_series.loot.LootConfig;
 import net.spell_engine.rpg_series.loot.LootHelper;
-import net.spell_engine.rpg_series.config.Defaults;
+import net.spell_engine.rpg_series.config.LootDefaults;
 import net.tiny_config.ConfigManager;
 
 import java.util.HashMap;
@@ -16,7 +16,7 @@ public class RPGSeriesCore {
     public static final String NAMESPACE = "rpg_series";
 
     public static ConfigManager<LootConfig> lootEquipmentConfig = new ConfigManager<>
-            ("loot_equipment_v2", Defaults.itemLootConfig)
+            ("loot_equipment_v2", LootDefaults.itemLootConfig)
             .builder()
             .setDirectory(NAMESPACE)
             .sanitize(true)
@@ -24,7 +24,7 @@ public class RPGSeriesCore {
             .build();
 
     public static ConfigManager<LootConfig> lootScrollsConfig = new ConfigManager<>
-            ("loot_scrolls_v2", Defaults.scrollLootConfig)
+            ("loot_scrolls_v2", LootDefaults.scrollLootConfig)
             .builder()
             .setDirectory(NAMESPACE)
             .sanitize(true)

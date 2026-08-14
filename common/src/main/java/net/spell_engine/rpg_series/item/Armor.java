@@ -14,7 +14,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
-import net.spell_engine.api.config.ArmorSetConfig;
+import net.spell_engine.rpg_series.config.ArmorSetConfig;
 import net.spell_engine.mixin.item.ArmorMaterialLayerAccessor;
 import org.jetbrains.annotations.Nullable;
 

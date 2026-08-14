@@ -1,4 +1,4 @@
-package net.spell_engine.api.config;
+package net.spell_engine.rpg_series.config;
 
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;

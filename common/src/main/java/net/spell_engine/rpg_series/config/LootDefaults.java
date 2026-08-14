@@ -5,7 +5,7 @@ import net.spell_engine.rpg_series.tags.RPGSeriesItemTags;
 
 import java.util.*;
 
-public class Defaults {
+public class LootDefaults {
 
     public final static LootConfig itemLootConfig;
     public final static LootConfig scrollLootConfig;

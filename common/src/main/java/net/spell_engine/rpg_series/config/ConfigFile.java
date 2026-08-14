@@ -1,4 +1,4 @@
-package net.spell_engine.api.config;
+package net.spell_engine.rpg_series.config;
 
 import java.util.LinkedHashMap;
 

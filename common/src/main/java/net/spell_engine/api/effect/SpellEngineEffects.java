@@ -5,10 +5,9 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.config.AttributeModifier;
-import net.spell_engine.api.config.EffectConfig;
+import net.spell_engine.rpg_series.config.AttributeModifier;
+import net.spell_engine.rpg_series.config.EffectConfig;
 import net.spell_engine.client.util.Color;
-import net.spell_power.api.SpellSchools;
 
 import java.util.ArrayList;
 import java.util.HashMap;
