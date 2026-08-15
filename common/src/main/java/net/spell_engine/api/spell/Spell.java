@@ -867,7 +867,7 @@ public class Spell {
             /// Declarative definition of a spell-summoned entity (or formation of them): the entity
             /// type to spawn, its full runtime {@link SummonBehaviour}, and where/how it is placed
             /// (reusing {@link EntityPlacement}). Spawned relative to the caster — see the SUMMON
-            /// impact handling in `SpellHelper`.
+            /// impact handling in `SpellImpacts`.
             ///
             /// Unlike {@link Spawn}, time-to-live is not a separate field — it is part of
             /// {@link SummonBehaviour#lifespan}.

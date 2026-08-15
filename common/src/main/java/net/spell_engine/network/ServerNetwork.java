@@ -8,7 +8,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.casting.SpellCastSyncHelper;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.melee.Melee;
@@ -16,6 +15,8 @@ import net.spell_engine.internals.target.SpellTarget;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.spell_engine.internals.SpellExecution;
+import net.spell_engine.internals.casting.SpellCasting;
 
 /// Server-side packet handling. This class is loader-agnostic: it holds only the handler
 /// bodies. Payload registration, configuration tasks and the lifecycle event wiring live in
@@ -38,7 +39,7 @@ public class ServerNetwork {
             if (packet.spellId() == null) {
                 SpellCastSyncHelper.clearCasting(player);
             } else {
-                SpellHelper.startCasting(player, packet.spellId(), packet.speed(), packet.length());
+                SpellCasting.start(player, packet.spellId(), packet.speed(), packet.length());
             }
         });
     }
@@ -66,7 +67,7 @@ public class ServerNetwork {
                 }
             }
             var target = new SpellTarget.SearchResult(targets, packet.location());
-            SpellHelper.performSpell(world, player, spellEntry.get(), target, packet.action(), packet.progress());
+            SpellExecution.performSpell(world, player, spellEntry.get(), target, packet.action(), packet.progress());
         });
     }
 

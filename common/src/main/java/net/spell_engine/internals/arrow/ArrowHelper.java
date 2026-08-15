@@ -14,7 +14,6 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.utils.SoundHelper;
 import net.spell_engine.utils.WorldScheduler;
@@ -24,13 +23,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.function.Supplier;
+import net.spell_engine.internals.SpellExecution;
 
 public class ArrowHelper {
-    public static void shootArrow(World world, LivingEntity shooter, RegistryEntry<Spell> spellEntry, SpellHelper.ImpactContext context) {
+    public static void shootArrow(World world, LivingEntity shooter, RegistryEntry<Spell> spellEntry, SpellExecution.ImpactContext context) {
         shootArrow(world, shooter, spellEntry, context, 0);
     }
 
-    public static void shootArrow(World world, LivingEntity shooter, RegistryEntry<Spell> spellEntry, SpellHelper.ImpactContext context, int sequenceIndex) {
+    public static void shootArrow(World world, LivingEntity shooter, RegistryEntry<Spell> spellEntry, SpellExecution.ImpactContext context, int sequenceIndex) {
         var spell = spellEntry.value();
         var shoot_arrow = spell.deliver.shoot_arrow;
         var weaponStack = shooter.getMainHandStack();

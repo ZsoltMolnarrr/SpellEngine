@@ -23,7 +23,6 @@ import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterEntity;
@@ -41,6 +40,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import net.spell_engine.internals.SpellExecution;
+import net.spell_engine.internals.impact.SpellImpacts;
+import net.spell_engine.internals.SpellParameters;
 
 public class Melee {
 
@@ -72,7 +74,7 @@ public class Melee {
         /// always `1` for every other cast type. Travels with the attack through the client round
         /// trip, so overlapping deliveries cannot mix up each other's charge.
         ///
-        /// Same unweighted value `SpellHelper.ImpactContext` carries, under the same name — the
+        /// Same unweighted value `SpellExecution.ImpactContext` carries, under the same name — the
         /// output multiplier and the charge bonus are both rebuilt from it by `resolveCharge`.
         float charge
     ) {
@@ -174,7 +176,7 @@ public class Melee {
         // Must stay in step with the server side distance guard in `performAttackAgainstTargets`,
         // which resolves the same range: a hitbox grown by `range_add` here but not there would
         // find targets the server then rejects.
-        var range = spell.isPresent() ? SpellHelper.getRange(caster, spell.get(), chargeModifier) : (float)caster.getEntityInteractionRange();
+        var range = spell.isPresent() ? SpellParameters.getRange(caster, spell.get(), chargeModifier) : (float)caster.getEntityInteractionRange();
 
         var momentumBonus = 0F;
         var slipBonus = 0F;
@@ -202,17 +204,17 @@ public class Melee {
         );
     }
 
-    /// Rebuilds what `SpellHelper.performSpell` resolved when the cast was released, from the curved
+    /// Rebuilds what `SpellExecution.performSpell` resolved when the cast was released, from the curved
     /// ratio the attack carries. Both are pure functions of static spell data, so the return leg
     /// reconstructs them rather than transporting them.
     private record ResolvedCharge(float outputMultiplier, @Nullable Spell.Modifier modifier) {
         static final ResolvedCharge NONE = new ResolvedCharge(1F, null);
     }
     private static ResolvedCharge resolveCharge(@Nullable RegistryEntry<Spell> spellEntry, float curvedRatio) {
-        var charge = SpellHelper.chargeConfigOf(spellEntry);
+        var charge = SpellParameters.chargeConfigOf(spellEntry);
         if (charge == null) { return ResolvedCharge.NONE; }
         return new ResolvedCharge(
-                SpellHelper.chargeOutputMultiplier(spellEntry, curvedRatio),
+                SpellParameters.chargeOutputMultiplier(spellEntry, curvedRatio),
                 SpellModifiers.scaledBy(charge.bonus, curvedRatio));
     }
 
@@ -362,7 +364,7 @@ public class Melee {
                 impactSound = attack.impact_sound;
                 impactSoundLimit = attack.impact_sound_cap > 0 ? attack.impact_sound_cap : 999;
             }
-            var attackRange = spellEntry != null ? SpellHelper.getRange(player, spellEntry, resolvedCharge.modifier()) : (float)player.getEntityInteractionRange();
+            var attackRange = spellEntry != null ? SpellParameters.getRange(player, spellEntry, resolvedCharge.modifier()) : (float)player.getEntityInteractionRange();
 
             for (int targetId : targetIds) {
                 var target = world.getEntityById(targetId);
@@ -392,11 +394,11 @@ public class Melee {
             }
 
             if (!targets.isEmpty()) {
-                var impactContext = new SpellHelper.ImpactContext()
+                var impactContext = new SpellExecution.ImpactContext()
                         .position(player.getPos())
                         .charge(curvedRatio)
                         .chargeModifier(resolvedCharge.modifier());
-                SpellHelper.meleeImpact(player, targets, spellEntry, impactContext);
+                SpellImpacts.meleeImpact(player, targets, spellEntry, impactContext);
             }
             ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(lastAttackTime);
         } catch (Exception e) {

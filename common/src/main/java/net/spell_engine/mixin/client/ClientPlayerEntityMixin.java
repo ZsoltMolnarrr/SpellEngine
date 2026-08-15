@@ -4,8 +4,6 @@ import net.spell_engine.Platform;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -15,15 +13,12 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.PlatformClient;
-import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.client.input.SpellHotbar;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.internals.melee.Melee;
-import net.spell_engine.internals.melee.OrientedBoundingBox;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
@@ -38,6 +33,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import net.spell_engine.internals.casting.SpellCasting;
+import net.spell_engine.internals.SpellParameters;
 
 @Mixin(ClientPlayerEntity.class)
 public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
@@ -113,13 +110,13 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         if (EntityActionsAllowed.isImpaired(caster, EntityActionsAllowed.Player.CAST_SPELL, true)) {
             return SpellCast.Attempt.none();
         }
-        var attempt = SpellHelper.attemptCasting(caster, itemStack, spellId);
+        var attempt = SpellCasting.attempt(caster, itemStack, spellId);
         if (attempt.isSuccess()) {
             if (spellCastProcess != null) {
                 // Cancel previous spell
                 cancelSpellCast(false);
             }
-            var instant = SpellHelper.isInstantCast(spellEntry, caster);
+            var instant = SpellParameters.isInstantCast(spellEntry, caster);
             if (instant) {
                 // Release instant spell
                 var process = new SpellCast.Process(caster, spellEntry, itemStack.getItem(), 1, 0, caster.getWorld().getTime());
@@ -128,7 +125,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
                 applyInstantGlobalCooldown();
             } else {
                 // Start casting
-                var details = SpellHelper.getCastTimeDetails(caster, spell);
+                var details = SpellParameters.getCastTimeDetails(caster, spell);
                 setSpellCastProcess(new SpellCast.Process(caster, spellEntry, itemStack.getItem(), details.speed(), details.length(), caster.getWorld().getTime()), true);
             }
         }
@@ -166,7 +163,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
     public void cancelSpellCast(boolean syncProcess) {
         var process = spellCastProcess;
         if (process != null) {
-            if (SpellHelper.isChanneled(process.spell().value())) {
+            if (SpellParameters.isChanneled(process.spell().value())) {
                 var player = player();
                 var progress = process.progress(player.getWorld().getTime());
                 Platform.util().networkC2S_Send(new Packets.SpellRequest(SpellCast.Action.RELEASE, process.id(), progress.ratio(), new int[]{}, null));
@@ -208,7 +205,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
             var cast = spell.active.cast;
             spellTarget = SpellTarget.findTargets(player, process.spell(), spellTarget, SpellEngineClient.config.filterInvalidTargets);
 
-            if (SpellHelper.isChanneled(spell)) {
+            if (SpellParameters.isChanneled(spell)) {
                 // System.out.println("Channeling tick: " + process.spellCastTicksSoFar(player.getWorld().getTime()) + " ticks, isDue: " + process.isDue(player.getWorld().getTime()));
                 if (process.isDue(player.getWorld().getTime())) {
                     process.markDue();

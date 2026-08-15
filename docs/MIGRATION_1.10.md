@@ -4,8 +4,9 @@
 **breaking with no compatibility shim**: old fields are deleted, not deprecated. Existing
 spell JSON and Java authoring must be updated.
 
-It also **relocates a non-spell package** — equipment config moves out of `api.*` — which is a
-compile-only break for downstream mods (§6).
+It also **relocates a non-spell package** — equipment config moves out of `api.*` — and
+**decomposes `internals.SpellHelper`** into per-stage classes. Both are compile-only breaks for
+downstream mods (§6).
 
 Everything else in the spell API is unchanged.
 
@@ -306,6 +307,37 @@ This is the template for every package relocation this line ships, not a one-off
 4. **Verify by compiling** each consumer — a move has no runtime or data surface, so if it
    compiles, it is done.
 
+### `SpellHelper` is decomposed
+
+`internals.SpellHelper` (2500+ lines) no longer exists. Its contents were split along the
+execution pipeline — and unlike the relocations above, **a few symbols were renamed in the
+process**, so this is a lookup-table fix, not a blind import rewrite. Behaviour is unchanged.
+
+The map below covers every public symbol. Packages are relative to `net.spell_engine.internals`;
+`SpellExecution` (the execution entry points + shared types, with a flow-map doc worth reading)
+sits at that root.
+
+| Was `SpellHelper.…` | Now |
+|---|---|
+| `ImpactContext`, `DeliveryTarget`, `DeliveryCompletion` | `SpellExecution.` same names |
+| `TargetConditionResult` | `SpellExecution.ConditionResult` |
+| `performSpell`, `targetAndPerformSpell` | `SpellExecution.` same names |
+| `resolveImpactPower` / `clampedPower` / `blendedPower` | `SpellExecution.Power.resolve` / `.clamped` / `.blended` |
+| `attemptCasting`, `startCasting` | `casting.SpellCasting.attempt`, `.start` |
+| `getRange`, `isChanneled`, `isInstant`, `isInstantCast`, `getCastDuration`, `getCastTimeDetails`, `getCooldownDuration`, `channelTicks`, `channelValueMultiplier`, `hasteAffectedValue`, `chargeConfigOf`, `chargeOutputMultiplier` | `SpellParameters.` same names |
+| `performImpacts`, `projectileImpact`, `arrowImpact`, `meleeImpact`, `fallImpact`, `lookupAndPerformAreaImpact`, `modifyCooldowns`, `evaluateImpactConditions`, `underApplyLimit` | `impact.SpellImpacts.` same names |
+| `estimate`, `EstimatedValue`, `EstimatedOutput` | `impact.SpellEstimation.` same names |
+| `focusMode`, `impactIntent`, `impactIntents`, `deliveryIntent` | `target.SpellIntents.` same names |
+| `deliver` | `delivery.SpellDelivery.deliver` |
+| `shootProjectile`, `fallProjectile` | `delivery.ProjectileLauncher.` same names |
+| `placeCloud` | `delivery.CloudPlacer.placeCloud` |
+| `launchPoint`, `launchHeight`, `launchPointOffsetDefault` | `delivery.LaunchGeometry.` same names |
+| `applyEntityPlacement` | `EntityPlacements.applyEntityPlacement` |
+| `imposeCooldown` | `cost.SpellCooldowns.imposeCooldown` |
+
+Two pure package moves accompany the split: `internals.Ammo` and `internals.SpellCooldownManager`
+both moved into `internals.cost` (classes unchanged — the §6 recipe applies).
+
 ---
 
 ## 7. Migration checklist
@@ -324,7 +356,9 @@ This is the template for every package relocation this line ships, not a one-off
    `scale_with = RANGE`, and **reset their `scale` to 1**.
 6. **Legacy models / channelling** — see [other removals](#5-other-removals-in-110).
 7. **Package imports** — rewrite `net.spell_engine.api.config.*` imports to
-   `net.spell_engine.rpg_series.config.*`, then bump `spell_engine_version`. See
+   `net.spell_engine.rpg_series.config.*`, and fix any `SpellHelper.*` reference per the
+   [symbol map](#spellhelper-is-decomposed) (most commonly `SpellHelper.ImpactContext` →
+   `SpellExecution.ImpactContext`). Then bump `spell_engine_version`. See
    [package relocations](#6-package-relocations).
 8. **Rebuild and re-run datagen**, then diff the generated JSON. The generated files are the
    real contract; a field that silently stopped serialising shows up there.

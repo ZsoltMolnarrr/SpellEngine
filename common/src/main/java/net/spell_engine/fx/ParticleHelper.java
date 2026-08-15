@@ -10,7 +10,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.fx.ParticleGroup;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.network.Packets;
 import net.spell_engine.utils.TargetHelper;
 import net.spell_engine.utils.VectorHelper;
@@ -20,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import net.spell_engine.internals.delivery.LaunchGeometry;
 
 /// Spawns and broadcasts [ParticleGroup]s.
 ///
@@ -272,7 +272,7 @@ public class ParticleHelper {
             }
             case LAUNCH_POINT -> {
                 if (entity instanceof LivingEntity livingEntity) {
-                    return SpellHelper.launchPoint(livingEntity);
+                    return LaunchGeometry.launchPoint(livingEntity);
                 } else {
                     return entity.getPos().add(0, entity.getHeight() * 0.5F, 0);
                 }

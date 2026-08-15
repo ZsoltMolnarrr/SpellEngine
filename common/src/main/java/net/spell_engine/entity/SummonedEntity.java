@@ -11,7 +11,6 @@ import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
-import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -25,7 +24,6 @@ import net.minecraft.entity.passive.GolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -34,7 +32,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import net.spell_engine.api.entity.TwoWayCollisionChecker;
 import net.spell_engine.api.spell.fx.Fx;
-import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.summon.AttributeScaling;
@@ -44,19 +41,18 @@ import net.spell_engine.api.spell.summon.SummonedEntityConfig;
 import net.spell_engine.entity.goal.*;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
-import net.spell_engine.internals.SpellCooldownManager;
-import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.cost.SpellCooldownManager;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.internals.target.EntityRelation;
 import net.spell_engine.internals.target.EntityRelations;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import net.spell_engine.internals.SpellParameters;
 
 public abstract class SummonedEntity extends GolemEntity implements SpellSummoned, Tameable {
 
@@ -699,7 +695,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     }
 
     /// Largest effective range across all configured actions: spell effective ranges
-    /// (`SpellHelper.getRange` × the action's `range.max` fraction) and melee reach
+    /// (`SpellParameters.getRange` × the action's `range.max` fraction) and melee reach
     /// (`max_range` scaled by the entity's size). 0 when no action yields a positive range.
     private double maximumActionRange() {
         if (behaviour == null) return 0;
@@ -725,7 +721,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         var entry = SpellRegistry.from(getWorld()).getEntry(Identifier.of(spell.spell_id)).orElse(null);
         if (entry == null) return 0;
         // Effective range folds in caster modifiers; range.max is the action's engagement edge.
-        return SpellHelper.getRange(this, entry) * spell.range.max;
+        return SpellParameters.getRange(this, entry) * spell.range.max;
     }
 
     /// True if the entity currently has a live target. Used by passive navigation goals

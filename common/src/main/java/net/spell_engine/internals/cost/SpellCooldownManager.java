@@ -1,4 +1,4 @@
-package net.spell_engine.internals;
+package net.spell_engine.internals.cost;
 import net.spell_engine.Platform;
 
 import com.google.common.collect.Maps;

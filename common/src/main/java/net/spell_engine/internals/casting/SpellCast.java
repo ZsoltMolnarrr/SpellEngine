@@ -7,11 +7,11 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
-import net.spell_engine.internals.Ammo;
-import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.cost.Ammo;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import net.spell_engine.internals.SpellParameters;
 
 public class SpellCast {
     public record Attempt(Result result,
@@ -54,8 +54,8 @@ public class SpellCast {
     public record Process(RegistryEntry<Spell> spell, Item item, float speed, int length, long startedAt, TickHolder tickHolder) {
         public Process(LivingEntity caster, RegistryEntry<Spell> spell, Item item, float speed, int length, long startedAt) {
             this(spell, item, speed, length, startedAt, new TickHolder());
-            if (SpellHelper.isChanneled(spell.value())) {
-                var channelCount = SpellHelper.channelTicks(caster, spell);
+            if (SpellParameters.isChanneled(spell.value())) {
+                var channelCount = SpellParameters.channelTicks(caster, spell);
                 var interval = channelInterval(caster);
                 var offset = -interval * 0.5F;
                 for (int i = 1; i <= channelCount; i++) {
@@ -113,7 +113,7 @@ public class SpellCast {
         public record SyncFormat(String i, float s, int l) { }
 
         public float channelInterval(LivingEntity caster) {
-            var ticks = SpellHelper.channelTicks(caster, spell());
+            var ticks = SpellParameters.channelTicks(caster, spell());
             if (ticks > 0) {
                 return length / (float)ticks;
             } else {
@@ -149,7 +149,7 @@ public class SpellCast {
                 if (spell.active.cast.duration <= 0) {
                     return INSTANT;
                 }
-                if (SpellHelper.isChanneled(spell)) {
+                if (SpellParameters.isChanneled(spell)) {
                     return CHANNEL;
                 }
                 if (spell.active.cast.type == Spell.Active.Cast.Type.CHARGE) {

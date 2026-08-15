@@ -21,7 +21,6 @@ import net.spell_engine.client.util.Rect;
 import net.spell_engine.client.util.SpellRender;
 import net.spell_engine.client.util.TextureFile;
 import net.spell_engine.config.HudConfig;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.mixin.client.control.KeybindingAccessor;
 import org.jetbrains.annotations.Nullable;
@@ -30,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+import net.spell_engine.internals.SpellParameters;
 
 public class HudRenderHelper {
 
@@ -97,7 +97,7 @@ public class HudRenderHelper {
                         spellCast.process().length(),
                         SpellRender.iconTexture(spellCast.process().id()),
                         true,
-                        SpellHelper.isChanneled(spellCast.process().spell().value())
+                        SpellParameters.isChanneled(spellCast.process().spell().value())
                 );
             }
 

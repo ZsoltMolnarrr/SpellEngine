@@ -9,7 +9,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellTriggers;
 import net.spell_engine.internals.arrow.ArrowHelper;
 import net.spell_engine.internals.target.SpellTarget;
@@ -18,6 +17,8 @@ import net.spell_power.api.SpellPower;
 
 import java.util.HashMap;
 import java.util.Map;
+import net.spell_engine.internals.SpellExecution;
+import net.spell_engine.internals.impact.SpellImpacts;
 
 public class SpellStashHelper {
     public static void init() {
@@ -92,7 +93,7 @@ public class SpellStashHelper {
                             var aoeSource = event.aoeSource(trigger);
                             var spell = stash.spell().value();
                             var power = SpellPower.getSpellPower(spell.school, event.player);
-                            var impactContext = new SpellHelper.ImpactContext(1F, 1F, null, power, SpellTarget.FocusMode.DIRECT, 0);
+                            var impactContext = new SpellExecution.ImpactContext(1F, 1F, null, power, SpellTarget.FocusMode.DIRECT, 0);
                             if (target != null) {
                                 impactContext = impactContext.position(target.getPos());
                             } else if (aoeSource != null) {
@@ -100,7 +101,7 @@ public class SpellStashHelper {
                             } else {
                                 impactContext = impactContext.position(caster.getPos());
                             }
-                            SpellHelper.performImpacts(world, caster, target, aoeSource, spellEntry, spellEntry.value().impacts, impactContext);
+                            SpellImpacts.performImpacts(world, caster, target, aoeSource, spellEntry, spellEntry.value().impacts, impactContext);
                         }
                         case TRANSFER -> {
                             var arrow = event.arrow;

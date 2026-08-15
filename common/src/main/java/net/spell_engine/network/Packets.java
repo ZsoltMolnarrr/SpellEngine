@@ -12,7 +12,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.config.ServerConfig;
-import net.spell_engine.internals.SpellCooldownManager;
+import net.spell_engine.internals.cost.SpellCooldownManager;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.melee.Melee;
 import org.jetbrains.annotations.Nullable;

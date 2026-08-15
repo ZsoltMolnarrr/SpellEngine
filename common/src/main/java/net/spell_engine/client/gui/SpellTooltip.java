@@ -28,8 +28,7 @@ import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
-import net.spell_engine.internals.Ammo;
-import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.cost.Ammo;
 import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.spellbinding.spellchoice.SpellChoices;
@@ -42,6 +41,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import net.spell_engine.internals.impact.SpellEstimation;
+import net.spell_engine.internals.SpellParameters;
 
 public class SpellTooltip {
     // Token names live in the dependency-free `TooltipTokens`, statically imported above so they can
@@ -503,13 +504,13 @@ public class SpellTooltip {
         if (spell.tooltip().show_activation) {
             if (active != null) {
                 if (active.cast != null) {
-                    if (SpellHelper.isInstant(spell)) {
+                    if (SpellParameters.isInstant(spell)) {
                         lines.add(indentation(indentLevel)
                                 .append(Text.translatable("spell.tooltip.cast_instant"))
                                 .formatted(Formatting.GOLD));
                     } else if (active.cast.type == Spell.Active.Cast.Type.CHARGE) {
                         // CHARGE: the duration is the time to reach full charge (releasable earlier).
-                        var chargeDuration = SpellHelper.getCastDuration(player, spell, itemStack);
+                        var chargeDuration = SpellParameters.getCastDuration(player, spell, itemStack);
                         var chargeKey = keyWithPlural("spell.tooltip.cast_charge", chargeDuration);
                         var chargeText = I18n.translate(chargeKey).replace(placeholder(durationToken), formattedNumber(chargeDuration));
                         lines.add(indentation(indentLevel)
@@ -517,14 +518,14 @@ public class SpellTooltip {
                                 .formatted(Formatting.GOLD));
                     } else if (active.cast.type == Spell.Active.Cast.Type.CHANNEL) {
                         // CHANNEL: the duration is the span over which the repeated deliveries are spread.
-                        var channelDuration = SpellHelper.getCastDuration(player, spell, itemStack);
+                        var channelDuration = SpellParameters.getCastDuration(player, spell, itemStack);
                         var channelKey = keyWithPlural("spell.tooltip.cast_channel", channelDuration);
                         var channelText = I18n.translate(channelKey).replace(placeholder(durationToken), formattedNumber(channelDuration));
                         lines.add(indentation(indentLevel)
                                 .append(Text.literal(channelText))
                                 .formatted(Formatting.GOLD));
                     } else {
-                        var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
+                        var castDuration = SpellParameters.getCastDuration(player, spell, itemStack);
                         var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
                         var castTime = I18n.translate(castTimeKey).replace(placeholder(durationToken), formattedNumber(castDuration));
                         lines.add(indentation(indentLevel)
@@ -586,7 +587,7 @@ public class SpellTooltip {
                     .formatted(Formatting.GOLD));
         }
 
-        var cooldownDuration = SpellHelper.getCooldownDuration(player, spellEntry, itemStack);
+        var cooldownDuration = SpellParameters.getCooldownDuration(player, spellEntry, itemStack);
         if (cooldownDuration > 0) {
             var cooldownKey = keyWithPlural("spell.tooltip.cooldown", cooldownDuration);
             var cooldown = I18n.translate(cooldownKey).replace(placeholder(durationToken), formattedNumber(cooldownDuration));
@@ -694,7 +695,7 @@ public class SpellTooltip {
             }
         }
         if (!impacts.isEmpty()) {
-            var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);
+            var estimatedOutput = SpellEstimation.estimate(spell, player, itemStack);
             for (var impact : impacts) {
                 if (impact.chance != 1) {
                     addToken(impact_chance, percent(impact.chance), tokenReplacements);
@@ -719,7 +720,7 @@ public class SpellTooltip {
                         switch (teleport.mode) {
                             case FORWARD -> {
                                 var forward = teleport.forward;
-                                // Distance reflects the player's equipped spell modifiers (matches SpellHelper TELEPORT).
+                                // Distance reflects the player's equipped spell modifiers (matches SpellImpacts TELEPORT).
                                 var distance = forward.distance;
                                 for (var modifier : SpellModifiers.of(player, spellEntry)) {
                                     distance += modifier.teleport_distance_add;
@@ -738,7 +739,7 @@ public class SpellTooltip {
                         if (summon != null) {
                             var spawnCount = summon.spawn_count;
                             var groupCount = summon.group_count;
-                            // Counts reflect the player's equipped spell modifiers (matches SpellHelper.summon).
+                            // Counts reflect the player's equipped spell modifiers (matches SpellImpacts.summon).
                             for (var modifier : SpellModifiers.of(player, spellEntry)) {
                                 spawnCount += modifier.summon_spawn_count_add;
                                 groupCount += modifier.summon_group_count_add;
@@ -919,7 +920,7 @@ public class SpellTooltip {
         return 0;
     }
 
-    private static String replaceDamageTokens(String text, String token, List<SpellHelper.EstimatedValue> values) {
+    private static String replaceDamageTokens(String text, String token, List<SpellEstimation.EstimatedValue> values) {
         for (int i = 0; i < values.size(); ++i) {
             var range = values.get(i);
             var actualToken = TooltipTokens.placeholder(token, i, values.size());

@@ -1,4 +1,4 @@
-package net.spell_engine.internals;
+package net.spell_engine.internals.cost;
 
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;

@@ -14,7 +14,6 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.HudMessages;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -26,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import net.spell_engine.internals.SpellParameters;
 
 public class SpellHotbar {
     public static SpellHotbar INSTANCE = new SpellHotbar();
@@ -226,7 +226,7 @@ public class SpellHotbar {
                     case CASTING, CHANNEL -> {
                         if (casted != null && casted.process().id().equals(slot.spell.getKey().get().getValue())) {
                             // The spell is already being casted
-                            var needsToBeHeld = SpellHelper.isChanneled(casted.process().spell().value()) ?
+                            var needsToBeHeld = SpellParameters.isChanneled(casted.process().spell().value()) ?
                                     SpellEngineClient.config.holdToCastChannelled :
                                     SpellEngineClient.config.holdToCastCharged;
                             if (needsToBeHeld) {

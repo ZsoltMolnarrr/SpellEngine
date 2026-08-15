@@ -8,19 +8,19 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.Spell;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_power.api.SpellPower;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import net.spell_engine.internals.SpellExecution;
 
 public class SpellHandlers {
     public static final Map<String, CustomDelivery> customDelivery = new HashMap<>();
     public interface CustomDelivery {
         boolean onSpellDelivery(World world, RegistryEntry<Spell> spellEntry, LivingEntity caster,
-                                List<SpellHelper.DeliveryTarget> targets, SpellHelper.ImpactContext context,
+                                List<SpellExecution.DeliveryTarget> targets, SpellExecution.ImpactContext context,
                                 @Nullable Vec3d targetLocation);
     }
     public static void registerCustomDelivery(Identifier id, CustomDelivery delivery) {
@@ -32,7 +32,7 @@ public class SpellHandlers {
     public interface CustomImpact {
         ImpactResult onSpellImpact(RegistryEntry<Spell> spellEntry, SpellPower.Result spellPower,
                            LivingEntity caster, @Nullable Entity target,
-                           SpellHelper.ImpactContext context);
+                           SpellExecution.ImpactContext context);
     }
     public static void registerCustomImpact(Identifier id, CustomImpact impact) {
         customImpact.put(id.toString(), impact);

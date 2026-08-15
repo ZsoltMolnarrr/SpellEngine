@@ -28,7 +28,6 @@ import net.spell_engine.api.entity.TwoWayCollisionChecker;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.render.FlyingSpellEntity;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.fx.ParticleHelper;
@@ -46,6 +45,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.spell_engine.internals.melee.OrientedBoundingBox;
+import net.spell_engine.internals.SpellExecution;
+import net.spell_engine.internals.impact.SpellImpacts;
+import net.spell_engine.internals.target.SpellIntents;
 
 public class SpellProjectile extends ProjectileEntity implements FlyingSpellEntity {
     public static EntityType<SpellProjectile> ENTITY_TYPE;
@@ -53,7 +55,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     public float range = 128;
     private Spell.ProjectileData.Perks perks;
-    private SpellHelper.ImpactContext context;
+    private SpellExecution.ImpactContext context;
     public Vec3d previousVelocity;
 
     public SpellProjectile(EntityType<? extends ProjectileEntity> entityType, World world) {
@@ -70,7 +72,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
 
     public SpellProjectile(World world, LivingEntity caster, double x, double y, double z,
-                           Behaviour behaviour, RegistryEntry<Spell> spellEntry, SpellHelper.ImpactContext context, Spell.ProjectileData.Perks mutablePerks) {
+                           Behaviour behaviour, RegistryEntry<Spell> spellEntry, SpellExecution.ImpactContext context, Spell.ProjectileData.Perks mutablePerks) {
         this(world, caster);
         this.setPosition(x, y, z);
 
@@ -311,7 +313,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                                 && !spell.impacts.isEmpty()
                                 && !impactHistory.contains(target.getId())
                                 && getOwner() instanceof LivingEntity owner) {
-                            var intents = SpellHelper.impactIntents(spell);
+                            var intents = SpellIntents.impactIntents(spell);
 
                             boolean intentAllows = false;
                             for (var intent: intents) {
@@ -434,7 +436,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             return;
         }
         if (owner instanceof LivingEntity livingEntity) {
-            SpellHelper.fallImpact(livingEntity, this, this.getSpellEntry(), context.position(this.getPos()));
+            SpellImpacts.fallImpact(livingEntity, this, this.getSpellEntry(), context.position(this.getPos()));
         }
     }
 
@@ -534,7 +536,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 setFollowedTarget(null);
                 var context = this.context;
                 if (context == null) {
-                    context = new SpellHelper.ImpactContext();
+                    context = new SpellExecution.ImpactContext();
                     var spell = this.getSpellEntry().value();
                     if (getOwner() instanceof PlayerEntity player && spell != null)  {
                         context = context.power(SpellPower.getSpellPower(spell.school, player));
@@ -549,7 +551,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 var hitVector = entityHitResult.getPos().subtract(prevProjectilePos).normalize().multiply(this.getWidth() * 0.5F);
                 var hitPosition = entityHitResult.getPos().subtract(hitVector);
 
-                var performed = SpellHelper.projectileImpact(caster, this, target, this.getSpellEntry(), context.position(hitPosition));
+                var performed = SpellImpacts.projectileImpact(caster, this, target, this.getSpellEntry(), context.position(hitPosition));
                 if (performed) {
                     chainReactionFrom(target);
                     if (ricochetFrom(target, caster)) {
@@ -583,7 +585,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 this.perks.ricochet_range,
                 this.perks.ricochet_range);
         var spell = this.getSpellEntry().value();
-        var intents = SpellHelper.impactIntents(spell);
+        var intents = SpellIntents.impactIntents(spell);
         Predicate<Entity> intentMatches = (entity) -> {
             boolean intentAllows = false;
             for (var intent: intents) {
@@ -739,7 +741,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     // MARK: Helper
 
-    public SpellHelper.ImpactContext getImpactContext() {
+    public SpellExecution.ImpactContext getImpactContext() {
         return context;
     }
 
@@ -782,7 +784,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         if (this.getOwner() != null
                 && this.getOwner() instanceof LivingEntity caster) {
             var hitPosition = blockHitResult.getPos();
-            var performed = SpellHelper.projectileImpact(caster, this, null, this.getSpellEntry(), context.position(hitPosition));
+            var performed = SpellImpacts.projectileImpact(caster, this, null, this.getSpellEntry(), context.position(hitPosition));
         }
         this.kill();
     }
@@ -900,7 +902,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 var spellId = Identifier.of(nbt.getString(NBT_SPELL_ID));
                 this.setSpell(SpellRegistry.from(this.getWorld()).getEntry(spellId).orElse(null));
 
-                this.context = gson.fromJson(nbt.getString(NBT_IMPACT_CONTEXT), SpellHelper.ImpactContext.class);
+                this.context = gson.fromJson(nbt.getString(NBT_IMPACT_CONTEXT), SpellExecution.ImpactContext.class);
                 this.perks = gson.fromJson(nbt.getString(NBT_PERKS), Spell.ProjectileData.Perks.class);
                 if (nbt.contains(NBT_SCALE, NbtElement.FLOAT_TYPE)) {
                     this.setScaleMultiplier(nbt.getFloat(NBT_SCALE));

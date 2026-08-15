@@ -8,10 +8,11 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.entity.SummonedEntity;
-import net.spell_engine.internals.SpellHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
+import net.spell_engine.internals.SpellExecution;
+import net.spell_engine.internals.SpellParameters;
 
 /// Casts a configured spell on cooldown. Aiming is resolved once per activation into a {@link CastAim}
 /// (a tracked target, or a stationary forward/self fallback), so the cast lifecycle stays free of
@@ -48,10 +49,10 @@ public class SpellCastGoal extends Goal {
     }
 
     // Resolved engagement distances. The `range.{min,max,preferred}` fields are FRACTIONS of the
-    // spell's effective range (`SpellHelper.getRange`, which applies caster-level modifiers), so they
+    // spell's effective range (`SpellParameters.getRange`, which applies caster-level modifiers), so they
     // auto-scale per caster.
     private float spellRange(RegistryEntry<Spell> entry) {
-        return SpellHelper.getRange(entity, entry);
+        return SpellParameters.getRange(entity, entry);
     }
     private float effectiveMin(RegistryEntry<Spell> entry) {
         return config.range.min * spellRange(entry);
@@ -74,7 +75,7 @@ public class SpellCastGoal extends Goal {
         if (spell.active == null) return false;           // ACTIVE spells only
         // Summons only cast INSTANT and CASTING spells. Channeled and charged spells depend on
         // player-input timing (per-tick channeling / hold-to-release), so they are silently skipped.
-        if (SpellHelper.isChanneled(spell)) return false;
+        if (SpellParameters.isChanneled(spell)) return false;
         if (spell.active.cast.type == Spell.Active.Cast.Type.CHARGE) return false;
         if (!entity.isActive()) return false;             // not in spawn/despawn phase
         if (entity.cooldownManager.isCoolingDown(entry)) return false;
@@ -89,9 +90,9 @@ public class SpellCastGoal extends Goal {
         aim = resolveAim(entry);
         if (entry != null) {
             var spell = entry.value();
-            castDuration = SpellHelper.isInstant(spell)
+            castDuration = SpellParameters.isInstant(spell)
                     ? 1
-                    : SpellHelper.getCastTimeDetails(entity, spell).length();
+                    : SpellParameters.getCastTimeDetails(entity, spell).length();
             if (castDuration <= 0) castDuration = 1;
         }
         entity.onSpellCastStarted(entity.pickVariant(config.cast_animation_variants));
@@ -134,14 +135,14 @@ public class SpellCastGoal extends Goal {
         if (entity.getWorld().isClient()) return;
         // Final orient before the engine reads the look vector.
         aim.orient();
-        SpellHelper.targetAndPerformSpell(entity.getWorld(), entity, entry);
+        SpellExecution.targetAndPerformSpell(entity.getWorld(), entity, entry);
         entity.onSpellCastEnded();
         entity.onSpellReleased(entity.pickVariant(config.release_animation_variants), config.release_animation_duration);
 
         // Cooldown: use spell's own duration if set, else fall back to config override (ticks)
         int cooldownTicks;
         if (spell.cost.cooldown != null && spell.cost.cooldown.duration > 0) {
-            cooldownTicks = Math.round(SpellHelper.getCooldownDuration(entity, entry) * 20F);
+            cooldownTicks = Math.round(SpellParameters.getCooldownDuration(entity, entry) * 20F);
         } else {
             cooldownTicks = config.cooldown; // already in ticks; default = 20
         }

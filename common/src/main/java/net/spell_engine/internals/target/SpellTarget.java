@@ -7,13 +7,13 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.api.entity.SpellEntityPredicates;
 import net.spell_engine.api.spell.Spell;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.utils.PatternMatching;
 import net.spell_engine.utils.TargetHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Predicate;
+import net.spell_engine.internals.SpellParameters;
 
 public class SpellTarget {
     public enum Intent {
@@ -47,17 +47,17 @@ public class SpellTarget {
             return new SearchResult(targets, location);
         }
         boolean fallbackToPreviousTargets = false;
-        var focusMode = SpellHelper.focusMode(currentSpell);
+        var focusMode = SpellIntents.focusMode(currentSpell);
         var targetType = currentSpell.target.type;
-        var range = SpellHelper.getRange(caster, spellEntry) * caster.getScale();
+        var range = SpellParameters.getRange(caster, spellEntry) * caster.getScale();
 
         Predicate<Entity> selectionPredicate = (target) -> {
-            var deliveryIntent = SpellHelper.deliveryIntent(currentSpell);
+            var deliveryIntent = SpellIntents.deliveryIntent(currentSpell);
             boolean intentAllows = deliveryIntent.isPresent()
                     ? EntityRelations.actionAllowed(focusMode, deliveryIntent.get(), caster, target)
                     : false;
             for (var impact: currentSpell.impacts) {
-                var intent = SpellHelper.impactIntent(impact.action);
+                var intent = SpellIntents.impactIntent(impact.action);
                 var newValue = impact.action.apply_to_caster
                         ? target == caster
                         : EntityRelations.actionAllowed(focusMode, intent, caster, target);

@@ -278,10 +278,10 @@ public class SpellTriggers {
                         }
                         if (trigger.fire_delay > 0) {
                             ((WorldScheduler)player.getWorld()).schedule(trigger.fire_delay - 1, () -> {
-                                SpellHelper.performSpell(player.getWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
+                                SpellExecution.performSpell(player.getWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
                             });
                         } else {
-                            SpellHelper.performSpell(player.getWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
+                            SpellExecution.performSpell(player.getWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
                         }
                         break;
                     }

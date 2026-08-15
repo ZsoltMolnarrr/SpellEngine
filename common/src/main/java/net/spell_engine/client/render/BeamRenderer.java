@@ -15,12 +15,12 @@ import net.spell_engine.client.beam.BeamEmitterEntity;
 import net.spell_engine.client.compatibility.ShaderCompatibility;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.internals.delivery.Beam;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.utils.TargetHelper;
 
 import java.util.HashMap;
 import java.util.Map;
+import net.spell_engine.internals.delivery.LaunchGeometry;
 
 public class BeamRenderer extends RenderLayer {
     public record LayerSet(RenderLayer inner, RenderLayer outer) { }
@@ -105,8 +105,8 @@ public class BeamRenderer extends RenderLayer {
         Vec3d camPos = camera.getPos();
         matrices.translate(-camPos.x, -camPos.y, -camPos.z);
         for (var livingEntity : players) {
-            var launchHeight = SpellHelper.launchHeight(livingEntity);
-            var offset = new Vec3d(0.0, launchHeight, SpellHelper.launchPointOffsetDefault);
+            var launchHeight = LaunchGeometry.launchHeight(livingEntity);
+            var offset = new Vec3d(0.0, launchHeight, LaunchGeometry.launchPointOffsetDefault);
             SpellCasterEntity caster = (SpellCasterEntity)livingEntity;
             matrices.push();
             var pos = new Vec3d(livingEntity.prevX, livingEntity.prevY, livingEntity.prevZ)

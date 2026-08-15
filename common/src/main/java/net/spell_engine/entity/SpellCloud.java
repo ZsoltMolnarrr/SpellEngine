@@ -9,13 +9,11 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.utils.SoundHelper;
@@ -23,6 +21,8 @@ import net.spell_engine.utils.SoundPlayerWorld;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
+import net.spell_engine.internals.SpellExecution;
+import net.spell_engine.internals.impact.SpellImpacts;
 
 public class SpellCloud extends Entity implements Ownable {
     public static EntityType<SpellCloud> ENTITY_TYPE;
@@ -42,7 +42,7 @@ public class SpellCloud extends Entity implements Ownable {
     private int impactCap = 0;
     private Identifier spellId;
     private int dataIndex = 0;
-    private SpellHelper.ImpactContext context;
+    private SpellExecution.ImpactContext context;
     /// Cloud-targeting spell modifiers (radius / growth) summed at spawn. Persisted as one small compound
     /// so a mid-life reload keeps the bonus — the caster's modifiers aren't re-derivable from the entity.
     private Spell.Modifier.Cloud cloudModifier = new Spell.Modifier.Cloud();
@@ -66,7 +66,7 @@ public class SpellCloud extends Entity implements Ownable {
         this.noClip = true;
     }
 
-    public void onCreatedFromSpell(Identifier spellId, Spell.Delivery.Cloud cloudData, SpellHelper.ImpactContext context, float time_to_live_seconds, Spell.Modifier.Cloud cloudModifier) {
+    public void onCreatedFromSpell(Identifier spellId, Spell.Delivery.Cloud cloudData, SpellExecution.ImpactContext context, float time_to_live_seconds, Spell.Modifier.Cloud cloudModifier) {
         this.spellId = spellId;
         this.context = context;
         this.cloudModifier = cloudModifier;
@@ -133,7 +133,7 @@ public class SpellCloud extends Entity implements Ownable {
             // Fire the wind-down FX exactly on the ACTIVE -> DESPAWNING transition. This is the sole
             // server-side choke point for phase changes (both the age-based expiry in `tick()` and
             // `beginDespawn()` route through here), and the tracker guard makes it run once. Mirrors the
-            // spawn FX in SpellHelper.spawnClouds. `despawn_ticks == 0` clouds discard before reaching
+            // spawn FX in CloudPlacer.placeCloud. `despawn_ticks == 0` clouds discard before reaching
             // DESPAWNING, so they get no wind-down FX by design.
             if (phase == PHASE_DESPAWNING) {
                 playDespawnFX();
@@ -194,7 +194,7 @@ public class SpellCloud extends Entity implements Ownable {
     }
 
     /// Server-side: emit the cloud's configured despawn FX (sound, particles, model effects), broadcast
-    /// to nearby clients. Symmetrical with the spawn FX in `SpellHelper.spawnClouds`.
+    /// to nearby clients. Symmetrical with the spawn FX in `CloudPlacer.placeCloud`.
     private void playDespawnFX() {
         var cloudData = getCloudData();
         if (cloudData == null) {
@@ -463,9 +463,9 @@ public class SpellCloud extends Entity implements Ownable {
                     var spell = spellEntry.value();
                     var context = this.context;
                     if (context == null) {
-                        context = new SpellHelper.ImpactContext();
+                        context = new SpellExecution.ImpactContext();
                     }
-                    var performed = SpellHelper.lookupAndPerformAreaImpact(area_impact, spellEntry, owner,null,
+                    var performed = SpellImpacts.lookupAndPerformAreaImpact(area_impact, spellEntry, owner,null,
                             this, spell.impacts, context.position(this.getPos()), true, grownRadius);
                     if (performed) {
                         onImpactPerformed(owner, world, cloudData, context);
@@ -484,7 +484,7 @@ public class SpellCloud extends Entity implements Ownable {
         }
     }
 
-    protected void onImpactPerformed(LivingEntity owner, World world, Spell.Delivery.Cloud cloudData, SpellHelper.ImpactContext context) {
+    protected void onImpactPerformed(LivingEntity owner, World world, Spell.Delivery.Cloud cloudData, SpellExecution.ImpactContext context) {
         // Server-side call site: `ParticleHelper.play` bottoms out in `World.addParticle`, which is an
         // empty method on anything but ClientWorld — it has to be broadcast instead. Detached (rather
         // than entity-anchored) because a cloud whose `despawn_ticks` is 0 is discarded on this very
@@ -493,7 +493,7 @@ public class SpellCloud extends Entity implements Ownable {
         this.impactsPerformed++;
     }
 
-    protected void onImpactFailed(LivingEntity owner, World world, Spell.Delivery.Cloud cloudData, SpellHelper.ImpactContext context) {
+    protected void onImpactFailed(LivingEntity owner, World world, Spell.Delivery.Cloud cloudData, SpellExecution.ImpactContext context) {
         // No-op by default; override in subclasses to handle failed impacts (e.g. play a sound).
     }
 

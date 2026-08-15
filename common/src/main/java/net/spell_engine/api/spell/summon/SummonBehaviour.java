@@ -7,6 +7,7 @@ import net.spell_engine.api.spell.fx.Fx;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import net.spell_engine.internals.SpellParameters;
 
 public class SummonBehaviour {
 
@@ -363,7 +364,7 @@ public class SummonBehaviour {
 
             /// Engagement-distance configuration for a SpellCast action.
             ///
-            /// All fields are FRACTIONS of the spell's effective range — `SpellHelper.getRange(caster, spell)`,
+            /// All fields are FRACTIONS of the spell's effective range — `SpellParameters.getRange(caster, spell)`,
             /// which folds in caster-level modifiers (gear, attributes, etc.). For a spell whose
             /// effective range works out to 16 blocks, `min = 0.5` means "minimum 8 blocks".
             ///
