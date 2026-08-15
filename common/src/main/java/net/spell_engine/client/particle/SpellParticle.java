@@ -312,12 +312,33 @@ public class SpellParticle extends SpriteBillboardParticle {
         };
     }
 
+    /// Camera-facing particles take vanilla's [SpriteBillboardParticle#buildGeometry], which
+    /// Sodium's `SingleQuadParticleMixin` accelerates. Every other orientation MUST be driven
+    /// through here instead: Sodium cancels vanilla `buildGeometry` at its head and rebuilds a
+    /// pure camera billboard from the camera's left/up vectors, ignoring [#getRotator] entirely —
+    /// so an area decal that relies on the rotator silently reverts to facing the camera.
+    ///
+    /// The fix is to resolve the rotator ourselves and hand the finished quaternion to the
+    /// `Camera`-taking quad method. Sodium *does* intercept that one and honours the passed
+    /// rotation (it derives left/up from the quaternion), and vanilla routes it straight into
+    /// [#method_60374] — so the orientation survives on both paths. Mirrors vanilla
+    /// `buildGeometry` exactly, only with the [#getRotator] call moved out of the method Sodium
+    /// overwrites and into one it does not.
     @Override
     public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
         if (skipRender) {
             return;
         }
-        super.buildGeometry(vertexConsumer, camera, tickDelta);
+        if (facing == ParticleGroup.Facing.CAMERA) {
+            super.buildGeometry(vertexConsumer, camera, tickDelta);
+            return;
+        }
+        var quaternion = new Quaternionf();
+        getRotator().setRotation(quaternion, camera, tickDelta);
+        if (this.angle != 0F) {
+            quaternion.rotateZ(MathHelper.lerp(tickDelta, this.prevAngle, this.angle));
+        }
+        method_60373(vertexConsumer, camera, quaternion, tickDelta);
     }
 
     /// Applies the entry's pivot: shifts the quad vertically in units of its size
