@@ -95,6 +95,100 @@ public class Packets {
         }
     }
 
+    // MARK: New casting protocol (server-side casting rework, Phase B) — registered on both
+    // loaders, sent by nobody yet. Shared snapshot wire helpers below.
+
+    private static void writeTargetSnapshot(RegistryByteBuf buffer, SpellCast.TargetSnapshot snapshot) {
+        buffer.writeIntArray(snapshot.entityIds().stream().mapToInt(Integer::intValue).toArray());
+        var location = snapshot.location();
+        if (location != null) {
+            buffer.writeBoolean(true);
+            buffer.writeDouble(location.x);
+            buffer.writeDouble(location.y);
+            buffer.writeDouble(location.z);
+        } else {
+            buffer.writeBoolean(false);
+        }
+    }
+
+    private static SpellCast.TargetSnapshot readTargetSnapshot(RegistryByteBuf buffer) {
+        var entityIds = Arrays.stream(buffer.readIntArray()).boxed().toList();
+        Vec3d location = null;
+        if (buffer.readBoolean()) {
+            location = new Vec3d(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
+        }
+        return new SpellCast.TargetSnapshot(entityIds, location);
+    }
+
+    /// C2S: begin casting an option. Instants carry their targeting snapshot along (and fire
+    /// immediately); timed casts follow up with a TargetStream.
+    public record CastRequest(Identifier spellId, SpellCast.TargetSnapshot snapshot) implements CustomPayload {
+        public static Identifier ID = Identifier.of(SpellEngineMod.ID, "cast_request");
+        public static final CustomPayload.Id<CastRequest> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<RegistryByteBuf, CastRequest> CODEC = PacketCodec.of(CastRequest::write, CastRequest::read);
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
+        }
+
+        public void write(RegistryByteBuf buffer) {
+            buffer.writeString(spellId.toString());
+            writeTargetSnapshot(buffer, snapshot);
+        }
+
+        public static CastRequest read(RegistryByteBuf buffer) {
+            var spellId = Identifier.of(buffer.readString());
+            return new CastRequest(spellId, readTargetSnapshot(buffer));
+        }
+    }
+
+    /// C2S: latest-wins replication of the client's cursor targeting, sent every tick IF CHANGED
+    /// while a cursor-driven cast is active. `sequence` discards late arrivals.
+    public record TargetStream(Identifier spellId, SpellCast.TargetSnapshot snapshot, int sequence) implements CustomPayload {
+        public static Identifier ID = Identifier.of(SpellEngineMod.ID, "target_stream");
+        public static final CustomPayload.Id<TargetStream> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<RegistryByteBuf, TargetStream> CODEC = PacketCodec.of(TargetStream::write, TargetStream::read);
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
+        }
+
+        public void write(RegistryByteBuf buffer) {
+            buffer.writeString(spellId.toString());
+            writeTargetSnapshot(buffer, snapshot);
+            buffer.writeVarInt(sequence);
+        }
+
+        public static TargetStream read(RegistryByteBuf buffer) {
+            var spellId = Identifier.of(buffer.readString());
+            var snapshot = readTargetSnapshot(buffer);
+            var sequence = buffer.readVarInt();
+            return new TargetStream(spellId, snapshot, sequence);
+        }
+    }
+
+    /// C2S: the player's end-input (key up): cancels a timed cast, completes a channel early,
+    /// releases a charge — carrying the final snapshot of the release frame (zero staleness).
+    public record CastInput(Identifier spellId, SpellCast.TargetSnapshot snapshot) implements CustomPayload {
+        public static Identifier ID = Identifier.of(SpellEngineMod.ID, "cast_input");
+        public static final CustomPayload.Id<CastInput> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<RegistryByteBuf, CastInput> CODEC = PacketCodec.of(CastInput::write, CastInput::read);
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
+        }
+
+        public void write(RegistryByteBuf buffer) {
+            buffer.writeString(spellId.toString());
+            writeTargetSnapshot(buffer, snapshot);
+        }
+
+        public static CastInput read(RegistryByteBuf buffer) {
+            var spellId = Identifier.of(buffer.readString());
+            return new CastInput(spellId, readTargetSnapshot(buffer));
+        }
+    }
+
     public record SpellCooldown(Identifier spellId, int duration) implements CustomPayload {
         public static Identifier ID = Identifier.of(SpellEngineMod.ID, "spell_cooldown");
         public static final CustomPayload.Id<SpellCooldown> PACKET_ID = new CustomPayload.Id<>(ID);

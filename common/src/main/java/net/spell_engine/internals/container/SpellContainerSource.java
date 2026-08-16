@@ -15,6 +15,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
 
@@ -231,6 +232,13 @@ public class SpellContainerSource {
             }
 
             ((Owner) player).setSpellContainers(new Result(activeContainer, activeSpells, passiveSpells, modifiers.stream().toList(), allContainers));
+
+            // Containers changed — the casting authority re-derives its options from them and
+            // re-declares to the owner's client (tracked data). Server-side only: on the client
+            // the interactor mirrors the declared options instead of computing its own.
+            if (!player.getWorld().isClient) {
+                ((SpellCasterEntity) player).getInteractor().invalidateOptions();
+            }
         }
     }
 

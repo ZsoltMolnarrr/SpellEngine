@@ -7,7 +7,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.registry.SpellRegistry;
-import net.spell_engine.internals.casting.SpellCastSyncHelper;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.melee.Melee;
@@ -15,8 +14,6 @@ import net.spell_engine.internals.target.SpellTarget;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.spell_engine.internals.SpellExecution;
-import net.spell_engine.internals.casting.SpellCasting;
 
 /// Server-side packet handling. This class is loader-agnostic: it holds only the handler
 /// bodies. Payload registration, configuration tasks and the lifecycle event wiring live in
@@ -36,10 +33,11 @@ public class ServerNetwork {
         }
 
         world.getServer().executeSync(() -> {
+            var interactor = ((SpellCasterEntity) player).getInteractor();
             if (packet.spellId() == null) {
-                SpellCastSyncHelper.clearCasting(player);
+                interactor.requestClear();
             } else {
-                SpellCasting.start(player, packet.spellId(), packet.speed(), packet.length());
+                interactor.requestStart(packet.spellId(), packet.speed(), packet.length());
             }
         });
     }
@@ -67,7 +65,45 @@ public class ServerNetwork {
                 }
             }
             var target = new SpellTarget.SearchResult(targets, packet.location());
-            SpellExecution.performSpell(world, player, spellEntry.get(), target, packet.action(), packet.progress());
+            ((SpellCasterEntity) player).getInteractor()
+                    .performRequested(spellEntry.get(), target, packet.action(), packet.progress());
+        });
+    }
+
+    // MARK: New casting protocol (server-side casting rework, Phase B)
+    // Registered on both loaders, but nothing sends these yet — clients still speak the legacy
+    // SpellCastSync/SpellRequest protocol. They become the driving signals in Phase D.
+
+    public static void handleCastRequest(Packets.CastRequest packet, MinecraftServer server, ServerPlayerEntity player) {
+        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
+                .orNull();
+        if (world == null || world.isClient) {
+            return;
+        }
+        world.getServer().executeSync(() -> {
+            ((SpellCasterEntity) player).getInteractor().requestCast(packet.spellId(), packet.snapshot());
+        });
+    }
+
+    public static void handleTargetStream(Packets.TargetStream packet, MinecraftServer server, ServerPlayerEntity player) {
+        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
+                .orNull();
+        if (world == null || world.isClient) {
+            return;
+        }
+        world.getServer().executeSync(() -> {
+            ((SpellCasterEntity) player).getInteractor().submitTargets(packet.spellId(), packet.snapshot(), packet.sequence());
+        });
+    }
+
+    public static void handleCastInput(Packets.CastInput packet, MinecraftServer server, ServerPlayerEntity player) {
+        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
+                .orNull();
+        if (world == null || world.isClient) {
+            return;
+        }
+        world.getServer().executeSync(() -> {
+            ((SpellCasterEntity) player).getInteractor().requestEnd(packet.spellId(), packet.snapshot());
         });
     }
 

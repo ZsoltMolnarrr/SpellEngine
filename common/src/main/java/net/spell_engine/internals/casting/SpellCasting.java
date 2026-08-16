@@ -6,12 +6,12 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.cost.Ammo;
-import net.spell_engine.utils.SoundHelper;
 
-/// Management of the casting *process* — the timed part of a cast, before anything fires:
-/// gating the attempt and starting the cast bar. The process state itself lives on
-/// {@link SpellCasterEntity} and {@link SpellCast.Process}; what happens when the process
-/// completes (or ticks, for channels) is {@link net.spell_engine.internals.SpellExecution}'s job.
+/// The gate in front of every cast attempt (cooldown, ammo, injected event verdicts), run on
+/// the server before starting or performing a spell, and on the client before a cast request is
+/// even sent. Starting/ending the casting process is {@link SpellCastInteractor}'s job; what
+/// happens when the process completes (or ticks, for channels) is
+/// {@link net.spell_engine.internals.SpellExecution}'s job.
 public class SpellCasting {
 
     // MARK: Cast attempt
@@ -54,33 +54,5 @@ public class SpellCasting {
             }
         }
         return SpellCast.Attempt.success();
-    }
-
-    // MARK: Casting process
-
-    public static void start(PlayerEntity player, Identifier spellId, float speed, int length) {
-        var spellEntry = SpellRegistry.from(player.getWorld()).getEntry(spellId).orElse(null);
-        if (spellEntry == null) {
-            return;
-        }
-        var spell = spellEntry.value();
-        if (spell.active == null) {
-            return;
-        }
-        var itemStack = player.getMainHandStack();
-        var attempt = attempt(player, itemStack, spellId);
-        if (!attempt.isSuccess()) {
-            return;
-        }
-        // Allow clients to specify their haste without validation
-        // var details = SpellParameters.getCastTimeDetails(player, spell);
-        var process = new SpellCast.Process(player, spellEntry, itemStack.getItem(), speed, length, player.getWorld().getTime());
-        // Every channel starts counting from zero. `clearCasting` resets too, but it is not reached
-        // on every path: cancelling a cast to start another one (`cancelSpellCast(false)`) sends no
-        // cast sync packet, leaving only the RELEASE request, which early-returns when
-        // `attemptCasting` fails. Resetting here makes a stale index impossible to inherit.
-        ((SpellCasterEntity) player).setChannelTickIndex(0);
-        SpellCastSyncHelper.setCasting(player, process);
-        SoundHelper.playSound(player.getWorld(), player, spell.active.cast.start_sound);
     }
 }

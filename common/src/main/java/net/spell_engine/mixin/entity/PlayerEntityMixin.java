@@ -11,13 +11,17 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.arrow.ArrowShootContext;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.casting.SpellCastSyncHelper;
+import net.spell_engine.internals.casting.SpellCastInteractor;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.cost.SpellCooldownManager;
 import net.spell_engine.internals.melee.Melee;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -32,22 +36,41 @@ public class PlayerEntityMixin implements SpellCasterEntity {
 
     private final SpellCooldownManager spellCooldownManager = new SpellCooldownManager(player());
 
+    /// The casting authority component. The two lambdas are its declaration ports: they write
+    /// the tracked data slots below, and no-op on the client (where the interactor is a mirror).
+    private final SpellCastInteractor interactor = SpellCastInteractor.forPlayer(player(),
+            process -> {
+                if (!player().getWorld().isClient) {
+                    var json = process != null ? process.fastSyncJSON() : "";
+                    player().getDataTracker().set(SPELL_ENGINE_SPELL_PROGRESS, json);
+                }
+            },
+            options -> {
+                if (!player().getWorld().isClient) {
+                    var syncFormats = options.stream().map(SpellCast.Option::sync).toArray(SpellCast.Option.SyncFormat[]::new);
+                    player().getDataTracker().set(SPELL_ENGINE_OPTIONS, syncGson.toJson(syncFormats));
+                }
+            });
+
+    @Override
+    public SpellCastInteractor getInteractor() {
+        return interactor;
+    }
+
     private static final TrackedData<String> SPELL_ENGINE_SPELL_PROGRESS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.STRING);
+    private static final TrackedData<String> SPELL_ENGINE_OPTIONS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.STRING);
     private static final TrackedData<Float> SPELL_ENGINE_EXTRA_SLIPPERINESS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.FLOAT);
     private static final Gson syncGson = new Gson();
 
     @Inject(method = "initDataTracker", at = @At("TAIL"))
     private void initDataTracker_TAIL_SpellEngine_SyncEffects(DataTracker.Builder builder, CallbackInfo ci) {
         builder.add(SPELL_ENGINE_SPELL_PROGRESS, "");
+        builder.add(SPELL_ENGINE_OPTIONS, "");
         builder.add(SPELL_ENGINE_EXTRA_SLIPPERINESS, 0F);
     }
 
-    private SpellCast.Process synchronizedSpellCastProcess = null;
     public void setSpellCastProcess(@Nullable SpellCast.Process process) {
-        if (process != null && process.spell().value().active == null) { return; }
-        synchronizedSpellCastProcess = process;
-        var json = process != null ? process.fastSyncJSON() : "";
-        player().getDataTracker().set(SPELL_ENGINE_SPELL_PROGRESS, json);
+        interactor.setProcess(process);
     }
 
     private int channelTickIndex = 0;
@@ -61,7 +84,7 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     }
 
     @Nullable public SpellCast.Process getSpellCastProcess() {
-        return synchronizedSpellCastProcess;
+        return interactor.process();
     }
 
     @Override
@@ -98,6 +121,7 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     }
 
     private String lastHandledSyncData = "";
+    private String lastHandledOptionsData = "";
 
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL_SpellEngine(CallbackInfo ci) {
@@ -109,27 +133,31 @@ public class PlayerEntityMixin implements SpellCasterEntity {
             var progressString = player.getDataTracker().get(SPELL_ENGINE_SPELL_PROGRESS);
             if (!progressString.equals(lastHandledSyncData)) {
                 if (progressString.isEmpty()) {
-                    this.synchronizedSpellCastProcess = null;
+                    interactor.setProcess(null);
                 } else {
                     var syncFormat = syncGson.fromJson(progressString, SpellCast.Process.SyncFormat.class);
-                    this.synchronizedSpellCastProcess = SpellCast.Process.fromSync(player, player.getWorld(), syncFormat, player.getMainHandStack().getItem(), player.getWorld().getTime());
+                    interactor.setProcess(SpellCast.Process.fromSync(player, player.getWorld(), syncFormat, player.getMainHandStack().getItem(), player.getWorld().getTime()));
                 }
                 lastHandledSyncData = progressString;
             }
 
+            var optionsString = player.getDataTracker().get(SPELL_ENGINE_OPTIONS);
+            if (!optionsString.equals(lastHandledOptionsData)) {
+                if (optionsString.isEmpty()) {
+                    interactor.mirrorOptions(List.of());
+                } else {
+                    var syncFormats = syncGson.fromJson(optionsString, SpellCast.Option.SyncFormat[].class);
+                    interactor.mirrorOptions(Arrays.stream(syncFormats)
+                            .map(sync -> SpellCast.Option.fromSync(player.getWorld(), sync))
+                            .filter(Objects::nonNull)
+                            .toList());
+                }
+                lastHandledOptionsData = optionsString;
+            }
+
         } else {
             // Server side
-            if (synchronizedSpellCastProcess != null) {
-                var castSpell = synchronizedSpellCastProcess.spell().value();
-                // CHARGE spells may be held at full charge indefinitely, so they are exempt from the
-                // overrun timeout (otherwise their cast state would be cleared while still held).
-                var isCharge = castSpell.active != null
-                        && castSpell.active.cast.type == Spell.Active.Cast.Type.CHARGE;
-                var castTicks = synchronizedSpellCastProcess.spellCastTicksSoFar(player.getWorld().getTime());
-                if (!isCharge && castTicks >= (synchronizedSpellCastProcess.length() * 1.5)) {
-                    SpellCastSyncHelper.clearCasting(player);
-                }
-            }
+            interactor.tick();
             if (activeAttack_serverSide != null
                     // Offsetting time by 1 tick, to compensate sync delays
                     && activeAttack_serverSide.isFinished(player.age + 1)) {

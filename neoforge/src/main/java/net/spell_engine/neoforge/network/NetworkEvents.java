@@ -58,6 +58,18 @@ public class NetworkEvents {
             var player = (ServerPlayerEntity) context.player();
             ServerNetwork.handleSpellRequest(packet, player.server, player);
         });
+        registrar.playToServer(Packets.CastRequest.PACKET_ID, Packets.CastRequest.CODEC, (packet, context) -> {
+            var player = (ServerPlayerEntity) context.player();
+            ServerNetwork.handleCastRequest(packet, player.server, player);
+        });
+        registrar.playToServer(Packets.TargetStream.PACKET_ID, Packets.TargetStream.CODEC, (packet, context) -> {
+            var player = (ServerPlayerEntity) context.player();
+            ServerNetwork.handleTargetStream(packet, player.server, player);
+        });
+        registrar.playToServer(Packets.CastInput.PACKET_ID, Packets.CastInput.CODEC, (packet, context) -> {
+            var player = (ServerPlayerEntity) context.player();
+            ServerNetwork.handleCastInput(packet, player.server, player);
+        });
         registrar.playToServer(Packets.AttackPerform.PACKET_ID, Packets.AttackPerform.CODEC, (packet, context) -> {
             var player = (ServerPlayerEntity) context.player();
             ServerNetwork.handleAttackPerform(packet, player.server, player);

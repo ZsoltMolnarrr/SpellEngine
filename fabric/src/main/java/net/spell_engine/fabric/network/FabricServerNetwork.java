@@ -58,6 +58,9 @@ public class FabricServerNetwork {
         // Play stage
         PayloadTypeRegistry.playC2S().register(Packets.SpellCastSync.PACKET_ID, Packets.SpellCastSync.CODEC);
         PayloadTypeRegistry.playC2S().register(Packets.SpellRequest.PACKET_ID, Packets.SpellRequest.CODEC);
+        PayloadTypeRegistry.playC2S().register(Packets.CastRequest.PACKET_ID, Packets.CastRequest.CODEC);
+        PayloadTypeRegistry.playC2S().register(Packets.TargetStream.PACKET_ID, Packets.TargetStream.CODEC);
+        PayloadTypeRegistry.playC2S().register(Packets.CastInput.PACKET_ID, Packets.CastInput.CODEC);
         PayloadTypeRegistry.playC2S().register(Packets.AttackPerform.PACKET_ID, Packets.AttackPerform.CODEC);
         PayloadTypeRegistry.playC2S().register(Packets.AttackFxBroadcast.PACKET_ID, Packets.AttackFxBroadcast.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.SpellCooldown.PACKET_ID, Packets.SpellCooldown.CODEC);
@@ -72,6 +75,12 @@ public class FabricServerNetwork {
                 ServerNetwork.handleSpellCastSync(packet, context.server(), context.player()));
         ServerPlayNetworking.registerGlobalReceiver(Packets.SpellRequest.PACKET_ID, (packet, context) ->
                 ServerNetwork.handleSpellRequest(packet, context.server(), context.player()));
+        ServerPlayNetworking.registerGlobalReceiver(Packets.CastRequest.PACKET_ID, (packet, context) ->
+                ServerNetwork.handleCastRequest(packet, context.server(), context.player()));
+        ServerPlayNetworking.registerGlobalReceiver(Packets.TargetStream.PACKET_ID, (packet, context) ->
+                ServerNetwork.handleTargetStream(packet, context.server(), context.player()));
+        ServerPlayNetworking.registerGlobalReceiver(Packets.CastInput.PACKET_ID, (packet, context) ->
+                ServerNetwork.handleCastInput(packet, context.server(), context.player()));
         ServerPlayNetworking.registerGlobalReceiver(Packets.AttackFxBroadcast.PACKET_ID, (packet, context) ->
                 ServerNetwork.handleAttackFxBroadcast(packet, context.server(), context.player()));
         ServerPlayNetworking.registerGlobalReceiver(Packets.AttackPerform.PACKET_ID, (packet, context) ->

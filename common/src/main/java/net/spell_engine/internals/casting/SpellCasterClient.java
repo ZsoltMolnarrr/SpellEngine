@@ -4,12 +4,17 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.spell.Spell;
+import net.spell_engine.client.casting.ClientCastController;
 import net.spell_engine.internals.melee.Melee;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public interface SpellCasterClient extends SpellCasterEntity {
+    /// The client-side casting counterpart of this player's {@link SpellCastInteractor}.
+    /// One per player entity — state resets naturally when vanilla replaces the entity.
+    ClientCastController getCastController();
+
     List<Entity> getCurrentTargets();
     Entity getCurrentFirstTarget();
 

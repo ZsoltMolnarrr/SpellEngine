@@ -8,6 +8,10 @@ import net.spell_engine.internals.melee.Melee;
 import org.jetbrains.annotations.Nullable;
 
 public interface SpellCasterEntity {
+    /// The server-side casting authority component of this caster.
+    /// Only meaningful on the server — client code must not signal it.
+    SpellCastInteractor getInteractor();
+
     SpellCooldownManager getCooldownManager();
 
     void setChannelTickIndex(int channelTickIndex);
