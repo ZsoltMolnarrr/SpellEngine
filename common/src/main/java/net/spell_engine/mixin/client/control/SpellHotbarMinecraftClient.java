@@ -108,7 +108,6 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
     @Inject(method = "handleInputEvents", at = @At(value = "TAIL"))
     private void handleInputEvents_TAIL_SpellHotbar(CallbackInfo ci) {
         if (player == null || options == null) { return; }
-        SpellHotbar.INSTANCE.syncItemUseSkill(player);
     }
 
     @WrapOperation(

@@ -20,7 +20,6 @@ import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Objects;
 
 /// Client-side counterpart of the server-side casting authority ({@link
 /// net.spell_engine.internals.casting.SpellCastInteractor}). One instance per
@@ -30,8 +29,8 @@ import java.util.Objects;
 /// - the input POLICY of casting: what a key hold or release means per cast mode (start,
 ///   cancel, charge release; hold-to-cast vs toggle) — `SpellHotbar` owns the input MECHANICS
 ///   (key scanning, edge memory, vanilla arbitration) and forwards control events here;
-/// - the cast process state machine: per-tick cancellation conditions, client-side targeting,
-///   and — for mechanics not yet server-authoritative — the channel/release timing decisions;
+/// - the predicted cast process: per-tick cancellation conditions, client-side targeting, and
+///   reconciliation against the server's declared process (the timeline authority);
 /// - the target stream: latest-wins replication of the cursor targeting to the server, sent
 ///   every tick IF CHANGED while a cursor-driven cast is active, consumed by the server's
 ///   authoritative fires.
@@ -77,20 +76,8 @@ public class ClientCastController {
         return null;
     }
 
-    private void setProcess(@Nullable SpellCast.Process newValue, boolean sync) {
-        var oldValue = predictedProcess;
+    private void setProcess(@Nullable SpellCast.Process newValue) {
         predictedProcess = newValue;
-        if (sync && !Objects.equals(oldValue, newValue)) {
-            Identifier id = null;
-            float speed = 0;
-            int length = 0;
-            if (newValue != null) {
-                id = newValue.spell().getKey().get().getValue();
-                speed = newValue.speed();
-                length = newValue.length();
-            }
-            Platform.util().networkC2S_Send(new Packets.SpellCastSync(id, speed, length));
-        }
     }
 
     // MARK: Cast lifecycle
@@ -116,36 +103,24 @@ public class ClientCastController {
         if (attempt.isSuccess()) {
             if (predictedProcess != null) {
                 // Cancel previous spell
-                cancelSpellCast(false);
+                cancelSpellCast();
             }
-            var authoritative = SpellCast.serverAuthoritative(SpellCast.Mode.from(spell));
             var instant = SpellParameters.isInstantCast(spellEntry, player);
             if (instant) {
-                if (authoritative) {
-                    // One-shot targeting at the input frame, shipped with the request; no process
-                    var targetResult = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), SpellEngineClient.config.filterInvalidTargets);
-                    Platform.util().networkC2S_Send(new Packets.CastRequest(spellId, snapshotFor(spellEntry, targetResult)));
-                    applyInstantGlobalCooldown();
-                } else {
-                    // Release instant spell
-                    var newProcess = new SpellCast.Process(player, spellEntry, itemStack.getItem(), 1, 0, player.getWorld().getTime());
-                    this.setProcess(newProcess, false);
-                    this.tick();
-                    applyInstantGlobalCooldown();
-                }
+                // One-shot targeting at the input frame, shipped with the request; no process
+                var targetResult = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), SpellEngineClient.config.filterInvalidTargets);
+                Platform.util().networkC2S_Send(new Packets.CastRequest(spellId, snapshotFor(spellEntry, targetResult)));
+                applyInstantGlobalCooldown();
             } else {
-                if (authoritative) {
-                    // Predicted process only (display); the server starts its own on the request.
-                    // Current aim rides along so the server has targets from tick one.
-                    var details = SpellParameters.getCastTimeDetails(player, spell);
-                    setProcess(new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.getWorld().getTime()), false);
-                    spellTarget = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), SpellEngineClient.config.filterInvalidTargets);
-                    Platform.util().networkC2S_Send(new Packets.CastRequest(spellId, snapshotFor(spellEntry, spellTarget)));
-                } else {
-                    // Start casting
-                    var details = SpellParameters.getCastTimeDetails(player, spell);
-                    setProcess(new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.getWorld().getTime()), true);
-                }
+                // Predicted process only (display); the server starts its own on the request.
+                // Current aim rides along so the server has targets from tick one.
+                var details = SpellParameters.getCastTimeDetails(player, spell);
+                setProcess(new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.getWorld().getTime()));
+                predictionConfirmed = false;
+                spellTarget = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), SpellEngineClient.config.filterInvalidTargets);
+                var snapshot = snapshotFor(spellEntry, spellTarget);
+                lastSentSnapshot = snapshot; // the request seeds the server's slot; the stream dedups against it
+                Platform.util().networkC2S_Send(new Packets.CastRequest(spellId, snapshot));
             }
         }
         return attempt;
@@ -169,51 +144,24 @@ public class ClientCastController {
     }
 
     public void cancelSpellCast() {
-        cancelSpellCast(true);
-    }
-
-    public void cancelSpellCast(boolean syncProcess) {
         var process = this.predictedProcess;
         if (process != null) {
-            var spell = process.spell().value();
-            if (SpellCast.serverAuthoritative(SpellCast.Mode.from(spell))) {
-                // End-input: the server decides what ending means for this mechanic
-                // (cancel / early channel completion) — regardless of `syncProcess`, which only
-                // ever concerned the legacy cast-sync channel.
-                Platform.util().networkC2S_Send(new Packets.CastInput(process.id(), snapshotFor(process.spell(), spellTarget)));
-                endPrediction();
-                return;
-            }
-            if (SpellParameters.isChanneled(spell)) {
-                var progress = process.progress(player.getWorld().getTime());
-                Platform.util().networkC2S_Send(new Packets.SpellRequest(SpellCast.Action.RELEASE, process.id(), progress.ratio(), new int[]{}, null));
-            }
+            // End-input: the server decides what ending means for this mechanic
+            // (cancel / early channel completion / charge release).
+            Platform.util().networkC2S_Send(new Packets.CastInput(process.id(), snapshotFor(process.spell(), spellTarget)));
         }
-        setProcess(null, syncProcess);
-        spellTarget = SpellTarget.SearchResult.empty();
+        endPrediction();
     }
 
-    /// Releases a CHARGED spell at its current progress (the charge ratio). Below the spell's
-    /// `min_release_ratio` the cast fizzles instead.
+    /// Releases a CHARGED spell. The server computes the ratio from its own clock and applies
+    /// the min-ratio fizzle; the end-input carries the release frame's targets (zero staleness).
     public void releaseCharge() {
         var process = this.predictedProcess;
         if (process == null) {
             return;
         }
-        if (SpellCast.serverAuthoritative(SpellCast.Mode.from(process.spell().value()))) {
-            // The server computes the ratio from its own clock and applies the min-ratio fizzle;
-            // the end-input carries the release frame's targets (zero staleness).
-            Platform.util().networkC2S_Send(new Packets.CastInput(process.id(), snapshotFor(process.spell(), spellTarget)));
-            endPrediction();
-            return;
-        }
-        var charge = process.spell().value().active.cast.charge;
-        var progress = process.progress(player.getWorld().getTime());
-        if (charge != null && progress.ratio() < charge.min_release_ratio) {
-            cancelSpellCast(); // below the minimum charge — fizzle
-            return;
-        }
-        releaseSpellCast(process, SpellCast.Action.RELEASE);
+        Platform.util().networkC2S_Send(new Packets.CastInput(process.id(), snapshotFor(process.spell(), spellTarget)));
+        endPrediction();
     }
 
     /// Per-tick heartbeat of the cast: cancellation conditions, client-side targeting +
@@ -232,99 +180,58 @@ public class ClientCastController {
                 return;
             }
             var spell = process.spell().value();
-            var cast = spell.active.cast;
             spellTarget = SpellTarget.findTargets(player, process.spell(), spellTarget, SpellEngineClient.config.filterInvalidTargets);
             streamTargets(process);
 
+            // Prediction only — the server owns the timeline and fires on its own clock.
             var mode = SpellCast.Mode.from(spell);
-            if (SpellCast.serverAuthoritative(mode)) {
-                // Prediction only — the server owns the timeline and fires on its own clock.
-                var castTicks = process.spellCastTicksSoFar(player.getWorld().getTime());
-                // Reconciliation: if the server never confirmed this cast (its declared process,
-                // mirrored from tracked data, stays empty), the start was rejected server-side —
-                // drop the prediction quietly.
-                var declared = caster.getInteractor().process();
-                if (declared == null && castTicks > RECONCILE_GRACE_TICKS) {
+            var castTicks = process.spellCastTicksSoFar(player.getWorld().getTime());
+            var declared = caster.getInteractor().process();
+            var declaredMatches = declared != null && declared.id().equals(process.id());
+            if (declaredMatches) {
+                predictionConfirmed = true;
+            }
+            if (predictionConfirmed) {
+                // The prediction ends when the SERVER'S declared process ends (it fired,
+                // completed or cancelled) — never at client-computed completion. The client
+                // clock starts at the input frame, the server's ~latency later; ending here
+                // at client completion let a held-key re-cast supersede a server process one
+                // tick away from firing (release swallowed, cast "restarts"). (Bug#1)
+                if (!declaredMatches) {
                     endPrediction();
                     return;
                 }
-                switch (mode) {
-                    case CASTING -> {
-                        if (castTicks >= process.length()) {
-                            endPrediction();
-                        }
-                    }
-                    case CHANNEL -> {
-                        if (process.progress(player.getWorld().getTime()).ratio() >= 1F) {
-                            endPrediction();
-                        }
-                    }
-                    default -> { } // CHARGED holds until key-up
-                }
+            } else if (castTicks > RECONCILE_GRACE_TICKS) {
+                endPrediction(); // the server never confirmed this cast — rejected
                 return;
             }
-
-            if (SpellParameters.isChanneled(spell)) {
-                if (process.isDue(player.getWorld().getTime())) {
-                    process.markDue();
-                    releaseSpellCast(process, SpellCast.Action.CHANNEL);
-                }
-                var progress = process.progress(player.getWorld().getTime());
-                if (progress.ratio() >= 1) {
-                    cancelSpellCast();
-                }
-            } else {
-                var spellCastTicks = process.spellCastTicksSoFar(player.getWorld().getTime());
-                var isFinished = spellCastTicks >= process.length();
-                // CHARGE spells are not auto-released at full: the player may hold the charge
-                // indefinitely and releases manually (key-up, via SpellHotbar -> releaseCharge).
-                if (isFinished && cast.type != Spell.Active.Cast.Type.CHARGE) {
-                    // Release spell
-                    releaseSpellCast(process, SpellCast.Action.RELEASE);
-                }
+            // Fallback: end an overrun prediction even if the declaration was lost
+            if (mode != SpellCast.Mode.CHARGED
+                    && castTicks >= process.length() + RECONCILE_GRACE_TICKS) {
+                endPrediction();
             }
         } else {
             spellTarget = SpellTarget.SearchResult.empty();
         }
     }
 
-    private void releaseSpellCast(SpellCast.Process process, SpellCast.Action action) {
-        var spellId = process.id();
-        var progress = process.progress(player.getWorld().getTime());
-        var targets = spellTarget.entities();
-        var location = spellTarget.location();
-        int[] targetIDs = new int[targets.size()];
-        int i = 0;
-        for (var target : targets) {
-            targetIDs[i] = target.getId();
-            i += 1;
-        }
-
-        Platform.util().networkC2S_Send(new Packets.SpellRequest(action, spellId, progress.ratio(), targetIDs, location));
-        switch (action) {
-            case CHANNEL -> {
-                if (progress.ratio() >= 1) {
-                    cancelSpellCast();
-                }
-            }
-            case RELEASE -> {
-                cancelSpellCast();
-            }
-        }
-    }
-
-    // MARK: Server-authoritative support (Phase D)
+    // MARK: Prediction support
 
     /// How long a predicted cast survives without the server confirming it (declared process
     /// still empty) before the prediction is dropped as rejected. Generous enough for high ping;
     /// the local pre-flight `attempt` catches nearly all denials before a packet is even sent.
     private static final int RECONCILE_GRACE_TICKS = 20;
 
+    /// Whether the server has confirmed the current prediction (its declared process matched
+    /// at least once). Gates the "declaration ended → prediction ends" reconciliation rule.
+    private boolean predictionConfirmed = false;
+
     /// Ends the predicted cast without any packets — the server's own timeline already ran
     /// (or never confirmed) the real thing.
     private void endPrediction() {
-        setProcess(null, false);
+        setProcess(null);
         spellTarget = SpellTarget.SearchResult.empty();
+        predictionConfirmed = false;
     }
 
     /// The snapshot to ship for this spell: the current targeting for cursor-driven shapes,
@@ -338,9 +245,9 @@ public class ClientCastController {
 
     // MARK: Target stream
 
+    /// The last snapshot shipped to the server (via CastRequest or TargetStream), for on-change
+    /// suppression. Seeded by each cast request, so every cast starts with a clean dedup slate.
     @Nullable private SpellCast.TargetSnapshot lastSentSnapshot = null;
-    @Nullable private Identifier lastStreamSpellId = null;
-    private int streamSequence = 0;
 
     /// Replicates the cursor targeting to the server as STATE ("this is what my cursor selects
     /// right now"), every tick IF CHANGED, only while a cursor-driven cast is active. The
@@ -350,19 +257,12 @@ public class ClientCastController {
         if (!option.targeting().clientResolved()) {
             return;
         }
-        var spellId = process.id();
-        if (!spellId.equals(lastStreamSpellId)) {
-            lastStreamSpellId = spellId;
-            lastSentSnapshot = null;
-            streamSequence = 0;
-        }
         var snapshot = SpellCast.TargetSnapshot.of(spellTarget);
         if (snapshot.equals(lastSentSnapshot)) {
             return; // Unchanged aim — silence means "unchanged", the server's copy stays valid
         }
-        streamSequence += 1;
         lastSentSnapshot = snapshot;
-        Platform.util().networkC2S_Send(new Packets.TargetStream(spellId, snapshot, streamSequence));
+        Platform.util().networkC2S_Send(new Packets.TargetStream(process.id(), snapshot));
     }
 
     // MARK: Input policy

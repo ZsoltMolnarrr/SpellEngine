@@ -11,11 +11,6 @@ import java.util.LinkedHashMap;
 public class ServerConfig implements ConfigData { public ServerConfig() {}
     @Comment("Applied as multiplier on top of spell.cast.movement_speed. Default value of 1.0 means no change.")
     public float movement_multiplier_speed_while_casting = 1F;
-    @Comment("Server-authoritative casting, per cast mechanic (rollback switches). When true, the server owns that mechanic's cast timeline — fire moments, channel cadence, charge release — using client-streamed targeting. Set false to fall back to the legacy client-driven protocol for that mechanic.")
-    public boolean server_authoritative_casting = true;
-    public boolean server_authoritative_channel = true;
-    public boolean server_authoritative_charge = true;
-    public boolean server_authoritative_instant = true;
     @Comment("Allow spells to bypass invulnerability frames. This is required in order for high attack frequency spells (such as beams) to work.")
     public boolean bypass_iframes = true;
     @Comment("Spell haste reduces the cooldown time of abilities")

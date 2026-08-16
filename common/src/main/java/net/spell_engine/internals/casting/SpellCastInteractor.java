@@ -27,13 +27,11 @@ import java.util.function.Supplier;
 /// Entity-specific behavior is injected via {@link Ports} (lambdas assembled by a factory such as
 /// {@link #forPlayer}), so the same component serves players and mobs.
 ///
-/// Server-side casting rework, Phase B+ (strangler fig): the legacy client-driven protocol calls
-/// through this class, which accumulates the gate, state and fire logic while the client remains
-/// in charge of timing. Authority flips per cast mechanic in Phase D, at which point
-/// {@link #requestCast} / {@link #requestEnd} become the real entry points and
-/// {@link #performRequested} retires together with the legacy packets.
+/// The timeline is fully server-authoritative: {@link #requestCast} starts (or, for instants,
+/// immediately fires) a cast with server-computed timing, {@link #tick} drives completion and
+/// channel cadence, {@link #requestEnd} handles the player's end-input, and targets come from
+/// the client's streamed cursor snapshot ({@link #submitTargets}) or a server-side lookup.
 public class SpellCastInteractor {
-    private static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
     /// Entity-specific wiring, injected at construction. Every component is a lambda so hosts
     /// compose only what they have; this record names the full contract in one place.
@@ -117,60 +115,13 @@ public class SpellCastInteractor {
 
     // MARK: Signals — cast lifecycle
 
-    /// [CAST-start] Starts the casting process for a timed spell.
-    /// Legacy-driven: `speed`/`length` arrive from the client's `SpellCastSync` packet.
-    /// Phase D1 replaces them with server-computed cast time details.
-    public void requestStart(Identifier spellId, float speed, int length) {
-        var spellEntry = SpellRegistry.from(player.getWorld()).getEntry(spellId).orElse(null);
-        if (spellEntry == null) {
-            return;
-        }
-        var spell = spellEntry.value();
-        if (spell.active == null) {
-            return;
-        }
-        if (SpellCast.serverAuthoritative(SpellCast.Mode.from(spell))) {
-            // The new protocol owns this mechanic ({@link #requestCast}); accepting a legacy
-            // start here would let client-declared timing seed the authoritative timeline.
-            return;
-        }
-        var itemStack = player.getMainHandStack();
-        var attempt = SpellCasting.attempt(player, itemStack, spellId);
-        if (!attempt.isSuccess()) {
-            return;
-        }
-        // Allow clients to specify their haste without validation
-        // var details = SpellParameters.getCastTimeDetails(player, spell);
-        var process = new SpellCast.Process(player, spellEntry, itemStack.getItem(), speed, length, player.getWorld().getTime());
-        // Every channel starts counting from zero. `clearCasting` resets too, but it is not reached
-        // on every path: cancelling a cast to start another one (`cancelSpellCast(false)`) sends no
-        // cast sync packet, leaving only the RELEASE request, which early-returns when
-        // `attemptCasting` fails. Resetting here makes a stale index impossible to inherit.
-        ((SpellCasterEntity) player).setChannelTickIndex(0);
-        SpellCastSyncHelper.setCasting(player, process);
-        SoundHelper.playSound(player.getWorld(), player, spell.active.cast.start_sound);
-    }
-
-    /// [CAST-clear] Ends the casting process without firing (client cancelled, or sync said so).
+    /// [CAST-clear] Ends the casting process without firing, and resets the channel counter.
     public void requestClear() {
-        SpellCastSyncHelper.clearCasting(player);
+        setProcess(null);
+        ((SpellCasterEntity) player).setChannelTickIndex(0);
     }
 
-    /// [FIRE-legacy] Performs the spell with an externally supplied targeting result — the legacy
-    /// protocol, where the client decides when this happens and ships its targets in the packet.
-    /// Only serves mechanics whose server-authority flag is off (plus TRIGGER, which carries
-    /// pre-resolved targets and has no timeline); for flag-on mechanics the request is dropped,
-    /// otherwise a stale or hostile legacy packet would fire a second time.
-    public void performRequested(RegistryEntry<Spell> spellEntry, SpellTarget.SearchResult targetResult, SpellCast.Action action, float progress) {
-        if (action != SpellCast.Action.TRIGGER
-                && SpellCast.serverAuthoritative(SpellCast.Mode.from(spellEntry.value()))) {
-            return;
-        }
-        logTargetDivergence(spellEntry, targetResult, action);
-        SpellExecution.performSpell(player.getWorld(), player, spellEntry, targetResult, action, progress);
-    }
-
-    // MARK: Server-authoritative timeline (Phase D)
+    // MARK: Server-authoritative timeline
 
     /// [FIRE] Performs the spell with server-resolved targets: cursor-driven shapes rehydrate the
     /// latest streamed snapshot; server-resolved shapes (SELF / AROUND_CASTER / NONE) run the same
@@ -198,26 +149,8 @@ public class SpellCastInteractor {
         return new SpellTarget.SearchResult(targets, snapshot.location());
     }
 
-    /// Phase C3 measurement instrument, removed when Phase D flips authority: compares the
-    /// targets the legacy request shipped (exactly-at-fire, the old design's freshness) against
-    /// the streamed snapshot the server would fire with instead. Divergence here IS the staleness
-    /// cost of server-initiated fires — the one open functional question of the rework.
-    private void logTargetDivergence(RegistryEntry<Spell> spellEntry, SpellTarget.SearchResult targetResult, SpellCast.Action action) {
-        var spellId = spellEntry.getKey().get().getValue();
-        var snapshot = latestSnapshot(spellId);
-        if (snapshot == null) {
-            return; // No stream for this spell (server-resolved targeting, or client not streaming)
-        }
-        var requestedIds = targetResult.entities().stream().map(net.minecraft.entity.Entity::getId).toList();
-        if (!requestedIds.equals(snapshot.entityIds())) {
-            LOGGER.info("Spell cast target divergence — spell: {} action: {} request: {} stream: {}",
-                    spellId, action, requestedIds, snapshot.entityIds());
-        }
-    }
-
-    /// Server tick. For server-authoritative mechanics this IS the cast timeline: cancellation
-    /// conditions, completion fire (CASTING), channel cadence (CHANNEL). CHARGE holds until its
-    /// end-input. For mechanics still on the legacy protocol, only the overrun guard runs.
+    /// Server tick — the cast timeline: cancellation conditions, completion fire (CASTING),
+    /// channel cadence (CHANNEL). CHARGE holds until its end-input.
     public void tick() {
         var process = this.process;
         if (process == null) {
@@ -226,18 +159,6 @@ public class SpellCastInteractor {
         var spell = process.spell().value();
         var mode = SpellCast.Mode.from(spell);
         var time = player.getWorld().getTime();
-
-        if (!SpellCast.serverAuthoritative(mode)) {
-            // Legacy overrun guard: a client that stopped talking mid-cast. CHARGE spells may be
-            // held at full charge indefinitely, so they are exempt (otherwise their cast state
-            // would be cleared while still held).
-            var isCharge = spell.active != null
-                    && spell.active.cast.type == Spell.Active.Cast.Type.CHARGE;
-            if (!isCharge && process.spellCastTicksSoFar(time) >= (process.length() * 1.5)) {
-                SpellCastSyncHelper.clearCasting(player);
-            }
-            return;
-        }
 
         // Cancellation conditions, server-side. The client predicts the same and also sends an
         // end-input, but the authority must not depend on that packet arriving in time.
@@ -278,14 +199,13 @@ public class SpellCastInteractor {
         }
     }
 
-    // MARK: Signals — new protocol (registered in Phase B, driven from Phase D)
+    // MARK: Signals — cast protocol
 
     /// The latest client-submitted targeting state ("what my cursor selects right now"), kept as
-    /// a single latest-wins slot. Consumed by server-initiated fires from Phase D on; until then
-    /// it feeds the divergence telemetry above.
+    /// a single slot. Client→server payloads ride one ordered channel, so the last received IS
+    /// the newest — no sequence numbering needed. Consumed by server-initiated fires.
     @Nullable private SpellCast.TargetSnapshot latestSnapshot = null;
     @Nullable private Identifier latestSnapshotSpellId = null;
-    private int latestSnapshotSequence = -1;
 
     /// [CAST-request] The unified start signal of the new protocol: begin casting an option.
     /// Instants carry their targeting snapshot and fire immediately; timed casts start the
@@ -297,11 +217,6 @@ public class SpellCastInteractor {
         }
         var spell = spellEntry.value();
         if (spell.active == null) {
-            return;
-        }
-        if (!SpellCast.serverAuthoritative(SpellCast.Mode.from(spell))) {
-            // Mechanic still on the legacy protocol — keep the snapshot, ignore the signal
-            submitTargets(spellId, snapshot, latestSnapshotSequence + 1);
             return;
         }
         // Possession gate: the spell must actually be granted to this caster
@@ -316,7 +231,7 @@ public class SpellCastInteractor {
         if (this.process != null) {
             requestClear(); // a new cast supersedes any in-flight process (no cost)
         }
-        submitTargets(spellId, snapshot, latestSnapshotSequence + 1);
+        submitTargets(spellId, snapshot);
         if (SpellCast.Mode.from(spell) == SpellCast.Mode.INSTANT) {
             fire(spellEntry, SpellCast.Action.RELEASE, 1F);
             return;
@@ -325,7 +240,7 @@ public class SpellCastInteractor {
         var details = SpellParameters.getCastTimeDetails(player, spell);
         var process = new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.getWorld().getTime());
         ((SpellCasterEntity) player).setChannelTickIndex(0);
-        SpellCastSyncHelper.setCasting(player, process);
+        setProcess(process);
         SoundHelper.playSound(player.getWorld(), player, spell.active.cast.start_sound);
     }
 
@@ -334,16 +249,13 @@ public class SpellCastInteractor {
     /// release frame (zero staleness). The client decides *whether* an input means ending
     /// (hold-vs-toggle policy); the server decides what ending *does*.
     public void requestEnd(Identifier spellId, SpellCast.TargetSnapshot snapshot) {
-        submitTargets(spellId, snapshot, latestSnapshotSequence + 1);
+        submitTargets(spellId, snapshot);
         var process = this.process;
         if (process == null || !process.id().equals(spellId)) {
             return;
         }
         var spell = process.spell().value();
         var mode = SpellCast.Mode.from(spell);
-        if (!SpellCast.serverAuthoritative(mode)) {
-            return;
-        }
         var ratio = process.progress(player.getWorld().getTime()).ratio();
         switch (mode) {
             case CASTING -> requestClear(); // cancelled before completion — nothing fires
@@ -369,27 +281,17 @@ public class SpellCastInteractor {
         }
     }
 
-    /// [TARGET-stream] Latest-wins replication of the client's cursor targeting. Validated
-    /// against the option's wire contract, stored, consumed by server-initiated fires (Phase D).
-    public void submitTargets(Identifier spellId, SpellCast.TargetSnapshot snapshot, int sequence) {
+    /// [TARGET-stream] Replication of the client's cursor targeting. Clamped to the option's
+    /// wire contract and stored; arrival order is delivery order (ordered channel), so a plain
+    /// overwrite keeps the slot newest.
+    public void submitTargets(Identifier spellId, SpellCast.TargetSnapshot snapshot) {
         var spellEntry = SpellRegistry.from(player.getWorld()).getEntry(spellId).orElse(null);
         if (spellEntry == null) {
             return;
         }
         var option = SpellCast.Option.of(spellEntry);
-        if (!snapshot.conformsTo(option.targeting())) {
-            return;
-        }
-        if (!spellId.equals(latestSnapshotSpellId)) {
-            // New spell context: the previous stream's sequence numbering restarts
-            latestSnapshotSequence = -1;
-        }
-        if (sequence <= latestSnapshotSequence) {
-            return; // Late arrival, a newer snapshot is already in place
-        }
-        latestSnapshot = snapshot;
+        latestSnapshot = snapshot.sanitizedFor(option.targeting());
         latestSnapshotSpellId = spellId;
-        latestSnapshotSequence = sequence;
     }
 
     @Nullable public SpellCast.TargetSnapshot latestSnapshot(Identifier spellId) {

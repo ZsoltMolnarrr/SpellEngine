@@ -56,8 +56,6 @@ public class FabricServerNetwork {
         });
 
         // Play stage
-        PayloadTypeRegistry.playC2S().register(Packets.SpellCastSync.PACKET_ID, Packets.SpellCastSync.CODEC);
-        PayloadTypeRegistry.playC2S().register(Packets.SpellRequest.PACKET_ID, Packets.SpellRequest.CODEC);
         PayloadTypeRegistry.playC2S().register(Packets.CastRequest.PACKET_ID, Packets.CastRequest.CODEC);
         PayloadTypeRegistry.playC2S().register(Packets.TargetStream.PACKET_ID, Packets.TargetStream.CODEC);
         PayloadTypeRegistry.playC2S().register(Packets.CastInput.PACKET_ID, Packets.CastInput.CODEC);
@@ -71,10 +69,6 @@ public class FabricServerNetwork {
         PayloadTypeRegistry.playS2C().register(Packets.SpellContainerSync.PACKET_ID, Packets.SpellContainerSync.CODEC);
         PayloadTypeRegistry.playS2C().register(Packets.AttackAvailable.PACKET_ID, Packets.AttackAvailable.CODEC);
 
-        ServerPlayNetworking.registerGlobalReceiver(Packets.SpellCastSync.PACKET_ID, (packet, context) ->
-                ServerNetwork.handleSpellCastSync(packet, context.server(), context.player()));
-        ServerPlayNetworking.registerGlobalReceiver(Packets.SpellRequest.PACKET_ID, (packet, context) ->
-                ServerNetwork.handleSpellRequest(packet, context.server(), context.player()));
         ServerPlayNetworking.registerGlobalReceiver(Packets.CastRequest.PACKET_ID, (packet, context) ->
                 ServerNetwork.handleCastRequest(packet, context.server(), context.player()));
         ServerPlayNetworking.registerGlobalReceiver(Packets.TargetStream.PACKET_ID, (packet, context) ->

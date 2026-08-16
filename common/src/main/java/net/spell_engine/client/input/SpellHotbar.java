@@ -1,5 +1,4 @@
 package net.spell_engine.client.input;
-import net.spell_engine.Platform;
 
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.GameOptions;
@@ -17,7 +16,6 @@ import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCasterClient;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.mixin.client.control.KeybindingAccessor;
-import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -247,16 +245,6 @@ public class SpellHotbar {
             HudMessages.INSTANCE.castAttemptError(attempt);
         }
         this.attemptedSpell = spell;
-    }
-
-    private Identifier lastSyncedSpellId = null;
-    public void syncItemUseSkill(ClientPlayerEntity player) {
-        Identifier idToSync = null;
-        if (!Objects.equals(idToSync, lastSyncedSpellId)) {
-            // System.out.println("Syncing item use skill: " + idToSync);
-            Platform.util().networkC2S_Send(new Packets.SpellCastSync(idToSync, 1, 1000));
-            lastSyncedSpellId = idToSync;
-        }
     }
 
     private enum UseCase { START, STOP }

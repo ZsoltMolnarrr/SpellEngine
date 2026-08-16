@@ -1,19 +1,14 @@
 package net.spell_engine.network;
 
 import com.google.common.collect.Iterables;
-import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.melee.Melee;
-import net.spell_engine.internals.target.SpellTarget;
 
-import java.util.ArrayList;
-import java.util.List;
 
 /// Server-side packet handling. This class is loader-agnostic: it holds only the handler
 /// bodies. Payload registration, configuration tasks and the lifecycle event wiring live in
@@ -25,54 +20,7 @@ public class ServerNetwork {
     public static final String CONFIG_TASK_NAME = SpellEngineMod.ID + ":" + "config";
     public static final String SPELL_REGISTRY_TASK_NAME = SpellEngineMod.ID + ":" + "spell_registry";
 
-    public static void handleSpellCastSync(Packets.SpellCastSync packet, MinecraftServer server, ServerPlayerEntity player) {
-        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
-                .orNull();
-        if (world == null || world.isClient) {
-            return;
-        }
-
-        world.getServer().executeSync(() -> {
-            var interactor = ((SpellCasterEntity) player).getInteractor();
-            if (packet.spellId() == null) {
-                interactor.requestClear();
-            } else {
-                interactor.requestStart(packet.spellId(), packet.speed(), packet.length());
-            }
-        });
-    }
-
-    public static void handleSpellRequest(Packets.SpellRequest packet, MinecraftServer server, ServerPlayerEntity player) {
-        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
-                .orNull();
-        if (world == null || world.isClient) {
-            return;
-        }
-
-        world.getServer().executeSync(() -> {
-            var spellEntry = SpellRegistry.from(world).getEntry(packet.spellId());
-            if (spellEntry.isEmpty()) {
-                return;
-            }
-            List<Entity> targets = new ArrayList<>();
-            for (var targetId: packet.targets()) {
-                // var entity = world.getEntityById(targetId);
-                var entity = world.getDragonPart(targetId); // Retrieves `getEntityById` + dragon parts :)
-                if (entity != null) {
-                    targets.add(entity);
-                } else {
-                    System.err.println("Spell Engine: Trying to perform spell " + packet.spellId().toString() + " Entity not found: " + targetId);
-                }
-            }
-            var target = new SpellTarget.SearchResult(targets, packet.location());
-            ((SpellCasterEntity) player).getInteractor()
-                    .performRequested(spellEntry.get(), target, packet.action(), packet.progress());
-        });
-    }
-
-    // MARK: New casting protocol (server-side casting rework, Phase B)
-    // Registered on both loaders, but nothing sends these yet — clients still speak the legacy
-    // SpellCastSync/SpellRequest protocol. They become the driving signals in Phase D.
+    // MARK: Casting protocol — signals into the caster's SpellCastInteractor
 
     public static void handleCastRequest(Packets.CastRequest packet, MinecraftServer server, ServerPlayerEntity player) {
         ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
@@ -92,7 +40,7 @@ public class ServerNetwork {
             return;
         }
         world.getServer().executeSync(() -> {
-            ((SpellCasterEntity) player).getInteractor().submitTargets(packet.spellId(), packet.snapshot(), packet.sequence());
+            ((SpellCasterEntity) player).getInteractor().submitTargets(packet.spellId(), packet.snapshot());
         });
     }
 

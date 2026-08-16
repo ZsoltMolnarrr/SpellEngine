@@ -50,14 +50,6 @@ public class NetworkEvents {
         });
 
         // Play stage — client → server
-        registrar.playToServer(Packets.SpellCastSync.PACKET_ID, Packets.SpellCastSync.CODEC, (packet, context) -> {
-            var player = (ServerPlayerEntity) context.player();
-            ServerNetwork.handleSpellCastSync(packet, player.server, player);
-        });
-        registrar.playToServer(Packets.SpellRequest.PACKET_ID, Packets.SpellRequest.CODEC, (packet, context) -> {
-            var player = (ServerPlayerEntity) context.player();
-            ServerNetwork.handleSpellRequest(packet, player.server, player);
-        });
         registrar.playToServer(Packets.CastRequest.PACKET_ID, Packets.CastRequest.CODEC, (packet, context) -> {
             var player = (ServerPlayerEntity) context.player();
             ServerNetwork.handleCastRequest(packet, player.server, player);

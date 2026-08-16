@@ -8,7 +8,6 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -175,19 +174,6 @@ public class SpellCast {
         }
     }
 
-    /// Server-side casting rework, Phase D: whether the server owns the cast timeline (fire
-    /// moments) for this cast mechanic. Per-mechanic rollback switches; the config is synced,
-    /// so client and server always agree on who drives.
-    public static boolean serverAuthoritative(Mode mode) {
-        var config = SpellEngineMod.config;
-        return switch (mode) {
-            case INSTANT -> config.server_authoritative_instant;
-            case CASTING -> config.server_authoritative_casting;
-            case CHANNEL -> config.server_authoritative_channel;
-            case CHARGED -> config.server_authoritative_charge;
-            case PASSIVE, ITEM_USE -> false;
-        };
-    }
 
     /// An actively castable spell of a caster: the spell itself, the derived classification of
     /// how casting it unfolds over time ({@link Mode}) and how it acquires targets
@@ -299,16 +285,24 @@ public class SpellCast {
             return new TargetSnapshot(result.entities().stream().map(Entity::getId).toList(), result.location());
         }
 
-        /// Submission validation against an option's wire contract. `entityRequired` is
-        /// deliberately NOT checked here: an empty snapshot is a valid *submission* (the aim may
-        /// wander off target mid-cast) — a missing required entity gates the fire, not the stream.
-        public boolean conformsTo(Option.Targeting targeting) {
+        /// Clamps this snapshot to an option's wire contract — never rejects, because a state
+        /// update that gets dropped stalls the receiver on older state (e.g. a beam crossing
+        /// more entities than the cap would freeze the server's targets). Ids past
+        /// `maxEntities` are cut, a disallowed location is dropped, non-cursor shapes reduce
+        /// to EMPTY. `entityRequired` is deliberately not involved: a missing required entity
+        /// gates the fire, not the stream.
+        public TargetSnapshot sanitizedFor(Option.Targeting targeting) {
             if (!targeting.clientResolved()) {
-                return entityIds.isEmpty() && location == null;
+                return EMPTY;
             }
-            if (entityIds.size() > targeting.maxEntities()) { return false; }
-            if (location != null && !targeting.locationAllowed()) { return false; }
-            return true;
+            var ids = entityIds.size() > targeting.maxEntities()
+                    ? List.copyOf(entityIds.subList(0, targeting.maxEntities()))
+                    : entityIds;
+            var clampedLocation = targeting.locationAllowed() ? location : null;
+            if (ids == entityIds && clampedLocation == location) {
+                return this;
+            }
+            return new TargetSnapshot(ids, clampedLocation);
         }
     }
 
