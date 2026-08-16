@@ -45,56 +45,12 @@ public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
         return castController;
     }
 
+    /// The one derived-read override: the LOCAL player's process is the controller's
+    /// prediction (born at the input frame), not the interactor's server mirror — every
+    /// interface default (current spell, casting speed, beam, ...) composes with this.
     @Override
     @Nullable public SpellCast.Process getSpellCastProcess() {
         return castController.predictedProcess();
-    }
-
-    @Override
-    public Spell getCurrentSpell() {
-        var process = castController.predictedProcess();
-        if (process != null) {
-            return process.spell().value();
-        }
-        return null;
-    }
-
-    @Override
-    public float getCurrentCastingSpeed() {
-        var process = castController.predictedProcess();
-        if (process != null) {
-            return process.speed();
-        }
-        return 1F;
-    }
-
-    public boolean isCastingSpell() {
-        return castController.predictedProcess() != null;
-    }
-
-    public SpellCast.Attempt startSpellCast(ItemStack itemStack, RegistryEntry<Spell> spellEntry) {
-        return castController.startSpellCast(itemStack, spellEntry);
-    }
-
-    @Nullable public SpellCast.Progress getSpellCastProgress() {
-        return castController.progress();
-    }
-
-    public void cancelSpellCast() {
-        castController.cancelSpellCast();
-    }
-
-    @Override
-    public void releaseCharge() {
-        castController.releaseCharge();
-    }
-
-    public List<Entity> getCurrentTargets() {
-        return castController.currentTargets();
-    }
-
-    public Entity getCurrentFirstTarget() {
-        return castController.currentFirstTarget();
     }
 
     // MARK: Melee delivery — client-side scheduled attacks

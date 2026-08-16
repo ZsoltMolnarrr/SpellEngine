@@ -11,58 +11,65 @@ import net.spell_engine.internals.SpellExecution;
 import net.spell_engine.internals.SpellParameters;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.target.SpellTarget;
+import net.spell_engine.utils.Binding;
 import net.spell_engine.utils.SoundHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /// The server-side casting authority component of a caster: owns the caster's castable
 /// {@link SpellCast.Option}s and the {@link SpellCast.Process}, and receives control signals
-/// (from network handlers for players; from `MobCastController` for mobs, later). Drivers cannot
+/// (network handlers, driven by the owning client). Drivers cannot
 /// be told apart from in here — no signal carries packet or input types.
 ///
-/// Entity-specific behavior is injected via {@link Ports} (lambdas assembled by a factory such as
-/// {@link #forPlayer}), so the same component serves players and mobs.
+/// Entity-specific wiring is injected via {@link Ports} (lambdas assembled by a factory such as
+/// {@link #forPlayer}). Mob casting deliberately does NOT run on this component — see
+/// `MobCastController` for why (engagement-gated pacing).
 ///
 /// The timeline is fully server-authoritative: {@link #requestCast} starts (or, for instants,
 /// immediately fires) a cast with server-computed timing, {@link #tick} drives completion and
 /// channel cadence, {@link #requestEnd} handles the player's end-input, and targets come from
 /// the client's streamed cursor snapshot ({@link #submitTargets}) or a server-side lookup.
 public class SpellCastInteractor {
+    private static final com.google.gson.Gson syncGson = new com.google.gson.Gson();
 
     /// Entity-specific wiring, injected at construction. Every component is a lambda so hosts
-    /// compose only what they have; this record names the full contract in one place.
-    /// (Phase D/E additions land here: cost policy, server-side target resolution, animations.)
+    /// compose only what they have; this record names the full contract in one place. The sync
+    /// bindings lens raw synced values (tracked-data slots for players) — the interactor's
+    /// synced state is stored THROUGH them, not next to them: the server write projects the
+    /// authoritative object out to clients, the client read is the synced truth the interactor
+    /// lazily parses. Binding writes must no-op on the client side.
+    /// (Future additions land here: cost policy, server-side target resolution, animations.)
     public record Ports(
-            /// Recomputes the caster's current options (player: from spell containers;
-            /// mob: from its behaviour config). Invoked on {@link #invalidateOptions}.
+            /// Recomputes the caster's current options from its spell containers.
+            /// Invoked on {@link #invalidateOptions}.
             Supplier<List<SpellCast.Option>> resolveOptions,
-            /// Declares the cast process to interested clients (player: tracked data — the
-            /// caster's own client reconciles its prediction, observers render the cast).
-            /// Must no-op on the client side.
-            Consumer<SpellCast.Process> declareProcess,
-            /// Declares the caster's options to interested clients (player: tracked data,
-            /// consumed by the owner's hotbar). Must no-op on the client side.
-            Consumer<List<SpellCast.Option>> declareOptions
+            /// Sync slot of the cast process (the caster's own client reconciles its
+            /// prediction against it, observers render the cast from it).
+            Binding<String> processSync,
+            /// Sync slot of the castable options (consumed by the owner's hotbar).
+            Binding<String> optionsSync
     ) { }
 
-    /// Assembles the player wiring. The declaration lambdas are supplied by the caller
+    /// Assembles the player wiring. The sync bindings are supplied by the caller
     /// (`PlayerEntityMixin`), since the tracked data slots live there.
     public static SpellCastInteractor forPlayer(PlayerEntity player,
-                                                Consumer<SpellCast.Process> declareProcess,
-                                                Consumer<List<SpellCast.Option>> declareOptions) {
+                                                Binding<String> processSync,
+                                                Binding<String> optionsSync) {
         return new SpellCastInteractor(player, new Ports(
                 () -> SpellCast.Option.allOf(player),
-                declareProcess,
-                declareOptions
+                processSync,
+                optionsSync
         ));
     }
 
-    /// Used directly by legacy strangler internals (attempt gate, perform, sounds) — these
-    /// migrate behind ports in Phase E, when mobs join.
+    /// Used directly by the gate, fire and sound paths; would move behind ports only if a
+    /// second host type ever joins this component.
     private final PlayerEntity player;
     private final Ports ports;
 
@@ -73,12 +80,20 @@ public class SpellCastInteractor {
 
     // MARK: Owned state — options
 
-    /// The caster's castable options. On the server: authoritative, recomputed via
-    /// {@link Ports#resolveOptions} whenever containers change. On the client: a mirror,
-    /// set from the synced tracked data via {@link #mirrorOptions}.
+    /// The caster's castable options, stored through {@link Ports#optionsSync}. The in-memory
+    /// list is a parse-cache over the binding's raw value: on the client a changed raw (a server
+    /// declaration arrived) re-parses lazily on read; the server records the raw it wrote and so
+    /// never re-parses its own writes. String equality is an identity check until a sync
+    /// actually replaces the value, so the per-read cost is negligible.
     private List<SpellCast.Option> options = List.of();
+    private String lastOptionsRaw = "";
 
     public List<SpellCast.Option> options() {
+        var raw = ports.optionsSync().get();
+        if (!raw.equals(lastOptionsRaw)) {
+            lastOptionsRaw = raw;
+            options = parseOptions(raw);
+        }
         return options;
     }
 
@@ -88,29 +103,76 @@ public class SpellCastInteractor {
         var computed = ports.resolveOptions().get();
         if (!computed.equals(options)) {
             options = computed;
-            ports.declareOptions().accept(computed);
+            var raw = serializeOptions(computed);
+            lastOptionsRaw = raw;
+            ports.optionsSync().set(raw);
         }
     }
 
-    /// Client-side: store the options declared by the server (no recompute, no re-declare).
-    public void mirrorOptions(List<SpellCast.Option> synced) {
-        options = synced;
+    private static String serializeOptions(List<SpellCast.Option> options) {
+        var syncFormats = options.stream().map(SpellCast.Option::sync).toArray(SpellCast.Option.SyncFormat[]::new);
+        return syncGson.toJson(syncFormats);
+    }
+
+    private List<SpellCast.Option> parseOptions(String raw) {
+        if (raw.isEmpty()) {
+            return List.of();
+        }
+        var syncFormats = syncGson.fromJson(raw, SpellCast.Option.SyncFormat[].class);
+        return Arrays.stream(syncFormats)
+                .map(sync -> SpellCast.Option.fromSync(player.getWorld(), sync))
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     // MARK: Owned state — cast process
 
     @Nullable private SpellCast.Process process = null;
+    private String lastProcessRaw = "";
 
+    /// Read-through over {@link Ports#processSync}, same contract as {@link #options()}. The
+    /// no-reparse-own-writes property matters here beyond cost: the server's authoritative
+    /// Process carries consumed channel-tick state that a JSON round trip would lose.
     @Nullable public SpellCast.Process process() {
+        var raw = ports.processSync().get();
+        if (!raw.equals(lastProcessRaw)) {
+            lastProcessRaw = raw;
+            process = parseProcess(raw);
+        }
         return process;
     }
 
-    /// Single write path for the process, server and client mirror alike: stores, then declares
-    /// via the port (which no-ops on the client).
+    /// Single write path (server): stores the authoritative object and projects it out through
+    /// the sync binding, which carries it to the owner's client and observers.
     public void setProcess(@Nullable SpellCast.Process process) {
         if (process != null && process.spell().value().active == null) { return; }
         this.process = process;
-        ports.declareProcess().accept(process);
+        var raw = process != null ? process.fastSyncJSON() : "";
+        lastProcessRaw = raw;
+        ports.processSync().set(raw);
+    }
+
+    @Nullable private SpellCast.Process parseProcess(String raw) {
+        if (raw.isEmpty()) {
+            return null;
+        }
+        var syncFormat = syncGson.fromJson(raw, SpellCast.Process.SyncFormat.class);
+        return SpellCast.Process.fromSync(player, player.getWorld(), syncFormat,
+                player.getMainHandStack().getItem(), player.getWorld().getTime());
+    }
+
+    // MARK: Owned state — channel tick counter
+
+    /// Index of the current channel tick within a channeled cast. Single writer: the interactor's
+    /// own timeline (via `performSpell`'s guarded increment). Reset with the process.
+    private int channelTickIndex = 0;
+
+    public int channelTickIndex() {
+        return channelTickIndex;
+    }
+
+    public void setChannelTickIndex(int value) {
+        channelTickIndex = value;
     }
 
     // MARK: Signals — cast lifecycle
@@ -118,7 +180,7 @@ public class SpellCastInteractor {
     /// [CAST-clear] Ends the casting process without firing, and resets the channel counter.
     public void requestClear() {
         setProcess(null);
-        ((SpellCasterEntity) player).setChannelTickIndex(0);
+        channelTickIndex = 0;
     }
 
     // MARK: Server-authoritative timeline
@@ -239,7 +301,7 @@ public class SpellCastInteractor {
         // Server-computed cast timing — the client's prediction is display-only from here
         var details = SpellParameters.getCastTimeDetails(player, spell);
         var process = new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.getWorld().getTime());
-        ((SpellCasterEntity) player).setChannelTickIndex(0);
+        channelTickIndex = 0;
         setProcess(process);
         SoundHelper.playSound(player.getWorld(), player, spell.active.cast.start_sound);
     }

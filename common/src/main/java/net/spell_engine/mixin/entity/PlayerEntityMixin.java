@@ -1,6 +1,5 @@
 package net.spell_engine.mixin.entity;
 
-import com.google.gson.Gson;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -10,8 +9,8 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.arrow.ArrowShootContext;
-import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCastInteractor;
+import net.spell_engine.utils.Binding;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.cost.SpellCooldownManager;
 import net.spell_engine.internals.melee.Melee;
@@ -19,13 +18,9 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import static net.spell_engine.api.spell.Spell.Target.Type.BEAM;
 
 @Mixin(value = PlayerEntity.class, priority = 555)
 public class PlayerEntityMixin implements SpellCasterEntity {
@@ -36,21 +31,24 @@ public class PlayerEntityMixin implements SpellCasterEntity {
 
     private final SpellCooldownManager spellCooldownManager = new SpellCooldownManager(player());
 
-    /// The casting authority component. The two lambdas are its declaration ports: they write
-    /// the tracked data slots below, and no-op on the client (where the interactor is a mirror).
+    /// The casting authority component. The two bindings lens its synced state (process,
+    /// options) onto the tracked data slots below: the server writes through them, the client
+    /// reads through them (the interactor parses lazily on change — no polling here).
     private final SpellCastInteractor interactor = SpellCastInteractor.forPlayer(player(),
-            process -> {
-                if (!player().getWorld().isClient) {
-                    var json = process != null ? process.fastSyncJSON() : "";
-                    player().getDataTracker().set(SPELL_ENGINE_SPELL_PROGRESS, json);
-                }
-            },
-            options -> {
-                if (!player().getWorld().isClient) {
-                    var syncFormats = options.stream().map(SpellCast.Option::sync).toArray(SpellCast.Option.SyncFormat[]::new);
-                    player().getDataTracker().set(SPELL_ENGINE_OPTIONS, syncGson.toJson(syncFormats));
-                }
-            });
+            new Binding<>(
+                    () -> player().getDataTracker().get(SPELL_ENGINE_SPELL_PROGRESS),
+                    json -> {
+                        if (!player().getWorld().isClient) {
+                            player().getDataTracker().set(SPELL_ENGINE_SPELL_PROGRESS, json);
+                        }
+                    }),
+            new Binding<>(
+                    () -> player().getDataTracker().get(SPELL_ENGINE_OPTIONS),
+                    json -> {
+                        if (!player().getWorld().isClient) {
+                            player().getDataTracker().set(SPELL_ENGINE_OPTIONS, json);
+                        }
+                    }));
 
     @Override
     public SpellCastInteractor getInteractor() {
@@ -60,49 +58,12 @@ public class PlayerEntityMixin implements SpellCasterEntity {
     private static final TrackedData<String> SPELL_ENGINE_SPELL_PROGRESS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.STRING);
     private static final TrackedData<String> SPELL_ENGINE_OPTIONS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.STRING);
     private static final TrackedData<Float> SPELL_ENGINE_EXTRA_SLIPPERINESS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.FLOAT);
-    private static final Gson syncGson = new Gson();
 
     @Inject(method = "initDataTracker", at = @At("TAIL"))
     private void initDataTracker_TAIL_SpellEngine_SyncEffects(DataTracker.Builder builder, CallbackInfo ci) {
         builder.add(SPELL_ENGINE_SPELL_PROGRESS, "");
         builder.add(SPELL_ENGINE_OPTIONS, "");
         builder.add(SPELL_ENGINE_EXTRA_SLIPPERINESS, 0F);
-    }
-
-    public void setSpellCastProcess(@Nullable SpellCast.Process process) {
-        interactor.setProcess(process);
-    }
-
-    private int channelTickIndex = 0;
-    @Override
-    public void setChannelTickIndex(int channelTickIndex) {
-        this.channelTickIndex = channelTickIndex;
-    }
-    @Override
-    public int getChannelTickIndex() {
-        return channelTickIndex;
-    }
-
-    @Nullable public SpellCast.Process getSpellCastProcess() {
-        return interactor.process();
-    }
-
-    @Override
-    public Spell getCurrentSpell() {
-        var process = getSpellCastProcess();
-        if (process != null) {
-            return process.spell().value();
-        }
-        return null;
-    }
-
-    @Override
-    public float getCurrentCastingSpeed() {
-        var process = getSpellCastProcess();
-        if (process != null) {
-            return process.speed();
-        }
-        return 1F; // Fallback value
     }
 
     private ArrowShootContext arrowShotContext = ArrowShootContext.empty();
@@ -120,41 +81,11 @@ public class PlayerEntityMixin implements SpellCasterEntity {
         return spellCooldownManager;
     }
 
-    private String lastHandledSyncData = "";
-    private String lastHandledOptionsData = "";
-
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL_SpellEngine(CallbackInfo ci) {
         var player = player();
         if (player.getWorld().isClient) {
             ((AnimatablePlayer)player()).updateSpellCastAnimationsOnTick();
-
-            // Check changes in tracked data
-            var progressString = player.getDataTracker().get(SPELL_ENGINE_SPELL_PROGRESS);
-            if (!progressString.equals(lastHandledSyncData)) {
-                if (progressString.isEmpty()) {
-                    interactor.setProcess(null);
-                } else {
-                    var syncFormat = syncGson.fromJson(progressString, SpellCast.Process.SyncFormat.class);
-                    interactor.setProcess(SpellCast.Process.fromSync(player, player.getWorld(), syncFormat, player.getMainHandStack().getItem(), player.getWorld().getTime()));
-                }
-                lastHandledSyncData = progressString;
-            }
-
-            var optionsString = player.getDataTracker().get(SPELL_ENGINE_OPTIONS);
-            if (!optionsString.equals(lastHandledOptionsData)) {
-                if (optionsString.isEmpty()) {
-                    interactor.mirrorOptions(List.of());
-                } else {
-                    var syncFormats = syncGson.fromJson(optionsString, SpellCast.Option.SyncFormat[].class);
-                    interactor.mirrorOptions(Arrays.stream(syncFormats)
-                            .map(sync -> SpellCast.Option.fromSync(player.getWorld(), sync))
-                            .filter(Objects::nonNull)
-                            .toList());
-                }
-                lastHandledOptionsData = optionsString;
-            }
-
         } else {
             // Server side
             interactor.tick();
@@ -165,19 +96,6 @@ public class PlayerEntityMixin implements SpellCasterEntity {
             }
         }
         spellCooldownManager.tickUpdate();
-    }
-
-    public boolean isBeaming() {
-        return getBeam() != null;
-    }
-
-    @Nullable
-    public Spell.Target.Beam getBeam() {
-        var spell = getCurrentSpell();
-        if (spell != null && spell.target != null && spell.target.type == BEAM) {
-            return spell.target.beam;
-        }
-        return null;
     }
 
     private Melee.ActiveAttack activeAttack_serverSide = null;

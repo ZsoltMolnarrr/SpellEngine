@@ -93,7 +93,7 @@ public class SpellExecution {
         });
         switch (action) {
             case CHANNEL -> {
-                channelTickIndex = caster.getChannelTickIndex();
+                channelTickIndex = caster.getInteractor().channelTickIndex();
                 incrementChannelTicks = 1;
                 channelMultiplier = SpellParameters.channelValueMultiplier(spell);
                 // Compensating with extra damage, for spell with less than intended ticks
@@ -192,7 +192,7 @@ public class SpellExecution {
                 if (incrementChannelTicks > 0
                         && castProcess != null
                         && castProcess.id().equals(spellId)) {
-                    caster.setChannelTickIndex(channelTickIndex + incrementChannelTicks);
+                    caster.getInteractor().setChannelTickIndex(channelTickIndex + incrementChannelTicks);
                 }
             } else {
                 if (finished && completion != null) {

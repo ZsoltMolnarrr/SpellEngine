@@ -164,12 +164,10 @@ public class HudRenderHelper {
 
             public static ViewModel from(ClientPlayerEntity player) {
                 var caster = (SpellCasterClient)player;
-                var target = caster.getCurrentFirstTarget();
-                var text = "";
-                if (target != null
-                        && (/* SpellEngineClient.config.showTargetNameWhenMultiple || */ caster.getCurrentTargets().size() == 1)) {
-                    text = target.getName().getString();
-                }
+                var targets = caster.getCurrentTargets();
+                var text = targets.size() == 1
+                        ? targets.getFirst().getName().getString()
+                        : "";
                 return new ViewModel(text);
             }
         }

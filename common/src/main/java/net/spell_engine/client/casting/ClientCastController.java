@@ -65,10 +65,6 @@ public class ClientCastController {
         return targets;
     }
 
-    @Nullable public Entity currentFirstTarget() {
-        return spellTarget.entities().stream().findFirst().orElse(null);
-    }
-
     @Nullable public SpellCast.Progress progress() {
         if (predictedProcess != null) {
             return predictedProcess.progress(player.getWorld().getTime());
