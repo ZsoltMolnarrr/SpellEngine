@@ -39,6 +39,14 @@ public class SpellTarget {
     }
 
     public static SearchResult findTargets(LivingEntity caster, RegistryEntry<Spell> spellEntry, SearchResult previous, boolean filterInvalidTargets) {
+        return findTargets(caster, spellEntry, previous, filterInvalidTargets, SpellParameters.getRange(caster, spellEntry));
+    }
+
+    /// `resolvedRange` — the caster-resolved reach to search at, WITHOUT the caster scale
+    /// multiplier (applied here). Callers override it to search at something other than the
+    /// plain resolved range: the client targets at the option's maximum (full-charge) range,
+    /// the server fires at the true (charge-ratio-scaled) range.
+    public static SearchResult findTargets(LivingEntity caster, RegistryEntry<Spell> spellEntry, SearchResult previous, boolean filterInvalidTargets, float resolvedRange) {
         var currentSpell = spellEntry.value();
         List<Entity> targets = List.of();
         var previousTargets = previous.entities;
@@ -49,7 +57,7 @@ public class SpellTarget {
         boolean fallbackToPreviousTargets = false;
         var focusMode = SpellIntents.focusMode(currentSpell);
         var targetType = currentSpell.target.type;
-        var range = SpellParameters.getRange(caster, spellEntry) * caster.getScale();
+        var range = resolvedRange * caster.getScale();
 
         Predicate<Entity> selectionPredicate = (target) -> {
             var deliveryIntent = SpellIntents.deliveryIntent(currentSpell);

@@ -42,7 +42,7 @@ import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.DamageSourceExtension;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
-import net.spell_engine.internals.EntityPlacements;
+import net.spell_engine.internals.delivery.EntityPlacements;
 import net.spell_engine.internals.SpellExecution;
 import net.spell_engine.internals.SpellExecution.ConditionResult;
 import net.spell_engine.internals.SpellExecution.ImpactContext;

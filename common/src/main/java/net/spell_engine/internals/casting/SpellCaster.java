@@ -3,9 +3,9 @@ package net.spell_engine.internals.casting;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.casting.ClientCastController;
-import net.spell_engine.internals.arrow.ArrowShootContext;
+import net.spell_engine.internals.delivery.arrow.ArrowShootContext;
 import net.spell_engine.internals.cost.SpellCooldownManager;
-import net.spell_engine.internals.melee.Melee;
+import net.spell_engine.internals.delivery.melee.Melee;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;

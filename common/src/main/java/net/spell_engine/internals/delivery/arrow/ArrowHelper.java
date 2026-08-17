@@ -1,4 +1,4 @@
-package net.spell_engine.internals.arrow;
+package net.spell_engine.internals.delivery.arrow;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;

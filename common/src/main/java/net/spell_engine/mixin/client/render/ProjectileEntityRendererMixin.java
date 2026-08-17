@@ -9,7 +9,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.client.render.SpellProjectileRenderer;
-import net.spell_engine.internals.arrow.ArrowExtension;
+import net.spell_engine.internals.delivery.arrow.ArrowExtension;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

@@ -1,4 +1,4 @@
-package net.spell_engine.internals.melee;
+package net.spell_engine.internals.delivery.melee;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;

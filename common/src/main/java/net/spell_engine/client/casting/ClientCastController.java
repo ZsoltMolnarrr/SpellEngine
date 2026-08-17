@@ -4,7 +4,6 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
 import net.spell_engine.Platform;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
@@ -105,7 +104,7 @@ public class ClientCastController {
             var instant = SpellParameters.isInstantCast(spellEntry, player);
             if (instant) {
                 // One-shot targeting at the input frame, shipped with the request; no process
-                var targetResult = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), SpellEngineClient.config.filterInvalidTargets);
+                var targetResult = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), SpellEngineClient.config.filterInvalidTargets, targetingRange(spellEntry));
                 Platform.util().networkC2S_Send(new Packets.CastRequest(spellId, snapshotFor(spellEntry, targetResult)));
                 applyInstantGlobalCooldown();
             } else {
@@ -114,7 +113,7 @@ public class ClientCastController {
                 var details = SpellParameters.getCastTimeDetails(player, spell);
                 setProcess(new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.getWorld().getTime()));
                 predictionConfirmed = false;
-                spellTarget = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), SpellEngineClient.config.filterInvalidTargets);
+                spellTarget = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), SpellEngineClient.config.filterInvalidTargets, targetingRange(spellEntry));
                 var snapshot = snapshotFor(spellEntry, spellTarget);
                 lastSentSnapshot = snapshot; // the request seeds the server's slot; the stream dedups against it
                 Platform.util().networkC2S_Send(new Packets.CastRequest(spellId, snapshot));
@@ -177,7 +176,7 @@ public class ClientCastController {
                 return;
             }
             var spell = process.spell().value();
-            spellTarget = SpellTarget.findTargets(player, process.spell(), spellTarget, SpellEngineClient.config.filterInvalidTargets);
+            spellTarget = SpellTarget.findTargets(player, process.spell(), spellTarget, SpellEngineClient.config.filterInvalidTargets, targetingRange(process.spell()));
             streamTargets(process);
 
             // Prediction only — the server owns the timeline and fires on its own clock.
@@ -279,11 +278,26 @@ public class ClientCastController {
         predictionConfirmed = false;
     }
 
+    /// The range the client targets at: the declared option's flattened MAXIMUM range —
+    /// server-resolved, so modifiers and the full charge bonus are included without the client
+    /// knowing the caster's modifier spells. The client runs the expensive lookup (raycasts,
+    /// terrain collision) at this widest reach; the server filters to the true (ratio-scaled)
+    /// range at fire. Falls back to local derivation while no declaration covers the spell yet
+    /// (e.g. the round-trip gap right after an equipment swap).
+    private float targetingRange(RegistryEntry<Spell> spellEntry) {
+        var id = spellEntry.getKey().get().getValue();
+        for (var option : ((SpellCaster.Player) player).getInteractor().options()) {
+            if (option.id().equals(id)) {
+                return option.range();
+            }
+        }
+        return SpellParameters.getMaxRange(player, spellEntry);
+    }
+
     /// The snapshot to ship for this spell: the current targeting for cursor-driven shapes,
     /// EMPTY for server-resolved shapes (whose payloads the server would reject anyway).
     private static SpellCast.TargetSnapshot snapshotFor(RegistryEntry<Spell> spellEntry, SpellTarget.SearchResult targetResult) {
-        var option = SpellCast.Option.of(spellEntry);
-        return option.targeting().clientResolved()
+        return SpellCast.Option.Targeting.of(spellEntry.value()).clientResolved()
                 ? SpellCast.TargetSnapshot.of(targetResult)
                 : SpellCast.TargetSnapshot.EMPTY;
     }
@@ -298,8 +312,7 @@ public class ClientCastController {
     /// right now"), every tick IF CHANGED, only while a cursor-driven cast is active. The
     /// server's authoritative fires consume the latest snapshot.
     private void streamTargets(SpellCast.Process process) {
-        var option = SpellCast.Option.of(process.spell());
-        if (!option.targeting().clientResolved()) {
+        if (!SpellCast.Option.Targeting.of(process.spell().value()).clientResolved()) {
             return;
         }
         var snapshot = SpellCast.TargetSnapshot.of(spellTarget);

@@ -5,6 +5,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.SpellExecution;
@@ -19,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /// The server-side casting authority component of a caster: owns the caster's castable
@@ -189,26 +189,44 @@ public class SpellCastInteractor {
     /// latest streamed snapshot; server-resolved shapes (SELF / AROUND_CASTER / NONE) run the same
     /// server-side lookup the mob path uses.
     private void fire(RegistryEntry<Spell> spellEntry, SpellCast.Action action, float progress) {
-        SpellExecution.performSpell(player.getWorld(), player, spellEntry, resolveTargets(spellEntry), action, progress);
+        SpellExecution.performSpell(player.getWorld(), player, spellEntry, resolveTargets(spellEntry, progress), action, progress);
     }
 
-    private SpellTarget.SearchResult resolveTargets(RegistryEntry<Spell> spellEntry) {
-        var option = SpellCast.Option.of(spellEntry);
-        if (!option.targeting().clientResolved()) {
-            return SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), true);
+    /// Resolves the targets of a fire at the TRUE range: the caster-resolved range plus the charge
+    /// bonus scaled by the released ratio (`progress`; inert for non-CHARGE casts). The division of
+    /// labor with the client: the client runs the expensive lookup (raycasts, terrain collision) at
+    /// the option's MAX range, the server only validates magnitudes — cheap squared-distance checks
+    /// against each submitted target's bounding box. Validation clamps, never rejects: out-of-range
+    /// entities are dropped individually, an out-of-range location is pulled back onto the range.
+    private SpellTarget.SearchResult resolveTargets(RegistryEntry<Spell> spellEntry, float progress) {
+        // The one true range of this fire, shared by every branch below (the caster scale is
+        // applied inside `findTargets` for the server-resolved shapes, explicitly here for the rest)
+        var range = SpellParameters.getRange(player, spellEntry, progress);
+        var targeting = SpellCast.Option.Targeting.of(spellEntry.value());
+        if (!targeting.clientResolved()) {
+            return SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), true, range);
         }
         var snapshot = latestSnapshot(spellEntry.getKey().get().getValue());
         if (snapshot == null || !(player.getWorld() instanceof ServerWorld serverWorld)) {
             return SpellTarget.SearchResult.empty();
         }
+        var scaledRange = range * player.getScale();
+        var allowed = scaledRange + SpellEngineMod.config.spell_target_range_tolerance;
+        var squaredAllowed = allowed * allowed;
+        var origin = player.getEyePos(); // client raycasts originate at the eye
         List<Entity> targets = new ArrayList<>();
         for (var targetId : snapshot.entityIds()) {
             var entity = serverWorld.getDragonPart(targetId); // `getEntityById` + dragon parts
-            if (entity != null && !entity.isRemoved()) {
+            if (entity != null && !entity.isRemoved()
+                    && entity.getBoundingBox().squaredMagnitude(origin) <= squaredAllowed) {
                 targets.add(entity);
             }
         }
-        return new SpellTarget.SearchResult(targets, snapshot.location());
+        var location = snapshot.location();
+        if (location != null && location.squaredDistanceTo(origin) > squaredAllowed) {
+            location = origin.add(location.subtract(origin).normalize().multiply(scaledRange));
+        }
+        return new SpellTarget.SearchResult(targets, location);
     }
 
     /// Server tick — the cast timeline: cancellation conditions, completion fire (CASTING),
@@ -354,8 +372,7 @@ public class SpellCastInteractor {
         if (spellEntry == null) {
             return;
         }
-        var option = SpellCast.Option.of(spellEntry);
-        latestSnapshot = snapshot.sanitizedFor(option.targeting());
+        latestSnapshot = snapshot.sanitizedFor(SpellCast.Option.Targeting.of(spellEntry.value()));
         latestSnapshotSpellId = spellId;
     }
 

@@ -178,8 +178,10 @@ public class SpellCast {
     /// An actively castable spell of a caster: the spell itself, the derived classification of
     /// its AUTHORED cast mechanic ({@link Mode}) and how it acquires targets
     /// ({@link Targeting}), plus the container-scoped resolved magnitudes flattened in
-    /// (`range`, `channelTicks` — base values + spell modifier contributions). Everything is
-    /// derived, never authored. The flattened values let clients predict targeting range and
+    /// (`range`, `channelTicks` — base values + spell modifier contributions). `range` is the
+    /// MAXIMUM effective range: modifiers plus the full charge `range_add` — the client targets
+    /// at this bound and the server filters to the true (ratio-scaled) range at fire. Everything
+    /// is derived, never authored. The flattened values let clients predict targeting range and
     /// channel cadence WITHOUT knowing the caster's modifier spells; they refresh whenever the
     /// caster's containers change (the interactor re-derives and re-declares). Attribute-scoped
     /// magnitudes (haste-driven cast duration) are deliberately NOT flattened — attributes sync
@@ -194,25 +196,19 @@ public class SpellCast {
     public record Option(RegistryEntry<Spell> spell, Mode mode, Targeting targeting,
                          float range, int channelTicks) {
 
-        /// Caster-aware derivation: resolved values include the caster's spell modifiers.
+        /// Caster-aware derivation: resolved values include the caster's spell modifiers;
+        /// `range` is the maximum (full-charge) reach.
         public static Option of(PlayerEntity caster, RegistryEntry<Spell> spellEntry) {
             var spell = spellEntry.value();
             return new Option(spellEntry, Mode.from(spell), Targeting.of(spell),
-                    SpellParameters.getRange(caster, spellEntry),
+                    SpellParameters.getMaxRange(caster, spellEntry),
                     SpellParameters.channelTicks(caster, spellEntry));
         }
 
-        /// Caster-free derivation: resolved values are the spell's base values (no modifiers).
-        /// Use only where classification (`mode`/`targeting`) is what matters — e.g. snapshot
-        /// contract validation; casters obtain their options from the interactor instead.
-        public static Option of(RegistryEntry<Spell> spellEntry) {
-            var spell = spellEntry.value();
-            return new Option(spellEntry, Mode.from(spell), Targeting.of(spell),
-                    spell.range,
-                    spell.active != null ? spell.active.cast.channelTicks() : 0);
-        }
-
         /// The actively castable spells of a player, in container order, with resolved values.
+        /// (There is deliberately no caster-free derivation: call sites that only need
+        /// classification use {@link Targeting#of} directly; resolved magnitudes always
+        /// come from a caster.)
         public static List<Option> allOf(PlayerEntity player) {
             return SpellContainerSource.activeSpellsOf(player).stream()
                     .map(entry -> Option.of(player, entry))

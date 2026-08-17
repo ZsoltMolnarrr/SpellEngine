@@ -7,7 +7,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.container.SpellContainerSource;
-import net.spell_engine.internals.melee.Melee;
+import net.spell_engine.internals.delivery.melee.Melee;
 
 
 /// Server-side packet handling. This class is loader-agnostic: it holds only the handler

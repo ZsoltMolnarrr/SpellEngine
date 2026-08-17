@@ -44,7 +44,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Predicate;
-import net.spell_engine.internals.melee.OrientedBoundingBox;
+import net.spell_engine.internals.delivery.melee.OrientedBoundingBox;
 import net.spell_engine.internals.SpellExecution;
 import net.spell_engine.internals.impact.SpellImpacts;
 import net.spell_engine.internals.target.SpellIntents;

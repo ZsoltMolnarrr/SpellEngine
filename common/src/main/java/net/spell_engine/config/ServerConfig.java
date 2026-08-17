@@ -23,6 +23,8 @@ public class ServerConfig implements ConfigData { public ServerConfig() {}
     public boolean spell_cost_durability_allowed = true;
     @Comment("The time in ticks of global cooldown to apply to all instant cast spells when casted.")
     public int spell_instant_cast_global_cooldown = 0;
+    @Comment("Extra distance in blocks allowed when the server validates the range of client-targeted entities at spell fire. Covers the drift between the client's aim frame and the server tick (latency + movement).")
+    public float spell_target_range_tolerance = 2F;
     @Comment("Players cannot unequip a spell book, if one of the spells in it is on cooldown.")
     public boolean spell_item_cooldown_lock = true;
     @Comment("Additional cooldown in seconds applied to equipped spell book item, after casting a spell from them, to prevent quick swapping and casting.")

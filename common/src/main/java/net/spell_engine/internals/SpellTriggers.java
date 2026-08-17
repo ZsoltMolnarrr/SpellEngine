@@ -17,7 +17,7 @@ import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.compat.MeleeCompat;
 import net.spell_engine.compat.CriticalStrikeCompat;
-import net.spell_engine.internals.arrow.ArrowExtension;
+import net.spell_engine.internals.delivery.arrow.ArrowExtension;
 import net.spell_engine.internals.casting.SpellBatcher;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCaster;

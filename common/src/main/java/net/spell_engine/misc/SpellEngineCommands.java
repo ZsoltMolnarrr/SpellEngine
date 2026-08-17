@@ -1,4 +1,4 @@
-package net.spell_engine.internals;
+package net.spell_engine.misc;
 
 import net.spell_engine.PlatformEvents;
 import net.minecraft.command.argument.EntityArgumentType;

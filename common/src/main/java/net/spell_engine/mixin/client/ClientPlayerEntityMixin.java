@@ -1,20 +1,16 @@
 package net.spell_engine.mixin.client;
 
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.Vec3d;
 import net.spell_engine.Platform;
 import net.spell_engine.PlatformClient;
 import net.spell_engine.api.effect.EntityActionsAllowed;
-import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.client.casting.ClientCastController;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCaster;
-import net.spell_engine.internals.melee.Melee;
+import net.spell_engine.internals.delivery.melee.Melee;
 import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;

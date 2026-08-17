@@ -10,7 +10,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.SpellTriggers;
-import net.spell_engine.internals.arrow.ArrowHelper;
+import net.spell_engine.internals.delivery.arrow.ArrowHelper;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.utils.StatusEffectUtil;
 import net.spell_power.api.SpellPower;

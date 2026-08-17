@@ -4,7 +4,7 @@ import net.minecraft.entity.LivingEntity;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.effect.CustomParticleStatusEffect;
 import net.spell_engine.api.effect.Synchronized;
-import net.spell_engine.client.beam.BeamEmitterEntity;
+import net.spell_engine.client.render.BeamEmitterEntity;
 import net.spell_engine.internals.delivery.Beam;
 import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.api.spell.fx.Fx;

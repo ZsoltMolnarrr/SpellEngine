@@ -21,7 +21,7 @@ import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.SummonedEntity;
 import net.spell_engine.internals.SpellTriggers;
-import net.spell_engine.internals.arrow.ArrowExtension;
+import net.spell_engine.internals.delivery.arrow.ArrowExtension;
 import net.spell_engine.internals.target.EntityRelation;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.fx.ParticleHelper;
