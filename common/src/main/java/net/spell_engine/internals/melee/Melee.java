@@ -25,7 +25,7 @@ import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.mixin.entity.LivingEntityAccessor;
@@ -273,7 +273,7 @@ public class Melee {
             // side movement, so it has to match the value the client is already sliding with.
             var modifiers = allAttacksOf(player, resolved.melee().attacks, resolved.spell(), charge.modifier()).spellModifiers();
             var attack = convert(player, attackContext.spellId(), attackData, attackSpeedMultiplier, modifiers, curvedRatio, charge.modifier());
-            ((SpellCasterEntity) player).setMeleeSkillAttack(new ActiveAttack(attack, player.age, player.getMainHandStack().getItem()));
+            ((SpellCaster.Player) player).setMeleeSkillAttack(new ActiveAttack(attack, player.age, player.getMainHandStack().getItem()));
             // Sending fx to clients - animation, sound, particles
             var trackers = Platform.tracking(player);
             float speed = (float) (attackData.attack_speed_multiplier * AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player));
@@ -326,7 +326,7 @@ public class Melee {
             var targets = new ArrayList<Entity>();
             var resolvedContext = resolveAttackData(player, world, context.spellId, context.attackId);
             var spellEntry = resolvedContext.spell();
-            ((SpellCasterEntity)player).setActiveMeleeSkill(spellEntry);
+            ((SpellCaster.Player)player).setActiveMeleeSkill(spellEntry);
             var attack = resolvedContext.attack();
             Sound impactSound = null;
             int impactSoundLimit = 0;
@@ -413,7 +413,7 @@ public class Melee {
         if (appliedChargeModifier != null) {
             attributeInstance.removeModifier(appliedChargeModifier);
         }
-        ((SpellCasterEntity)player).setActiveMeleeSkill(null);
+        ((SpellCaster.Player)player).setActiveMeleeSkill(null);
     }
 
     private static SpellTarget.FocusMode focusMode() {

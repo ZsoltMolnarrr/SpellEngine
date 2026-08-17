@@ -48,7 +48,7 @@ import net.spell_engine.internals.SpellExecution.ConditionResult;
 import net.spell_engine.internals.SpellExecution.ImpactContext;
 import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.internals.SpellTriggers;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.cost.SpellCooldownManager;
 import net.spell_engine.internals.target.EntityRelations;
@@ -693,7 +693,7 @@ public class SpellImpacts {
                             SpellTriggers.onSpellImpactSpecific(player, target, spellEntry, impact, critical, Spell.Trigger.Stage.PRE);
                         }
                         ///
-                        var cooldownManager = ((SpellCasterEntity)playerTarget).getCooldownManager();
+                        var cooldownManager = ((SpellCaster.Player)playerTarget).getCooldownManager();
                         if (cooldown.actives != null) {
                             var spells = SpellContainerSource.activeSpellsOf(playerTarget);
                             modified = modified || modifyCooldowns(spells, cooldown.actives, cooldownManager);

@@ -13,7 +13,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.client.casting.ClientCastController;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.casting.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.melee.Melee;
 import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
@@ -30,7 +30,7 @@ import java.util.List;
 /// process state machine and targeting — Phase C1 of the server-side casting rework moved the
 /// logic there), and runs the client side of MELEE delivery (scheduled attacks).
 @Mixin(ClientPlayerEntity.class)
-public abstract class ClientPlayerEntityMixin implements SpellCasterClient {
+public abstract class ClientPlayerEntityMixin implements SpellCaster.Client {
 
     private ClientPlayerEntity player() {
         return (ClientPlayerEntity) ((Object) this);

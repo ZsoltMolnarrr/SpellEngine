@@ -15,7 +15,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.registry.SpellRegistry;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
 
@@ -237,7 +237,7 @@ public class SpellContainerSource {
             // re-declares to the owner's client (tracked data). Server-side only: on the client
             // the interactor mirrors the declared options instead of computing its own.
             if (!player.getWorld().isClient) {
-                ((SpellCasterEntity) player).getInteractor().invalidateOptions();
+                ((SpellCaster.Player) player).getInteractor().invalidateOptions();
             }
         }
     }

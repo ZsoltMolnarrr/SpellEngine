@@ -11,6 +11,7 @@ import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.arrow.ArrowShootContext;
 import net.spell_engine.internals.casting.SpellCastInteractor;
 import net.spell_engine.utils.Binding;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.casting.SpellCasterEntity;
 import net.spell_engine.internals.cost.SpellCooldownManager;
 import net.spell_engine.internals.melee.Melee;
@@ -23,7 +24,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
 @Mixin(value = PlayerEntity.class, priority = 555)
-public class PlayerEntityMixin implements SpellCasterEntity {
+// Implements the DEPRECATED bridge type (extends SpellCaster.Player) on purpose: external
+// compat mods cast players to SpellCasterEntity — the cast only works if players implement it.
+public class PlayerEntityMixin implements SpellCaster.Player, SpellCasterEntity {
 
     private PlayerEntity player() {
         return (PlayerEntity) ((Object) this);

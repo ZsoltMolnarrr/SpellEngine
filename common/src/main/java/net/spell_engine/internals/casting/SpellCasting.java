@@ -24,7 +24,7 @@ public class SpellCasting {
     /// on the client before a cast request is even sent. Composes the cooldown and ammo checks with
     /// the PRE/POST attempt events mods can inject a verdict through.
     public static SpellCast.Attempt attempt(PlayerEntity player, ItemStack itemStack, Identifier spellId, boolean checkAmmo) {
-        var caster = (SpellCasterEntity)player;
+        var caster = (SpellCaster.Player)player;
         var spellEntry = SpellRegistry.from(player.getWorld()).getEntry(spellId).orElse(null);
         if (spellEntry == null) {
             return SpellCast.Attempt.none();

@@ -8,7 +8,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.RotationAxis;
 import net.spell_engine.api.effect.CustomModelStatusEffect;
 import net.spell_engine.api.effect.Synchronized;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,7 +19,7 @@ public class LivingEntityRendererMixin {
 
     @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("HEAD"))
     private void render_HEAD_SpellEngine(LivingEntity livingEntity, float f, float delta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, CallbackInfo ci) {
-        if (livingEntity instanceof SpellCasterEntity caster) {
+        if (livingEntity instanceof SpellCaster.Player caster) {
             var process = caster.getSpellCastProcess();
             if (process != null) {
                 var spell = process.spell().value();

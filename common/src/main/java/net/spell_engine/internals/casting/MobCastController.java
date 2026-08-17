@@ -14,6 +14,7 @@ import net.spell_engine.internals.SpellParameters;
 import net.spell_engine.internals.delivery.SpellDelivery;
 import net.spell_engine.internals.target.SpellIntents;
 import net.spell_engine.internals.target.SpellTarget;
+import net.spell_engine.utils.SoundHelper;
 import net.spell_power.api.SpellPower;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,9 +22,11 @@ import java.util.Comparator;
 
 /// Mob-side counterpart of {@link SpellCastInteractor}'s drivers: encapsulates the whole cast
 /// lifecycle of a summon — option resolution (from its {@link SummonBehaviour} config), aim
-/// strategies, engagement-gated cast timing, and the cost-free server-side fire (formerly
-/// `SpellExecution.targetAndPerformSpell`). `SpellCastGoal` is a thin vanilla-`Goal` adapter
-/// over this; a Brain-based mob or scripted caster can drive the same lifecycle directly.
+/// strategies, cast timing (engagement-gated for timed casts; wall-clock schedule for channels,
+/// declared via the entity's synced process for beam presentation), and the cost-free
+/// server-side fire (formerly `SpellExecution.targetAndPerformSpell`). `SpellCastGoal` is a
+/// thin vanilla-`Goal` adapter over this; a Brain-based mob or scripted caster can drive the
+/// same lifecycle directly.
 ///
 /// Deliberately NOT running on `SpellCastInteractor`'s timeline: a mob cast progresses only
 /// while its aim is engaged (in range + line of sight), which is AI-native pacing the wall-clock
@@ -44,6 +47,10 @@ public class MobCastController {
     // How this activation aims, resolved once when the cast begins. Capturing it at begin() pins
     // the target for the whole cast, so a mid-cast retarget can't redirect the spell. Cleared in end().
     @Nullable private CastAim aim = null;
+    // Channel state: the schedule-carrying process of a channeled activation (null otherwise),
+    // declared on the entity for client presentation (beam, particles, sound).
+    @Nullable private SpellCast.Process channel = null;
+    private boolean channelFired = false;
 
     public MobCastController(SummonedEntity entity, SummonBehaviour.Action.SpellCast config) {
         this.entity = entity;
@@ -82,9 +89,8 @@ public class MobCastController {
         if (entry == null) return false;
         var spell = entry.value();
         if (spell.active == null) return false;           // ACTIVE spells only
-        // Summons only cast INSTANT and CASTING spells. Channeled and charged spells depend on
-        // player-input timing (per-tick channeling / hold-to-release), so they are silently skipped.
-        if (SpellParameters.isChanneled(spell)) return false;
+        // CHARGE spells depend on player input (hold-to-release) and are silently skipped.
+        // INSTANT, CASTING and CHANNEL all work — channels run on a server-owned schedule.
         if (spell.active.cast.type == Spell.Active.Cast.Type.CHARGE) return false;
         if (!entity.isActive()) return false;             // not in spawn/despawn phase
         if (entity.cooldownManager.isCoolingDown(entry)) return false;
@@ -98,10 +104,21 @@ public class MobCastController {
         aim = resolveAim(entry);
         if (entry != null) {
             var spell = entry.value();
-            castDuration = SpellParameters.isInstant(spell)
-                    ? 1
-                    : SpellParameters.getCastTimeDetails(entity, spell).length();
-            if (castDuration <= 0) castDuration = 1;
+            if (SpellParameters.isChanneled(spell)) {
+                // Channels have no wind-up: the cast IS the channel, running on a server-owned
+                // schedule (the same Process machinery players use), declared on the entity so
+                // clients render the beam and play the cast presentation.
+                var details = SpellParameters.getCastTimeDetails(entity, spell);
+                channel = new SpellCast.Process(entity, entry, null, details.speed(), details.length(), entity.getWorld().getTime());
+                channelFired = false;
+                entity.declareCastProcess(channel);
+                SoundHelper.playSound(entity.getWorld(), entity, spell.active.cast.start_sound);
+            } else {
+                castDuration = SpellParameters.isInstant(spell)
+                        ? 1
+                        : SpellParameters.getCastTimeDetails(entity, spell).length();
+                if (castDuration <= 0) castDuration = 1;
+            }
         }
         entity.onSpellCastStarted(entity.pickVariant(config.cast_animation_variants));
         entity.setAttacking(true);
@@ -115,6 +132,15 @@ public class MobCastController {
         entity.setAttacking(false);
         entity.getNavigation().stop();
         aim = null;
+        if (channel != null) {
+            entity.declareCastProcess(null);
+            // An interrupted channel already dealt its per-tick output — cooldown still applies
+            if (channelFired && !released && spellEntry != null) {
+                applyCooldown(spellEntry, spellEntry.value());
+            }
+            channel = null;
+            channelFired = false;
+        }
         // Covers both the natural-end path and early cancellation. Idempotent.
         entity.onSpellCastEnded();
         // Only consult clear_conditions when the spell actually fired this activation.
@@ -129,9 +155,30 @@ public class MobCastController {
         if (entry == null) return;
         aim.approach();                 // chase the subject (no-op when stationary)
         aim.orient();                   // face the way the spell must fire
+        if (channel != null) {
+            tickChannel(entry, entry.value());
+            return;
+        }
         if (aim.engaged()) castTick++;  // progress only while in range and visible
         if (castTick >= castDuration) {
             releaseSpell(entry, entry.value());
+            released = true;
+        }
+    }
+
+    /// Channel timeline: wall-clock schedule, matching player channels — no engagement pause;
+    /// a broken line of sight just means the beam hits a wall and the raycast finds no targets.
+    /// Aim aborts (target dead / out of max range) still end the channel via `shouldContinue`.
+    private void tickChannel(RegistryEntry<Spell> entry, Spell spell) {
+        var time = entity.getWorld().getTime();
+        if (channel.isDue(time)) {
+            channel.markDue();
+            aim.orient(); // final orient before the raycast reads the look vector
+            fireChannelTick(entry, spell);
+            channelFired = true;
+        }
+        if (channel.progress(time).ratio() >= 1F) {
+            finishChannel(entry, spell);
             released = true;
         }
     }
@@ -143,8 +190,44 @@ public class MobCastController {
         performSpell(entry);
         entity.onSpellCastEnded();
         entity.onSpellReleased(entity.pickVariant(config.release_animation_variants), config.release_animation_duration);
+        applyCooldown(entry, spell);
+    }
 
-        // Cooldown: use spell's own duration if set, else fall back to config override (ticks)
+    /// One tick of a channeled cast: the spell's output split across the channel's ticks,
+    /// exactly like the player path — including the sub-tick interval compensation.
+    private void fireChannelTick(RegistryEntry<Spell> spellEntry, Spell spell) {
+        var world = entity.getWorld();
+        if (world.isClient()) return;
+        var multiplier = SpellParameters.channelValueMultiplier(spell);
+        var interval = channel.channelInterval(entity);
+        if (interval < 1) {
+            multiplier *= (1F / interval);
+        }
+        var context = ownerAdjusted(new SpellExecution.ImpactContext()
+                .power(SpellPower.getSpellPower(spell.school, entity))
+                .target(SpellIntents.focusMode(spell))
+                .channeled(multiplier));
+        SpellDelivery.resolveAndDeliver(world, entity, spellEntry, cappedTargets(spellEntry, spell), context,
+                (completionArgs) -> {
+                    if (completionArgs.success() && spell.active.cast.channelReleaseFx()) {
+                        ReleaseFx.send(world, entity, spellEntry, 1F);
+                    }
+                });
+    }
+
+    /// Natural end of a channel: release FX (unless every tick already played it), release
+    /// animation, cooldown. Impacts happened on the ticks — nothing fires here.
+    private void finishChannel(RegistryEntry<Spell> entry, Spell spell) {
+        if (!entity.getWorld().isClient() && !spell.active.cast.channelReleaseFx()) {
+            ReleaseFx.send(entity.getWorld(), entity, entry, 1F);
+        }
+        entity.onSpellCastEnded();
+        entity.onSpellReleased(entity.pickVariant(config.release_animation_variants), config.release_animation_duration);
+        applyCooldown(entry, spell);
+    }
+
+    /// Cooldown: use spell's own duration if set, else fall back to config override (ticks)
+    private void applyCooldown(RegistryEntry<Spell> entry, Spell spell) {
         int cooldownTicks;
         if (spell.cost.cooldown != null && spell.cost.cooldown.duration > 0) {
             cooldownTicks = Math.round(SpellParameters.getCooldownDuration(entity, entry) * 20F);
@@ -165,20 +248,34 @@ public class MobCastController {
         var spell = spellEntry.value();
         if (spell.active == null) return;
 
-        var context = new SpellExecution.ImpactContext()
+        var context = ownerAdjusted(new SpellExecution.ImpactContext()
                 .power(SpellPower.getSpellPower(spell.school, entity))
-                .target(SpellIntents.focusMode(spell));
+                .target(SpellIntents.focusMode(spell)));
 
+        SpellDelivery.resolveAndDeliver(world, entity, spellEntry, cappedTargets(spellEntry, spell), context,
+                (completionArgs) -> {
+                    if (completionArgs.success()) {
+                        // Summons never cast CHARGE spells, so the pitch shift never applies; pass full.
+                        ReleaseFx.send(world, entity, spellEntry, 1F);
+                    }
+                });
+    }
+
+    /// A pet's helpful casts attribute to its owner.
+    private SpellExecution.ImpactContext ownerAdjusted(SpellExecution.ImpactContext context) {
         if (!entity.isAttackable() && entity instanceof Tameable) {
             var owner = ((Tameable) entity).getOwner();
             if (owner != null) {
-                context = context.effectiveCaster(owner);
+                return context.effectiveCaster(owner);
             }
         }
+        return context;
+    }
 
+    /// Server-side targeting from the entity's current rotation/position, with the target cap
+    /// applied (sorted by distance to the caster).
+    private SpellTarget.SearchResult cappedTargets(RegistryEntry<Spell> spellEntry, Spell spell) {
         var targetResult = SpellTarget.findTargets(entity, spellEntry, SpellTarget.SearchResult.empty(), true);
-
-        // Apply target cap, sorted by distance to caster
         var targets = targetResult.entities();
         if (spell.target.cap > 0) {
             targets = targets.stream()
@@ -187,14 +284,7 @@ public class MobCastController {
                     .toList();
             targetResult = new SpellTarget.SearchResult(targets, targetResult.location());
         }
-
-        SpellDelivery.resolveAndDeliver(world, entity, spellEntry, targetResult, context,
-                (completionArgs) -> {
-                    if (completionArgs.success()) {
-                        // Summons never cast CHARGE spells, so the pitch shift never applies; pass full.
-                        ReleaseFx.send(world, entity, spellEntry, 1F);
-                    }
-                });
+        return targetResult;
     }
 
     // MARK: Aim resolution

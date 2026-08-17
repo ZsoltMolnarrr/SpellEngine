@@ -13,7 +13,7 @@ import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.SpellHotbar;
 import net.spell_engine.internals.SpellParameters;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.casting.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.casting.SpellCasting;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.network.Packets;
@@ -24,7 +24,7 @@ import java.util.List;
 /// Client-side counterpart of the server-side casting authority ({@link
 /// net.spell_engine.internals.casting.SpellCastInteractor}). One instance per
 /// `ClientPlayerEntity`, owned by its mixin and reachable via
-/// {@link SpellCasterClient#getCastController()} — so all state resets naturally when vanilla
+/// {@link SpellCaster.Client#getCastController()} — so all state resets naturally when vanilla
 /// replaces the player entity on respawn or world join. Owns:
 /// - the input POLICY of casting: what a key hold or release means per cast mode (start,
 ///   cancel, charge release; hold-to-cast vs toggle) — `SpellHotbar` owns the input MECHANICS
@@ -133,7 +133,7 @@ public class ClientCastController {
                 }
                 var spell = spellEntry.value();
                 if (spell.active != null && spell.active.cast != null && spell.active.cast.duration <= 0) {
-                    ((SpellCasterClient) player).getCooldownManager().set(spellEntry, duration, false);
+                    ((SpellCaster.Client) player).getCooldownManager().set(spellEntry, duration, false);
                 }
             }
         }
@@ -166,7 +166,7 @@ public class ClientCastController {
     public void tick() {
         var process = this.predictedProcess;
         if (process != null) {
-            var caster = (SpellCasterClient) player;
+            var caster = (SpellCaster.Client) player;
             if (!player.isAlive()
                     || player.getMainHandStack().getItem() != process.item()
                     || caster.getCooldownManager().isCoolingDown(process.spell())

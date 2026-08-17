@@ -5,7 +5,7 @@ import com.github.exopandora.shouldersurfing.api.plugin.IShoulderSurfingRegistra
 import net.minecraft.client.MinecraftClient;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
-import net.spell_engine.internals.casting.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCaster;
 
 public class ShoulderSurfingCompatibility implements IShoulderSurfingPlugin {
     private static final int toleranceTicks = 3;
@@ -16,7 +16,7 @@ public class ShoulderSurfingCompatibility implements IShoulderSurfingPlugin {
             if (SpellContainerHelper.hasUsableContainer(itemStack)) {
                 var player = MinecraftClient.getInstance().player;
                 if (player != null & SpellEngineClient.config.shoulderSurfingAdaptiveWhileUse) {
-                    var casting = ((SpellCasterClient)player).getSpellCastProgress() != null;
+                    var casting = ((SpellCaster.Client)player).getSpellCastProgress() != null;
                     if (casting) {
                         this.setTicks(player.age);
                     }

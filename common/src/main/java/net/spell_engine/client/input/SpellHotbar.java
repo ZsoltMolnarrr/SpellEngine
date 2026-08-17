@@ -13,8 +13,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.HudMessages;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.casting.SpellCasterClient;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.mixin.client.control.KeybindingAccessor;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,7 +53,7 @@ public class SpellHotbar {
         var initialSlotCount = slots.size();
         // Server-declared options, mirrored via tracked data (the server owns what is castable;
         // the client no longer derives this from containers)
-        var castOptions = ((SpellCasterEntity) player).getInteractor().options();
+        var castOptions = ((SpellCaster.Player) player).getInteractor().options();
 
         var slots = new ArrayList<Slot>();
         var otherSlots = new ArrayList<Slot>();
@@ -202,7 +201,7 @@ public class SpellHotbar {
                 } else if (pressed) {
                     // Forward the control event; the controller owns what it means for this
                     // cast mode. The hotbar only keeps the edge memory (debounce) it reports.
-                    var reaction = ((SpellCasterClient) player).getCastController().keyHeld(slot.option(),
+                    var reaction = ((SpellCaster.Client) player).getCastController().keyHeld(slot.option(),
                             isReleased(keyBinding, UseCase.STOP), isReleased(keyBinding, UseCase.START));
                     switch (reaction.type()) {
                         case STARTED -> {
@@ -220,7 +219,7 @@ public class SpellHotbar {
                         case NONE -> { }
                     }
                 } else {
-                    if (((SpellCasterClient) player).getCastController().keyUp(slot.option())) {
+                    if (((SpellCaster.Client) player).getCastController().keyUp(slot.option())) {
                         handledThisTick = handle;
                         return handle;
                     }

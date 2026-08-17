@@ -12,7 +12,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.*;
 import net.spell_engine.compat.CombatRollCompat;
-import net.spell_engine.internals.casting.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCaster;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
@@ -56,7 +56,7 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
         if (player.isUsingItem()) {
             return;
         }
-        var caster = (SpellCasterClient) player;
+        var caster = (SpellCaster.Client) player;
         if (caster.getCurrentSkillAttack() != null) {
             itemUseCooldown = Math.max(itemUseCooldown, 1); // Blocking item use
             attackCooldown = 1; // Blocking attacks
@@ -84,7 +84,7 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
                 player.stopUsingItem();
                 itemUseCooldown = 1;
             }
-            if ( (handled.isSuccessfulAttempt() || ((SpellCasterClient)player).isCastingSpell())
+            if ( (handled.isSuccessfulAttempt() || ((SpellCaster.Client)player).isCastingSpell())
                     && handled.keyBinding() == options.useKey) {
                 useKeySpellCastingLock = true;
             }
@@ -92,7 +92,7 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
         if (useKeySpellCastingLock && !options.useKey.isPressed()) {
             useKeySpellCastingLock = false;
         }
-        if (((SpellCasterClient)player).isCastingSpell()) {
+        if (((SpellCaster.Client)player).isCastingSpell()) {
             attackCooldown = 2;
         }
     }
@@ -101,7 +101,7 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
     private void tick_HEAD_SpellHotbar(CallbackInfo ci) {
         if (player == null || options == null) { return; }
         if (currentScreen != null || CombatRollCompat.isRolling.apply(player)) {
-            ((SpellCasterClient)player).cancelSpellCast();
+            ((SpellCaster.Client)player).cancelSpellCast();
         }
     }
 
@@ -139,7 +139,7 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
     @Inject(method = "doItemUse", at = @At("HEAD"), cancellable = true)
     private void doItemUse_HEAD_autoSwap(CallbackInfo ci) {
         if (useKeySpellCastingLock
-                || ((SpellCasterClient)player).isCastingSpell()) {
+                || ((SpellCaster.Client)player).isCastingSpell()) {
             ci.cancel();
             return;
         }

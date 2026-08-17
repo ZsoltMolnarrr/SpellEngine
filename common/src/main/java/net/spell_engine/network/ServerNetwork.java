@@ -5,7 +5,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.melee.Melee;
 
@@ -29,7 +29,7 @@ public class ServerNetwork {
             return;
         }
         world.getServer().executeSync(() -> {
-            ((SpellCasterEntity) player).getInteractor().requestCast(packet.spellId(), packet.snapshot());
+            ((SpellCaster.Player) player).getInteractor().requestCast(packet.spellId(), packet.snapshot());
         });
     }
 
@@ -40,7 +40,7 @@ public class ServerNetwork {
             return;
         }
         world.getServer().executeSync(() -> {
-            ((SpellCasterEntity) player).getInteractor().submitTargets(packet.spellId(), packet.snapshot());
+            ((SpellCaster.Player) player).getInteractor().submitTargets(packet.spellId(), packet.snapshot());
         });
     }
 
@@ -51,7 +51,7 @@ public class ServerNetwork {
             return;
         }
         world.getServer().executeSync(() -> {
-            ((SpellCasterEntity) player).getInteractor().requestEnd(packet.spellId(), packet.snapshot());
+            ((SpellCaster.Player) player).getInteractor().requestEnd(packet.spellId(), packet.snapshot());
         });
     }
 
@@ -83,7 +83,7 @@ public class ServerNetwork {
     /// server-side spell containers. Wired to `ServerPlayConnectionEvents.JOIN` /
     /// `ServerEntityWorldChangeEvents` on Fabric and to `PlayerEvent` on NeoForge.
     public static void onPlayerConnectOrChangeWorld(ServerPlayerEntity player) {
-        ((SpellCasterEntity) player).getCooldownManager().pushSync();
+        ((SpellCaster.Player) player).getCooldownManager().pushSync();
         SpellContainerSource.syncServerSideContainers(player);
     }
 }

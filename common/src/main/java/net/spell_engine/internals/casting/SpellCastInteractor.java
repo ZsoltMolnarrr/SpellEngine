@@ -226,7 +226,7 @@ public class SpellCastInteractor {
         // end-input, but the authority must not depend on that packet arriving in time.
         if (!player.isAlive()
                 || player.getMainHandStack().getItem() != process.item()
-                || ((SpellCasterEntity) player).getCooldownManager().isCoolingDown(process.spell())) {
+                || ((SpellCaster.Player) player).getCooldownManager().isCoolingDown(process.spell())) {
             requestClear();
             return;
         }
@@ -294,7 +294,10 @@ public class SpellCastInteractor {
             requestClear(); // a new cast supersedes any in-flight process (no cost)
         }
         submitTargets(spellId, snapshot);
-        if (SpellCast.Mode.from(spell) == SpellCast.Mode.INSTANT) {
+        // Caster-aware instant check (NOT Mode.from): `InstantCast` effects instantify timed
+        // spells per caster. The client's start path uses the same check, so both sides agree
+        // that no process exists — the request's snapshot carries the input-frame targets.
+        if (SpellParameters.isInstantCast(spellEntry, player)) {
             fire(spellEntry, SpellCast.Action.RELEASE, 1F);
             return;
         }

@@ -176,7 +176,7 @@ public class SpellCast {
 
 
     /// An actively castable spell of a caster: the spell itself, the derived classification of
-    /// how casting it unfolds over time ({@link Mode}) and how it acquires targets
+    /// its AUTHORED cast mechanic ({@link Mode}) and how it acquires targets
     /// ({@link Targeting}), plus the container-scoped resolved magnitudes flattened in
     /// (`range`, `channelTicks` — base values + spell modifier contributions). Everything is
     /// derived, never authored. The flattened values let clients predict targeting range and
@@ -185,6 +185,12 @@ public class SpellCast {
     /// magnitudes (haste-driven cast duration) are deliberately NOT flattened — attributes sync
     /// natively and change more often than containers. Passive and FROM_TRIGGER-driven spells
     /// are not options.
+    ///
+    /// **`mode` is classification, not a behavior promise.** Effect-scoped state can change what
+    /// actually happens at cast time — most notably `InstantCast` effects, which make a CASTING
+    /// spell fire instantly. Anything deciding actual cast behavior must consult the live,
+    /// caster-aware checks (`SpellParameters.isInstantCast`, `getCastTimeDetails`) at the
+    /// decision point; `mode` serves stable concerns only (input policy, wire contract, sorting).
     public record Option(RegistryEntry<Spell> spell, Mode mode, Targeting targeting,
                          float range, int channelTicks) {
 

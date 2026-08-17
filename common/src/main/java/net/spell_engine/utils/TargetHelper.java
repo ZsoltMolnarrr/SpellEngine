@@ -15,7 +15,7 @@ import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.delivery.Beam;
-import net.spell_engine.internals.casting.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCaster;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -191,7 +191,7 @@ public class TargetHelper {
     }
 
     public static boolean isTargetedByPlayer(Entity entity, PlayerEntity player) {
-        if (entity != null && entity.getWorld().isClient && player instanceof SpellCasterClient casterClient) {
+        if (entity != null && entity.getWorld().isClient && player instanceof SpellCaster.Client casterClient) {
             var targets = casterClient.getCurrentTargets();
             if (entity instanceof EnderDragonEntity dragon) {
                 // Targets contain any of the dragon's body parts

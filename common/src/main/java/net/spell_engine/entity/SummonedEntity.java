@@ -41,6 +41,8 @@ import net.spell_engine.api.spell.summon.SummonedEntityConfig;
 import net.spell_engine.entity.goal.*;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
+import net.spell_engine.internals.casting.SpellCast;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.cost.SpellCooldownManager;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.internals.target.EntityRelation;
@@ -54,7 +56,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import net.spell_engine.internals.SpellParameters;
 
-public abstract class SummonedEntity extends GolemEntity implements SpellSummoned, Tameable {
+public abstract class SummonedEntity extends GolemEntity implements SpellSummoned, Tameable, SpellCaster.Entity {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -70,6 +72,10 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
             DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.FLOAT);
     public static final TrackedData<Integer> END_OF_PHASE_AGE =
             DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    /// Synced cast process (JSON of SpellCast.Process.SyncFormat, "" = none) — drives the beam
+    /// visual, beam particles and cast sound on clients while this summon channels a spell.
+    public static final TrackedData<String> CAST_PROCESS =
+            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.STRING);
     // One packed tracker per action type — kept separate so a spell cast and a melee swing
     // can animate in parallel without one stomping the other's state.
     //
@@ -873,6 +879,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         builder.add(BOUNDING_BOX_WIDTH,  0F);
         builder.add(BOUNDING_BOX_HEIGHT, 0F);
         builder.add(END_OF_PHASE_AGE, 0);
+        builder.add(CAST_PROCESS, "");
         // duration = 0 → all action animations start inactive.
         long inactive = packAnim(0, 0, 0);
         builder.add(ATTACK_ANIMATION, inactive);
@@ -1038,6 +1045,39 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     // --- NBT ---
 
     private static final Gson GSON = new Gson();
+
+    // MARK: Synced cast process (SpellCaster.Entity)
+
+    @Nullable private SpellCast.Process castProcess = null;
+    private String lastCastProcessRaw = "";
+
+    /// Server-side: declares the channel process this summon is casting (null = none). Synced
+    /// via CAST_PROCESS; clients discover it through {@link SpellCaster.Entity} for beam
+    /// rendering, beam particles and the cast sound loop.
+    public void declareCastProcess(@Nullable SpellCast.Process process) {
+        castProcess = process;
+        var raw = process != null ? process.fastSyncJSON() : "";
+        lastCastProcessRaw = raw;
+        this.dataTracker.set(CAST_PROCESS, raw);
+    }
+
+    /// Read-through parse-cache over the synced raw value — same pattern as the player
+    /// interactor: the server never re-parses its own writes, the client re-parses on change.
+    @Override
+    @Nullable public SpellCast.Process getSpellCastProcess() {
+        var raw = this.dataTracker.get(CAST_PROCESS);
+        if (!raw.equals(lastCastProcessRaw)) {
+            lastCastProcessRaw = raw;
+            if (raw.isEmpty()) {
+                castProcess = null;
+            } else {
+                var syncFormat = GSON.fromJson(raw, SpellCast.Process.SyncFormat.class);
+                // Summons hold no casting item — the process `item` slot is player machinery
+                castProcess = SpellCast.Process.fromSync(this, this.getWorld(), syncFormat, null, this.getWorld().getTime());
+            }
+        }
+        return castProcess;
+    }
     private static final String NBT_OWNER_UUID        = "OwnerUUID";
     private static final String NBT_TTL               = "TTL";
     private static final String NBT_SPAWN_END_AGE     = "SpawnEndAge";

@@ -7,8 +7,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.client.gui.HudMessages;
-import net.spell_engine.internals.casting.SpellCasterClient;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.container.SpellAssignments;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.network.Packets;
@@ -58,7 +57,7 @@ public class ClientNetwork {
             var registry = SpellRegistry.from(client.world);
             var spell = registry.getEntry(packet.spellId());
             if (spell.isEmpty()) return;
-            ((SpellCasterEntity) client.player).getCooldownManager().set(spell.get(), packet.duration());
+            ((SpellCaster.Player) client.player).getCooldownManager().set(spell.get(), packet.duration());
         });
     }
 
@@ -73,7 +72,7 @@ public class ClientNetwork {
     public static void handleSpellCooldownSync(Packets.SpellCooldownSync packet) {
         var client = MinecraftClient.getInstance();
         client.execute(() -> {
-            var cooldownManager = ((SpellCasterEntity) client.player).getCooldownManager();
+            var cooldownManager = ((SpellCaster.Player) client.player).getCooldownManager();
             var cooldownsBefore = cooldownManager.spellsOnCooldown();
             cooldownManager.acceptSync(packet.baseTick(), packet.cooldowns());
             var cooldownsAfter = cooldownManager.spellsOnCooldown();
@@ -98,7 +97,7 @@ public class ClientNetwork {
         var client = MinecraftClient.getInstance();
         client.execute(() -> {
             var player = client.player;
-            if (player instanceof SpellCasterClient caster) {
+            if (player instanceof SpellCaster.Client caster) {
                 caster.onAttacksAvailable(packet.attacks());
             }
         });

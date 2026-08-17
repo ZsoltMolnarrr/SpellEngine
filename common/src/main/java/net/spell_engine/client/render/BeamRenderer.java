@@ -15,9 +15,11 @@ import net.spell_engine.client.beam.BeamEmitterEntity;
 import net.spell_engine.client.compatibility.ShaderCompatibility;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.internals.delivery.Beam;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.utils.TargetHelper;
+import net.minecraft.entity.LivingEntity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import net.spell_engine.internals.delivery.LaunchGeometry;
@@ -92,22 +94,27 @@ public class BeamRenderer extends RenderLayer {
         }
         var renderDistance = MinecraftClient.getInstance().options.getViewDistance().getValue() * 24; // 24 = 16 * 1.5F
         var squaredRenderDistance = renderDistance * renderDistance;
-        var players = world.getPlayers()
-                .stream().filter(player ->
-                        player.squaredDistanceTo(focusedEntity) < squaredRenderDistance
-                && ((SpellCasterEntity)player).getBeam() != null)
-                .toList();
-        if (players.isEmpty()) {
+        // Any entity exposing a cast process can beam (players and summons alike)
+        var casters = new ArrayList<LivingEntity>();
+        for (var entity : world.getEntities()) {
+            if (entity instanceof LivingEntity livingEntity
+                    && entity instanceof SpellCaster.Entity holder
+                    && holder.getBeam() != null
+                    && entity.squaredDistanceTo(focusedEntity) < squaredRenderDistance) {
+                casters.add(livingEntity);
+            }
+        }
+        if (casters.isEmpty()) {
             return;
         }
 
         matrices.push();
         Vec3d camPos = camera.getPos();
         matrices.translate(-camPos.x, -camPos.y, -camPos.z);
-        for (var livingEntity : players) {
+        for (var livingEntity : casters) {
             var launchHeight = LaunchGeometry.launchHeight(livingEntity);
             var offset = new Vec3d(0.0, launchHeight, LaunchGeometry.launchPointOffsetDefault);
-            SpellCasterEntity caster = (SpellCasterEntity)livingEntity;
+            SpellCaster.Entity caster = (SpellCaster.Entity) livingEntity;
             matrices.push();
             var pos = new Vec3d(livingEntity.prevX, livingEntity.prevY, livingEntity.prevZ)
                     .lerp(livingEntity.getPos(), delta);

@@ -17,7 +17,7 @@ import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.utils.SoundHelper;
 import net.spell_engine.utils.WorldScheduler;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.mixin.item.RangedWeaponAccessor;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,7 +64,7 @@ public class ArrowHelper {
             }
 
             // Save as active spell
-            if (shooter instanceof SpellCasterEntity caster) {
+            if (shooter instanceof SpellCaster.Player caster) {
                 var shotContext = caster.getArrowShootContext();
                 shotContext.firedBySpell = true;
                 shotContext.activeSpells.add(spellEntry);
@@ -97,7 +97,7 @@ public class ArrowHelper {
                 );
             }
 
-            if (shooter instanceof SpellCasterEntity caster) {
+            if (shooter instanceof SpellCaster.Player caster) {
                 caster.setArrowShootContext(ArrowShootContext.empty());
             }
 

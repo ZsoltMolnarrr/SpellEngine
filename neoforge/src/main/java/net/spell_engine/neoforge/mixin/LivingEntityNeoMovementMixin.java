@@ -7,7 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.WorldView;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -18,7 +18,7 @@ public class LivingEntityNeoMovementMixin {
     private float getFriction_Wrapped(BlockState instance, WorldView worldView, BlockPos blockPos, Entity entity, Operation<Float> original) {
         var result = original.call(instance, worldView, blockPos, entity);
         // var entity = (LivingEntity) (Object) this;
-        if (entity instanceof SpellCasterEntity caster) {
+        if (entity instanceof SpellCaster.Player caster) {
             // result = Math.max(result - (caster.getExtraSlipperiness() * 0.5F), 0F);
 //            if (caster.getExtraSlipperiness() != 0F) {
 //                result = Math.min(result + caster.getExtraSlipperiness(), 1F);

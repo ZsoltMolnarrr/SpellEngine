@@ -21,7 +21,7 @@ import net.spell_engine.client.util.Rect;
 import net.spell_engine.client.util.SpellRender;
 import net.spell_engine.client.util.TextureFile;
 import net.spell_engine.config.HudConfig;
-import net.spell_engine.internals.casting.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.mixin.client.control.KeybindingAccessor;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,7 +61,7 @@ public class HudRenderHelper {
         }
 
         if (player != null) {
-            var caster = (SpellCasterClient) player;
+            var caster = (SpellCaster.Client) player;
 
             if (SpellHotbar.INSTANCE.slots.isEmpty()) {
                 hotbarViewModel = SpellHotBarWidget.ViewModel.empty;
@@ -163,7 +163,7 @@ public class HudRenderHelper {
             }
 
             public static ViewModel from(ClientPlayerEntity player) {
-                var caster = (SpellCasterClient)player;
+                var caster = (SpellCaster.Client)player;
                 var targets = caster.getCurrentTargets();
                 var text = targets.size() == 1
                         ? targets.getFirst().getName().getString()

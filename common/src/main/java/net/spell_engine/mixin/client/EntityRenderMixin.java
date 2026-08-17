@@ -3,7 +3,7 @@ package net.spell_engine.mixin.client;
 import net.minecraft.client.render.Frustum;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.entity.Entity;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -14,8 +14,8 @@ import net.spell_engine.internals.SpellParameters;
 public class EntityRenderMixin {
     @Inject(method = "shouldRender", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getVisibilityBoundingBox()Lnet/minecraft/util/math/Box;"), cancellable = true)
     public void shouldRender_WhileBeaming(Entity entity, Frustum frustum, double x, double y, double z, CallbackInfoReturnable<Boolean> cir) {
-        if (entity instanceof SpellCasterEntity caster) {
-            var spell = caster.getCurrentSpell();
+        if (entity instanceof SpellCaster.Player caster) {
+            var spell = caster.getCastedSpell();
             if (spell != null && SpellParameters.isChanneled(spell)) {
                 cir.setReturnValue(true);
                 cir.cancel();

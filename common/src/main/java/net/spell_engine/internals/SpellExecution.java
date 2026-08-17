@@ -16,7 +16,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.fx.ReleaseFx;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.casting.SpellCasting;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.cost.Ammo;
@@ -77,9 +77,9 @@ public class SpellExecution {
         if (!attempt.isSuccess()) {
             return;
         }
-        var caster = (SpellCasterEntity)player;
+        var caster = (SpellCaster.Player)player;
         var targets = targetResult.entities();
-        var castingSpeed = caster.getCurrentCastingSpeed();
+        var castingSpeed = caster.getCastingSpeed();
         // Normalized progress in 0 to 1
         progress = Math.max(Math.min(progress, 1F), 0F);
         var channelMultiplier = 1F;

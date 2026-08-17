@@ -9,7 +9,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -46,7 +46,7 @@ public class SpellEngineCommands {
             if (spell != null) {
                 spellId = spell.getKey().get().getValue();
             }
-            ((SpellCasterEntity) player).getCooldownManager().reset(spellId);
+            ((SpellCaster.Player) player).getCooldownManager().reset(spellId);
         }
         return 0;
     }

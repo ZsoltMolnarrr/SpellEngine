@@ -20,7 +20,7 @@ import net.spell_engine.internals.impact.SpellImpacts;
 import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.internals.SpellParameters;
 import net.spell_engine.internals.arrow.ArrowHelper;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.melee.Melee;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.network.Packets;
@@ -213,7 +213,7 @@ public class SpellDelivery {
                 delivered = true;
             }
             case AFFECT_ARROW -> {
-                if (caster instanceof SpellCasterEntity shooter) {
+                if (caster instanceof SpellCaster.Player shooter) {
                     var arrowContext = shooter.getArrowShootContext();
                     arrowContext.activeSpells.add(spellEntry);
                 }
