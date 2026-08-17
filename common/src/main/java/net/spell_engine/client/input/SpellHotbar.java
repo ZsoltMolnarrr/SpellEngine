@@ -51,9 +51,9 @@ public class SpellHotbar {
     public boolean update(ClientPlayerEntity player, GameOptions options) {
         var changed = false;
         var initialSlotCount = slots.size();
-        // Server-declared options, mirrored via tracked data (the server owns what is castable;
-        // the client no longer derives this from containers)
-        var castOptions = ((SpellCaster.Player) player).getInteractor().options();
+        // Server-declared options — with a client-side prediction bridging the round-trip gap
+        // after local equipment changes, so the hotbar reacts on the same frame as the swap
+        var castOptions = ((SpellCaster.Client) player).getCastController().displayOptions();
 
         var slots = new ArrayList<Slot>();
         var otherSlots = new ArrayList<Slot>();

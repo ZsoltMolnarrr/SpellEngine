@@ -15,6 +15,7 @@ import net.spell_engine.internals.SpellParameters;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.casting.SpellCasting;
+import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
@@ -209,6 +210,54 @@ public class ClientCastController {
         } else {
             spellTarget = SpellTarget.SearchResult.empty();
         }
+    }
+
+    // MARK: Options display prediction (hotbar swap-latency mitigation)
+
+    /// Between an equipment change and the server's re-declared options lies a round trip —
+    /// a few ticks of the hotbar showing the old weapon's spells. During that gap the hotbar
+    /// displays locally derived options (the same deterministic derivation the server runs,
+    /// over the same synced inputs), and settles back to the declared list as soon as it
+    /// catches up. The declared list remains the resting source of truth; the prediction only
+    /// bridges the gap — the exact pattern the predicted cast process uses.
+    private List<SpellCast.Option> predictedOptions = List.of();
+    private boolean predictingOptions = false;
+    private List<SpellCast.Option> declaredAtPredictionStart = List.of();
+    private int optionsPredictionStartedAt = 0;
+    @Nullable private SpellContainerSource.Result lastSeenContainers = null;
+
+    /// Safety valve: if the derivations genuinely disagree (they shouldn't — both sides run the
+    /// same code over synced state), fall back to the declared truth rather than predicting forever.
+    private static final int OPTIONS_PREDICTION_TIMEOUT_TICKS = 40;
+
+    /// What the hotbar should display right now: the declared options, or — while the client's
+    /// own container state is ahead of the last declaration — the locally predicted ones.
+    public List<SpellCast.Option> displayOptions() {
+        var declared = ((SpellCaster.Player) player).getInteractor().options();
+        var containers = SpellContainerSource.getSpellsOf(player);
+        if (containers != lastSeenContainers) {
+            // The client's container state changed (e.g. a weapon swap applied locally) —
+            // predict until the server's declaration reflects it
+            lastSeenContainers = containers;
+            predictedOptions = SpellCast.Option.allOf(player);
+            if (predictedOptions.equals(declared)) {
+                predictingOptions = false;
+            } else {
+                predictingOptions = true;
+                declaredAtPredictionStart = declared;
+                optionsPredictionStartedAt = player.age;
+            }
+        }
+        if (predictingOptions) {
+            var declarationArrived = !declared.equals(declaredAtPredictionStart);
+            var timedOut = player.age - optionsPredictionStartedAt > OPTIONS_PREDICTION_TIMEOUT_TICKS;
+            if (declarationArrived || timedOut) {
+                predictingOptions = false;
+            } else {
+                return predictedOptions;
+            }
+        }
+        return declared;
     }
 
     // MARK: Prediction support
