@@ -13,6 +13,7 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.World;
+import net.spell_engine.api.effect.EntityTints;
 import net.spell_engine.api.effect.Synchronized;
 import net.spell_engine.api.spell.fx.ModelEffectAttachment;
 import net.spell_engine.api.spell.fx.ModelEffect;
@@ -30,13 +31,17 @@ import java.util.List;
 import java.util.Map;
 
 @Mixin(LivingEntity.class)
-public abstract class LivingEntityStatusEffectSync extends Entity implements Synchronized.Provider, ModelEffectAttachment.Provider {
+public abstract class LivingEntityStatusEffectSync extends Entity implements Synchronized.Provider, ModelEffectAttachment.Provider, EntityTints.Provider {
     @Shadow @Final private Map<RegistryEntry<StatusEffect>, StatusEffectInstance> activeStatusEffects;
 
     // MARK: Status effect sync
 
     private final ArrayList<Synchronized.Effect> SpellEngine_syncedStatusEffects = new ArrayList();
     private static final TrackedData<String> SPELL_ENGINE_SYNCED_EFFECTS = DataTracker.registerData(LivingEntity.class, TrackedDataHandlerRegistry.STRING);
+
+    // MARK: Entity tint (see EntityTints)
+
+    private static final TrackedData<Integer> SPELL_ENGINE_TINT_ARGB = DataTracker.registerData(LivingEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
     // MARK: Attached model FX
 
@@ -59,6 +64,7 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
     private void initDataTracker_TAIL_SpellEngine_SyncEffects(DataTracker.Builder builder, CallbackInfo ci) {
         builder.add(SPELL_ENGINE_SYNCED_EFFECTS, "");
         builder.add(SPELL_ENGINE_MODEL_FX, "");
+        builder.add(SPELL_ENGINE_TINT_ARGB, EntityTints.NEUTRAL);
     }
 
     // MARK: Status effect sync — write
@@ -73,6 +79,7 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
         } else {
             dataTracker.set(SPELL_ENGINE_SYNCED_EFFECTS, SpellEngine_encodedStatusEffects());
         }
+        dataTracker.set(SPELL_ENGINE_TINT_ARGB, EntityTints.resolve((LivingEntity)(Object)this));
     }
 
     // MARK: Model FX — server tick (expiry)
@@ -180,6 +187,11 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
 
     public List<Synchronized.Effect> SpellEngine_syncedStatusEffects() {
         return SpellEngine_syncedStatusEffects;
+    }
+
+    @Override
+    public int SpellEngine_entityTintArgb() {
+        return dataTracker.get(SPELL_ENGINE_TINT_ARGB);
     }
 
     @Override

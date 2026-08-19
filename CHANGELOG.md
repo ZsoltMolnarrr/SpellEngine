@@ -69,6 +69,12 @@ Description tokens:
 - Effect tokens make an effect's non-first modifier addressable and replace the per-spell `DescriptionMutator` pattern for effect values (e.g. Frostbite can now show both its movement- and attack-speed values)
 - Moved the programmatic description escape hatch to the server-safe `TooltipTokens.Custom` (register via `TooltipTokens.registerCustom`) so content that still needs it no longer references client-only code. The old `SpellTooltip.DescriptionMutator` / `addDescriptionMutator` remain as deprecated bridges into the same registry
 
+Added `EntityTints` — status-effect-driven ARGB tinting of a living entity's whole rendered appearance:
+- Register a `Tint` against a status effect (`EntityTints.register`), and every entity carrying that effect is tinted for all players tracking it: body model, worn armor and every other `ModelPart`-based render pass — with zero integration needed from armor/feature renderers, as the tint rides the vanilla `ModelPart` color argument (Sodium/Iris compatible)
+- `Tint` derives its color from the entity and the effect instance; factories cover the common cases: `Tint.flat(argb)` for a constant color, `Tint.scaling(argb, strengthPerStack)` strengthening from neutral towards the full color per effect stack (amplifier + 1)
+- Tints of concurrent effects blend by componentwise multiplication (order-independent, alphas compound); the blend recomputes server side whenever the effect set changes and reaches clients as tracked data — `EntityTints.resolve(entity)` server side, `EntityTints.currentTint(entity)` anywhere
+- A tint with alpha below 1 turns the whole entity translucent: the body swaps to the render layer vanilla uses for spectators, and armor layers are made blend-capable (the same transparency swap Shoulder Surfing applies, idempotent alongside it)
+
 Other changes:
 - Moved all content config types (`WeaponConfig`, `ArmorSetConfig`, etc...) into `rpg_series` package scope
 - `EffectConfig` now supports `ConditionalAttributes`

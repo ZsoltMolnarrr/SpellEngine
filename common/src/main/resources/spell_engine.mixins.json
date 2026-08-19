@@ -74,7 +74,9 @@
     "client.render.LivingEntityRendererMixin",
     "client.render.MinecraftClientMixin",
     "client.render.ModelPredicateProviderRegistryAccessor",
-    "client.render.ProjectileEntityRendererMixin"
+    "client.render.ProjectileEntityRendererMixin",
+    "client.render.tint.ModelPartMixin",
+    "client.render.tint.RenderLayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
