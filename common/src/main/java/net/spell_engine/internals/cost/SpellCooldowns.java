@@ -7,7 +7,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.internals.SpellParameters;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.utils.ItemCooldownManagerExtension;
 
@@ -20,7 +20,7 @@ public class SpellCooldowns {
         var duration = cooldownToSet(player, spellEntry, progress);
         var durationTicks = Math.round(duration * 20F);
         if (duration > 0) {
-            ((SpellCasterEntity) player).getCooldownManager().set(spellEntry, durationTicks);
+            ((SpellCaster.Player) player).getCooldownManager().set(spellEntry, durationTicks);
         }
         if (SpellEngineMod.config.spell_item_cooldown_lock && spell.cost.cooldown.hosting_item && source.itemStack() != null) {
             var hostingItem = source.itemStack().getItem();
@@ -53,7 +53,7 @@ public class SpellCooldowns {
             var attemptCooldown = spell.cost.cooldown.attempt_duration;
             if (attemptCooldown > 0) {
                 var durationTicks = Math.round(attemptCooldown * 20F);
-                ((SpellCasterEntity) player).getCooldownManager().set(spellEntry, durationTicks);
+                ((SpellCaster.Player) player).getCooldownManager().set(spellEntry, durationTicks);
             }
         }
     }

@@ -16,8 +16,10 @@ public class ReleaseFx {
     public static void send(World world, LivingEntity caster, RegistryEntry<Spell> spellEntry, float progress) {
         var spell = spellEntry.value();
         // The caster's own reach is the one magnitude a release can honestly describe, so it is
-        // the only one bound here; effects asking for anything else fall back to their authored size.
-        var context = Fx.Context.ofRange(SpellParameters.getRange(caster, spellEntry));
+        // the only one bound here; effects asking for anything else fall back to their authored
+        // size. For CHARGE casts the reach is the released (ratio-scaled) one, matching what the
+        // fire actually covered.
+        var context = Fx.Context.ofRange(SpellParameters.getRange(caster, spellEntry, progress));
         emitVisuals(world, caster, spell.release.visuals, context);
         for (var modifier: SpellModifiers.of(caster, spellEntry, null)) {
             if (modifier.release != null) {

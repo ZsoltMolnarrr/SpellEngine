@@ -1,4 +1,4 @@
-package net.spell_engine.internals.melee;
+package net.spell_engine.internals.delivery.melee;
 import net.spell_engine.Platform;
 
 import com.google.common.base.Suppliers;
@@ -25,7 +25,7 @@ import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.mixin.entity.LivingEntityAccessor;
@@ -159,13 +159,13 @@ public class Melee {
         var allAttacks = allAttacksOf(caster, meleeDataAttacks, spellEntry, chargeModifier);
         for (var attack : allAttacks.attacks()) {
             // Calculate haste-affected duration
-            var meleeAttack = convert(caster, spellId, attack, attackSpeedMultiplier, allAttacks.spellModifiers(), curvedRatio, chargeModifier);
+            var meleeAttack = convert(caster, spellId, attack, attackSpeedMultiplier, allAttacks.spellModifiers(), curvedRatio);
             attacks.add(meleeAttack);
         }
         return attacks;
     }
 
-    private static Attack convert(ServerPlayerEntity caster, Identifier spellId, Spell.Delivery.Melee.Attack attack, double attackSpeedMultiplier, List<Spell.Modifier> spellModifiers, float curvedRatio, @Nullable Spell.Modifier chargeModifier) {
+    private static Attack convert(ServerPlayerEntity caster, Identifier spellId, Spell.Delivery.Melee.Attack attack, double attackSpeedMultiplier, List<Spell.Modifier> spellModifiers, float curvedRatio) {
         var speed = (float) (attack.attack_speed_multiplier * attackSpeedMultiplier);
         float duration = attack.duration > 0
                 // `getAttackCooldownProgressPerTick` is poorly named, it actually returns the attack cooldown in ticks
@@ -176,7 +176,7 @@ public class Melee {
         // Must stay in step with the server side distance guard in `performAttackAgainstTargets`,
         // which resolves the same range: a hitbox grown by `range_add` here but not there would
         // find targets the server then rejects.
-        var range = spell.isPresent() ? SpellParameters.getRange(caster, spell.get(), chargeModifier) : (float)caster.getEntityInteractionRange();
+        var range = spell.isPresent() ? SpellParameters.getRangeCurved(caster, spell.get(), curvedRatio) : (float)caster.getEntityInteractionRange();
 
         var momentumBonus = 0F;
         var slipBonus = 0F;
@@ -272,8 +272,8 @@ public class Melee {
             // The full modifier list (not `List.of()`): the slipperiness stored here drives server
             // side movement, so it has to match the value the client is already sliding with.
             var modifiers = allAttacksOf(player, resolved.melee().attacks, resolved.spell(), charge.modifier()).spellModifiers();
-            var attack = convert(player, attackContext.spellId(), attackData, attackSpeedMultiplier, modifiers, curvedRatio, charge.modifier());
-            ((SpellCasterEntity) player).setMeleeSkillAttack(new ActiveAttack(attack, player.age, player.getMainHandStack().getItem()));
+            var attack = convert(player, attackContext.spellId(), attackData, attackSpeedMultiplier, modifiers, curvedRatio);
+            ((SpellCaster.Player) player).setMeleeSkillAttack(new ActiveAttack(attack, player.age, player.getMainHandStack().getItem()));
             // Sending fx to clients - animation, sound, particles
             var trackers = Platform.tracking(player);
             float speed = (float) (attackData.attack_speed_multiplier * AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player));
@@ -326,7 +326,7 @@ public class Melee {
             var targets = new ArrayList<Entity>();
             var resolvedContext = resolveAttackData(player, world, context.spellId, context.attackId);
             var spellEntry = resolvedContext.spell();
-            ((SpellCasterEntity)player).setActiveMeleeSkill(spellEntry);
+            ((SpellCaster.Player)player).setActiveMeleeSkill(spellEntry);
             var attack = resolvedContext.attack();
             Sound impactSound = null;
             int impactSoundLimit = 0;
@@ -364,7 +364,7 @@ public class Melee {
                 impactSound = attack.impact_sound;
                 impactSoundLimit = attack.impact_sound_cap > 0 ? attack.impact_sound_cap : 999;
             }
-            var attackRange = spellEntry != null ? SpellParameters.getRange(player, spellEntry, resolvedCharge.modifier()) : (float)player.getEntityInteractionRange();
+            var attackRange = spellEntry != null ? SpellParameters.getRangeCurved(player, spellEntry, curvedRatio) : (float)player.getEntityInteractionRange();
 
             for (int targetId : targetIds) {
                 var target = world.getEntityById(targetId);
@@ -413,7 +413,7 @@ public class Melee {
         if (appliedChargeModifier != null) {
             attributeInstance.removeModifier(appliedChargeModifier);
         }
-        ((SpellCasterEntity)player).setActiveMeleeSkill(null);
+        ((SpellCaster.Player)player).setActiveMeleeSkill(null);
     }
 
     private static SpellTarget.FocusMode focusMode() {

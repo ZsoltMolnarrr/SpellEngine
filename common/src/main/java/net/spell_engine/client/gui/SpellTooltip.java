@@ -570,12 +570,13 @@ public class SpellTooltip {
                 }
             } else if (chargeRangeAdd != 0) {
                 // CHARGE spell whose charge bonus scales range: show the span from the weakest allowed
-                // release to a full charge, e.g. "4 - 10". The charge modifier's range_add scales with
-                // the curved charge ratio (full at ratio 1), matching the runtime in getRange; the
-                // minimum uses the same `curve(min_release_ratio)` the damage line uses for its floor.
+                // release to a full charge, e.g. "4 - 10". Both ends come from the same resolver the
+                // runtime fires with (`getRange` at a raw hold ratio, curve applied inside), so the
+                // span includes the caster's static range modifiers — scaled by the charge ratio
+                // together with the charge bonus, exactly as a release would resolve them.
                 var charge = spell.active.cast.charge;
-                var minRange = spell.range + chargeRangeAdd * charge.curve.apply(charge.min_release_ratio);
-                var maxRange = spell.range + chargeRangeAdd;
+                var minRange = SpellParameters.getRange(player, spellEntry, charge.min_release_ratio);
+                var maxRange = SpellParameters.getMaxRange(player, spellEntry);
                 var rangeKey = keyWithPlural("spell.tooltip.range", maxRange);
                 rangeText = I18n.translate(rangeKey).replace(placeholder(rangeToken), formattedRange(minRange, maxRange));
             } else {

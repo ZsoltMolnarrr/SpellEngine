@@ -17,10 +17,10 @@ import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.compat.MeleeCompat;
 import net.spell_engine.compat.CriticalStrikeCompat;
-import net.spell_engine.internals.arrow.ArrowExtension;
+import net.spell_engine.internals.delivery.arrow.ArrowExtension;
 import net.spell_engine.internals.casting.SpellBatcher;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.delivery.SpellStashHelper;
 import net.spell_engine.internals.target.SpellTarget;
@@ -150,7 +150,7 @@ public class SpellTriggers {
         }
         event.melee = MeleeCompat.attackProperties.apply(player);
 
-        var activeSpell = ((SpellCasterEntity)player).getActiveMeleeSkill();
+        var activeSpell = ((SpellCaster.Player)player).getActiveMeleeSkill();
         if (activeSpell != null) {
             event.spell = activeSpell;
         }
@@ -258,7 +258,7 @@ public class SpellTriggers {
         SpellStashHelper.useStashes(event);
         // Iterate passive spells
         var player = event.player;
-        var caster = (SpellCasterEntity)player;
+        var caster = (SpellCaster.Player)player;
         for(var spellEntry: SpellContainerSource.passiveSpellsOf(event.player)) {
             var spell = spellEntry.value();
             var spellId = spellEntry.getKey().get().getValue();

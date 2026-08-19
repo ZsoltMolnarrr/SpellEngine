@@ -1,4 +1,4 @@
-package net.spell_engine.client.beam;
+package net.spell_engine.client.render;
 
 import net.spell_engine.internals.delivery.Beam;
 

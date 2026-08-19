@@ -34,12 +34,40 @@ public class SpellParameters {
     }
 
     // MARK: Range
+    //
+    // The range family:
+    // - `getRange(caster, entry)` — the resolved range at full charge, for everything not
+    //   tracking a cast process (mob engagement, server lookups of non-charge casts).
+    // - `getRange(caster, entry, chargeRatio)` — resolved range at a RAW charge hold ratio
+    //   (0..1; the charge curve is applied here). The resolver of actual execution: fire-time
+    //   target search, range validation and release FX pass the released ratio.
+    // - `getRangeCurved(caster, entry, curvedRatio)` — delivery-stage variant for callers that
+    //   carry the ALREADY-CURVED ratio (`ImpactContext.charge`, `AttackContext.charge`).
+    //   Passing a raw ratio here skips the curve; passing a curved ratio above doubles it.
+    //
+    // Bonus combination: when a CHARGE spell's charge bonus scales range (`bonus.range_add` set),
+    // ALL range bonuses — the caster's spell modifiers AND the charge bonus — scale together
+    // with the curved ratio, so the whole reach grows with the hold. Otherwise modifier bonuses
+    // apply flat and the ratio is ignored.
 
     public static float getRange(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
-        return getRange(caster, spellEntry, null);
+        return getRangeCurved(caster, spellEntry, 1F);
     }
 
-    public static float getRange(LivingEntity caster, RegistryEntry<Spell> spellEntry, @Nullable Spell.Modifier chargeModifier) {
+    public static float getRange(LivingEntity caster, RegistryEntry<Spell> spellEntry, float chargeRatio) {
+        var charge = chargeConfigOf(spellEntry.value());
+        return getRangeCurved(caster, spellEntry, charge != null ? charge.curve.apply(chargeRatio) : 1F);
+    }
+
+    /// The furthest this spell can ever reach for this caster: the resolved range at full
+    /// charge. This is what `SpellCast.Option` flattens — the client runs its expensive
+    /// targeting (raycasts, collision checks) at this bound, and the server filters down to
+    /// the true (ratio-scaled) range at fire.
+    public static float getMaxRange(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
+        return getRange(caster, spellEntry, 1F);
+    }
+
+    public static float getRangeCurved(LivingEntity caster, RegistryEntry<Spell> spellEntry, float curvedRatio) {
         var spell = spellEntry.value();
         var range = spell.range;
         if (spell.range_mechanic != null) {
@@ -53,17 +81,17 @@ public class SpellParameters {
                 }
             }
         }
+        var bonus = 0F;
         if (caster instanceof PlayerEntity player) {
             for (var modifier: SpellModifiers.of(player, spellEntry)) {
-                if (modifier.range_add != 0) {
-                    range += modifier.range_add;
-                }
+                bonus += modifier.range_add;
             }
         }
-        if (chargeModifier != null) {
-            range += chargeModifier.range_add;
+        var charge = chargeConfigOf(spell);
+        if (charge != null && charge.bonus.range_add != 0) {
+            bonus = (bonus + charge.bonus.range_add) * curvedRatio;
         }
-        return range;
+        return range + bonus;
     }
 
     // MARK: Cast duration

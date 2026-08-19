@@ -1,4 +1,4 @@
-package net.spell_engine.internals.criteria;
+package net.spell_engine.misc.criteria;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

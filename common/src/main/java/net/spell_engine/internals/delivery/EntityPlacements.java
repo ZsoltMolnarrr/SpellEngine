@@ -1,4 +1,4 @@
-package net.spell_engine.internals;
+package net.spell_engine.internals.delivery;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;

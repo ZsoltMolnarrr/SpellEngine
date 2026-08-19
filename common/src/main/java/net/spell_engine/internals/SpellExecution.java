@@ -3,7 +3,6 @@ package net.spell_engine.internals;
 import com.google.common.base.Suppliers;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.Tameable;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -17,8 +16,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.fx.ReleaseFx;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.casting.SpellCasterEntity;
-import net.spell_engine.internals.casting.SpellCastSyncHelper;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.casting.SpellCasting;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.cost.Ammo;
@@ -43,9 +41,11 @@ import java.util.function.Supplier;
 /// stages hand each other along the way. The flow, per the pipeline order in spell data:
 ///
 /// ```
-/// [CAST]    performSpell (player) / targetAndPerformSpell (entity) — the cast bar itself is
-///           managed by casting.SpellCasting; this is what runs when it fires or ticks
-/// [TARGET]  client raycast (player, arrives on the SearchResult) / SpellTarget.findTargets (entity)
+/// [CAST]    performSpell (player, invoked by casting.SpellCastInteractor's timeline) /
+///           casting.MobCastController (entity) — the cast process itself is owned by the
+///           interactor (server-authoritative); this is what runs when it fires or ticks
+/// [TARGET]  client cursor snapshot or server lookup (player, resolved by the interactor
+///           into the SearchResult) / SpellTarget.findTargets (entity)
 /// [DELIVER] SpellDelivery.resolveAndDeliver → deliver
 ///             DIRECT / AREA ──────► SpellImpacts.performImpacts    (same tick)
 ///             PROJECTILE / METEOR ► SpellProjectile ► SpellImpacts (on hit / landing)
@@ -77,9 +77,9 @@ public class SpellExecution {
         if (!attempt.isSuccess()) {
             return;
         }
-        var caster = (SpellCasterEntity)player;
+        var caster = (SpellCaster.Player)player;
         var targets = targetResult.entities();
-        var castingSpeed = caster.getCurrentCastingSpeed();
+        var castingSpeed = caster.getCastingSpeed();
         // Normalized progress in 0 to 1
         progress = Math.max(Math.min(progress, 1F), 0F);
         var channelMultiplier = 1F;
@@ -93,7 +93,7 @@ public class SpellExecution {
         });
         switch (action) {
             case CHANNEL -> {
-                channelTickIndex = caster.getChannelTickIndex();
+                channelTickIndex = caster.getInteractor().channelTickIndex();
                 incrementChannelTicks = 1;
                 channelMultiplier = SpellParameters.channelValueMultiplier(spell);
                 // Compensating with extra damage, for spell with less than intended ticks
@@ -125,7 +125,7 @@ public class SpellExecution {
                 } else {
                     channelMultiplier = (progress >= 1) ? 1 : 0;
                 }
-                SpellCastSyncHelper.clearCasting(player);
+                caster.getInteractor().requestClear();
             }
             case TRIGGER -> {
                 // Nothing to do, defaults are okay
@@ -192,7 +192,7 @@ public class SpellExecution {
                 if (incrementChannelTicks > 0
                         && castProcess != null
                         && castProcess.id().equals(spellId)) {
-                    caster.setChannelTickIndex(channelTickIndex + incrementChannelTicks);
+                    caster.getInteractor().setChannelTickIndex(channelTickIndex + incrementChannelTicks);
                 }
             } else {
                 if (finished && completion != null) {
@@ -203,48 +203,8 @@ public class SpellExecution {
         }
     }
 
-    /// Server-side entry point for non-player entities (e.g. summoned companions) to cast a spell.
-    /// Performs targeting based on the entity's current rotation/position, then runs the full
-    /// delivery pipeline. No player-side costs (ammo, exhaust, cooldown, animations) are applied;
-    /// callers are responsible for managing their own cooldown.
-    ///
-    /// Must be called on the server; silently no-ops on the client.
-    public static void targetAndPerformSpell(World world, LivingEntity caster, RegistryEntry<Spell> spellEntry) {
-        if (world.isClient()) return;
-        var spell = spellEntry.value();
-        if (spell.active == null) return;
-
-        var context = new ImpactContext()
-                .power(SpellPower.getSpellPower(spell.school, caster))
-                .target(SpellIntents.focusMode(spell));
-
-        if (!caster.isAttackable() && caster instanceof Tameable) {
-            var owner = ((Tameable) caster).getOwner();
-            if (owner != null) {
-                context = context.effectiveCaster(owner);
-            }
-        }
-
-        var targetResult = SpellTarget.findTargets(caster, spellEntry, SpellTarget.SearchResult.empty(), true);
-
-        // Apply target cap, sorted by distance to caster
-        var targets = targetResult.entities();
-        if (spell.target.cap > 0) {
-            targets = targets.stream()
-                    .sorted(Comparator.comparingDouble(t -> t.squaredDistanceTo(caster.getPos())))
-                    .limit(spell.target.cap)
-                    .toList();
-            targetResult = new SpellTarget.SearchResult(targets, targetResult.location());
-        }
-
-        SpellDelivery.resolveAndDeliver(world, caster, spellEntry, targetResult, context,
-                (completionArgs) -> {
-                    if (completionArgs.success()) {
-                        // Summons never cast CHARGE spells, so the pitch shift never applies; pass full.
-                        ReleaseFx.send(world, caster, spellEntry, 1F);
-                    }
-                });
-    }
+    // Non-player casting (summoned companions) lives in `casting.MobCastController`, which owns
+    // targeting, the cost-free fire, and its own cooldown management.
 
     // MARK: Impact context
 

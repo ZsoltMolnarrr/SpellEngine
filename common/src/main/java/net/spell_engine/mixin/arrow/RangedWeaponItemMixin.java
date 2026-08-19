@@ -11,10 +11,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.world.World;
 import net.spell_engine.internals.SpellTriggers;
-import net.spell_engine.internals.arrow.ArrowExtension;
-import net.spell_engine.internals.arrow.ArrowHelper;
-import net.spell_engine.internals.arrow.ArrowShootContext;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.delivery.arrow.ArrowExtension;
+import net.spell_engine.internals.delivery.arrow.ArrowHelper;
+import net.spell_engine.internals.delivery.arrow.ArrowShootContext;
+import net.spell_engine.internals.casting.SpellCaster;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -28,7 +28,7 @@ public class RangedWeaponItemMixin {
         var projectile = original.call(instance, world, shooter, weaponStack, projectileStack, critical);
         if (shooter instanceof PlayerEntity player
                 && projectile instanceof ArrowExtension arrow) {
-            var caster = (SpellCasterEntity) player;
+            var caster = (SpellCaster.Player) player;
             var shotContext = caster.getArrowShootContext();
 
             // First run triggers to enable modifying the arrow by passive spells

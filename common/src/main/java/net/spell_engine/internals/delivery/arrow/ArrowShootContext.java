@@ -1,4 +1,4 @@
-package net.spell_engine.internals.arrow;
+package net.spell_engine.internals.delivery.arrow;
 
 import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.spell.Spell;

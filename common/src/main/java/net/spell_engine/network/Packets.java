@@ -14,84 +14,101 @@ import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.internals.cost.SpellCooldownManager;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.melee.Melee;
-import org.jetbrains.annotations.Nullable;
+import net.spell_engine.internals.delivery.melee.Melee;
 
 import java.util.*;
 
 public class Packets {
 
-    public record SpellCastSync(Identifier spellId, float speed, int length) implements CustomPayload {
-        public static Identifier ID = Identifier.of(SpellEngineMod.ID, "cast_sync");
-        public static final CustomPayload.Id<SpellCastSync> PACKET_ID = new CustomPayload.Id<>(ID);
-        public static final PacketCodec<RegistryByteBuf, SpellCastSync> CODEC = PacketCodec.of(SpellCastSync::write, SpellCastSync::read);
-        @Override
-        public Id<? extends CustomPayload> getId() {
-            return PACKET_ID;
-        }
+    // MARK: Casting protocol — shared snapshot wire helpers below.
 
-        public void write(RegistryByteBuf buffer) {
-            if (spellId == null) {
-                buffer.writeString("");
-            } else {
-                buffer.writeString(spellId.toString());
-            }
-            buffer.writeFloat(speed);
-            buffer.writeInt(length);
-        }
-
-        public static SpellCastSync read(RegistryByteBuf buffer) {
-            var string = buffer.readString();
-            Identifier spellId = null;
-            if (!string.isEmpty()) {
-                spellId = Identifier.of(string);
-            }
-            var speed = buffer.readFloat();
-            var length = buffer.readInt();
-            return new SpellCastSync(spellId, speed, length);
+    private static void writeTargetSnapshot(RegistryByteBuf buffer, SpellCast.TargetSnapshot snapshot) {
+        buffer.writeIntArray(snapshot.entityIds().stream().mapToInt(Integer::intValue).toArray());
+        var location = snapshot.location();
+        if (location != null) {
+            buffer.writeBoolean(true);
+            buffer.writeDouble(location.x);
+            buffer.writeDouble(location.y);
+            buffer.writeDouble(location.z);
+        } else {
+            buffer.writeBoolean(false);
         }
     }
 
-    public record SpellRequest(SpellCast.Action action, Identifier spellId, float progress, int[] targets, @Nullable Vec3d location) implements CustomPayload {
-        public static Identifier ID = Identifier.of(SpellEngineMod.ID, "release_request");
-        public static final CustomPayload.Id<SpellRequest> PACKET_ID = new CustomPayload.Id<>(ID);
-        public static final PacketCodec<RegistryByteBuf, SpellRequest> CODEC = PacketCodec.of(SpellRequest::write, SpellRequest::read);
+    private static SpellCast.TargetSnapshot readTargetSnapshot(RegistryByteBuf buffer) {
+        var entityIds = Arrays.stream(buffer.readIntArray()).boxed().toList();
+        Vec3d location = null;
+        if (buffer.readBoolean()) {
+            location = new Vec3d(buffer.readDouble(), buffer.readDouble(), buffer.readDouble());
+        }
+        return new SpellCast.TargetSnapshot(entityIds, location);
+    }
+
+    /// C2S: begin casting an option. Instants carry their targeting snapshot along (and fire
+    /// immediately); timed casts follow up with a TargetStream.
+    public record CastRequest(Identifier spellId, SpellCast.TargetSnapshot snapshot) implements CustomPayload {
+        public static Identifier ID = Identifier.of(SpellEngineMod.ID, "cast_request");
+        public static final CustomPayload.Id<CastRequest> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<RegistryByteBuf, CastRequest> CODEC = PacketCodec.of(CastRequest::write, CastRequest::read);
         @Override
         public Id<? extends CustomPayload> getId() {
             return PACKET_ID;
         }
 
         public void write(RegistryByteBuf buffer) {
-            buffer.writeEnumConstant(action);
             buffer.writeString(spellId.toString());
-            buffer.writeFloat(progress);
-            buffer.writeIntArray(targets);
-
-            if (location != null) {
-                buffer.writeBoolean(true);
-                buffer.writeDouble(location.x);
-                buffer.writeDouble(location.y);
-                buffer.writeDouble(location.z);
-            } else {
-                buffer.writeBoolean(false);
-            }
+            writeTargetSnapshot(buffer, snapshot);
         }
 
-        public static SpellRequest read(RegistryByteBuf buffer) {
-            var action = buffer.readEnumConstant(SpellCast.Action.class);
+        public static CastRequest read(RegistryByteBuf buffer) {
             var spellId = Identifier.of(buffer.readString());
-            var progress = buffer.readFloat();
-            var targets = buffer.readIntArray();
+            return new CastRequest(spellId, readTargetSnapshot(buffer));
+        }
+    }
 
-            Vec3d location = null;
-            var hasLocation = buffer.readBoolean();
-            if (hasLocation) {
-                var x = buffer.readDouble();
-                var y = buffer.readDouble();
-                var z = buffer.readDouble();
-                location = new Vec3d(x, y, z);
-            }
-            return new SpellRequest(action, spellId, progress, targets, location);
+    /// C2S: replication of the client's cursor targeting, sent every tick IF CHANGED while a
+    /// cursor-driven cast is active. Rides the ordered play channel — arrival order is send
+    /// order, so the receiver's last-received slot is always the newest.
+    public record TargetStream(Identifier spellId, SpellCast.TargetSnapshot snapshot) implements CustomPayload {
+        public static Identifier ID = Identifier.of(SpellEngineMod.ID, "target_stream");
+        public static final CustomPayload.Id<TargetStream> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<RegistryByteBuf, TargetStream> CODEC = PacketCodec.of(TargetStream::write, TargetStream::read);
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
+        }
+
+        public void write(RegistryByteBuf buffer) {
+            buffer.writeString(spellId.toString());
+            writeTargetSnapshot(buffer, snapshot);
+        }
+
+        public static TargetStream read(RegistryByteBuf buffer) {
+            var spellId = Identifier.of(buffer.readString());
+            var snapshot = readTargetSnapshot(buffer);
+            return new TargetStream(spellId, snapshot);
+        }
+    }
+
+    /// C2S: the player's end-input (key up): cancels a timed cast, completes a channel early,
+    /// releases a charge — carrying the final snapshot of the release frame (zero staleness).
+    public record CastInput(Identifier spellId, SpellCast.TargetSnapshot snapshot) implements CustomPayload {
+        public static Identifier ID = Identifier.of(SpellEngineMod.ID, "cast_input");
+        public static final CustomPayload.Id<CastInput> PACKET_ID = new CustomPayload.Id<>(ID);
+        public static final PacketCodec<RegistryByteBuf, CastInput> CODEC = PacketCodec.of(CastInput::write, CastInput::read);
+        @Override
+        public Id<? extends CustomPayload> getId() {
+            return PACKET_ID;
+        }
+
+        public void write(RegistryByteBuf buffer) {
+            buffer.writeString(spellId.toString());
+            writeTargetSnapshot(buffer, snapshot);
+        }
+
+        public static CastInput read(RegistryByteBuf buffer) {
+            var spellId = Identifier.of(buffer.readString());
+            return new CastInput(spellId, readTargetSnapshot(buffer));
         }
     }
 

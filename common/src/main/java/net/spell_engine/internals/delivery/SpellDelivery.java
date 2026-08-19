@@ -19,9 +19,9 @@ import net.spell_engine.internals.SpellExecution.ImpactContext;
 import net.spell_engine.internals.impact.SpellImpacts;
 import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.internals.SpellParameters;
-import net.spell_engine.internals.arrow.ArrowHelper;
-import net.spell_engine.internals.casting.SpellCasterEntity;
-import net.spell_engine.internals.melee.Melee;
+import net.spell_engine.internals.delivery.arrow.ArrowHelper;
+import net.spell_engine.internals.casting.SpellCaster;
+import net.spell_engine.internals.delivery.melee.Melee;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.network.Packets;
 import net.spell_engine.utils.TargetHelper;
@@ -89,7 +89,7 @@ public class SpellDelivery {
             case AREA -> {
                 var center = caster.getPos().add(0, caster.getHeight() / 2F, 0);
                 var area = spell.target.area;
-                var range = SpellParameters.getRange(caster, spellEntry, context.chargeModifier()) * caster.getScale();
+                var range = SpellParameters.getRangeCurved(caster, spellEntry, context.charge()) * caster.getScale();
                 final var centeredContext = context; // .position(center);
                 double squaredRange = range * range;
                 var targetsWithContext = targets.stream().map(target -> {
@@ -213,7 +213,7 @@ public class SpellDelivery {
                 delivered = true;
             }
             case AFFECT_ARROW -> {
-                if (caster instanceof SpellCasterEntity shooter) {
+                if (caster instanceof SpellCaster.Player shooter) {
                     var arrowContext = shooter.getArrowShootContext();
                     arrowContext.activeSpells.add(spellEntry);
                 }

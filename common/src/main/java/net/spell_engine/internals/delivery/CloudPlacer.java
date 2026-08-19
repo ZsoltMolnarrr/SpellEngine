@@ -12,7 +12,6 @@ import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
-import net.spell_engine.internals.EntityPlacements;
 import net.spell_engine.internals.SpellExecution.ImpactContext;
 import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.utils.SoundHelper;

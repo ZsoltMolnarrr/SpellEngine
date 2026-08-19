@@ -12,7 +12,7 @@ import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.tags.SpellEngineDamageTypeTags;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.utils.AnimationHelper;
 import net.spell_engine.utils.VectorHelper;
 
@@ -30,7 +30,7 @@ public class EvasionLogic {
         }
         var config = SpellEngineMod.config;
         if (!config.attribute_evasion_allowed_while_spell_casting
-                && entity instanceof SpellCasterEntity casterEntity
+                && entity instanceof SpellCaster.Player casterEntity
                 && casterEntity.isCastingSpell()) {
             return false;
         }

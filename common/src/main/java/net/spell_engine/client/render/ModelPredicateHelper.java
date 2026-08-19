@@ -6,7 +6,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.mixin.client.render.ModelPredicateProviderRegistryAccessor;
 
 import java.util.Map;
@@ -80,7 +80,7 @@ public class ModelPredicateHelper {
     }
 
     private static SpellCast.Progress getItemStackRangedSkillProgress(ItemStack itemStack, LivingEntity entity) {
-        if (entity instanceof SpellCasterEntity caster && entity.getMainHandStack() == itemStack) {
+        if (entity instanceof SpellCaster.Player caster && entity.getMainHandStack() == itemStack) {
             var process = caster.getSpellCastProcess();
             // Watch out! This mode check is duplicated
             if (process != null && process.spell().value().active.cast.animates_ranged_weapon) {
@@ -91,7 +91,7 @@ public class ModelPredicateHelper {
     }
 
     private static boolean isItemStackUsedForRangedSkill(ItemStack itemStack, LivingEntity entity) {
-        if (entity instanceof SpellCasterEntity caster && entity.getMainHandStack() == itemStack) {
+        if (entity instanceof SpellCaster.Player caster && entity.getMainHandStack() == itemStack) {
             var process = caster.getSpellCastProcess();
             // Watch out! This mode check is duplicated
             if (process != null && process.spell().value().active.cast.animates_ranged_weapon) {
