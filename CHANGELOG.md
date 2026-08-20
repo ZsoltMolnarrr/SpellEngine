@@ -15,6 +15,8 @@
 ## Notable setup changes
 
 - Removed Forgified Fabric API dependency for the NeoForge version, now all platform API calls are fully native
+- Removed Accessories mod support entirely (from both loader variants) - Accessories mod l
+- Added Curious API slot mod support (NeoForge only)
 
 ## API Changes
 

@@ -1,5 +1,0 @@
-{
-  "icon": "spell_engine:gui/slot/spell_scroll",
-  "order": 0,
-  "validator_predicates": ["accessories:tag"]
-}

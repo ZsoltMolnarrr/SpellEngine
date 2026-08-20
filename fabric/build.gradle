@@ -73,9 +73,6 @@ repositories {
         }
     }
 
-    // Accessories
-    maven { url 'https://maven.wispforest.io/releases' }
-
     // CurseMaven
     maven {
         url = "https://www.cursemaven.com"
@@ -119,8 +116,6 @@ dependencies {
     modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${project.ftb_teams_version}")
     modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
 
-    modCompileOnly "maven.modrinth:owo-lib:${project.owo_version}" // Accessories needs this
-    modCompileOnly("io.wispforest:accessories-${platform}:${project.accessories_version}") // Appearantly this doesn't work as a modCompileOnly?
     modCompileOnly("maven.modrinth:iris:${project.iris_version}")
 
     // Fabric specific

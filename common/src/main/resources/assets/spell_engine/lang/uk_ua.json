@@ -107,11 +107,9 @@
   "trinkets.slot.spell.quiver": "Сагайдак",
   "trinkets.slot.misc.quiver": "Сагайдак",
 
-  "accessories.slot_group.spell": "Закляття",
-  "accessories.slot.spell_book": "Книга заклинань",
-  "accessories.slot.spell_scroll": "Сувій заклинань",
-  "accessories.slot.spell_quiver": "Сагайдак",
-  "accessories.slot.spell_trinket": "Аксесуар",
+  "curios.identifier.spell_book": "Книга заклинань",
+  "curios.identifier.spell_scroll": "Сувій заклинань",
+  "curios.identifier.spell_quiver": "Сагайдак",
 
   "effect.spell_engine.stun": "Оглушення",
   "effect.spell_engine.stun.description": "Не можна рухатися чи діяти.",

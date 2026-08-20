@@ -43,10 +43,6 @@ repositories {
         }
     }
 
-    // For Accessories:
-    maven { url 'https://maven.wispforest.io/releases' }
-    maven { url 'https://maven.su5ed.dev/releases' }
-    maven { url 'https://maven.fabricmc.net' }
 
     // CurseMaven
     maven {
@@ -92,7 +88,4 @@ dependencies {
     modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
     modCompileOnly("maven.modrinth:iris:${project.iris_version}")
 
-    // NeoForge specific
-    modCompileOnly "io.wispforest:owo-lib:${project.owo_version}" // Accessories needs this
-    modImplementation("io.wispforest:accessories-common:${project.accessories_version}")
 }

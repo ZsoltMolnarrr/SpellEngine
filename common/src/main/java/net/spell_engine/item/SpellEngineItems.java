@@ -1,5 +1,6 @@
 package net.spell_engine.item;
 
+import net.spell_engine.Platform;
 import net.spell_engine.PlatformEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
@@ -33,6 +34,10 @@ public class SpellEngineItems {
     }
 
     public static final Lazy<Item> SCROLL = new Lazy<>(() -> {
+        // Slot mod compat must install its item factories before the first access,
+        // items get created (thus factories read) during item registration, which
+        // runs before the loader entrypoints reach compat init.
+        Platform.util().awakeSlotModCompat();
         var settings = new Item.Settings().maxCount(1);
         var args = new SlotModCompat.SpellScrollArs(settings);
         var factory = SlotModCompat.spellScrollFactory;
@@ -40,6 +45,7 @@ public class SpellEngineItems {
     });
 
     public static final Lazy<Item> SPELL_BOOK = new Lazy<>(() -> {
+        Platform.util().awakeSlotModCompat();
         var settings = new Item.Settings().maxCount(1);
         var args = new SlotModCompat.SpellBookArgs(settings);
         var factory = SlotModCompat.spellBookFactory;
