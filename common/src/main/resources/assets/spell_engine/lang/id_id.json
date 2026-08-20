@@ -103,6 +103,10 @@
   "curios.identifier.spell_book": "Buku Mantra",
   "curios.identifier.spell_scroll": "Gulungan Mantra",
   "curios.identifier.spell_quiver": "Tabung Panah",
+  "curios.identifier.spell_trinket": "Aksesori",
+
+  "curios.modifiers.spell_book": "Saat dipakai sebagai buku mantra:",
+  "curios.modifiers.spell_trinket": "Saat dipakai sebagai aksesori:",
   "effect.spell_engine.stun": "Pingsan",
   "effect.spell_engine.stun.description": "Tidak dapat bergerak atau bertindak.",
   "effect.spell_engine.immobilize": "Terpaku",

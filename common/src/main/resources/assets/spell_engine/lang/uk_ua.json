@@ -110,6 +110,10 @@
   "curios.identifier.spell_book": "Книга заклинань",
   "curios.identifier.spell_scroll": "Сувій заклинань",
   "curios.identifier.spell_quiver": "Сагайдак",
+  "curios.identifier.spell_trinket": "Аксесуар",
+
+  "curios.modifiers.spell_book": "Коли споряджено, як книга заклинань:",
+  "curios.modifiers.spell_trinket": "Коли споряджено, як аксесуар:",
 
   "effect.spell_engine.stun": "Оглушення",
   "effect.spell_engine.stun.description": "Не можна рухатися чи діяти.",

@@ -169,6 +169,10 @@
   "curios.identifier.spell_book": "Libro degli Incantesimi",
   "curios.identifier.spell_scroll": "Pergamena degli Incantesimi",
   "curios.identifier.spell_quiver": "Faretra",
+  "curios.identifier.spell_trinket": "Ciondolo",
+
+  "curios.modifiers.spell_book": "Come libro degli incantesimi:",
+  "curios.modifiers.spell_trinket": "Come ciondolo:",
   "effect.spell_engine.stun": "Stordito",
   "effect.spell_engine.stun.description": "Non può muoversi o agire.",
   "effect.spell_engine.immobilize": "Immobilizzato",

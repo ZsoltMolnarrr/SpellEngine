@@ -103,6 +103,10 @@
   "curios.identifier.spell_book": "Spreukboek",
   "curios.identifier.spell_scroll": "Spreukrol",
   "curios.identifier.spell_quiver": "Pijlkoker",
+  "curios.identifier.spell_trinket": "Sieraad",
+
+  "curios.modifiers.spell_book": "Wanneer gedragen als spreukboek:",
+  "curios.modifiers.spell_trinket": "Wanneer gedragen als sieraad:",
   "effect.spell_engine.stun": "Verdoofd",
   "effect.spell_engine.stun.description": "Kan niet bewegen of handelen.",
   "effect.spell_engine.immobilize": "Onbeweeglijk",

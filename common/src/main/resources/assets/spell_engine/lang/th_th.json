@@ -103,6 +103,10 @@
   "curios.identifier.spell_book": "หนังสือเวทมนตร์",
   "curios.identifier.spell_scroll": "ม้วนเวทมนตร์",
   "curios.identifier.spell_quiver": "แล่งธนู",
+  "curios.identifier.spell_trinket": "เครื่องราง",
+
+  "curios.modifiers.spell_book": "เมื่อสวมใส่เป็นหนังสือเวทมนตร์:",
+  "curios.modifiers.spell_trinket": "เมื่อสวมใส่เป็นเครื่องราง:",
   "effect.spell_engine.stun": "มึนงง",
   "effect.spell_engine.stun.description": "ไม่สามารถเคลื่อนที่หรือกระทำการใดๆ ได้",
   "effect.spell_engine.immobilize": "เคลื่อนที่ไม่ได้",

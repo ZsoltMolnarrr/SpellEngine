@@ -103,6 +103,10 @@
   "curios.identifier.spell_book": "Knjiga čarolija",
   "curios.identifier.spell_scroll": "Svitak čarolije",
   "curios.identifier.spell_quiver": "Tobolac",
+  "curios.identifier.spell_trinket": "Privjesak",
+
+  "curios.modifiers.spell_book": "Kada se nosi kao knjiga čarolija:",
+  "curios.modifiers.spell_trinket": "Kada se nosi kao privjesak:",
   "effect.spell_engine.stun": "Omamljen",
   "effect.spell_engine.stun.description": "Ne može se kretati niti djelovati.",
   "effect.spell_engine.immobilize": "Nepomičan",

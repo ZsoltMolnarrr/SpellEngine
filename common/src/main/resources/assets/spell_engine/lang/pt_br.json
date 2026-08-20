@@ -97,6 +97,10 @@
   "curios.identifier.spell_book": "Livro de Feitiços",
   "curios.identifier.spell_scroll": "Pergaminho de Feitiço",
   "curios.identifier.spell_quiver": "Aljava",
+  "curios.identifier.spell_trinket": "Berloque",
+
+  "curios.modifiers.spell_book": "Quando como livro de feitiços:",
+  "curios.modifiers.spell_trinket": "Quando como berloque:",
   "effect.spell_engine.stun": "Atordoado",
   "effect.spell_engine.stun.description": "Não pode se mover ou agir.",
   "effect.spell_engine.immobilize": "Imobilizado",

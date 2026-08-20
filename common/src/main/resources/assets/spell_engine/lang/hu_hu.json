@@ -103,6 +103,10 @@
   "curios.identifier.spell_book": "Varázskönyv",
   "curios.identifier.spell_scroll": "Varázstekercs",
   "curios.identifier.spell_quiver": "Tegez",
+  "curios.identifier.spell_trinket": "Amulett",
+
+  "curios.modifiers.spell_book": "Varázskönyvként viselve:",
+  "curios.modifiers.spell_trinket": "Amulettként viselve:",
   "effect.spell_engine.stun": "Kábult",
   "effect.spell_engine.stun.description": "Nem tud mozogni vagy cselekedni.",
   "effect.spell_engine.immobilize": "Mozgásképtelen",

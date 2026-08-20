@@ -158,6 +158,10 @@
   "curios.identifier.spell_book": "마법책",
   "curios.identifier.spell_scroll": "주문서",
   "curios.identifier.spell_quiver": "화살통",
+  "curios.identifier.spell_trinket": "장신구",
+
+  "curios.modifiers.spell_book": "마법책을 착용했을 때:",
+  "curios.modifiers.spell_trinket": "장신구를 착용했을 때:",
   "effect.spell_engine.stun": "기절",
   "effect.spell_engine.stun.description": "움직이거나 행동할 수 없습니다.",
   "text.autoconfig.spell_engine.option.client.renderBeamsHighLuminance": "높은 광도의 광선",

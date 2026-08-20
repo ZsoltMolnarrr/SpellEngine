@@ -103,6 +103,10 @@
   "curios.identifier.spell_book": "Büyü Kitabı",
   "curios.identifier.spell_scroll": "Büyü Parşömeni",
   "curios.identifier.spell_quiver": "Sadak",
+  "curios.identifier.spell_trinket": "Tılsım",
+
+  "curios.modifiers.spell_book": "Büyü kitabı olarak takıldığında:",
+  "curios.modifiers.spell_trinket": "Tılsım olarak takıldığında:",
   "effect.spell_engine.stun": "Sersemletildi",
   "effect.spell_engine.stun.description": "Hareket edemez veya eylem yapamaz.",
   "effect.spell_engine.immobilize": "Hareketsiz Bırakıldı",

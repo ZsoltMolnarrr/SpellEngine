@@ -103,6 +103,10 @@
   "curios.identifier.spell_book": "Besvärjelsebok",
   "curios.identifier.spell_scroll": "Besvärjelserulle",
   "curios.identifier.spell_quiver": "Koger",
+  "curios.identifier.spell_trinket": "Amulett",
+
+  "curios.modifiers.spell_book": "När den bärs som besvärjelsebok:",
+  "curios.modifiers.spell_trinket": "När den bärs som amulett:",
   "effect.spell_engine.stun": "Bedövad",
   "effect.spell_engine.stun.description": "Kan varken röra sig eller agera.",
   "effect.spell_engine.immobilize": "Orörlig",

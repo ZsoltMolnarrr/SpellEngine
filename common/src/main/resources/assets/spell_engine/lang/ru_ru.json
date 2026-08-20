@@ -173,6 +173,10 @@
   "curios.identifier.spell_book": "Книга заклинаний",
   "curios.identifier.spell_scroll": "Свиток заклинания",
   "curios.identifier.spell_quiver": "Колчан",
+  "curios.identifier.spell_trinket": "Аксессуар",
+
+  "curios.modifiers.spell_book": "Когда надето в качестве книги заклинаний:",
+  "curios.modifiers.spell_trinket": "Когда надето в качестве аксессуара:",
   "effect.spell_engine.stun": "Оглушение",
   "effect.spell_engine.stun.description": "Не может двигаться или действовать.",
   "effect.spell_engine.immobilize": "Обездвиживание",

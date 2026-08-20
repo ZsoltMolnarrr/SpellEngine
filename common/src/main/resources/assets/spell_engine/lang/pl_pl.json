@@ -103,6 +103,10 @@
   "curios.identifier.spell_book": "Księga Zaklęć",
   "curios.identifier.spell_scroll": "Zwój Zaklęć",
   "curios.identifier.spell_quiver": "Kołczan",
+  "curios.identifier.spell_trinket": "Ozdoba",
+
+  "curios.modifiers.spell_book": "Kiedy noszony jako księga zaklęć:",
+  "curios.modifiers.spell_trinket": "Kiedy noszony jako ozdoba:",
   "effect.spell_engine.stun": "Ogłuszenie",
   "effect.spell_engine.stun.description": "Nie można się poruszać ani działać.",
   "effect.spell_engine.immobilize": "Unieruchomienie",

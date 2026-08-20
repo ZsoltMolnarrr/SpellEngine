@@ -110,6 +110,10 @@
   "curios.identifier.spell_book": "Spell Book",
   "curios.identifier.spell_scroll": "Spell Scroll",
   "curios.identifier.spell_quiver": "Quiver",
+  "curios.identifier.spell_trinket": "Trinket",
+
+  "curios.modifiers.spell_book": "When worn as spell book:",
+  "curios.modifiers.spell_trinket": "When worn as trinket:",
 
   "effect.spell_engine.stun": "Stunned",
   "effect.spell_engine.stun.description": "Cannot move or act.",

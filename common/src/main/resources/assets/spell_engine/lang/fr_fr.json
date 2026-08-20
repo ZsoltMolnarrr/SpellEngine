@@ -91,6 +91,10 @@
   "curios.identifier.spell_book": "Livre de Sorts",
   "curios.identifier.spell_scroll": "Parchemin de Sort",
   "curios.identifier.spell_quiver": "Carquois",
+  "curios.identifier.spell_trinket": "Fétiche",
+
+  "curios.modifiers.spell_book": "Quand porté comme livre de sorts :",
+  "curios.modifiers.spell_trinket": "Quand porté comme fétiche :",
   "effect.spell_engine.stun": "Étourdi",
   "effect.spell_engine.stun.description": "Ne peut ni bouger ni agir.",
   "text.autoconfig.spell_engine.title": "Spell Engine",

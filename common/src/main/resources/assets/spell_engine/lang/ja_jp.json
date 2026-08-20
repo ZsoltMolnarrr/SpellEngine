@@ -103,6 +103,10 @@
   "curios.identifier.spell_book": "呪文の書",
   "curios.identifier.spell_scroll": "呪文の巻物",
   "curios.identifier.spell_quiver": "矢筒",
+  "curios.identifier.spell_trinket": "アクセサリー",
+
+  "curios.modifiers.spell_book": "呪文の書に装備したとき：",
+  "curios.modifiers.spell_trinket": "アクセサリーに装備したとき：",
   "effect.spell_engine.stun": "スタン",
   "effect.spell_engine.stun.description": "移動も行動もできない。",
   "effect.spell_engine.immobilize": "移動不能",

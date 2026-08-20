@@ -103,6 +103,10 @@
   "curios.identifier.spell_book": "Kniha kouzel",
   "curios.identifier.spell_scroll": "Svitek kouzel",
   "curios.identifier.spell_quiver": "Toulec",
+  "curios.identifier.spell_trinket": "Přívěsek",
+
+  "curios.modifiers.spell_book": "Když je nošeno jako kniha kouzel:",
+  "curios.modifiers.spell_trinket": "Když je nošeno jako přívěsek:",
   "effect.spell_engine.stun": "Omráčení",
   "effect.spell_engine.stun.description": "Nelze se hýbat ani jednat.",
   "effect.spell_engine.immobilize": "Znehybnění",

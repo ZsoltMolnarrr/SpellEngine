@@ -103,6 +103,10 @@
   "curios.identifier.spell_book": "Sách Phép Thuật",
   "curios.identifier.spell_scroll": "Cuộn Giấy Phép Thuật",
   "curios.identifier.spell_quiver": "Ống Tên",
+  "curios.identifier.spell_trinket": "Bùa Hộ Mệnh",
+
+  "curios.modifiers.spell_book": "Khi trang bị làm sách phép thuật:",
+  "curios.modifiers.spell_trinket": "Khi trang bị làm bùa hộ mệnh:",
   "effect.spell_engine.stun": "Choáng",
   "effect.spell_engine.stun.description": "Không thể di chuyển hoặc hành động.",
   "effect.spell_engine.immobilize": "Bất Động",
