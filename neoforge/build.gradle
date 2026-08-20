@@ -185,3 +185,15 @@ publishMods {
         commitish = providers.environmentVariable("GITHUB_SHA")
     }
 }
+
+// The GitHub release is the *seal* on a successful publish, so it must run LAST: if a mod
+// host upload fails (e.g. a CurseForge 500), Gradle aborts the build before the release is
+// created, so there is never a green GitHub release pointing at a half-published version.
+// `mustRunAfter` is an ordering rule ONLY -- it does not pull the referenced tasks into the
+// graph. A Modrinth-only run therefore still works and simply ignores the CurseForge rule.
+// This matters because command-line task order is NOT an execution-order guarantee.
+// NOTE: must sit AFTER the `publishMods` block -- the plugin registers one task per
+// destination while that block is evaluated, so these names do not exist before it.
+tasks.named("publishGithub") {
+    mustRunAfter(tasks.named("publishCurseforge"), tasks.named("publishModrinth"))
+}
