@@ -1,6 +1,6 @@
 package net.spell_engine.compat.container;
+import net.spell_engine.Platform;
 
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.BundleContentsComponent;
 import net.minecraft.entity.player.PlayerEntity;
@@ -25,7 +25,7 @@ public class ContainerCompat {
             }
             return null;
         });
-        if (FabricLoader.getInstance().isModLoaded("bundleapi")) {
+        if (Platform.util().isModLoaded("bundleapi")) {
             CustomBundleCompat.init();
         }
     }

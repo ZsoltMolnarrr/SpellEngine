@@ -52,10 +52,6 @@ repositories {
             includeGroup 'maven.modrinth'
         }
     }
-    maven {
-        name = "Ladysnake Libs"
-        url = 'https://maven.ladysnake.org/releases'
-    }
     exclusiveContent {
         forRepository {
             maven {
@@ -67,29 +63,9 @@ repositories {
             includeGroup"dev.ftb.mods"
         }
     }
-    // JEI Maven currently required by FTB
-    maven {
-        name "ModMaven (JEI)"
-        url "https://modmaven.dev/"
-        content {
-            includeGroup "mezz.jei"
-        }
-    }
-    maven {
-        url "https://maven.su5ed.dev/releases"
-    }
 
-    // For Accessories
-    maven { url 'https://maven.wispforest.io/releases' }
-    maven { url 'https://maven.fabricmc.net' }
-
-    // CurseMaven
-    maven {
-        url = "https://www.cursemaven.com"
-        content {
-            includeGroup "curse.maven"
-        }
-    }
+    // For Curios
+    maven { url 'https://maven.theillusivec4.top/' }
 
     mavenLocal()
 }
@@ -98,7 +74,6 @@ dependencies {
     neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
-    modImplementation "org.sinytra.forgified-fabric-api:forgified-fabric-api:${project.forgified_fabric_api_version}"
 
     modImplementation("dev.kosmx.player-anim:player-animation-lib-forge:${project.player_anim_version}")
     modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${project.cloth_config_version}")
@@ -124,14 +99,8 @@ dependencies {
     modCompileOnly("maven.modrinth:iris:${project.iris_version}")
 
     // NeoForge specific
-    // - Accessories - https://docs.wispforest.io/accessories/developer/dev_setup
-    modImplementation "maven.modrinth:owo-lib:${project.owo_neo_version}" // AccessoryItem wouldn't compile without this
-    modImplementation("io.wispforest:accessories-neoforge:${project.accessories_version}")
-    forgeRuntimeLibrary("blue.endless:jankson:1.2.2")
-    forgeRuntimeLibrary("io.wispforest:endec:0.1.5.1")
-    forgeRuntimeLibrary("io.wispforest.endec:gson:0.1.3.1")
-    forgeRuntimeLibrary("io.wispforest.endec:jankson:0.1.3.1")
-    forgeRuntimeLibrary("io.wispforest.endec:netty:0.1.2")
+    // - Curios - https://docs.illusivesoulworks.com/category/curios
+    modImplementation("top.theillusivec4.curios:curios-neoforge:${project.curios_version}")
 }
 
 processResources {
@@ -161,7 +130,11 @@ remapJar {
 // `build` — with none of the tokens present — is completely unaffected.
 def releaseTypeName = (project.findProperty('release_type') ?: 'beta').toString()
 
-// Keep the old task name so the existing workflow (`:neoforge:publishMod`) keeps working.
+// Convenience alias: build + publish to every configured destination in one go.
+// CI does NOT use this -- `publish.yml` invokes `:neoforge:build` plus an explicit subset of
+// the plugin's per-destination tasks (`publishCurseforge` / `publishModrinth` /
+// `publishGithub`), so a release can target only some platforms. Keep that in mind when
+// changing this alias: it is now a local/manual convenience, not the CI entry point.
 // The plugin's own aggregate task is `publishMods` (plural).
 tasks.register("publishMod") {
     dependsOn(build)
@@ -186,7 +159,7 @@ publishMods {
         client = true                    // >=1 of client/server REQUIRED by CurseForge (Error 1021)
         server = true
         changelogType = "markdown"
-        requires("forgified-fabric-api", "cloth-config", "playeranimator", "spell-power", "accessories")
+        requires("cloth-config", "playeranimator", "spell-power", "curios")
     }
 
     modrinth {
@@ -194,11 +167,10 @@ publishMods {
         accessToken = providers.environmentVariable("MODRINTH_API_KEY")
         minecraftVersions.add(project.minecraft_version)
         minecraftVersions.add(project.minecraft_compat_version)
-        requires { slug = "forgified-fabric-api" }
         requires { slug = "cloth-config" }
         requires { slug = "playeranimator" }
         requires { slug = "spell-power" }
-        requires { slug = "accessories" }
+        requires { slug = "curios" }
     }
 
     // Each platform publishes its own GitHub release under a distinct, platform-suffixed
@@ -212,4 +184,16 @@ publishMods {
         // Actions to the triggering commit — valid even in a detached-HEAD checkout.
         commitish = providers.environmentVariable("GITHUB_SHA")
     }
+}
+
+// The GitHub release is the *seal* on a successful publish, so it must run LAST: if a mod
+// host upload fails (e.g. a CurseForge 500), Gradle aborts the build before the release is
+// created, so there is never a green GitHub release pointing at a half-published version.
+// `mustRunAfter` is an ordering rule ONLY -- it does not pull the referenced tasks into the
+// graph. A Modrinth-only run therefore still works and simply ignores the CurseForge rule.
+// This matters because command-line task order is NOT an execution-order guarantee.
+// NOTE: must sit AFTER the `publishMods` block -- the plugin registers one task per
+// destination while that block is evaluated, so these names do not exist before it.
+tasks.named("publishGithub") {
+    mustRunAfter(tasks.named("publishCurseforge"), tasks.named("publishModrinth"))
 }

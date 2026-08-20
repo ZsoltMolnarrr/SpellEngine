@@ -5,7 +5,7 @@ import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
-import net.spell_engine.api.config.AttributeModifier;
+import net.spell_engine.rpg_series.config.AttributeModifier;
 
 import java.util.List;
 import java.util.function.Supplier;

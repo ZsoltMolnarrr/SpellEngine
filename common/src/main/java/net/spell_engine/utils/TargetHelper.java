@@ -15,8 +15,7 @@ import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.delivery.Beam;
-import net.spell_engine.internals.casting.SpellCasterClient;
-import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.casting.SpellCaster;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -24,6 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
+import net.spell_engine.internals.delivery.LaunchGeometry;
 
 public class TargetHelper {
 
@@ -191,7 +191,7 @@ public class TargetHelper {
     }
 
     public static boolean isTargetedByPlayer(Entity entity, PlayerEntity player) {
-        if (entity != null && entity.getWorld().isClient && player instanceof SpellCasterClient casterClient) {
+        if (entity != null && entity.getWorld().isClient && player instanceof SpellCaster.Client casterClient) {
             var targets = casterClient.getCurrentTargets();
             if (entity instanceof EnderDragonEntity dragon) {
                 // Targets contain any of the dragon's body parts
@@ -209,7 +209,7 @@ public class TargetHelper {
     }
 
     public static Beam.Position castBeam(LivingEntity caster, Vec3d direction, float max) {
-        var start = SpellHelper.launchPoint(caster);
+        var start = LaunchGeometry.launchPoint(caster);
         var end = start.add(direction.multiply(max));
         var length = max;
         boolean hitBlock = false;

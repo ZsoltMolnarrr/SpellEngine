@@ -1,8 +1,9 @@
 package net.spell_engine.rpg_series.item;
+import net.spell_engine.Platform;
 
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.fabricmc.loader.api.FabricLoader;
+import net.spell_engine.PlatformEvents;
 import net.minecraft.block.Block;
+import net.minecraft.component.ComponentChanges;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.component.type.ToolComponent;
@@ -20,8 +21,8 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
 import net.minecraft.util.Rarity;
-import net.spell_engine.api.config.AttributeModifier;
-import net.spell_engine.api.config.WeaponConfig;
+import net.spell_engine.rpg_series.config.AttributeModifier;
+import net.spell_engine.rpg_series.config.WeaponConfig;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
@@ -83,7 +84,7 @@ public class Weapon {
             if (requiredMod == null || requiredMod.isEmpty()) {
                 return true;
             }
-            return FabricLoader.getInstance().isModLoaded(requiredMod);
+            return Platform.util().isModLoaded(requiredMod);
         }
 
         public String name() {
@@ -121,6 +122,16 @@ public class Weapon {
         public Entry withSpellChoices(String pool) {
             this.spellContainer = this.spellContainer.withBindingPool(Identifier.of(pool));
             this.spellChoice = SpellChoice.of(pool);
+            return this;
+        }
+
+        /// Registers component changes to apply to this item when `spellId` is chosen from the pool.
+        /// Lets the chosen spell drive the item's appearance (`custom_model_data`, `custom_name`, ...).
+        public Entry applyOnChoice(String spellId, ComponentChanges changes) {
+            if (this.spellChoice == null) {
+                this.spellChoice = SpellChoice.EMPTY;
+            }
+            this.spellChoice = this.spellChoice.withApplyOnChoice(Identifier.of(spellId), changes);
             return this;
         }
 
@@ -246,7 +257,7 @@ public class Weapon {
             var item = entry.create(entry.material, settings);
             Registry.register(Registries.ITEM, entry.id(), item);
         }
-        ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register(content -> {
+        PlatformEvents.onItemGroupModify(itemGroupKey, (content, context) -> {
             for(var entry: entries) {
                 content.add(entry.item());
             }

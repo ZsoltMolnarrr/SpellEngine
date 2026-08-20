@@ -4,9 +4,10 @@ import net.minecraft.entity.LivingEntity;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.effect.CustomParticleStatusEffect;
 import net.spell_engine.api.effect.Synchronized;
-import net.spell_engine.client.beam.BeamEmitterEntity;
+import net.spell_engine.client.render.BeamEmitterEntity;
 import net.spell_engine.internals.delivery.Beam;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
+import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.fx.ParticleHelper;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,7 +33,7 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
     private void tick_TAIL_spawnBeamParticles(CallbackInfo ci) {
         var livingEntity = livingEntity();
         Spell.Target.Beam beam = null;
-        if (livingEntity instanceof SpellCasterEntity caster) {
+        if (livingEntity instanceof SpellCaster.Entity caster) {
             beam = caster.getBeam();
         }
         var renderedBeam = lastRenderedBeam;
@@ -43,7 +44,9 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
             var yaw = livingEntity.getYaw();
 
             if (position.hitBlock()) {
-                for (var batch : appearance.block_hit_particles) {
+                // Emitted purely client-side, with no server involvement, so nothing contextual
+                // (the caster's effective range included) can be resolved here.
+                for (var batch : appearance.block_hit.resolved(Fx.Context.NONE).particles) {
                     ParticleHelper.play(livingEntity.getWorld(), livingEntity.age, position.end(),
                             appearance.width * 2, yaw, livingEntity.getPitch(), batch, livingEntity);
                 }

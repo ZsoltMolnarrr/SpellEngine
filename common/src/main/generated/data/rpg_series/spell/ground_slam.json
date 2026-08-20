@@ -42,35 +42,49 @@
   ],
   "area_impact": {
     "radius": 3.0,
-    "particles": [
-      {
-        "particle_id": "spell_engine:smoke_medium",
-        "origin": "FEET",
-        "shape": "CIRCLE",
-        "count": 25.0,
-        "min_speed": 0.2,
-        "max_speed": 0.2,
-        "pre_spawn_travel": 1.0
-      },
-      {
-        "particle_id": "spell_engine:smoke_medium",
-        "origin": "FEET",
-        "shape": "CIRCLE",
-        "count": 25.0,
-        "min_speed": 0.3,
-        "max_speed": 0.3,
-        "pre_spawn_travel": 2.0
-      },
-      {
-        "particle_id": "spell_engine:smoke_medium",
-        "origin": "FEET",
-        "shape": "CIRCLE",
-        "count": 25.0,
-        "min_speed": 0.4,
-        "max_speed": 0.4,
-        "pre_spawn_travel": 4.0
-      }
-    ],
+    "visuals": {
+      "particles": [
+        {
+          "id": "spell_engine:smoke_medium",
+          "appearance": {},
+          "batch": {
+            "count": 25.0,
+            "shape": "CIRCLE",
+            "anchor": "ENTITY",
+            "vertical_origin": 0.1,
+            "min_speed": 0.2,
+            "max_speed": 0.2,
+            "pre_travel": 1.0
+          }
+        },
+        {
+          "id": "spell_engine:smoke_medium",
+          "appearance": {},
+          "batch": {
+            "count": 25.0,
+            "shape": "CIRCLE",
+            "anchor": "ENTITY",
+            "vertical_origin": 0.1,
+            "min_speed": 0.3,
+            "max_speed": 0.3,
+            "pre_travel": 2.0
+          }
+        },
+        {
+          "id": "spell_engine:smoke_medium",
+          "appearance": {},
+          "batch": {
+            "count": 25.0,
+            "shape": "CIRCLE",
+            "anchor": "ENTITY",
+            "vertical_origin": 0.1,
+            "min_speed": 0.4,
+            "max_speed": 0.4,
+            "pre_travel": 4.0
+          }
+        }
+      ]
+    },
     "sound": {
       "id": "spell_engine:weapon_ground_slam"
     }

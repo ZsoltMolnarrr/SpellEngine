@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Melakukan serangan berputar, memberikan {damage} kerusakan kepada musuh di sekitar.",
+  "spell.rpg_series.cleave.name": "Cincang",
+  "spell.rpg_series.fan_of_knives.description": "Melemparkan beberapa bilahmu dalam bentuk kerucut, memberikan {damage} kerusakan, memantul dari medan hingga {bounce} kali.",
+  "spell.rpg_series.fan_of_knives.name": "Kipas Pisau",
+  "spell.rpg_series.flurry.description": "Tahan untuk melepaskan rentetan serangan cepat, sambil mendapatkan momentum.",
+  "spell.rpg_series.flurry.name": "Rentetan",
+  "spell.rpg_series.ground_slam.description": "Melompat ke udara dan menghantam tanah, memberikan {damage} kerusakan kepada musuh di sekitar.",
+  "spell.rpg_series.ground_slam.name": "Hantaman Tanah",
+  "spell.rpg_series.impale.description": "Melemparkan senjatamu ke depan, memberikan {damage} kerusakan dan tolakan kuat. Semakin lama lemparan diisi, semakin keras hantamannya dan semakin jauh terbangnya.",
+  "spell.rpg_series.impale.name": "Tusukan",
+  "spell.rpg_series.smash.description": "Memberikan pukulan dengan tolakan kuat, menonaktifkan penggunaan perisai dan item target.",
+  "spell.rpg_series.smash.name": "Hantam",
+  "spell.rpg_series.swift_strikes.description": "Lepaskan rentetan serangan cepat.",
+  "spell.rpg_series.swift_strikes.name": "Serangan Kilat",
+  "spell.rpg_series.swipe.description": "Meluncur maju dengan senjatamu, menyerang semua musuh di sepanjang jalurmu.",
+  "spell.rpg_series.swipe.name": "Sabetan",
+  "spell.rpg_series.thrust.description": "Menerjang maju dengan senjatamu, menyerang semua musuh di sepanjang jalurmu.",
+  "spell.rpg_series.thrust.name": "Terjangan",
+  "spell.rpg_series.whirlwind.description": "Tahan untuk berputar, memberikan {damage} kerusakan per detik, kepada musuh di sekitar.",
+  "spell.rpg_series.whirlwind.name": "Angin Puyuh"
+}

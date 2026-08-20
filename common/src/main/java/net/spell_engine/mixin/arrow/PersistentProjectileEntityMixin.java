@@ -20,9 +20,8 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.SummonedEntity;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.SpellTriggers;
-import net.spell_engine.internals.arrow.ArrowExtension;
+import net.spell_engine.internals.delivery.arrow.ArrowExtension;
 import net.spell_engine.internals.target.EntityRelation;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.fx.ParticleHelper;
@@ -37,6 +36,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import net.spell_engine.internals.SpellExecution;
+import net.spell_engine.internals.impact.SpellImpacts;
 
 @Mixin(PersistentProjectileEntity.class)
 public abstract class PersistentProjectileEntityMixin implements ArrowExtension {
@@ -317,8 +318,8 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         if (spellEntry != null
                 && spellEntry.value().impacts != null
                 && owner instanceof LivingEntity shooter) {
-            SpellHelper.arrowImpact(shooter, arrow, target, spellEntry,
-                    new SpellHelper.ImpactContext().position(entityHitResult.getPos()));
+            SpellImpacts.arrowImpact(shooter, arrow, target, spellEntry,
+                    new SpellExecution.ImpactContext().position(entityHitResult.getPos()));
         }
     }
 }

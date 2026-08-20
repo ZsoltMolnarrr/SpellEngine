@@ -33,18 +33,23 @@ public class SpellCloudRenderer<T extends SpellCloud> extends EntityRenderer<T> 
         }
         var clientData = data.client_data;
         if (!clientData.model_fx.isEmpty()) {
-            renderModelFx(entity, clientData, tickDelta, matrixStack, vertexConsumers, light); // new path
-        } else {
-            renderLegacyModel(entity, clientData, tickDelta, matrixStack, vertexConsumers, light); // legacy path
+            renderModelFx(entity, clientData, tickDelta, matrixStack, vertexConsumers, light);
         }
     }
 
-    /// New multi-model path: each model animated through the modelFX system, under the shared
-    /// cloud-root transform. Animation time is the cloud's age (lines up with its lifecycle phases).
+    /// Each model animated through the modelFX system, under the shared cloud-root transform. Animation time is the cloud's age (lines up with its lifecycle phases).
     private void renderModelFx(T entity, Spell.Delivery.Cloud.ClientData clientData, float tickDelta,
                                MatrixStack matrixStack, VertexConsumerProvider vertexConsumers, int light) {
         matrixStack.push();
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-1F * entity.getYaw() + 180F));
+        // Grow the model with the cloud's radius. Applied about the ground origin (before the 0.5 lift)
+        // so the model scales up from where it sits. `getRenderScale` interpolates within the tick, so a
+        // discrete growth step doesn't pop; it's 1.0 for a non-growing cloud, leaving existing clouds
+        // untouched.
+        float renderScale = entity.getRenderScale(tickDelta);
+        if (renderScale != 1F) {
+            matrixStack.scale(renderScale, renderScale, renderScale);
+        }
         matrixStack.translate(0, 0.5, 0); // Compensate for translate within CustomModels.render
 
         float age = entity.age + tickDelta;
@@ -58,30 +63,6 @@ public class SpellCloudRenderer<T extends SpellCloud> extends EntityRenderer<T> 
             }
             ModelEffectOperations.renderEffect(effect, age, matrixStack, itemRenderer, vertexConsumers, light, entity.getId());
             matrixStack.pop();
-        }
-
-        matrixStack.pop();
-    }
-
-    @SuppressWarnings("removal") // legacy single-model path; delete together with ProjectileModel
-    private void renderLegacyModel(T entity, Spell.Delivery.Cloud.ClientData clientData, float tickDelta,
-                                   MatrixStack matrixStack, VertexConsumerProvider vertexConsumers, int light) {
-        var renderData = clientData.model;
-        if (renderData == null) {
-            return;
-        }
-
-        matrixStack.push();
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-1F * entity.getYaw() + 180F));
-        matrixStack.translate(0, 0.5, 0); // Compensate for translate within CustomModels.render
-
-        var time = entity.getWorld().getTime();
-        var absoluteTime = (float)time + tickDelta;
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(absoluteTime * renderData.rotate_degrees_per_tick));
-        matrixStack.scale(renderData.scale, renderData.scale, renderData.scale);
-        if (renderData.model_id != null && !renderData.model_id.isEmpty()) {
-            var modelId = Identifier.of(renderData.model_id);
-            CustomModels.render(SpellModelHelper.LAYERS.get(renderData.light_emission), itemRenderer, modelId, matrixStack, vertexConsumers, light, entity.getId());
         }
 
         matrixStack.pop();

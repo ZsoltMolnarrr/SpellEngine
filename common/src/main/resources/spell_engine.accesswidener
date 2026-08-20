@@ -3,3 +3,16 @@ accessible    class    net/minecraft/entity/effect/PoisonStatusEffect
 accessible    class    net/minecraft/client/render/RenderLayer$MultiPhase
 accessible    method    net/minecraft/client/render/RenderLayer    of    (Ljava/lang/String;Lnet/minecraft/client/render/VertexFormat;Lnet/minecraft/client/render/VertexFormat$DrawMode;IZZLnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;)Lnet/minecraft/client/render/RenderLayer$MultiPhase;
 accessible    method    net/minecraft/client/render/block/entity/BlockEntityRendererFactories    register    (Lnet/minecraft/block/entity/BlockEntityType;Lnet/minecraft/client/render/block/entity/BlockEntityRendererFactory;)V
+# Loader-neutral replacement for Fabric API's PlayerLookup.tracking(Entity):
+# reach the vanilla entity-tracker listener set so common code can enumerate the
+# server players tracking an entity without depending on any loader networking API.
+accessible    field    net/minecraft/server/world/ServerChunkLoadingManager    entityTrackers    Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
+accessible    class    net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker
+accessible    field    net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker    listeners    Ljava/util/Set;
+# NeoForge has no LootTable.Builder in its LootTableLoadEvent (it exposes a built LootTable), so the
+# NeoForge loot-modify path reconstructs the table with extra pools. Needs the vanilla fields + ctor.
+accessible    field    net/minecraft/loot/LootTable    type    Lnet/minecraft/loot/context/LootContextType;
+accessible    field    net/minecraft/loot/LootTable    randomSequenceId    Ljava/util/Optional;
+accessible    field    net/minecraft/loot/LootTable    pools    Ljava/util/List;
+accessible    field    net/minecraft/loot/LootTable    functions    Ljava/util/List;
+accessible    method    net/minecraft/loot/LootTable    <init>    (Lnet/minecraft/loot/context/LootContextType;Ljava/util/Optional;Ljava/util/List;Ljava/util/List;)V

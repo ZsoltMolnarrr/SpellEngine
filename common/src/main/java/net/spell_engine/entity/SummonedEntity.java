@@ -11,7 +11,6 @@ import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
-import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -25,7 +24,6 @@ import net.minecraft.entity.passive.GolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -33,7 +31,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import net.spell_engine.api.entity.TwoWayCollisionChecker;
-import net.spell_engine.api.spell.Spell;
+import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.summon.AttributeScaling;
@@ -43,21 +41,22 @@ import net.spell_engine.api.spell.summon.SummonedEntityConfig;
 import net.spell_engine.entity.goal.*;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
-import net.spell_engine.internals.SpellCooldownManager;
-import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.casting.SpellCast;
+import net.spell_engine.internals.casting.SpellCaster;
+import net.spell_engine.internals.cost.SpellCooldownManager;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.internals.target.EntityRelation;
 import net.spell_engine.internals.target.EntityRelations;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import net.spell_engine.internals.SpellParameters;
 
-public abstract class SummonedEntity extends GolemEntity implements SpellSummoned, Tameable {
+public abstract class SummonedEntity extends GolemEntity implements SpellSummoned, Tameable, SpellCaster.Entity {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
@@ -73,6 +72,10 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
             DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.FLOAT);
     public static final TrackedData<Integer> END_OF_PHASE_AGE =
             DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    /// Synced cast process (JSON of SpellCast.Process.SyncFormat, "" = none) — drives the beam
+    /// visual, beam particles and cast sound on clients while this summon channels a spell.
+    public static final TrackedData<String> CAST_PROCESS =
+            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.STRING);
     // One packed tracker per action type — kept separate so a spell cast and a melee swing
     // can animate in parallel without one stomping the other's state.
     //
@@ -437,12 +440,12 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     /// go out as a tracker packet, model effects as self-syncing entities, both at this entity.
     private void emitSpawnFx() {
         if (behaviour == null || behaviour.spawn_fx == null) return;
-        var fx = behaviour.spawn_fx;
+        var fx = behaviour.spawn_fx.resolved(Fx.Context.NONE);
         var world = getWorld();
-        if (fx.particles != null && fx.particles.length > 0) {
+        if (!fx.particles.isEmpty()) {
             ParticleHelper.sendBatches(this, fx.particles);
         }
-        ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.model_fx, this);
+        ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.models, this);
     }
 
     /// Server-side: emits the individual despawn FX once, when the entity enters its despawn phase.
@@ -450,12 +453,12 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     /// self-syncing entities, both at this entity.
     private void emitDespawnFx() {
         if (behaviour == null || behaviour.despawn_fx == null) return;
-        var fx = behaviour.despawn_fx;
+        var fx = behaviour.despawn_fx.resolved(Fx.Context.NONE);
         var world = getWorld();
-        if (fx.particles != null && fx.particles.length > 0) {
+        if (!fx.particles.isEmpty()) {
             ParticleHelper.sendBatches(this, fx.particles);
         }
-        ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.model_fx, this);
+        ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.models, this);
     }
 
     /// Client-side: spawns the configured existence particles locally on their interval, during the
@@ -464,7 +467,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         if (clientExistenceParticles == null || !isActive()) return;
         var world = getWorld();
         for (var ep : clientExistenceParticles) {
-            if (ep == null || ep.particles == null || ep.particles.length == 0 || ep.interval_ticks <= 0) {
+            if (ep == null || ep.particles == null || ep.particles.isEmpty() || ep.interval_ticks <= 0) {
                 continue;
             }
             if (((this.age - ep.offset_ticks) % ep.interval_ticks) == 0) {
@@ -698,7 +701,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     }
 
     /// Largest effective range across all configured actions: spell effective ranges
-    /// (`SpellHelper.getRange` × the action's `range.max` fraction) and melee reach
+    /// (`SpellParameters.getRange` × the action's `range.max` fraction) and melee reach
     /// (`max_range` scaled by the entity's size). 0 when no action yields a positive range.
     private double maximumActionRange() {
         if (behaviour == null) return 0;
@@ -724,7 +727,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         var entry = SpellRegistry.from(getWorld()).getEntry(Identifier.of(spell.spell_id)).orElse(null);
         if (entry == null) return 0;
         // Effective range folds in caster modifiers; range.max is the action's engagement edge.
-        return SpellHelper.getRange(this, entry) * spell.range.max;
+        return SpellParameters.getRange(this, entry) * spell.range.max;
     }
 
     /// True if the entity currently has a live target. Used by passive navigation goals
@@ -876,6 +879,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         builder.add(BOUNDING_BOX_WIDTH,  0F);
         builder.add(BOUNDING_BOX_HEIGHT, 0F);
         builder.add(END_OF_PHASE_AGE, 0);
+        builder.add(CAST_PROCESS, "");
         // duration = 0 → all action animations start inactive.
         long inactive = packAnim(0, 0, 0);
         builder.add(ATTACK_ANIMATION, inactive);
@@ -1041,6 +1045,39 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     // --- NBT ---
 
     private static final Gson GSON = new Gson();
+
+    // MARK: Synced cast process (SpellCaster.Entity)
+
+    @Nullable private SpellCast.Process castProcess = null;
+    private String lastCastProcessRaw = "";
+
+    /// Server-side: declares the channel process this summon is casting (null = none). Synced
+    /// via CAST_PROCESS; clients discover it through {@link SpellCaster.Entity} for beam
+    /// rendering, beam particles and the cast sound loop.
+    public void declareCastProcess(@Nullable SpellCast.Process process) {
+        castProcess = process;
+        var raw = process != null ? process.fastSyncJSON() : "";
+        lastCastProcessRaw = raw;
+        this.dataTracker.set(CAST_PROCESS, raw);
+    }
+
+    /// Read-through parse-cache over the synced raw value — same pattern as the player
+    /// interactor: the server never re-parses its own writes, the client re-parses on change.
+    @Override
+    @Nullable public SpellCast.Process getSpellCastProcess() {
+        var raw = this.dataTracker.get(CAST_PROCESS);
+        if (!raw.equals(lastCastProcessRaw)) {
+            lastCastProcessRaw = raw;
+            if (raw.isEmpty()) {
+                castProcess = null;
+            } else {
+                var syncFormat = GSON.fromJson(raw, SpellCast.Process.SyncFormat.class);
+                // Summons hold no casting item — the process `item` slot is player machinery
+                castProcess = SpellCast.Process.fromSync(this, this.getWorld(), syncFormat, null, this.getWorld().getTime());
+            }
+        }
+        return castProcess;
+    }
     private static final String NBT_OWNER_UUID        = "OwnerUUID";
     private static final String NBT_TTL               = "TTL";
     private static final String NBT_SPAWN_END_AGE     = "SpawnEndAge";

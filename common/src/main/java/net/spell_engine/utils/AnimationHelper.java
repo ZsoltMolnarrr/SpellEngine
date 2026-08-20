@@ -1,6 +1,6 @@
 package net.spell_engine.utils;
+import net.spell_engine.Platform;
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -33,8 +33,8 @@ public class AnimationHelper {
 
     private static void sendPacketToPlayer(ServerPlayerEntity serverPlayer, Packets.SpellAnimation packet) {
         try {
-            if (ServerPlayNetworking.canSend(serverPlayer, Packets.SpellAnimation.ID)) {
-                ServerPlayNetworking.send(serverPlayer, packet);
+            if (Platform.util().networkS2C_CanSend(serverPlayer, Packets.SpellAnimation.ID)) {
+                Platform.util().networkS2C_Send(serverPlayer, packet);
             }
         } catch (Exception e) {
             e.printStackTrace();

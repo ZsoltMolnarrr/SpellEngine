@@ -3,22 +3,27 @@ package net.spell_engine.client;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
-import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.minecraft.client.gui.screen.ingame.HandledScreens;
+import net.minecraft.client.particle.ParticleFactory;
+import net.minecraft.client.particle.SpriteProvider;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleType;
 import net.minecraft.registry.Registries;
+import net.minecraft.text.Text;
+
+import java.util.List;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.CustomParticleStatusEffect;
 import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.api.item.set.EquipmentSetTooltip;
 import net.spell_engine.api.render.BuffParticleSpawner;
 import net.spell_engine.api.render.StunParticleSpawner;
-import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.ParticleGroupBuilder;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.client.compatibility.CompatFeatures;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.particle.*;
@@ -27,16 +32,9 @@ import net.spell_engine.client.util.Color;
 import net.spell_engine.config.ClientConfig;
 import net.spell_engine.config.ClientConfigWrapper;
 import net.spell_engine.config.HudConfig;
-import net.spell_engine.entity.SpellCloud;
-import net.spell_engine.entity.SpellModelEffect;
-import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.rpg_series.client.RPGSeriesCoreClient;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
-import net.spell_engine.spellbinding.SpellBindingScreen;
-import net.spell_engine.spellbinding.SpellBindingScreenHandler;
-import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreen;
-import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
 import net.tiny_config.ConfigManager;
 
 public class SpellEngineClient {
@@ -50,34 +48,46 @@ public class SpellEngineClient {
             .validate(HudConfig::isValid)
             .build();
 
+    /// Loader-neutral client init. Loader-specific registration (particle appearances, tooltips,
+    /// client-started, world render) is invoked from each loader's client entrypoint via the hooks
+    /// below, so this stays free of any loader client API.
     public static void init() {
         AutoConfig.register(ClientConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ClientConfigWrapper.class).getConfig().client;
         hudConfig.refresh();
 
-        ClientNetwork.initializeHandlers();
-
-        ClientLifecycleEvents.CLIENT_STARTED.register((client) -> {
-            injectRangedWeaponModelPredicates();
-        });
-
-        HandledScreens.register(SpellBindingScreenHandler.HANDLER_TYPE, SpellBindingScreen::new);
-        HandledScreens.register(SpellChoiceScreenHandler.HANDLER_TYPE, SpellChoiceScreen::new);
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
         CompatFeatures.initialize();
-        BeamRenderer.setup();
         registerEffectParticles();
-
-        ItemTooltipCallback.EVENT.register((itemStack, tooltipContext, tooltipType, lines) -> {
-            SpellTooltip.addSpellLines(itemStack, tooltipType, lines);
-            EquipmentSetTooltip.appendLines(itemStack, lines);
-        });
-        EntityRendererRegistry.register(SpellProjectile.ENTITY_TYPE, SpellProjectileRenderer::new);
-        EntityRendererRegistry.register(SpellCloud.ENTITY_TYPE, SpellCloudRenderer::new);
-        EntityRendererRegistry.register(SpellModelEffect.ENTITY_TYPE, SpellModelEffectRenderer::new);
         ModelEffectOperations.registerDefaults();
 
         RPGSeriesCoreClient.init();
+    }
+
+    // MARK: - Loader-invoked registration hooks
+
+    @FunctionalInterface
+    public interface ParticleAppearanceRegistrar {
+        <T extends ParticleEffect> void register(ParticleType<T> type, SpriteFactory<T> factory);
+    }
+
+    /// Loader-neutral equivalent of the vanilla (private) `ParticleManager.SpriteAwareFactory` and
+    /// Fabric's `PendingParticleFactory`: builds a particle factory from a sprite provider.
+    @FunctionalInterface
+    public interface SpriteFactory<T extends ParticleEffect> {
+        ParticleFactory<T> create(SpriteProvider spriteProvider);
+    }
+
+    /// Ran once the client has started (registries frozen). Fabric: `ClientLifecycleEvents.CLIENT_STARTED`;
+    /// NeoForge: `FMLClientSetupEvent`.
+    public static void onClientStarted() {
+        injectRangedWeaponModelPredicates();
+    }
+
+    /// Append Spell Engine tooltip lines. Fabric: `ItemTooltipCallback`; NeoForge: `ItemTooltipEvent`.
+    public static void addTooltipLines(ItemStack itemStack, TooltipType tooltipType, List<Text> lines) {
+        SpellTooltip.addSpellLines(itemStack, tooltipType, lines);
+        EquipmentSetTooltip.appendLines(itemStack, lines);
     }
 
     private static void injectRangedWeaponModelPredicates() {
@@ -96,112 +106,34 @@ public class SpellEngineClient {
                 SpellEngineEffects.STUN.effect,
                 new StunParticleSpawner()
         );
-        final var magicSnareParticles = new ParticleBatch(
-                SpellEngineParticles.MagicParticles.get(
-                        SpellEngineParticles.MagicParticles.Shape.SPARK,
-                        SpellEngineParticles.MagicParticles.Motion.DECELERATE).id().toString(),
-                ParticleBatch.Shape.CIRCLE, ParticleBatch.Origin.FEET,
-                2F, 0.15F, 0.15F)
-                .preSpawnTravel(5)
-                .invert();
+        final var magicSnareParticles = ParticleGroupBuilder
+                .magic(SpellEngineParticles.magic_spark, ParticleGroup.Motion.DECELERATE, Color.PHYSICAL_BLUE)
+                .batch(ParticleGroupBuilder.Batches.shockwave(2F, 0.15F, 5)
+                        .andThen(b -> b.invert(true)));
         CustomParticleStatusEffect.register(
                 SpellEngineEffects.IMMOBILIZE.effect,
-                new BuffParticleSpawner(new ParticleBatch[]{ magicSnareParticles
-                        .copy().color(Color.PHYSICAL_BLUE.toRGBA()) })
+                new BuffParticleSpawner(magicSnareParticles)
         );
 
         // Blood dripping off a bleeding entity; count scales with stacks, dripping a few times a second.
-        final var bleedParticles = new ParticleBatch(
-                SpellEngineParticles.dripping_blood.id().toString(),
-                ParticleBatch.Shape.SPHERE, ParticleBatch.Origin.CENTER,
-                1F, 0.1F, 0.3F);
+        final var bleedParticles = ParticleGroupBuilder
+                .of(SpellEngineParticles.dripping_blood)
+                .batch(ParticleGroupBuilder.Batches.impact(1F, 0.3F).andThen(b -> b.speed(0.1F, 0.3F)));
         CustomParticleStatusEffect.register(
                 SpellEngineEffects.BLEED.effect,
-                new BuffParticleSpawner(new ParticleBatch[]{ bleedParticles })
+                new BuffParticleSpawner(bleedParticles)
                         .withFrequency(5)
         );
     }
 
-    public static void registerParticleAppearances() {
-        /* Adds our particle textures to vanilla's Texture Atlas so it can be shown properly.
-         * Modify the namespace and particle id accordingly.
-         *
-         * This is only used if you plan to add your own textures for the particle. Otherwise, remove  this.*/
-//        ClientSpriteRegistryCallback.event(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE).register(((atlasTexture, registry) -> {
-//            for(var entry: Particles.all()) {
-//                if (entry.usesCustomTexture) {
-//                    registry.register(entry.id);
-//                }
-//            }
-//        }));
-
-        /* Registers our particle client-side.
-         * First argument is our particle's instance, created previously on ExampleMod.
-         * Second argument is the particle's factory. The factory controls how the particle behaves.
-         * In this example, we'll use FlameParticle's Factory.*/
-
-        // Elemental
-
-        register(SpellEngineParticles.flame, SpellFlameParticle.config());
-        register(SpellEngineParticles.flame_spark, SpellFlameParticle.config().animated());
-        register(SpellEngineParticles.flame_ground, SpellFlameParticle.config().animated());
-        var mediumFlame = SpellFlameParticle.config().animated().scale(0.5F).maxAgeFactor(0.5F);
-        register(SpellEngineParticles.flame_medium_a, mediumFlame);
-        register(SpellEngineParticles.flame_medium_b, mediumFlame);
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.snowflake.particleType(), SpellSnowflakeParticle.FrostFactory::new);
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.frost_shard.particleType(), SpellFlameParticle.FrostShard::new);
-
-        var electricSpark = SpellFlameParticle.config().animated().color(Color.ELECTRIC).scale(0.75F).alpha(1F);
-        register(SpellEngineParticles.electric_arc_A, electricSpark);
-        register(SpellEngineParticles.electric_arc_B, electricSpark);
-
-        // Physical
-
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.smoke_medium.particleType(), SpellFlameParticle.SmokeFactory::new);
-
-        // Misc
-
-        register(SpellEngineParticles.weakness_smoke, SpellFlameParticle.config().animated()
-                .color(Color.from(0x993333)).randomDarken()
-                .velocityMultiplier(0.8F).alpha(0.7F).glow(false).gravityStrength(0.01F));
-
-        ParticleFactoryRegistry.getInstance().register(
-                SpellEngineParticles.shield_small.particleType(), (provider) -> new SpellUniversalParticle.Opaque(provider, SpellEngineParticles.MagicParticles.Motion.DECELERATE)
-        );
-
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.dripping_blood.particleType(), SpellSnowflakeParticle.DrippingBloodFactory::new);
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.roots.particleType(), ShiftedParticle.RootsFactory::new);
-
-        // Macro, billboard, whatever
-
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.fire_explosion.particleType(), SpellExplosionParticle.TemplateFactory::new);
-
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.smoke_large.particleType(), SpellSmokeParticle.CosySmokeFactory::new);
-
-        var lightningArcA = SpellEngineParticles.lightning_arc_A;
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.lightning_arc_A.particleType(), (provider) -> new SpellFlameParticle.GlowingTemplateFactory(provider, lightningArcA.texture()));
-        var lightningArcB = SpellEngineParticles.lightning_arc_B;
-        ParticleFactoryRegistry.getInstance().register(SpellEngineParticles.lightning_arc_B.particleType(), (provider) -> new SpellFlameParticle.GlowingTemplateFactory(provider, lightningArcB.texture()));
-
-        for (var entry: SpellEngineParticles.areaEffects()) {
-            ParticleFactoryRegistry.getInstance().register(
-                    entry.particleType(), (provider) -> new SpellAreaParticle.Factory(provider, entry.texture(), entry.fading(), entry.orientation())
-            );
+    /// Register the particle appearance factories. Fabric: `ParticleFactoryRegistry`; NeoForge:
+    /// `RegisterParticleProvidersEvent`.
+    public static void registerParticleAppearances(ParticleAppearanceRegistrar registrar) {
+        // One generic factory serves every entry: appearance and behaviour are
+        // resolved from the entry's defaults + the spawning effect's payload.
+        for (var entry: SpellEngineParticles.entries()) {
+            registrar.register(entry.type(),
+                    (SpriteProvider provider) -> new SpellParticle.Factory(provider, entry));
         }
-        for (var entry: SpellEngineParticles.signEffects()) {
-            ParticleFactoryRegistry.getInstance().register(
-                    entry.particleType(), (provider) -> new SpellFlameParticle.SignFactory(provider, entry.texture())
-            );
-        }
-        for (var variant: SpellEngineParticles.MagicParticles.all) {
-            ParticleFactoryRegistry.getInstance().register(
-                    variant.entry().particleType(), (provider) -> new SpellUniversalParticle.MagicVariant(provider, variant)
-            );
-        }
-    }
-
-    private static void register(SpellEngineParticles.Entry entry, SpellFlameParticle.Config config) {
-        ParticleFactoryRegistry.getInstance().register(entry.particleType(),
-                provider -> new SpellFlameParticle.ConfiguredFactory(provider, config));
     }
 }

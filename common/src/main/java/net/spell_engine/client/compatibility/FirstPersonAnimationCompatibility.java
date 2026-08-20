@@ -1,7 +1,7 @@
 package net.spell_engine.client.compatibility;
+import net.spell_engine.Platform;
 
 import dev.kosmx.playerAnim.api.firstPerson.FirstPersonMode;
-import net.fabricmc.loader.api.FabricLoader;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.config.TriStateAuto;
 
@@ -13,7 +13,7 @@ public class FirstPersonAnimationCompatibility {
             "firstperson", "realcamera"
         };
         for (var mod : cameraMods) {
-            if (FabricLoader.getInstance().isModLoaded(mod)) {
+            if (Platform.util().isModLoaded(mod)) {
                 isCameraModPresent = true;
                 break;
             }

@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Thực hiện một đòn tấn công xoay vòng, gây {damage} sát thương cho kẻ địch xung quanh.",
+  "spell.rpg_series.cleave.name": "Chém Xoay",
+  "spell.rpg_series.fan_of_knives.description": "Ném nhiều lưỡi dao theo hình nón, gây {damage} sát thương, nảy trên địa hình tối đa {bounce} lần.",
+  "spell.rpg_series.fan_of_knives.name": "Mưa Dao",
+  "spell.rpg_series.flurry.description": "Giữ để tung ra một loạt đòn tấn công nhanh, đồng thời tăng dần đà.",
+  "spell.rpg_series.flurry.name": "Loạn Đả",
+  "spell.rpg_series.ground_slam.description": "Nhảy lên không trung rồi đập mạnh xuống đất, gây {damage} sát thương cho kẻ địch xung quanh.",
+  "spell.rpg_series.ground_slam.name": "Đập Đất",
+  "spell.rpg_series.impale.description": "Ném vũ khí về phía trước, gây {damage} sát thương và đẩy lùi mạnh. Càng tích lực lâu, đòn đánh càng mạnh và bay càng xa.",
+  "spell.rpg_series.impale.name": "Xuyên Thấu",
+  "spell.rpg_series.smash.description": "Tung ra một đòn đánh với lực đẩy lùi mạnh, vô hiệu hóa khiên và việc sử dụng vật phẩm của mục tiêu.",
+  "spell.rpg_series.smash.name": "Đập Vỡ",
+  "spell.rpg_series.swift_strikes.description": "Tung ra một loạt đòn tấn công nhanh.",
+  "spell.rpg_series.swift_strikes.name": "Đòn Đánh Thần Tốc",
+  "spell.rpg_series.swipe.description": "Trượt về phía trước cùng vũ khí, tấn công mọi kẻ địch trên đường đi.",
+  "spell.rpg_series.swipe.name": "Phạt Ngang",
+  "spell.rpg_series.thrust.description": "Lao về phía trước cùng vũ khí, tấn công mọi kẻ địch trên đường đi.",
+  "spell.rpg_series.thrust.name": "Đâm Tới",
+  "spell.rpg_series.whirlwind.description": "Giữ để xoay vòng liên tục, gây {damage} sát thương mỗi giây cho kẻ địch xung quanh.",
+  "spell.rpg_series.whirlwind.name": "Lốc Xoáy"
+}

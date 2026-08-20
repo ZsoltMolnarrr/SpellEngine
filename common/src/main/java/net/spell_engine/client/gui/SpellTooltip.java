@@ -1,7 +1,6 @@
 package net.spell_engine.client.gui;
 
-import com.ibm.icu.text.DecimalFormat;
-import net.fabricmc.fabric.mixin.client.keybinding.KeyBindingAccessor;
+import net.spell_engine.mixin.client.control.KeybindingAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.resource.language.I18n;
@@ -10,6 +9,7 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.MutableText;
@@ -21,13 +21,14 @@ import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellChoice;
+import net.spell_engine.api.spell.tooltip.TooltipTokens;
+import static net.spell_engine.api.spell.tooltip.TooltipTokens.*;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
-import net.spell_engine.internals.Ammo;
-import net.spell_engine.internals.SpellHelper;
+import net.spell_engine.internals.cost.Ammo;
 import net.spell_engine.internals.SpellModifiers;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.spellbinding.spellchoice.SpellChoices;
@@ -40,38 +41,24 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import net.spell_engine.internals.impact.SpellEstimation;
+import net.spell_engine.internals.SpellParameters;
 
 public class SpellTooltip {
-    public static final String damageToken = "damage";
-    public static final String healToken = "heal";
-    public static final String rangeToken = "range";
-    public static final String durationToken = "duration";
-    public static final String itemToken = "item";
-    public static final String effectDurationToken = "effect_duration";
-    public static final String effectAmplifierToken = "effect_amplifier";
-    public static final String effectAmplifierCapToken = "effect_amplifier_cap";
-    public static final String impactRangeToken = "impact_range";
-    public static final String teleportDistanceToken = "teleport_distance";
-    public static final String countToken = "count";
-    public static final String impact_chance = "impact_chance";
-    public static final String trigger_chance = "trigger_chance";
-    public static final String trigger_list = "trigger_list";
-    public static final String additional_placement_count = "additional_placement_count";
-    public static final String summonDurationToken = "summon_duration";
-    public static final String summonCountToken = "summon_count";
-    public static final String summonGroupCountToken = "summon_group_count";
-    public static String placeholder(String token) { return "{" + token + "}"; }
+    // Token names live in the dependency-free `TooltipTokens`, statically imported above so they can
+    // be referenced unqualified here. This delegate preserves the `SpellTooltip.placeholder(...)` API.
+    public static String placeholder(String token) { return TooltipTokens.placeholder(token); }
 
     // Constant token-start matcher; compiling per-tooltip-frame was a needless cost.
     private static final Pattern TOKEN_PATTERN = Pattern.compile("\\{[a-z]{3}");
 
-    // DecimalFormat is expensive to construct (loads locale/symbol data) and formattedNumber
-    // is called many times per tooltip frame. Reuse one per thread (tooltips may be built off-thread).
-    private static final ThreadLocal<DecimalFormat> NUMBER_FORMAT = ThreadLocal.withInitial(() -> {
-        var formatter = new DecimalFormat();
-        formatter.setMaximumFractionDigits(1);
-        return formatter;
-    });
+    // Parametric effect-value token: `{effect|<effect_id>|<amplifier>|<attribute>|<format>}`. The
+    // prefix doubles as a cheap `String.contains` gate so the regex only runs for descriptions that
+    // actually carry one. Built from the shared TooltipTokens constants so both sides agree.
+    private static final String EFFECT_TOKEN_PREFIX =
+            "{" + TooltipTokens.effectToken + TooltipTokens.effectTokenSeparator; // "{effect|"
+    private static final Pattern EFFECT_TOKEN_PATTERN =
+            Pattern.compile(Pattern.quote(EFFECT_TOKEN_PREFIX) + "([^}]*)}");
 
     public static void addSpellLines(ItemStack itemStack, TooltipType tooltipType, List<Text> lines) {
         var player = MinecraftClient.getInstance().player;
@@ -361,7 +348,7 @@ public class SpellTooltip {
         // some loaders like to call these concurrently
         if (client.isOnThread()) {
             return InputUtil.isKeyPressed(client.getWindow().getHandle(),
-                    ((KeyBindingAccessor) keybinding).fabric_getBoundKey().getCode());
+                    ((KeybindingAccessor) keybinding).spellEngine_getBoundKey().getCode());
         }
         return false;
     }
@@ -517,28 +504,28 @@ public class SpellTooltip {
         if (spell.tooltip().show_activation) {
             if (active != null) {
                 if (active.cast != null) {
-                    if (SpellHelper.isInstant(spell)) {
+                    if (SpellParameters.isInstant(spell)) {
                         lines.add(indentation(indentLevel)
                                 .append(Text.translatable("spell.tooltip.cast_instant"))
                                 .formatted(Formatting.GOLD));
-                    } else if (active.cast.resolvedType() == Spell.Active.Cast.Type.CHARGE) {
+                    } else if (active.cast.type == Spell.Active.Cast.Type.CHARGE) {
                         // CHARGE: the duration is the time to reach full charge (releasable earlier).
-                        var chargeDuration = SpellHelper.getCastDuration(player, spell, itemStack);
+                        var chargeDuration = SpellParameters.getCastDuration(player, spell, itemStack);
                         var chargeKey = keyWithPlural("spell.tooltip.cast_charge", chargeDuration);
                         var chargeText = I18n.translate(chargeKey).replace(placeholder(durationToken), formattedNumber(chargeDuration));
                         lines.add(indentation(indentLevel)
                                 .append(Text.literal(chargeText))
                                 .formatted(Formatting.GOLD));
-                    } else if (active.cast.resolvedType() == Spell.Active.Cast.Type.CHANNEL) {
+                    } else if (active.cast.type == Spell.Active.Cast.Type.CHANNEL) {
                         // CHANNEL: the duration is the span over which the repeated deliveries are spread.
-                        var channelDuration = SpellHelper.getCastDuration(player, spell, itemStack);
+                        var channelDuration = SpellParameters.getCastDuration(player, spell, itemStack);
                         var channelKey = keyWithPlural("spell.tooltip.cast_channel", channelDuration);
                         var channelText = I18n.translate(channelKey).replace(placeholder(durationToken), formattedNumber(channelDuration));
                         lines.add(indentation(indentLevel)
                                 .append(Text.literal(channelText))
                                 .formatted(Formatting.GOLD));
                     } else {
-                        var castDuration = SpellHelper.getCastDuration(player, spell, itemStack);
+                        var castDuration = SpellParameters.getCastDuration(player, spell, itemStack);
                         var castTimeKey = keyWithPlural("spell.tooltip.cast_time", castDuration);
                         var castTime = I18n.translate(castTimeKey).replace(placeholder(durationToken), formattedNumber(castDuration));
                         lines.add(indentation(indentLevel)
@@ -583,12 +570,13 @@ public class SpellTooltip {
                 }
             } else if (chargeRangeAdd != 0) {
                 // CHARGE spell whose charge bonus scales range: show the span from the weakest allowed
-                // release to a full charge, e.g. "4 - 10". The charge modifier's range_add scales with
-                // the curved charge ratio (full at ratio 1), matching the runtime in getRange; the
-                // minimum uses the same `curve(min_release_ratio)` the damage line uses for its floor.
+                // release to a full charge, e.g. "4 - 10". Both ends come from the same resolver the
+                // runtime fires with (`getRange` at a raw hold ratio, curve applied inside), so the
+                // span includes the caster's static range modifiers — scaled by the charge ratio
+                // together with the charge bonus, exactly as a release would resolve them.
                 var charge = spell.active.cast.charge;
-                var minRange = spell.range + chargeRangeAdd * charge.curve.apply(charge.min_release_ratio);
-                var maxRange = spell.range + chargeRangeAdd;
+                var minRange = SpellParameters.getRange(player, spellEntry, charge.min_release_ratio);
+                var maxRange = SpellParameters.getMaxRange(player, spellEntry);
                 var rangeKey = keyWithPlural("spell.tooltip.range", maxRange);
                 rangeText = I18n.translate(rangeKey).replace(placeholder(rangeToken), formattedRange(minRange, maxRange));
             } else {
@@ -600,7 +588,7 @@ public class SpellTooltip {
                     .formatted(Formatting.GOLD));
         }
 
-        var cooldownDuration = SpellHelper.getCooldownDuration(player, spellEntry, itemStack);
+        var cooldownDuration = SpellParameters.getCooldownDuration(player, spellEntry, itemStack);
         if (cooldownDuration > 0) {
             var cooldownKey = keyWithPlural("spell.tooltip.cooldown", cooldownDuration);
             var cooldown = I18n.translate(cooldownKey).replace(placeholder(durationToken), formattedNumber(cooldownDuration));
@@ -708,7 +696,7 @@ public class SpellTooltip {
             }
         }
         if (!impacts.isEmpty()) {
-            var estimatedOutput = SpellHelper.estimate(spell, player, itemStack);
+            var estimatedOutput = SpellEstimation.estimate(spell, player, itemStack);
             for (var impact : impacts) {
                 if (impact.chance != 1) {
                     addToken(impact_chance, percent(impact.chance), tokenReplacements);
@@ -733,7 +721,7 @@ public class SpellTooltip {
                         switch (teleport.mode) {
                             case FORWARD -> {
                                 var forward = teleport.forward;
-                                // Distance reflects the player's equipped spell modifiers (matches SpellHelper TELEPORT).
+                                // Distance reflects the player's equipped spell modifiers (matches SpellImpacts TELEPORT).
                                 var distance = forward.distance;
                                 for (var modifier : SpellModifiers.of(player, spellEntry)) {
                                     distance += modifier.teleport_distance_add;
@@ -752,7 +740,7 @@ public class SpellTooltip {
                         if (summon != null) {
                             var spawnCount = summon.spawn_count;
                             var groupCount = summon.group_count;
-                            // Counts reflect the player's equipped spell modifiers (matches SpellHelper.summon).
+                            // Counts reflect the player's equipped spell modifiers (matches SpellImpacts.summon).
                             for (var modifier : SpellModifiers.of(player, spellEntry)) {
                                 spawnCount += modifier.summon_spawn_count_add;
                                 groupCount += modifier.summon_group_count_add;
@@ -871,11 +859,13 @@ public class SpellTooltip {
             var values = entry.getValue();
             description = replaceTokens(description, token, values);
         }
- 
-        var mutator = descriptionMutators.get(spellId);
-        if (mutator != null) {
-            var args = new DescriptionMutator.Args(description, player, spellEntry);
-            description = mutator.mutate(args);
+
+        description = replaceEffectTokens(description);
+
+        var custom = TooltipTokens.customFor(spellId);
+        if (custom != null) {
+            var args = new TooltipTokens.Custom.Args(description, player, spellEntry);
+            description = custom.resolve(args);
         }
         return description;
     }
@@ -924,49 +914,123 @@ public class SpellTooltip {
     /// actually scales the spell's range, which is the sole case where the range line shows a span.
     private static float chargeRangeAdd(Spell spell) {
         if (spell.active != null && spell.active.cast != null
-                && spell.active.cast.resolvedType() == Spell.Active.Cast.Type.CHARGE
+                && spell.active.cast.type == Spell.Active.Cast.Type.CHARGE
                 && spell.active.cast.charge != null) {
             return spell.active.cast.charge.bonus.range_add;
         }
         return 0;
     }
 
-    private static String replaceDamageTokens(String text, String token, List<SpellHelper.EstimatedValue> values) {
-        boolean indexTokens = values.size() > 1;
+    private static String replaceDamageTokens(String text, String token, List<SpellEstimation.EstimatedValue> values) {
         for (int i = 0; i < values.size(); ++i) {
             var range = values.get(i);
-            var actualToken = indexTokens ? placeholder(token + "_" + (i + 1)) : placeholder(token);
+            var actualToken = TooltipTokens.placeholder(token, i, values.size());
             text = text.replace(actualToken, formattedRange(range.min(), range.max()));
         }
         return text;
     }
 
     public static String replaceTokens(String text, String token, List<String> values) {
-        boolean indexTokens = values.size() > 1;
         for (int i = 0; i < values.size(); ++i) {
-            var actualToken = indexTokens ? placeholder(token + "_" + (i + 1)) : placeholder(token);
+            var actualToken = TooltipTokens.placeholder(token, i, values.size());
             text = text.replace(actualToken, values.get(i));
         }
         return text;
     }
 
+    /// Replaces every `{effect|...}` token in the description with its resolved value. Guarded by a
+    /// cheap `contains` check so the regex only runs when a token is actually present. Each distinct
+    /// token is resolved at most once (memoised); the matcher scans the original text while
+    /// replacements accumulate into the returned string.
+    private static String replaceEffectTokens(String text) {
+        if (!text.contains(EFFECT_TOKEN_PREFIX)) {
+            return text;
+        }
+        var matcher = EFFECT_TOKEN_PATTERN.matcher(text);
+        Set<String> replaced = null;
+        while (matcher.find()) {
+            var literal = matcher.group();  // "{effect|...}" — the exact substring to replace
+            var body = matcher.group(1);    // "<effect_id>|<amplifier>|<attribute>|<format>"
+            if (replaced == null) {
+                replaced = new HashSet<>();
+            }
+            if (!replaced.add(literal)) {
+                continue; // a repeated token: its first occurrence already replaced all copies
+            }
+            text = text.replace(literal, resolveEffectToken(literal, body));
+        }
+        return text;
+    }
+
+    /// Returns the display string for an effect token, memoised on its (canonical) body. Unresolvable
+    /// tokens cache the original `literal`, so replacing it is a no-op and it stays visible for
+    /// debugging rather than being re-parsed every frame.
+    private static synchronized String resolveEffectToken(String literal, String body) {
+        return resolvedEffectTokens.computeIfAbsent(body, key -> {
+            var resolved = computeEffectToken(key);
+            return resolved != null ? resolved : literal;
+        });
+    }
+
+    /// Resolves an effect token body (`<effect_id>|<amplifier>|<attribute>|<format>`) into a
+    /// formatted value, or `null` if it can't be resolved. Reads the configured attribute modifiers
+    /// straight off the vanilla status effect — amplifier scaling (`base × (amplifier+1)`) is applied
+    /// by `forEachAttributeModifier`. A blank attribute field falls back to the effect's *first*
+    /// modifier, so a multi-modifier effect still resolves rather than showing the literal token.
+    /// The status effect's modifier map is unordered, so "first" is not guaranteed to be the config's
+    /// declared-first — fine when the modifiers share a value, but name the attribute explicitly when
+    /// they differ.
+    private static @Nullable String computeEffectToken(String body) {
+        var parts = body.split(Pattern.quote(TooltipTokens.effectTokenSeparator), -1);
+        if (parts.length == 0 || parts[0].isBlank()) {
+            return null;
+        }
+        var effectId = Identifier.tryParse(parts[0]);
+        if (effectId == null) {
+            return null;
+        }
+        var effect = Registries.STATUS_EFFECT.get(effectId);
+        if (effect == null) {
+            return null;
+        }
+        int amplifier = 0;
+        if (parts.length > 1 && !parts[1].isBlank()) {
+            try {
+                amplifier = Integer.parseInt(parts[1].trim());
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        var attributeId = (parts.length > 2 && !parts[2].isBlank()) ? parts[2] : null;
+        var format = TooltipTokens.Format.parse(parts.length > 3 ? parts[3] : null);
+
+        // LinkedHashMap so "first" is the first modifier `forEachAttributeModifier` yields.
+        var modifiers = new LinkedHashMap<String, EntityAttributeModifier>();
+        effect.forEachAttributeModifier(amplifier, (attribute, modifier) ->
+                attribute.getKey().ifPresent(key -> modifiers.put(key.getValue().toString(), modifier)));
+
+        EntityAttributeModifier chosen;
+        if (attributeId != null) {
+            chosen = modifiers.get(attributeId);
+        } else {
+            // Blank attribute: fall back to the first modifier rather than refusing when several exist.
+            chosen = modifiers.isEmpty() ? null : modifiers.values().iterator().next();
+        }
+        if (chosen == null) {
+            return null;
+        }
+        return format.render((float) chosen.value(), chosen.operation());
+    }
+
+    // Value-formatting primitives live in the dependency-free `TooltipTokens` (so the effect-token
+    // format resolver can reach them without loading this client-only class). These delegates
+    // preserve the existing `SpellTooltip.percent/bonus/formattedNumber` public API.
     public static String percent(float chance) {
-        return String.valueOf((int) (chance * 100)) + '%';
+        return TooltipTokens.percent(chance);
     }
 
     public static String bonus(float amount, EntityAttributeModifier.Operation operation) {
-        switch (operation) {
-            case ADD_VALUE -> {
-                return formattedNumber(amount);
-            }
-            case ADD_MULTIPLIED_BASE -> {
-                return percent(amount);
-            }
-            case ADD_MULTIPLIED_TOTAL -> {
-                return percent(amount - 1F);
-            }
-        }
-        return "";
+        return TooltipTokens.bonus(amount, operation);
     }
 
     public static String formattedRange(double min, double max) {
@@ -977,7 +1041,7 @@ public class SpellTooltip {
     }
 
     public static String formattedNumber(float number) {
-        return NUMBER_FORMAT.get().format(number);
+        return TooltipTokens.formattedNumber(number);
     }
 
     public static String keyWithPlural(String key, float value) {
@@ -1009,15 +1073,20 @@ public class SpellTooltip {
         }
     }
 
+    /// @deprecated Moved to the server-safe {@link TooltipTokens.Custom}; register via
+    /// {@link TooltipTokens#registerCustom}. Kept as a bridge so existing content compiles until migrated.
+    @Deprecated
     public interface DescriptionMutator {
         record Args(String description, PlayerEntity player, RegistryEntry<Spell> spellEntry) { }
         String mutate(Args args);
     }
 
-    private static final Map<Identifier, DescriptionMutator> descriptionMutators = new HashMap<>();
-
+    /// @deprecated Use {@link TooltipTokens#registerCustom} with a {@link TooltipTokens.Custom}. This
+    /// bridges a legacy handler into the same registry.
+    @Deprecated
     public static void addDescriptionMutator(Identifier spellId, DescriptionMutator handler) {
-        descriptionMutators.put(spellId, handler);
+        TooltipTokens.registerCustom(spellId, args ->
+                handler.mutate(new DescriptionMutator.Args(args.description(), args.player(), args.spellEntry())));
     }
 
     // Resolved spell entries depend only on the loaded spell registry, never on the player or
@@ -1028,12 +1097,20 @@ public class SpellTooltip {
     private static Registry<Spell> resolvedRegistry;
     private static final Map<String, Optional<RegistryEntry<Spell>>> resolvedSpells = new HashMap<>();
 
+    // Effect-value tokens resolve to a value that depends only on the status-effect registry (the
+    // configured attribute modifiers), never on the player — so, like resolved spells, each token
+    // body resolves once and is reused until a registry resync. Keyed by the token *body* (canonical,
+    // so byte-equality == semantic equality); an unresolvable body caches the original literal so the
+    // replacement is a harmless no-op and isn't re-attempted every frame. Cleared beside resolvedSpells.
+    private static final Map<String, String> resolvedEffectTokens = new HashMap<>();
+
     @SuppressWarnings("unchecked")
     private static synchronized @Nullable RegistryEntry<Spell> resolveSpell(World world, String idString) {
         var registry = SpellRegistry.from(world);
         if (registry != resolvedRegistry) {
             resolvedRegistry = registry;
             resolvedSpells.clear();
+            resolvedEffectTokens.clear();
         }
         return resolvedSpells.computeIfAbsent(idString, key -> {
             var id = Identifier.tryParse(key);

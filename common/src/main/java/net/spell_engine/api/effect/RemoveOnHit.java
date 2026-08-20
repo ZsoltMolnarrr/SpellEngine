@@ -19,11 +19,6 @@ public interface RemoveOnHit {
     @Nullable Args getRemovalOnHit();
     StatusEffect setRemovalOnHit(Args args);
 
-    @Deprecated
-    static void configure(StatusEffect effect, boolean removeOnHit) {
-        configure(effect, Trigger.ANY_HIT);
-    }
-
     static void configure(StatusEffect effect, Trigger condition) {
         configure(effect, condition, 1.0F);
     }

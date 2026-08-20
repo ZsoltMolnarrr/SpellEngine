@@ -2,9 +2,7 @@ package net.spell_engine.rpg_series.loot;
 
 import net.minecraft.item.Item;
 import net.minecraft.loot.LootPool;
-import net.minecraft.loot.LootTable;
 import net.minecraft.loot.condition.KilledByPlayerLootCondition;
-import net.minecraft.loot.condition.LootConditionTypes;
 import net.minecraft.loot.entry.ItemEntry;
 import net.minecraft.loot.function.EnchantWithLevelsLootFunction;
 import net.minecraft.loot.provider.number.BinomialLootNumberProvider;
@@ -73,7 +71,7 @@ public class LootHelper {
         LootHelper.TAG_CACHE.save();
     }
 
-    public static void configureV2(RegistryWrapper.WrapperLookup registries, Identifier lootTableId, LootTable.Builder tableBuilder, LootConfig config, HashMap<String, Item> entries) {
+    public static void configure(RegistryWrapper.WrapperLookup registries, Identifier lootTableId, java.util.function.Consumer<LootPool> poolSink, LootConfig config, HashMap<String, Item> entries) {
         boolean isEntityLootTable = lootTableId.getPath().startsWith("entities");
         var tableId = lootTableId.toString();
         var pool = config.injectors.get(tableId);
@@ -143,14 +141,23 @@ public class LootHelper {
                 if (spellBind != null && spellBind.isValid()) {
                     var function = SpellBindRandomlyLootFunction.builder(
                             spellBind.pool,
-                            numberProvider(spellBind.tier_min, spellBind.tier_max),
+                            numberProvider(tierBound(spellBind.tier_min), tierBound(spellBind.tier_max)),
                             numberProvider(spellBind.count_min, spellBind.count_max));
                     lootEntry.apply(function);
                 }
                 lootPoolBuilder.with(lootEntry);
             }
         }
-        tableBuilder.pool(lootPoolBuilder.build());
+        poolSink.accept(lootPoolBuilder.build());
+    }
+
+    /// Resolves a nullable tier bound to the value the loot function expects.
+    /// `null` — and any negative value, for backwards compatibility with older config
+    /// files that used `-1` as the sentinel — both mean "no tier limit", which
+    /// {@link net.spell_engine.spellbinding.SpellBindRandomlyLootFunction} reads as a
+    /// negative tier (any tier).
+    private static float tierBound(Integer tier) {
+        return (tier == null || tier < 0) ? -1 : tier;
     }
 
     private static LootNumberProvider numberProvider(float min, float max) {

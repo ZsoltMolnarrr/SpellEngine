@@ -1,6 +1,7 @@
 package net.spell_engine.rpg_series.item;
 
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.spell_engine.PlatformEvents;
+import net.minecraft.component.ComponentChanges;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.Item;
@@ -15,8 +16,8 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.Util;
-import net.spell_engine.api.config.AttributeModifier;
-import net.spell_engine.api.config.ShieldConfig;
+import net.spell_engine.rpg_series.config.AttributeModifier;
+import net.spell_engine.rpg_series.config.ShieldConfig;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
@@ -198,6 +199,16 @@ public class Shield {
             return this;
         }
 
+        /// Registers component changes to apply to this item when `spellId` is chosen from the pool.
+        /// Lets the chosen spell drive the item's appearance (`custom_model_data`, `custom_name`, ...).
+        public Entry applyOnChoice(String spellId, ComponentChanges changes) {
+            if (this.spellChoice == null) {
+                this.spellChoice = SpellChoice.EMPTY;
+            }
+            this.spellChoice = this.spellChoice.withApplyOnChoice(Identifier.of(spellId), changes);
+            return this;
+        }
+
         public Entry lootTheme(String theme) {
             lootProperties = Equipment.LootProperties.of(lootProperties.tier(), theme);
             return this;
@@ -261,7 +272,7 @@ public class Shield {
         }
 
         // Add to item group
-        ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register((content) -> {
+        PlatformEvents.onItemGroupModify(itemGroupKey, (content, context) -> {
             for (var shield : shields) {
                 content.add(shield);
             }

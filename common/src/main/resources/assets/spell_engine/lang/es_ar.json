@@ -108,11 +108,13 @@
   "trinkets.slot.spell.quiver": "Carcaj",
   "trinkets.slot.misc.quiver": "Carcaj",
 
-  "accessories.slot_group.spell": "Hechizo",
-  "accessories.slot.spell_book": "Libro de Hechizos",
-  "accessories.slot.spell_scroll": "Pergamino de Hechizos",
-  "accessories.slot.spell_quiver": "Carcaj",
-  "accessories.slot.spell_trinket": "Amuleto",
+  "curios.identifier.spell_book": "Libro de Hechizos",
+  "curios.identifier.spell_scroll": "Pergamino de Hechizos",
+  "curios.identifier.spell_quiver": "Carcaj",
+  "curios.identifier.spell_trinket": "Amuleto",
+
+  "curios.modifiers.spell_book": "Cuando se usa como libro de hechizos:",
+  "curios.modifiers.spell_trinket": "Cuando se usa como amuleto:",
 
   "effect.spell_engine.stun": "Aturdido",
   "effect.spell_engine.stun.description": "No podés moverte ni realizar acciones.",

@@ -14,6 +14,5 @@ public class TrinketsItemHelper {
         SlotModCompat.setSpellBookFactory(
                 (args) -> new SpellBookTrinketItem(args.settings(), SpellEngineSounds.SPELLBOOK_EQUIP.soundEvent())
         );
-        SlotModCompat.spellBookResolver = TrinketsCompat::getSpellBookStack;
     }
 }

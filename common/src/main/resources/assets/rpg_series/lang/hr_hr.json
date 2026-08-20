@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Izvodi rotirajući napad, nanoseći {damage} štete obližnjim neprijateljima.",
+  "spell.rpg_series.cleave.name": "Rasijecanje",
+  "spell.rpg_series.fan_of_knives.description": "Baca nekoliko tvojih oštrica u obliku lepeze, nanoseći {damage} štete, odbijajući se od terena do {bounce} puta.",
+  "spell.rpg_series.fan_of_knives.name": "Lepeza noževa",
+  "spell.rpg_series.flurry.description": "Drži za pokretanje brzog niza udaraca, uz istovremeno stjecanje zamaha.",
+  "spell.rpg_series.flurry.name": "Bujica udaraca",
+  "spell.rpg_series.ground_slam.description": "Skače u zrak i udara o tlo, nanoseći {damage} štete obližnjim neprijateljima.",
+  "spell.rpg_series.ground_slam.name": "Udar o tlo",
+  "spell.rpg_series.impale.description": "Baca tvoje oružje naprijed, nanoseći {damage} štete i snažno odbacivanje. Što je bacanje dulje nabijeno, to jače pogađa i dalje leti.",
+  "spell.rpg_series.impale.name": "Probadanje",
+  "spell.rpg_series.smash.description": "Zadaje udarac sa snažnim odbacivanjem, onemogućujući korištenje štita i predmeta cilja.",
+  "spell.rpg_series.smash.name": "Tresak",
+  "spell.rpg_series.swift_strikes.description": "Pokreni brzi niz udaraca.",
+  "spell.rpg_series.swift_strikes.name": "Brzi udarci",
+  "spell.rpg_series.swipe.description": "Kliži naprijed s oružjem, udarajući sve neprijatelje na svom putu.",
+  "spell.rpg_series.swipe.name": "Zamah",
+  "spell.rpg_series.thrust.description": "Nasrni naprijed s oružjem, udarajući sve neprijatelje na svom putu.",
+  "spell.rpg_series.thrust.name": "Ubod",
+  "spell.rpg_series.whirlwind.description": "Drži za vrtnju, nanoseći {damage} štete po sekundi obližnjim neprijateljima.",
+  "spell.rpg_series.whirlwind.name": "Vihor"
+}

@@ -1,7 +1,5 @@
 package net.spell_engine.client.render;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -19,7 +17,6 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 
 // Copied from EnchantingTableBlockEntityRenderer
-@Environment(EnvType.CLIENT)
 public class SpellBindingBlockEntityRenderer implements BlockEntityRenderer<SpellBindingBlockEntity> {
 
     public static final SpriteIdentifier BOOK_TEXTURE = new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, Identifier.of(SpellEngineMod.ID, "entity/spell_binding_book"));

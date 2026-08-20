@@ -1,3 +1,79 @@
+# 1.10.0
+
+**Important disclaimer** - NeoForge users need to unequip their spell books, jewelry, relics and quivers to preserve it, before updating to this version 
+
+## Notable setup changes
+
+- Removed Forgified Fabric API dependency for the NeoForge version, now all platform API calls are fully native
+- Removed Accessories mod support entirely (from both loader variants) - Accessories mod l
+- Added Curious API slot mod support (NeoForge only)
+
+## Functional changes
+
+- Fixed Spell Projectile velocity change upon bounce from terrain
+- Fully translated content, now supporting 20 languages
+
+## API Changes
+
+- `spell_choice` gains `apply_on_choice`: chosen spell id → data-component changes applied to the item (e.g. `custom_model_data`/`custom_name`), so the choice can drive the item's appearance
+
+Completely reworked particle effect system:
+- `ParticleBatch` replaced by `ParticleGroup`: `id` + `appearance` (one particle) + `batch` (how many, where, what velocity)
+  - Unset fields inherit the registered particle's defaults; `scale`, `opacity` and `playback_speed` multiply with them
+  - New appearance fields: `facing` (`CAMERA`/`GROUND`/`UPRIGHT`/`VELOCITY`), `motion` presets with `gravity`/`drag` overrides, `render`/`glow`, `opacity_curve`, `scale_multiplier`/`scale_easing`, `color_variance`/`scale_variance`/`lifetime_variance`, `playback_speed` (negative reverses), `collides`
+  - `facing = GROUND` quads render double-sided, so flat area decals are visible from below too
+  - New attachment mode `POSITION_HORIZONTAL` — follows the entity horizontally, but pins height to the ground below (re-probed each tick), keeping decals flush through jumps and terrain
+  - New batch shape `NONE` for a single placed, motionless billboard
+  - `batch.count` is now a rate: `1`+ is a count per emission, below `1` a period (`0.25` = one every 4th tick, continuous FX only)
+  - New `batch.chance` (`0..1`) — dedicated probability field, replacing the old sub-`1` `count` overload
+  - Restored the per-particle lifetime randomness of the pre-1.10 particle classes — 11 elemental/smoke entries were spawning and dying in lockstep
+  - `BuffParticleSpawner.spacing(EVEN | RANDOM)` decides how a leftover fractional density looks; defaults to `RANDOM`, matching pre-1.10 buff particles
+  - `origin` splits into `anchor` + `vertical_origin`; `WIDE_PIPE` becomes `PIPE` + `width_factor`; `rotation` becomes `alignment`; `max_age` becomes `playback_speed` (reciprocal)
+  - New `ParticleGroupBuilder` for authoring, with reusable batch layout presets
+- `SpellEngineParticles`: `Entry` and `TemplateEntry` merged into one entry type carrying its own defaults; category lists replaced by a single `entries()`
+  - Removed the 14 `aura_effect_*` entries — use the matching `area_effect_*` id with `facing = CAMERA`
+  - Removed the 32 `magic_<shape>_<motion>` entries — use the 8 `magic_<shape>` entries and set `motion` on the effect
+  - Removed `weakness_smoke` — it was `smoke_medium` with a baked tint; set `color`/`opacity`/`gravity` per use instead
+  - Removed the `electric_arc_*` entries and textures — they duplicated `lightning_arc_*`; `ParticleGroupBuilder.electricArc(lightning_arc_A/B)` reproduces their tuned look
+  - `MagicParticles` nested class flattened into `SpellEngineParticles.magic_*` fields
+- Added `Fx.Visuals` (particles + models), replacing `VFX`
+  - `visuals` on `release`, `impacts[]`, `area_impact`, `deliver.melee.attacks[]`, `deliver.clouds[].spawn`/`.despawn`/`.impact`, `target.beam.block_hit`, `teleport.depart`/`.arrive`/`.fizzle`, `modifiers[].release`, `arrow_perks.launch_visuals`
+  - Continuous particle lists are unchanged — they describe a state, not a moment
+  - List forms `ofParticles(List)`, `.particles(List)`, `.models(List)` alongside the varargs
+- Added `Fx.ScaleWith` + `Fx.Context`: `scale_with = RANGE` on an `Appearance` or `ModelEffect` multiplies its authored `scale` by a magnitude bound at the emission site. Sites bind only what they can supply; an unbound request keeps the authored size and warns once
+- Renamed `ParticleGroupEffect` → `ParticleGroup`, its nested `Particle` → `Appearance` (JSON `particle` → `appearance`), `ParticleGroupEffectType` → `ParticleGroupType`, `ParticleGroupBuilder.particle(...)` → `.appearance(...)`
+- Renamed `ModelEffect.Easing` → top-level `Easing`, now shared with particle opacity curves
+- Removed, with no compatibility shim:
+  - `particles` / `model_fx` at every one-shot site — move them into `visuals`
+  - `release.scaled_with_ranged` — use `scale_with = RANGE`. Semantics changed: the old field *replaced* a particle's scale with the range, `scale_with` *multiplies* by it, so a ported particle wants `scale = 1` (models already multiplied and port as-is)
+  - `arrow_perks.launch_particles` — use `arrow_perks.launch_visuals`
+  - `Spell.ProjectileModel` and the single-model render paths reaching it (`ProjectileData.Client.model`, `Cloud.ClientData.model`, `ArrowPerks.override_render`) — use `composite_model` for projectiles and arrows, `model_fx` for clouds
+  - `Cast.channel_ticks` / `Cast.channeled_release_fx` and the `resolvedType()` resolver — use `cast.type = CHANNEL` with a `channel` block, and read `cast.type` directly
+  - The long-deprecated `EntityImmunity` API (interface + `Entity` mixin) — use `LivingEntityImmunity`, which covers damage types, tags and status effects
+  - The deprecated `RemoveOnHit.configure(StatusEffect, boolean)` overload — pass a `RemoveOnHit.Trigger` (`ANY_HIT` matches the old `true`)
+
+Projectile flight physics:
+- Added optional `ProjectileData.motion` for `FLY` projectiles (ignored by `FALL`/meteor delivery) — `null` keeps the classic constant-velocity, gravity-free flight
+  - `gravity` — downward acceleration in blocks/tick² (negative floats the projectile up), applied before drag each tick, so projectiles arc and pitch along their trajectory
+  - `drag` — fraction of speed *lost* per tick, so `0` = constant speed, `0.01` = gentle decay, `1` = instant stop (above `1` clamps). Note this reads the opposite way to Minecraft's retained-fraction convention
+  - `min_speed` — expires a decelerating projectile (impact-less) once it slows below this, so drag without gravity doesn't leave it hovering until the age cap
+  - Medium-aware drag: `drag_fluid` applies inside any fluid — vanilla or modded, detected generically via `FluidState` — and `fluid_overrides[]` fine-tune per fluid with their own `drag` and a `gravity_multiply` (buoyancy). Selectors use the shared `PatternMatching` syntax (`#tag`, `~regex`, `!negate`, `*`, exact id)
+
+Description tokens:
+- Added the parametric effect token `{effect|<effect_id>|<amplifier>|<attribute>|<format>}` — reads a status effect's attribute modifier straight off the registry, with amplifier scaling (`base × (amplifier + 1)`), attribute selection by id (blank falls back to the effect's first modifier), and a sign-only `format` (`abs`, `+`). Resolution is player-independent and memoised until a registry resync. See [Description Tokens](docs/12-description-tokens.md)
+- This makes an effect's non-first modifier addressable and replaces the per-spell `DescriptionMutator` pattern for effect values (e.g. Frostbite can show both its movement- and attack-speed values)
+- Added `TooltipTokens` — a dependency-free, server-safe home for token names, the `effect(...)` builders, the value-formatting primitives (`percent`, `bonus`, `formattedNumber`) and the programmatic escape hatch `TooltipTokens.Custom` (register via `registerCustom`), so descriptions can be built without touching client-only code. `SpellTooltip`'s former API — including `DescriptionMutator` / `addDescriptionMutator` — remains as deprecated delegates into the same registry
+
+Added `EntityTints` — status-effect-driven ARGB tinting of a living entity's whole rendered appearance:
+- Register a `Tint` against a status effect (`EntityTints.register`) and every entity carrying it is tinted for all players tracking it: body model, worn armor and every other `ModelPart`-based render pass — no integration needed from armor/feature renderers, as the tint rides the vanilla `ModelPart` color argument (Sodium/Iris compatible)
+- `Tint` derives its color from the entity and the effect instance; `Tint.flat(argb)` for a constant color, `Tint.scaling(argb, strengthPerStack)` to strengthen from neutral per effect stack (amplifier + 1)
+- Concurrent tints blend by componentwise multiplication (order-independent, alphas compound); the blend recomputes server side whenever the effect set changes and reaches clients as tracked data — `EntityTints.resolve(entity)` server side, `EntityTints.currentTint(entity)` anywhere
+- Alpha below 1 turns the whole entity translucent: the body swaps to the render layer vanilla uses for spectators, and armor layers are made blend-capable (the same swap Shoulder Surfing applies, idempotent alongside it)
+
+Other changes:
+- Moved all content config types (`WeaponConfig`, `ArmorSetConfig`, etc...) into `rpg_series` package scope
+- `EffectConfig` now supports `ConditionalAttributes`
+
 # 1.19.16
 
 - Attempted to fix status effect and model effect tracker sync #202

@@ -163,7 +163,7 @@ By default that damage scaling is the *only* thing hold time changes. Everything
 | | Fields |
 |---|---|
 | Scales with charge | the weapon swing, plus impact damage / healing / knockback |
-| Fixed | `duration`, `delay`, `attack_speed_multiplier`, `additional_strikes`, `additional_strike_delay`, `movement_speed`, `hitbox.*`, `animation`, sounds, particles, `model_fx` |
+| Fixed | `duration`, `delay`, `attack_speed_multiplier`, `additional_strikes`, `additional_strike_delay`, `movement_speed`, `hitbox.*`, `animation`, sounds, `visuals` |
 
 `damage_bonus` is the one per-attack field that interacts: it and the charge become separate `ADD_MULTIPLIED_TOTAL` attribute modifiers, so they compose multiplicatively — a `damage_bonus: 0.5` swing at half charge deals `0.5 × 1.5 = 0.75×`, not `1.0×`.
 

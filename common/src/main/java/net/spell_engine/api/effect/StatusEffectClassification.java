@@ -1,6 +1,6 @@
 package net.spell_engine.api.effect;
 
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.spell_engine.PlatformEvents;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffect;
@@ -20,7 +20,7 @@ public class StatusEffectClassification {
         movementImpairingAttributes.add(EntityAttributes.GENERIC_MOVEMENT_SPEED);
         movementImpairingAttributes.add(EntityAttributes.GENERIC_FLYING_SPEED);
         movementImpairingAttributes.add(EntityAttributes.GENERIC_GRAVITY);
-        ServerLifecycleEvents.SERVER_STARTED.register((server) -> {
+        PlatformEvents.onServerStarted((server) -> {
             parse(Registries.STATUS_EFFECT);
         });
     }

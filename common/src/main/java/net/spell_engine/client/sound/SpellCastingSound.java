@@ -6,7 +6,7 @@ import net.minecraft.client.sound.TickableSoundInstance;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import org.jetbrains.annotations.Nullable;
 
 public class SpellCastingSound extends PositionedSoundInstance implements SoundInstance, TickableSoundInstance {
@@ -26,7 +26,7 @@ public class SpellCastingSound extends PositionedSoundInstance implements SoundI
     }
 
     private boolean isEmitterCasting() {
-        return emitter != null && emitter.isAlive() && (emitter instanceof SpellCasterEntity caster && caster.isCastingSpell());
+        return emitter != null && emitter.isAlive() && (emitter instanceof SpellCaster.Entity caster && caster.isCastingSpell());
     }
 
     @Override

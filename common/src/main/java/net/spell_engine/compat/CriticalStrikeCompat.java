@@ -1,8 +1,8 @@
 package net.spell_engine.compat;
+import net.spell_engine.Platform;
 
 import net.critical_strike.api.CriticalDamageSource;
 import net.critical_strike.internal.CriticalStriker;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.damage.DamageSource;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_power.api.SpellSchool;
@@ -16,7 +16,7 @@ public class CriticalStrikeCompat {
         // No-op
     };
     public static void init() {
-        if (FabricLoader.getInstance().isModLoaded("critical_strike")) {
+        if (Platform.util().isModLoaded("critical_strike")) {
             isCriticalStrike = ds -> ((CriticalDamageSource)ds).rng_isCritical();
             setCriticalStrike = (ds, multiplier) -> ((CriticalDamageSource)ds).rng_setCriticalDamageMultiplier(multiplier);
 

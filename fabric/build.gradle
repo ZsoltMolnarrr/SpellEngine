@@ -50,6 +50,10 @@ repositories {
         }
     }
     maven {
+        name = "Sleeping Town"
+        url = "https://repo.sleeping.town/"
+    }
+    maven {
         name = "Ladysnake Libs"
         url = 'https://maven.ladysnake.org/releases'
     }
@@ -71,21 +75,6 @@ repositories {
         content {
             includeGroup "mezz.jei"
         }
-    }
-
-    // Accessories
-    maven { url 'https://maven.wispforest.io/releases' }
-
-    // CurseMaven
-    maven {
-        url = "https://www.cursemaven.com"
-        content {
-            includeGroup "curse.maven"
-        }
-    }
-    maven {
-        name = "TerraformersMC"
-        url = "https://maven.terraformersmc.com/"
     }
 
     mavenLocal()
@@ -119,25 +108,11 @@ dependencies {
     modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${project.ftb_teams_version}")
     modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
 
-    modCompileOnly "maven.modrinth:owo-lib:${project.owo_version}" // Accessories needs this
-    modCompileOnly("io.wispforest:accessories-${platform}:${project.accessories_version}") // Appearantly this doesn't work as a modCompileOnly?
     modCompileOnly("maven.modrinth:iris:${project.iris_version}")
 
     // Fabric specific
-    modCompileOnly("maven.modrinth:modmenu:${project.mod_menu_version}")
-    // Trinkets: Modrinth Maven serves minimal POMs (no transitive deps) and
-    // TerraformersMC has been unreliable in CI. Use Modrinth on CI; use dev.emi
-    // locally so runClient gets Trinkets' full transitive graph.
-//    if (System.getenv("CI")) {
-//        modCompileOnly("maven.modrinth:trinkets:${project.trinkets_version}")
-//    } else {
-//        modCompileOnly("maven.modrinth:trinkets:${project.trinkets_version}")
-//        modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:6.1.3")
-//        modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-entity:6.1.3")
-//    }
-    modImplementation("maven.modrinth:trinkets:${project.trinkets_version}")
-    modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-base:6.1.3")
-    modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:6.1.3")
+    modImplementation("maven.modrinth:modmenu:${project.mod_menu_version}")
+    modImplementation("dev.emi:trinkets:${project.trinkets_version}")
 
     modCompileOnly("maven.modrinth:lambdynamiclights:${project.lamb_dynamic_lights_version}")
 }
@@ -165,7 +140,11 @@ remapJar {
 // `build` — with none of the tokens present — is completely unaffected.
 def releaseTypeName = (project.findProperty('release_type') ?: 'beta').toString()
 
-// Keep the old task name so the existing workflow (`:fabric:publishMod`) keeps working.
+// Convenience alias: build + publish to every configured destination in one go.
+// CI does NOT use this -- `publish.yml` invokes `:fabric:build` plus an explicit subset of
+// the plugin's per-destination tasks (`publishCurseforge` / `publishModrinth` /
+// `publishGithub`), so a release can target only some platforms. Keep that in mind when
+// changing this alias: it is now a local/manual convenience, not the CI entry point.
 // The plugin's own aggregate task is `publishMods` (plural).
 tasks.register("publishMod") {
     dependsOn(build)
@@ -216,4 +195,16 @@ publishMods {
         // Actions to the triggering commit — valid even in a detached-HEAD checkout.
         commitish = providers.environmentVariable("GITHUB_SHA")
     }
+}
+
+// The GitHub release is the *seal* on a successful publish, so it must run LAST: if a mod
+// host upload fails (e.g. a CurseForge 500), Gradle aborts the build before the release is
+// created, so there is never a green GitHub release pointing at a half-published version.
+// `mustRunAfter` is an ordering rule ONLY -- it does not pull the referenced tasks into the
+// graph. A Modrinth-only run therefore still works and simply ignores the CurseForge rule.
+// This matters because command-line task order is NOT an execution-order guarantee.
+// NOTE: must sit AFTER the `publishMods` block -- the plugin registers one task per
+// destination while that block is evaluated, so these names do not exist before it.
+tasks.named("publishGithub") {
+    mustRunAfter(tasks.named("publishCurseforge"), tasks.named("publishModrinth"))
 }

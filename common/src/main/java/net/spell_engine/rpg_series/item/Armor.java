@@ -1,6 +1,6 @@
 package net.spell_engine.rpg_series.item;
 
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.spell_engine.PlatformEvents;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
@@ -14,7 +14,7 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
-import net.spell_engine.api.config.ArmorSetConfig;
+import net.spell_engine.rpg_series.config.ArmorSetConfig;
 import net.spell_engine.mixin.item.ArmorMaterialLayerAccessor;
 import org.jetbrains.annotations.Nullable;
 
@@ -92,7 +92,7 @@ public class Armor {
             for (var piece: pieces()) {
                 Registry.register(Registries.ITEM, idOf(piece), piece);
             }
-            ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register(content -> {
+            PlatformEvents.onItemGroupModify(itemGroupKey, (content, context) -> {
                 for(var piece: pieces()) {
                     content.add(piece);
                 }

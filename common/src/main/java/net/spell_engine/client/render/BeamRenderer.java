@@ -1,7 +1,5 @@
 package net.spell_engine.client.render;
 
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
@@ -13,16 +11,17 @@ import net.spell_engine.api.render.CustomLayers;
 import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.SpellEngineClient;
-import net.spell_engine.client.beam.BeamEmitterEntity;
 import net.spell_engine.client.compatibility.ShaderCompatibility;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.internals.delivery.Beam;
-import net.spell_engine.internals.SpellHelper;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.utils.TargetHelper;
+import net.minecraft.entity.LivingEntity;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import net.spell_engine.internals.delivery.LaunchGeometry;
 
 public class BeamRenderer extends RenderLayer {
     public record LayerSet(RenderLayer inner, RenderLayer outer) { }
@@ -74,37 +73,47 @@ public class BeamRenderer extends RenderLayer {
         );
     }
 
-    public static void setup() {
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
-            VertexConsumerProvider.Immediate vcProvider = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
-            renderAllInWorld(context, context.matrixStack(), vcProvider, context.camera(), LightmapTextureManager.MAX_LIGHT_COORDINATE, context.tickCounter().getTickDelta(true));
-        });
+    /// Beam world-render pass. Loader-neutral: takes the pose stack, camera and partial tick from
+    /// whatever event the loader fires. Fabric: `WorldRenderEvents.AFTER_TRANSLUCENT`; NeoForge:
+    /// `RenderLevelStageEvent` (AFTER_TRANSLUCENT_BLOCKS).
+    public static void renderAfterTranslucent(MatrixStack matrices, Camera camera, float tickDelta) {
+        VertexConsumerProvider.Immediate vcProvider = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
+        renderAllInWorld(matrices, vcProvider, camera, LightmapTextureManager.MAX_LIGHT_COORDINATE, tickDelta);
     }
 
-    public static void renderAllInWorld(WorldRenderContext context, MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, Camera camera, int light, float delta) {
-        var focusedEntity = context.camera().getFocusedEntity();
+    public static void renderAllInWorld(MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, Camera camera, int light, float delta) {
+        var focusedEntity = camera.getFocusedEntity();
         if (focusedEntity == null) {
             return;
         }
 
+        var world = MinecraftClient.getInstance().world;
+        if (world == null) {
+            return;
+        }
         var renderDistance = MinecraftClient.getInstance().options.getViewDistance().getValue() * 24; // 24 = 16 * 1.5F
         var squaredRenderDistance = renderDistance * renderDistance;
-        var players = context.world().getPlayers()
-                .stream().filter(player ->
-                        player.squaredDistanceTo(focusedEntity) < squaredRenderDistance
-                && ((SpellCasterEntity)player).getBeam() != null)
-                .toList();
-        if (players.isEmpty()) {
+        // Any entity exposing a cast process can beam (players and summons alike)
+        var casters = new ArrayList<LivingEntity>();
+        for (var entity : world.getEntities()) {
+            if (entity instanceof LivingEntity livingEntity
+                    && entity instanceof SpellCaster.Entity holder
+                    && holder.getBeam() != null
+                    && entity.squaredDistanceTo(focusedEntity) < squaredRenderDistance) {
+                casters.add(livingEntity);
+            }
+        }
+        if (casters.isEmpty()) {
             return;
         }
 
         matrices.push();
         Vec3d camPos = camera.getPos();
         matrices.translate(-camPos.x, -camPos.y, -camPos.z);
-        for (var livingEntity : players) {
-            var launchHeight = SpellHelper.launchHeight(livingEntity);
-            var offset = new Vec3d(0.0, launchHeight, SpellHelper.launchPointOffsetDefault);
-            SpellCasterEntity caster = (SpellCasterEntity)livingEntity;
+        for (var livingEntity : casters) {
+            var launchHeight = LaunchGeometry.launchHeight(livingEntity);
+            var offset = new Vec3d(0.0, launchHeight, LaunchGeometry.launchPointOffsetDefault);
+            SpellCaster.Entity caster = (SpellCaster.Entity) livingEntity;
             matrices.push();
             var pos = new Vec3d(livingEntity.prevX, livingEntity.prevY, livingEntity.prevZ)
                     .lerp(livingEntity.getPos(), delta);

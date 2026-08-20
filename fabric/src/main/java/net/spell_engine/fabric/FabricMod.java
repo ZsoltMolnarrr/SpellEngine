@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.fabric.compat.FabricCompatFeatures;
+import net.spell_engine.fabric.network.FabricServerNetwork;
 import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.item.SpellEngineItems;
@@ -20,6 +21,7 @@ public final class FabricMod implements ModInitializer {
         SpellEngineMod.registerSpellBinding();
 
         SpellEngineMod.init();
+        FabricServerNetwork.init();
 
         FabricCompatFeatures.initialize();
     }

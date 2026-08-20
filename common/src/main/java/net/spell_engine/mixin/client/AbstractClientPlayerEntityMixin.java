@@ -23,7 +23,7 @@ import net.spell_engine.client.animation.*;
 import net.spell_engine.client.compatibility.FirstPersonAnimationCompatibility;
 import net.spell_engine.client.sound.SpellCastingSound;
 import net.spell_engine.internals.casting.SpellCast;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.mixin.entity.LivingEntityAccessor;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.utils.AnimationHelper;
@@ -62,7 +62,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         String castAnimationName = null;
         Sound castSound = null;
         float speed = 1F;
-        var spell = ((SpellCasterEntity)player).getCurrentSpell();
+        var spell = ((SpellCaster.Player)player).getCastedSpell();
         if (spell != null && spell.active != null) {
             var cast = spell.active.cast;
             castAnimationName = AnimationHelper.getAnimationId(player, cast.animation);
@@ -72,7 +72,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             for (var batch: cast.particles) {
                 ParticleHelper.play(player.getWorld(), player, player.getYaw(), getPitch(), batch);
             }
-            speed = ((SpellCasterEntity)player).getCurrentCastingSpeed() * cast.animation.speed;
+            speed = ((SpellCaster.Player)player).getCastingSpeed() * cast.animation.speed;
             castingAnimationPitching = cast.animation_pitch;
         } else {
             castingAnimationPitching = true;

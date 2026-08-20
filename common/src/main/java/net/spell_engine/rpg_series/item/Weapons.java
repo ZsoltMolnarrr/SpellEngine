@@ -2,8 +2,8 @@ package net.spell_engine.rpg_series.item;
 
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.util.Identifier;
-import net.spell_engine.api.config.AttributeModifier;
-import net.spell_engine.api.config.WeaponConfig;
+import net.spell_engine.rpg_series.config.AttributeModifier;
+import net.spell_engine.rpg_series.config.WeaponConfig;
 import net.spell_engine.api.item.weapon.SpellSwordItem;
 import net.spell_engine.api.item.weapon.SpellWeaponItem;
 import net.spell_engine.api.item.weapon.StaffItem;

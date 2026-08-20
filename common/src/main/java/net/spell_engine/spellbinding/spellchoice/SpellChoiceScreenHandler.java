@@ -149,6 +149,16 @@ public class SpellChoiceScreenHandler extends ScreenHandler {
                 // Bind spell to the item's spell container
                 SpellContainerHelper.addSpell(world, selectedSpellId, itemStack);
 
+                // Apply the chosen spell's component changes (appearance, name, ...) to the item.
+                // Read before clearing the component below.
+                var spellChoice = SpellChoices.from(itemStack);
+                if (spellChoice != null) {
+                    var changes = spellChoice.applyOnChoiceFor(selectedSpellId);
+                    if (!changes.isEmpty()) {
+                        itemStack.applyChanges(changes);
+                    }
+                }
+
                 // Remove the spell choice component
                 itemStack.set(SpellDataComponents.SPELL_CHOICE, SpellChoice.EMPTY);
 

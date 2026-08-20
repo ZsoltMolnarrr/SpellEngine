@@ -4,9 +4,9 @@ import net.minecraft.entity.EquipmentSlot;
 import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ModelEffect;
-import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.api.spell.fx.Sound;
-import net.spell_engine.api.spell.fx.VFX;
+import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.summon.AttributeScaling;
 import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.api.util.AlwaysGenerate;
@@ -152,31 +152,15 @@ public class Spell {
                 }
             }
 
-            // MARK: Legacy migration (handled with priority — see resolver accessors below)
+            // MARK: Accessors resolving `type` against its matching sub-struct, so callers
+            // never have to null-check a block that only applies to one casting mechanic.
 
-            /// @deprecated Use `type = CHANNEL` with a `channel` block instead.
-            /// Kept for backward compatibility: when non-zero it takes priority and the spell behaves
-            /// exactly as before (channeled), ignoring the `type`/`channel`/`charge` structure.
-            @Deprecated(forRemoval = true) public int channel_ticks = 0;
-            /// @deprecated Use `channel.release_fx` instead. Only consulted while legacy channeling is active.
-            @Deprecated(forRemoval = true) public boolean channeled_release_fx = false;
-
-            // MARK: Resolved accessors — single source of truth for the engine.
-            // Legacy fields win when set to a non-default value; otherwise the new structure is interpreted.
-
-            public Type resolvedType() {
-                if (channel_ticks != 0) { return Type.CHANNEL; } // legacy override
-                return type;
-            }
             public int channelTicks() {
-                if (channel_ticks != 0) { return channel_ticks; }
                 if (type == Type.CHANNEL && channel != null) { return channel.ticks; }
                 return 0;
             }
             public boolean channelReleaseFx() {
-                if (channel_ticks != 0) { return channeled_release_fx; }
-                if (type == Type.CHANNEL && channel != null) { return channel.release_fx; }
-                return false;
+                return type == Type.CHANNEL && channel != null && channel.release_fx;
             }
 
             public PlayerAnimation animation;
@@ -188,7 +172,7 @@ public class Spell {
             public float movement_speed = 0.2F;
             public Sound start_sound;
             public Sound sound;
-            public ParticleBatch[] particles = new ParticleBatch[]{};
+            public List<ParticleGroup> particles = List.of();
         }
     }
 
@@ -231,9 +215,9 @@ public class Spell {
         /// Bonus added to a meteor delivery's `launch_radius` (the horizontal spread the falling
         /// projectiles are scattered over around the target). 0 = unchanged
         public float meteor_launch_radius_add = 0F;
-        /// Particle batches played alongside the spell's release FX (anchored on the caster,
+        /// Visuals played alongside the spell's release FX (anchored on the caster,
         /// repeated per channel burst when the spell replays release FX). null = none
-        @Nullable public ParticleBatch[] release_particles = null;
+        @Nullable public Fx.Visuals release = null;
         @Nullable public Impact.Modifier power_modifier;
         public int channel_ticks_add = 0;
         public float knockback_multiply_base = 0;
@@ -255,6 +239,22 @@ public class Spell {
 
         /// Additional cloud or entity spawn placements
         public List<EntityPlacement> additional_placements = List.of();
+
+        /// Adjustments to a `CLOUD` delivery, snapshotted onto the cloud entity at spawn (summed across
+        /// all applied modifiers). Reuses the `Delivery.Cloud.Growth` shape so the growth block reads
+        /// identically to the one authored on the spell.
+        public Cloud cloud = new Cloud();
+        public static class Cloud { public Cloud() {}
+            /// Added to the cloud's base impact radius (blocks). Summed across modifiers. Grows the
+            /// area of effect, the entity hitbox and the visuals.
+            public float radius_add = 0F;
+            /// A growth contribution. Its magnitudes (`radius_step`, `duration_ticks`) are summed onto
+            /// the cloud's own growth — so several modifiers stack, and supplying both can attach growth
+            /// to a cloud that had none. Its timing (`step_interval`, `start_tick`) only applies when the
+            /// cloud has no growth of its own (i.e. when attaching); an already-growing cloud keeps its
+            /// own cadence.
+            public Delivery.Cloud.Growth growth = new Delivery.Cloud.Growth();
+        }
 
         // Summon impact (`Impact.Action.Summon`) modifiers.
         /// Additional owner-scaled attribute bonuses, merged into the summon's `attribute_scaling`.
@@ -287,16 +287,15 @@ public class Spell {
     public Release release = new Release();
     public static class Release { public Release() { }
         public PlayerAnimation animation;
-        public ParticleBatch[] particles;
-        public ParticleBatch[] particles_scaled_with_ranged;
+        /// Played on the caster the moment the spell fires. Effects that should be sized by
+        /// the spell's reach declare `scale_with = RANGE` individually, so range-scaled and
+        /// fixed-size effects share this one bundle.
+        public Fx.Visuals visuals = new Fx.Visuals();
         /// Amount added to the release `sound` pitch, scaled by the charge ratio (CHARGE casts only).
         /// e.g. `0.5` raises the pitch by up to +0.5 at full charge.
         public float pitch_shift = 0F;
         public Sound sound;
-        public List<ModelEffect> model_fx = List.of();
-        /// Model effects whose `scale` is multiplied by the spell's range on release.
-        /// Each entry's authored `scale` acts as the coefficient (final scale = scale * range).
-        public List<ModelEffect> model_fx_scaled_with_ranged = List.of();
+
     }
 
     public Target target = new Target();
@@ -333,7 +332,8 @@ public class Spell {
             public long inner_color_rgba = 0xFFFFFFFFL;
             public float width = 0.1F;
             public float flow = 1;
-            public ParticleBatch[] block_hit_particles = new ParticleBatch[]{};
+            /// Played where the beam meets a solid block.
+            public Fx.Visuals block_hit = new Fx.Visuals();
         }
 
         public Area area;
@@ -448,8 +448,9 @@ public class Spell {
                 /// The maximum number of times the impact sound to be played, to avoid overwhelming the audio channel when hitting lots of targets.
                 /// Zero means no limit.
                 public int impact_sound_cap = 3;
-                public ParticleBatch[] particles = new ParticleBatch[]{};
-                public List<ModelEffect> model_fx = List.of();
+                /// Played on the caster as the attack swings.
+                public Fx.Visuals visuals = new Fx.Visuals();
+
             }
             public static class HitBox {
                 /// Relative length of the hitbox, will be scaled up by attack range.
@@ -478,11 +479,28 @@ public class Spell {
             /// Active-phase duration (when impacts fire). Total life = spawn_ticks + this*20 + despawn_ticks.
             public float time_to_live_seconds = 0;
 
+            /// Optional: grow (or shrink) the cloud's radius over its lifetime, on top of `volume`'s base
+            /// radius. Both the visual size (particle field + model) and the area-of-effect radius follow.
+            /// Disabled unless both `radius_step` and `duration_ticks` are non-zero.
+            public Growth growth = new Growth();
+            public static class Growth { public Growth() {}
+                /// Radius added each step. Negative shrinks (radius is floored at 0). 0 disables growth.
+                public float radius_step = 0F;
+                /// Ticks between growth steps (the growth frequency).
+                public int step_interval = 1;
+                /// Absolute age in ticks (from spawn) at which growth begins.
+                public int start_tick = 0;
+                /// How long growth runs, in ticks. 0 disables growth; a negative value grows for the
+                /// cloud's whole (finite) life.
+                public int duration_ticks = 0;
+            }
+
             /// The number of ticks between looking for targets and trying to apply impact
             public int impact_tick_interval = 5;
             /// The number of times impacts can be performed, zero means unlimited
             public int impact_cap = 0;
-            public ParticleBatch[] impact_particles = new ParticleBatch[]{};
+            /// Played on each entity the cloud impacts.
+            public Fx.Visuals impact = new Fx.Visuals();
 
             /// Base spawn delay
             public int delay_ticks = 0;
@@ -494,31 +512,29 @@ public class Spell {
             public Cloud.ClientData client_data = new Cloud.ClientData();
             public static class ClientData {
                 public int light_level = 0;
-                public ParticleBatch[] particles = new ParticleBatch[]{};
+                public List<ParticleGroup> particles = List.of();
                 public int particle_spawn_interval = 1;
                 /// Particles to be spawned at the interval of `particle_spawn_interval`
                 /// Useful for ground particles with fixed animation duration
-                public ParticleBatch[] interval_particles = new ParticleBatch[]{};
-                /// Legacy single cloud model. Superseded by `model_fx`.
-                @Deprecated(forRemoval = true)
-                public ProjectileModel model;
-                /// Animatable cloud models, each driven by the modelFX system. When non-empty,
-                /// supersedes `model`.
+                public List<ParticleGroup> interval_particles = List.of();
+                /// Animatable cloud models, each driven by the modelFX system.
                 public List<ModelEffect> model_fx = List.of();
             }
             public Cloud.Spawn spawn = new Cloud.Spawn();
             public static class Spawn {
                 public Sound sound;
-                public ParticleBatch[] particles = new ParticleBatch[]{};
-                public List<ModelEffect> model_fx = List.of();
+                /// Played once where the cloud appears.
+                public Fx.Visuals visuals = new Fx.Visuals();
+
             }
             /// FX played once, server-side, as the cloud enters its wind-down (the DESPAWNING phase).
             /// Not emitted when `despawn_ticks == 0`: such clouds skip DESPAWNING and vanish on the spot.
             public Cloud.Despawn despawn = new Cloud.Despawn();
             public static class Despawn {
                 public Sound sound;
-                public ParticleBatch[] particles = new ParticleBatch[]{};
-                public List<ModelEffect> model_fx = List.of();
+                /// Played once as the cloud begins to wind down.
+                public Fx.Visuals visuals = new Fx.Visuals();
+
             }
         }
 
@@ -734,7 +750,9 @@ public class Spell {
                 @Nullable public Fizzle fizzle;
                 public static class Fizzle { public Fizzle() { }
                     @Nullable public Sound sound;
-                    @Nullable public ParticleBatch[] particles;
+                    /// Played at the caster's position when the teleport is aborted.
+                    public Fx.Visuals visuals = new Fx.Visuals();
+
                 }
                 public SpellTarget.Intent intent = SpellTarget.Intent.HELPFUL;
                 public Forward forward;
@@ -745,10 +763,8 @@ public class Spell {
                 public static class BehindTarget { public BehindTarget() { }
                     public float distance = 1.5F;
                 }
-                @Nullable public ParticleBatch[] depart_particles;
-                @Nullable public List<ModelEffect> depart_model_fx;
-                @Nullable public ParticleBatch[] arrive_particles;
-                @Nullable public List<ModelEffect> arrive_model_fx;
+                @Nullable public Fx.Visuals depart;
+                @Nullable public Fx.Visuals arrive;
             }
 
             public Cooldown cooldown;
@@ -851,7 +867,7 @@ public class Spell {
             /// Declarative definition of a spell-summoned entity (or formation of them): the entity
             /// type to spawn, its full runtime {@link SummonBehaviour}, and where/how it is placed
             /// (reusing {@link EntityPlacement}). Spawned relative to the caster — see the SUMMON
-            /// impact handling in `SpellHelper`.
+            /// impact handling in `SpellImpacts`.
             ///
             /// Unlike {@link Spawn}, time-to-live is not a separate field — it is part of
             /// {@link SummonBehaviour#lifespan}.
@@ -890,7 +906,7 @@ public class Spell {
 
                 /// One-shot FX emitted once per group, at the group's anchor, deferred by the group
                 /// placement's `delay_ticks`. Null = none.
-                @Nullable public VFX group_spawn_fx = null;
+                @Nullable public Fx.Visuals group_spawn_fx = null;
 
                 /// Sound played once per group when it spawns, at the group's anchor (deferred by the
                 /// group placement's `delay_ticks`). Null = none.
@@ -915,9 +931,10 @@ public class Spell {
             }
         }
 
-        public ParticleBatch[] particles = new ParticleBatch[]{};
+        /// Played on each entity this impact lands on.
+        public Fx.Visuals visuals = new Fx.Visuals();
         public Sound sound;
-        public List<ModelEffect> model_fx = List.of();
+
     }
     /// Apply this impact to other entities nearby
     @Nullable public AreaImpact area_impact;
@@ -931,13 +948,11 @@ public class Spell {
         public boolean skip_arrow_damage = false;
         public int pierce = 0;
         public float knockback = 1;
-        public ParticleBatch[] travel_particles = new ParticleBatch[]{};
-        public ParticleBatch[] launch_particles = new ParticleBatch[]{};
+        public List<ParticleGroup> travel_particles = List.of();
+        /// Played on the shooter as the arrow leaves.
+        public Fx.Visuals launch_visuals = new Fx.Visuals();
         @Nullable public Sound launch_sound;
-        /// Legacy single override model. Superseded by `composite_model`.
-        @Deprecated(forRemoval = true)
-        @Nullable public ProjectileModel override_render;
-        /// Multi-model successor to `override_render`. When present and non-empty, supersedes it.
+        /// Models rendered in place of the vanilla arrow.
         @Nullable public ProjectileModelComposite composite_model;
 
         public ArrowPerks copy() {
@@ -950,9 +965,8 @@ public class Spell {
             copy.pierce = this.pierce;
             copy.knockback = this.knockback;
             copy.travel_particles = this.travel_particles;
-            copy.launch_particles = this.launch_particles;
+            copy.launch_visuals = this.launch_visuals;
             copy.launch_sound = this.launch_sound;
-            copy.override_render = this.override_render;
             copy.composite_model = this.composite_model;
             return copy;
         }
@@ -1147,10 +1161,11 @@ public class Spell {
             public float power_cap = 0;
         }
         public Target.Area area = new Target.Area();
-        public ParticleBatch[] particles = new ParticleBatch[]{};
+        /// Played once at the area's centre when it goes off.
+        public Fx.Visuals visuals = new Fx.Visuals();
         @Nullable
         public Sound sound;
-        public List<ModelEffect> model_fx = List.of();
+
 
         public float combinedRadius(double power) {
             return radius + extra_radius.power_coefficient * (float) Math.min(extra_radius.power_cap, power);
@@ -1209,6 +1224,53 @@ public class Spell {
         /// The frequency of playing the travel sound in ticks
         public int travel_sound_interval = 20;
         @Nullable public Sound travel_sound;
+
+        /// Optional flight physics for `FLY` projectiles. null = legacy motion: constant
+        /// velocity, no gravity, no drag. Ignored by `FALL` (meteor) delivery, which keeps
+        /// its straight-line descent.
+        @Nullable public Motion motion;
+        public static class Motion { public Motion() { }
+            /// Downward acceleration in blocks/tick². 0 = none. Negative floats the projectile up.
+            /// Reference: vanilla arrow ~0.05, thrown potion 0.03.
+            public float gravity = 0F;
+            /// Fraction of speed *lost* per tick in air (and any medium not covered below).
+            /// 0 = constant speed (default), 0.01 = gentle decay, 1 = stops instantly.
+            /// Values above 1 clamp to a full stop (never reverse the projectile).
+            public float drag = 0F;
+            /// Drag while inside ANY fluid — water, lava, or a modded fluid such as honey
+            /// (anything reporting a non-empty `FluidState`). 0 = inherit `drag`; any positive
+            /// value overrides it. This is the easy knob: most spells just want "slower in liquids".
+            public float drag_fluid = 0F;
+            /// Per-fluid fine-tuning. First entry whose `fluid` matches the current medium wins;
+            /// no match falls back to `drag_fluid` (then `drag`).
+            public List<FluidOverride> fluid_overrides = List.of();
+            public static class FluidOverride { public FluidOverride() { }
+                /// Fluid selector, using the shared `PatternMatching` syntax: exact id
+                /// (`minecraft:lava`), fluid tag (`#c:honey`), regex (`~.*lava`), negation
+                /// (`!minecraft:water`), or any (`*`). Note vanilla still/flowing fluids have
+                /// distinct ids — prefer a tag (e.g. `#minecraft:water`) to catch both.
+                public String fluid = "";
+                /// Fraction of speed lost per tick in this medium (0 = none).
+                public float drag = 0F;
+                /// Multiplies `gravity` while in this medium (1 = unchanged, 0 = neutrally
+                /// buoyant, negative = bobs upward).
+                public float gravity_multiply = 1F;
+            }
+            /// Expire the projectile (impact-less kill) once its speed decays below this
+            /// (blocks/tick). 0 = disabled. Recommended when `drag` < 1 and `gravity` == 0,
+            /// otherwise a decelerating projectile stalls and hovers until the age cap.
+            public float min_speed = 0F;
+
+            public Motion copy() {
+                Motion copy = new Motion();
+                copy.gravity = this.gravity;
+                copy.drag = this.drag;
+                copy.drag_fluid = this.drag_fluid;
+                copy.fluid_overrides = this.fluid_overrides;
+                copy.min_speed = this.min_speed;
+                return copy;
+            }
+        }
 
         public Perks perks = new Perks();
         public static class Perks { public Perks() { }
@@ -1284,37 +1346,14 @@ public class Spell {
             /// 14 - torch
             /// 10 - soul torch
             public int light_level = 0;
-            public ParticleBatch[] travel_particles = new ParticleBatch[]{};
-            /// Legacy single projectile model. Superseded by `composite_model`.
-            @Deprecated(forRemoval = true)
-            public ProjectileModel model;
-            /// Multi-model successor to `model`. When present and non-empty, supersedes `model`.
+            public List<ParticleGroup> travel_particles = List.of();
+            /// The models this projectile renders as.
             public ProjectileModelComposite composite_model;
         }
     }
 
-    /// Legacy single-model projectile/cloud visual. Superseded by {@link ProjectileModelComposite}
-    /// (projectiles) and a `List<ModelEffect>` (clouds); slated for removal once both legacy render
-    /// paths are gone.
-    @Deprecated(forRemoval = true)
-    public static class ProjectileModel { public ProjectileModel() { }
-        public boolean use_held_item = false;
-        public String model_id;
-        public LightEmission light_emission = LightEmission.GLOW;
-        public float scale = 1F;
-        public float rotate_degrees_per_tick = 2F;
-        public float rotate_degrees_offset = 0;
-        public Orientation orientation = Orientation.TOWARDS_MOTION;
-        public enum Orientation {
-            TOWARDS_CAMERA, TOWARDS_MOTION, ALONG_MOTION
-        }
-    }
-
-    /// Multi-model successor to {@link ProjectileModel}: a projectile can render several models,
-    /// each animatable via the modelFX system ({@link ModelEffect}). Self-contained on purpose
-    /// (its own {@link Orientation}) so the legacy {@link ProjectileModel} can be removed without
-    /// touching this. When a projectile's composite is present and non-empty, it supersedes the
-    /// legacy single model.
+    /// A projectile's models: several of them, each animatable via the modelFX system
+    /// ({@link ModelEffect}). Carries its own {@link Orientation} so the type is self-contained.
     public static class ProjectileModelComposite { public ProjectileModelComposite() { }
         public List<Model> models = List.of();
 
@@ -1322,7 +1361,7 @@ public class Spell {
             /// Facing relative to the projectile's travel.
             public Orientation orientation = Orientation.TOWARDS_MOTION;
             /// Continuous spin about the view/motion axis (degrees per tick) plus a static offset.
-            /// Defaults to 2 to match the legacy ProjectileModel; set 0 for a non-spinning (e.g. flat) model.
+            /// Set 0 for a non-spinning (e.g. flat) model.
             public float rotate_degrees_per_tick = 2F;
             public float rotate_degrees_offset = 0F;
             /// Render the caster's held-item id as this model's source instead of `fx.model_id`.
@@ -1334,8 +1373,6 @@ public class Spell {
             public ModelEffect fx = new ModelEffect();
         }
 
-        /// Duplicated from {@link ProjectileModel.Orientation} on purpose, to keep this type
-        /// independent of the legacy one.
         public enum Orientation {
             TOWARDS_CAMERA, TOWARDS_MOTION, ALONG_MOTION
         }

@@ -130,7 +130,7 @@ public class SpellModifiers {
         copy.mutate_impacts = modifier.mutate_impacts;
         copy.impacts = modifier.impacts;
         copy.replacing_area_impact = modifier.replacing_area_impact;
-        copy.release_particles = modifier.release_particles;
+        copy.release = modifier.release;
         copy.impact_filters = modifier.impact_filters;
         // Deliberately dropped, not copied: an attack list has no magnitude to scale, so it would
         // appear in full at any ratio above `min_release_ratio` — "release at 21%, get the whole
@@ -158,6 +158,16 @@ public class SpellModifiers {
         copy.meteor_launch_radius_add = modifier.meteor_launch_radius_add * r;
         copy.summon_spawn_count_add = Math.round(modifier.summon_spawn_count_add * r);
         copy.summon_group_count_add = Math.round(modifier.summon_group_count_add * r);
+        // Cloud bonus: scale the magnitudes; leave the growth cadence (interval/start) untouched.
+        var cloud = new Spell.Modifier.Cloud();
+        cloud.radius_add = modifier.cloud.radius_add * r;
+        cloud.growth.radius_step = modifier.cloud.growth.radius_step * r;
+        cloud.growth.duration_ticks = modifier.cloud.growth.duration_ticks < 0
+                ? -1 // preserve the "whole life" sentinel; rounding it would disable growth
+                : Math.round(modifier.cloud.growth.duration_ticks * r);
+        cloud.growth.step_interval = modifier.cloud.growth.step_interval;
+        cloud.growth.start_tick = modifier.cloud.growth.start_tick;
+        copy.cloud = cloud;
         // Scaled nested objects (fresh copies, so the shared template is never mutated)
         if (modifier.power_modifier != null) {
             var pm = new Spell.Impact.Modifier();

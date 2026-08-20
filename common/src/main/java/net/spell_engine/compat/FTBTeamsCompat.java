@@ -1,9 +1,9 @@
 package net.spell_engine.compat;
+import net.spell_engine.Platform;
 
 import dev.ftb.mods.ftbteams.api.FTBTeamsAPI;
 import dev.ftb.mods.ftbteams.api.Team;
 import dev.ftb.mods.ftbteams.api.client.KnownClientPlayer;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.internals.target.EntityRelations;
 
@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public class FTBTeamsCompat {
     public static void init() {
-        if (FabricLoader.getInstance().isModLoaded("ftbteams")) {
+        if (Platform.util().isModLoaded("ftbteams")) {
             EntityRelations.registerTeamMatcher("ftb", (attack, target) -> {
                 if (attack instanceof PlayerEntity attackerPlayer && target instanceof PlayerEntity targetPlayer) {
                     if (attackerPlayer.getWorld().isClient()) {

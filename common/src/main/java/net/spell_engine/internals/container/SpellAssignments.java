@@ -2,7 +2,6 @@ package net.spell_engine.internals.container;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
@@ -25,7 +24,7 @@ public class SpellAssignments {
     public static final Map<Identifier, SpellContainer> book_containers = new HashMap<>();
 
     public static void init() {
-        ServerLifecycleEvents.SERVER_STARTING.register(SpellAssignments::load);
+        net.spell_engine.PlatformEvents.onServerStarting(SpellAssignments::load);
     }
 
     private static void load(MinecraftServer minecraftServer) {

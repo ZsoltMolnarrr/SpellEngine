@@ -21,45 +21,242 @@ Sounds can appear at multiple points:
 
 ## Particles
 
-Particles use the `ParticleBatch` object. A batch spawns multiple particles at once with a given shape.
+A particle effect is a `ParticleGroup`. It has three parts:
 
 ```json
 {
-  "id": "spell_engine:sparkle",
-  "shape": "SPHERE",
-  "origin": "CENTER",
-  "count": 8,
-  "spread": 0.3,
-  "speed": 0.1
+  "id": "spell_engine:magic_spell",
+  "appearance": { "color": 4284940287, "motion": "ASCEND" },
+  "batch":    { "shape": "PIPE", "count": 8, "min_speed": 0.05, "max_speed": 0.1 }
 }
 ```
 
-| Field | Description |
+| Part | Meaning |
 |---|---|
-| `id` | Particle type identifier |
-| `shape` | Spawn shape: `SPHERE`, `PIPE`, `LINE`, `LINE_VERTICAL`, `PILLAR` |
-| `origin` | Anchor point: `CENTER`, `FEET`, `GROUND`, `LAUNCH_POINT`, `OVER_HEAD` (1.5x entity height, above the feet) |
-| `count` | Number of particles per batch |
-| `spread` | Positional spread radius |
-| `speed` | Particle velocity |
+| `id` | Which registered particle to spawn — picks the texture and its defaults |
+| `appearance` | What one particle looks like and how it moves. Sent to the client as one payload |
+| `batch` | How many to spawn, where to place them, what velocity to give them. Resolved before any particle exists |
 
-Built-in particles are in [`SpellEngineParticles.java`](../common/src/main/java/net/spell_engine/fx/SpellEngineParticles.java). Vanilla particle ids also work.
+The split is the rule of thumb for finding a field: *"is this about one particle, or about the whole group?"* Colour, size, fade and motion are `appearance`. Count, shape, placement and speed are `batch`.
 
-Particles can appear at:
+### Authoring in Java
+
+Use [`ParticleGroupBuilder`](../common/src/main/java/net/spell_engine/api/spell/fx/ParticleGroupBuilder.java). Named methods configure the particle; `batch(...)` configures the batch and closes the builder:
+
+```java
+ParticleGroupBuilder.magic(SpellEngineParticles.magic_spell, Motion.ASCEND)
+        .color(Color.ARCANE)
+        .batch(Batches.casting(8, 0.1F));
+```
+
+**Starting points:**
+
+| Call | Use for |
+|---|---|
+| `of(entry)` / `of(id)` | Any particle |
+| `magic(entry, motion[, color])` | The `magic_*` particles, choosing how they move |
+| `zone(entry)` | A flat effect on the ground plane — runes, circles, shockwaves |
+| `aura(entry)` | An upright effect that follows and scales with its entity |
+
+`zone` and `aura` are the same textures rendered two ways. In earlier versions these were registered as separate `area_*` / `aura_*` particles; orientation is now chosen at the call site.
+
+**Batch presets** live in `ParticleGroupBuilder.Batches` as composable `Consumer<Batch>` values:
+
+| Preset | Layout |
+|---|---|
+| `impact(count, speed)` | Burst outward from the target's centre |
+| `casting(count, speed)` | Rising swirl around the caster's feet, at double body radius |
+| `travel(count, speed)` | Trailing wake around a projectile, oriented to its flight path |
+| `cloud(count, speed)` | Column rising from within the source's footprint |
+| `shockwave(count, speed, preTravel)` | Expanding ring along the floor |
+| `ground(count)` | Flat on the floor below the source, motionless |
+| `placed(count)` | On the source itself, motionless — auras, explosions |
+| `popUp()` | A sign or icon drifting above the entity's head |
+| `helix(count, speed, degreesPerTick, offset)` | One strand of a spiralling wake — two `180` apart make a double helix |
+| `cone(count, speed, angle)` | Forward in a spread cone |
+
+Presets compose with `andThen`, and anything not covered stays reachable with a plain lambda:
+
+```java
+.batch(Batches.impact(10, 0.3F).andThen(b -> b.extent(0.5F)))
+.batch(b -> b.shape(Shape.SPHERE).count(4).speed(0.1F, 0.4F))
+```
+
+### Entry defaults
+
+Every registered particle carries its own defaults — lifetime, render sheet, base scale, colouring, motion. A builder only sets what you ask for; everything else falls back to the entry. That is what lets one texture serve several roles.
+
+Three fields **multiply** with the entry's value instead of replacing it:
+
+| Field | `scale(2F)` means |
+|---|---|
+| `scale`, `opacity`, `playback_speed` | twice the entry's own size, whatever that is |
+
+Everything else overrides outright. Built-in particles are listed in [`SpellEngineParticles.java`](../common/src/main/java/net/spell_engine/fx/SpellEngineParticles.java).
+
+### `appearance` fields
+
+| Field | Default | Description |
+|---|---|---|
+| `playback_speed` | `1.0` | Scales the whole timeline — lifetime and sprite animation together. `2.5` is a quick flash, `0.5` lingers. Negative runs the sprite sequence backwards |
+| `lifetime_variance` | `0.0` | Random lifetime spread, `0..1`. `0.5` gives each particle a life in `[0.5x, 1.5x]` so a batch thins out instead of vanishing at once |
+| `color` | `-1` | Tint, packed RGBA. `-1` leaves the texture untinted. The alpha component multiplies `opacity` |
+| `color_variance` | `0.0` | Random darkening at spawn, `0..1`. Gives a batch visible internal variation |
+| `opacity` | `1.0` | Peak opacity |
+| `opacity_curve` | none | Fade envelope — see below |
+| `scale` | `1.0` | Size at spawn |
+| `scale_with` | `NONE` | Multiplies `scale` by a magnitude resolved at emit time. `RANGE` = the spell's effective range. Only resolved for effects emitted as part of a `visuals` bundle |
+| `scale_variance` | `0.0` | Random size spread, as a fraction of `scale` |
+| `scale_multiplier` | `1.0` | Size at death, as a multiple of the spawn size. Only read when `scale_easing` is set |
+| `scale_easing` | none | Interpolates `scale` toward `scale * scale_multiplier` over the lifetime |
+| `facing` | entry | `CAMERA`, `GROUND` (flat on the floor), `UPRIGHT` (Y-axis billboard), `VELOCITY` (aligned to travel) |
+| `glow` | entry | Renders at full brightness, ignoring world light |
+| `render` | entry | `OPAQUE`, `TRANSLUCENT`, `LIT` |
+| `motion` | entry | Motion preset — see below |
+| `gravity` | preset | Downward acceleration per tick. Negative values rise |
+| `drag` | preset | Fraction of velocity kept each tick |
+| `collides` | `false` | Collides with blocks instead of passing through |
+| `attachment` | `NONE` | `POSITION` rides the source entity keeping its spawn offset, `POSITION_SCALED` also scales with it, `POSITION_HORIZONTAL` follows horizontally but pins to the ground below (for flat area decals that must ignore the entity's jumps/falls) |
+
+**Motion presets** supply gravity, drag, spawn-velocity shaping and a lifetime factor:
+
+| Motion | Behaviour |
+|---|---|
+| `STATIC` | Keeps its spawn velocity. No gravity, no drag |
+| `FLOAT` | Gentle randomised drift with mild drag |
+| `ASCEND` | Rises steadily against gravity |
+| `DECELERATE` | Strong drag — travels a short distance then halts |
+| `BURST` | Thrown outward hard, then falls. Short-lived |
+| `DRIFT` | Falls while drifting sideways, damping as it settles — snow, ash, embers |
+
+**Opacity curve** is an `Easing.Curve`: ramp up, hold, ramp down. `hold` is the fraction of the lifetime spent at full opacity; whatever is left is split between whichever ramps are set.
+
+```java
+.fadeOut(0.7F, Easing.LINEAR)     // hold 70%, then fade
+.fadeInOut(0.4F, Easing.LINEAR)   // fade in, hold 40%, fade out
+```
+
+```json
+"opacity_curve": { "in": "LINEAR", "out": "LINEAR", "hold": 0.4 }
+```
+
+### `batch` fields
+
+| Field | Default | Description |
+|---|---|---|
+| `count` | `1.0` | Particles per tick. `1`+ is a count per emission; below `1` it is a period — `0.25` emits one every 4th tick. The sub-`1` form needs a tick loop, so it only applies to continuous FX |
+| `chance` | `1.0` | Probability the batch emits at all, `0..1`. Works everywhere, and composes with a fractional `count` |
+| `shape` | `CIRCLE` | Placement and initial velocity pattern — see below |
+| `anchor` | `ENTITY` | `ENTITY`, `GROUND` (first solid block below), `LAUNCH_POINT` (the caster's hand) |
+| `vertical_origin` | `0.5` | Offset from the anchor, in units of the source's height. `0` feet, `0.5` centre, `1` head, `1.5` above |
+| `alignment` | `WORLD` | `LOOK` rotates the whole pattern into the source's aim direction |
+| `min_speed` / `max_speed` | `0.0` | Randomised initial speed range |
+| `angle` | `0.0` | Cone spread in degrees |
+| `extent` | `0.0` | Radial offset added to the source's own radius |
+| `width_factor` | `1.0` | Multiplier on the source's width when placing. `0` makes `extent` absolute; `2` doubles the radius |
+| `pre_travel` | `0.0` | Distance travelled along the spawn direction before appearing |
+| `roll_per_tick` | `0.0` | Degrees the pattern rotates per tick — successive spawns trace a helix |
+| `roll_offset` | `0.0` | Starting angle of `roll_per_tick` |
+| `invert` | `false` | Flips the initial velocity, turning outward patterns inward |
+
+**Shapes:**
+
+| Shape | Placement / velocity |
+|---|---|
+| `NONE` | Exactly on the origin, motionless. For single placed billboards — explosions, ground decals. Ignores speed, `extent` and `pre_travel` |
+| `CIRCLE` | Outward along the horizontal plane |
+| `SPHERE` | Outward in a random 3D direction |
+| `PILLAR` | Upward, from a random point *within* the radius |
+| `PIPE` | Upward, from a random point *on* the radius |
+| `CONE` | Forward, spread by `angle` |
+| `LINE` | Straight forward |
+| `LINE_VERTICAL` | Straight up |
+
+> **Sizing ground decals:** a particle quad spans `±scale`, so it renders **twice** its scale value in blocks. A decal meant to cover a 3-block impact radius wants `scale(radius * 0.5F)`, not `scale(radius)`.
+
+### Vanilla particles
+
+Vanilla and third-party ids (`"minecraft:flame"`, `"crit"`, `"smoke"`) work, but only the `batch` geometry applies — their factories know nothing about our payload, so the entire `appearance` block is ignored. Register an equivalent if you need colouring, scaling or a lifetime change.
+
+### Where particles can appear
+
+A **moment** — something that happens once, at an instant — carries its particles and its
+models together in a single `visuals` bundle (`Fx.Visuals`), with a `sound` field beside it
+where the moment has audio of its own. A **presence** — something ongoing, emitted on a
+schedule — stays a plain particle list.
+
+Moments (`visuals.particles` + `visuals.models`):
+
+| Location | Description |
+|---|---|
+| `release.visuals` | On release, at the caster |
+| `impacts[].visuals` | On each entity an impact lands on |
+| `area_impact.visuals` | On area splash, at the centre |
+| `deliver.melee.attacks[].visuals` | On each melee swing |
+| `deliver.clouds[].spawn.visuals` | When a cloud spawns |
+| `deliver.clouds[].despawn.visuals` | When a cloud begins winding down |
+| `deliver.clouds[].impact.visuals` | On each entity a cloud impacts |
+| `impacts[].action.teleport.depart` / `.arrive` | Pre- and post-teleport position |
+| `impacts[].action.teleport.fizzle.visuals` | Where an aborted teleport leaves the caster |
+| `arrow_perks.launch_visuals` | On the shooter, as an arrow leaves |
+| `target.beam.block_hit` | Where a beam meets a solid block |
+| `impacts[].action.summon.group_spawn_fx` | Once per summoned group, at the group's anchor |
+| `modifiers[].release` | Added to the release of any spell a modifier matches |
+
+Two more live on a summon's behaviour rather than on the spell — see
+[Summons](10-summons.md):
+
+| Location | Description |
+|---|---|
+| `spawn_fx` | Per summoned entity, as it enters the world |
+| `despawn_fx` | Per summoned entity, as it begins winding down |
+
+Presences (plain lists):
 
 | Location | Description |
 |---|---|
 | `active.cast.particles` | During cast |
-| `release.particles` | On release |
-| `impacts[].particles` | On each impact |
-| `area_impact.particles` | On area splash |
-| `deliver.melee.swing.particles` | On each melee swing |
-| `deliver.clouds[].spawn.particles` | When a cloud spawns |
 | `deliver.clouds[].client_data.particles` | Ambient tick particles on cloud |
 | `deliver.clouds[].client_data.interval_particles` | Interval particles on cloud |
 | `deliver.projectile.projectile.client_data.travel_particles` | While projectile is in flight |
-| `impacts[].action.teleport.depart_particles` | At departure location |
-| `impacts[].action.teleport.arrive_particles` | At arrival location |
+| `arrow_perks.travel_particles` | While an affected arrow is in flight |
+| `existence_particles[].particles` | On a summon's behaviour, per interval while it lives |
+
+### Sizing an effect by the spell's range
+
+An effect can declare that its size follows a magnitude only known where it is emitted,
+rather than being a fixed number:
+
+```java
+ParticleGroupBuilder.of(SpellEngineParticles.area_swirl)
+        .scaleWith(Fx.ScaleWith.RANGE)
+        .batch(Batches.placed(1));
+```
+
+The authored `scale` stays a **coefficient** — `scale(0.5F)` with `RANGE` draws at half the
+spell's range — so leaving it at its default means "exactly the range".
+
+Because the declaration sits on the individual effect, a bundle freely mixes scaled and
+unscaled effects; they are emitted together, and only the ones that ask to be scaled are
+copied. `RANGE` resolves the caster's *effective* reach (melee range mechanic and range
+modifiers included), and is bound at release. Sites anchored on a target do not bind it —
+the caster's range says nothing about how big an effect on a distant target should be — so
+an effect asking for it there keeps its authored size and logs a one-time warning.
+
+### Example — frost impact
+
+```java
+impact.visuals = Fx.Visuals.of(
+        ParticleGroupBuilder.magic(SpellEngineParticles.magic_frost, Motion.BURST)
+                .color(Color.FROST)
+                .batch(Batches.impact(15, 0.4F)),
+        ParticleGroupBuilder.zone(SpellEngineParticles.area_effect_474)
+                .scale(radius * 0.5F)
+                .color(Color.FROST)
+                .batch(Batches.ground(1)));
+```
+
+A short-lived burst of frost shards thrown outward from the target, over a motionless decal lying flat on the floor and sized to match the damage radius.
 
 ## Model FX
 
@@ -95,6 +292,7 @@ Spell Engine discovers and registers these automatically. No Java registration i
 | `model_id` | — | Fully qualified model identifier |
 | `light_emission` | `GLOW` | `NONE` (standard), `GLOW` (beacon beam shader), `RADIATE` (emissive) |
 | `scale` | `1.0` | Base scale of the model |
+| `scale_with` | `NONE` | Multiplies `scale` by a magnitude resolved at emit time — `RANGE` for the spell's effective range |
 | `duration` | `20` | Lifetime in ticks |
 | `positioning` | `CENTER` | `CENTER`, `FEET`, `GROUND` — where the entity anchors |
 
@@ -129,23 +327,25 @@ All functions from [easings.net](https://easings.net) are supported, using the s
 ### Example — spike rising from the ground
 
 ```json
-"model_fx": [
-  {
-    "model_id": "mymod:spell_effect/ground_spike",
-    "light_emission": "GLOW",
-    "duration": 30,
-    "initial": [
-      { "operation": "translate", "y": -1.0 },
-      { "operation": "scale", "x": -1.0, "y": -1.0, "z": -1.0 }
-    ],
-    "animations": [
-      { "operation": "scale",     "start": 0,  "end": 10, "x": 1.0, "y": 1.0, "z": 1.0, "easing": "EASE_OUT_CUBIC" },
-      { "operation": "translate", "start": 0,  "end": 10, "y": 1.0,            "easing": "EASE_OUT_CUBIC" },
-      { "operation": "scale",     "start": 20, "end": 30, "x": -1.0, "y": -1.0, "z": -1.0, "easing": "EASE_IN_CUBIC" },
-      { "operation": "translate", "start": 20, "end": 30, "y": -1.0,            "easing": "EASE_IN_CUBIC" }
-    ]
-  }
-]
+"visuals": {
+  "models": [
+    {
+      "model_id": "mymod:spell_effect/ground_spike",
+      "light_emission": "GLOW",
+      "duration": 30,
+      "initial": [
+        { "operation": "translate", "y": -1.0 },
+        { "operation": "scale", "x": -1.0, "y": -1.0, "z": -1.0 }
+      ],
+      "animations": [
+        { "operation": "scale",     "start": 0,  "end": 10, "x": 1.0, "y": 1.0, "z": 1.0, "easing": "EASE_OUT_CUBIC" },
+        { "operation": "translate", "start": 0,  "end": 10, "y": 1.0,            "easing": "EASE_OUT_CUBIC" },
+        { "operation": "scale",     "start": 20, "end": 30, "x": -1.0, "y": -1.0, "z": -1.0, "easing": "EASE_IN_CUBIC" },
+        { "operation": "translate", "start": 20, "end": 30, "y": -1.0,            "easing": "EASE_IN_CUBIC" }
+      ]
+    }
+  ]
+}
 ```
 
 **How it works:** the initial state places the model one block underground at scale 0. Over ticks 0–10 it rises to the surface and scales up to full size. It holds from ticks 10–20, then sinks back underground over ticks 20–30.
@@ -154,17 +354,21 @@ All functions from [easings.net](https://easings.net) are supported, using the s
 
 ### Attachment points
 
-`model_fx` is supported at the following locations:
+Models live in the same `visuals` bundle as particles — under `visuals.models`, at every
+location listed in [Where particles can appear](#where-particles-can-appear):
 
 | Location | Spawned at |
 |---|---|
-| `release.model_fx` | Caster position |
-| `impacts[].model_fx` | Target position |
-| `area_impact.model_fx` | Area center |
-| `deliver.melee.swing.model_fx` | Caster position |
-| `deliver.clouds[].spawn.model_fx` | Cloud spawn position |
-| `impacts[].action.teleport.depart_model_fx` | Pre-teleport position |
-| `impacts[].action.teleport.arrive_model_fx` | Post-teleport position |
+| `release.visuals.models` | Caster position |
+| `impacts[].visuals.models` | Target position |
+| `area_impact.visuals.models` | Area center |
+| `deliver.melee.attacks[].visuals.models` | Caster position |
+| `deliver.clouds[].spawn.visuals.models` | Cloud spawn position |
+| `impacts[].action.teleport.depart.models` | Pre-teleport position |
+| `impacts[].action.teleport.arrive.models` | Post-teleport position |
+
+A model can size itself by the spell's range in the same way a particle does — set
+`scale_with` to `RANGE`, and its authored `scale` becomes the coefficient.
 
 ### Custom operations
 
@@ -234,7 +438,6 @@ The same structure drives custom arrow visuals via `arrow_perks.composite_model`
 
 Dynamic lighting (`client_data.light_level` field) requires the LambDynamicLights mod.
 
-> **Deprecated:** the legacy single-model fields `deliver.projectile.projectile.client_data.model` and `arrow_perks.override_render` are superseded by `composite_model` and slated for removal. Migrate to `composite_model` with a single `models` entry (`rotate_degrees_per_tick` defaults to `2`, matching the old default, so behaviour is unchanged).
 
 ## Spell Effect Models
 

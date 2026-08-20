@@ -9,12 +9,11 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.utils.SoundHelper;
@@ -22,6 +21,8 @@ import net.spell_engine.utils.SoundPlayerWorld;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
+import net.spell_engine.internals.SpellExecution;
+import net.spell_engine.internals.impact.SpellImpacts;
 
 public class SpellCloud extends Entity implements Ownable {
     public static EntityType<SpellCloud> ENTITY_TYPE;
@@ -41,7 +42,10 @@ public class SpellCloud extends Entity implements Ownable {
     private int impactCap = 0;
     private Identifier spellId;
     private int dataIndex = 0;
-    private SpellHelper.ImpactContext context;
+    private SpellExecution.ImpactContext context;
+    /// Cloud-targeting spell modifiers (radius / growth) summed at spawn. Persisted as one small compound
+    /// so a mid-life reload keeps the bonus — the caster's modifiers aren't re-derivable from the entity.
+    private Spell.Modifier.Cloud cloudModifier = new Spell.Modifier.Cloud();
 
     // MARK: Lifecycle phases
 
@@ -62,9 +66,10 @@ public class SpellCloud extends Entity implements Ownable {
         this.noClip = true;
     }
 
-    public void onCreatedFromSpell(Identifier spellId, Spell.Delivery.Cloud cloudData, SpellHelper.ImpactContext context, float time_to_live_seconds) {
+    public void onCreatedFromSpell(Identifier spellId, Spell.Delivery.Cloud cloudData, SpellExecution.ImpactContext context, float time_to_live_seconds, Spell.Modifier.Cloud cloudModifier) {
         this.spellId = spellId;
         this.context = context;
+        this.cloudModifier = cloudModifier;
 
         var spellEntry = getSpellEntry();
         if (spellEntry != null) {
@@ -78,7 +83,7 @@ public class SpellCloud extends Entity implements Ownable {
         }
         this.getDataTracker().set(SPELL_ID_TRACKER, this.spellId.toString());
         this.getDataTracker().set(DATA_INDEX_TRACKER, this.dataIndex);
-        this.getDataTracker().set(RADIUS_TRACKER, calculateRadius());
+        this.getDataTracker().set(RADIUS_TRACKER, radiusForAge(this.age));
 
         // Carve the lifetime into spawning / active / despawning, like a summoned entity.
         // `time_to_live_seconds` is the ACTIVE duration; spawn/despawn bracket it.
@@ -128,7 +133,7 @@ public class SpellCloud extends Entity implements Ownable {
             // Fire the wind-down FX exactly on the ACTIVE -> DESPAWNING transition. This is the sole
             // server-side choke point for phase changes (both the age-based expiry in `tick()` and
             // `beginDespawn()` route through here), and the tracker guard makes it run once. Mirrors the
-            // spawn FX in SpellHelper.spawnClouds. `despawn_ticks == 0` clouds discard before reaching
+            // spawn FX in CloudPlacer.placeCloud. `despawn_ticks == 0` clouds discard before reaching
             // DESPAWNING, so they get no wind-down FX by design.
             if (phase == PHASE_DESPAWNING) {
                 playDespawnFX();
@@ -155,6 +160,24 @@ public class SpellCloud extends Entity implements Ownable {
     public final AnimationState idleAnimationState    = new AnimationState();
     public final AnimationState despawnAnimationState = new AnimationState();
 
+    // Client-side render basis for all size interpolation. RADIUS_TRACKER is the single source of truth
+    // for the cloud's true radius (base + power + modifiers + growth — whatever the source); these
+    // snapshot it each tick so the renderer can lerp across `tickDelta`. `spawnRenderRadius` is the
+    // scale-1.0 reference (first observed radius), so any later change scales the model identically no
+    // matter where it came from.
+    private float spawnRenderRadius = -1F;
+    private float prevRenderRadius = -1F;
+    private float renderRadius = -1F;
+
+    /// Client-side model scale, interpolated within the tick so a growing cloud animates smoothly. Derived
+    /// solely from the synced radius relative to the spawn radius, so it is 1.0 for any cloud whose radius
+    /// never changes and scales identically whether the growth is configured on the spell or added by a
+    /// modifier.
+    public float getRenderScale(float tickDelta) {
+        if (spawnRenderRadius <= 0F) return 1F;
+        return net.minecraft.util.math.MathHelper.lerp(tickDelta, prevRenderRadius, renderRadius) / spawnRenderRadius;
+    }
+
     /// Client-side: keeps the three lifecycle animation states in sync with the current phase.
     private void setupAnimationStates() {
         spawnAnimationState.setRunning(isSpawning(), this.age);
@@ -171,7 +194,7 @@ public class SpellCloud extends Entity implements Ownable {
     }
 
     /// Server-side: emit the cloud's configured despawn FX (sound, particles, model effects), broadcast
-    /// to nearby clients. Symmetrical with the spawn FX in `SpellHelper.spawnClouds`.
+    /// to nearby clients. Symmetrical with the spawn FX in `CloudPlacer.placeCloud`.
     private void playDespawnFX() {
         var cloudData = getCloudData();
         if (cloudData == null) {
@@ -181,23 +204,65 @@ public class SpellCloud extends Entity implements Ownable {
         if (despawn.sound != null) {
             SoundHelper.playSound(getWorld(), this, despawn.sound);
         }
-        if (despawn.particles != null) {
-            ParticleHelper.sendBatches(this, despawn.particles);
-        }
-        ModelEffectHelper.spawn(getWorld(), this.getPos(), this.getYaw(), despawn.model_fx, null);
+        var despawnVisuals = despawn.visuals.resolved(Fx.Context.NONE);
+        ParticleHelper.sendBatches(this, despawnVisuals.particles);
+        ModelEffectHelper.spawn(getWorld(), this.getPos(), this.getYaw(), despawnVisuals.models, null);
     }
 
-    private float calculateRadius() {
+    /// The cloud's radius before any lifetime growth: the configured base plus power scaling, plus the
+    /// summed `radius_add` from cloud-targeting spell modifiers.
+    private float baseRadius() {
         var cloudData = getCloudData();
         if (cloudData != null) {
             var radius = cloudData.volume.radius;
             if (context != null) {
                 radius = cloudData.volume.combinedRadius(context.power().baseValue());
             }
-            return radius;
+            return Math.max(radius + cloudModifier.radius_add, 0F);
         } else {
             return 0F;
         }
+    }
+
+    /// The effective radius at a given age, applying `growth` on top of `baseRadius()`. A pure function
+    /// of age (base is age-independent), so it needs no extra synced/persisted state and stays consistent
+    /// across an NBT round-trip.
+    ///
+    /// Growth combines the cloud's own `growth` with the summed modifier contribution: magnitudes
+    /// (`radius_step`, `duration_ticks`) sum, so modifiers stack and can attach growth to a bare cloud;
+    /// timing (`step_interval`, `start_tick`) comes from the cloud when it already grows, otherwise from
+    /// the modifier. Growth is off unless the effective `radius_step` and `duration_ticks` are both
+    /// non-zero; a negative `duration_ticks` (on either side) means "whole life". Floored at 0 so
+    /// shrinking can't go negative.
+    private float radiusForAge(int age) {
+        var base = baseRadius();
+        var cloudData = getCloudData();
+        if (cloudData == null) {
+            return base;
+        }
+        var growth = cloudData.growth;
+        var mod = cloudModifier.growth;
+        boolean baseGrows = growth != null && growth.radius_step != 0F && growth.duration_ticks != 0;
+
+        float step = (growth != null ? growth.radius_step : 0F) + mod.radius_step;
+        int baseDuration = growth != null ? growth.duration_ticks : 0;
+        // A negative duration on either side is the "whole life" sentinel — it wins over any summed span.
+        int duration = (baseDuration < 0 || mod.duration_ticks < 0) ? -1 : baseDuration + mod.duration_ticks;
+        int interval = baseGrows ? growth.step_interval : mod.step_interval;
+        int startTick = baseGrows ? growth.start_tick : mod.start_tick;
+
+        if (step == 0F || duration == 0 || interval <= 0) {
+            return base;
+        }
+        int elapsed = age - startTick;
+        if (elapsed <= 0) {
+            return base;
+        }
+        if (duration > 0) {
+            elapsed = Math.min(elapsed, duration);
+        }
+        int steps = elapsed / interval;
+        return Math.max(base + steps * step, 0F);
     }
 
     public EntityDimensions getDimensions(EntityPose pose) {
@@ -267,7 +332,8 @@ public class SpellCloud extends Entity implements Ownable {
         SPAWN_DURATION("SpawnDuration"),
         DESPAWN_DURATION("DespawnDuration"),
         SPELL_ID("SpellId"),
-        DATA_INDEX("DataIndex")
+        DATA_INDEX("DataIndex"),
+        CLOUD_MODIFIER("CloudMod")
         ;
 
         public final String key;
@@ -284,6 +350,16 @@ public class SpellCloud extends Entity implements Ownable {
         this.despawnDuration = nbt.getInt(NBTKey.DESPAWN_DURATION.key);
         this.spellId = Identifier.of(nbt.getString(NBTKey.SPELL_ID.key));
         this.dataIndex = nbt.getInt(NBTKey.DATA_INDEX.key);
+        if (nbt.contains(NBTKey.CLOUD_MODIFIER.key)) {
+            var cm = nbt.getCompound(NBTKey.CLOUD_MODIFIER.key);
+            var modifier = new Spell.Modifier.Cloud();
+            modifier.radius_add = cm.getFloat("RadiusAdd");
+            modifier.growth.radius_step = cm.getFloat("GrowthStep");
+            modifier.growth.step_interval = cm.getInt("GrowthInterval");
+            modifier.growth.start_tick = cm.getInt("GrowthStart");
+            modifier.growth.duration_ticks = cm.getInt("GrowthDuration");
+            this.cloudModifier = modifier;
+        }
     }
 
     @Override
@@ -294,6 +370,13 @@ public class SpellCloud extends Entity implements Ownable {
         nbt.putInt(NBTKey.DESPAWN_DURATION.key, this.despawnDuration);
         nbt.putString(NBTKey.SPELL_ID.key, this.spellId.toString());
         nbt.putInt(NBTKey.DATA_INDEX.key, this.dataIndex);
+        var cm = new NbtCompound();
+        cm.putFloat("RadiusAdd", cloudModifier.radius_add);
+        cm.putFloat("GrowthStep", cloudModifier.growth.radius_step);
+        cm.putInt("GrowthInterval", cloudModifier.growth.step_interval);
+        cm.putInt("GrowthStart", cloudModifier.growth.start_tick);
+        cm.putInt("GrowthDuration", cloudModifier.growth.duration_ticks);
+        nbt.put(NBTKey.CLOUD_MODIFIER.key, cm);
     }
 
     // MARK: Behavior
@@ -314,6 +397,13 @@ public class SpellCloud extends Entity implements Ownable {
         var world = this.getWorld();
         if (world.isClient) {
             // Client side tick
+            float trackedRadius = getDataTracker().get(RADIUS_TRACKER);
+            if (spawnRenderRadius < 0F) {
+                spawnRenderRadius = prevRenderRadius = renderRadius = trackedRadius;
+            } else {
+                prevRenderRadius = renderRadius;
+                renderRadius = trackedRadius;
+            }
             setupAnimationStates();
             var clientData = cloudData.client_data;
             var spawnParticles = clientData.particle_spawn_interval <= 1 || (this.age % clientData.particle_spawn_interval) == 0;
@@ -356,6 +446,14 @@ public class SpellCloud extends Entity implements Ownable {
                 phase = PHASE_ACTIVE;
             }
             setPhase(phase);
+            // Lifetime growth: recompute the radius from the current age and republish it only when it
+            // actually changes (i.e. on a growth-step boundary), so rendering/collision follow and sync
+            // traffic stays minimal. `radiusForAge` is a no-op unless `growth` is configured.
+            float grownRadius = radiusForAge(this.age);
+            if (grownRadius != getDataTracker().get(RADIUS_TRACKER)) {
+                getDataTracker().set(RADIUS_TRACKER, grownRadius);
+                calculateDimensions();
+            }
             if (phase == PHASE_ACTIVE && (this.age % cloudData.impact_tick_interval) == 0) {
                 // Impact tick due
                 var area_impact = cloudData.volume;
@@ -365,10 +463,10 @@ public class SpellCloud extends Entity implements Ownable {
                     var spell = spellEntry.value();
                     var context = this.context;
                     if (context == null) {
-                        context = new SpellHelper.ImpactContext();
+                        context = new SpellExecution.ImpactContext();
                     }
-                    var performed = SpellHelper.lookupAndPerformAreaImpact(area_impact, spellEntry, owner,null,
-                            this, spell.impacts, context.position(this.getPos()), true);
+                    var performed = SpellImpacts.lookupAndPerformAreaImpact(area_impact, spellEntry, owner,null,
+                            this, spell.impacts, context.position(this.getPos()), true, grownRadius);
                     if (performed) {
                         onImpactPerformed(owner, world, cloudData, context);
                         if (this.impactCap > 0 && this.impactsPerformed >= this.impactCap) {
@@ -386,16 +484,16 @@ public class SpellCloud extends Entity implements Ownable {
         }
     }
 
-    protected void onImpactPerformed(LivingEntity owner, World world, Spell.Delivery.Cloud cloudData, SpellHelper.ImpactContext context) {
+    protected void onImpactPerformed(LivingEntity owner, World world, Spell.Delivery.Cloud cloudData, SpellExecution.ImpactContext context) {
         // Server-side call site: `ParticleHelper.play` bottoms out in `World.addParticle`, which is an
         // empty method on anything but ClientWorld — it has to be broadcast instead. Detached (rather
         // than entity-anchored) because a cloud whose `despawn_ticks` is 0 is discarded on this very
         // tick, and the client would resolve the packet's entity id to nothing.
-        ParticleHelper.sendBatchesDetached(this, cloudData.impact_particles);
+        ParticleHelper.sendBatchesDetached(this, cloudData.impact.resolved(Fx.Context.NONE).particles);
         this.impactsPerformed++;
     }
 
-    protected void onImpactFailed(LivingEntity owner, World world, Spell.Delivery.Cloud cloudData, SpellHelper.ImpactContext context) {
+    protected void onImpactFailed(LivingEntity owner, World world, Spell.Delivery.Cloud cloudData, SpellExecution.ImpactContext context) {
         // No-op by default; override in subclasses to handle failed impacts (e.g. play a sound).
     }
 

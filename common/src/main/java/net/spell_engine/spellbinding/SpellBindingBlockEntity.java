@@ -1,6 +1,5 @@
 package net.spell_engine.spellbinding;
 
-import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -12,7 +11,8 @@ import net.minecraft.world.World;
 
 // Copied from EnchantingTableBlockEntity
 public class SpellBindingBlockEntity extends BlockEntity {
-    public static BlockEntityType<SpellBindingBlockEntity> ENTITY_TYPE = FabricBlockEntityTypeBuilder.create(SpellBindingBlockEntity::new, SpellBindingBlock.INSTANCE).build();
+    // Vanilla BlockEntityType.Builder (loader-neutral); build(null) skips the datafixer type, as FabricBlockEntityTypeBuilder.build() did.
+    public static BlockEntityType<SpellBindingBlockEntity> ENTITY_TYPE = BlockEntityType.Builder.create(SpellBindingBlockEntity::new, SpellBindingBlock.INSTANCE).build(null);
 
     public int ticks;
     public float nextPageAngle;

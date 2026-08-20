@@ -3,13 +3,12 @@ package net.spell_engine;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
-import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.client.resource.language.I18n;
-import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnGroup;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -30,12 +29,12 @@ import net.tiny_config.ConfigManager;
 import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellModelEffect;
 import net.spell_engine.entity.SpellProjectile;
-import net.spell_engine.internals.SpellEngineCommands;
+import net.spell_engine.misc.SpellEngineCommands;
 import net.spell_engine.internals.SpellTriggers;
 import net.spell_engine.internals.container.SpellAssignments;
 import net.spell_engine.internals.container.SpellContainerSource;
-import net.spell_engine.internals.criteria.EnchantmentSpecificCriteria;
-import net.spell_engine.internals.criteria.SpellCastCriteria;
+import net.spell_engine.misc.criteria.EnchantmentSpecificCriteria;
+import net.spell_engine.misc.criteria.SpellCastCriteria;
 import net.spell_engine.internals.delivery.SpellStashHelper;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.rpg_series.RPGSeriesCore;
@@ -80,10 +79,9 @@ public class SpellEngineMod {
         weaknessConfig.refresh();
         fallbackConfig.refresh();
 
-        DynamicRegistries.registerSynced(SpellRegistry.KEY, SpellRegistry.LOCAL_CODEC, SpellRegistry.NETWORK_CODEC_V2);
+        Platform.util().registerSyncedDataRegistry(SpellRegistry.KEY, SpellRegistry.LOCAL_CODEC, SpellRegistry.NETWORK_CODEC_V2);
 
         SpellAssignments.init();
-        ServerNetwork.init();
 
         SpellEvents.SPELL_CAST.register(args -> {
             SpellCastCriteria.INSTANCE.trigger((ServerPlayerEntity) args.caster(), args.spell());
@@ -100,23 +98,30 @@ public class SpellEngineMod {
 
         SpellEngineCommands.register();
 
-        ServerLivingEntityEvents.ALLOW_DAMAGE.register((entity, source, amount) -> {
-            var attacker = source.getAttacker();
-            if (amount > 0 && attacker != null) {
-                var effectChanges = new ArrayList<StatusEffectUtil.Diff>();
-                for (var instance : entity.getStatusEffects()) {
-                    var effect = instance.getEffectType();
-                    var remove = RemoveOnHit.removeCount(entity.getWorld(), effect.value(), source);
-                    if (remove > 0) {
-                        effectChanges.add(new StatusEffectUtil.Diff(instance, instance.getAmplifier() - remove));
-                    } else if (remove < 0) {
-                        effectChanges.add(new StatusEffectUtil.Diff(instance, -1));
-                    }
+        PlatformEvents.onIncomingDamage(SpellEngineMod::onIncomingDamage);
+        // Re-sync spell cooldowns and containers when a player joins or changes dimension.
+        PlatformEvents.onPlayerJoin(ServerNetwork::onPlayerConnectOrChangeWorld);
+        PlatformEvents.onPlayerChangedWorld(ServerNetwork::onPlayerConnectOrChangeWorld);
+    }
+
+    /// Damage-incoming hook (side effect only, never denies damage): strips RemoveOnHit status
+    /// effects from the victim. Wired to `ServerLivingEntityEvents.ALLOW_DAMAGE` on Fabric and to
+    /// `LivingIncomingDamageEvent` on NeoForge.
+    public static void onIncomingDamage(LivingEntity entity, DamageSource source, float amount) {
+        var attacker = source.getAttacker();
+        if (amount > 0 && attacker != null) {
+            var effectChanges = new ArrayList<StatusEffectUtil.Diff>();
+            for (var instance : entity.getStatusEffects()) {
+                var effect = instance.getEffectType();
+                var remove = RemoveOnHit.removeCount(entity.getWorld(), effect.value(), source);
+                if (remove > 0) {
+                    effectChanges.add(new StatusEffectUtil.Diff(instance, instance.getAmplifier() - remove));
+                } else if (remove < 0) {
+                    effectChanges.add(new StatusEffectUtil.Diff(instance, -1));
                 }
-                StatusEffectUtil.applyChanges(entity, effectChanges);
             }
-            return true;
-        });
+            StatusEffectUtil.applyChanges(entity, effectChanges);
+        }
     }
 
     public static void registerSpellBinding() {
@@ -128,35 +133,38 @@ public class SpellEngineMod {
     }
 
     public static void registerEntityTypes() {
+        // Vanilla EntityType.Builder (loader-neutral) replaces FabricEntityTypeBuilder.
+        // Note: vanilla `dimensions(w, h)` produces "changing" dimensions; the former `fixed(...)`
+        // is a no-op difference for these never-scaled entities.
         SpellProjectile.ENTITY_TYPE = Registry.register(
                 Registries.ENTITY_TYPE,
                 Identifier.of(SpellEngineMod.ID, "spell_projectile"),
-                FabricEntityTypeBuilder.<SpellProjectile>create(SpawnGroup.MISC, SpellProjectile::new)
-                        .dimensions(EntityDimensions.fixed(0.25F, 0.25F)) // dimensions in Minecraft units of the render
-                        .fireImmune()
-                        .trackRangeBlocks(128)
-                        .trackedUpdateRate(2)
-                        .build()
+                EntityType.Builder.<SpellProjectile>create(SpellProjectile::new, SpawnGroup.MISC)
+                        .dimensions(0.25F, 0.25F) // dimensions in Minecraft units of the render
+                        .makeFireImmune()
+                        .maxTrackingRange(128)
+                        .trackingTickInterval(2)
+                        .build("spell_projectile")
         );
         SpellCloud.ENTITY_TYPE = Registry.register(
                 Registries.ENTITY_TYPE,
                 Identifier.of(SpellEngineMod.ID, "spell_area_effect"),
-                FabricEntityTypeBuilder.<SpellCloud>create(SpawnGroup.MISC, SpellCloud::new)
-                        .dimensions(EntityDimensions.changing(6F, 0.5F)) // dimensions in Minecraft units of the render
-                        .fireImmune()
-                        .trackRangeBlocks(128)
-                        .trackedUpdateRate(20)
-                        .build()
+                EntityType.Builder.<SpellCloud>create(SpellCloud::new, SpawnGroup.MISC)
+                        .dimensions(6F, 0.5F) // dimensions in Minecraft units of the render
+                        .makeFireImmune()
+                        .maxTrackingRange(128)
+                        .trackingTickInterval(20)
+                        .build("spell_area_effect")
         );
         SpellModelEffect.ENTITY_TYPE = Registry.register(
                 Registries.ENTITY_TYPE,
                 Identifier.of(SpellEngineMod.ID, "spell_model_effect"),
-                FabricEntityTypeBuilder.<SpellModelEffect>create(SpawnGroup.MISC, SpellModelEffect::new)
-                        .dimensions(EntityDimensions.fixed(0.5F, 0.5F))
-                        .fireImmune()
-                        .trackRangeBlocks(128)
-                        .trackedUpdateRate(20)
-                        .build()
+                EntityType.Builder.<SpellModelEffect>create(SpellModelEffect::new, SpawnGroup.MISC)
+                        .dimensions(0.5F, 0.5F)
+                        .makeFireImmune()
+                        .maxTrackingRange(128)
+                        .trackingTickInterval(20)
+                        .build("spell_model_effect")
         );
     }
 

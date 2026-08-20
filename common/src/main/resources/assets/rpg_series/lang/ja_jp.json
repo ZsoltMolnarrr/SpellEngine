@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "回転攻撃を繰り出し、周囲の敵に{damage}のダメージを与える。",
+  "spell.rpg_series.cleave.name": "薙ぎ払い",
+  "spell.rpg_series.fan_of_knives.description": "複数の刃を扇状に投げつけ、{damage}のダメージを与える。地形に当たって最大{bounce}回跳ね返る。",
+  "spell.rpg_series.fan_of_knives.name": "ナイフ乱舞",
+  "spell.rpg_series.flurry.description": "長押しで素早い連続攻撃を繰り出し、同時に勢いを得る。",
+  "spell.rpg_series.flurry.name": "乱撃",
+  "spell.rpg_series.ground_slam.description": "空中に飛び上がり地面に叩きつけ、周囲の敵に{damage}のダメージを与える。",
+  "spell.rpg_series.ground_slam.name": "地砕き",
+  "spell.rpg_series.impale.description": "武器を前方に投げつけ、{damage}のダメージと強力なノックバックを与える。チャージ時間が長いほど威力と飛距離が増す。",
+  "spell.rpg_series.impale.name": "串刺し",
+  "spell.rpg_series.smash.description": "強力なノックバックを伴う一撃を放ち、対象の盾とアイテムの使用を封じる。",
+  "spell.rpg_series.smash.name": "粉砕",
+  "spell.rpg_series.swift_strikes.description": "素早い連続攻撃を繰り出す。",
+  "spell.rpg_series.swift_strikes.name": "疾風連撃",
+  "spell.rpg_series.swipe.description": "武器を構えて前方に滑り込み、通り道上のすべての敵を攻撃する。",
+  "spell.rpg_series.swipe.name": "掃き払い",
+  "spell.rpg_series.thrust.description": "武器を構えて前方に突進し、通り道上のすべての敵を攻撃する。",
+  "spell.rpg_series.thrust.name": "突き",
+  "spell.rpg_series.whirlwind.description": "長押しで回転し、周囲の敵に毎秒{damage}のダメージを与える。",
+  "spell.rpg_series.whirlwind.name": "旋風"
+}

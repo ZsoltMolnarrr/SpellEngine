@@ -122,10 +122,7 @@ the `{damage}` range widens downward to the weakest allowed release automaticall
 | `movement_speed` | float | `0.2` | Movement speed multiplier while casting |
 | `start_sound` | Sound | `null` | Played once at cast start |
 | `sound` | Sound | `null` | Looped during cast |
-| `particles` | array | `[]` | Particles emitted during cast |
-
-> **Deprecated:** the flat `channel_ticks` / `channeled_release_fx` fields still work (they take
-> priority when set, for backward compatibility) but are superseded by `type: CHANNEL` + `channel`.
+| `particles` | array | `[]` | Particles emitted during cast — see [Particles](09-visuals-and-audio.md#particles) |
 
 ## Building in Java
 
@@ -148,7 +145,7 @@ The `release` block controls what happens when the spell fires (after cast finis
 "release": {
   "animation": { "id": "spell_engine:one_handed_projectile_release" },
   "sound": { "id": "spell_engine:generic_cast_1" },
-  "particles": [ { ... } ]
+  "visuals": { "particles": [ { ... } ], "models": [ { ... } ] }
 }
 ```
 

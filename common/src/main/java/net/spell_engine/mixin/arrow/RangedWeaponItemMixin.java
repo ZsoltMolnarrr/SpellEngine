@@ -1,9 +1,9 @@
 package net.spell_engine.mixin.arrow;
+import net.spell_engine.Platform;
 
 import com.google.common.base.Suppliers;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
@@ -11,10 +11,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.world.World;
 import net.spell_engine.internals.SpellTriggers;
-import net.spell_engine.internals.arrow.ArrowExtension;
-import net.spell_engine.internals.arrow.ArrowHelper;
-import net.spell_engine.internals.arrow.ArrowShootContext;
-import net.spell_engine.internals.casting.SpellCasterEntity;
+import net.spell_engine.internals.delivery.arrow.ArrowExtension;
+import net.spell_engine.internals.delivery.arrow.ArrowHelper;
+import net.spell_engine.internals.delivery.arrow.ArrowShootContext;
+import net.spell_engine.internals.casting.SpellCaster;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -28,7 +28,7 @@ public class RangedWeaponItemMixin {
         var projectile = original.call(instance, world, shooter, weaponStack, projectileStack, critical);
         if (shooter instanceof PlayerEntity player
                 && projectile instanceof ArrowExtension arrow) {
-            var caster = (SpellCasterEntity) player;
+            var caster = (SpellCaster.Player) player;
             var shotContext = caster.getArrowShootContext();
 
             // First run triggers to enable modifying the arrow by passive spells
@@ -39,7 +39,7 @@ public class RangedWeaponItemMixin {
 
             // Apply arrow modification
 
-            var trackers = Suppliers.memoize(() -> PlayerLookup.tracking(shooter));
+            var trackers = Suppliers.memoize(() -> Platform.tracking(shooter));
             for (var spellEntry: shotContext.activeSpells) {
                 ArrowHelper.onArrowShot(arrow, shooter, spellEntry, trackers);
             }

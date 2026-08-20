@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Realiza um ataque giratório, causando {damage} de dano aos inimigos próximos.",
+  "spell.rpg_series.cleave.name": "Fenda",
+  "spell.rpg_series.fan_of_knives.description": "Arremessa várias das suas lâminas em cone, causando {damage} de dano, ricocheteando no terreno até {bounce} vezes.",
+  "spell.rpg_series.fan_of_knives.name": "Leque de Facas",
+  "spell.rpg_series.flurry.description": "Segure para desencadear uma rápida sequência de golpes, enquanto também ganha impulso.",
+  "spell.rpg_series.flurry.name": "Rajada",
+  "spell.rpg_series.ground_slam.description": "Salta no ar e se choca contra o chão, causando {damage} de dano aos inimigos próximos.",
+  "spell.rpg_series.ground_slam.name": "Pancada no Chão",
+  "spell.rpg_series.impale.description": "Arremessa sua arma para frente, causando {damage} de dano e uma forte repulsão. Quanto mais tempo o arremesso for carregado, mais forte ele acerta e mais longe voa.",
+  "spell.rpg_series.impale.name": "Empalar",
+  "spell.rpg_series.smash.description": "Desfere um golpe com forte repulsão, desativando o uso de escudo e itens do alvo.",
+  "spell.rpg_series.smash.name": "Esmagar",
+  "spell.rpg_series.swift_strikes.description": "Desencadeia uma rápida sequência de golpes.",
+  "spell.rpg_series.swift_strikes.name": "Golpes Ágeis",
+  "spell.rpg_series.swipe.description": "Deslize para frente com sua arma, atingindo todos os inimigos em seu caminho.",
+  "spell.rpg_series.swipe.name": "Deslize",
+  "spell.rpg_series.thrust.description": "Avance com sua arma, atingindo todos os inimigos em seu caminho.",
+  "spell.rpg_series.thrust.name": "Estocada",
+  "spell.rpg_series.whirlwind.description": "Segure para girar ao redor, causando {damage} de dano por segundo aos inimigos próximos.",
+  "spell.rpg_series.whirlwind.name": "Redemoinho"
+}

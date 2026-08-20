@@ -1,12 +1,13 @@
 package net.spell_engine.api.spell.summon;
 
 import com.google.gson.Gson;
-import net.spell_engine.api.spell.fx.ParticleBatch;
+import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.api.spell.fx.Sound;
-import net.spell_engine.api.spell.fx.VFX;
+import net.spell_engine.api.spell.fx.Fx;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import net.spell_engine.internals.SpellParameters;
 
 public class SummonBehaviour {
 
@@ -49,11 +50,11 @@ public class SummonBehaviour {
 
     /// One-shot FX emitted server-side when this individual summon enters the world (on its first
     /// tick, alongside the spawn sound). Null = none.
-    @Nullable public VFX spawn_fx = null;
+    @Nullable public Fx.Visuals spawn_fx = null;
 
     /// One-shot FX emitted server-side when this individual summon enters its despawn phase
     /// (alongside the despawn sound). Null = none.
-    @Nullable public VFX despawn_fx = null;
+    @Nullable public Fx.Visuals despawn_fx = null;
 
     // --- Existence FX ---
 
@@ -63,7 +64,7 @@ public class SummonBehaviour {
     /// mirroring SpellCloud's `client_data` particles.
     public List<ExistenceParticles> existence_particles = List.of();
     public static class ExistenceParticles {
-        public ParticleBatch[] particles = new ParticleBatch[]{};
+        public List<ParticleGroup> particles = List.of();
         /// Emit every N ticks of entity age (1 = every tick). Values <= 0 disable this entry.
         public int interval_ticks = 20;
         /// Tick offset within the interval, so multiple entries can be phase-shifted.
@@ -363,7 +364,7 @@ public class SummonBehaviour {
 
             /// Engagement-distance configuration for a SpellCast action.
             ///
-            /// All fields are FRACTIONS of the spell's effective range — `SpellHelper.getRange(caster, spell)`,
+            /// All fields are FRACTIONS of the spell's effective range — `SpellParameters.getRange(caster, spell)`,
             /// which folds in caster-level modifiers (gear, attributes, etc.). For a spell whose
             /// effective range works out to 16 blocks, `min = 0.5` means "minimum 8 blocks".
             ///

@@ -28,13 +28,6 @@ ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.spell_engine]]
-modId = "forgified_fabric_api"
-type = "required"
-versionRange = "*"
-ordering = "NONE"
-side = "BOTH"
-
-[[dependencies.spell_engine]]
 modId = "cloth_config"
 type = "required"
 versionRange = "[${cloth_config_version},)"
@@ -56,10 +49,9 @@ ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.spell_engine]]
-modId = "accessories"
-type = "required"
-versionRange = "*"
-ordering = "NONE"
+modId = "curios"
+type = "optional"
+ordering = "AFTER"
 side = "BOTH"
 
 [[mixins]]

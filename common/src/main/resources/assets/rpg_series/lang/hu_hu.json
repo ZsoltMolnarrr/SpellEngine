@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Pörgő támadást hajt végre, {damage} sebzést okozva a közeli ellenfeleknek.",
+  "spell.rpg_series.cleave.name": "Hasítás",
+  "spell.rpg_series.fan_of_knives.description": "Több pengét hajít el kúp alakban, {damage} sebzést okozva, és akár {bounce} alkalommal visszapattanhat a terepről.",
+  "spell.rpg_series.fan_of_knives.name": "Kések legyezője",
+  "spell.rpg_series.flurry.description": "Tartsd lenyomva, hogy gyors csapások sorozatát indítsd el, közben lendületet is gyűjtve.",
+  "spell.rpg_series.flurry.name": "Csapásözön",
+  "spell.rpg_series.ground_slam.description": "A levegőbe ugrik, majd lecsap a földre, {damage} sebzést okozva a közeli ellenfeleknek.",
+  "spell.rpg_series.ground_slam.name": "Földcsapás",
+  "spell.rpg_series.impale.description": "Előredobja fegyveredet, {damage} sebzést és erős hátralökést okozva. Minél tovább tartod töltve a dobást, annál keményebben csapódik be és annál messzebbre repül.",
+  "spell.rpg_series.impale.name": "Felnyársalás",
+  "spell.rpg_series.smash.description": "Erős hátralökéssel járó csapást mér, amely megakadályozza a célpont pajzs- és tárgyhasználatát.",
+  "spell.rpg_series.smash.name": "Szétzúzás",
+  "spell.rpg_series.swift_strikes.description": "Gyors csapások sorozatát indítja el.",
+  "spell.rpg_series.swift_strikes.name": "Gyors csapások",
+  "spell.rpg_series.swipe.description": "Előrecsúszol fegyvereddel, eltalálva minden ellenfelet az utadban.",
+  "spell.rpg_series.swipe.name": "Suhintás",
+  "spell.rpg_series.thrust.description": "Előreveted magad fegyvereddel, eltalálva minden ellenfelet az utadban.",
+  "spell.rpg_series.thrust.name": "Döfés",
+  "spell.rpg_series.whirlwind.description": "Tartsd lenyomva, hogy körbeforogj, másodpercenként {damage} sebzést okozva a közeli ellenfeleknek.",
+  "spell.rpg_series.whirlwind.name": "Forgószél"
+}

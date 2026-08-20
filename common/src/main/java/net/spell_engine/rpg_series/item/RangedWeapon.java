@@ -1,7 +1,8 @@
 package net.spell_engine.rpg_series.item;
 
 import net.fabric_extras.ranged_weapon.api.RangedConfig;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.spell_engine.PlatformEvents;
+import net.minecraft.component.ComponentChanges;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ToolMaterials;
@@ -124,6 +125,16 @@ public class RangedWeapon {
             return this;
         }
 
+        /// Registers component changes to apply to this item when `spellId` is chosen from the pool.
+        /// Lets the chosen spell drive the item's appearance (`custom_model_data`, `custom_name`, ...).
+        public Entry applyOnChoice(String spellId, ComponentChanges changes) {
+            if (this.spellChoice == null) {
+                this.spellChoice = SpellChoice.EMPTY;
+            }
+            this.spellChoice = this.spellChoice.withApplyOnChoice(Identifier.of(spellId), changes);
+            return this;
+        }
+
         public Entry lootTheme(String theme) {
             lootProperties = Equipment.LootProperties.of(lootProperties.tier(), theme);
             return this;
@@ -158,7 +169,7 @@ public class RangedWeapon {
             var item = entry.create(settings, config);
             Registry.register(Registries.ITEM, entry.id, item);
         }
-        ItemGroupEvents.modifyEntriesEvent(itemGroupKey).register((content) -> {
+        PlatformEvents.onItemGroupModify(itemGroupKey, (content, context) -> {
             for (var entry: entries) {
                 content.add(entry.registeredItem);
             }

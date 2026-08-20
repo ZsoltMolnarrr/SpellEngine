@@ -9,11 +9,11 @@ import net.spell_engine.api.event.Event;
 import net.spell_engine.api.event.StagedEvent;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.entity.SpellProjectile;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.casting.SpellCast;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import net.spell_engine.internals.SpellExecution;
 
 public class SpellEvents {
     public static final StagedEvent<CastingAttemptEvent> CASTING_ATTEMPT = new StagedEvent<>();
@@ -48,7 +48,7 @@ public class SpellEvents {
                                         LivingEntity caster,
                                         @Nullable Entity target,
                                         RegistryEntry<Spell> spellEntry,
-                                        SpellHelper.ImpactContext context,
+                                        SpellExecution.ImpactContext context,
                                         int sequenceIndex) { }
     public interface ProjectileLaunch {
         void onProjectileLaunch(ProjectileLaunchEvent event);

@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Führt einen Drehangriff aus und fügt nahen Feinden {damage} Schaden zu.",
+  "spell.rpg_series.cleave.name": "Spalten",
+  "spell.rpg_series.fan_of_knives.description": "Wirft mehrere deiner Klingen in einem Kegel, fügt {damage} Schaden zu und prallt bis zu {bounce}-mal vom Gelände ab.",
+  "spell.rpg_series.fan_of_knives.name": "Messerhagel",
+  "spell.rpg_series.flurry.description": "Halten, um eine schnelle Serie von Schlägen freizusetzen und dabei an Schwung zu gewinnen.",
+  "spell.rpg_series.flurry.name": "Schlagwirbel",
+  "spell.rpg_series.ground_slam.description": "Springt in die Luft und schlägt auf den Boden, wodurch nahen Feinden {damage} Schaden zugefügt wird.",
+  "spell.rpg_series.ground_slam.name": "Bodenschlag",
+  "spell.rpg_series.impale.description": "Wirft deine Waffe nach vorn, fügt {damage} Schaden zu und verursacht starken Rückstoß. Je länger der Wurf aufgeladen wird, desto härter trifft er und desto weiter fliegt er.",
+  "spell.rpg_series.impale.name": "Aufspießen",
+  "spell.rpg_series.smash.description": "Versetzt einen Schlag mit starkem Rückstoß, der die Schild- und Gegenstandsnutzung des Ziels deaktiviert.",
+  "spell.rpg_series.smash.name": "Zerschmettern",
+  "spell.rpg_series.swift_strikes.description": "Setzt eine schnelle Serie von Schlägen frei.",
+  "spell.rpg_series.swift_strikes.name": "Schnelle Schläge",
+  "spell.rpg_series.swipe.description": "Gleite mit deiner Waffe nach vorn und triff alle Feinde auf deinem Weg.",
+  "spell.rpg_series.swipe.name": "Schwinger",
+  "spell.rpg_series.thrust.description": "Stoße mit deiner Waffe nach vorn und triff alle Feinde auf deinem Weg.",
+  "spell.rpg_series.thrust.name": "Stoß",
+  "spell.rpg_series.whirlwind.description": "Halten, um dich zu drehen und nahen Feinden {damage} Schaden pro Sekunde zuzufügen.",
+  "spell.rpg_series.whirlwind.name": "Wirbelwind"
+}

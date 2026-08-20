@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Utför en snurrande attack som orsakar {damage} skada mot närliggande fiender.",
+  "spell.rpg_series.cleave.name": "Klyvning",
+  "spell.rpg_series.fan_of_knives.description": "Kastar flera av dina klingor i en kon, orsakar {damage} skada, och studsar mot terräng upp till {bounce} gånger.",
+  "spell.rpg_series.fan_of_knives.name": "Knivfläkt",
+  "spell.rpg_series.flurry.description": "Håll intryckt för att utlösa en snabb serie slag, samtidigt som du bygger upp fart.",
+  "spell.rpg_series.flurry.name": "Slagskur",
+  "spell.rpg_series.ground_slam.description": "Hoppar upp i luften och slår ner i marken, vilket orsakar {damage} skada mot närliggande fiender.",
+  "spell.rpg_series.ground_slam.name": "Marksmäll",
+  "spell.rpg_series.impale.description": "Kastar ditt vapen framåt, orsakar {damage} skada och kraftig knockback. Ju längre kastet laddas, desto hårdare träffar det och desto längre flyger det.",
+  "spell.rpg_series.impale.name": "Spetsning",
+  "spell.rpg_series.smash.description": "Levererar ett slag med kraftig knockback, vilket inaktiverar målets sköld- och föremålsanvändning.",
+  "spell.rpg_series.smash.name": "Kross",
+  "spell.rpg_series.swift_strikes.description": "Utlöser en snabb serie slag.",
+  "spell.rpg_series.swift_strikes.name": "Snabba slag",
+  "spell.rpg_series.swipe.description": "Glider framåt med ditt vapen och slår alla fiender längs vägen.",
+  "spell.rpg_series.swipe.name": "Svep",
+  "spell.rpg_series.thrust.description": "Rusar framåt med ditt vapen och slår alla fiender längs vägen.",
+  "spell.rpg_series.thrust.name": "Utfall",
+  "spell.rpg_series.whirlwind.description": "Håll intryckt för att snurra runt, vilket orsakar {damage} skada per sekund mot närliggande fiender.",
+  "spell.rpg_series.whirlwind.name": "Virvelvind"
+}

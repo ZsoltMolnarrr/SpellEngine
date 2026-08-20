@@ -4,7 +4,6 @@ import dev.emi.trinkets.api.TrinketsApi;
 import dev.emi.trinkets.api.event.TrinketEquipCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.spell_engine.compat.container.ContainerCompat;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -80,19 +79,5 @@ public class TrinketsCompat {
             }
         });
         return equipped;
-    }
-
-    public static ItemStack getSpellBookStack(PlayerEntity player) {
-        if (!enabled) {
-            return ItemStack.EMPTY;
-        }
-        var component = TrinketsApi.getTrinketComponent(player);
-        if (component.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
-        var trinketInventory = component.get().getInventory().get("spell").get("book");
-
-        // Casting to vanilla type to avoid mapping issues for content mod dev environments
-        return ((Inventory)trinketInventory).getStack(0);
     }
 }

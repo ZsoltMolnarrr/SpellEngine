@@ -13,6 +13,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
@@ -27,10 +28,10 @@ import net.spell_engine.api.entity.TwoWayCollisionChecker;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.render.FlyingSpellEntity;
-import net.spell_engine.internals.SpellHelper;
 import net.spell_engine.internals.target.EntityRelations;
 import net.spell_engine.internals.target.SpellTarget;
 import net.spell_engine.fx.ParticleHelper;
+import net.spell_engine.utils.PatternMatching;
 import net.spell_engine.utils.SoundHelper;
 import net.spell_engine.utils.VectorHelper;
 import net.spell_power.api.SpellPower;
@@ -43,7 +44,10 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Predicate;
-import net.spell_engine.internals.melee.OrientedBoundingBox;
+import net.spell_engine.internals.delivery.melee.OrientedBoundingBox;
+import net.spell_engine.internals.SpellExecution;
+import net.spell_engine.internals.impact.SpellImpacts;
+import net.spell_engine.internals.target.SpellIntents;
 
 public class SpellProjectile extends ProjectileEntity implements FlyingSpellEntity {
     public static EntityType<SpellProjectile> ENTITY_TYPE;
@@ -51,7 +55,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     public float range = 128;
     private Spell.ProjectileData.Perks perks;
-    private SpellHelper.ImpactContext context;
+    private SpellExecution.ImpactContext context;
     public Vec3d previousVelocity;
 
     public SpellProjectile(EntityType<? extends ProjectileEntity> entityType, World world) {
@@ -68,7 +72,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
 
     public SpellProjectile(World world, LivingEntity caster, double x, double y, double z,
-                           Behaviour behaviour, RegistryEntry<Spell> spellEntry, SpellHelper.ImpactContext context, Spell.ProjectileData.Perks mutablePerks) {
+                           Behaviour behaviour, RegistryEntry<Spell> spellEntry, SpellExecution.ImpactContext context, Spell.ProjectileData.Perks mutablePerks) {
         this(world, caster);
         this.setPosition(x, y, z);
 
@@ -78,13 +82,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         this.context = context;
 
         var projectileData = projectileData();
-        if (projectileData.client_data != null && projectileData.client_data.model != null) {
-            var model = projectileData.client_data.model;
-            if (model.use_held_item) {
-                setItemStackModel(caster.getMainHandStack());
-            }
-        }
-        // New multi-model path: capture the held item once if any composite model wants it.
+        // Capture the held item once if any model wants to render as it.
         if (projectileData.client_data != null && projectileData.client_data.composite_model != null
                 && projectileData.client_data.composite_model.models.stream().anyMatch(m -> m.use_held_item)) {
             setItemStackModel(caster.getMainHandStack());
@@ -262,19 +260,23 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             // Travel
             if (!skipTravel) {
                 this.followTarget();
+                // Flight physics (gravity/drag) run after homing and before the move, so homing
+                // aims first and drag then damps the whole velocity (vanilla order). May expire
+                // the projectile via `min_speed`.
+                applyMotion();
+                if (this.isRemoved()) {
+                    return;
+                }
                 Vec3d velocity = this.getVelocity();
                 double d = this.getX() + velocity.x;
                 double e = this.getY() + velocity.y;
                 double f = this.getZ() + velocity.z;
                 ProjectileUtil.setRotationFromVelocity(this, 0.2F);
 
-                float g = this.getDrag();
                 if (this.isTouchingWater()) {
                     for(int i = 0; i < 4; ++i) {
-                        float h = 0.25F;
                         this.getWorld().addParticle(ParticleTypes.BUBBLE, d - velocity.x * 0.25, e - velocity.y * 0.25, f - velocity.z * 0.25, velocity.x, velocity.y, velocity.z);
                     }
-                    g = 0.8F;
                 }
 
                 var data = projectileData();
@@ -311,7 +313,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                                 && !spell.impacts.isEmpty()
                                 && !impactHistory.contains(target.getId())
                                 && getOwner() instanceof LivingEntity owner) {
-                            var intents = SpellHelper.impactIntents(spell);
+                            var intents = SpellIntents.impactIntents(spell);
 
                             boolean intentAllows = false;
                             for (var intent: intents) {
@@ -434,7 +436,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             return;
         }
         if (owner instanceof LivingEntity livingEntity) {
-            SpellHelper.fallImpact(livingEntity, this, this.getSpellEntry(), context.position(this.getPos()));
+            SpellImpacts.fallImpact(livingEntity, this, this.getSpellEntry(), context.position(this.getPos()));
         }
     }
 
@@ -472,8 +474,55 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         }
     }
 
-    protected float getDrag() {
-        return 0.95F;
+    /// Applies optional flight physics (`Spell.ProjectileData.Motion`) to the velocity for this
+    /// tick: gravity, then medium-dependent drag. FLY behaviour only — FALL (meteor) keeps its
+    /// straight-line descent, and its `range * 0.98` fall-distance math must not be perturbed.
+    /// May `kill()` the projectile when its speed decays below `min_speed`.
+    private void applyMotion() {
+        if (getBehaviour() != Behaviour.FLY) {
+            return;
+        }
+        var data = projectileData();
+        if (data == null || data.motion == null) {
+            return;
+        }
+        var motion = data.motion;
+
+        // Resolve the current medium by sampling the FluidState at the projectile's block.
+        // Empty = air; any non-empty state (water, lava, modded honey, ...) counts as a fluid.
+        // `drag` here is the fraction of speed lost per tick (0 = constant speed).
+        float drag = motion.drag;
+        float gravityMultiply = 1F;
+        var fluidState = getWorld().getFluidState(getBlockPos());
+        if (!fluidState.isEmpty()) {
+            boolean matched = false;
+            var fluidEntry = fluidState.getFluid().getRegistryEntry();
+            for (var override : motion.fluid_overrides) {
+                if (PatternMatching.matches(fluidEntry, RegistryKeys.FLUID, override.fluid)) {
+                    drag = override.drag;
+                    gravityMultiply = override.gravity_multiply;
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched && motion.drag_fluid > 0F) {
+                drag = motion.drag_fluid;
+            }
+        }
+
+        var velocity = this.getVelocity();
+        if (motion.gravity != 0F) {
+            velocity = velocity.subtract(0, motion.gravity * gravityMultiply, 0);
+        }
+        if (drag != 0F) {
+            // Retained fraction; clamp at 0 so drag > 1 fully stops rather than reversing.
+            velocity = velocity.multiply(Math.max(0F, 1F - drag));
+        }
+        this.setVelocity(velocity);
+
+        if (motion.min_speed > 0F && velocity.length() < motion.min_speed) {
+            this.kill();
+        }
     }
 
     @Override
@@ -487,7 +536,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 setFollowedTarget(null);
                 var context = this.context;
                 if (context == null) {
-                    context = new SpellHelper.ImpactContext();
+                    context = new SpellExecution.ImpactContext();
                     var spell = this.getSpellEntry().value();
                     if (getOwner() instanceof PlayerEntity player && spell != null)  {
                         context = context.power(SpellPower.getSpellPower(spell.school, player));
@@ -502,7 +551,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 var hitVector = entityHitResult.getPos().subtract(prevProjectilePos).normalize().multiply(this.getWidth() * 0.5F);
                 var hitPosition = entityHitResult.getPos().subtract(hitVector);
 
-                var performed = SpellHelper.projectileImpact(caster, this, target, this.getSpellEntry(), context.position(hitPosition));
+                var performed = SpellImpacts.projectileImpact(caster, this, target, this.getSpellEntry(), context.position(hitPosition));
                 if (performed) {
                     chainReactionFrom(target);
                     if (ricochetFrom(target, caster)) {
@@ -536,7 +585,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 this.perks.ricochet_range,
                 this.perks.ricochet_range);
         var spell = this.getSpellEntry().value();
-        var intents = SpellHelper.impactIntents(spell);
+        var intents = SpellIntents.impactIntents(spell);
         Predicate<Entity> intentMatches = (entity) -> {
             boolean intentAllows = false;
             for (var intent: intents) {
@@ -622,7 +671,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
         // Set the new position and velocity
         this.setPos(finalPosition.getX(), finalPosition.getY(), finalPosition.getZ());
-        this.setVelocity(newDirection.multiply(speed));
+        // Reflection preserves magnitude, so `newDirection` already has length == `speed`.
+        // Re-normalize before applying the speed to avoid squaring it on every bounce.
+        this.setVelocity(newDirection.normalize().multiply(speed));
         ProjectileUtil.setRotationFromVelocity(this, 0.2F);
 
         this.perks.bounce -= 1;
@@ -690,7 +741,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     // MARK: Helper
 
-    public SpellHelper.ImpactContext getImpactContext() {
+    public SpellExecution.ImpactContext getImpactContext() {
         return context;
     }
 
@@ -700,15 +751,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     // MARK: FlyingSpellEntity
 
-    public Spell.ProjectileModel renderData() {
-        var data = projectileData();
-        if (data != null && data.client_data != null) {
-            return data.client_data.model;
-        }
-        return null;
-    }
-
-    /// New multi-model render data; null when the projectile uses the legacy single model.
+    /// The models this projectile renders as; null when it defines none.
     public Spell.ProjectileModelComposite renderModels() {
         var data = projectileData();
         if (data != null && data.client_data != null) {
@@ -723,12 +766,11 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         return this.getDataTracker().get(TRACKER_ITEM_MODEL_ID);
     }
 
+    /// Required by `FlyingItemEntity`. Spell projectiles draw themselves through
+    /// `composite_model` rather than as an item stack, so there is nothing to hand back —
+    /// models that render as the caster's held item go through `heldItemModelId()` instead.
     @Override
     public ItemStack getStack() {
-        var data = projectileData();
-        if (data != null && data.client_data != null && data.client_data.model != null) {
-            return Registries.ITEM.get(Identifier.of(data.client_data.model.model_id)).getDefaultStack();
-        }
         return ItemStack.EMPTY;
     }
 
@@ -742,7 +784,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         if (this.getOwner() != null
                 && this.getOwner() instanceof LivingEntity caster) {
             var hitPosition = blockHitResult.getPos();
-            var performed = SpellHelper.projectileImpact(caster, this, null, this.getSpellEntry(), context.position(hitPosition));
+            var performed = SpellImpacts.projectileImpact(caster, this, null, this.getSpellEntry(), context.position(hitPosition));
         }
         this.kill();
     }
@@ -860,7 +902,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 var spellId = Identifier.of(nbt.getString(NBT_SPELL_ID));
                 this.setSpell(SpellRegistry.from(this.getWorld()).getEntry(spellId).orElse(null));
 
-                this.context = gson.fromJson(nbt.getString(NBT_IMPACT_CONTEXT), SpellHelper.ImpactContext.class);
+                this.context = gson.fromJson(nbt.getString(NBT_IMPACT_CONTEXT), SpellExecution.ImpactContext.class);
                 this.perks = gson.fromJson(nbt.getString(NBT_PERKS), Spell.ProjectileData.Perks.class);
                 if (nbt.contains(NBT_SCALE, NbtElement.FLOAT_TYPE)) {
                     this.setScaleMultiplier(nbt.getFloat(NBT_SCALE));

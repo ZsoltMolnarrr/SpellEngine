@@ -37,8 +37,8 @@ public class CustomModels {
     /// transform (the default behaviour of the sibling overload).
     ///
     /// Needed for held-item models: they are authored in item-display space, so the projectile
-    /// renderer applies `FIXED` (mirroring the legacy single-model path) to give them the base
-    /// orientation the projectile orientation math expects. Custom (non-item) models pass `null`.
+    /// renderer applies `FIXED` to give them the base orientation the projectile orientation math
+    /// expects. Custom (non-item) models pass `null`.
     public static void render(RenderLayer renderLayer, ItemRenderer itemRenderer, Identifier modelId,
                               @Nullable ModelTransformationMode transformationMode,
                               MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int seed) {

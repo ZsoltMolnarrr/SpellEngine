@@ -21,8 +21,7 @@ import net.spell_engine.client.util.Rect;
 import net.spell_engine.client.util.SpellRender;
 import net.spell_engine.client.util.TextureFile;
 import net.spell_engine.config.HudConfig;
-import net.spell_engine.internals.SpellHelper;
-import net.spell_engine.internals.casting.SpellCasterClient;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.mixin.client.control.KeybindingAccessor;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+import net.spell_engine.internals.SpellParameters;
 
 public class HudRenderHelper {
 
@@ -61,7 +61,7 @@ public class HudRenderHelper {
         }
 
         if (player != null) {
-            var caster = (SpellCasterClient) player;
+            var caster = (SpellCaster.Client) player;
 
             if (SpellHotbar.INSTANCE.slots.isEmpty()) {
                 hotbarViewModel = SpellHotBarWidget.ViewModel.empty;
@@ -97,7 +97,7 @@ public class HudRenderHelper {
                         spellCast.process().length(),
                         SpellRender.iconTexture(spellCast.process().id()),
                         true,
-                        SpellHelper.isChanneled(spellCast.process().spell().value())
+                        SpellParameters.isChanneled(spellCast.process().spell().value())
                 );
             }
 
@@ -163,13 +163,11 @@ public class HudRenderHelper {
             }
 
             public static ViewModel from(ClientPlayerEntity player) {
-                var caster = (SpellCasterClient)player;
-                var target = caster.getCurrentFirstTarget();
-                var text = "";
-                if (target != null
-                        && (/* SpellEngineClient.config.showTargetNameWhenMultiple || */ caster.getCurrentTargets().size() == 1)) {
-                    text = target.getName().getString();
-                }
+                var caster = (SpellCaster.Client)player;
+                var targets = caster.getCurrentTargets();
+                var text = targets.size() == 1
+                        ? targets.getFirst().getName().getString()
+                        : "";
                 return new ViewModel(text);
             }
         }

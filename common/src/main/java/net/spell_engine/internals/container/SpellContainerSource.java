@@ -1,6 +1,6 @@
 package net.spell_engine.internals.container;
+import net.spell_engine.Platform;
 
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
@@ -15,6 +15,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.registry.SpellRegistry;
+import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,7 +66,7 @@ public class SpellContainerSource {
         if (!player.getWorld().isClient) {
             var containers = ((Owner)player).serverSideSpellContainers();
             var packet = new Packets.SpellContainerSync(containers);
-            ServerPlayNetworking.send((ServerPlayerEntity) player, packet);
+            Platform.util().networkS2C_Send((ServerPlayerEntity) player, packet);
             setDirty(player, MAIN_HAND);
         }
     }
@@ -231,6 +232,13 @@ public class SpellContainerSource {
             }
 
             ((Owner) player).setSpellContainers(new Result(activeContainer, activeSpells, passiveSpells, modifiers.stream().toList(), allContainers));
+
+            // Containers changed — the casting authority re-derives its options from them and
+            // re-declares to the owner's client (tracked data). Server-side only: on the client
+            // the interactor mirrors the declared options instead of computing its own.
+            if (!player.getWorld().isClient) {
+                ((SpellCaster.Player) player).getInteractor().invalidateOptions();
+            }
         }
     }
 

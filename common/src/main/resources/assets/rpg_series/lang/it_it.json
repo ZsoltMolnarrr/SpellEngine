@@ -1,0 +1,22 @@
+{
+  "spell.rpg_series.cleave.description": "Esegue un attacco rotante, infliggendo {damage} danni ai nemici vicini.",
+  "spell.rpg_series.cleave.name": "Fendente",
+  "spell.rpg_series.fan_of_knives.description": "Lancia diverse lame in un cono, infliggendo {damage} danni, rimbalzando sul terreno fino a {bounce} volte.",
+  "spell.rpg_series.fan_of_knives.name": "Ventaglio di Lame",
+  "spell.rpg_series.flurry.description": "Tieni premuto per scatenare una rapida serie di colpi, guadagnando anche slancio.",
+  "spell.rpg_series.flurry.name": "Raffica",
+  "spell.rpg_series.ground_slam.description": "Salta in aria e si schianta al suolo, infliggendo {damage} danni ai nemici vicini.",
+  "spell.rpg_series.ground_slam.name": "Schianto al Suolo",
+  "spell.rpg_series.impale.description": "Lancia la tua arma in avanti, infliggendo {damage} danni e un potente respingimento. Più a lungo viene caricato il lancio, più forte colpisce e più lontano vola.",
+  "spell.rpg_series.impale.name": "Impalamento",
+  "spell.rpg_series.smash.description": "Sferra un colpo con potente respingimento, disabilitando l'uso dello scudo e degli oggetti del bersaglio.",
+  "spell.rpg_series.smash.name": "Colpo Schiacciante",
+  "spell.rpg_series.swift_strikes.description": "Scatena una rapida serie di colpi.",
+  "spell.rpg_series.swift_strikes.name": "Colpi Rapidi",
+  "spell.rpg_series.swipe.description": "Scivola in avanti con la tua arma, colpendo tutti i nemici lungo il percorso.",
+  "spell.rpg_series.swipe.name": "Scivolata",
+  "spell.rpg_series.thrust.description": "Balza in avanti con la tua arma, colpendo tutti i nemici lungo il percorso.",
+  "spell.rpg_series.thrust.name": "Affondo",
+  "spell.rpg_series.whirlwind.description": "Tieni premuto per roteare, infliggendo {damage} danni al secondo ai nemici vicini.",
+  "spell.rpg_series.whirlwind.name": "Turbine"
+}

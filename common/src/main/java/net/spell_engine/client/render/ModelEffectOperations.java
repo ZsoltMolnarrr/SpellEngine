@@ -6,7 +6,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
 import net.spell_engine.api.render.CustomModels;
-import net.spell_engine.api.spell.fx.EasingHelper;
+import net.spell_engine.api.spell.fx.Easing;
 import net.spell_engine.api.spell.fx.ModelEffect;
 
 import java.util.HashMap;
@@ -65,7 +65,7 @@ public class ModelEffectOperations {
             if (age < anim.start) continue;
             float t = (anim.end <= anim.start) ? 1F
                     : Math.clamp((age - anim.start) / (float)(anim.end - anim.start), 0F, 1F);
-            float progress = EasingHelper.apply(anim.easing, t);
+            float progress = Easing.apply(anim.easing, t);
             if ("scale".equals(anim.operation)) {
                 sx += progress * anim.x; sy += progress * anim.y; sz += progress * anim.z;
             } else {
