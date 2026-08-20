@@ -50,6 +50,10 @@ repositories {
         }
     }
     maven {
+        name = "Sleeping Town"
+        url = "https://repo.sleeping.town/"
+    }
+    maven {
         name = "Ladysnake Libs"
         url = 'https://maven.ladysnake.org/releases'
     }
@@ -71,18 +75,6 @@ repositories {
         content {
             includeGroup "mezz.jei"
         }
-    }
-
-    // CurseMaven
-    maven {
-        url = "https://www.cursemaven.com"
-        content {
-            includeGroup "curse.maven"
-        }
-    }
-    maven {
-        name = "TerraformersMC"
-        url = "https://maven.terraformersmc.com/"
     }
 
     mavenLocal()
@@ -119,20 +111,8 @@ dependencies {
     modCompileOnly("maven.modrinth:iris:${project.iris_version}")
 
     // Fabric specific
-    modCompileOnly("maven.modrinth:modmenu:${project.mod_menu_version}")
-    // Trinkets: Modrinth Maven serves minimal POMs (no transitive deps) and
-    // TerraformersMC has been unreliable in CI. Use Modrinth on CI; use dev.emi
-    // locally so runClient gets Trinkets' full transitive graph.
-//    if (System.getenv("CI")) {
-//        modCompileOnly("maven.modrinth:trinkets:${project.trinkets_version}")
-//    } else {
-//        modCompileOnly("maven.modrinth:trinkets:${project.trinkets_version}")
-//        modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:6.1.3")
-//        modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-entity:6.1.3")
-//    }
-    modImplementation("maven.modrinth:trinkets:${project.trinkets_version}")
-    modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-base:6.1.3")
-    modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:6.1.3")
+    modImplementation("maven.modrinth:modmenu:${project.mod_menu_version}")
+    modImplementation("dev.emi:trinkets:${project.trinkets_version}")
 
     modCompileOnly("maven.modrinth:lambdynamiclights:${project.lamb_dynamic_lights_version}")
 }

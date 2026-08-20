@@ -52,10 +52,6 @@ repositories {
             includeGroup 'maven.modrinth'
         }
     }
-    maven {
-        name = "Ladysnake Libs"
-        url = 'https://maven.ladysnake.org/releases'
-    }
     exclusiveContent {
         forRepository {
             maven {
@@ -67,30 +63,10 @@ repositories {
             includeGroup"dev.ftb.mods"
         }
     }
-    // JEI Maven currently required by FTB
-    maven {
-        name "ModMaven (JEI)"
-        url "https://modmaven.dev/"
-        content {
-            includeGroup "mezz.jei"
-        }
-    }
-    maven {
-        url "https://maven.su5ed.dev/releases"
-    }
 
     // For Curios
     maven { url 'https://maven.theillusivec4.top/' }
 
-    // CurseMaven
-    maven {
-        url = "https://www.cursemaven.com"
-        content {
-            includeGroup "curse.maven"
-        }
-    }
-
-    maven { url 'https://maven.azuredoom.com/mods' }
     mavenLocal()
 }
 
