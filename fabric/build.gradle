@@ -140,12 +140,7 @@ remapJar {
 // `build` — with none of the tokens present — is completely unaffected.
 def releaseTypeName = (project.findProperty('release_type') ?: 'beta').toString()
 
-// Convenience alias: build + publish to every configured destination in one go.
-// CI does NOT use this -- `publish.yml` invokes `:fabric:build` plus an explicit subset of
-// the plugin's per-destination tasks (`publishCurseforge` / `publishModrinth` /
-// `publishGithub`), so a release can target only some platforms. Keep that in mind when
-// changing this alias: it is now a local/manual convenience, not the CI entry point.
-// The plugin's own aggregate task is `publishMods` (plural).
+// Local convenience alias -- CI invokes the per-destination publish tasks directly.
 tasks.register("publishMod") {
     dependsOn(build)
     finalizedBy(tasks.named("publishMods"))
@@ -173,7 +168,6 @@ publishMods {
     }
 
     modrinth {
-        // Modrinth side metadata -- without it the version publishes as "Unknown".
         environment = me.modmuss50.mpp.platforms.modrinth.ModrinthEnvironment.CLIENT_AND_SERVER
         projectId = providers.environmentVariable("MODRINTH_PROJECT_RAW_ID")
         accessToken = providers.environmentVariable("MODRINTH_API_KEY")
@@ -199,14 +193,8 @@ publishMods {
     }
 }
 
-// The GitHub release is the *seal* on a successful publish, so it must run LAST: if a mod
-// host upload fails (e.g. a CurseForge 500), Gradle aborts the build before the release is
-// created, so there is never a green GitHub release pointing at a half-published version.
-// `mustRunAfter` is an ordering rule ONLY -- it does not pull the referenced tasks into the
-// graph. A Modrinth-only run therefore still works and simply ignores the CurseForge rule.
-// This matters because command-line task order is NOT an execution-order guarantee.
-// NOTE: must sit AFTER the `publishMods` block -- the plugin registers one task per
-// destination while that block is evaluated, so these names do not exist before it.
+// GitHub release last: a failed mod upload aborts the build before the release exists.
+// Ordering only -- unselected tasks are ignored. Must sit after the publishMods block.
 tasks.named("publishGithub") {
     mustRunAfter(tasks.named("publishCurseforge"), tasks.named("publishModrinth"))
 }
