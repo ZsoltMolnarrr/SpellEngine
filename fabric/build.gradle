@@ -173,6 +173,8 @@ publishMods {
     }
 
     modrinth {
+        // Modrinth side metadata -- without it the version publishes as "Unknown".
+        environment = me.modmuss50.mpp.platforms.modrinth.ModrinthEnvironment.CLIENT_AND_SERVER
         projectId = providers.environmentVariable("MODRINTH_PROJECT_RAW_ID")
         accessToken = providers.environmentVariable("MODRINTH_API_KEY")
         minecraftVersions.add(project.minecraft_version)
