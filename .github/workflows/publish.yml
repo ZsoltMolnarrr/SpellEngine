@@ -7,15 +7,21 @@
 
 name: Publish
 
+# `workflow_dispatch` has no multi-select input type, so each selectable option is its
+# own `boolean` input -- which GitHub renders as a checkbox, pre-ticked via
+# `default: true`. Inputs are shown in declaration order, hence loaders / release type /
+# platforms below.
 on:
   workflow_dispatch:
     inputs:
-      loader:
-        type: choice
-        description: Mod loader
-        options:
-          - fabric
-          - neoforge
+      fabric:
+        type: boolean
+        description: 'Loader: Fabric'
+        default: true
+      neoforge:
+        type: boolean
+        description: 'Loader: NeoForge'
+        default: true
       release_type:
         type: choice
         description: Release type
@@ -23,14 +29,88 @@ on:
           - release
           - beta
           - alpha
+      curseforge:
+        type: boolean
+        description: 'Platform: CurseForge'
+        default: true
+      modrinth:
+        type: boolean
+        description: 'Platform: Modrinth'
+        default: true
+      github:
+        type: boolean
+        description: 'Platform: GitHub Release'
+        default: true
 
 permissions:
   contents: read
 
 jobs:
-  build:
+  # Validates the selection and turns the checkboxes into a build plan. This exists as a
+  # separate job because a matrix built from an empty list produces ZERO jobs -- an
+  # unticked-everything dispatch would otherwise "succeed" having published nothing.
+  plan:
 
     runs-on: ubuntu-latest
+
+    outputs:
+      loaders: ${{ steps.plan.outputs.loaders }}
+      destinations: ${{ steps.plan.outputs.destinations }}
+
+    steps:
+      - name: Resolve build plan
+        id: plan
+        # `${{ inputs.x }}` interpolates a bare `false`, and `false && ...` would abort the
+        # step under `set -e` -- hence explicit `if` blocks rather than `&&` chains.
+        run: |
+          set -euo pipefail
+
+          loaders=""
+          if [ "${{ inputs.fabric }}"   = "true" ]; then loaders="$loaders fabric";   fi
+          if [ "${{ inputs.neoforge }}" = "true" ]; then loaders="$loaders neoforge"; fi
+
+          # mod-publish-plugin generates one task per destination alongside the
+          # `publishMods` aggregate, so platform selection needs no build script changes.
+          destinations=""
+          if [ "${{ inputs.curseforge }}" = "true" ]; then destinations="$destinations publishCurseforge"; fi
+          if [ "${{ inputs.modrinth }}"   = "true" ]; then destinations="$destinations publishModrinth";   fi
+          if [ "${{ inputs.github }}"     = "true" ]; then destinations="$destinations publishGithub";     fi
+
+          loaders="${loaders# }"
+          destinations="${destinations# }"
+
+          if [ -z "$loaders" ]; then
+            echo "::error::No loader selected - tick at least one of Fabric / NeoForge."
+            exit 1
+          fi
+          if [ -z "$destinations" ]; then
+            echo "::error::No platform selected - tick at least one of CurseForge / Modrinth / GitHub Release."
+            exit 1
+          fi
+
+          json=""
+          for l in $loaders; do json="$json${json:+,}\"$l\""; done
+
+          echo "loaders=[$json]" >> "$GITHUB_OUTPUT"
+          echo "destinations=$destinations" >> "$GITHUB_OUTPUT"
+
+          echo "Loaders:   $loaders"
+          echo "Platforms: $destinations"
+          echo "Release:   ${{ inputs.release_type }}"
+
+  build:
+
+    needs: plan
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      # Never cancel a sibling that may already be mid-upload: a cancelled publish can
+      # leave a version half-uploaded, and neither CurseForge nor Modrinth allows
+      # re-publishing the same version string.
+      fail-fast: false
+      matrix:
+        loader: ${{ fromJSON(needs.plan.outputs.loaders) }}
 
     steps:
       - uses: actions/checkout@v3
@@ -39,10 +119,23 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
+      - name: Resolve Gradle tasks
+        id: targets
+        # `build` is listed explicitly because the per-destination publish tasks depend on
+        # `remapJar` (via the `file` provider) but NOT on `build`, so omitting it would
+        # publish without running `check`.
+        run: |
+          set -euo pipefail
+          tasks=":${{ matrix.loader }}:build"
+          for d in ${{ needs.plan.outputs.destinations }}; do
+            tasks="$tasks :${{ matrix.loader }}:$d"
+          done
+          echo "tasks=$tasks" >> "$GITHUB_OUTPUT"
+          echo "Publishing ${{ matrix.loader }} via: $tasks"
       - name: Build with Gradle
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
-          arguments: :${{ inputs.loader }}:publishMod -Prelease_type=${{ inputs.release_type }}
+          arguments: ${{ steps.targets.outputs.tasks }} -Prelease_type=${{ inputs.release_type }}
         env:
           CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
           CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}

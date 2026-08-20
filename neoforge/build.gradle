@@ -130,7 +130,11 @@ remapJar {
 // `build` — with none of the tokens present — is completely unaffected.
 def releaseTypeName = (project.findProperty('release_type') ?: 'beta').toString()
 
-// Keep the old task name so the existing workflow (`:neoforge:publishMod`) keeps working.
+// Convenience alias: build + publish to every configured destination in one go.
+// CI does NOT use this -- `publish.yml` invokes `:neoforge:build` plus an explicit subset of
+// the plugin's per-destination tasks (`publishCurseforge` / `publishModrinth` /
+// `publishGithub`), so a release can target only some platforms. Keep that in mind when
+// changing this alias: it is now a local/manual convenience, not the CI entry point.
 // The plugin's own aggregate task is `publishMods` (plural).
 tasks.register("publishMod") {
     dependsOn(build)
