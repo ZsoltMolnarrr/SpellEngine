@@ -369,3 +369,29 @@ both moved into `internals.cost` (classes unchanged — the §6 recipe applies).
 `batch` geometry applies — their factories know nothing about our payload, so the whole
 `appearance` block is ignored. Register an equivalent if you need colouring, scaling or a
 lifetime change.
+
+---
+
+## 8. Recommended (non-breaking): description tokens
+
+Not part of the FX rework and **nothing forces you to change it** — old code still compiles — but
+1.10 also added a description-token system that supersedes the per-spell `DescriptionMutator`, and
+existing content should move to it when convenient. See **[Description Tokens](12-description-tokens.md)**
+for the full reference.
+
+- **Effect values → `{effect|…}` tokens.** A mutator that read `effect.config().firstModifier()`
+  and formatted it (`SpellTooltip.bonus/percent`) becomes a declarative
+  `TooltipTokens.effect(effectId, …)` token embedded in the description — resolved at render time,
+  player-independent, and correct across operations. Multi-modifier effects name the attribute.
+- **`SpellTooltip.DescriptionMutator` → `TooltipTokens.Custom`.** The imperative escape hatch moved
+  to the server-safe `TooltipTokens`; register via `TooltipTokens.registerCustom`. The old
+  `SpellTooltip.DescriptionMutator` / `addDescriptionMutator` remain as **deprecated bridges** into
+  the same registry, so nothing breaks — but they keep a data definition referencing client-only
+  code, which crashes a dedicated server if the class is loaded there. Migrating removes that risk.
+- **Static percentages baked into a description** (not a render-time token) must escape `%` as `%%` —
+  use `TooltipTokens.bakedPercent(value)`. `I18n.translate` runs the lang value through
+  `String.format`, so a lone `%` renders as "Format error".
+
+Why it's worth doing: it takes the client-only `SpellTooltip` out of your spell data definitions
+(the real motivation), and effect tokens stay in lockstep with the effect's configured value instead
+of duplicating it in prose.
