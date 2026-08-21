@@ -76,7 +76,20 @@ public class SpellEngineParticles {
         Entry(String name, Texture texture) {
             this(Identifier.of(SpellEngineMod.ID, name), texture);
         }
-        Entry(Identifier id, Texture texture) {
+        /// Creates an entry for `id`, rendered from `texture`.
+        ///
+        /// Public so downstream mods can register particles of their own against the
+        /// generic factory — mirroring [SpellEngineSounds.Entry]. A third-party entry
+        /// is registered by its owner, not by [#register]:
+        /// ```java
+        /// var entry = new SpellEngineParticles.Entry(Identifier.of(MOD_ID, "blood_drop"),
+        ///         new Texture(Identifier.of(MOD_ID, "blood_drop"))).lifetime(12)
+        ///         .defaults(p -> p.scale(0.15F).glow(false));
+        /// Registry.register(Registries.PARTICLE_TYPE, entry.id(), entry.type());
+        /// // client side, per platform:
+        /// // registrar.register(entry.type(), provider -> new SpellParticle.Factory(provider, entry));
+        /// ```
+        public Entry(Identifier id, Texture texture) {
             this.id = id;
             this.texture = texture;
             this.type.bind(this);
@@ -91,9 +104,9 @@ public class SpellEngineParticles {
         public float pivot() { return pivot; }
         public ParticleGroup.Appearance defaults() { return defaults; }
 
-        Entry lifetime(int lifetime) { this.lifetime = lifetime; return this; }
-        Entry pivot(float pivot) { this.pivot = pivot; return this; }
-        Entry defaults(Consumer<ParticleGroup.Appearance> configure) { configure.accept(this.defaults); return this; }
+        public Entry lifetime(int lifetime) { this.lifetime = lifetime; return this; }
+        public Entry pivot(float pivot) { this.pivot = pivot; return this; }
+        public Entry defaults(Consumer<ParticleGroup.Appearance> configure) { configure.accept(this.defaults); return this; }
     }
 
     private static final ArrayList<Entry> entries = new ArrayList<>();

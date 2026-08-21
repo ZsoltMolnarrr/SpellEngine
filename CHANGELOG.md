@@ -1,3 +1,8 @@
+# 1.10.2
+
+API Changes:
+- Fixed particle constructor and builder visibility
+
 # 1.10.1
 
 **Important disclaimer** - NeoForge users need to unequip their spell books, jewelry, relics and quivers to preserve it, before updating to this version
