@@ -1,6 +1,5 @@
 package net.spell_engine.api.spell.tooltip;
 
-import com.ibm.icu.text.DecimalFormat;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -8,6 +7,7 @@ import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import org.jetbrains.annotations.Nullable;
 
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,8 +16,9 @@ import java.util.Map;
 ///
 /// This class intentionally avoids client-only references (no `MinecraftClient`, `I18n`, `KeyBinding`
 /// …), so it is safe to touch from spell data definitions that run on both client and server. It only
-/// depends on shared Minecraft types (`Identifier`, `EntityAttributeModifier.Operation`) and ICU's
-/// number formatter, all present on a dedicated server. The client renderer
+/// depends on shared Minecraft types (`Identifier`, `EntityAttributeModifier.Operation`) and the JDK's
+/// `java.text.DecimalFormat`, all present on a dedicated server. Note ICU (`com.ibm.icu.text`) is a
+/// *client-only* Minecraft library — importing it here crashes dedicated servers. The client renderer
 /// (`net.spell_engine.client.gui.SpellTooltip`) resolves these tokens into concrete numbers; the data
 /// side only needs the token *builders* here to embed placeholders into a description string.
 ///
@@ -160,6 +161,8 @@ public final class TooltipTokens {
 
     // DecimalFormat is expensive to construct (loads locale/symbol data) and formattedNumber
     // is called many times per tooltip frame. Reuse one per thread (tooltips may be built off-thread).
+    // Must be `java.text`, NOT `com.ibm.icu.text`: ICU ships with the client only, and the lambda's
+    // instantiated method type forces the class to load during this class's `<clinit>`.
     private static final ThreadLocal<DecimalFormat> NUMBER_FORMAT = ThreadLocal.withInitial(() -> {
         var formatter = new DecimalFormat();
         formatter.setMaximumFractionDigits(1);

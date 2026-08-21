@@ -1,3 +1,10 @@
+# 1.10.1
+
+**Important disclaimer** - NeoForge users need to unequip their spell books, jewelry, relics and quivers to preserve it, before updating to this version
+
+Changes:
+- Fixed dedicated server crash caused by formatter 
+
 # 1.10.0
 
 **Important disclaimer** - NeoForge users need to unequip their spell books, jewelry, relics and quivers to preserve it, before updating to this version 
