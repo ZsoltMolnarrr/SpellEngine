@@ -1,6 +1,11 @@
+# 1.10.3
+
+Functional changes:
+- Rebindable spell tooltip details button 
+
 # 1.10.2
 
-API Changes:
+API changes:
 - Fixed particle constructor and builder visibility
 
 # 1.10.1

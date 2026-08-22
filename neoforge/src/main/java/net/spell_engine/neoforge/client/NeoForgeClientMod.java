@@ -25,6 +25,8 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.ConfigMenuScreen;
 import net.spell_engine.client.gui.HudRenderHelper;
+import net.neoforged.neoforge.client.settings.KeyConflictContext;
+import net.spell_engine.client.input.GuiKeyBinding;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.client.render.BeamRenderer;
 import net.spell_engine.client.render.CustomModelRegistry;
@@ -71,6 +73,12 @@ public class NeoForgeClientMod {
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event){
         for(var keybinding: Keybindings.all()) {
+            if (keybinding instanceof GuiKeyBinding) {
+                // NeoForge natively understands GUI scoped bindings, and its key lookup
+                // only activates them while a screen is open. (The controls screen still
+                // marks the key red, vanilla bindings conflict with every context.)
+                keybinding.setKeyConflictContext(KeyConflictContext.GUI);
+            }
             event.register(keybinding);
         }
     }

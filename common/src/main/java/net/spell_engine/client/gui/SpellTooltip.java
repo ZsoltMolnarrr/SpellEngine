@@ -159,7 +159,7 @@ public class SpellTooltip {
             ItemStack itemStack, SpellContainer container, PlayerEntity player,
             boolean forceHideHeader, boolean allowDetailsHint) {
         var config = SpellEngineClient.config;
-        var keybinding = Keybindings.bypass_spell_hotbar;
+        var keybinding = detailsKeybinding();
         var showDetails = config.alwaysShowFullTooltip
                 || (!keybinding.isUnbound() && isKeyPressed(keybinding)
         );
@@ -340,6 +340,15 @@ public class SpellTooltip {
                 lines.addAll(info);
             }
         }
+    }
+
+    /**
+     * The key held to reveal detailed spell tooltips.
+     * Prefers the dedicated `tooltip_details` key, falls back to `bypass_spell_hotbar` while that one is unbound.
+     */
+    private static KeyBinding detailsKeybinding() {
+        var dedicated = Keybindings.tooltip_details;
+        return dedicated.isUnbound() ? Keybindings.bypass_spell_hotbar : dedicated;
     }
 
     private static boolean isKeyPressed(KeyBinding keybinding) {

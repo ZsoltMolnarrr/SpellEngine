@@ -29,6 +29,17 @@ public class Keybindings {
         return key;
     }
 
+    /**
+     * Dedicated key for revealing detailed spell tooltips.
+     * Unbound by default, in which case tooltips fall back to `bypass_spell_hotbar`.
+     * GUI scoped, so it can share a key with an in-game binding (such as sneak) without disabling it.
+     */
+    public static KeyBinding tooltip_details = add(new GuiKeyBinding(
+            "keybindings." + SpellEngineMod.ID + ".tooltip_details",
+            InputUtil.Type.KEYSYM,
+            InputUtil.UNKNOWN_KEY.getCode(),
+            SpellEngineMod.modName()));
+
     public static KeyBinding bypass_spell_hotbar = add(new KeyBinding(
             "keybindings." + SpellEngineMod.ID + ".bypass_spell_hotbar",
             InputUtil.Type.KEYSYM,

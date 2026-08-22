@@ -38,7 +38,8 @@
     ]
   },
   "mixins": [
-    "spell_engine.mixins.json"
+    "spell_engine.mixins.json",
+    "spell_engine-fabric.mixins.json"
   ],
   "depends": {
     "minecraft": ">=${minecraft_compat_version}",
