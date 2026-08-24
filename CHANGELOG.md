@@ -2,6 +2,8 @@
 
 Functional changes:
 - Rebindable spell tooltip details button 
+- Added Loot injection fallback mode: injects into loot tables those are not pre-defined, works based on checking loot table contents to add matching RPG Series loot
+  - example: loot tables with Iron Sword in it, will generate stuff RPG Series Tier 1 weapons
 
 # 1.10.2
 
