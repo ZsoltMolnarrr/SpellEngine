@@ -75,7 +75,7 @@ public class PlatformEventsImpl {
 
     public static void onLootTableModify(Consumer<PlatformEvents.LootTableModifyContext> callback) {
         NeoForge.EVENT_BUS.addListener(LootTableLoadEvent.class, event -> {
-            var context = new NeoForgeLootContext(event.getRegistries(), event.getName());
+            var context = new NeoForgeLootContext(event.getRegistries(), event.getName(), event.getTable().pools);
             callback.accept(context);
             if (!context.pools.isEmpty()) {
                 // NeoForge exposes a built LootTable — rebuild it with the extra pools appended.
@@ -127,15 +127,18 @@ public class PlatformEventsImpl {
     private static final class NeoForgeLootContext implements PlatformEvents.LootTableModifyContext {
         private final RegistryWrapper.WrapperLookup registries;
         private final Identifier tableId;
+        private final List<LootPool> existingPools;
         private final List<LootPool> pools = new ArrayList<>();
 
-        private NeoForgeLootContext(RegistryWrapper.WrapperLookup registries, Identifier tableId) {
+        private NeoForgeLootContext(RegistryWrapper.WrapperLookup registries, Identifier tableId, List<LootPool> existingPools) {
             this.registries = registries;
             this.tableId = tableId;
+            this.existingPools = existingPools;
         }
 
         @Override public RegistryWrapper.WrapperLookup registries() { return registries; }
         @Override public Identifier tableId() { return tableId; }
+        @Override public List<LootPool> existingPools() { return existingPools; }
         @Override public void addPool(LootPool pool) { pools.add(pool); }
     }
 }

@@ -116,6 +116,9 @@ public class PlatformEvents {
     public interface LootTableModifyContext {
         RegistryWrapper.WrapperLookup registries();
         Identifier tableId();
+        /// Snapshot of the pools the table already has (as parsed from the datapack, plus anything
+        /// other mods added before us). Read-only; used to inspect what the table drops.
+        java.util.List<LootPool> existingPools();
         void addPool(LootPool pool);
     }
 

@@ -7,11 +7,56 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
+/// Loot injection config. A loot table is processed with the following priority (first hit wins):
+/// 1. `injectors` — exact loot table id
+/// 2. `regex_injectors` — regex matched loot table id
+/// 3. `fallbacks` — the table's own contents are inspected; every fallback whose `reference`
+///    matches an item the table drops gets injected (one per `category`)
 public class LootConfig {
     public LinkedHashMap<String, Pool> injectors = new LinkedHashMap<>();
     public LinkedHashMap<String, Pool> regex_injectors = new LinkedHashMap<>();
+    /// Ordered: within a `category` the first matching fallback wins, so list higher tiers first.
+    /// Missing from the file (older configs) -> filled with defaults; explicit `[]` -> disabled.
+    @Nullable public List<Fallback> fallbacks = null;
+
+    public static class Fallback extends Pool {
+        public static final String DEFAULT_TABLE_PATTERN = "~:chests/";
+        /// Item pattern (`#tag`, `~regex`, or exact id) the loot table must already drop.
+        public String reference = "";
+        /// Exclusivity group: at most one fallback per category is injected into a table.
+        public String category = "";
+        /// Which loot tables this fallback may apply to (`~regex` or exact id).
+        public String table_pattern = DEFAULT_TABLE_PATTERN;
+        /// Added on top of `rolls`, scaled by the reference gear's weight share of the source table
+        /// (`effective_rolls = rolls + extra_rolls * share`, share in 0..1).
+        public float extra_rolls = 1F;
+
+        public Fallback() {
+            this.rolls = 0F;
+            this.bonus_rolls = 0F;
+        }
+        public Fallback(String reference, String category) {
+            this();
+            this.reference = reference;
+            this.category = category;
+        }
+        public Fallback tables(String pattern) {
+            this.table_pattern = pattern;
+            return this;
+        }
+        public Fallback extra_rolls(double extraRolls) {
+            this.extra_rolls = (float) extraRolls;
+            return this;
+        }
+        public Fallback with(Consumer<Pool> configure) {
+            configure.accept(this);
+            return this;
+        }
+    }
 
     public static class Pool {
         public float rolls = 1F;
@@ -166,17 +211,35 @@ public class LootConfig {
         }
     }
 
-    public static LootConfig constrainValues(LootConfig config) {
-        if (config.injectors != null) {
-            for (var entry: config.injectors.entrySet()) {
-                var pool = entry.getValue();
-                for (var lootEntry: pool.entries) {
-                    if (lootEntry.weight < 1) {
-                        lootEntry.weight = 1;
-                    }
+    public static LootConfig constrainValues(LootConfig config, LootConfig defaults) {
+        if (config.injectors == null) { config.injectors = new LinkedHashMap<>(); }
+        if (config.regex_injectors == null) { config.regex_injectors = new LinkedHashMap<>(); }
+        if (config.fallbacks == null) {
+            config.fallbacks = defaults.fallbacks != null ? new ArrayList<>(defaults.fallbacks) : new ArrayList<>();
+        }
+        config.fallbacks.removeIf(Objects::isNull);
+        constrainPools(config.injectors.values());
+        constrainPools(config.regex_injectors.values());
+        constrainPools(config.fallbacks);
+        for (var fallback: config.fallbacks) {
+            if (fallback.reference == null) { fallback.reference = ""; }
+            if (fallback.category == null) { fallback.category = ""; }
+            if (fallback.table_pattern == null || fallback.table_pattern.isEmpty()) {
+                fallback.table_pattern = Fallback.DEFAULT_TABLE_PATTERN;
+            }
+            if (fallback.extra_rolls < 0) { fallback.extra_rolls = 0; }
+        }
+        return config;
+    }
+
+    private static void constrainPools(Iterable<? extends Pool> pools) {
+        for (var pool: pools) {
+            if (pool.entries == null) { pool.entries = new ArrayList<>(); }
+            for (var lootEntry: pool.entries) {
+                if (lootEntry.weight < 1) {
+                    lootEntry.weight = 1;
                 }
             }
         }
-        return config;
     }
 }

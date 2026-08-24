@@ -3,6 +3,7 @@ package net.spell_engine.rpg_series.datagen;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
@@ -20,6 +21,50 @@ public class RPGSeriesContent {
     public static class EquipmentTagGen extends FabricTagProvider<Item> {
         public EquipmentTagGen(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
             super(output, RegistryKeys.ITEM, registriesFuture);
+        }
+
+        /// Vanilla gear classified into RPG Series loot tiers. Loot tables dropping these get the
+        /// matching `loot_tier` items injected by the loot fallback injector.
+        private void generateLootReferenceTags() {
+            var WEAPONS = RPGSeriesItemTags.LootCategory.WEAPONS;
+            var ARMORS = RPGSeriesItemTags.LootCategory.ARMORS;
+            for (int i = 0; i < RPGSeriesItemTags.LootTiers.DEFAULT_TIERS; i++) {
+                getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(i, WEAPONS));
+                getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(i, ARMORS));
+                getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.treasures(i));
+            }
+            // Treasure signals: valuables that only show up in loot, used for accessories / relics
+            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.treasures(1))
+                    .add(Items.EMERALD, Items.ENCHANTED_BOOK, Items.GOLDEN_APPLE);
+            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.treasures(2))
+                    .add(Items.DIAMOND, Items.HEART_OF_THE_SEA, Items.ENCHANTED_GOLDEN_APPLE, Items.DIAMOND_HORSE_ARMOR,
+                         Items.MUSIC_DISC_13, Items.MUSIC_DISC_CAT, Items.MUSIC_DISC_OTHERSIDE,
+                         Items.MUSIC_DISC_PIGSTEP, Items.MUSIC_DISC_RELIC, Items.MUSIC_DISC_5);
+            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.treasures(3))
+                    .add(Items.TOTEM_OF_UNDYING, Items.NETHERITE_INGOT, Items.NETHERITE_SCRAP,
+                         Items.NETHER_STAR, Items.ELYTRA);
+            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(0, WEAPONS))
+                    .add(Items.WOODEN_SWORD, Items.WOODEN_AXE,
+                         Items.STONE_SWORD, Items.STONE_AXE);
+            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(RPGSeriesItemTags.LootReference.GOLDEN_WEAPONS))
+                    .add(Items.GOLDEN_SWORD, Items.GOLDEN_AXE);
+            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(0, ARMORS))
+                    .add(Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS,
+                         Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS);
+            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(1, WEAPONS))
+                    .add(Items.IRON_SWORD, Items.IRON_AXE, Items.BOW, Items.CROSSBOW);
+            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(1, ARMORS))
+                    .add(Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS,
+                         Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, Items.CHAINMAIL_LEGGINGS, Items.CHAINMAIL_BOOTS,
+                         Items.TURTLE_HELMET);
+            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(2, WEAPONS))
+                    .add(Items.DIAMOND_SWORD, Items.DIAMOND_AXE, Items.TRIDENT);
+            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(2, ARMORS))
+                    .add(Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS);
+            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(3, WEAPONS))
+                    .add(Items.NETHERITE_SWORD, Items.NETHERITE_AXE, Items.MACE);
+            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(3, ARMORS))
+                    .add(Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS);
         }
 
         @Override
@@ -46,6 +91,7 @@ public class RPGSeriesContent {
             for (var entry: RPGSeriesItemTags.ArmorType.ALL.entrySet()) {
                 var tag = getOrCreateTagBuilder(entry.getValue());
             }
+            generateLootReferenceTags();
 
             var fullSpellWeaponTypes = List.of(
                     Equipment.WeaponType.DAMAGE_STAFF, Equipment.WeaponType.DAMAGE_WAND,

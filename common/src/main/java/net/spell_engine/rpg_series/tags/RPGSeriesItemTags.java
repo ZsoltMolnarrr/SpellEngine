@@ -131,6 +131,44 @@ public class RPGSeriesItemTags {
     public enum LootCategory {
         WEAPONS, ARMORS, ACCESSORIES, RELICS
     }
+    /// Reference gear used by the loot fallback injector: a loot table dropping any item of
+    /// `loot_reference/tier_N_<category>` gets `loot_tier/tier_N_<category>` items injected.
+    /// Spell Engine ships vanilla gear in these tags; content mods / packs may extend them.
+    public static class LootReference {
+        public static final String FOLDER = "loot_reference";
+        public static TagKey<Item> get(int tier, LootCategory category) {
+            return TagKey.of(RegistryKeys.ITEM, id(tier, category));
+        }
+        public static Identifier id(int tier, LootCategory category) {
+            var name = category.toString().toLowerCase(Locale.ROOT);
+            return Identifier.of(NAMESPACE, FOLDER + "/" + "tier_" + tier + "_" + name);
+        }
+        public static String tagString(int tier, LootCategory category) {
+            return "#" + id(tier, category);
+        }
+
+        /// Vanilla treasure items signalling a valuable chest (diamonds, totems, ...), drive accessory / relic injection.
+        public static final String TREASURES = "treasures";
+        public static TagKey<Item> treasures(int tier) {
+            return TagKey.of(RegistryKeys.ITEM, id("tier_" + tier + "_" + TREASURES));
+        }
+        public static String treasuresTagString(int tier) {
+            return "#" + id("tier_" + tier + "_" + TREASURES);
+        }
+
+        /// Themed (non-tiered) reference gear, e.g. golden weapons found in nether structures.
+        public static final String GOLDEN_WEAPONS = "golden_weapons";
+        public static TagKey<Item> get(String theme) {
+            return TagKey.of(RegistryKeys.ITEM, id(theme));
+        }
+        public static Identifier id(String theme) {
+            return Identifier.of(NAMESPACE, FOLDER + "/" + theme);
+        }
+        public static String tagString(String theme) {
+            return "#" + id(theme);
+        }
+    }
+
     public static class LootTiers {
         public static final int DEFAULT_TIERS = 10;
         public static final String FOLDER = "loot_tier";

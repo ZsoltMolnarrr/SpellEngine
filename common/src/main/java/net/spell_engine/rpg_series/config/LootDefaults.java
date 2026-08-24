@@ -18,6 +18,18 @@ public class LootDefaults {
         return "#" + RPGSeriesItemTags.LootTiers.id(tier, RPGSeriesItemTags.LootCategory.WEAPONS).toString();
     }
 
+    private static String referenceWeapons(int tier) {
+        return RPGSeriesItemTags.LootReference.tagString(tier, RPGSeriesItemTags.LootCategory.WEAPONS);
+    }
+
+    private static String referenceArmors(int tier) {
+        return RPGSeriesItemTags.LootReference.tagString(tier, RPGSeriesItemTags.LootCategory.ARMORS);
+    }
+
+    private static String referenceTreasures(int tier) {
+        return RPGSeriesItemTags.LootReference.treasuresTagString(tier);
+    }
+
     private static String relics(int tier) {
         return "#" + RPGSeriesItemTags.LootTiers.id(tier, RPGSeriesItemTags.LootCategory.RELICS).toString();
     }
@@ -62,6 +74,76 @@ public class LootDefaults {
         scrollLootConfig = new LootConfig();
         var scrolls = scrollLootConfig.injectors;
         var scrolls_regex = scrollLootConfig.regex_injectors;
+
+        // Fallback injection: for loot tables without an explicit entry above, inspect what the
+        // table drops and inject matching RPG Series loot. One winner per category, first match
+        // wins, so higher tiers are listed first. `rolls` is flat, `extra_rolls` is scaled by the
+        // reference gear's share of the source table. Enchanting is mirrored from the source table
+        // (plain/enchanted copies weighted like the reference gear), an entry's `enchant` only
+        // overrides the level range of the enchanted copy. See `LootConfig.Fallback`.
+
+        var WEAPONS = "weapons";
+        var ARMORS = "armors";
+        var SCROLLS = "scrolls";
+        itemLootConfig.fallbacks = new ArrayList<>();
+        scrollLootConfig.fallbacks = new ArrayList<>();
+        var fallbacks = itemLootConfig.fallbacks;
+        var scroll_fallbacks = scrollLootConfig.fallbacks;
+
+        // Golden weapons are their own category so they coexist with tiered weapon injection
+        fallbacks.add(new LootConfig.Fallback(RPGSeriesItemTags.LootReference.tagString(RPGSeriesItemTags.LootReference.GOLDEN_WEAPONS), "golden_weapons")
+                .with(pool -> pool.add(GOLDEN)));
+
+        fallbacks.add(new LootConfig.Fallback(referenceWeapons(3), WEAPONS)
+                .with(pool -> pool.add(W3)));
+        fallbacks.add(new LootConfig.Fallback(referenceWeapons(2), WEAPONS)
+                .with(pool -> pool.add(W2)));
+        fallbacks.add(new LootConfig.Fallback(referenceWeapons(1), WEAPONS)
+                .with(pool -> pool.add(W1)));
+        fallbacks.add(new LootConfig.Fallback(referenceWeapons(0), WEAPONS)
+                .with(pool -> pool.add(W0)));
+
+        fallbacks.add(new LootConfig.Fallback(referenceArmors(3), ARMORS)
+                .with(pool -> pool.add(A3)));
+        fallbacks.add(new LootConfig.Fallback(referenceArmors(2), ARMORS)
+                .with(pool -> pool.add(A2)));
+        fallbacks.add(new LootConfig.Fallback(referenceArmors(1), ARMORS)
+                .with(pool -> pool.add(A1)));
+        fallbacks.add(new LootConfig.Fallback(referenceArmors(0), ARMORS)
+                .with(pool -> pool.add(A1)));   // No tier 0 armors exist, use tier 1
+
+        // Accessories: driven by treasure signals (valuables in the chest), with a lower-rate
+        // ride-along on gear tiers for chests that have equipment but no treasure.
+        var ACCESSORIES = "accessories";
+        fallbacks.add(new LootConfig.Fallback(referenceTreasures(3), ACCESSORIES).extra_rolls(0.5)
+                .with(pool -> pool.add(X3)));
+        fallbacks.add(new LootConfig.Fallback(referenceTreasures(2), ACCESSORIES).extra_rolls(0.5)
+                .with(pool -> pool.add(X2)));
+        fallbacks.add(new LootConfig.Fallback(referenceTreasures(1), ACCESSORIES).extra_rolls(0.5)
+                .with(pool -> pool.add(X1)));
+        for (int tier = 3; tier >= 0; tier--) {
+            var accessory = accessories(tier);
+            fallbacks.add(new LootConfig.Fallback(referenceWeapons(tier), ACCESSORIES).extra_rolls(0.25)
+                    .with(pool -> pool.add(accessory)));
+            fallbacks.add(new LootConfig.Fallback(referenceArmors(tier), ACCESSORIES).extra_rolls(0.25)
+                    .with(pool -> pool.add(accessory)));
+        }
+
+        // Relics: only from tier 2+ treasure signals
+        var RELICS = "relics";
+        fallbacks.add(new LootConfig.Fallback(referenceTreasures(3), RELICS).extra_rolls(0.25)
+                .with(pool -> pool.add(R3)));
+        fallbacks.add(new LootConfig.Fallback(referenceTreasures(2), RELICS).extra_rolls(0.25)
+                .with(pool -> pool.add(R2)));
+
+        for (int tier = 3; tier >= 1; tier--) {
+            var min = tier;
+            var max = Math.min(tier + 1, 4);
+            scroll_fallbacks.add(new LootConfig.Fallback(referenceWeapons(tier), SCROLLS).extra_rolls(0.25)
+                    .with(pool -> pool.scroll(min, max)));
+            scroll_fallbacks.add(new LootConfig.Fallback(referenceArmors(tier), SCROLLS).extra_rolls(0.25)
+                    .with(pool -> pool.scroll(min, max)));
+        }
 
         var arsenal_heal_spells = "#arsenal:heal";
         var arsenal_melee_spells = "#arsenal:melee";

@@ -15,6 +15,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.spell_engine.PlatformEvents;
+import net.spell_engine.mixin.loot.LootTableBuilderAccessor;
 
 import java.util.function.Consumer;
 
@@ -76,6 +77,11 @@ public class PlatformEventsImpl {
     private record FabricLootContext(RegistryWrapper.WrapperLookup registries, Identifier tableId,
                                      net.minecraft.loot.LootTable.Builder builder)
             implements PlatformEvents.LootTableModifyContext {
+        @Override
+        public java.util.List<LootPool> existingPools() {
+            return ((LootTableBuilderAccessor) builder).spellEngine_getPools().build();
+        }
+
         @Override
         public void addPool(LootPool pool) {
             builder.pool(pool); // FabricLootTableBuilder.pool(LootPool)

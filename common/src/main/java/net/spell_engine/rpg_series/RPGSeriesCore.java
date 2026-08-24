@@ -1,5 +1,6 @@
 package net.spell_engine.rpg_series;
 
+import com.google.common.base.Suppliers;
 import net.minecraft.enchantment.Enchantments;
 import net.spell_engine.PlatformEvents;
 import net.spell_engine.api.item.weapon.StaffItem;
@@ -9,7 +10,6 @@ import net.spell_engine.rpg_series.loot.LootHelper;
 import net.spell_engine.rpg_series.config.LootDefaults;
 import net.tiny_config.ConfigManager;
 
-import java.util.HashMap;
 import java.util.Set;
 
 public class RPGSeriesCore {
@@ -20,7 +20,7 @@ public class RPGSeriesCore {
             .builder()
             .setDirectory(NAMESPACE)
             .sanitize(true)
-            .constrain(LootConfig::constrainValues)
+            .constrain(config -> LootConfig.constrainValues(config, LootDefaults.itemLootConfig))
             .build();
 
     public static ConfigManager<LootConfig> lootScrollsConfig = new ConfigManager<>
@@ -28,7 +28,7 @@ public class RPGSeriesCore {
             .builder()
             .setDirectory(NAMESPACE)
             .sanitize(true)
-            .constrain(LootConfig::constrainValues)
+            .constrain(config -> LootConfig.constrainValues(config, LootDefaults.scrollLootConfig))
             .build();
 
     public static void init() {
@@ -36,14 +36,20 @@ public class RPGSeriesCore {
         lootScrollsConfig.refresh();
         LootHelper.TAG_CACHE.refresh();
         PlatformEvents.onLootTableModify(context -> {
-            LootHelper.configure(context.registries(), context.tableId(), context::addPool, lootEquipmentConfig.value, new HashMap<>());
-            LootHelper.configure(context.registries(), context.tableId(), context::addPool, lootScrollsConfig.value, new HashMap<>());
+            // Snapshot the table's existing pools lazily, only if a fallback needs to inspect them
+            var existingPools = Suppliers.memoize(context::existingPools);
+            LootHelper.configure(context.registries(), context.tableId(), existingPools, context::addPool, lootEquipmentConfig.value, "equipment");
+            LootHelper.configure(context.registries(), context.tableId(), existingPools, context::addPool, lootScrollsConfig.value, "scrolls");
         });
         PlatformEvents.onServerStarted((server) -> {
             LootHelper.updateTagCache(lootEquipmentConfig.value);
+            LootHelper.updateTagCache(lootScrollsConfig.value);
+            LootHelper.saveFallbackReport();
         });
         PlatformEvents.onDataPackReloadComplete(() -> {
             LootHelper.updateTagCache(lootEquipmentConfig.value);
+            LootHelper.updateTagCache(lootScrollsConfig.value);
+            LootHelper.saveFallbackReport();
         });
 
         var staffEnchantments = Set.of(Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING);
