@@ -59,6 +59,11 @@ public class PlatformImpl {
         }
 
         @Override
+        public void sendPacket(ServerPlayerEntity player, net.minecraft.network.packet.Packet<?> packet) {
+            player.networkHandler.send(packet); // NeoForge-patched name (vanilla Yarn: sendPacket)
+        }
+
+        @Override
         public void networkS2C_Send(ServerPlayerEntity player, CustomPayload payload) {
             PacketDistributor.sendToPlayer(player, payload);
         }

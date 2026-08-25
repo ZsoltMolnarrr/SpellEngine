@@ -58,6 +58,9 @@ public class Platform {
         boolean networkS2C_CanSend(ServerPlayerEntity player, Identifier packetId);
         /// Send a clientbound custom payload to a single player.
         void networkS2C_Send(ServerPlayerEntity player, CustomPayload payload);
+        /// Sends a vanilla packet to one player. Per loader because NeoForge's Yarn-patched jar names
+        /// `ServerCommonNetworkHandler#sendPacket` `send` (LESSONS §4.15).
+        void sendPacket(ServerPlayerEntity player, net.minecraft.network.packet.Packet<?> packet);
         /// Send a serverbound custom payload from the client. Invoked on the physical client only.
         void networkC2S_Send(CustomPayload payload);
 

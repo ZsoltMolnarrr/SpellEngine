@@ -831,7 +831,7 @@ public class SpellImpacts {
                             // gone. Player movement is client-authoritative, so the player's own client must be told
                             // explicitly — the same way vanilla knockback does it (PlayerEntity#attack).
                             if (target instanceof net.minecraft.server.network.ServerPlayerEntity serverPlayer) {
-                                serverPlayer.networkHandler.sendPacket(new net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket(serverPlayer));
+                                net.spell_engine.Platform.util().sendPacket(serverPlayer, new net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket(serverPlayer));
                             }
                             success = true;
                         }
