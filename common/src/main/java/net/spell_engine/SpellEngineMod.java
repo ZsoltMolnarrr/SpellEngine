@@ -9,12 +9,14 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.spell_engine.api.effect.EntityTints;
 import net.spell_engine.api.effect.RemoveOnHit;
 import net.spell_engine.api.effect.StatusEffectClassification;
 import net.spell_engine.api.item.set.EquipmentSetFeature;
@@ -89,6 +91,8 @@ public class SpellEngineMod {
         SpellEvents.SPELL_CAST.register(args -> {
             SpellCastCriteria.INSTANCE.trigger((ServerPlayerEntity) args.caster(), args.spell());
         });
+
+        EntityTints.register(StatusEffects.POISON.value(), 0x88000088);
 
         ExternalSpellSchools.init();
         RPGSeriesCore.init();

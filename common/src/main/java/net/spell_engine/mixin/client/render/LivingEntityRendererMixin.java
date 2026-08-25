@@ -31,6 +31,8 @@ public abstract class LivingEntityRendererMixin {
             return;
         }
         var delta = ((EntityRenderStateExtension) state).spellEngine_getTickDelta();
+        // Active for the whole submission of this entity (body, features, armor): consumed by
+        // BatchingRenderCommandQueueTintMixin, which multiplies it into every submitted model's tint color
         EntityTints.Current.set(EntityTints.currentTint(livingEntity));
         if (livingEntity instanceof SpellCaster.Player caster) {
             var process = caster.getSpellCastProcess();
