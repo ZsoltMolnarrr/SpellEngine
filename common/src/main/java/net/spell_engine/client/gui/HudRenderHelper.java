@@ -34,6 +34,19 @@ import java.util.stream.Collectors;
 import net.spell_engine.internals.SpellParameters;
 
 public class HudRenderHelper {
+    /** Id of the spell HUD element/layer registered with each loader's HUD registry (same id on both). */
+    public static final Identifier HUD_ELEMENT_ID = Identifier.of(SpellEngineMod.ID, "spell_hud");
+
+    /**
+     * Body of the HUD element registered natively per loader (Fabric {@code HudElementRegistry},
+     * NeoForge {@code RegisterGuiLayersEvent}). Both register it right after the vanilla status-bar
+     * group (below chat) so it composites above the status bars on its own GUI layer.
+     */
+    public static void renderHudElement(DrawContext context, float tickDelta) {
+        if (MinecraftClient.getInstance().options.hudHidden) { return; }
+        render(context, tickDelta);
+    }
+
 
     public static void render(DrawContext context, float tickDelta) {
         render(context, tickDelta, false);

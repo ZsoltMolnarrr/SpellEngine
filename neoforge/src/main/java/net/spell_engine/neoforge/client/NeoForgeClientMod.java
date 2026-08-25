@@ -1,7 +1,6 @@
 package net.spell_engine.neoforge.client;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.Identifier;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
 import net.neoforged.api.distmarker.Dist;
@@ -60,13 +59,12 @@ public class NeoForgeClientMod {
         ModLoadingContext.get().registerExtensionPoint(IConfigScreenFactory.class, () -> (modContainer, parent) -> new ConfigMenuScreen(parent));
     }
 
-    public static final Identifier SPELL_HUD_LAYER_ID = Identifier.of(SpellEngineMod.ID, "spell_hud");
     @SubscribeEvent
-    public static void registerGuiOverlaysEvent(RegisterGuiLayersEvent event) {
-        event.registerBelow(VanillaGuiLayers.CHAT, SPELL_HUD_LAYER_ID, (guiGraphics, deltaTracker) -> {
-            if (MinecraftClient.getInstance().options.hudHidden) { return; }
-            HudRenderHelper.render(guiGraphics, deltaTracker.getTickProgress(true));
-        });
+    public static void registerGuiLayers(RegisterGuiLayersEvent event) {
+        // Spell HUD right after the vanilla status-bar group (AIR_LEVEL is its last layer on NeoForge; Fabric
+        // attaches after MOUNT_HEALTH, the same spot), i.e. above the status bars and below the info/xp bar and chat.
+        event.registerAbove(VanillaGuiLayers.AIR_LEVEL, HudRenderHelper.HUD_ELEMENT_ID, (guiGraphics, deltaTracker) ->
+                HudRenderHelper.renderHudElement(guiGraphics, deltaTracker.getTickProgress(true)));
     }
 
     @SubscribeEvent

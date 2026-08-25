@@ -4,9 +4,6 @@ import net.spell_engine.Platform;
 import net.spell_engine.PlatformEvents;
 import net.minecraft.block.Block;
 import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.RepairableComponent;
-import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.component.type.ToolComponent;
@@ -199,13 +196,10 @@ public class Weapon {
         public Ingredient getRepairIngredient() { return repairIngredient.get(); }
 
         /// Durability, enchantability and repair (from the supplier) — no TOOL component.
+        /// Repair is a `minecraft:repairable` snapshot plus the lazily resolved {@link LazyRepair} component.
         public Item.Settings applyBaseSettings(Item.Settings settings) {
             settings = settings.maxDamage(toolMaterial.durability()).enchantable(toolMaterial.enchantmentValue());
-            var ingredient = repairIngredient.get();
-            if (ingredient != null && !ingredient.isEmpty()) {
-                settings.component(DataComponentTypes.REPAIRABLE, new RepairableComponent(RegistryEntryList.of(ingredient.getMatchingItems().toList())));
-            }
-            return settings;
+            return LazyRepair.apply(settings, repairIngredient);
         }
 
         /// Base settings plus the vanilla sword TOOL/WEAPON components. Attack attributes must be applied afterwards.

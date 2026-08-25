@@ -60,6 +60,11 @@ public class PlatformImpl {
         }
 
         @Override
+        public void sendPacket(ServerPlayerEntity player, net.minecraft.network.packet.Packet<?> packet) {
+            player.networkHandler.sendPacket(packet);
+        }
+
+        @Override
         public void networkS2C_Send(ServerPlayerEntity player, CustomPayload payload) {
             ServerPlayNetworking.send(player, payload);
         }
