@@ -1,6 +1,8 @@
 package net.spell_engine.entity.goal;
 
 import net.minecraft.entity.LivingEntity;
+import net.spell_engine.internals.target.EntityRelations;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.Box;
@@ -75,7 +77,7 @@ public class DynamicMeleeAttackGoal extends Goal {
             float r = effectiveMaxRange();
             sqMax = Math.min(sqMax, (double) r * r);
         }
-        Vec3d toTarget = target.getPos().subtract(summonedEntity.getPos()).normalize();
+        Vec3d toTarget = target.getEntityPos().subtract(summonedEntity.getEntityPos()).normalize();
         double dot = target.getVelocity().dotProduct(toTarget);
         float frac = (dot > 0.01) ? 0.5f : (dot < -0.01) ? 0.9f : 0.7f;
         return sqMax * frac * frac;
@@ -225,7 +227,8 @@ public class DynamicMeleeAttackGoal extends Goal {
     private void performAttackImpact(LivingEntity primary) {
         // Played once per swing, before any tryAttack calls — AoE hits do not retrigger it.
         summonedEntity.playConfiguredSound(config.impact_sound);
-        summonedEntity.tryAttack(primary);
+        var serverWorld = (ServerWorld) summonedEntity.getEntityWorld();
+        summonedEntity.tryAttack(serverWorld, primary);
         if (config.radius <= 0) return;
         // Scale the AoE radius with the entity's GENERIC_SCALE attribute so a larger
         // summon hits a proportionally larger area — keeps the impact footprint visually
@@ -234,14 +237,14 @@ public class DynamicMeleeAttackGoal extends Goal {
         LivingEntity owner = summonedEntity.getOwner();
         Box box = primary.getBoundingBox().expand(radius);
         double radiusSq = (double) radius * radius;
-        for (LivingEntity nearby : summonedEntity.getWorld().getEntitiesByClass(LivingEntity.class, box, e -> true)) {
+        for (LivingEntity nearby : summonedEntity.getEntityWorld().getEntitiesByClass(LivingEntity.class, box, e -> true)) {
             if (nearby == primary) continue;
             if (nearby == summonedEntity) continue;
             if (nearby == owner) continue;
-            if (nearby instanceof Tameable t && owner != null && owner.getUuid().equals(t.getOwnerUuid())) continue;
+            if (nearby instanceof Tameable t && owner != null && owner.getUuid().equals(EntityRelations.ownerUuid(t))) continue;
             if (owner != null && !summonedEntity.canAttackTarget(nearby, owner)) continue;
             if (nearby.squaredDistanceTo(primary) > radiusSq) continue;
-            summonedEntity.tryAttack(nearby);
+            summonedEntity.tryAttack(serverWorld, nearby);
         }
     }
 

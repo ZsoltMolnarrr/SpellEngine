@@ -71,8 +71,8 @@ public class Ammo {
             var needsArrow = id.getPath().contains("arrow");
 
             var enchantmentQuery = needsArrow
-                    ? player.getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntry(Enchantments.INFINITY)
-                    : player.getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntry(SPELL_INFINITY);
+                    ? player.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(Enchantments.INFINITY)
+                    : player.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(SPELL_INFINITY);
             if (enchantmentQuery.isPresent() &&
                     EnchantmentHelper.getLevel(enchantmentQuery.get(), casterStack) > 0) { // Has infinity
                 return new Result(satisfied, ammo, consume, sources);

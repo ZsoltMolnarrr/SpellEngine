@@ -26,10 +26,6 @@ public class UniversalSpellBookItem extends Item {
         super(settings);
     }
 
-    @Override
-    public boolean isEnchantable(ItemStack stack) {
-        return false;
-    }
 
     /**
      * Apply spell book configuration to an ItemStack based on a tag.
@@ -67,7 +63,7 @@ public class UniversalSpellBookItem extends Item {
 
         // Set custom model ID
         var modelId = modelIdForPool(tag.id());
-        itemStack.set(SpellDataComponents.ITEM_MODEL, modelId);
+        itemStack.set(DataComponentTypes.ITEM_MODEL, modelId); // item-model definition: assets/<ns>/items/<pool path>.json
 
         // Set custom name if translation exists
         var key = translationKeyForPool(tag.id());

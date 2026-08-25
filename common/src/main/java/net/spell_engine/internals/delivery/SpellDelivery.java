@@ -87,7 +87,7 @@ public class SpellDelivery {
                 }
             }
             case AREA -> {
-                var center = caster.getPos().add(0, caster.getHeight() / 2F, 0);
+                var center = caster.getEntityPos().add(0, caster.getHeight() / 2F, 0);
                 var area = spell.target.area;
                 var range = SpellParameters.getRangeCurved(caster, spellEntry, context.charge()) * caster.getScale();
                 final var centeredContext = context; // .position(center);
@@ -146,7 +146,7 @@ public class SpellDelivery {
         switch (spell.deliver.type) {
             case DIRECT -> {
                 var anySuccess = false;
-                var casterPos = caster.getPos().add(0, caster.getHeight() / 2F, 0);
+                var casterPos = caster.getEntityPos().add(0, caster.getHeight() / 2F, 0);
                 if (targets.isEmpty() && targetLocation != null
                         && spell.area_impact != null) { // Special check to allow area impacts only, in the absence of targets
                     var position = targetLocation.lerp(casterPos, 0.001F);
@@ -158,7 +158,7 @@ public class SpellDelivery {
                         var target = targeted.entity();
                         var position = target == caster
                                 ? casterPos
-                                : target.getPos().add(0, target.getHeight() / 2F, 0).lerp(casterPos, 0.01F);
+                                : target.getEntityPos().add(0, target.getHeight() / 2F, 0).lerp(casterPos, 0.01F);
                         var targetSpecificContext = targeted.context().position(position);
                         var result = SpellImpacts.performImpacts(world, caster, target, target, spellEntry, spell.impacts, targetSpecificContext);
                         anySuccess = anySuccess || result;

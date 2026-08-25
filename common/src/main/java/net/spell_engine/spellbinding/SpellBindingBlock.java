@@ -1,5 +1,7 @@
 package net.spell_engine.spellbinding;
 
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryKey;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -9,6 +11,8 @@ import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.component.type.TooltipDisplayComponent;
+import java.util.function.Consumer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.particle.ParticleTypes;
@@ -30,7 +34,17 @@ import java.util.List;
 
 public class SpellBindingBlock extends BlockWithEntity {
     public static SpellBindingBlock INSTANCE = new SpellBindingBlock(AbstractBlock.Settings.create().hardness(4F).nonOpaque());
-    public static final BlockItem ITEM = new BlockItem(INSTANCE, new Item.Settings());
+    // Block#appendTooltip is gone since 1.21.5; the description lives on the item
+    public static final BlockItem ITEM = new BlockItem(INSTANCE, new Item.Settings().registryKey(RegistryKey.of(RegistryKeys.ITEM, SpellBinding.ID)).useBlockPrefixedTranslationKey()) {
+        @Override
+        public void appendTooltip(ItemStack stack, Item.TooltipContext context, TooltipDisplayComponent displayComponent, Consumer<Text> tooltip, TooltipType options) {
+            super.appendTooltip(stack, context, displayComponent, tooltip, options);
+            tooltip.accept(Text
+                    .translatable("block.spell_engine.spell_binding.description")
+                    .formatted(Formatting.GRAY)
+            );
+        }
+    };
 
     protected static final VoxelShape SHAPE = Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
     public static final List<BlockPos> BOOKSHELF_OFFSETS = BlockPos.stream(-2, 0, -2, 2, 1, 2).filter(pos -> Math.abs(pos.getX()) == 2 || Math.abs(pos.getZ()) == 2).map(BlockPos::toImmutable).toList();
@@ -63,7 +77,7 @@ public class SpellBindingBlock extends BlockWithEntity {
         super.randomDisplayTick(state, world, pos, random);
         for (BlockPos blockPos : BOOKSHELF_OFFSETS) {
             if (random.nextInt(16) != 0 || !SpellBindingBlock.canAccessBookshelf(world, pos, blockPos)) continue;
-            world.addParticle(ParticleTypes.ENCHANT, (double)pos.getX() + 0.5, (double)pos.getY() + 2.0, (double)pos.getZ() + 0.5, (double)((float)blockPos.getX() + random.nextFloat()) - 0.5, (float)blockPos.getY() - random.nextFloat() - 1.0f, (double)((float)blockPos.getZ() + random.nextFloat()) - 0.5);
+            world.addParticleClient(ParticleTypes.ENCHANT, (double)pos.getX() + 0.5, (double)pos.getY() + 2.0, (double)pos.getZ() + 0.5, (double)((float)blockPos.getX() + random.nextFloat()) - 0.5, (float)blockPos.getY() - random.nextFloat() - 1.0f, (double)((float)blockPos.getZ() + random.nextFloat()) - 0.5);
         }
     }
 
@@ -80,11 +94,11 @@ public class SpellBindingBlock extends BlockWithEntity {
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return world.isClient ? validateTicker(type, SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntity::tick) : null;
+        return world.isClient() ? validateTicker(type, SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntity::tick) : null;
     }
 
     protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (world.isClient) {
+        if (world.isClient()) {
             return ActionResult.SUCCESS;
         }
         player.openHandledScreen(state.createScreenHandlerFactory(world, pos));
@@ -110,12 +124,4 @@ public class SpellBindingBlock extends BlockWithEntity {
         return false;
     }
 
-    @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType options) {
-        super.appendTooltip(stack, context, tooltip, options);
-        tooltip.add(Text
-                .translatable("block.spell_engine.spell_binding.description")
-                .formatted(Formatting.GRAY)
-        );
-    }
 }

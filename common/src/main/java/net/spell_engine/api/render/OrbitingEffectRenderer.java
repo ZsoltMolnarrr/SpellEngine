@@ -1,9 +1,7 @@
 package net.spell_engine.api.render;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.item.ItemRenderer;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Identifier;
@@ -28,7 +26,7 @@ public class OrbitingEffectRenderer implements CustomModelStatusEffect.Renderer 
     // `appliedAtWorldTime` ignored: the orbit angle is driven by the entity's own age, so a
     // client/server age offset only shifts the (continuous, periodic) phase — invisible.
     @Override
-    public void renderEffect(long appliedAtWorldTime, int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumers, int light) {
+    public void renderEffect(long appliedAtWorldTime, int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack, OrderedRenderCommandQueue queue, int light) {
         matrixStack.push();
         var time = livingEntity.age + delta;
 
@@ -36,20 +34,19 @@ public class OrbitingEffectRenderer implements CustomModelStatusEffect.Renderer 
         var entityScale = livingEntity.getScale();
         var horizontalOffset = this.horizontalOffset * livingEntity.getScaleFactor();
         var verticalOffset = livingEntity.getHeight() / (2F * entityScale);
-        var itemRenderer = MinecraftClient.getInstance().getItemRenderer();
 
         var stacks = amplifier + 1;
         var turnAngle = 360F / stacks;
         for (int i = 0; i < stacks; i++) {
             var angle = initialAngle + turnAngle * i;
-            renderModel(matrixStack, scale, verticalOffset, horizontalOffset, angle, itemRenderer, vertexConsumers, light, livingEntity);
+            renderModel(matrixStack, scale, verticalOffset, horizontalOffset, angle, queue, light, livingEntity);
         }
 
         matrixStack.pop();
     }
 
     private void renderModel(MatrixStack matrixStack, float scale, float verticalOffset, float horizontalOffset, float rotation,
-                               ItemRenderer itemRenderer, VertexConsumerProvider vertexConsumers, int light, LivingEntity livingEntity) {
+                               OrderedRenderCommandQueue queue, int light, LivingEntity livingEntity) {
         matrixStack.push();
 
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotation));
@@ -58,8 +55,8 @@ public class OrbitingEffectRenderer implements CustomModelStatusEffect.Renderer 
 
         for(var model: models) {
             matrixStack.push();
-            CustomModels.render(model.layer, itemRenderer, model.modelId,
-                    matrixStack, vertexConsumers, light, livingEntity.getId());
+            CustomModels.render(model.layer, model.modelId,
+                    matrixStack, queue, light, livingEntity.getId());
             matrixStack.pop();
         }
 

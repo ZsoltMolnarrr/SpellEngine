@@ -7,7 +7,6 @@ import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ToolItem;
 import net.minecraft.registry.RegistryCodecs;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -95,7 +94,7 @@ public class EquipmentSet {
                 sets.get(id).put(itemEntry.registryKey(), stack);
             }
         }
-        var registry = world.getRegistryManager().get(EquipmentSetRegistry.KEY);
+        var registry = world.getRegistryManager().getOrThrow(EquipmentSetRegistry.KEY);
         List<Result> results = new ArrayList<>();
         for (var entry : sets.entrySet()) {
             var setId = entry.getKey();

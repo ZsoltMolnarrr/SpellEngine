@@ -87,8 +87,8 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick_TAIL_SpellEngine_ModelFx(CallbackInfo ci) {
-        if (getWorld().isClient || SpellEngine_attachedModelFx.isEmpty()) return;
-        boolean changed = SpellEngine_attachedModelFx.removeIf(e -> getWorld().getTime() >= e.expiresAtWorldTime());
+        if (getEntityWorld().isClient() || SpellEngine_attachedModelFx.isEmpty()) return;
+        boolean changed = SpellEngine_attachedModelFx.removeIf(e -> getEntityWorld().getTime() >= e.expiresAtWorldTime());
         if (changed) {
             dataTracker.set(SPELL_ENGINE_MODEL_FX,
                     SpellEngine_attachedModelFx.isEmpty() ? "" : SpellEngine_gson.toJson(SpellEngine_attachedModelFx));
@@ -165,7 +165,7 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
                 return synced.appliedAtWorldTime();
             }
         }
-        return getWorld().getTime();
+        return getEntityWorld().getTime();
     }
 
     @Unique

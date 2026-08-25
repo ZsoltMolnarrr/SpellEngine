@@ -23,6 +23,17 @@ public class ItemGlowVertexConsumer implements VertexConsumer {
     private final Vector3f scratch = new Vector3f();
     private final int red, green, blue, alpha;
 
+    @Override
+    public VertexConsumer color(int argb) {
+        return color(net.minecraft.util.math.ColorHelper.getRed(argb), net.minecraft.util.math.ColorHelper.getGreen(argb), net.minecraft.util.math.ColorHelper.getBlue(argb), net.minecraft.util.math.ColorHelper.getAlpha(argb));
+    }
+
+    @Override
+    public VertexConsumer lineWidth(float width) {
+        delegate.lineWidth(width);
+        return this;
+    }
+
     public ItemGlowVertexConsumer(VertexConsumer delegate, Color color) {
         this.delegate = delegate;
         this.textureMatrix = CustomLayers.itemGlowTextureMatrix();

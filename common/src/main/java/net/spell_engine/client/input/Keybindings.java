@@ -1,5 +1,6 @@
 package net.spell_engine.client.input;
 
+import net.minecraft.util.Identifier;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import net.spell_engine.SpellEngineMod;
@@ -19,12 +20,15 @@ public class Keybindings {
         return keyBinding;
     }
 
+    /// 1.21.9+ keybinding categories are registered objects (translation key: key.categories.<namespace>.<path>)
+    public static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of(SpellEngineMod.ID, "spell_engine"));
+
     private static KeyBinding hotbarKey(int number) {
         var key = new KeyBinding(
                 "keybindings." + SpellEngineMod.ID + ".spell_hotbar_" + number,
                 InputUtil.Type.KEYSYM,
                 InputUtil.UNKNOWN_KEY.getCode(),
-                SpellEngineMod.modName());
+                CATEGORY);
         add(key);
         return key;
     }
@@ -34,17 +38,17 @@ public class Keybindings {
      * Unbound by default, in which case tooltips fall back to `bypass_spell_hotbar`.
      * GUI scoped, so it can share a key with an in-game binding (such as sneak) without disabling it.
      */
-    public static KeyBinding tooltip_details = add(new GuiKeyBinding(
+    public static KeyBinding tooltip_details = add(new KeyBinding(
             "keybindings." + SpellEngineMod.ID + ".tooltip_details",
             InputUtil.Type.KEYSYM,
             InputUtil.UNKNOWN_KEY.getCode(),
-            SpellEngineMod.modName()));
+            CATEGORY));
 
     public static KeyBinding bypass_spell_hotbar = add(new KeyBinding(
             "keybindings." + SpellEngineMod.ID + ".bypass_spell_hotbar",
             InputUtil.Type.KEYSYM,
             InputUtil.GLFW_KEY_LEFT_ALT,
-            SpellEngineMod.modName()));
+            CATEGORY));
 
     public static KeyBinding spell_hotbar_1 = hotbarKey(1);
     public static KeyBinding spell_hotbar_2 = hotbarKey(2);

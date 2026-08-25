@@ -1,6 +1,7 @@
 package net.spell_engine.api.effect;
 
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.util.math.MathHelper;
@@ -35,10 +36,7 @@ public class BleedStatusEffect extends StatusEffect {
     }
 
     @Override
-    public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
-        if (entity.getWorld().isClient()) {
-            return true; // Damage is server-authoritative
-        }
+    public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier) {
         // `getVelocity()` is server-authoritative for AI-driven mobs, the usual bleed victims.
         // `* 20` converts blocks/tick to blocks/second, the unit of MOVEMENT_SPEED_CAP.
         var speed = entity.getVelocity().horizontalLength() * 20.0;
@@ -47,7 +45,7 @@ public class BleedStatusEffect extends StatusEffect {
         var stacks = amplifier + 1;
         var damage = (float) (POISON_DAMAGE_PER_STACK * stacks * multiplier);
         // Lethal by design: no `health > 1` floor and no non-lethal cap, unlike poison.
-        entity.damage(entity.getDamageSources().magic(), damage);
+        entity.damage(world, entity.getDamageSources().magic(), damage);
         return true;
     }
 }

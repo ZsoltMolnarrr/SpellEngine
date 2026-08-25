@@ -77,7 +77,7 @@ public class Platform {
     /// entity-tracker listener set directly (widened via the access widener), so no loader
     /// networking API is involved and behaviour is identical on Fabric and NeoForge.
     public static Collection<ServerPlayerEntity> tracking(Entity entity) {
-        if (!(entity.getWorld() instanceof ServerWorld world)) {
+        if (!(entity.getEntityWorld() instanceof ServerWorld world)) {
             return List.of();
         }
         var tracker = world.getChunkManager().chunkLoadingManager.entityTrackers.get(entity.getId());

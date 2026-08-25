@@ -18,7 +18,7 @@ public class SpellEngineCommands {
     public static void register() {
         PlatformEvents.onCommandRegistration((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("spell_cooldown")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
                     .then(CommandManager.literal("reset").then(
                             CommandManager.argument("players", EntityArgumentType.player())
                                     .then(CommandManager.argument("spell", RegistryEntryReferenceArgumentType.registryEntry(registryAccess, SpellRegistry.KEY))

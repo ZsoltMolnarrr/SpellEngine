@@ -17,9 +17,9 @@ public class CustomModelDiscovery {
 
     private static final String MODEL_FOLDER = "models";
     // Model paths to scan for automatic discovery
+    // Spell book / scroll models are addressed through vanilla item-model definitions since 1.21.4
+    // (`assets/<ns>/items/spell_book/<pool>.json`), so only the raw fx models are discovered here.
     private static final String[] MODEL_PATHS = {
-        "/item/spell_book",
-        "/item/spell_scroll",
         "/spell_projectile",
         "/spell_effect"
     };

@@ -1,6 +1,6 @@
 package net.spell_engine.api.effect;
 
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
@@ -11,7 +11,7 @@ import java.util.Map;
 public final class CustomModelStatusEffect {
     public interface Renderer {
         void renderEffect(long appliedAtWorldTime, int amplifier, LivingEntity livingEntity, float delta,
-                          MatrixStack matrixStack, VertexConsumerProvider vertexConsumers, int light);
+                          MatrixStack matrixStack, OrderedRenderCommandQueue queue, int light);
     }
     public record Args(boolean scaleWithEntity) {
         public static final Args DEFAULT = new Args(true);

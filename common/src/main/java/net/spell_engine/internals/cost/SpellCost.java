@@ -25,7 +25,7 @@ public class SpellCost {
             if (((SpellBatcher)player).hasBatchedCost(spellId)) {
                 return;
             }
-            ((WorldScheduler)player.getWorld()).schedule(0, () -> consume(player, progress, spellSource, spellId, spellEntry, heldItemStack, ammoResult, true));
+            ((WorldScheduler)player.getEntityWorld()).schedule(0, () -> consume(player, progress, spellSource, spellId, spellEntry, heldItemStack, ammoResult, true));
             ((SpellBatcher)player).batchCost(spellId, true);
             return;
         }

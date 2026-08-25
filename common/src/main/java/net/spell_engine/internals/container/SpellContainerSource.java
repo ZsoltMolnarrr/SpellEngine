@@ -63,7 +63,7 @@ public class SpellContainerSource {
         ((Owner)player).markServerSideSpellContainersDirty();
     }
     public static void syncServerSideContainers(PlayerEntity player) {
-        if (!player.getWorld().isClient) {
+        if (!player.getEntityWorld().isClient()) {
             var containers = ((Owner)player).serverSideSpellContainers();
             var packet = new Packets.SpellContainerSync(containers);
             Platform.util().networkS2C_Send((ServerPlayerEntity) player, packet);
@@ -164,8 +164,8 @@ public class SpellContainerSource {
         return List.of(player.getOffHandStack());
     });
     public static final ItemEntry ARMOR = itemEntry("armor", (player, sourceName) -> {
-        return List.of(player.getInventory().armor.get(0), player.getInventory().armor.get(1),
-                player.getInventory().armor.get(2), player.getInventory().armor.get(3));
+        return List.of(player.getEquippedStack(EquipmentSlot.FEET), player.getEquippedStack(EquipmentSlot.LEGS),
+                player.getEquippedStack(EquipmentSlot.CHEST), player.getEquippedStack(EquipmentSlot.HEAD));
     });
 
     public static void init() {
@@ -212,13 +212,13 @@ public class SpellContainerSource {
             var activeContainer = SpellContainer.EMPTY;
             List<RegistryEntry<Spell>> activeSpells = List.of();
             if (heldContainer != null && heldContainer.isResolver()) {
-                var merged = mergedContainerSources1(allContainers, heldContainer, Spell.Type.ACTIVE, player.getWorld());
+                var merged = mergedContainerSources1(allContainers, heldContainer, Spell.Type.ACTIVE, player.getEntityWorld());
                 activeContainer = merged.container();
                 activeSpells = merged.spells();
             }
-            List<RegistryEntry<Spell>> passiveSpells = mergedContainerSources(allContainers, null, null, Spell.Type.PASSIVE, player.getWorld());
+            List<RegistryEntry<Spell>> passiveSpells = mergedContainerSources(allContainers, null, null, Spell.Type.PASSIVE, player.getEntityWorld());
 
-            var registry = SpellRegistry.from(player.getWorld());
+            var registry = SpellRegistry.from(player.getEntityWorld());
             LinkedHashSet<RegistryEntry<Spell>> modifiers = new LinkedHashSet<>();
             for (var container : allContainers) {
                 var spellContainer = container.container();
@@ -236,7 +236,7 @@ public class SpellContainerSource {
             // Containers changed — the casting authority re-derives its options from them and
             // re-declares to the owner's client (tracked data). Server-side only: on the client
             // the interactor mirrors the declared options instead of computing its own.
-            if (!player.getWorld().isClient) {
+            if (!player.getEntityWorld().isClient()) {
                 ((SpellCaster.Player) player).getInteractor().invalidateOptions();
             }
         }
@@ -363,7 +363,7 @@ public class SpellContainerSource {
                     .map(stack -> new EquipmentSet.SourcedItemStack(stack, sourceName))
                     .forEach(equipmentStacks::add);
         }
-        var equipmentSets = EquipmentSet.collectFrom(equipmentStacks, player.getWorld());
+        var equipmentSets = EquipmentSet.collectFrom(equipmentStacks, player.getEntityWorld());
         ((EquipmentSet.Owner) player).setActiveEquipmentSets(equipmentSets);
         allContainers.addAll(sourcedContainersFrom(equipmentSets));
     }

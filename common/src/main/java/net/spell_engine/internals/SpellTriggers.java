@@ -253,7 +253,7 @@ public class SpellTriggers {
     }
 
     private static void fireTriggers(Event event) {
-        if (event.player.getWorld().isClient()) { return; }
+        if (event.player.getEntityWorld().isClient()) { return; }
         // Iterate stash effects
         SpellStashHelper.useStashes(event);
         // Iterate passive spells
@@ -277,11 +277,11 @@ public class SpellTriggers {
                             targetResult = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), true);
                         }
                         if (trigger.fire_delay > 0) {
-                            ((WorldScheduler)player.getWorld()).schedule(trigger.fire_delay - 1, () -> {
-                                SpellExecution.performSpell(player.getWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
+                            ((WorldScheduler)player.getEntityWorld()).schedule(trigger.fire_delay - 1, () -> {
+                                SpellExecution.performSpell(player.getEntityWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
                             });
                         } else {
-                            SpellExecution.performSpell(player.getWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
+                            SpellExecution.performSpell(player.getEntityWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
                         }
                         break;
                     }

@@ -1,6 +1,6 @@
 package net.spell_engine.rpg_series.item;
 
-import net.minecraft.item.ToolMaterials;
+import net.minecraft.item.ToolMaterial;
 import org.jetbrains.annotations.Nullable;
 
 public class Equipment {
@@ -28,24 +28,24 @@ public class Equipment {
     }
 
     public enum Tier {
-        WOODEN(ToolMaterials.WOOD, "Wooden"),
-        TIER_0(ToolMaterials.STONE, "T0"),
-        TIER_1(ToolMaterials.IRON, "T1"),
-        TIER_2(ToolMaterials.DIAMOND, "T2"),
-        TIER_3(ToolMaterials.NETHERITE, "T3"),
-        TIER_4(ToolMaterials.NETHERITE, "T4"),  // Modded materials (ruby, aeternium, etc.)
-        TIER_5(ToolMaterials.NETHERITE, "T5"),  // Higher-tier modded materials
-        GOLDEN(ToolMaterials.GOLD, "Golden");
+        WOODEN(ToolMaterial.WOOD, "Wooden"),
+        TIER_0(ToolMaterial.STONE, "T0"),
+        TIER_1(ToolMaterial.IRON, "T1"),
+        TIER_2(ToolMaterial.DIAMOND, "T2"),
+        TIER_3(ToolMaterial.NETHERITE, "T3"),
+        TIER_4(ToolMaterial.NETHERITE, "T4"),  // Modded materials (ruby, aeternium, etc.)
+        TIER_5(ToolMaterial.NETHERITE, "T5"),  // Higher-tier modded materials
+        GOLDEN(ToolMaterial.GOLD, "Golden");
 
-        private final ToolMaterials vanillaMaterial;
+        private final ToolMaterial vanillaMaterial;
         private final String displayName;
 
-        Tier(ToolMaterials material, String displayName) {
+        Tier(ToolMaterial material, String displayName) {
             this.vanillaMaterial = material;
             this.displayName = displayName;
         }
 
-        public ToolMaterials getVanillaMaterial() {
+        public ToolMaterial getVanillaMaterial() {
             return vanillaMaterial;
         }
         public String getDisplayName() {

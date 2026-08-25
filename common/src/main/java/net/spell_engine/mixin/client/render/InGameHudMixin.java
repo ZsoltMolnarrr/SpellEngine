@@ -41,7 +41,7 @@ public class InGameHudMixin {
         // however some mods somewhat restore it, so we only run this on Fabric
         // NeoForge specific invocation is in NeoForge-Client subscription
         if (Platform.Fabric) {
-            HudRenderHelper.render(context, tickCounter.getTickDelta(true));
+            HudRenderHelper.render(context, tickCounter.getTickProgress(true));
         }
     }
 }

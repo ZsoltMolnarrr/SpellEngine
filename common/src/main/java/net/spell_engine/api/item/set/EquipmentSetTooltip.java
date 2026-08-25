@@ -29,8 +29,8 @@ public class EquipmentSetTooltip {
         if (component == null) {
             return text;
         }
-        var optionalEntry = EquipmentSetRegistry.from(player.getWorld()).getEntry(component);
-        if (optionalEntry.isPresent() && player != null && player.getWorld() != null) {
+        var optionalEntry = EquipmentSetRegistry.from(player.getEntityWorld()).getEntry(component);
+        if (optionalEntry.isPresent() && player != null && player.getEntityWorld() != null) {
             var equipmentSetEntry = optionalEntry.get();
             var equipmentSet = equipmentSetEntry.value();
             var setSize = equipmentSet.items().size();

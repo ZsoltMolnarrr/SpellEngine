@@ -25,7 +25,7 @@ public class SpellCasting {
     /// the PRE/POST attempt events mods can inject a verdict through.
     public static SpellCast.Attempt attempt(PlayerEntity player, ItemStack itemStack, Identifier spellId, boolean checkAmmo) {
         var caster = (SpellCaster.Player)player;
-        var spellEntry = SpellRegistry.from(player.getWorld()).getEntry(spellId).orElse(null);
+        var spellEntry = SpellRegistry.from(player.getEntityWorld()).getEntry(spellId).orElse(null);
         if (spellEntry == null) {
             return SpellCast.Attempt.none();
         }

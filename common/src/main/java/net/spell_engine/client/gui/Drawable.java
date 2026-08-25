@@ -1,5 +1,6 @@
 package net.spell_engine.client.gui;
 
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.util.Identifier;
 
@@ -29,7 +30,7 @@ public class Drawable {
                     y -= draw().height;
                 }
             }
-            context.drawTexture(texture().id, x, y, draw().u, draw().v, draw().width, draw().height, texture().width, texture().height);
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, texture().id, x, y, draw().u, draw().v, draw().width, draw().height, texture().width, texture().height);
         }
 
         public void drawFlexibleWidth(DrawContext context, int x, int y, int width, Anchor vAnchor) {
@@ -44,7 +45,7 @@ public class Drawable {
                     y -= draw().height;
                 }
             }
-            context.drawTexture(texture().id, x, y, draw().u, draw().v, width, draw().height, texture().width, texture().height);
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, texture().id, x, y, draw().u, draw().v, width, draw().height, texture().width, texture().height);
         }
     }
     public record DrawRect(int u, int v, int width, int height) {}

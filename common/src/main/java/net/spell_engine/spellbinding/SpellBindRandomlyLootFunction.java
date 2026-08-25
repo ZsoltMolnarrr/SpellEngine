@@ -6,7 +6,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.condition.LootCondition;
 import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.loot.function.ConditionalLootFunction;
 import net.minecraft.loot.function.LootFunctionType;
 import net.minecraft.loot.provider.number.LootNumberProvider;
@@ -62,11 +61,6 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
         return TYPE;
     }
 
-    @Override
-    public Set<LootContextParameter<?>> getRequiredParameters() {
-        // return this.tier.getRequiredParameters();
-        return Set.of();
-    }
 
     @Nullable TagKey<Spell> getSpellTag() {
         if (this.pool == null || this.pool.isEmpty()) {

@@ -17,9 +17,9 @@ public class StatusEffectClassification {
     private static final Set<RegistryKey<StatusEffect>> movementImpairingEffects = new HashSet<>();
 
     public static void init() {
-        movementImpairingAttributes.add(EntityAttributes.GENERIC_MOVEMENT_SPEED);
-        movementImpairingAttributes.add(EntityAttributes.GENERIC_FLYING_SPEED);
-        movementImpairingAttributes.add(EntityAttributes.GENERIC_GRAVITY);
+        movementImpairingAttributes.add(EntityAttributes.MOVEMENT_SPEED);
+        movementImpairingAttributes.add(EntityAttributes.FLYING_SPEED);
+        movementImpairingAttributes.add(EntityAttributes.GRAVITY);
         PlatformEvents.onServerStarted((server) -> {
             parse(Registries.STATUS_EFFECT);
         });

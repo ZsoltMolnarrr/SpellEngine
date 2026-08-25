@@ -1,5 +1,6 @@
 package net.spell_engine.client.gui;
 
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -270,7 +271,8 @@ public class HudConfigScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        double mouseX = click.x(), mouseY = click.y();
         if (HudRenderHelper.CastBarWidget.lastRendered != null && HudRenderHelper.CastBarWidget.lastRendered.contains(mouseX, mouseY)) {
             dragged = Dragged.CAST_BAR;
             return true;
@@ -283,18 +285,19 @@ public class HudConfigScreen extends Screen {
             dragged = Dragged.ERROR_MESSAGE;
             return true;
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+    public boolean mouseReleased(Click click) {
         dragged = null;
-        return super.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(click);
     }
 
     @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        var result = super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    public boolean mouseDragged(Click click, double deltaX, double deltaY) {
+        var result = super.mouseDragged(click, deltaX, deltaY);
+        int button = click.button();
         if (!this.isDragging() && button == 0 && dragged != null) {
             var config = SpellEngineClient.hudConfig.value;
             switch (dragged) {

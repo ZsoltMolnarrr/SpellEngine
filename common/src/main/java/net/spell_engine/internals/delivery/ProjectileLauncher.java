@@ -27,7 +27,7 @@ public class ProjectileLauncher {
     }
 
     public static void shootProjectile(World world, LivingEntity caster, Entity target, RegistryEntry<Spell> spellEntry, ImpactContext context, int sequenceIndex) {
-        if (world.isClient) {
+        if (world.isClient()) {
             return;
         }
 
@@ -66,7 +66,7 @@ public class ProjectileLauncher {
         var directionPitch = data.inherit_shooter_pitch ? caster.getPitch() : 0;
         var directionYaw = data.inherit_shooter_yaw ? caster.getYaw() : 0;
         if (data.direct_towards_target && target != null) {
-            var directionVector = target.getPos().subtract(caster.getPos()).normalize();
+            var directionVector = target.getEntityPos().subtract(caster.getEntityPos()).normalize();
             // Yaw and pitch from distance vector
             directionPitch = (float) VectorHelper.pitchFromNormalized(directionVector);
             directionYaw = (float) VectorHelper.yawFromNormalized(directionVector);
@@ -120,11 +120,11 @@ public class ProjectileLauncher {
     }
 
     public static boolean fallProjectile(World world, LivingEntity caster, Entity target, @Nullable Vec3d targetLocation, RegistryEntry<Spell> spellEntry, ImpactContext context, int sequenceIndex) {
-        if (world.isClient) {
+        if (world.isClient()) {
             return false;
         }
 
-        Vec3d targetPosition = (target != null) ? target.getPos() : targetLocation;
+        Vec3d targetPosition = (target != null) ? target.getEntityPos() : targetLocation;
         if (targetPosition == null) {
             return false;
         }
@@ -176,11 +176,11 @@ public class ProjectileLauncher {
         if (launchRadius > 0 && launchSequenceEligible(sequenceIndex, meteor.offset_requires_sequence)) {
             var randomAngle = Math.toRadians(world.random.nextFloat() * 360);
             var offset = (new Vec3d(launchRadius, 0, 0)).rotateY((float) randomAngle);
-            projectile.setPosition(projectile.getPos().add(offset));
+            projectile.setPosition(projectile.getEntityPos().add(offset));
         }
 
-        projectile.prevYaw = projectile.getYaw();
-        projectile.prevPitch = projectile.getPitch();
+        projectile.lastYaw = projectile.getYaw();
+        projectile.lastPitch = projectile.getPitch();
         projectile.range = height;
 
         world.spawnEntity(projectile);

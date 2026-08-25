@@ -17,7 +17,7 @@ public class StatusEffectUtil {
             final var newAmplifier = change.newAmplifier;
             if (change.delay > 0) {
                 final var effectType = change.effect.getEffectType();
-                ((WorldScheduler)livingEntity.getWorld()).schedule(change.delay - 1, () -> {
+                ((WorldScheduler)livingEntity.getEntityWorld()).schedule(change.delay - 1, () -> {
                     var effect = livingEntity.getStatusEffect(effectType);
                     if (effect == null) {
                         // If the effect is not present, we can skip processing

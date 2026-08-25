@@ -120,7 +120,7 @@ public class SpellCastInteractor {
         }
         var syncFormats = syncGson.fromJson(raw, SpellCast.Option.SyncFormat[].class);
         return Arrays.stream(syncFormats)
-                .map(sync -> SpellCast.Option.fromSync(player.getWorld(), sync))
+                .map(sync -> SpellCast.Option.fromSync(player.getEntityWorld(), sync))
                 .filter(Objects::nonNull)
                 .toList();
     }
@@ -157,8 +157,8 @@ public class SpellCastInteractor {
             return null;
         }
         var syncFormat = syncGson.fromJson(raw, SpellCast.Process.SyncFormat.class);
-        return SpellCast.Process.fromSync(player, player.getWorld(), syncFormat,
-                player.getMainHandStack().getItem(), player.getWorld().getTime());
+        return SpellCast.Process.fromSync(player, player.getEntityWorld(), syncFormat,
+                player.getMainHandStack().getItem(), player.getEntityWorld().getTime());
     }
 
     // MARK: Owned state — channel tick counter
@@ -189,7 +189,7 @@ public class SpellCastInteractor {
     /// latest streamed snapshot; server-resolved shapes (SELF / AROUND_CASTER / NONE) run the same
     /// server-side lookup the mob path uses.
     private void fire(RegistryEntry<Spell> spellEntry, SpellCast.Action action, float progress) {
-        SpellExecution.performSpell(player.getWorld(), player, spellEntry, resolveTargets(spellEntry, progress), action, progress);
+        SpellExecution.performSpell(player.getEntityWorld(), player, spellEntry, resolveTargets(spellEntry, progress), action, progress);
     }
 
     /// Resolves the targets of a fire at the TRUE range: the caster-resolved range plus the charge
@@ -207,7 +207,7 @@ public class SpellCastInteractor {
             return SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), true, range);
         }
         var snapshot = latestSnapshot(spellEntry.getKey().get().getValue());
-        if (snapshot == null || !(player.getWorld() instanceof ServerWorld serverWorld)) {
+        if (snapshot == null || !(player.getEntityWorld() instanceof ServerWorld serverWorld)) {
             return SpellTarget.SearchResult.empty();
         }
         var scaledRange = range * player.getScale();
@@ -216,7 +216,7 @@ public class SpellCastInteractor {
         var origin = player.getEyePos(); // client raycasts originate at the eye
         List<Entity> targets = new ArrayList<>();
         for (var targetId : snapshot.entityIds()) {
-            var entity = serverWorld.getDragonPart(targetId); // `getEntityById` + dragon parts
+            var entity = serverWorld.getEntityById(targetId);
             if (entity != null && !entity.isRemoved()
                     && entity.getBoundingBox().squaredMagnitude(origin) <= squaredAllowed) {
                 targets.add(entity);
@@ -238,7 +238,7 @@ public class SpellCastInteractor {
         }
         var spell = process.spell().value();
         var mode = SpellCast.Mode.from(spell);
-        var time = player.getWorld().getTime();
+        var time = player.getEntityWorld().getTime();
 
         // Cancellation conditions, server-side. The client predicts the same and also sends an
         // end-input, but the authority must not depend on that packet arriving in time.
@@ -291,7 +291,7 @@ public class SpellCastInteractor {
     /// Instants carry their targeting snapshot and fire immediately; timed casts start the
     /// server-owned process (server-computed timing) and are fed by the target stream.
     public void requestCast(Identifier spellId, SpellCast.TargetSnapshot snapshot) {
-        var spellEntry = SpellRegistry.from(player.getWorld()).getEntry(spellId).orElse(null);
+        var spellEntry = SpellRegistry.from(player.getEntityWorld()).getEntry(spellId).orElse(null);
         if (spellEntry == null) {
             return;
         }
@@ -321,10 +321,10 @@ public class SpellCastInteractor {
         }
         // Server-computed cast timing — the client's prediction is display-only from here
         var details = SpellParameters.getCastTimeDetails(player, spell);
-        var process = new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.getWorld().getTime());
+        var process = new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.getEntityWorld().getTime());
         channelTickIndex = 0;
         setProcess(process);
-        SoundHelper.playSound(player.getWorld(), player, spell.active.cast.start_sound);
+        SoundHelper.playSound(player.getEntityWorld(), player, spell.active.cast.start_sound);
     }
 
     /// [END-input] The player let go: cancels a timed cast (no cost), completes a channel early
@@ -339,7 +339,7 @@ public class SpellCastInteractor {
         }
         var spell = process.spell().value();
         var mode = SpellCast.Mode.from(spell);
-        var ratio = process.progress(player.getWorld().getTime()).ratio();
+        var ratio = process.progress(player.getEntityWorld().getTime()).ratio();
         switch (mode) {
             case CASTING -> requestClear(); // cancelled before completion — nothing fires
             case CHANNEL -> {
@@ -368,7 +368,7 @@ public class SpellCastInteractor {
     /// wire contract and stored; arrival order is delivery order (ordered channel), so a plain
     /// overwrite keeps the slot newest.
     public void submitTargets(Identifier spellId, SpellCast.TargetSnapshot snapshot) {
-        var spellEntry = SpellRegistry.from(player.getWorld()).getEntry(spellId).orElse(null);
+        var spellEntry = SpellRegistry.from(player.getEntityWorld()).getEntry(spellId).orElse(null);
         if (spellEntry == null) {
             return;
         }

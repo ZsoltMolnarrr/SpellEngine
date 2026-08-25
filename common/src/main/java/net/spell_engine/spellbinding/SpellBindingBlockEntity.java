@@ -11,8 +11,8 @@ import net.minecraft.world.World;
 
 // Copied from EnchantingTableBlockEntity
 public class SpellBindingBlockEntity extends BlockEntity {
-    // Vanilla BlockEntityType.Builder (loader-neutral); build(null) skips the datafixer type, as FabricBlockEntityTypeBuilder.build() did.
-    public static BlockEntityType<SpellBindingBlockEntity> ENTITY_TYPE = BlockEntityType.Builder.create(SpellBindingBlockEntity::new, SpellBindingBlock.INSTANCE).build(null);
+    // The vanilla constructor is private (widened via spell_engine.accesswidener); loader-neutral
+    public static BlockEntityType<SpellBindingBlockEntity> ENTITY_TYPE = new BlockEntityType<>(SpellBindingBlockEntity::new, java.util.Set.of(SpellBindingBlock.INSTANCE));
 
     public int ticks;
     public float nextPageAngle;

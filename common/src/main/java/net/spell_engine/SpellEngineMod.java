@@ -11,6 +11,8 @@ import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.effect.RemoveOnHit;
@@ -46,6 +48,7 @@ import net.spell_engine.utils.StatusEffectUtil;
 import java.util.ArrayList;
 
 public class SpellEngineMod {
+    public static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
     public static final String ID = "spell_engine";
     public static String modName() {
         return I18n.translate("spell_engine.mod_name");
@@ -113,7 +116,7 @@ public class SpellEngineMod {
             var effectChanges = new ArrayList<StatusEffectUtil.Diff>();
             for (var instance : entity.getStatusEffects()) {
                 var effect = instance.getEffectType();
-                var remove = RemoveOnHit.removeCount(entity.getWorld(), effect.value(), source);
+                var remove = RemoveOnHit.removeCount(entity.getEntityWorld(), effect.value(), source);
                 if (remove > 0) {
                     effectChanges.add(new StatusEffectUtil.Diff(instance, instance.getAmplifier() - remove));
                 } else if (remove < 0) {
@@ -144,7 +147,7 @@ public class SpellEngineMod {
                         .makeFireImmune()
                         .maxTrackingRange(128)
                         .trackingTickInterval(2)
-                        .build("spell_projectile")
+                        .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(ID, "spell_projectile")))
         );
         SpellCloud.ENTITY_TYPE = Registry.register(
                 Registries.ENTITY_TYPE,
@@ -154,7 +157,7 @@ public class SpellEngineMod {
                         .makeFireImmune()
                         .maxTrackingRange(128)
                         .trackingTickInterval(20)
-                        .build("spell_area_effect")
+                        .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(ID, "spell_area_effect")))
         );
         SpellModelEffect.ENTITY_TYPE = Registry.register(
                 Registries.ENTITY_TYPE,
@@ -164,7 +167,7 @@ public class SpellEngineMod {
                         .makeFireImmune()
                         .maxTrackingRange(128)
                         .trackingTickInterval(20)
-                        .build("spell_model_effect")
+                        .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(ID, "spell_model_effect")))
         );
     }
 

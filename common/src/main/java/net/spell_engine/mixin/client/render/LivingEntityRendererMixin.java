@@ -2,9 +2,11 @@ package net.spell_engine.mixin.client.render;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderer;
+import net.minecraft.client.render.RenderLayers;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
+import net.minecraft.client.render.entity.state.LivingEntityRenderState;
+import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.RotationAxis;
@@ -12,6 +14,7 @@ import net.spell_engine.api.effect.CustomModelStatusEffect;
 import net.spell_engine.api.effect.EntityTints;
 import net.spell_engine.api.effect.Synchronized;
 import net.spell_engine.internals.casting.SpellCaster;
+import net.spell_engine.mixin.client.render.state.EntityRenderStateExtension;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,17 +22,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntityRenderer.class)
-public class LivingEntityRendererMixin {
+public abstract class LivingEntityRendererMixin {
+    private static final String RENDER = "render(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;Lnet/minecraft/client/render/state/CameraRenderState;)V";
 
-    @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("HEAD"))
-    private void render_HEAD_SpellEngine(LivingEntity livingEntity, float f, float delta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, CallbackInfo ci) {
+    @Inject(method = RENDER, at = @At("HEAD"))
+    private void render_HEAD_SpellEngine(LivingEntityRenderState state, MatrixStack matrixStack, OrderedRenderCommandQueue queue, CameraRenderState cameraState, CallbackInfo ci) {
+        if (!(((EntityRenderStateExtension) state).spellEngine_getEntity() instanceof LivingEntity livingEntity)) {
+            return;
+        }
+        var delta = ((EntityRenderStateExtension) state).spellEngine_getTickDelta();
         EntityTints.Current.set(EntityTints.currentTint(livingEntity));
         if (livingEntity instanceof SpellCaster.Player caster) {
             var process = caster.getSpellCastProcess();
             if (process != null) {
                 var spell = process.spell().value();
                 if (spell.active != null && spell.active.cast != null && spell.active.cast.animation_spin != 0) {
-                    var ticks = process.spellCastTicksSoFar(livingEntity.getWorld().getTime());
+                    var ticks = process.spellCastTicksSoFar(livingEntity.getEntityWorld().getTime());
                     var spin = spell.active.cast.animation_spin;
                     var turn = spin / (process.channelInterval(livingEntity) / 20F);
                     var degress = turn * ticks + delta * turn;
@@ -39,8 +47,12 @@ public class LivingEntityRendererMixin {
         }
     }
 
-    @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("TAIL"))
-    private void render_TAIL_SpellEngine(LivingEntity livingEntity, float f, float delta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, CallbackInfo ci) {
+    @Inject(method = RENDER, at = @At("TAIL"))
+    private void render_TAIL_SpellEngine(LivingEntityRenderState state, MatrixStack matrixStack, OrderedRenderCommandQueue queue, CameraRenderState cameraState, CallbackInfo ci) {
+        if (!(((EntityRenderStateExtension) state).spellEngine_getEntity() instanceof LivingEntity livingEntity)) {
+            return;
+        }
+        var delta = ((EntityRenderStateExtension) state).spellEngine_getTickDelta();
         var client = MinecraftClient.getInstance();
         var isRenderingClientPlayerInFirstPerson = (livingEntity == client.player && !client.gameRenderer.getCamera().isThirdPerson());
         if (!isRenderingClientPlayerInFirstPerson) {
@@ -54,7 +66,7 @@ public class LivingEntityRendererMixin {
                         var scale = livingEntity.getScale();
                         matrixStack.scale(scale, scale, scale);
                     }
-                    rendererEntry.renderer().renderEffect(entry.appliedAtWorldTime(), amplifier, livingEntity, delta, matrixStack, vertexConsumerProvider, light);
+                    rendererEntry.renderer().renderEffect(entry.appliedAtWorldTime(), amplifier, livingEntity, delta, matrixStack, queue, state.light);
                     matrixStack.pop();
                 }
             }
@@ -66,11 +78,11 @@ public class LivingEntityRendererMixin {
 
     /// When the active tint carries transparency, the body needs a blending-capable layer —
     /// same one vanilla uses for spectators/invisible-to-teammates rendering.
-    @Inject(method = "getRenderLayer(Lnet/minecraft/entity/LivingEntity;ZZZ)Lnet/minecraft/client/render/RenderLayer;", at = @At("RETURN"), cancellable = true)
-    private void getRenderLayer_RETURN_SpellEngine_Tint(LivingEntity entity, boolean showBody, boolean translucent, boolean showOutline, CallbackInfoReturnable<RenderLayer> cir) {
+    @Inject(method = "getRenderLayer(Lnet/minecraft/client/render/entity/state/LivingEntityRenderState;ZZZ)Lnet/minecraft/client/render/RenderLayer;", at = @At("RETURN"), cancellable = true)
+    private void getRenderLayer_RETURN_SpellEngine_Tint(LivingEntityRenderState state, boolean showBody, boolean translucent, boolean showOutline, CallbackInfoReturnable<RenderLayer> cir) {
         if (EntityTints.Current.isTranslucent() && showBody && !translucent && cir.getReturnValue() != null) {
-            var texture = ((EntityRenderer)(Object)this).getTexture(entity);
-            cir.setReturnValue(RenderLayer.getItemEntityTranslucentCull(texture));
+            var texture = ((LivingEntityRenderer) (Object) this).getTexture(state);
+            cir.setReturnValue(RenderLayers.itemEntityTranslucentCull(texture));
         }
     }
 }

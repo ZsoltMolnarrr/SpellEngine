@@ -1,10 +1,12 @@
 package net.spell_engine.entity;
 
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.*;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
@@ -112,7 +114,7 @@ public class SpellCloud extends Entity implements Ownable {
     /// a subclass may pick its own wind-down length from `onImpactPerformed` before the impact-cap
     /// check in `tick()` falls back to the cloud's configured `despawn_ticks`.
     protected void beginDespawn(int ticks) {
-        if (getWorld().isClient || isDespawning()) {
+        if (getEntityWorld().isClient() || isDespawning()) {
             return;
         }
         if (ticks <= 0) {
@@ -202,11 +204,11 @@ public class SpellCloud extends Entity implements Ownable {
         }
         var despawn = cloudData.despawn;
         if (despawn.sound != null) {
-            SoundHelper.playSound(getWorld(), this, despawn.sound);
+            SoundHelper.playSound(getEntityWorld(), this, despawn.sound);
         }
         var despawnVisuals = despawn.visuals.resolved(Fx.Context.NONE);
         ParticleHelper.sendBatches(this, despawnVisuals.particles);
-        ModelEffectHelper.spawn(getWorld(), this.getPos(), this.getYaw(), despawnVisuals.models, null);
+        ModelEffectHelper.spawn(getEntityWorld(), this.getEntityPos(), this.getYaw(), despawnVisuals.models, null);
     }
 
     /// The cloud's radius before any lifetime growth: the configured base plus power scaling, plus the
@@ -286,8 +288,8 @@ public class SpellCloud extends Entity implements Ownable {
     @Nullable
     @Override
     public Entity getOwner() {
-        if (this.owner == null && this.ownerUuid != null && this.getWorld() instanceof ServerWorld) {
-            Entity entity = ((ServerWorld)this.getWorld()).getEntity(this.ownerUuid);
+        if (this.owner == null && this.ownerUuid != null && this.getEntityWorld() instanceof ServerWorld) {
+            Entity entity = ((ServerWorld)this.getEntityWorld()).getEntity(this.ownerUuid);
             if (entity instanceof LivingEntity) {
                 this.owner = (LivingEntity)entity;
             }
@@ -314,7 +316,7 @@ public class SpellCloud extends Entity implements Ownable {
 
     public void onTrackedDataSet(TrackedData<?> data) {
         super.onTrackedDataSet(data);
-        if (getWorld().isClient) {
+        if (getEntityWorld().isClient()) {
             var rawSpellId = this.getDataTracker().get(SPELL_ID_TRACKER);
             if (rawSpellId != null && !rawSpellId.isEmpty()) {
                 this.spellId = Identifier.of(rawSpellId);
@@ -343,40 +345,43 @@ public class SpellCloud extends Entity implements Ownable {
     }
 
     @Override
-    protected void readCustomDataFromNbt(NbtCompound nbt) {
-        this.age = nbt.getInt(NBTKey.AGE.key);
-        this.timeToLive = nbt.getInt(NBTKey.TIME_TO_LIVE.key);
-        this.spawnDuration = nbt.getInt(NBTKey.SPAWN_DURATION.key);
-        this.despawnDuration = nbt.getInt(NBTKey.DESPAWN_DURATION.key);
-        this.spellId = Identifier.of(nbt.getString(NBTKey.SPELL_ID.key));
-        this.dataIndex = nbt.getInt(NBTKey.DATA_INDEX.key);
-        if (nbt.contains(NBTKey.CLOUD_MODIFIER.key)) {
-            var cm = nbt.getCompound(NBTKey.CLOUD_MODIFIER.key);
+    protected void readCustomData(ReadView view) {
+        this.age = view.getInt(NBTKey.AGE.key, 0);
+        this.timeToLive = view.getInt(NBTKey.TIME_TO_LIVE.key, 0);
+        this.spawnDuration = view.getInt(NBTKey.SPAWN_DURATION.key, 0);
+        this.despawnDuration = view.getInt(NBTKey.DESPAWN_DURATION.key, 0);
+        this.spellId = Identifier.of(view.getString(NBTKey.SPELL_ID.key, ""));
+        this.dataIndex = view.getInt(NBTKey.DATA_INDEX.key, 0);
+        view.getOptionalReadView(NBTKey.CLOUD_MODIFIER.key).ifPresent(cm -> {
             var modifier = new Spell.Modifier.Cloud();
-            modifier.radius_add = cm.getFloat("RadiusAdd");
-            modifier.growth.radius_step = cm.getFloat("GrowthStep");
-            modifier.growth.step_interval = cm.getInt("GrowthInterval");
-            modifier.growth.start_tick = cm.getInt("GrowthStart");
-            modifier.growth.duration_ticks = cm.getInt("GrowthDuration");
+            modifier.radius_add = cm.getFloat("RadiusAdd", 0);
+            modifier.growth.radius_step = cm.getFloat("GrowthStep", 0);
+            modifier.growth.step_interval = cm.getInt("GrowthInterval", 0);
+            modifier.growth.start_tick = cm.getInt("GrowthStart", 0);
+            modifier.growth.duration_ticks = cm.getInt("GrowthDuration", 0);
             this.cloudModifier = modifier;
-        }
+        });
     }
 
     @Override
-    protected void writeCustomDataToNbt(NbtCompound nbt) {
-        nbt.putInt(NBTKey.AGE.key, this.age);
-        nbt.putInt(NBTKey.TIME_TO_LIVE.key, this.timeToLive);
-        nbt.putInt(NBTKey.SPAWN_DURATION.key, this.spawnDuration);
-        nbt.putInt(NBTKey.DESPAWN_DURATION.key, this.despawnDuration);
-        nbt.putString(NBTKey.SPELL_ID.key, this.spellId.toString());
-        nbt.putInt(NBTKey.DATA_INDEX.key, this.dataIndex);
-        var cm = new NbtCompound();
+    protected void writeCustomData(WriteView view) {
+        view.putInt(NBTKey.AGE.key, this.age);
+        view.putInt(NBTKey.TIME_TO_LIVE.key, this.timeToLive);
+        view.putInt(NBTKey.SPAWN_DURATION.key, this.spawnDuration);
+        view.putInt(NBTKey.DESPAWN_DURATION.key, this.despawnDuration);
+        view.putString(NBTKey.SPELL_ID.key, this.spellId.toString());
+        view.putInt(NBTKey.DATA_INDEX.key, this.dataIndex);
+        var cm = view.get(NBTKey.CLOUD_MODIFIER.key);
         cm.putFloat("RadiusAdd", cloudModifier.radius_add);
         cm.putFloat("GrowthStep", cloudModifier.growth.radius_step);
         cm.putInt("GrowthInterval", cloudModifier.growth.step_interval);
         cm.putInt("GrowthStart", cloudModifier.growth.start_tick);
         cm.putInt("GrowthDuration", cloudModifier.growth.duration_ticks);
-        nbt.put(NBTKey.CLOUD_MODIFIER.key, cm);
+    }
+
+    @Override
+    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+        return false;
     }
 
     // MARK: Behavior
@@ -394,8 +399,8 @@ public class SpellCloud extends Entity implements Ownable {
             // this.discard();
             return;
         }
-        var world = this.getWorld();
-        if (world.isClient) {
+        var world = this.getEntityWorld();
+        if (world.isClient()) {
             // Client side tick
             float trackedRadius = getDataTracker().get(RADIUS_TRACKER);
             if (spawnRenderRadius < 0F) {
@@ -466,7 +471,7 @@ public class SpellCloud extends Entity implements Ownable {
                         context = new SpellExecution.ImpactContext();
                     }
                     var performed = SpellImpacts.lookupAndPerformAreaImpact(area_impact, spellEntry, owner,null,
-                            this, spell.impacts, context.position(this.getPos()), true, grownRadius);
+                            this, spell.impacts, context.position(this.getEntityPos()), true, grownRadius);
                     if (performed) {
                         onImpactPerformed(owner, world, cloudData, context);
                         if (this.impactCap > 0 && this.impactsPerformed >= this.impactCap) {
@@ -507,6 +512,6 @@ public class SpellCloud extends Entity implements Ownable {
     }
 
     @Nullable public RegistryEntry<Spell> getSpellEntry() {
-        return SpellRegistry.from(this.getWorld()).getEntry(this.spellId).orElse(null);
+        return SpellRegistry.from(this.getEntityWorld()).getEntry(this.spellId).orElse(null);
     }
 }

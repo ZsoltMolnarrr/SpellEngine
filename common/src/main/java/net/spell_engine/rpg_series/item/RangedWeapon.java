@@ -5,7 +5,7 @@ import net.spell_engine.PlatformEvents;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ToolMaterials;
+import net.minecraft.item.ToolMaterial;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -80,9 +80,9 @@ public class RangedWeapon {
             switch (tier) {
                 case WOODEN, GOLDEN -> { return 384; }
                 case TIER_0, TIER_1 -> { return 465; }
-                case TIER_2 -> { return ToolMaterials.DIAMOND.getDurability(); }
-                case TIER_3 -> { return ToolMaterials.NETHERITE.getDurability(); }
-                case TIER_4, TIER_5 -> { return ToolMaterials.NETHERITE.getDurability() * 2; }
+                case TIER_2 -> { return ToolMaterial.DIAMOND.durability(); }
+                case TIER_3 -> { return ToolMaterial.NETHERITE.durability(); }
+                case TIER_4, TIER_5 -> { return ToolMaterial.NETHERITE.durability() * 2; }
                 default -> { return 250; }
             }
         }

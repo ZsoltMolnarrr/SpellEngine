@@ -37,7 +37,7 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
             beam = caster.getBeam();
         }
         var renderedBeam = lastRenderedBeam;
-        if (livingEntity.getWorld().isClient && beam != null && renderedBeam != null) {
+        if (livingEntity.getEntityWorld().isClient() && beam != null && renderedBeam != null) {
             var position = renderedBeam.position();
             var appearance = renderedBeam.appearance();
 
@@ -47,7 +47,7 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
                 // Emitted purely client-side, with no server involvement, so nothing contextual
                 // (the caster's effective range included) can be resolved here.
                 for (var batch : appearance.block_hit.resolved(Fx.Context.NONE).particles) {
-                    ParticleHelper.play(livingEntity.getWorld(), livingEntity.age, position.end(),
+                    ParticleHelper.play(livingEntity.getEntityWorld(), livingEntity.age, position.end(),
                             appearance.width * 2, yaw, livingEntity.getPitch(), batch, livingEntity);
                 }
             }
@@ -57,7 +57,7 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
     @Inject(method = "tickStatusEffects", at = @At("TAIL"))
     private void tickStatusEffects_TAIL_SpellEngine_CustomParticles(CallbackInfo ci) {
         var livingEntity = livingEntity();
-        if (!livingEntity.isAlive() || !livingEntity.getWorld().isClient()) {
+        if (!livingEntity.isAlive() || !livingEntity.getEntityWorld().isClient()) {
             return;
         }
 

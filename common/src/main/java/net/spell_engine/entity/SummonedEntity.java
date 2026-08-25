@@ -1,5 +1,6 @@
 package net.spell_engine.entity;
 
+import net.minecraft.server.world.ServerWorld;
 import com.google.common.base.Suppliers;
 import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
@@ -9,6 +10,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LazyEntityReference;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.ai.goal.*;
@@ -22,7 +24,9 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.GolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
+import net.minecraft.util.Uuids;
 import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
@@ -60,8 +64,8 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public static final TrackedData<Optional<UUID>> OWNER_UUID =
-            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.OPTIONAL_UUID);
+    public static final TrackedData<Optional<LazyEntityReference<LivingEntity>>> OWNER_UUID =
+            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.LAZY_ENTITY_REFERENCE);
     public static final TrackedData<Byte> PHASE =
             DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.BYTE);
     public static final TrackedData<Byte> COLLISION_MODE =
@@ -189,13 +193,13 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     }
 
     @Override
-    public boolean damage(DamageSource source, float amount) {
-        return isAttackableSummon() && super.damage(source, amount);
+    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+        return isAttackableSummon() && super.damage(world, source, amount);
     }
 
     @Override
-    public boolean isInvulnerableTo(DamageSource damageSource) {
-        return !isAttackableSummon() && super.isInvulnerableTo(damageSource);
+    public boolean isInvulnerableTo(ServerWorld world, DamageSource damageSource) {
+        return !isAttackableSummon() && super.isInvulnerableTo(world, damageSource);
     }
 
     @Override
@@ -351,7 +355,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     public void playConfiguredSound(@Nullable Sound sound) {
         SoundEvent event = resolveEvent(sound);
         if (event == null) return;
-        getWorld().playSound(null, getX(), getY(), getZ(),
+        getEntityWorld().playSound(null, getX(), getY(), getZ(),
                 event, getSoundCategory(), sound.volume(), sound.randomizedPitch());
     }
 
@@ -360,9 +364,9 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     }
 
     @Override
-    public boolean isCollidable() {
+    public boolean isCollidable(@Nullable Entity entity) {
         if (collisionMode() == SummonBehaviour.Movement.CollisionMode.NONE) return false;
-        return super.isCollidable();
+        return super.isCollidable(entity);
     }
 
     @Override
@@ -441,11 +445,11 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private void emitSpawnFx() {
         if (behaviour == null || behaviour.spawn_fx == null) return;
         var fx = behaviour.spawn_fx.resolved(Fx.Context.NONE);
-        var world = getWorld();
+        var world = getEntityWorld();
         if (!fx.particles.isEmpty()) {
             ParticleHelper.sendBatches(this, fx.particles);
         }
-        ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.models, this);
+        ModelEffectHelper.spawn(world, getEntityPos(), getYaw(), fx.models, this);
     }
 
     /// Server-side: emits the individual despawn FX once, when the entity enters its despawn phase.
@@ -454,18 +458,18 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private void emitDespawnFx() {
         if (behaviour == null || behaviour.despawn_fx == null) return;
         var fx = behaviour.despawn_fx.resolved(Fx.Context.NONE);
-        var world = getWorld();
+        var world = getEntityWorld();
         if (!fx.particles.isEmpty()) {
             ParticleHelper.sendBatches(this, fx.particles);
         }
-        ModelEffectHelper.spawn(world, getPos(), getYaw(), fx.models, this);
+        ModelEffectHelper.spawn(world, getEntityPos(), getYaw(), fx.models, this);
     }
 
     /// Client-side: spawns the configured existence particles locally on their interval, during the
     /// ACTIVE phase. No network traffic — the config was synced once via EXISTENCE_PARTICLES.
     private void spawnExistenceParticles() {
         if (clientExistenceParticles == null || !isActive()) return;
-        var world = getWorld();
+        var world = getEntityWorld();
         for (var ep : clientExistenceParticles) {
             if (ep == null || ep.particles == null || ep.particles.isEmpty() || ep.interval_ticks <= 0) {
                 continue;
@@ -549,7 +553,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
             this.setNoGravity(true);
         }
         if (!behaviour.movement.is_pushable) {
-            this.getAttributeInstance(EntityAttributes.GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE).addTemporaryModifier(new EntityAttributeModifier(Identifier.of("unpushable"), 9999, EntityAttributeModifier.Operation.ADD_VALUE));
+            this.getAttributeInstance(EntityAttributes.EXPLOSION_KNOCKBACK_RESISTANCE).addTemporaryModifier(new EntityAttributeModifier(Identifier.of("unpushable"), 9999, EntityAttributeModifier.Operation.ADD_VALUE));
         }
     }
 
@@ -558,10 +562,10 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     /// types — registered via `SummonedEntities.registerAttributes` rather than a per-entity method.
     public static DefaultAttributeContainer.Builder createAttributes(SummonedEntityConfig.Entry entry) {
         var builder = LivingEntity.createLivingAttributes()
-                .add(EntityAttributes.GENERIC_FOLLOW_RANGE, entry.common.follow_range)
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, entry.common.max_health)
-                .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, entry.common.movement_speed)
-                .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, entry.common.attack_damage);
+                .add(EntityAttributes.FOLLOW_RANGE, entry.common.follow_range)
+                .add(EntityAttributes.MAX_HEALTH, entry.common.max_health)
+                .add(EntityAttributes.MOVEMENT_SPEED, entry.common.movement_speed)
+                .add(EntityAttributes.ATTACK_DAMAGE, entry.common.attack_damage);
         for (var custom : entry.custom) {
             Registries.ATTRIBUTE.getEntry(Identifier.of(custom.id)).ifPresent(e -> builder.add(e, custom.value));
         }
@@ -660,7 +664,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         LivingEntity owner = getOwner();
         if (owner == null) return false;
         if (candidate == owner) return false;
-        if (candidate instanceof Tameable t && owner.getUuid().equals(t.getOwnerUuid())) return false;
+        if (candidate instanceof Tameable t && owner.getUuid().equals(EntityRelations.ownerUuid(t))) return false;
         return EntityRelations.getRelation(owner, candidate) == EntityRelation.HOSTILE;
     }
 
@@ -672,7 +676,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         // a full-health ally and the heal action would burn cooldowns on no-ops.
         if (candidate.getHealth() >= candidate.getMaxHealth()) return false;
         if (candidate == owner) return true;
-        if (candidate instanceof Tameable t && owner.getUuid().equals(t.getOwnerUuid())) return true;
+        if (candidate instanceof Tameable t && owner.getUuid().equals(EntityRelations.ownerUuid(t))) return true;
         return EntityRelations.getRelation(owner, candidate) == EntityRelation.FRIENDLY;
     }
 
@@ -687,7 +691,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     /// FOLLOW_RANGE mode, a null config (e.g. legacy NBT), or a MAXIMUM_ACTION_RANGE that
     /// resolves to nothing.
     public double detectionRange() {
-        double followRange = getAttributeValue(EntityAttributes.GENERIC_FOLLOW_RANGE);
+        double followRange = getAttributeValue(EntityAttributes.FOLLOW_RANGE);
         var config = behaviour != null ? behaviour.targeting.detection_range : null;
         if (config == null) return followRange;
         return switch (config.mode) {
@@ -724,7 +728,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
 
     private double spellActionRange(SummonBehaviour.Action.SpellCast spell) {
         if (spell == null) return 0;
-        var entry = SpellRegistry.from(getWorld()).getEntry(Identifier.of(spell.spell_id)).orElse(null);
+        var entry = SpellRegistry.from(getEntityWorld()).getEntry(Identifier.of(spell.spell_id)).orElse(null);
         if (entry == null) return 0;
         // Effective range folds in caster modifiers; range.max is the action's engagement edge.
         return SpellParameters.getRange(this, entry) * spell.range.max;
@@ -889,19 +893,26 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     }
 
     public void setOwnerUuid(@Nullable UUID uuid) {
-        this.getDataTracker().set(OWNER_UUID, Optional.ofNullable(uuid));
+        this.getDataTracker().set(OWNER_UUID, Optional.ofNullable(uuid == null ? null : LazyEntityReference.ofUUID(uuid)));
     }
 
     @Nullable
     public UUID getOwnerUuid() {
+        return this.getDataTracker().get(OWNER_UUID).map(LazyEntityReference::getUuid).orElse(null);
+    }
+
+    @Override
+    @Nullable
+    public LazyEntityReference<LivingEntity> getOwnerReference() {
         return this.getDataTracker().get(OWNER_UUID).orElse(null);
     }
 
+    @Override
     @Nullable
     public LivingEntity getOwner() {
         UUID uuid = getOwnerUuid();
         if (uuid == null) return null;
-        return this.getWorld().getPlayerByUuid(uuid);
+        return this.getEntityWorld().getPlayerByUuid(uuid);
     }
 
     // --- Animation states ---
@@ -1009,7 +1020,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     @Override
     public void tick() {
         super.tick();
-        if (this.getWorld().isClient()) {
+        if (this.getEntityWorld().isClient()) {
             setupAnimationStates();
             spawnExistenceParticles();
         } else {
@@ -1073,7 +1084,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
             } else {
                 var syncFormat = GSON.fromJson(raw, SpellCast.Process.SyncFormat.class);
                 // Summons hold no casting item — the process `item` slot is player machinery
-                castProcess = SpellCast.Process.fromSync(this, this.getWorld(), syncFormat, null, this.getWorld().getTime());
+                castProcess = SpellCast.Process.fromSync(this, this.getEntityWorld(), syncFormat, null, this.getEntityWorld().getTime());
             }
         }
         return castProcess;
@@ -1086,39 +1097,34 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private static final String NBT_ATTRIBUTE_SCALING = "AttributeScaling";
 
     @Override
-    public void readCustomDataFromNbt(NbtCompound nbt) {
-        super.readCustomDataFromNbt(nbt);
-        if (nbt.containsUuid(NBT_OWNER_UUID)) {
-            setOwnerUuid(nbt.getUuid(NBT_OWNER_UUID));
-        }
-        this.timeToLive      = nbt.getInt(NBT_TTL);
-        this.spawnEndAge     = nbt.getInt(NBT_SPAWN_END_AGE);
-        this.despawnStartAge = nbt.getInt(NBT_DESPAWN_START_AGE);
+    public void readCustomData(ReadView view) {
+        super.readCustomData(view);
+        view.read(NBT_OWNER_UUID, Uuids.INT_STREAM_CODEC).ifPresent(this::setOwnerUuid);
+        this.timeToLive      = view.getInt(NBT_TTL, 0);
+        this.spawnEndAge     = view.getInt(NBT_SPAWN_END_AGE, 0);
+        this.despawnStartAge = view.getInt(NBT_DESPAWN_START_AGE, 0);
         // Read before setBehaviour, which (re-)applies the scaling.
-        if (nbt.contains(NBT_ATTRIBUTE_SCALING)) {
-            this.attributeScaling = GSON.fromJson(nbt.getString(NBT_ATTRIBUTE_SCALING), AttributeScaling.class);
-        }
-        if (nbt.contains(NBT_BEHAVIOUR)) {
-            var behaviour = GSON.fromJson(nbt.getString(NBT_BEHAVIOUR), SummonBehaviour.class);
-            setBehaviour(behaviour);
-        }
+        view.getOptionalString(NBT_ATTRIBUTE_SCALING).ifPresent(json ->
+                this.attributeScaling = GSON.fromJson(json, AttributeScaling.class));
+        view.getOptionalString(NBT_BEHAVIOUR).ifPresent(json ->
+                setBehaviour(GSON.fromJson(json, SummonBehaviour.class)));
     }
 
     @Override
-    public void writeCustomDataToNbt(NbtCompound nbt) {
-        super.writeCustomDataToNbt(nbt);
+    public void writeCustomData(WriteView view) {
+        super.writeCustomData(view);
         UUID uuid = getOwnerUuid();
         if (uuid != null) {
-            nbt.putUuid(NBT_OWNER_UUID, uuid);
+            view.put(NBT_OWNER_UUID, Uuids.INT_STREAM_CODEC, uuid);
         }
-        nbt.putInt(NBT_TTL, this.timeToLive);
-        nbt.putInt(NBT_SPAWN_END_AGE, this.spawnEndAge);
-        nbt.putInt(NBT_DESPAWN_START_AGE, this.despawnStartAge);
+        view.putInt(NBT_TTL, this.timeToLive);
+        view.putInt(NBT_SPAWN_END_AGE, this.spawnEndAge);
+        view.putInt(NBT_DESPAWN_START_AGE, this.despawnStartAge);
         if (this.behaviour != null) {
-            nbt.putString(NBT_BEHAVIOUR, GSON.toJson(this.behaviour));
+            view.putString(NBT_BEHAVIOUR, GSON.toJson(this.behaviour));
         }
         if (this.attributeScaling != null) {
-            nbt.putString(NBT_ATTRIBUTE_SCALING, GSON.toJson(this.attributeScaling));
+            view.putString(NBT_ATTRIBUTE_SCALING, GSON.toJson(this.attributeScaling));
         }
     }
 

@@ -148,11 +148,11 @@ public class ArrowHelper {
                                    Supplier<Collection<ServerPlayerEntity>> trackers) {
         var arrowPerks = effectiveArrowPerks(shooter, spellEntry);
         if (arrowPerks != null) {
-            var world = shooter.getWorld();
+            var world = shooter.getEntityWorld();
             arrow.applyArrowPerks(spellEntry, arrowPerks);
             var launchVisuals = arrowPerks.launch_visuals.resolved(Fx.Context.NONE);
             ParticleHelper.sendBatches(shooter, launchVisuals.particles, 1F, trackers.get());
-            ModelEffectHelper.spawn(world, shooter.getPos(), shooter.getYaw(), launchVisuals.models, shooter);
+            ModelEffectHelper.spawn(world, shooter.getEntityPos(), shooter.getYaw(), launchVisuals.models, shooter);
             SoundHelper.playSound(world, shooter, arrowPerks.launch_sound);
         }
     }

@@ -45,6 +45,6 @@ public class ReleaseFx {
         }
         var resolved = visuals.resolved(context);
         ParticleHelper.sendBatches(caster, resolved.particles);
-        ModelEffectHelper.spawn(world, caster.getPos(), caster.getYaw(), resolved.models, caster);
+        ModelEffectHelper.spawn(world, caster.getEntityPos(), caster.getYaw(), resolved.models, caster);
     }
 }

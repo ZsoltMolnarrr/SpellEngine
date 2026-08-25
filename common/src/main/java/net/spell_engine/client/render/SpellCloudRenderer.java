@@ -1,51 +1,61 @@
 package net.spell_engine.client.render;
 
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.item.ItemRenderer;
+import net.minecraft.client.render.entity.state.EntityRenderState;
+import net.minecraft.client.render.state.CameraRenderState;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
-import net.spell_engine.api.render.CustomModels;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.entity.SpellCloud;
+import org.jetbrains.annotations.Nullable;
 
-public class SpellCloudRenderer<T extends SpellCloud> extends EntityRenderer<T> {
-    // Item renderer
-    private final ItemRenderer itemRenderer;
+public class SpellCloudRenderer<T extends SpellCloud> extends EntityRenderer<T, SpellCloudRenderer.State> {
+    public static class State extends EntityRenderState {
+        @Nullable public SpellCloud cloud;
+        public float tickDelta;
+    }
+
     public SpellCloudRenderer(EntityRendererFactory.Context context) {
         super(context);
-        this.itemRenderer = context.getItemRenderer();
     }
 
     @Override
-    public Identifier getTexture(T entity) {
-        return null;
+    public State createRenderState() {
+        return new State();
     }
-    
-    public void render(T entity, float yaw, float tickDelta, MatrixStack matrixStack, VertexConsumerProvider vertexConsumers, int light) {
-        super.render(entity, yaw, tickDelta, matrixStack, vertexConsumers, light);
 
+    @Override
+    public void updateRenderState(T entity, State state, float tickDelta) {
+        super.updateRenderState(entity, state, tickDelta);
+        state.cloud = entity;
+        state.tickDelta = tickDelta;
+    }
+
+    @Override
+    public void render(State state, MatrixStack matrixStack, OrderedRenderCommandQueue queue, CameraRenderState cameraState) {
+        super.render(state, matrixStack, queue, cameraState);
+        var entity = state.cloud;
+        if (entity == null) {
+            return;
+        }
         var data = entity.getCloudData();
         if (data == null) {
             return;
         }
         var clientData = data.client_data;
         if (!clientData.model_fx.isEmpty()) {
-            renderModelFx(entity, clientData, tickDelta, matrixStack, vertexConsumers, light);
+            renderModelFx(entity, clientData, state.tickDelta, matrixStack, queue, state.light);
         }
     }
 
     /// Each model animated through the modelFX system, under the shared cloud-root transform. Animation time is the cloud's age (lines up with its lifecycle phases).
-    private void renderModelFx(T entity, Spell.Delivery.Cloud.ClientData clientData, float tickDelta,
-                               MatrixStack matrixStack, VertexConsumerProvider vertexConsumers, int light) {
+    private void renderModelFx(SpellCloud entity, Spell.Delivery.Cloud.ClientData clientData, float tickDelta,
+                               MatrixStack matrixStack, OrderedRenderCommandQueue queue, int light) {
         matrixStack.push();
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-1F * entity.getYaw() + 180F));
-        // Grow the model with the cloud's radius. Applied about the ground origin (before the 0.5 lift)
-        // so the model scales up from where it sits. `getRenderScale` interpolates within the tick, so a
-        // discrete growth step doesn't pop; it's 1.0 for a non-growing cloud, leaving existing clouds
-        // untouched.
+        // Grow the model with the cloud's radius, applied about the ground origin (before the 0.5 lift)
         float renderScale = entity.getRenderScale(tickDelta);
         if (renderScale != 1F) {
             matrixStack.scale(renderScale, renderScale, renderScale);
@@ -61,7 +71,7 @@ public class SpellCloudRenderer<T extends SpellCloud> extends EntityRenderer<T> 
             if (effect.positioning != null && effect.positioning.vertical != 0) {
                 matrixStack.translate(0, effect.positioning.vertical * entity.getHeight(), 0);
             }
-            ModelEffectOperations.renderEffect(effect, age, matrixStack, itemRenderer, vertexConsumers, light, entity.getId());
+            ModelEffectOperations.renderEffect(effect, age, matrixStack, queue, light, entity.getId());
             matrixStack.pop();
         }
 

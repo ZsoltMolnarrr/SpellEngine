@@ -1,6 +1,7 @@
 package net.spell_engine.client.render;
 
 import net.minecraft.client.MinecraftClient;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
@@ -23,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import net.spell_engine.internals.delivery.LaunchGeometry;
 
-public class BeamRenderer extends RenderLayer {
+public class BeamRenderer {
     public record LayerSet(RenderLayer inner, RenderLayer outer) { }
     private static final Map<String, LayerSet> layerCache = new HashMap<>();
     public static LayerSet layerSetFor(Identifier texture, Spell.Target.Beam.Luminance luminance) {
@@ -74,7 +75,7 @@ public class BeamRenderer extends RenderLayer {
     }
 
     /// Beam world-render pass. Loader-neutral: takes the pose stack, camera and partial tick from
-    /// whatever event the loader fires. Fabric: `WorldRenderEvents.AFTER_TRANSLUCENT`; NeoForge:
+    /// whatever event the loader fires. Fabric: `WorldRenderEvents.END_MAIN` (AFTER_TRANSLUCENT was removed in 1.21.9); NeoForge:
     /// `RenderLevelStageEvent` (AFTER_TRANSLUCENT_BLOCKS).
     public static void renderAfterTranslucent(MatrixStack matrices, Camera camera, float tickDelta) {
         VertexConsumerProvider.Immediate vcProvider = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
@@ -108,24 +109,24 @@ public class BeamRenderer extends RenderLayer {
         }
 
         matrices.push();
-        Vec3d camPos = camera.getPos();
+        Vec3d camPos = camera.getCameraPos();
         matrices.translate(-camPos.x, -camPos.y, -camPos.z);
         for (var livingEntity : casters) {
             var launchHeight = LaunchGeometry.launchHeight(livingEntity);
             var offset = new Vec3d(0.0, launchHeight, LaunchGeometry.launchPointOffsetDefault);
             SpellCaster.Entity caster = (SpellCaster.Entity) livingEntity;
             matrices.push();
-            var pos = new Vec3d(livingEntity.prevX, livingEntity.prevY, livingEntity.prevZ)
-                    .lerp(livingEntity.getPos(), delta);
+            var pos = new Vec3d(livingEntity.lastX, livingEntity.lastY, livingEntity.lastZ)
+                    .lerp(livingEntity.getEntityPos(), delta);
             matrices.translate(pos.x, pos.y, pos.z);
 
-            Vec3d from = livingEntity.getPos().add(0, launchHeight, 0);
+            Vec3d from = livingEntity.getEntityPos().add(0, launchHeight, 0);
             var lookVector = Vec3d.ZERO;
             if (livingEntity == MinecraftClient.getInstance().player) {
                 // No lerp for local player
                 lookVector = Vec3d.fromPolar(livingEntity.getPitch(), livingEntity.getYaw());
             } else {
-                lookVector = Vec3d.fromPolar(livingEntity.prevPitch, livingEntity.prevYaw);
+                lookVector = Vec3d.fromPolar(livingEntity.lastPitch, livingEntity.lastYaw);
                 lookVector = lookVector.lerp(Vec3d.fromPolar(livingEntity.getPitch(), livingEntity.getYaw()), delta);
             }
             lookVector = lookVector.normalize();
@@ -135,7 +136,7 @@ public class BeamRenderer extends RenderLayer {
 
             var beamAppearance = caster.getBeam();
             renderBeamFromPlayer(matrices, vertexConsumers, beamAppearance,
-                    from, to, offset, livingEntity.getWorld().getTime(), delta);
+                    from, to, offset, livingEntity.getEntityWorld().getTime(), delta);
             ((BeamEmitterEntity)livingEntity).setLastRenderedBeam(new Beam.Rendered(beamPosition, beamAppearance));
             matrices.pop();
         }
@@ -185,9 +186,6 @@ public class BeamRenderer extends RenderLayer {
         matrixStack.pop();
     }
 
-    public BeamRenderer(String name, VertexFormat vertexFormat, VertexFormat.DrawMode drawMode, int expectedBufferSize, boolean hasCrumbling, boolean translucent, Runnable startAction, Runnable endAction) {
-        super(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent, startAction, endAction);
-    }
 
     public static void renderBeam(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
                                   long time, float tickDelta, float direction, boolean center,

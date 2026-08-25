@@ -154,7 +154,7 @@ public class Melee {
                                                   RegistryEntry<Spell> spellEntry, float curvedRatio,
                                                   @Nullable Spell.Modifier chargeModifier) {
         var attacks = new ArrayList<Attack>();
-        var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, caster);
+        var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.ATTACK_SPEED, caster);
         var spellId = spellEntry.getKey().get().getValue();
         var allAttacks = allAttacksOf(caster, meleeDataAttacks, spellEntry, chargeModifier);
         for (var attack : allAttacks.attacks()) {
@@ -172,7 +172,7 @@ public class Melee {
                 ? attack.duration
                 : Math.max(caster.getAttackCooldownProgressPerTick() * (1F / speed), 1);
         float delay = duration * attack.delay;
-        var spell = SpellRegistry.from(caster.getWorld()).getEntry(spellId);
+        var spell = SpellRegistry.from(caster.getEntityWorld()).getEntry(spellId);
         // Must stay in step with the server side distance guard in `performAttackAgainstTargets`,
         // which resolves the same range: a hitbox grown by `range_add` here but not there would
         // find targets the server then rejects.
@@ -261,12 +261,12 @@ public class Melee {
     private static final Supplier<Boolean> REPLAY = Suppliers.memoize(() -> Platform.util().isModLoaded("replaymod"));
 
     public static void broadcastAttackFx(ServerPlayerEntity player, AttackContext attackContext) {
-        var world = player.getWorld();
+        var world = player.getEntityWorld();
         var resolved = resolveAttackData(player, world, attackContext.spellId(), attackContext.attackId());
         var attackData = resolved != null ? resolved.attack() : null;
         if (attackData != null) {
             // Saving the attack on server side - mainly for the slipperiness
-            var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player);
+            var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.ATTACK_SPEED, player);
             var curvedRatio = MathHelper.clamp(attackContext.charge(), 0F, 1F); // Client supplied
             var charge = resolveCharge(resolved.spell(), curvedRatio);
             // The full modifier list (not `List.of()`): the slipperiness stored here drives server
@@ -276,16 +276,16 @@ public class Melee {
             ((SpellCaster.Player) player).setMeleeSkillAttack(new ActiveAttack(attack, player.age, player.getMainHandStack().getItem()));
             // Sending fx to clients - animation, sound, particles
             var trackers = Platform.tracking(player);
-            float speed = (float) (attackData.attack_speed_multiplier * AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player));
+            float speed = (float) (attackData.attack_speed_multiplier * AttributeModifierUtil.multipliersOf(EntityAttributes.ATTACK_SPEED, player));
             if (REPLAY.get()) {
                 AnimationHelper.sendAnimation(player, trackers, SpellCast.Animation.RELEASE, attackData.animation, speed);
             } else {
                 AnimationHelper.sendAnimationExcluding(player, trackers, SpellCast.Animation.RELEASE, attackData.animation, speed);
             }
-            SoundHelper.playSound(player.getWorld(), player, attackData.swing_sound);
+            SoundHelper.playSound(player.getEntityWorld(), player, attackData.swing_sound);
             var swingVisuals = attackData.visuals.resolved(Fx.Context.NONE);
             ParticleHelper.sendBatches(player, swingVisuals.particles, 1, trackers);
-            ModelEffectHelper.spawn(player.getWorld(), player.getPos(), player.getYaw(), swingVisuals.models, player);
+            ModelEffectHelper.spawn(player.getEntityWorld(), player.getEntityPos(), player.getYaw(), swingVisuals.models, player);
         }
     }
 
@@ -313,9 +313,9 @@ public class Melee {
     private static final Identifier DUAL_WIELD_MODIFIER_ID = Identifier.of(SpellEngineMod.ID, "melee_attack_dual_wield");
     private static final Identifier CHARGE_MODIFIER_ID = Identifier.of(SpellEngineMod.ID, "melee_attack_charge");
     public static void performAttackAgainstTargets(ServerPlayerEntity player, AttackContext context, int[] targetIds) {
-        var world = player.getWorld();
+        var world = player.getEntityWorld();
         var focusMode = focusMode();
-        var attributeInstance = player.getAttributes().getCustomInstance(EntityAttributes.GENERIC_ATTACK_DAMAGE);
+        var attributeInstance = player.getAttributes().getCustomInstance(EntityAttributes.ATTACK_DAMAGE);
         EntityAttributeModifier appliedDamageModifier = null;
         EntityAttributeModifier appliedDualWieldModifier = null;
         EntityAttributeModifier appliedChargeModifier = null;
@@ -385,7 +385,7 @@ public class Melee {
                     ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(100);
                     player.attack(target);
                     if (impactSound != null && impactSoundLimit > 0) {
-                        SoundHelper.playSound(target.getWorld(), target, impactSound);
+                        SoundHelper.playSound(target.getEntityWorld(), target, impactSound);
                         impactSoundLimit -= 1;
                     }
                     targets.add(target);
@@ -395,7 +395,7 @@ public class Melee {
 
             if (!targets.isEmpty()) {
                 var impactContext = new SpellExecution.ImpactContext()
-                        .position(player.getPos())
+                        .position(player.getEntityPos())
                         .charge(curvedRatio)
                         .chargeModifier(resolvedCharge.modifier());
                 SpellImpacts.meleeImpact(player, targets, spellEntry, impactContext);

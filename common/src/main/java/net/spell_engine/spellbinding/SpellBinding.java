@@ -31,15 +31,14 @@ public class SpellBinding {
     public record OfferResult(Mode mode, List<Offer> offers) { }
 
     public static List<TagKey<Spell>> availableSpellBookTags(World world) {
-        var wrapper = world.getRegistryManager().getOptionalWrapper(SpellRegistry.KEY);
+        var wrapper = world.getRegistryManager().getOptional(SpellRegistry.KEY);
         if (wrapper.isEmpty()) {
             return List.of();
         }
         return wrapper.get().streamTags()
-                .filter(tag -> tag.getTagKey().isPresent()
-                        && tag.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_BOOK_PREFIX)
+                .filter(tag -> tag.getTag().id().getPath().startsWith(SpellTags.SPELL_BOOK_PREFIX)
                         && tag.size() > 0)  // Filter out empty tags
-                .map(tag -> tag.getTagKey().get())
+                .map(tag -> tag.getTag())
                 .sorted(Comparator.comparing(tag -> tag.id().getNamespace() + "_" + tag.id().getPath()))
                 .toList();
     }

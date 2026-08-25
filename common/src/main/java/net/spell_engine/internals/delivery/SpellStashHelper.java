@@ -27,7 +27,7 @@ public class SpellStashHelper {
 
     private static void link(MinecraftServer minecraftServer) {
         var manager = minecraftServer.getRegistryManager();
-        var registry = manager.get(SpellRegistry.KEY);
+        var registry = manager.getOrThrow(SpellRegistry.KEY);
         registry.streamEntries().forEach(entry -> {
             var spell = entry.value();
             var id = entry.getKey().get().getValue();
@@ -68,7 +68,7 @@ public class SpellStashHelper {
 
     public static void useStashes(SpellTriggers.Event event) {
         var caster = event.player;
-        var world = caster.getWorld();
+        var world = caster.getEntityWorld();
         Map<StatusEffectInstance, StatusEffectUtil.Diff> effectChanges = new HashMap<>();
         var activeEffects = Map.copyOf(caster.getActiveStatusEffects()); // Create copy to avoid concurrent modification
         for(var entry: activeEffects.entrySet()) {
@@ -95,11 +95,11 @@ public class SpellStashHelper {
                             var power = SpellPower.getSpellPower(spell.school, event.player);
                             var impactContext = new SpellExecution.ImpactContext(1F, 1F, null, power, SpellTarget.FocusMode.DIRECT, 0);
                             if (target != null) {
-                                impactContext = impactContext.position(target.getPos());
+                                impactContext = impactContext.position(target.getEntityPos());
                             } else if (aoeSource != null) {
-                                impactContext = impactContext.position(aoeSource.getPos());
+                                impactContext = impactContext.position(aoeSource.getEntityPos());
                             } else {
-                                impactContext = impactContext.position(caster.getPos());
+                                impactContext = impactContext.position(caster.getEntityPos());
                             }
                             SpellImpacts.performImpacts(world, caster, target, aoeSource, spellEntry, spellEntry.value().impacts, impactContext);
                         }

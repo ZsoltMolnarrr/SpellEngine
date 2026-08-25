@@ -10,7 +10,8 @@ import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Lazy;
+import com.google.common.base.Suppliers;
+import java.util.function.Supplier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.registry.SpellRegistry;
@@ -33,7 +34,7 @@ public class SpellEngineItems {
                 .build();
     }
 
-    public static final Lazy<Item> SCROLL = new Lazy<>(() -> {
+    public static final Supplier<Item> SCROLL = Suppliers.memoize(() -> {
         // Slot mod compat must install its item factories before the first access,
         // items get created (thus factories read) during item registration, which
         // runs before the loader entrypoints reach compat init.
@@ -44,7 +45,7 @@ public class SpellEngineItems {
         return factory != null ? factory.apply(args) : new ScrollItem(args.settings());
     });
 
-    public static final Lazy<Item> SPELL_BOOK = new Lazy<>(() -> {
+    public static final Supplier<Item> SPELL_BOOK = Suppliers.memoize(() -> {
         Platform.util().awakeSlotModCompat();
         var settings = new Item.Settings().maxCount(1);
         var args = new SlotModCompat.SpellBookArgs(settings);
@@ -60,30 +61,29 @@ public class SpellEngineItems {
         PlatformEvents.onItemGroupModify(Group.KEY, (content, context) -> {
             content.add(SpellBindingBlock.ITEM);
 
-            var registryWrapper = context.lookup().getWrapperOrThrow(SpellRegistry.KEY);
+            var registryWrapper = context.lookup().getOrThrow(SpellRegistry.KEY);
 
             // Spell book variants from tags
-            var spellBookTags = registryWrapper.streamTags()
+            var spellBookTags = registryWrapper.getTags()
                     .filter(tag ->
-                            tag.getTagKey().isPresent()
-                                    && tag.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_BOOK_PREFIX)
+                            tag.getTag().id().getPath().startsWith(SpellTags.SPELL_BOOK_PREFIX)
                     )
                     .sorted(Comparator.comparing(tag ->
-                            tag.getTagKey().get().id().getNamespace() + "_" + tag.getTagKey().get().id().getPath()))
+                            tag.getTag().id().getNamespace() + "_" + tag.getTag().id().getPath()))
                     .toList();
             for (var spellBookTag : spellBookTags) {
-                var tagKey = spellBookTag.getTagKey().get();
+                var tagKey = spellBookTag.getTag();
                 var spellBook = new ItemStack(SPELL_BOOK.get());
                 if (UniversalSpellBookItem.applyFromTag(spellBook, tagKey)) {
                     content.add(spellBook);
                 }
             }
 
-            var scrollTags = registryWrapper.streamTags()
+            var scrollTags = registryWrapper.getTags()
                     .filter(tag ->
-                            tag.getTagKey().isPresent() && tag.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_SCROLL_PREFIX)
+                            tag.getTag().id().getPath().startsWith(SpellTags.SPELL_SCROLL_PREFIX)
                     )
-                    .sorted(Comparator.comparing(tag -> tag.getTagKey().get().id().getNamespace() + "_" + tag.getTagKey().get().id().getPath()))
+                    .sorted(Comparator.comparing(tag -> tag.getTag().id().getNamespace() + "_" + tag.getTag().id().getPath()))
                     .toList();
             for (var scrollTag: scrollTags) {
                 scrollTag.stream()

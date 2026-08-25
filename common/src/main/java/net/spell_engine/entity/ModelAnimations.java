@@ -1,10 +1,11 @@
 package net.spell_engine.entity;
 
+import org.joml.Vector3fc;
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.render.entity.animation.Animation;
+import net.minecraft.client.model.Model;
+import net.minecraft.client.render.entity.animation.AnimationDefinition;
 import net.minecraft.client.render.entity.animation.Keyframe;
 import net.minecraft.client.render.entity.animation.Transformation;
-import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Vector3f;
 
@@ -44,7 +45,7 @@ public final class ModelAnimations {
      * {@code limbSwing} to {@code runningTime} (as {@code (long)(limbSwing * 50F)}) and
      * {@code limbSwingAmount} to {@code scale}.
      */
-    public static void seamlessLoop(SinglePartEntityModel<?> model, Animation animation, long runningTime, float scale, Vector3f temp) {
+    public static void seamlessLoop(Model<?> model, AnimationDefinition animation, long runningTime, float scale, Vector3f temp) {
         float lengthSeconds = animation.lengthInSeconds();
         boolean looping = animation.looping();
         float f = runningTime / 1000.0F;
@@ -55,12 +56,21 @@ public final class ModelAnimations {
 
         for (Map.Entry<String, List<Transformation>> entry : animation.boneAnimations().entrySet()) {
             List<Transformation> transformations = entry.getValue();
-            model.getChild(entry.getKey()).ifPresent(part -> {
-                for (Transformation transformation : transformations) {
-                    apply(part, transformation, time, looping, scale, temp);
-                }
-            });
+            var part = findPart(model.getRootPart(), entry.getKey());
+            if (part == null) continue;
+            for (Transformation transformation : transformations) {
+                apply(part, transformation, time, looping, scale, temp);
+            }
         }
+    }
+
+    /// Depth-first lookup by name; ModelPart no longer exposes an Optional child getter
+    @org.jetbrains.annotations.Nullable
+    private static ModelPart findPart(ModelPart root, String name) {
+        for (var candidate : root.traverse()) {
+            if (candidate.hasChild(name)) return candidate.getChild(name);
+        }
+        return null;
     }
 
     private static void apply(ModelPart part, Transformation transformation, float time, boolean looping, float scale, Vector3f temp) {
@@ -79,10 +89,10 @@ public final class ModelAnimations {
         // interpolated exactly as authored (including LINEAR/CUBIC choice and vanilla's own clamping).
         boolean touchesSeam = looping && last >= 2 && (i == 0 || j == last);
         if (touchesSeam) {
-            Vector3f p0 = keyframes[i == 0 ? last - 1 : i - 1].target();       // wrap the pre-neighbour
-            Vector3f p1 = from.target();
-            Vector3f p2 = to.target();
-            Vector3f p3 = keyframes[j == last ? 1 : j + 1].target();           // wrap the post-neighbour
+            Vector3fc p0 = keyframes[i == 0 ? last - 1 : i - 1].postTarget();       // wrap the pre-neighbour
+            Vector3fc p1 = from.postTarget();
+            Vector3fc p2 = to.postTarget();
+            Vector3fc p3 = keyframes[j == last ? 1 : j + 1].postTarget();           // wrap the post-neighbour
             temp.set(
                     MathHelper.catmullRom(delta, p0.x(), p1.x(), p2.x(), p3.x()) * scale,
                     MathHelper.catmullRom(delta, p0.y(), p1.y(), p2.y(), p3.y()) * scale,

@@ -62,7 +62,7 @@ public class MobCastController {
         if (spellLookupAttempted) return spellEntry;
         spellLookupAttempted = true;
         var id = Identifier.of(config.spell_id);
-        spellEntry = SpellRegistry.from(entity.getWorld()).getEntry(id).orElse(null);
+        spellEntry = SpellRegistry.from(entity.getEntityWorld()).getEntry(id).orElse(null);
         return spellEntry;
     }
 
@@ -109,10 +109,10 @@ public class MobCastController {
                 // schedule (the same Process machinery players use), declared on the entity so
                 // clients render the beam and play the cast presentation.
                 var details = SpellParameters.getCastTimeDetails(entity, spell);
-                channel = new SpellCast.Process(entity, entry, null, details.speed(), details.length(), entity.getWorld().getTime());
+                channel = new SpellCast.Process(entity, entry, null, details.speed(), details.length(), entity.getEntityWorld().getTime());
                 channelFired = false;
                 entity.declareCastProcess(channel);
-                SoundHelper.playSound(entity.getWorld(), entity, spell.active.cast.start_sound);
+                SoundHelper.playSound(entity.getEntityWorld(), entity, spell.active.cast.start_sound);
             } else {
                 castDuration = SpellParameters.isInstant(spell)
                         ? 1
@@ -170,7 +170,7 @@ public class MobCastController {
     /// a broken line of sight just means the beam hits a wall and the raycast finds no targets.
     /// Aim aborts (target dead / out of max range) still end the channel via `shouldContinue`.
     private void tickChannel(RegistryEntry<Spell> entry, Spell spell) {
-        var time = entity.getWorld().getTime();
+        var time = entity.getEntityWorld().getTime();
         if (channel.isDue(time)) {
             channel.markDue();
             aim.orient(); // final orient before the raycast reads the look vector
@@ -184,7 +184,7 @@ public class MobCastController {
     }
 
     private void releaseSpell(RegistryEntry<Spell> entry, Spell spell) {
-        if (entity.getWorld().isClient()) return;
+        if (entity.getEntityWorld().isClient()) return;
         // Final orient before the engine reads the look vector.
         aim.orient();
         performSpell(entry);
@@ -196,7 +196,7 @@ public class MobCastController {
     /// One tick of a channeled cast: the spell's output split across the channel's ticks,
     /// exactly like the player path — including the sub-tick interval compensation.
     private void fireChannelTick(RegistryEntry<Spell> spellEntry, Spell spell) {
-        var world = entity.getWorld();
+        var world = entity.getEntityWorld();
         if (world.isClient()) return;
         var multiplier = SpellParameters.channelValueMultiplier(spell);
         var interval = channel.channelInterval(entity);
@@ -218,8 +218,8 @@ public class MobCastController {
     /// Natural end of a channel: release FX (unless every tick already played it), release
     /// animation, cooldown. Impacts happened on the ticks — nothing fires here.
     private void finishChannel(RegistryEntry<Spell> entry, Spell spell) {
-        if (!entity.getWorld().isClient() && !spell.active.cast.channelReleaseFx()) {
-            ReleaseFx.send(entity.getWorld(), entity, entry, 1F);
+        if (!entity.getEntityWorld().isClient() && !spell.active.cast.channelReleaseFx()) {
+            ReleaseFx.send(entity.getEntityWorld(), entity, entry, 1F);
         }
         entity.onSpellCastEnded();
         entity.onSpellReleased(entity.pickVariant(config.release_animation_variants), config.release_animation_duration);
@@ -243,7 +243,7 @@ public class MobCastController {
     /// targeting from the entity's current rotation/position, then the full delivery pipeline.
     /// No player costs (ammo, exhaust, cooldown) — this controller manages its own cooldown.
     private void performSpell(RegistryEntry<Spell> spellEntry) {
-        var world = entity.getWorld();
+        var world = entity.getEntityWorld();
         if (world.isClient()) return;
         var spell = spellEntry.value();
         if (spell.active == null) return;
@@ -279,7 +279,7 @@ public class MobCastController {
         var targets = targetResult.entities();
         if (spell.target.cap > 0) {
             targets = targets.stream()
-                    .sorted(Comparator.comparingDouble(t -> t.squaredDistanceTo(entity.getPos())))
+                    .sorted(Comparator.comparingDouble(t -> t.squaredDistanceTo(entity.getEntityPos())))
                     .limit(spell.target.cap)
                     .toList();
             targetResult = new SpellTarget.SearchResult(targets, targetResult.location());

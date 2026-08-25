@@ -3,16 +3,16 @@ package net.spell_engine.client.particle;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleFactory;
-import net.minecraft.client.particle.ParticleTextureSheet;
-import net.minecraft.client.particle.SpriteBillboardParticle;
+import net.minecraft.client.particle.BillboardParticle;
+import net.minecraft.client.particle.BillboardParticleSubmittable;
 import net.minecraft.client.particle.SpriteProvider;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import net.spell_engine.api.spell.fx.Easing;
 import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.client.util.Color;
@@ -31,7 +31,7 @@ import org.joml.Vector3f;
 /// merges the two. This replaces the V1 zoo of hand-written particle classes
 /// (flame, universal, area, smoke, snowflake, explosion, shifted) and their
 /// per-entry factory wiring.
-public class SpellParticle extends SpriteBillboardParticle {
+public class SpellParticle extends BillboardParticle {
     private final SpriteProvider spriteProvider;
     private final int frameCount;
     private final boolean reversedPlayback;
@@ -60,7 +60,7 @@ public class SpellParticle extends SpriteBillboardParticle {
                             SpellEngineParticles.Entry entry,
                             ParticleGroup.Appearance config,
                             @Nullable Entity sourceEntity) {
-        super(world, x, y, z);
+        super(world, x, y, z, spriteProvider.getSprite(world.getRandom()));
         this.spriteProvider = spriteProvider;
         this.frameCount = entry.texture().frames();
         this.pivot = entry.pivot();
@@ -204,7 +204,7 @@ public class SpellParticle extends SpriteBillboardParticle {
             int frameAge = reversedPlayback ? (this.maxAge - this.age) : this.age;
             this.setSprite(spriteProvider.getSprite(MathHelper.clamp(frameAge, 0, this.maxAge), this.maxAge));
         } else if (this.sprite == null) {
-            this.setSprite(spriteProvider);
+            this.setSprite(spriteProvider.getSprite(this.random));
         }
     }
 
@@ -213,7 +213,7 @@ public class SpellParticle extends SpriteBillboardParticle {
         if (followEntity != null && !followEntity.isRemoved()) {
             // Following: accumulate own motion into the offset, then track the entity
             this.followDiff = followDiff.add(dx, dy, dz);
-            var position = followEntity.getPos().add(followDiff);
+            var position = followEntity.getEntityPos().add(followDiff);
             double y = attachment == ParticleGroup.Attachment.POSITION_HORIZONTAL
                     ? groundBelow(position.x, position.z)
                     : position.y;
@@ -237,7 +237,7 @@ public class SpellParticle extends SpriteBillboardParticle {
     /// the void) holds the last known height rather than dropping the particle to y=0.
     private double groundBelow(double x, double z) {
         var from = new Vec3d(x, followEntity.getY() + GROUND_PROBE_UP, z);
-        var hit = TargetHelper.findSolidBelow(followEntity, from, followEntity.getWorld(),
+        var hit = TargetHelper.findSolidBelow(followEntity, from, followEntity.getEntityWorld(),
                 -(GROUND_PROBE_UP + GROUND_PROBE_DOWN));
         if (hit != null) {
             groundY = hit.y + GROUND_LIFT;
@@ -271,12 +271,12 @@ public class SpellParticle extends SpriteBillboardParticle {
                 && client.options.getPerspective().isFirstPerson();
     }
 
+    /// Render type = atlas + pipeline since 1.21.9. `LIT` had no dedicated sheet since 1.21.2; it maps to translucent.
     @Override
-    public ParticleTextureSheet getType() {
+    protected RenderType getRenderType() {
         return switch (render) {
-            case OPAQUE -> ParticleTextureSheet.PARTICLE_SHEET_OPAQUE;
-            case TRANSLUCENT -> ParticleTextureSheet.PARTICLE_SHEET_TRANSLUCENT;
-            case LIT -> ParticleTextureSheet.PARTICLE_SHEET_LIT;
+            case OPAQUE -> RenderType.PARTICLE_ATLAS_OPAQUE;
+            case TRANSLUCENT, LIT -> RenderType.PARTICLE_ATLAS_TRANSLUCENT;
         };
     }
 
@@ -312,33 +312,14 @@ public class SpellParticle extends SpriteBillboardParticle {
         };
     }
 
-    /// Camera-facing particles take vanilla's [SpriteBillboardParticle#buildGeometry], which
-    /// Sodium's `SingleQuadParticleMixin` accelerates. Every other orientation MUST be driven
-    /// through here instead: Sodium cancels vanilla `buildGeometry` at its head and rebuilds a
-    /// pure camera billboard from the camera's left/up vectors, ignoring [#getRotator] entirely —
-    /// so an area decal that relies on the rotator silently reverts to facing the camera.
-    ///
-    /// The fix is to resolve the rotator ourselves and hand the finished quaternion to the
-    /// `Camera`-taking quad method. Sodium *does* intercept that one and honours the passed
-    /// rotation (it derives left/up from the quaternion), and vanilla routes it straight into
-    /// [#method_60374] — so the orientation survives on both paths. Mirrors vanilla
-    /// `buildGeometry` exactly, only with the [#getRotator] call moved out of the method Sodium
-    /// overwrites and into one it does not.
+    /// Vanilla resolves [#getRotator] itself before submitting the quad (queue-based particle rendering
+    /// since 1.21.9), so the former Sodium workaround is no longer needed; only the first-person skip remains.
     @Override
-    public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
+    public void render(BillboardParticleSubmittable submittable, Camera camera, float tickProgress) {
         if (skipRender) {
             return;
         }
-        if (facing == ParticleGroup.Facing.CAMERA) {
-            super.buildGeometry(vertexConsumer, camera, tickDelta);
-            return;
-        }
-        var quaternion = new Quaternionf();
-        getRotator().setRotation(quaternion, camera, tickDelta);
-        if (this.angle != 0F) {
-            quaternion.rotateZ(MathHelper.lerp(tickDelta, this.prevAngle, this.angle));
-        }
-        method_60373(vertexConsumer, camera, quaternion, tickDelta);
+        super.render(submittable, camera, tickProgress);
     }
 
     /// Applies the entry's pivot: shifts the quad vertically in units of its size
@@ -347,16 +328,14 @@ public class SpellParticle extends SpriteBillboardParticle {
     /// [Facing#GROUND] quads lie flat and, being backface-culled like every particle
     /// sheet, vanish the moment the camera drops below them. Area effects read as decals
     /// on the floor, so they should be visible from underneath too — a second quad,
-    /// flipped 180° about an in-plane axis, presents the opposite face. The two are
-    /// coplanar but never both drawn from one side (whichever faces away is culled), so
-    /// there is no z-fighting; the underside simply shows the texture mirrored.
+    /// flipped 180° about an in-plane axis, presents the opposite face.
     @Override
-    protected void method_60374(VertexConsumer vertexConsumer, Quaternionf quaternionf, float x, float y, float z, float tickDelta) {
-        float shiftedY = y + pivot * this.getSize(tickDelta);
-        super.method_60374(vertexConsumer, quaternionf, x, shiftedY, z, tickDelta);
+    protected void renderVertex(BillboardParticleSubmittable submittable, Quaternionf rotation, float x, float y, float z, float tickProgress) {
+        float shiftedY = y + pivot * this.getSize(tickProgress);
+        super.renderVertex(submittable, rotation, x, shiftedY, z, tickProgress);
         if (facing == ParticleGroup.Facing.GROUND) {
-            var backFace = new Quaternionf(quaternionf).rotateX((float) Math.PI);
-            super.method_60374(vertexConsumer, backFace, x, shiftedY, z, tickDelta);
+            var backFace = new Quaternionf(rotation).rotateX((float) Math.PI);
+            super.renderVertex(submittable, backFace, x, shiftedY, z, tickProgress);
         }
     }
 
@@ -374,7 +353,7 @@ public class SpellParticle extends SpriteBillboardParticle {
         @Override
         public Particle createParticle(ParticleGroupType type, ClientWorld world,
                                        double x, double y, double z,
-                                       double velocityX, double velocityY, double velocityZ) {
+                                       double velocityX, double velocityY, double velocityZ, Random random) {
             var resolved = resolve(entry, type.payload());
             return new SpellParticle(world, x, y, z, velocityX, velocityY, velocityZ,
                     spriteProvider, entry, resolved, type.sourceEntity());

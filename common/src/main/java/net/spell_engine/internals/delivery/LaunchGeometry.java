@@ -21,6 +21,6 @@ public class LaunchGeometry {
 
     public static Vec3d launchPoint(LivingEntity caster, float forward) {
         Vec3d look = caster.getRotationVector().multiply(forward * caster.getScaleFactor());
-        return caster.getPos().add(0, launchHeight(caster), 0).add(look);
+        return caster.getEntityPos().add(0, launchHeight(caster), 0).add(look);
     }
 }

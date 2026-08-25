@@ -5,17 +5,18 @@ import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.item.ArmorItem;
-import net.minecraft.item.ArmorMaterial;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.Item;
+import net.minecraft.item.equipment.ArmorMaterial;
+import net.minecraft.item.equipment.EquipmentType;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.spell_engine.rpg_series.config.ArmorSetConfig;
-import net.spell_engine.mixin.item.ArmorMaterialLayerAccessor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -26,32 +27,48 @@ import java.util.stream.Stream;
 
 public class Armor {
 
-    public static class CustomItem extends ArmorItem implements ConfigurableAttributes {
-        private AttributeModifiersComponent attributeModifiers = AttributeModifiersComponent.builder().build();
-        public final RegistryEntry<ArmorMaterial> customMaterial;
+    /// Armor items are plain items since 1.21.2 (armor behaviour = EQUIPPABLE + attribute components).
+    /// Attributes are configurable at registration time, after the item was constructed, so the
+    /// component map is rebuilt when {@link #setAttributes} is called.
+    public static class CustomItem extends Item implements ConfigurableAttributes {
+        public final ArmorMaterial customMaterial;
+        public final EquipmentType type;
+        private ComponentMap components;
 
-        public CustomItem(RegistryEntry<ArmorMaterial> material, Type slot, Settings settings) {
-            super(material, slot, settings);
+        public CustomItem(ArmorMaterial material, EquipmentType type, Settings settings) {
+            super(settings.armor(material, type));
             this.customMaterial = material;
+            this.type = type;
+            this.components = super.getComponents();
         }
 
         @Override
         public void setAttributes(AttributeModifiersComponent attributeModifiers) {
-            this.attributeModifiers = attributeModifiers;
+            this.components = ComponentMap.builder()
+                    .addAll(super.getComponents())
+                    .add(DataComponentTypes.ATTRIBUTE_MODIFIERS, attributeModifiers)
+                    .build();
         }
 
         @Override
-        public AttributeModifiersComponent getAttributeModifiers() {
-            return this.attributeModifiers;
+        public ComponentMap getComponents() {
+            return components == null ? super.getComponents() : components;
         }
 
+        public AttributeModifiersComponent getAttributeModifiers() {
+            return getComponents().getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
+        }
+
+        public EquipmentType getType() { return type; }
+        public EquipmentSlot getSlotType() { return type.getEquipmentSlot(); }
+
+        /// The equipment asset id (formerly the first armor material layer id)
         public Identifier getFirstLayerId() {
-            var fristLayer = customMaterial.value().layers().getFirst();
-            return ((ArmorMaterialLayerAccessor) (Object)fristLayer).spellEngine_getId();
+            return customMaterial.assetId().getValue();
         }
     }
 
-    public static class Set<A extends ArmorItem> {
+    public static class Set<A extends CustomItem> {
         public final String namespace;
         public final String name;
         public final A head, chest, legs, feet;
@@ -68,7 +85,7 @@ public class Armor {
             return Stream.of(head, chest, legs, feet).filter(Objects::nonNull).collect(Collectors.toList());
         }
 
-        public Identifier idOf(ArmorItem piece) {
+        public Identifier idOf(CustomItem piece) {
             var name = this.name + "_" + piece.getSlotType().getName();
             return Identifier.of(namespace, name);
         }
@@ -99,8 +116,8 @@ public class Armor {
             });
         }
 
-        public interface ItemFactory<T extends ArmorItem> {
-            T create(RegistryEntry<ArmorMaterial> material, ArmorItem.Type slot, Item.Settings settings);
+        public interface ItemFactory<T extends CustomItem> {
+            T create(ArmorMaterial material, EquipmentType slot, Item.Settings settings);
         }
     }
 
@@ -113,24 +130,24 @@ public class Armor {
         }
     }
 
-    public record Entry(RegistryEntry<ArmorMaterial> material, Armor.Set armorSet, ArmorSetConfig defaults, Equipment.LootProperties lootProperties) {
-        public static Entry create(RegistryEntry<ArmorMaterial> material, Identifier id, int durability, Set.ItemFactory factory, ArmorSetConfig defaults) {
+    public record Entry(ArmorMaterial material, Armor.Set armorSet, ArmorSetConfig defaults, Equipment.LootProperties lootProperties) {
+        public static Entry create(ArmorMaterial material, Identifier id, int durability, Set.ItemFactory factory, ArmorSetConfig defaults) {
             return create(material, id, durability, factory, defaults, Equipment.LootProperties.EMPTY);
         }
-        public static Entry create(RegistryEntry<ArmorMaterial> material, Identifier id, int durability, Set.ItemFactory factory, ArmorSetConfig defaults, Equipment.LootProperties lootProperties) {
+        public static Entry create(ArmorMaterial material, Identifier id, int durability, Set.ItemFactory factory, ArmorSetConfig defaults, Equipment.LootProperties lootProperties) {
             return create(material, id, durability, factory, defaults, lootProperties, null);
         }
-        public static Entry create(RegistryEntry<ArmorMaterial> material, Identifier id, int durability, Set.ItemFactory factory, ArmorSetConfig defaults,
+        public static Entry create(ArmorMaterial material, Identifier id, int durability, Set.ItemFactory factory, ArmorSetConfig defaults,
                                    Equipment.LootProperties lootProperties, @Nullable ItemSettingsTweaker settingsTweaker) {
 
             var helmetSettings = new Item.Settings()
-                    .maxDamage(ArmorItem.Type.HELMET.getMaxDamage(durability));
+                    .maxDamage(EquipmentType.HELMET.getMaxDamage(durability));
             var chestplateSettings = new Item.Settings()
-                    .maxDamage(ArmorItem.Type.CHESTPLATE.getMaxDamage(durability));
+                    .maxDamage(EquipmentType.CHESTPLATE.getMaxDamage(durability));
             var leggingsSettings = new Item.Settings()
-                    .maxDamage(ArmorItem.Type.LEGGINGS.getMaxDamage(durability));
+                    .maxDamage(EquipmentType.LEGGINGS.getMaxDamage(durability));
             var bootsSettings = new Item.Settings()
-                    .maxDamage(ArmorItem.Type.BOOTS.getMaxDamage(durability));
+                    .maxDamage(EquipmentType.BOOTS.getMaxDamage(durability));
             if (settingsTweaker != null) {
                 settingsTweaker.helmet.accept(helmetSettings);
                 settingsTweaker.chestplate.accept(chestplateSettings);
@@ -147,10 +164,10 @@ public class Armor {
             }
 
             var set = new Armor.Set(id.getNamespace(), id.getPath(),
-                    factory.create(material, ArmorItem.Type.HELMET, helmetSettings),
-                    factory.create(material, ArmorItem.Type.CHESTPLATE, chestplateSettings),
-                    factory.create(material, ArmorItem.Type.LEGGINGS, leggingsSettings),
-                    factory.create(material, ArmorItem.Type.BOOTS, bootsSettings)
+                    factory.create(material, EquipmentType.HELMET, helmetSettings),
+                    factory.create(material, EquipmentType.CHESTPLATE, chestplateSettings),
+                    factory.create(material, EquipmentType.LEGGINGS, leggingsSettings),
+                    factory.create(material, EquipmentType.BOOTS, bootsSettings)
             );
             return new Entry(material, set, defaults, lootProperties);
         }
@@ -165,12 +182,12 @@ public class Armor {
             return armorSet.name;
         }
 
-        public <T extends ArmorItem> Entry bundle(Function<RegistryEntry<ArmorMaterial>, Armor.Set<T>> factory) {
+        public <T extends CustomItem> Entry bundle(Function<ArmorMaterial, Armor.Set<T>> factory) {
             var armorSet = factory.apply(material);
             return new Entry(material, armorSet, defaults, lootProperties);
         }
 
-        public <T extends ArmorItem> Entry put(ArrayList<Entry> list) {
+        public <T extends CustomItem> Entry put(ArrayList<Entry> list) {
             list.add(this);
             return this;
         }
@@ -186,27 +203,26 @@ public class Armor {
                 configs.put(entry.name(), config);
             }
             for (var piece: entry.armorSet().pieces()) {
-                var slot = ((ArmorItem)piece).getSlotType();
-                ((ConfigurableAttributes)piece).setAttributes(attributesFrom(config, ((ArmorItem) piece).getType()));
+                ((ConfigurableAttributes)piece).setAttributes(attributesFrom(config, ((CustomItem) piece).getType()));
             }
             entry.armorSet().register(itemGroupKey);
         }
     }
 
-    private static AttributeModifiersComponent attributesFrom(ArmorSetConfig config, ArmorItem.Type slot) {
+    private static AttributeModifiersComponent attributesFrom(ArmorSetConfig config, EquipmentType slot) {
         ArmorSetConfig.Piece piece = null;
         var modifierId = Identifier.ofVanilla("armor." + slot.getName());
         switch (slot) {
-            case ArmorItem.Type.BOOTS -> {
+            case EquipmentType.BOOTS -> {
                 piece = config.feet;
             }
-            case ArmorItem.Type.LEGGINGS -> {
+            case EquipmentType.LEGGINGS -> {
                 piece = config.legs;
             }
-            case ArmorItem.Type.CHESTPLATE -> {
+            case EquipmentType.CHESTPLATE -> {
                 piece = config.chest;
             }
-            case ArmorItem.Type.HELMET -> {
+            case EquipmentType.HELMET -> {
                 piece = config.head;
             }
         }
@@ -216,7 +232,7 @@ public class Armor {
 
         if (config.armor_toughness != 0) {
 
-            builder.add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS,
+            builder.add(EntityAttributes.ARMOR_TOUGHNESS,
                     new EntityAttributeModifier(
                             modifierId,
                             config.armor_toughness,
@@ -224,7 +240,7 @@ public class Armor {
                     attributeModifierSlot);
         }
         if (config.knockback_resistance != 0) {
-            builder.add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE,
+            builder.add(EntityAttributes.KNOCKBACK_RESISTANCE,
                     new EntityAttributeModifier(
                             modifierId,
                             config.knockback_resistance,
@@ -232,7 +248,7 @@ public class Armor {
                     attributeModifierSlot);
         }
         if (piece.armor != 0) {
-            builder.add(EntityAttributes.GENERIC_ARMOR,
+            builder.add(EntityAttributes.ARMOR,
                     new EntityAttributeModifier(
                             modifierId,
                             piece.armor,
@@ -241,7 +257,7 @@ public class Armor {
         }
         for (var attribute: piece.selectedAttributes()) {
             try {
-                var entityAttribute = Registries.ATTRIBUTE.getEntry(Identifier.of(attribute.attribute)).get();
+                var entityAttribute = Registries.ATTRIBUTE.getEntry(Identifier.of(attribute.attribute)).orElseThrow();
                 builder.add(entityAttribute,
                         new EntityAttributeModifier(
                                 modifierId,

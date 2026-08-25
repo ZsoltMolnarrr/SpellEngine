@@ -20,6 +20,8 @@ public class SpellDataComponents {
     public static final ComponentType<Identifier> EQUIPMENT_SET = register(Identifier.of(SpellEngineMod.ID, "equipment_set"),
             builder -> builder.codec(Identifier.CODEC)
     );
+    /// @deprecated since 1.21.11 the vanilla `minecraft:item_model` component is used instead (item-model definitions)
+    @Deprecated(forRemoval = true)
     public static final ComponentType<Identifier> ITEM_MODEL = register(Identifier.of(SpellEngineMod.ID, "item_model"),
             builder -> builder.codec(Identifier.CODEC)
     );

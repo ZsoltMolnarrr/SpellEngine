@@ -1,7 +1,6 @@
 package net.spell_engine.api.render;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.RotationAxis;
@@ -97,13 +96,12 @@ public class ModelFxEffectRenderer implements CustomModelStatusEffect.Renderer {
 
     @Override
     public void renderEffect(long appliedAtWorldTime, int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack,
-                 VertexConsumerProvider vertexConsumers, int light) {
-        var itemRenderer = MinecraftClient.getInstance().getItemRenderer();
+                 OrderedRenderCommandQueue queue, int light) {
         // World time, not Entity.age: the server stamps `appliedAtWorldTime` in its clock, and the
         // client's World.getTime() tracks it (shared origin, re-synced each second). Entity.age counts
         // from whenever each side first saw the entity, so `age - appliedAtAge` could start deeply
         // negative and skip the whole animation for seconds. See Synchronized.Effect.
-        float rawTime = (livingEntity.getWorld().getTime() - appliedAtWorldTime) + delta;
+        float rawTime = (livingEntity.getEntityWorld().getTime() - appliedAtWorldTime) + delta;
 
         if (followYaw) {
             float yaw = livingEntity.getYaw(delta);
@@ -125,7 +123,7 @@ public class ModelFxEffectRenderer implements CustomModelStatusEffect.Renderer {
                 age = rawTime;
             }
 
-            ModelEffectOperations.renderEffect(effect, age, matrixStack, itemRenderer, vertexConsumers, light, livingEntity.getId());
+            ModelEffectOperations.renderEffect(effect, age, matrixStack, queue, light, livingEntity.getId());
         }
     }
 }

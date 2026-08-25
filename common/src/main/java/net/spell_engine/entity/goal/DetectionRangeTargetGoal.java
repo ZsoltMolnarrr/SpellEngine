@@ -15,7 +15,7 @@ public class DetectionRangeTargetGoal<T extends LivingEntity> extends ActiveTarg
     public DetectionRangeTargetGoal(SummonedEntity entity, Class<T> targetClass, int reciprocalChance,
                                     boolean checkVisibility, boolean checkCanNavigate,
                                     Predicate<LivingEntity> predicate) {
-        super(entity, targetClass, reciprocalChance, checkVisibility, checkCanNavigate, predicate);
+        super(entity, targetClass, reciprocalChance, checkVisibility, checkCanNavigate, (target, world) -> predicate.test(target));
     }
 
     @Override

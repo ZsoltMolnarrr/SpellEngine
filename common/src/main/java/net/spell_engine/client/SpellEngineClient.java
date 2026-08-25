@@ -24,6 +24,7 @@ import net.spell_engine.api.render.BuffParticleSpawner;
 import net.spell_engine.api.render.StunParticleSpawner;
 import net.spell_engine.api.spell.fx.ParticleGroupBuilder;
 import net.spell_engine.api.spell.fx.ParticleGroup;
+import net.spell_engine.client.animation.SpellAnimationStack;
 import net.spell_engine.client.compatibility.CompatFeatures;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.particle.*;
@@ -55,6 +56,7 @@ public class SpellEngineClient {
         AutoConfig.register(ClientConfigWrapper.class, PartitioningSerializer.wrap(JanksonConfigSerializer::new));
         config = AutoConfig.getConfigHolder(ClientConfigWrapper.class).getConfig().client;
         hudConfig.refresh();
+        SpellAnimationStack.registerFactories();
 
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
         CompatFeatures.initialize();
@@ -81,24 +83,15 @@ public class SpellEngineClient {
     /// Ran once the client has started (registries frozen). Fabric: `ClientLifecycleEvents.CLIENT_STARTED`;
     /// NeoForge: `FMLClientSetupEvent`.
     public static void onClientStarted() {
-        injectRangedWeaponModelPredicates();
+        // TODO(post-migration): `pull`/`pulling`/`charged` model predicates were injected onto every bow here
+        // so spell casts could drive the pull animation. Item model properties are data-driven since 1.21.4;
+        // decision: route through Ranged Weapon API's `ranged_weapon:pull` property (RWA consults Spell Engine).
     }
 
     /// Append Spell Engine tooltip lines. Fabric: `ItemTooltipCallback`; NeoForge: `ItemTooltipEvent`.
     public static void addTooltipLines(ItemStack itemStack, TooltipType tooltipType, List<Text> lines) {
         SpellTooltip.addSpellLines(itemStack, tooltipType, lines);
         EquipmentSetTooltip.appendLines(itemStack, lines);
-    }
-
-    private static void injectRangedWeaponModelPredicates() {
-        for(var itemId: Registries.ITEM.getIds()) {
-            var item = Registries.ITEM.get(itemId);
-            if (item instanceof BowItem) {
-                ModelPredicateHelper.injectBowSkillUsePredicate(item);
-            } else if (item instanceof CrossbowItem) {
-                ModelPredicateHelper.injectCrossBowSkillUsePredicate(item);
-            }
-        }
     }
 
     private static void registerEffectParticles() {

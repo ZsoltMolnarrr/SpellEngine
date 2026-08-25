@@ -19,7 +19,7 @@ public class EntityPlacements {
     private static final int PLACEMENT_LIFT_LIMIT = 2;
 
     public static void applyEntityPlacement(Entity entity, Entity target, Vec3d initialPosition, Spell.EntityPlacement placement) {
-        applyEntityPlacement(target.getWorld(), entity, target.getYaw(), target.getPitch(), target, initialPosition, placement);
+        applyEntityPlacement(target.getEntityWorld(), entity, target.getYaw(), target.getPitch(), target, initialPosition, placement);
     }
 
     public static void applyEntityPlacement(World world, Entity placedEntity,

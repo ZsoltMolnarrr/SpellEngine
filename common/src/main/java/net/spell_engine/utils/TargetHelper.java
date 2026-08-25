@@ -33,7 +33,7 @@ public class TargetHelper {
                 .normalize()
                 .multiply(range);
         Vec3d end = start.add(look);
-        var hit = raycastObstacle(caster.getWorld(), caster, start, end);
+        var hit = raycastObstacle(caster.getEntityWorld(), caster, start, end);
         if (hit.getType() == HitResult.Type.BLOCK) {
             return hit.getPos();
         }
@@ -51,7 +51,7 @@ public class TargetHelper {
             return !target.isSpectator() && target.canHit() && predicate.test(target);
         }, range*range); // `range*range` is provided for squared distance comparison
         if (hitResult != null) {
-            if (hitResult.getPos() == null || raycastObstacleFree(caster.getWorld(), caster, start, hitResult.getPos())) {
+            if (hitResult.getPos() == null || raycastObstacleFree(caster.getEntityWorld(), caster, start, hitResult.getPos())) {
                 return hitResult.getEntity();
             }
         }
@@ -69,7 +69,7 @@ public class TargetHelper {
             return !target.isSpectator() && target.canHit() && predicate.test(target);
         }, range*range); // `range*range` is provided for squared distance comparison
         return entitiesHit.stream()
-                .filter((hit) -> hit.position() == null || raycastObstacleFree(caster.getWorld(), caster, start, hit.position()))
+                .filter((hit) -> hit.position() == null || raycastObstacleFree(caster.getEntityWorld(), caster, start, hit.position()))
                 .sorted(new Comparator<EntityHit>() {
                     @Override
                     public int compare(EntityHit hit1, EntityHit hit2) {
@@ -87,7 +87,7 @@ public class TargetHelper {
 
     @Nullable
     private static List<EntityHit> raycastMultiple(Entity sourceEntity, Vec3d min, Vec3d max, Box searchBox, Predicate<Entity> predicate, double squaredDistance) {
-        World world = sourceEntity.getWorld();
+        World world = sourceEntity.getEntityWorld();
         double e = squaredDistance;
         // Entity entity2 = null;
         List<EntityHit> entities = new ArrayList<>();
@@ -126,7 +126,7 @@ public class TargetHelper {
 
     public static List<Entity> targetsFromArea(Entity caster, float range, Spell.Target.Area area, @Nullable Predicate<Entity> predicate) {
         var origin = caster.getEyePos();
-        return targetsFromArea(caster.getWorld(), caster, origin, caster.getRotationVector(), range, area, predicate);
+        return targetsFromArea(caster.getEntityWorld(), caster, origin, caster.getRotationVector(), range, area, predicate);
     }
 
     public static List<Entity> targetsFromArea(World world, @Nullable Entity centerEntity, Vec3d origin, Vec3d look, float range, Spell.Target.Area area, @Nullable Predicate<Entity> predicate) {
@@ -144,7 +144,7 @@ public class TargetHelper {
         var squaredDistance = range * range;
         var angle = area.angle_degrees / 2F;
         return world.getOtherEntities(centerEntity, box, (target) -> {
-            var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
+            var targetCenter = target.getEntityPos().add(0, target.getHeight() / 2F, 0);
             var distanceVector = VectorHelper.distanceVector(origin, target.getBoundingBox());
             return !target.isSpectator()
                     && target.canHit()
@@ -171,10 +171,10 @@ public class TargetHelper {
 
     public static boolean isInLineOfSight(Entity attacker, Entity target) {
         var origin = attacker.getEyePos();
-        var targetCenter = target.getPos().add(0, target.getHeight() / 2F, 0);
+        var targetCenter = target.getEntityPos().add(0, target.getHeight() / 2F, 0);
         var distanceVector = VectorHelper.distanceVector(origin, target.getBoundingBox());
-        return raycastObstacleFree(attacker.getWorld(), attacker, origin, targetCenter)
-                || raycastObstacleFree(attacker.getWorld(), attacker, origin, origin.add(distanceVector));
+        return raycastObstacleFree(attacker.getEntityWorld(), attacker, origin, targetCenter)
+                || raycastObstacleFree(attacker.getEntityWorld(), attacker, origin, origin.add(distanceVector));
     }
 
     private static BlockHitResult raycastObstacle(World world, Entity entity, Vec3d start, Vec3d end) {
@@ -191,7 +191,7 @@ public class TargetHelper {
     }
 
     public static boolean isTargetedByPlayer(Entity entity, PlayerEntity player) {
-        if (entity != null && entity.getWorld().isClient && player instanceof SpellCaster.Client casterClient) {
+        if (entity != null && entity.getEntityWorld().isClient() && player instanceof SpellCaster.Client casterClient) {
             var targets = casterClient.getCurrentTargets();
             if (entity instanceof EnderDragonEntity dragon) {
                 // Targets contain any of the dragon's body parts
@@ -213,7 +213,7 @@ public class TargetHelper {
         var end = start.add(direction.multiply(max));
         var length = max;
         boolean hitBlock = false;
-        var hit = caster.getWorld().raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, caster));
+        var hit = caster.getEntityWorld().raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, caster));
         if (hit.getType() == HitResult.Type.BLOCK) {
             hitBlock = true;
             end = hit.getPos();
@@ -244,7 +244,7 @@ public class TargetHelper {
     }
 
     @Nullable public static Vec3d findTeleportDestination(LivingEntity entity, Vec3d look, float distance, int clearanceY) {
-        var world = entity.getWorld();
+        var world = entity.getEntityWorld();
         var start = entity.getEyePos();
         var end = start.add(look.multiply(distance));
         var hit = world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));

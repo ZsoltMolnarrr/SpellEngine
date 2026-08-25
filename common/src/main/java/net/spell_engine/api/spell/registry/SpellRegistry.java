@@ -29,7 +29,7 @@ public class SpellRegistry {
     public static final Identifier ID = Identifier.ofVanilla("spell");
     public static final RegistryKey<Registry<Spell>> KEY = RegistryKey.ofRegistry(ID);
     public static Registry<Spell> from(World world) {
-        return world.getRegistryManager().get(KEY);
+        return world.getRegistryManager().getOrThrow(KEY);
     }
     
     private static final Gson gson = new GsonBuilder().create();
@@ -73,7 +73,7 @@ public class SpellRegistry {
 
     public static RegistryEntryList.Named<Spell> find(World world, Identifier tagId) {
         var manager = world.getRegistryManager();
-        var lookup = manager.createRegistryLookup().getOrThrow(KEY); // RegistryEntryLookup<Spell>
+        var lookup = manager.getOrThrow(KEY);
         var tag = TagKey.of(KEY, tagId);
         return lookup.getOrThrow(tag);
     }
@@ -96,7 +96,7 @@ public class SpellRegistry {
 
     public static Stream<RegistryEntry.Reference<Spell>> stream(World world) {
         var manager = world.getRegistryManager();
-        var registry = manager.get(KEY);
+        var registry = manager.getOrThrow(KEY);
         return registry.streamEntries();
     }
 }

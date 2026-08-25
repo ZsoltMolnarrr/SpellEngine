@@ -4,6 +4,9 @@ import net.spell_engine.Platform;
 import net.spell_engine.PlatformEvents;
 import net.minecraft.block.Block;
 import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.RepairableComponent;
+import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.component.type.ToolComponent;
@@ -12,14 +15,12 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ToolMaterial;
-import net.minecraft.item.ToolMaterials;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Lazy;
 import net.minecraft.util.Rarity;
 import net.spell_engine.rpg_series.config.AttributeModifier;
 import net.spell_engine.rpg_series.config.WeaponConfig;
@@ -173,56 +174,43 @@ public class Weapon {
 
     // MARK: Material
 
-    public static class CustomMaterial implements ToolMaterial {
-        public static CustomMaterial matching(ToolMaterials vanillaMaterial, Supplier<Ingredient> repairIngredient) {
-            var material = new CustomMaterial();
-            material.durability = vanillaMaterial.getDurability();
-            material.miningSpeed = vanillaMaterial.getMiningSpeedMultiplier();
-            material.enchantability = vanillaMaterial.getEnchantability();
-            material.ingredient = new Lazy(repairIngredient);
-            material.inverseTag = vanillaMaterial.getInverseTag();
-            return material;
+    /// Wraps a vanilla {@link ToolMaterial} (a record since 1.21.2) with a repair ingredient supplier.
+    /// Repair is expressed as an {@link Ingredient} rather than a tag so consumers can keep using
+    /// item-based repair definitions; it is applied through the REPAIRABLE data component.
+    public static class CustomMaterial {
+        public static CustomMaterial matching(ToolMaterial vanillaMaterial, Supplier<Ingredient> repairIngredient) {
+            return new CustomMaterial(vanillaMaterial, repairIngredient);
         }
 
-        private TagKey<Block> inverseTag;
-        private int durability = 0;
-        private float miningSpeed = 0;
-        private int enchantability = 0;
-        private Lazy<Ingredient> ingredient = null;
+        private final ToolMaterial toolMaterial;
+        private final Supplier<Ingredient> repairIngredient;
 
-        @Override
-        public int getDurability() {
-            return durability;
+        public CustomMaterial(ToolMaterial toolMaterial, Supplier<Ingredient> repairIngredient) {
+            this.toolMaterial = toolMaterial;
+            this.repairIngredient = repairIngredient;
         }
 
-        @Override
-        public float getMiningSpeedMultiplier() {
-            return miningSpeed;
+        public ToolMaterial toolMaterial() { return toolMaterial; }
+        public int getDurability() { return toolMaterial.durability(); }
+        public float getMiningSpeedMultiplier() { return toolMaterial.speed(); }
+        public int getEnchantability() { return toolMaterial.enchantmentValue(); }
+        public TagKey<Block> getInverseTag() { return toolMaterial.incorrectBlocksForDrops(); }
+        public Ingredient getRepairIngredient() { return repairIngredient.get(); }
+
+        /// Durability, enchantability and repair (from the supplier) — no TOOL component.
+        public Item.Settings applyBaseSettings(Item.Settings settings) {
+            settings = settings.maxDamage(toolMaterial.durability()).enchantable(toolMaterial.enchantmentValue());
+            var ingredient = repairIngredient.get();
+            if (ingredient != null && !ingredient.isEmpty()) {
+                settings.component(DataComponentTypes.REPAIRABLE, new RepairableComponent(RegistryEntryList.of(ingredient.getMatchingItems().toList())));
+            }
+            return settings;
         }
 
-        @Override
-        public float getAttackDamage() {
-            return 0;
-        }
-
-        @Override
-        public TagKey<Block> getInverseTag() {
-            return inverseTag;
-        }
-
-        @Override
-        public int getEnchantability() {
-            return enchantability;
-        }
-
-        @Override
-        public Ingredient getRepairIngredient() {
-            return (Ingredient)this.ingredient.get();
-        }
-
-        @Override
-        public ToolComponent createComponent(TagKey<Block> tag) {
-            return ToolMaterial.super.createComponent(tag);
+        /// Base settings plus the vanilla sword TOOL/WEAPON components. Attack attributes must be applied afterwards.
+        public Item.Settings applySwordSettings(Item.Settings settings) {
+            toolMaterial.applySwordSettings(settings, 0, 0);
+            return applyBaseSettings(settings);
         }
     }
 
@@ -237,8 +225,13 @@ public class Weapon {
             }
             if (!entry.isRequiredModInstalled()) { continue; }
 
-            var settings = new Item.Settings()
-                    .attributeModifiers(attributesFrom(config));
+            var settings = new Item.Settings();
+            switch (entry.category) {
+                case DAMAGE_STAFF, HEALING_STAFF, DAMAGE_WAND, HEALING_WAND -> entry.material.applyBaseSettings(settings);
+                default -> entry.material.applySwordSettings(settings);
+            }
+            // Attack attributes come from config, overriding whatever the vanilla material set
+            settings.attributeModifiers(attributesFrom(config));
             if (entry.rarity != Rarity.COMMON) {
                 settings = settings.rarity(entry.rarity);
             }
@@ -254,7 +247,7 @@ public class Weapon {
             if (tier >= 3) {
                 settings.fireproof();
             }
-            var item = entry.create(entry.material, settings);
+            var item = entry.create(entry.material.toolMaterial(), settings);
             Registry.register(Registries.ITEM, entry.id(), item);
         }
         PlatformEvents.onItemGroupModify(itemGroupKey, (content, context) -> {
@@ -266,13 +259,13 @@ public class Weapon {
 
     public static AttributeModifiersComponent attributesFrom(WeaponConfig config) {
         AttributeModifiersComponent.Builder builder = AttributeModifiersComponent.builder();
-        builder.add(EntityAttributes.GENERIC_ATTACK_DAMAGE,
+        builder.add(EntityAttributes.ATTACK_DAMAGE,
                 new EntityAttributeModifier(
                         Item.BASE_ATTACK_DAMAGE_MODIFIER_ID,
                         config.attack_damage,
                         EntityAttributeModifier.Operation.ADD_VALUE),
                 AttributeModifierSlot.MAINHAND);
-        builder.add(EntityAttributes.GENERIC_ATTACK_SPEED,
+        builder.add(EntityAttributes.ATTACK_SPEED,
                 new EntityAttributeModifier(
                         Item.BASE_ATTACK_SPEED_MODIFIER_ID,
                         config.attack_speed,

@@ -7,6 +7,7 @@ import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.server.world.ServerWorld;
 import net.spell_engine.api.entity.SpellEngineAttributes;
 import net.spell_engine.api.event.CombatEvents;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,11 +33,11 @@ public abstract class LivingEntityHealthImpacting {
 
     @WrapOperation(
             method = "damage",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;applyDamage(Lnet/minecraft/entity/damage/DamageSource;F)V")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;applyDamage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)V")
     )
     private void damage_ApplyDamage_entity(
             // Mixin parameters
-            LivingEntity instance, DamageSource source, float amount, Operation<Void> original
+            LivingEntity instance, ServerWorld world, DamageSource source, float amount, Operation<Void> original
     ) {
         if (CombatEvents.ENTITY_DAMAGE_INCOMING.isListened()) {
             var args = new CombatEvents.EntityDamageTaken.Args(instance, source, amount);
@@ -55,10 +56,10 @@ public abstract class LivingEntityHealthImpacting {
         // thus its fatality) was known, so re-check now: if the entity became immune to this source,
         // cancel the current hit instead of applying it. Without this, such effects only protect
         // against subsequent hits, never the triggering blow.
-        if (instance.isInvulnerableTo(source)) {
+        if (instance.isInvulnerableTo(world, source)) {
             return; // skip applyDamage: this damage instance is cancelled
         }
 
-        original.call(instance, source, amount);
+        original.call(instance, world, source, amount);
     }
 }

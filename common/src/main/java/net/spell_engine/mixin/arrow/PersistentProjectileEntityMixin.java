@@ -12,7 +12,8 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.EntityHitResult;
@@ -70,7 +71,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         if (cachedSpellEntry == null || cachedSpellEntry.size() != spellIds.size()) {
             var entries = spellIds.stream()
                     .map(id -> {
-                        var reference = SpellRegistry.from(arrow().getWorld()).getEntry(id).orElse(null);
+                        var reference = SpellRegistry.from(arrow().getEntityWorld()).getEntry(id).orElse(null);
                         return (RegistryEntry<Spell>)reference;
                     })
                     .toList();
@@ -90,17 +91,18 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
     private static final Type stringListType = new TypeToken<ArrayList<String>>(){}.getType();
     private static final String NBT_KEY_SPELL_ID = "spell_id";
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
-    public void writeCustomDataToNbt_TAIL_SpellEngine(NbtCompound nbt, CallbackInfo ci) {
+    @Inject(method = "writeCustomData", at = @At("TAIL"))
+    public void writeCustomData_TAIL_SpellEngine(WriteView view, CallbackInfo ci) {
         var stringList = this.spellIds.stream().map(Identifier::toString).toList();
         var json = gson.toJson(stringList);
-        nbt.putString(NBT_KEY_SPELL_ID, json);
+        view.putString(NBT_KEY_SPELL_ID, json);
     }
 
-    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
-    public void readCustomDataFromNbt_TAIL_SpellEngine(NbtCompound nbt, CallbackInfo ci) {
-        if (nbt.contains(NBT_KEY_SPELL_ID)) {
-            var string = nbt.getString(NBT_KEY_SPELL_ID);
+    @Inject(method = "readCustomData", at = @At("TAIL"))
+    public void readCustomData_TAIL_SpellEngine(ReadView view, CallbackInfo ci) {
+        var stringOpt = view.getOptionalString(NBT_KEY_SPELL_ID);
+        if (stringOpt.isPresent()) {
+            var string = stringOpt.get();
             if (string != null && !string.isEmpty()) {
                 List<String> stringList = new Gson().fromJson(string, stringListType);
                 this.spellIds.clear();
@@ -127,8 +129,8 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
     @Inject(method = "tick", at = @At("HEAD"))
     private void tick_HEAD_SpellEngine(CallbackInfo ci) {
         var arrow = arrow();
-        var world = arrow.getWorld();
-        if (world.isClient && this.spellIds.isEmpty()) {
+        var world = arrow.getEntityWorld();
+        if (world.isClient() && this.spellIds.isEmpty()) {
             var json = arrow().getDataTracker().get(SPELL_ID_TRACKER);
             if (json.isEmpty()) {
                 return;
@@ -152,7 +154,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
             if (perks != null && perks.travel_particles != null) {
                 var arrow = arrow();
                 for (var travel_particles : perks.travel_particles) {
-                    ParticleHelper.play(arrow.getWorld(), arrow, arrow.getYaw(), arrow.getPitch(), travel_particles);
+                    ParticleHelper.play(arrow.getEntityWorld(), arrow, arrow.getYaw(), arrow.getPitch(), travel_particles);
                 }
             }
         }
@@ -255,7 +257,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         var spellEntries = spellEntries();
         var arrow = arrow();
         var owner = arrow.getOwner();
-        if (entity.getWorld().isClient() || spellEntries.isEmpty()) {
+        if (entity.getEntityWorld().isClient() || spellEntries.isEmpty()) {
 
             var result = original.call(entity, damageSource, amount);
             if (owner instanceof PlayerEntity shooter) {

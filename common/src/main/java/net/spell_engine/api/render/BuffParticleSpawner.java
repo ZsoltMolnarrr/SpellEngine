@@ -139,11 +139,11 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
                 }
                 scaledParticles = copies;
             }
-            ParticleHelper.play(livingEntity.getWorld(), livingEntity, scaledParticles);
+            ParticleHelper.play(livingEntity.getEntityWorld(), livingEntity, scaledParticles);
         }
         if (groundEffect != null && groundFrequency > 0) {
             if (livingEntity.age % groundFrequency == 0) {
-                ParticleHelper.play(livingEntity.getWorld(), livingEntity, groundEffect);
+                ParticleHelper.play(livingEntity.getEntityWorld(), livingEntity, groundEffect);
             }
         }
     }

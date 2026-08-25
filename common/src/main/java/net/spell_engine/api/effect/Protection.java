@@ -58,7 +58,7 @@ public class Protection {
                 if (pop != null) {
                     ParticleHelper.sendBatches(entity, pop.particles);
                     if (pop.sound != null) {
-                        SoundHelper.playSoundEvent(entity.getWorld(), entity, pop.sound);
+                        SoundHelper.playSoundEvent(entity.getEntityWorld(), entity, pop.sound);
                     }
                 }
                 StatusEffectUtil.applyChanges(entity, List.of(

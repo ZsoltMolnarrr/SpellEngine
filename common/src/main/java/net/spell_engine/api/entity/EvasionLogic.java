@@ -43,7 +43,7 @@ public class EvasionLogic {
             var angleOfAttack = 0F;
             var evasionAngleLimit = config.attribute_evasion_angle;
             if (evasionAngleLimit > 0F && source.getSource() != null) {
-                var sourcePos = source.getPosition() != null ? source.getPosition() : source.getSource().getPos();
+                var sourcePos = source.getPosition() != null ? source.getPosition() : source.getSource().getEntityPos();
                 angleOfAttack = (float) VectorHelper.angleBetween(
                         entity.getRotationVec(1.0F),
                         new Vec3d(sourcePos.getX() - entity.getX(), 0, sourcePos.getZ() - entity.getZ())
@@ -63,7 +63,7 @@ public class EvasionLogic {
             var tracker = Platform.tracking(player);
             AnimationHelper.sendAnimation(player, tracker, SpellCast.Animation.MISC, evadeAnimation, 1F);
         }
-        entity.getWorld().playSound(null, entity.getX(), entity.getY(), entity.getZ(), SpellEngineSounds.DODGE.soundEvent(), entity.getSoundCategory(), 1.0F, evadeSound.randomizedPitch());
+        entity.getEntityWorld().playSound(null, entity.getX(), entity.getY(), entity.getZ(), SpellEngineSounds.DODGE.soundEvent(), entity.getSoundCategory(), 1.0F, evadeSound.randomizedPitch());
         CombatEvents.ENTITY_EVASION.invoke(listener -> listener.onEntityEvasion(new CombatEvents.EntityEvasion.Args(entity, damage, source)));
     }
 }

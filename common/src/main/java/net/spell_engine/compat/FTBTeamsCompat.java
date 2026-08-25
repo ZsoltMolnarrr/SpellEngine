@@ -14,7 +14,7 @@ public class FTBTeamsCompat {
         if (Platform.util().isModLoaded("ftbteams")) {
             EntityRelations.registerTeamMatcher("ftb", (attack, target) -> {
                 if (attack instanceof PlayerEntity attackerPlayer && target instanceof PlayerEntity targetPlayer) {
-                    if (attackerPlayer.getWorld().isClient()) {
+                    if (attackerPlayer.getEntityWorld().isClient()) {
                         return checkClientTeamRelation(attackerPlayer, targetPlayer);
                     } else {
                         return checkServerTeamRelation(attackerPlayer, targetPlayer);

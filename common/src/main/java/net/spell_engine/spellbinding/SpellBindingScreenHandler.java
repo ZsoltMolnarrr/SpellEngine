@@ -223,7 +223,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
             var lapisCount = getLapisCount();
             var mainStack = getStacks().get(0);
             var consumableStack = getStacks().get(1);
-            var playerWorld = player.getWorld();
+            var playerWorld = player.getEntityWorld();
 
             switch (mode) {
                 case SPELL -> {
@@ -285,7 +285,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                     if (poweredByLib == 0) {
                         return false;
                     }
-                    var tags = SpellBinding.availableSpellBookTags(player.getWorld());
+                    var tags = SpellBinding.availableSpellBookTags(player.getEntityWorld());
                     var tagIndex = rawId - SpellBinding.BOOK_OFFSET;
                     if (tagIndex < 0 || tagIndex >= tags.size()) {
                         return false;

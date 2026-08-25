@@ -4,7 +4,8 @@ import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
@@ -41,14 +42,14 @@ public class PlayerEntityMixin implements SpellCaster.Player, SpellCasterEntity 
             new Binding<>(
                     () -> player().getDataTracker().get(SPELL_ENGINE_SPELL_PROGRESS),
                     json -> {
-                        if (!player().getWorld().isClient) {
+                        if (!player().getEntityWorld().isClient()) {
                             player().getDataTracker().set(SPELL_ENGINE_SPELL_PROGRESS, json);
                         }
                     }),
             new Binding<>(
                     () -> player().getDataTracker().get(SPELL_ENGINE_OPTIONS),
                     json -> {
-                        if (!player().getWorld().isClient) {
+                        if (!player().getEntityWorld().isClient()) {
                             player().getDataTracker().set(SPELL_ENGINE_OPTIONS, json);
                         }
                     }));
@@ -87,7 +88,7 @@ public class PlayerEntityMixin implements SpellCaster.Player, SpellCasterEntity 
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL_SpellEngine(CallbackInfo ci) {
         var player = player();
-        if (player.getWorld().isClient) {
+        if (player.getEntityWorld().isClient()) {
             ((AnimatablePlayer)player()).updateSpellCastAnimationsOnTick();
         } else {
             // Server side
@@ -126,13 +127,13 @@ public class PlayerEntityMixin implements SpellCaster.Player, SpellCasterEntity 
 
     // MARK: Persistence
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
-    public void writeCustomDataToNbt_TAIL_SpellEngine(NbtCompound nbt, CallbackInfo ci) {
-        spellCooldownManager.writeCustomDataToNbt(nbt);
+    @Inject(method = "writeCustomData", at = @At("TAIL"))
+    public void writeCustomData_TAIL_SpellEngine(WriteView view, CallbackInfo ci) {
+        spellCooldownManager.writeCustomData(view);
     }
 
-    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
-    public void readCustomDataFromNbt_TAIL_SpellEngine(NbtCompound nbt, CallbackInfo ci) {
-        spellCooldownManager.readCustomDataFromNbt(nbt);
+    @Inject(method = "readCustomData", at = @At("TAIL"))
+    public void readCustomData_TAIL_SpellEngine(ReadView view, CallbackInfo ci) {
+        spellCooldownManager.readCustomData(view);
     }
 }

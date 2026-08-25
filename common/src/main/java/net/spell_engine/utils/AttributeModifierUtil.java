@@ -1,5 +1,7 @@
 package net.spell_engine.utils;
 
+import net.minecraft.entity.EquipmentSlot;
+
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.component.DataComponentTypes;
@@ -69,13 +71,9 @@ public class AttributeModifierUtil {
         if (player.getMainHandStack().equals(itemStack)) {
             return true;
         }
-        for (var armorSlot: player.getInventory().armor) {
-            if (armorSlot.equals(itemStack)) {
-                return true;
-            }
-        }
-        for (var offhandSlot: player.getInventory().offHand) {
-            if (offhandSlot.equals(itemStack)) {
+        for (var slot: EquipmentSlot.VALUES) {
+            if (slot == EquipmentSlot.MAINHAND) continue;
+            if (player.getEquippedStack(slot).equals(itemStack)) {
                 return true;
             }
         }

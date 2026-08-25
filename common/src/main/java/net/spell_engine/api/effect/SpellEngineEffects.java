@@ -26,7 +26,7 @@ public class SpellEngineEffects {
             new CustomStatusEffect(StatusEffectCategory.HARMFUL, 0x888800),
             new EffectConfig(List.of(
                     new AttributeModifier(
-                            EntityAttributes.GENERIC_JUMP_STRENGTH.getIdAsString(),
+                            EntityAttributes.JUMP_STRENGTH.getIdAsString(),
                             0,
                             EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
                     )
@@ -39,12 +39,12 @@ public class SpellEngineEffects {
             new CustomStatusEffect(StatusEffectCategory.HARMFUL, 0xcc0000),
             new EffectConfig(List.of(
                     new AttributeModifier(
-                            EntityAttributes.GENERIC_JUMP_STRENGTH.getIdAsString(),
+                            EntityAttributes.JUMP_STRENGTH.getIdAsString(),
                             -10,
                             EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
                     ),
                     new AttributeModifier(
-                            EntityAttributes.GENERIC_MOVEMENT_SPEED.getIdAsString(),
+                            EntityAttributes.MOVEMENT_SPEED.getIdAsString(),
                             -10,
                             EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
                     )

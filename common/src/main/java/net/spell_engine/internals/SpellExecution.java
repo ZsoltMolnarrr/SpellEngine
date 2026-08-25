@@ -145,7 +145,7 @@ public class SpellExecution {
             boolean success = true;
             if (targeting.cap > 0) {
                 targets = targets.stream()
-                        .sorted(Comparator.comparingDouble(target -> target.squaredDistanceTo(player.getPos())))
+                        .sorted(Comparator.comparingDouble(target -> target.squaredDistanceTo(player.getEntityPos())))
                         .limit(targeting.cap)
                         .toList();
             }

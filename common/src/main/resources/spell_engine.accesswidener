@@ -14,4 +14,10 @@ accessible    field    net/minecraft/loot/LootTable    type    Lnet/minecraft/ut
 accessible    field    net/minecraft/loot/LootTable    randomSequenceId    Ljava/util/Optional;
 accessible    field    net/minecraft/loot/LootTable    pools    Ljava/util/List;
 accessible    field    net/minecraft/loot/LootTable    functions    Ljava/util/List;
-accessible    method    net/minecraft/loot/LootTable    <init>    (Lnet/minecraft/util/context/ContextType;Ljava/util/Optional;Ljava/util/List;Ljava/util/List;)V
+accessible    method    net/minecraft/loot/LootTable    <init>    (Lnet/minecraft/util/context/ContextType;Ljava/util/Optional;Ljava/util/List;Ljava/util/List;)V# Vanilla BlockEntityType constructor is private since 1.21.2; used to create the spell binding block entity type
+accessible    method    net/minecraft/block/entity/BlockEntityType    <init>    (Lnet/minecraft/block/entity/BlockEntityType$BlockEntityFactory;Ljava/util/Set;)V
+accessible    class    net/minecraft/block/entity/BlockEntityType$BlockEntityFactory
+# Pipeline snippets to derive Spell Engine render pipelines from (blend/depth/cull variants of vanilla ones)
+accessible    field    net/minecraft/client/gl/RenderPipelines    ENTITY_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible    field    net/minecraft/client/gl/RenderPipelines    ENTITY_EMISSIVE_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible    field    net/minecraft/client/gl/RenderPipelines    RENDERTYPE_BEACON_BEAM_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;

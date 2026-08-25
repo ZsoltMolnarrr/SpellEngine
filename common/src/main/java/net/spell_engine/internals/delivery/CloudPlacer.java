@@ -1,5 +1,7 @@
 package net.spell_engine.internals.delivery;
 
+import net.minecraft.entity.SpawnReason;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.registry.Registries;
@@ -82,7 +84,7 @@ public class CloudPlacer {
                 if (cloud.entity_type_id != null) {
                     var id = Identifier.of(cloud.entity_type_id);
                     var type = Registries.ENTITY_TYPE.get(id);
-                    entity = (SpellCloud) type.create(world);
+                    entity = (SpellCloud) type.create(world, SpawnReason.MOB_SUMMONED);
                 } else {
                     entity = new SpellCloud(world);
                 }
@@ -90,9 +92,9 @@ public class CloudPlacer {
                 entity.onCreatedFromSpell(spellEntry.getKey().get().getValue(), cloud, context, cloud.time_to_live_seconds + extraTimeToLive, cloudModifier);
 
                 if (target != null) {
-                    EntityPlacements.applyEntityPlacement(entity, target, target.getPos(), placement);
+                    EntityPlacements.applyEntityPlacement(entity, target, target.getEntityPos(), placement);
                 } else if (location != null) {
-                    EntityPlacements.applyEntityPlacement(caster.getWorld(), entity,
+                    EntityPlacements.applyEntityPlacement(caster.getEntityWorld(), entity,
                             caster.getYaw(), caster.getPitch(), null,
                             location, placement);
                 } else {
@@ -108,7 +110,7 @@ public class CloudPlacer {
                     }
                     var spawnVisuals = cloud.spawn.visuals.resolved(Fx.Context.NONE);
                     ParticleHelper.sendBatches(entity, spawnVisuals.particles);
-                    ModelEffectHelper.spawn(world, entity.getPos(), entity.getYaw(), spawnVisuals.models, null);
+                    ModelEffectHelper.spawn(world, entity.getEntityPos(), entity.getYaw(), spawnVisuals.models, null);
                 });
 
                 if (cloud.placement_delay_stacks) {

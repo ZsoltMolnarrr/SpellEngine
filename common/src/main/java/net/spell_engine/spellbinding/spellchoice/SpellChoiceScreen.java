@@ -1,5 +1,7 @@
 package net.spell_engine.spellbinding.spellchoice;
 
+import net.minecraft.client.gui.Click;
+import net.minecraft.client.gl.RenderPipelines;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
@@ -103,16 +105,10 @@ public class SpellChoiceScreen extends HandledScreen<SpellChoiceScreenHandler> {
         }
 
         // Draw spell icon texture
-        context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.enableBlend();
-
         if (icon.spell != null && icon.spell.icon != null) {
-            context.drawTexture(icon.spell.icon, icon.x, icon.y,
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, icon.spell.icon, icon.x, icon.y,
                     0, 0, icon.size, icon.size, icon.size, icon.size);
         }
-
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableBlend();
     }
 
     @Override
@@ -140,7 +136,9 @@ public class SpellChoiceScreen extends HandledScreen<SpellChoiceScreenHandler> {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        double mouseX = click.x(), mouseY = click.y();
+        int button = click.button();
         if (button == 0) {  // Left click
             for (var icon : spellIcons) {
                 if (icon.mouseOver((int) mouseX, (int) mouseY)) {
@@ -153,7 +151,7 @@ public class SpellChoiceScreen extends HandledScreen<SpellChoiceScreenHandler> {
                 }
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     @Override

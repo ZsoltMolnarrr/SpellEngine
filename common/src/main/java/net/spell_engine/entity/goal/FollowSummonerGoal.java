@@ -73,6 +73,6 @@ public class FollowSummonerGoal extends Goal {
         Vec3d forward = lastOwnerForward != null ? lastOwnerForward : new Vec3d(0, 0, -1);
         // Right = forward rotated 90° clockwise (viewed from above) in Minecraft's coordinate system
         Vec3d right = new Vec3d(-forward.z, 0, forward.x);
-        return owner.getPos().add(right.multiply(2.0));
+        return owner.getEntityPos().add(right.multiply(2.0));
     }
 }

@@ -67,7 +67,7 @@ public class ClientCastController {
 
     @Nullable public SpellCast.Progress progress() {
         if (predictedProcess != null) {
-            return predictedProcess.progress(player.getWorld().getTime());
+            return predictedProcess.progress(player.getEntityWorld().getTime());
         }
         return null;
     }
@@ -111,7 +111,7 @@ public class ClientCastController {
                 // Predicted process only (display); the server starts its own on the request.
                 // Current aim rides along so the server has targets from tick one.
                 var details = SpellParameters.getCastTimeDetails(player, spell);
-                setProcess(new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.getWorld().getTime()));
+                setProcess(new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.getEntityWorld().getTime()));
                 predictionConfirmed = false;
                 spellTarget = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), SpellEngineClient.config.filterInvalidTargets, targetingRange(spellEntry));
                 var snapshot = snapshotFor(spellEntry, spellTarget);
@@ -181,7 +181,7 @@ public class ClientCastController {
 
             // Prediction only — the server owns the timeline and fires on its own clock.
             var mode = SpellCast.Mode.from(spell);
-            var castTicks = process.spellCastTicksSoFar(player.getWorld().getTime());
+            var castTicks = process.spellCastTicksSoFar(player.getEntityWorld().getTime());
             var declared = caster.getInteractor().process();
             var declaredMatches = declared != null && declared.id().equals(process.id());
             if (declaredMatches) {

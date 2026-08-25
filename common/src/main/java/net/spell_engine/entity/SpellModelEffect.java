@@ -1,12 +1,15 @@
 package net.spell_engine.entity;
 
 import com.google.gson.Gson;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.fx.ModelEffect;
 import org.jetbrains.annotations.Nullable;
@@ -52,7 +55,7 @@ public class SpellModelEffect extends Entity {
     @Override
     public void onTrackedDataSet(TrackedData<?> data) {
         super.onTrackedDataSet(data);
-        if (getWorld().isClient) {
+        if (getEntityWorld().isClient()) {
             var json = this.getDataTracker().get(MODEL_EFFECT_DATA);
             if (json != null && !json.isEmpty()) {
                 this.modelEffect = gson.fromJson(json, ModelEffect.class);
@@ -66,22 +69,27 @@ public class SpellModelEffect extends Entity {
     // MARK: Persistence
 
     @Override
-    protected void readCustomDataFromNbt(NbtCompound nbt) {
-        this.age = nbt.getInt("Age");
-        this.timeToLive = nbt.getInt("TTL");
-        var json = nbt.getString("ModelEffect");
+    protected void readCustomData(ReadView view) {
+        this.age = view.getInt("Age", 0);
+        this.timeToLive = view.getInt("TTL", 0);
+        var json = view.getString("ModelEffect", "");
         if (!json.isEmpty()) {
             this.modelEffect = gson.fromJson(json, ModelEffect.class);
         }
     }
 
     @Override
-    protected void writeCustomDataToNbt(NbtCompound nbt) {
-        nbt.putInt("Age", this.age);
-        nbt.putInt("TTL", this.timeToLive);
+    protected void writeCustomData(WriteView view) {
+        view.putInt("Age", this.age);
+        view.putInt("TTL", this.timeToLive);
         if (this.modelEffect != null) {
-            nbt.putString("ModelEffect", gson.toJson(this.modelEffect));
+            view.putString("ModelEffect", gson.toJson(this.modelEffect));
         }
+    }
+
+    @Override
+    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+        return false;
     }
 
     // MARK: Behavior
@@ -89,7 +97,7 @@ public class SpellModelEffect extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if (!getWorld().isClient && this.age >= this.timeToLive) {
+        if (!getEntityWorld().isClient() && this.age >= this.timeToLive) {
             this.discard();
         }
     }

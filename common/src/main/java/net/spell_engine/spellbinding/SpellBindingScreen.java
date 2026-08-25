@@ -1,14 +1,16 @@
 package net.spell_engine.spellbinding;
 
+import net.minecraft.client.gl.RenderPipelines;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.DialogScreen;
+import net.minecraft.client.gui.Click;
+import net.minecraft.client.gui.screen.ConfirmScreen;
+import net.minecraft.text.StyleSpriteSource;
 import net.minecraft.client.gui.screen.ingame.CyclingSlotIcon;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.MutableText;
@@ -89,7 +91,9 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        double mouseX = click.x(), mouseY = click.y();
+        int button = click.button();
         try {
             var mode = handler.getMode();
 
@@ -125,24 +129,20 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
             System.err.println(e.getMessage());
             e.printStackTrace();
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(click, doubled);
     }
 
     private void unbindDialog(SpellBindingWidgets.SpellIconViewModel icon) {
         var title = Text.translatable("gui.spell_engine.spell_binding.unbind_dialog.title", icon.spell().name().getString());
-        client.setScreen(new UnbindDialog(title, ImmutableList.of(
-                new DialogScreen.ChoiceButton(Text.translatable("gui.spell_engine.spell_binding.unbind_dialog.confirm").formatted(Formatting.RED), button -> {
-            client.interactionManager.clickButton(this.handler.syncId, icon.originalIndex());
+        // DialogScreen was removed in 1.21.6; ConfirmScreen offers the same two-choice flow
+        client.setScreen(new ConfirmScreen(confirmed -> {
+            if (confirmed) {
+                client.interactionManager.clickButton(this.handler.syncId, icon.originalIndex());
+            }
             this.client.setScreen(this);
-        }), new DialogScreen.ChoiceButton(Text.translatable("gui.spell_engine.spell_binding.unbind_dialog.cancel"), button -> {
-            this.client.setScreen(this);
-        }))));
-    }
-
-    public static class UnbindDialog extends DialogScreen {
-        protected UnbindDialog(Text title, ImmutableList<ChoiceButton> choiceButtons) {
-            super(title, List.of(Text.translatable("gui.spell_engine.spell_binding.unbind_dialog.subtitle")), choiceButtons);
-        }
+        }, title, Text.translatable("gui.spell_engine.spell_binding.unbind_dialog.subtitle"),
+                Text.translatable("gui.spell_engine.spell_binding.unbind_dialog.confirm").formatted(Formatting.RED),
+                Text.translatable("gui.spell_engine.spell_binding.unbind_dialog.cancel")));
     }
 
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
@@ -296,19 +296,16 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 
     @Override
     protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
-        DiffuseLighting.disableGuiDepthLighting();
 //        RenderSystem.setShader(GameRenderer::getPositionTexShader);
 //        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 //        RenderSystem.setShaderTexture(0, TEXTURE);
         int originX = (this.width - this.backgroundWidth) / 2;
         int originY = (this.height - this.backgroundHeight) / 2;
 
-        context.drawTexture(Pl, originX, originY - BACKGROUND_EXTRA_HEIGHT, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, Pl, originX, originY - BACKGROUND_EXTRA_HEIGHT, 0, 0, this.backgroundWidth, this.backgroundHeight, 256, 256);
 
         this.mainSlotIcon.render(this.handler, context, delta, this.x, this.y);
         this.consumableSlotIcon.render(this.handler, context, delta, this.x, this.y);
-
-        DiffuseLighting.enableGuiDepthLighting();
         this.updatePageControls();
         this.updateButtons(originX, originY);
         this.drawTierRows(context, mouseX, mouseY);
@@ -371,7 +368,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
 
 
     private static final Identifier RUNES_FONT_ID = Identifier.of("minecraft", "alt");
-    private static final Style RUNE_STYLE = Style.EMPTY.withFont(RUNES_FONT_ID);
+    private static final Style RUNE_STYLE = Style.EMPTY.withFont(new StyleSpriteSource.Font(RUNES_FONT_ID));
 
     // Helper record for grouping spells
     private record SpellData(

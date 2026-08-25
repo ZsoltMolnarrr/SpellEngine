@@ -1,7 +1,6 @@
 package net.spell_engine.client.render;
 
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.item.ItemRenderer;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
@@ -81,14 +80,14 @@ public class ModelEffectOperations {
     /// Applies transforms and renders a single ModelEffect.
     /// `age` is the elapsed time in ticks (with tick delta) used to evaluate animations.
     public static void renderEffect(ModelEffect effect, float age, MatrixStack matrixStack,
-                                    ItemRenderer itemRenderer, VertexConsumerProvider vertexConsumers, int light, int entityId) {
+                                    OrderedRenderCommandQueue queue, int light, int entityId) {
         matrixStack.push();
         applyTransforms(matrixStack, effect, age);
 
         // Render model
         var modelId = Identifier.of(effect.model_id);
         var layer = SpellModelHelper.LAYERS.get(effect.light_emission);
-        CustomModels.render(layer, itemRenderer, modelId, matrixStack, vertexConsumers, light, entityId);
+        CustomModels.render(layer, modelId, matrixStack, queue, light, entityId);
 
         matrixStack.pop();
     }

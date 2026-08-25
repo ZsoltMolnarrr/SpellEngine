@@ -21,6 +21,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class EntityRelations {
+    /// Owner UUID of a tameable without resolving the entity (1.21.11 replaced `getOwnerUuid` with a lazy reference)
+    @org.jetbrains.annotations.Nullable
+    public static java.util.UUID ownerUuid(net.minecraft.entity.Tameable tameable) {
+        var reference = tameable.getOwnerReference();
+        return reference == null ? null : reference.getUuid();
+    }
+
     public static EntityRelation getRelation(LivingEntity attacker, Entity target) {
         var config = SpellEngineMod.config;
         if (attacker == target) {
@@ -44,7 +51,7 @@ public class EntityRelations {
             // where `player_relation_to_passives` (HOSTILE by default) marked every unattended tamed
             // animal as an enemy. Note that `AbstractHorseEntity` is `Tameable` too, so this is the
             // branch that decides whether a player's horse is safe.
-            var ownerUuid = tameable.getOwnerUuid();
+            var ownerUuid = ownerUuid(tameable);
             if (ownerUuid != null) {
                 if (ownerUuid.equals(attacker.getUuid())) {
                     return config.player_relation_to_owned_pets;

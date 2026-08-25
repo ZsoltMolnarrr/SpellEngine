@@ -2,7 +2,8 @@ package net.spell_engine.compat;
 
 import net.minecraft.entity.damage.DamageSource;
 import net.spell_engine.Platform;
-import net.spell_engine.SpellEngineMod;
+import com.mojang.logging.LogUtils;
+import org.slf4j.Logger;
 
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -14,6 +15,7 @@ import java.util.function.Predicate;
  * against the mod.
  */
 public class CriticalStrikeCompat {
+    private static final Logger LOGGER = LogUtils.getLogger();
     private static final String MOD_ID = "critical_strike";
     private static final String IMPL = "net.spell_engine.compat.CriticalStrikeCompatImpl";
     private static Predicate<DamageSource> isCriticalStrike = ds -> false;
@@ -30,9 +32,9 @@ public class CriticalStrikeCompat {
             isCriticalStrike = (Predicate<DamageSource>) impl.getMethod("isCriticalStrikePredicate").invoke(null);
             setCriticalStrike = (BiConsumer<DamageSource, Float>) impl.getMethod("setCriticalStrikeConsumer").invoke(null);
         } catch (ClassNotFoundException e) {
-            SpellEngineMod.LOGGER.warn("Critical Strike is loaded but Spell Engine was built without its compat (enable_critical_strike=false)");
+            LOGGER.warn("Critical Strike is loaded but Spell Engine was built without its compat (enable_critical_strike=false)");
         } catch (Exception e) {
-            SpellEngineMod.LOGGER.error("Failed to initialize Critical Strike compat", e);
+            LOGGER.error("Failed to initialize Critical Strike compat", e);
         }
     }
 

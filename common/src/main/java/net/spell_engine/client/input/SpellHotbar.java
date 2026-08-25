@@ -8,7 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.UseAction;
+import net.minecraft.item.consume.UseAction;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.HudMessages;

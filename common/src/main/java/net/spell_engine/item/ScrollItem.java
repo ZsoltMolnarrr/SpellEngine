@@ -4,7 +4,7 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.Registry;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
@@ -30,10 +30,6 @@ public class ScrollItem extends Item {
         super(settings);
     }
 
-    @Override
-    public boolean isEnchantable(ItemStack stack) {
-        return false;
-    }
 
     public static void applySpell(ItemStack itemStack, RegistryEntry<Spell> spellEntry, @Nullable TagKey<Spell> pool) {
         itemStack.set(SpellDataComponents.SPELL_CONTAINER, SpellContainers.forScroll(spellEntry));
@@ -58,7 +54,7 @@ public class ScrollItem extends Item {
         if (pool != null) {
             // Set custom model override
             var modelId = modelIdForPool(pool.id());
-            itemStack.set(SpellDataComponents.ITEM_MODEL, modelId);
+            itemStack.set(DataComponentTypes.ITEM_MODEL, modelId); // item-model definition: assets/<ns>/items/<pool path>.json
 
             // Set custom name
             // - Example: "paladins:spell_scroll/paladin" -> "item.paladins.paladin_spell_scroll"
@@ -70,19 +66,19 @@ public class ScrollItem extends Item {
     }
 
     @Nullable public static TagKey<Spell> resolveSpellPool(World world, RegistryEntry<Spell> spellEntry) {
-        var wrapper = world.getRegistryManager().getOptionalWrapper(SpellRegistry.KEY);
-        if (wrapper.isPresent()) {
-            return resolveSpellPool(wrapper.get(), spellEntry);
+        var registry = world.getRegistryManager().getOptional(SpellRegistry.KEY);
+        if (registry.isPresent()) {
+            return resolveSpellPool(registry.get(), spellEntry);
         } else {
             return null;
         }
     }
 
-    @Nullable public static TagKey<Spell> resolveSpellPool(RegistryWrapper<Spell> wrapper, RegistryEntry<Spell> spellEntry) {
+    @Nullable public static TagKey<Spell> resolveSpellPool(Registry<Spell> wrapper, RegistryEntry<Spell> spellEntry) {
         // Find the first tag in which spellEntry is contained
         var tag = wrapper.streamTags()
                 .filter(t ->
-                        t.getTagKey().get().id().getPath().startsWith(SpellTags.SPELL_SCROLL_PREFIX)
+                        t.getTag().id().getPath().startsWith(SpellTags.SPELL_SCROLL_PREFIX)
                                 && t.contains(spellEntry)
                 )
                 .findFirst();

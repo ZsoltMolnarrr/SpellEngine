@@ -9,6 +9,6 @@ public class EquipmentSetRegistry {
     public static final Identifier ID = Identifier.ofVanilla("equipment_set");
     public static final RegistryKey<Registry<EquipmentSet.Definition>> KEY = RegistryKey.ofRegistry(ID);
     public static Registry<EquipmentSet.Definition> from(World world) {
-        return world.getRegistryManager().get(KEY);
+        return world.getRegistryManager().getOrThrow(KEY);
     }
 }

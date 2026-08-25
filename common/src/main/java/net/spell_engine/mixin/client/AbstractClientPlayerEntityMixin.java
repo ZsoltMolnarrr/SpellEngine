@@ -1,26 +1,16 @@
 package net.spell_engine.mixin.client;
 
 import com.mojang.authlib.GameProfile;
-import dev.kosmx.playerAnim.api.firstPerson.FirstPersonMode;
-import dev.kosmx.playerAnim.api.layered.KeyframeAnimationPlayer;
-import dev.kosmx.playerAnim.api.layered.modifier.AbstractFadeModifier;
-import dev.kosmx.playerAnim.api.layered.modifier.AdjustmentModifier;
-import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
-import dev.kosmx.playerAnim.core.util.Ease;
-import dev.kosmx.playerAnim.core.util.Vec3f;
-import dev.kosmx.playerAnim.impl.IAnimatedPlayer;
-import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry;
+import com.zigythebird.playeranim.api.PlayerAnimationAccess;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Arm;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.client.animation.*;
-import net.spell_engine.client.compatibility.FirstPersonAnimationCompatibility;
 import net.spell_engine.client.sound.SpellCastingSound;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCaster;
@@ -33,25 +23,23 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Optional;
-
 @Mixin(AbstractClientPlayerEntity.class)
 public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity implements AnimatablePlayer, SpellCastingSound.Listener {
-    public AbstractClientPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
-        super(world, pos, yaw, gameProfile);
+    public AbstractClientPlayerEntityMixin(World world, GameProfile gameProfile) {
+        super(world, gameProfile);
     }
 
-    private final AnimationSubStack castingAnimation = new AnimationSubStack(createPitchAdjustment_SpellEngine());
-    private final AnimationSubStack releaseAnimation = new AnimationSubStack(createPitchAdjustment_SpellEngine());
-    private final AnimationSubStack miscAnimation = new AnimationSubStack(createPitchAdjustment_SpellEngine());
-    private boolean castingAnimationPitching = true;
+    // PAL owns the controllers (registered in SpellAnimationStack.registerFactories); fetched by id
+    private SpellAnimationStack castingAnimation;
+    private SpellAnimationStack releaseAnimation;
+    private SpellAnimationStack miscAnimation;
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void postInit_SpellEngine(ClientWorld world, GameProfile profile, CallbackInfo ci) {
-        var stack = ((IAnimatedPlayer) this).getAnimationStack();
-        stack.addAnimLayer(950, releaseAnimation.base);
-        stack.addAnimLayer(900, castingAnimation.base);
-        stack.addAnimLayer(200, miscAnimation.base);
+        var player = (AbstractClientPlayerEntity) (Object) this;
+        castingAnimation = (SpellAnimationStack) PlayerAnimationAccess.getPlayerAnimationLayer(player, SpellAnimationStack.CASTING_ID);
+        releaseAnimation = (SpellAnimationStack) PlayerAnimationAccess.getPlayerAnimationLayer(player, SpellAnimationStack.RELEASE_ID);
+        miscAnimation = (SpellAnimationStack) PlayerAnimationAccess.getPlayerAnimationLayer(player, SpellAnimationStack.MISC_ID);
     }
 
     @Override
@@ -70,12 +58,12 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             // Rotate body towards look vector
             ((LivingEntityAccessor)player).spellEngine_invoke_TurnHead(player.getHeadYaw(), 0);
             for (var batch: cast.particles) {
-                ParticleHelper.play(player.getWorld(), player, player.getYaw(), getPitch(), batch);
+                ParticleHelper.play(player.getEntityWorld(), player, player.getYaw(), getPitch(), batch);
             }
             speed = ((SpellCaster.Player)player).getCastingSpeed() * cast.animation.speed;
-            castingAnimationPitching = cast.animation_pitch;
+            castingAnimation.pitching = cast.animation_pitch;
         } else {
-            castingAnimationPitching = true;
+            castingAnimation.pitching = true;
         }
         updateCastingAnimation(castAnimationName, speed);
         updateCastingSound(castSound);
@@ -117,117 +105,30 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         lastCastSoundId = null;
     }
 
-    private AdjustmentModifier createPitchAdjustment_SpellEngine() {
-        var player = (PlayerEntity)this;
-        return new AdjustmentModifier((partName) -> {
-            // System.out.println("Player pitch: " + player.getPitch());
-            float rotationX = 0;
-            float rotationY = 0;
-            float rotationZ = 0;
-            float offsetX = 0;
-            float offsetY = 0;
-            float offsetZ = 0;
-
-            if (this.castingAnimationPitching) {
-                if (FirstPersonMode.isFirstPersonPass()) {
-                    var pitch = player.getPitch();
-                    pitch = (float) Math.toRadians(pitch);
-                    switch (partName) {
-                        case "rightArm", "leftArm" -> {
-                            rotationX = pitch;
-                        }
-                        default -> {
-                            return Optional.empty();
-                        }
-                    }
-                } else {
-                    var pitch = player.getPitch() / 2F;
-                    pitch = (float) Math.toRadians(pitch);
-                    switch (partName) {
-                        case "body" -> {
-                            rotationX = (-1F) * pitch;
-                        }
-                        case "rightArm", "leftArm" -> {
-                            rotationX = pitch;
-                        }
-                        case "rightLeg", "leftLeg" -> {
-                            rotationX = (-1F) * pitch;
-                        }
-                        default -> {
-                            return Optional.empty();
-                        }
-                    }
-                }
-            }
-
-            return Optional.of(new AdjustmentModifier.PartModifier(
-                    new Vec3f(rotationX, rotationY, rotationZ),
-                    new Vec3f(offsetX, offsetY, offsetZ))
-            );
-        });
-    }
-
-    private void updateAnimationByCurrentActivity_SpellEngine(KeyframeAnimation.AnimationBuilder animation) {
-        if (isMounting_SpellEngine()) {
-            StateCollectionHelper.configure(animation.rightLeg, false, false);
-            StateCollectionHelper.configure(animation.leftLeg, false, false);
-        }
-    }
-
     public void playSpellAnimation(SpellCast.Animation type, String name, float speed) {
         try {
             var stack = spellAnimationStackFor(type);
-            // System.out.println("Player animation, type: " + type + ", name: " + name + ", speed: " + speed);
+            if (stack == null) { return; }
             if (name != null && !name.isEmpty()) {
-                var id = Identifier.of(name);
-                var animation = (KeyframeAnimation) PlayerAnimationRegistry.getAnimation(id);
-                var copy = animation.mutableCopy();
-                updateAnimationByCurrentActivity_SpellEngine(copy);
-                copy.torso.fullyEnablePart(true);
-                copy.head.pitch.setEnabled(false);
-                copy.head.yaw.setEnabled(true);
                 var mirror = isLeftHanded_SpellEngine();
                 if (type == SpellCast.Animation.MISC) {
-                    mirror = getWorld().random.nextBoolean();
+                    mirror = getEntityWorld().getRandom().nextBoolean();
                 }
-
-                var fadeIn = copy.beginTick;
-                stack.mirror.setEnabled(mirror);
-                stack.base.replaceAnimationWithFade(
-                        AbstractFadeModifier.standardFadeIn(fadeIn, Ease.INOUTSINE),
-                        new KeyframeAnimationPlayer(copy.build(), 0)
-                                .setFirstPersonMode(FirstPersonAnimationCompatibility.firstPersonMode()));
-                stack.speed.speed = speed;
+                stack.play(Identifier.of(name), mirror, speed);
             } else {
-                int fadeOutLength = 5;
-                stack.base.replaceAnimationWithFade(
-                        AbstractFadeModifier.standardFadeIn(fadeOutLength, Ease.INOUTSINE), null);
-                stack.adjustment.fadeOut(fadeOutLength);
-                stack.speed.speed = 1F;
+                stack.stopWithFade();
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private AnimationSubStack spellAnimationStackFor(SpellCast.Animation type) {
-        switch (type) {
-            case CASTING -> {
-                return castingAnimation;
-            }
-            case RELEASE -> {
-                return releaseAnimation;
-            }
-            case MISC -> {
-                return miscAnimation;
-            }
-        }
-        assert true;
-        return null;
-    }
-
-    private boolean isMounting_SpellEngine() {
-        return this.getVehicle() != null;
+    private SpellAnimationStack spellAnimationStackFor(SpellCast.Animation type) {
+        return switch (type) {
+            case CASTING -> castingAnimation;
+            case RELEASE -> releaseAnimation;
+            case MISC -> miscAnimation;
+        };
     }
 
     public boolean isLeftHanded_SpellEngine() {

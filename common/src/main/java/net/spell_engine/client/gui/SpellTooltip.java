@@ -187,7 +187,7 @@ public class SpellTooltip {
 
     public static @NotNull SpellInfo getSpellChoiceInfo(SpellChoice container, PlayerEntity player) {
         // Get world reference
-        final var world = player.getWorld();
+        final var world = player.getEntityWorld();
         if (world == null) {
             return new SpellInfo(List.of(), 0);
         }
@@ -356,14 +356,14 @@ public class SpellTooltip {
         // Checking execution on render thread
         // some loaders like to call these concurrently
         if (client.isOnThread()) {
-            return InputUtil.isKeyPressed(client.getWindow().getHandle(),
+            return InputUtil.isKeyPressed(client.getWindow(),
                     ((KeybindingAccessor) keybinding).spellEngine_getBoundKey().getCode());
         }
         return false;
     }
 
     public static List<Text> spellEntry(Identifier spellId, PlayerEntity player, ItemStack itemStack, boolean details, int indentLevel) {
-        var world = player.getWorld();
+        var world = player.getEntityWorld();
         if (world == null) {
             return List.of();
         }
@@ -493,7 +493,7 @@ public class SpellTooltip {
     }
 
     public static List<Text> spellDescriptionWithDetails(Identifier spellId, PlayerEntity player, ItemStack itemStack, int indentLevel) {
-        var world = player.getWorld();
+        var world = player.getEntityWorld();
         if (world == null) {
             return List.of();
         }

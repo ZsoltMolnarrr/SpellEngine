@@ -23,9 +23,9 @@ public class ServerNetwork {
     // MARK: Casting protocol — signals into the caster's SpellCastInteractor
 
     public static void handleCastRequest(Packets.CastRequest packet, MinecraftServer server, ServerPlayerEntity player) {
-        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
+        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getEntityWorld())
                 .orNull();
-        if (world == null || world.isClient) {
+        if (world == null || world.isClient()) {
             return;
         }
         world.getServer().executeSync(() -> {
@@ -34,9 +34,9 @@ public class ServerNetwork {
     }
 
     public static void handleTargetStream(Packets.TargetStream packet, MinecraftServer server, ServerPlayerEntity player) {
-        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
+        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getEntityWorld())
                 .orNull();
-        if (world == null || world.isClient) {
+        if (world == null || world.isClient()) {
             return;
         }
         world.getServer().executeSync(() -> {
@@ -45,9 +45,9 @@ public class ServerNetwork {
     }
 
     public static void handleCastInput(Packets.CastInput packet, MinecraftServer server, ServerPlayerEntity player) {
-        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
+        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getEntityWorld())
                 .orNull();
-        if (world == null || world.isClient) {
+        if (world == null || world.isClient()) {
             return;
         }
         world.getServer().executeSync(() -> {
@@ -56,9 +56,9 @@ public class ServerNetwork {
     }
 
     public static void handleAttackFxBroadcast(Packets.AttackFxBroadcast packet, MinecraftServer server, ServerPlayerEntity player) {
-        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
+        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getEntityWorld())
                 .orNull();
-        if (world == null || world.isClient) {
+        if (world == null || world.isClient()) {
             return;
         }
 
@@ -68,9 +68,9 @@ public class ServerNetwork {
     }
 
     public static void handleAttackPerform(Packets.AttackPerform packet, MinecraftServer server, ServerPlayerEntity player) {
-        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getWorld())
+        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getEntityWorld())
                 .orNull();
-        if (world == null || world.isClient) {
+        if (world == null || world.isClient()) {
             return;
         }
 

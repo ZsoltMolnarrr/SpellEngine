@@ -138,7 +138,7 @@ public abstract class ClientPlayerEntityMixin implements SpellCaster.Client {
             PlatformClient.util().sendVanillaPacket_C2S(player, new PlayerMoveC2SPacket.Full(
                     player.getX(), player.getY(), player.getZ(),
                     player.getYaw(), player.getPitch(),
-                    player.isOnGround())
+                    player.isOnGround(), player.horizontalCollision)
             );
         }
         onTick_ScheduledAttacks(player);

@@ -200,7 +200,7 @@ public class ParticleHelper {
                                    double velocityX, double velocityY, double velocityZ) {
         public void perform(World world) {
             try {
-                world.addParticle(particle, true,
+                world.addImportantParticleClient(particle,
                         positionX, positionY, positionZ,
                         velocityX, velocityY, velocityZ);
             } catch (Exception e) {
@@ -268,25 +268,25 @@ public class ParticleHelper {
     private static Vec3d origin(Entity entity, ParticleGroup.Batch batch) {
         switch (batch.anchor) {
             case ENTITY -> {
-                return entity.getPos().add(0, entity.getHeight() * batch.vertical_origin, 0);
+                return entity.getEntityPos().add(0, entity.getHeight() * batch.vertical_origin, 0);
             }
             case LAUNCH_POINT -> {
                 if (entity instanceof LivingEntity livingEntity) {
                     return LaunchGeometry.launchPoint(livingEntity);
                 } else {
-                    return entity.getPos().add(0, entity.getHeight() * 0.5F, 0);
+                    return entity.getEntityPos().add(0, entity.getHeight() * 0.5F, 0);
                 }
             }
             case GROUND -> {
-                var position = TargetHelper.findSolidBelow(entity, entity.getPos(), entity.getWorld(), -2);
+                var position = TargetHelper.findSolidBelow(entity, entity.getEntityPos(), entity.getEntityWorld(), -2);
                 if (position != null) {
                     return new Vec3d(entity.getX(), position.getY() + 0.1F, entity.getZ());
                 } else {
-                    return entity.getPos().add(0, 0.1F, 0);
+                    return entity.getEntityPos().add(0, 0.1F, 0);
                 }
             }
         }
-        return entity.getPos();
+        return entity.getEntityPos();
     }
 
     private static Vec3d origin(World world, Vec3d entityPos, float entityHeight, ParticleGroup.Batch batch) {

@@ -28,10 +28,10 @@ public class SpellCooldowns {
             if (source.itemStack().isIn(SpellEngineItemTags.SPELL_BOOK)) {
                 durationTicks += (int) (SpellEngineMod.config.spell_book_additional_cooldown * 20F);
             }
-            var durationLeft = ((ItemCooldownManagerExtension)itemCooldowns).SE_getLastCooldownDuration(hostingItem)
-                    * itemCooldowns.getCooldownProgress(hostingItem, 0);
+            var durationLeft = ((ItemCooldownManagerExtension)itemCooldowns).SE_getLastCooldownDuration(source.itemStack())
+                    * itemCooldowns.getCooldownProgress(source.itemStack(), 0);
             if (durationTicks > durationLeft) {
-                itemCooldowns.set(hostingItem, durationTicks);
+                itemCooldowns.set(source.itemStack(), durationTicks);
             }
         }
     }

@@ -1,6 +1,7 @@
 package net.spell_engine.client.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.gl.RenderPipelines;
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -17,7 +18,7 @@ public class CustomButton extends ButtonWidget {
     private int stateOffsetY;
 
     public CustomButton(int x, int y, Type type, PressAction onPress) {
-        super(x, y, type.width(), type.height(), Text.empty(), onPress, DEFAULT_NARRATION_SUPPLIER);
+        super(x, y, type.width(), type.height(), net.minecraft.text.Text.literal(""), onPress, DEFAULT_NARRATION_SUPPLIER);
         this.u = type.u();
         this.v = type.v();
         this.stateOffsetY = type.stateOffsetY();
@@ -69,14 +70,9 @@ public class CustomButton extends ButtonWidget {
     }
 
     @Override
-    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        MinecraftClient minecraftClient = MinecraftClient.getInstance();
-        context.setShaderColor(1.0f, 1.0f, 1.0f, this.alpha);
-        RenderSystem.enableBlend();
-        RenderSystem.enableDepthTest();
-        context.drawTexture(BUTTONS_TEXTURE, this.getX(), this.getY(), this.u, this.getTextureY(), this.getWidth(), this.getHeight());
+    protected void drawIcon(DrawContext context, int mouseX, int mouseY, float delta) {
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, BUTTONS_TEXTURE, this.getX(), this.getY(), this.u, this.getTextureY(), this.getWidth(), this.getHeight(), 256, 256, ColorHelper.fromFloats(this.alpha, 1F, 1F, 1F));
         // context.drawNineSlicedTexture(BUTTONS_TEXTURE, this.getX(), this.getY(), this.getWidth(), this.getHeight(), 20, 4, 200, 20, 0, this.getTextureY());
-        context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
         int i = this.active ? 0xFFFFFF : 0xA0A0A0;
         // this.drawMessage(context, minecraftClient.textRenderer, i | MathHelper.ceil(this.alpha * 255.0f) << 24);
     }

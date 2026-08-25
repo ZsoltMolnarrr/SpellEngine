@@ -3,7 +3,8 @@ import net.spell_engine.Platform;
 
 import com.google.common.collect.Maps;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -177,28 +178,28 @@ public class SpellCooldownManager {
     }
 
     private static final String NBT_KEY = "spell_engine_cooldowns";
-    public void writeCustomDataToNbt(NbtCompound nbt) {
-        NbtCompound cooldowns = new NbtCompound();
+    // Stored as a list (ReadView cannot enumerate keys), one element per spell
+    public void writeCustomData(WriteView view) {
+        var cooldowns = view.getList(NBT_KEY);
         for (var entry: entries.entrySet()) {
             var spell = entry.getKey();
             var cooldown = entry.getValue();
-            NbtCompound cooldownData = new NbtCompound();
+            var cooldownData = cooldowns.add();
+            cooldownData.putString("spell", spell.toString());
             cooldownData.putInt("start", cooldown.startTick - tick);
             cooldownData.putInt("end", cooldown.endTick - tick);
-            cooldowns.put(spell.toString(), cooldownData);
         }
-        nbt.put(NBT_KEY, cooldowns);
     }
 
-    public void readCustomDataFromNbt(NbtCompound nbt) {
-        NbtCompound cooldowns = nbt.getCompound(NBT_KEY);
-        for (var key: cooldowns.getKeys()) {
-            var spell = Identifier.of(key);
-            var cooldownData = cooldowns.getCompound(key);
-            var start = cooldownData.getInt("start");
-            var end = cooldownData.getInt("end");
+    public void readCustomData(ReadView view) {
+        view.getOptionalListReadView(NBT_KEY).ifPresent(cooldowns -> cooldowns.stream().forEach(cooldownData -> {
+            var spellString = cooldownData.getString("spell", "");
+            if (spellString.isEmpty()) { return; }
+            var spell = Identifier.of(spellString);
+            var start = cooldownData.getInt("start", 0);
+            var end = cooldownData.getInt("end", 0);
             entries.put(spell, new Entry(start, end));
-        }
+        }));
     }
 
     public void reset(@Nullable Identifier spellId) {

@@ -1,5 +1,7 @@
 package net.spell_engine.spellbinding;
 
+import net.minecraft.util.math.ColorHelper;
+import net.minecraft.client.gl.RenderPipelines;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -100,31 +102,23 @@ public class SpellBindingWidgets {
         }
 
         // Draw spell icon or item icon
-        context.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
-        RenderSystem.enableBlend(); 
-
         if (icon.spell != null && icon.spell.icon != null) {
-            context.drawTexture(icon.spell.icon, icon.x, icon.y,
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, icon.spell.icon, icon.x, icon.y,
                     0, 0, icon.size, icon.size, icon.size, icon.size);
         }
-
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableBlend();
     }
 
     public static void drawSpellIconIndicator(DrawContext context, SpellIconViewModel icon) {
         boolean alreadyApplied = icon.binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
         if (alreadyApplied) {
-            RenderSystem.enableBlend();
             int indicatorOffset = (SpellBindingWidgets.SELECTION_INDICATOR_SIZE - SpellBindingWidgets.SPELL_ICON_SIZE) / 2;
-            context.drawTexture(Pl,
+            context.drawTexture(RenderPipelines.GUI_TEXTURED, Pl,
                     icon.x - indicatorOffset,
                     icon.y - indicatorOffset,
                     SpellBindingWidgets.SELECTION_INDICATOR_U,
                     SpellBindingWidgets.SELECTION_INDICATOR_V,
                     SpellBindingWidgets.SELECTION_INDICATOR_SIZE,
-                    SpellBindingWidgets.SELECTION_INDICATOR_SIZE);
-            RenderSystem.disableBlend();
+                    SpellBindingWidgets.SELECTION_INDICATOR_SIZE, 256, 256);
         }
     }
 
@@ -142,24 +136,22 @@ public class SpellBindingWidgets {
         var vOffset = book.isEnabled
                 ? (mouseOver ? SpellBindingWidgets.BUTTON_HEIGHT * 2 : 0)
                 : SpellBindingWidgets.BUTTON_HEIGHT;
-        context.drawTexture(Pl,
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, Pl,
                 book.x,
                 book.y,
                 SpellBindingWidgets.BUTTON_TEXTURE_U,
                 SpellBindingWidgets.BUTTON_TEXTURE_V + vOffset,
                 SpellBindingWidgets.BUTTON_WIDTH,
-                SpellBindingWidgets.BUTTON_HEIGHT);
+                SpellBindingWidgets.BUTTON_HEIGHT, 256, 256);
 
         // Draw book icon
         int iconX = book.x + SpellBindingWidgets.SPELL_ICON_INDENT;
         int iconY = book.y + SpellBindingWidgets.TIER_ROW_ICON_Y_OFFSET;
 
-        context.setShaderColor(1.0f, 1.0f, 1.0f, isUnlocked ? 1.0f : 0.5f);
-        RenderSystem.enableBlend();
         context.drawItem(book.itemStack, iconX, iconY);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        RenderSystem.disableBlend();
-
+        if (!isUnlocked) {
+            context.fill(iconX, iconY, iconX + 16, iconY + 16, 0x80000000); // dim locked books (shader tinting is gone)
+        }
         // Draw book name
         Text bookName = book.itemStack.getName();
         int textX = iconX + SpellBindingWidgets.SPELL_ICON_SIZE + 4;  // 4px gap after icon

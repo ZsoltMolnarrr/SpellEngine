@@ -1,7 +1,7 @@
 package net.spell_engine.client.compatibility;
 import net.spell_engine.Platform;
 
-import dev.kosmx.playerAnim.api.firstPerson.FirstPersonMode;
+import com.zigythebird.playeranimcore.api.firstPerson.FirstPersonMode;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.config.TriStateAuto;
 
