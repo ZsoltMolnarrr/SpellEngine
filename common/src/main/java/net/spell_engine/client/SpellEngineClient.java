@@ -60,6 +60,7 @@ public class SpellEngineClient {
 
         BlockEntityRendererFactories.register(SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntityRenderer::new);
         CompatFeatures.initialize();
+        net.spell_engine.client.compatibility.IrisCompatibility.assignPipelines();
         registerEffectParticles();
         ModelEffectOperations.registerDefaults();
 

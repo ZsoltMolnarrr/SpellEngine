@@ -37,6 +37,21 @@ public class CustomLayers {
 
     // MARK: Pipelines
 
+    /// Iris program category of a custom pipeline (see `IrisCompatibility.assignPipelines`)
+    public enum PipelineKind { ENTITY_TRANSLUCENT, ENTITY_EMISSIVE, BEACON_BEAM }
+
+    /// Every custom `RenderPipeline` Spell Engine builds, with its Iris program category.
+    /// Shader-pack mods (Iris) map pipelines to shader programs and warn on every draw of an unknown one.
+    public static java.util.Map<RenderPipeline, PipelineKind> customPipelines() {
+        var map = new java.util.LinkedHashMap<RenderPipeline, PipelineKind>();
+        map.put(ENTITY_TRANSLUCENT_DEPTH_WRITE, PipelineKind.ENTITY_TRANSLUCENT);
+        map.put(ENTITY_EMISSIVE_DEPTH_WRITE, PipelineKind.ENTITY_EMISSIVE);
+        map.put(BEACON_BEAM_OPAQUE_CULL, PipelineKind.BEACON_BEAM);
+        map.put(BEACON_BEAM_TRANSLUCENT_CULL, PipelineKind.BEACON_BEAM);
+        map.put(ITEM_GLOW_PIPELINE, PipelineKind.ENTITY_EMISSIVE);
+        return map;
+    }
+
     /// `ENTITY_TRANSLUCENT` (entity shader, translucent blend, no cull) but with depth writes, for solid spell objects
     private static final RenderPipeline ENTITY_TRANSLUCENT_DEPTH_WRITE = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
             .withLocation(pipelineId("entity_translucent_depth_write"))
