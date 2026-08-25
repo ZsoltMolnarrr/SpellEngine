@@ -1,6 +1,7 @@
 package net.spell_engine.rpg_series.item;
 
 import net.minecraft.entity.attribute.EntityAttributeModifier.Operation;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.SoundEvent;
@@ -13,6 +14,8 @@ import java.util.function.Supplier;
 /**
  * Centralized shield factory for creating standardized shields across RPG Series mods.
  * Provides tier-based durability calculation and attribute helper methods.
+ * Register the entries with {@code Shield.register(configs, entries, groupKey)} — the built-in
+ * vanilla-component factory needs no shield library.
  *
  * <p>Usage example:
  * <pre>{@code
@@ -28,9 +31,9 @@ import java.util.function.Supplier;
  */
 public class Shields {
 
-    // Attribute constants
-    private static final String GENERIC_ARMOR_TOUGHNESS = "minecraft:generic.armor_toughness";
-    private static final String GENERIC_MAX_HEALTH = "generic.max_health";
+    // Attribute ids derived from the registry entries (1.21.2 dropped the `generic.` prefix — never hardcode them)
+    private static final String ARMOR_TOUGHNESS = EntityAttributes.ARMOR_TOUGHNESS.getIdAsString();
+    private static final String MAX_HEALTH = EntityAttributes.MAX_HEALTH.getIdAsString();
 
     /**
      * Create a shield entry with tier-based durability and custom attributes.
@@ -111,16 +114,16 @@ public class Shields {
         return switch (tier) {
             case WOODEN, TIER_0, GOLDEN -> List.of(); // No attributes
             case TIER_1, TIER_2 -> List.of(
-                    new AttributeModifier(GENERIC_ARMOR_TOUGHNESS, 1, Operation.ADD_VALUE),
-                    new AttributeModifier(GENERIC_MAX_HEALTH, 2.0f, Operation.ADD_VALUE)
+                    new AttributeModifier(ARMOR_TOUGHNESS, 1, Operation.ADD_VALUE),
+                    new AttributeModifier(MAX_HEALTH, 2.0f, Operation.ADD_VALUE)
             );
             case TIER_3 -> List.of(
-                    new AttributeModifier(GENERIC_ARMOR_TOUGHNESS, 1, Operation.ADD_VALUE),
-                    new AttributeModifier(GENERIC_MAX_HEALTH, 4.0f, Operation.ADD_VALUE)
+                    new AttributeModifier(ARMOR_TOUGHNESS, 1, Operation.ADD_VALUE),
+                    new AttributeModifier(MAX_HEALTH, 4.0f, Operation.ADD_VALUE)
             );
             case TIER_4, TIER_5 -> List.of(
-                    new AttributeModifier(GENERIC_ARMOR_TOUGHNESS, 1, Operation.ADD_VALUE),
-                    new AttributeModifier(GENERIC_MAX_HEALTH, 6.0f, Operation.ADD_VALUE)
+                    new AttributeModifier(ARMOR_TOUGHNESS, 1, Operation.ADD_VALUE),
+                    new AttributeModifier(MAX_HEALTH, 6.0f, Operation.ADD_VALUE)
             );
         };
     }
@@ -132,7 +135,7 @@ public class Shields {
      * @return AttributeModifier for armor toughness
      */
     public static AttributeModifier toughness(float value) {
-        return new AttributeModifier(GENERIC_ARMOR_TOUGHNESS, value, Operation.ADD_VALUE);
+        return new AttributeModifier(ARMOR_TOUGHNESS, value, Operation.ADD_VALUE);
     }
 
     /**
@@ -142,6 +145,6 @@ public class Shields {
      * @return AttributeModifier for max health
      */
     public static AttributeModifier health(float value) {
-        return new AttributeModifier(GENERIC_MAX_HEALTH, value, Operation.ADD_VALUE);
+        return new AttributeModifier(MAX_HEALTH, value, Operation.ADD_VALUE);
     }
 }
