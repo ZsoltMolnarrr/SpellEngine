@@ -27,11 +27,6 @@ public class SpellDataComponents {
     public static final ComponentType<LazyRepair> LAZY_REPAIR = register(Identifier.of(SpellEngineMod.ID, "lazy_repair"),
             builder -> builder.packetCodec(PacketCodec.unit(LazyRepair.NONE))
     );
-    /// @deprecated since 1.21.11 the vanilla `minecraft:item_model` component is used instead (item-model definitions)
-    @Deprecated(forRemoval = true)
-    public static final ComponentType<Identifier> ITEM_MODEL = register(Identifier.of(SpellEngineMod.ID, "item_model"),
-            builder -> builder.codec(Identifier.CODEC)
-    );
 
     private static <T> ComponentType<T> register(Identifier id, UnaryOperator<ComponentType.Builder<T>> builderOperator) {
         return Registry.register(Registries.DATA_COMPONENT_TYPE, id, ((ComponentType.Builder)builderOperator.apply(ComponentType.builder())).build());
