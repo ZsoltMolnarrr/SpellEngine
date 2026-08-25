@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 /// NeoForge networking entrypoint (mod bus): native payload registration via `PayloadRegistrar` and
 /// configuration tasks via `ICustomConfigurationTask`, with no Forgified Fabric API involved.
 /// Decoded packets are forwarded to the loader-agnostic {@link ServerNetwork}/{@link ClientNetwork}.
-@EventBusSubscriber(modid = SpellEngineMod.ID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = SpellEngineMod.ID)
 public class NetworkEvents {
     @SubscribeEvent
     public static void register(final RegisterConfigurationTasksEvent event) {
@@ -52,23 +52,23 @@ public class NetworkEvents {
         // Play stage — client → server
         registrar.playToServer(Packets.CastRequest.PACKET_ID, Packets.CastRequest.CODEC, (packet, context) -> {
             var player = (ServerPlayerEntity) context.player();
-            ServerNetwork.handleCastRequest(packet, player.server, player);
+            ServerNetwork.handleCastRequest(packet, player.getEntityWorld().getServer(), player);
         });
         registrar.playToServer(Packets.TargetStream.PACKET_ID, Packets.TargetStream.CODEC, (packet, context) -> {
             var player = (ServerPlayerEntity) context.player();
-            ServerNetwork.handleTargetStream(packet, player.server, player);
+            ServerNetwork.handleTargetStream(packet, player.getEntityWorld().getServer(), player);
         });
         registrar.playToServer(Packets.CastInput.PACKET_ID, Packets.CastInput.CODEC, (packet, context) -> {
             var player = (ServerPlayerEntity) context.player();
-            ServerNetwork.handleCastInput(packet, player.server, player);
+            ServerNetwork.handleCastInput(packet, player.getEntityWorld().getServer(), player);
         });
         registrar.playToServer(Packets.AttackPerform.PACKET_ID, Packets.AttackPerform.CODEC, (packet, context) -> {
             var player = (ServerPlayerEntity) context.player();
-            ServerNetwork.handleAttackPerform(packet, player.server, player);
+            ServerNetwork.handleAttackPerform(packet, player.getEntityWorld().getServer(), player);
         });
         registrar.playToServer(Packets.AttackFxBroadcast.PACKET_ID, Packets.AttackFxBroadcast.CODEC, (packet, context) -> {
             var player = (ServerPlayerEntity) context.player();
-            ServerNetwork.handleAttackFxBroadcast(packet, player.server, player);
+            ServerNetwork.handleAttackFxBroadcast(packet, player.getEntityWorld().getServer(), player);
         });
 
         // Play stage — server → client

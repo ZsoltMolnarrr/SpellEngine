@@ -13,6 +13,7 @@ import net.minecraft.util.Identifier;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.spell_engine.Platform;
 import net.spell_engine.neoforge.compat.NeoForgeCompatFeatures;
 
@@ -31,7 +32,7 @@ public class PlatformImpl {
 
         @Override
         public boolean isDevelopmentEnvironment() {
-            return !FMLLoader.isProduction();
+            return !FMLLoader.getCurrent().isProduction();
         }
 
         @Override
@@ -64,7 +65,7 @@ public class PlatformImpl {
 
         @Override
         public void networkC2S_Send(CustomPayload payload) {
-            PacketDistributor.sendToServer(payload);
+            ClientPacketDistributor.sendToServer(payload);
         }
 
         @Override

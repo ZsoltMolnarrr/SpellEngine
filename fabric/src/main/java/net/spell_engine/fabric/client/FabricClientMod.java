@@ -4,13 +4,13 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
+import net.minecraft.client.MinecraftClient;
 import net.spell_engine.client.render.BeamRenderer;
 import net.spell_engine.client.render.CustomModelRegistry;
 import net.spell_engine.client.render.SpellCloudRenderer;
@@ -45,12 +45,13 @@ public final class FabricClientMod implements ClientModInitializer {
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> SpellEngineClient.onClientStarted());
         ItemTooltipCallback.EVENT.register((stack, tooltipContext, tooltipType, lines) ->
                 SpellEngineClient.addTooltipLines(stack, tooltipType, lines));
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(context ->
-                BeamRenderer.renderAfterTranslucent(context.matrixStack(), context.camera(), context.tickCounter().getTickDelta(true)));
+        // 1.21.9+ world render events are extraction/main split; AFTER_TRANSLUCENT is gone. Beams draw in END_MAIN.
+        WorldRenderEvents.END_MAIN.register(context ->
+                BeamRenderer.renderAfterTranslucent(context.matrices(), context.gameRenderer().getCamera(),
+                        MinecraftClient.getInstance().getRenderTickCounter().getTickProgress(true)));
 
         registerKeyBindings();
-        registerModels();
-        ModelLoadingPlugin.register(new FabricModelDiscovery());
+        FabricModelDiscovery.install();
     }
 
     private static void registerKeyBindings() {
@@ -59,9 +60,4 @@ public final class FabricClientMod implements ClientModInitializer {
         }
     }
 
-    private static void registerModels() {
-        ModelLoadingPlugin.register(pluginCtx -> {
-            pluginCtx.addModels(CustomModelRegistry.getModelIds());
-        });
-    }
 }

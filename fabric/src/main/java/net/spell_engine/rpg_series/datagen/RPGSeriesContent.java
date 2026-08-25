@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class RPGSeriesContent {
-    public static class EquipmentTagGen extends FabricTagProvider<Item> {
+    public static class EquipmentTagGen extends FabricTagProvider.ItemTagProvider {
         public EquipmentTagGen(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
-            super(output, RegistryKeys.ITEM, registriesFuture);
+            super(output, registriesFuture);
         }
 
         /// Vanilla gear classified into RPG Series loot tiers. Loot tables dropping these get the
@@ -29,51 +29,51 @@ public class RPGSeriesContent {
             var WEAPONS = RPGSeriesItemTags.LootCategory.WEAPONS;
             var ARMORS = RPGSeriesItemTags.LootCategory.ARMORS;
             for (int i = 0; i < RPGSeriesItemTags.LootTiers.DEFAULT_TIERS; i++) {
-                getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(i, WEAPONS));
-                getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(i, ARMORS));
-                getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.treasures(i));
+                valueLookupBuilder(RPGSeriesItemTags.LootReference.get(i, WEAPONS));
+                valueLookupBuilder(RPGSeriesItemTags.LootReference.get(i, ARMORS));
+                valueLookupBuilder(RPGSeriesItemTags.LootReference.treasures(i));
             }
             // Treasure signals: valuables that only show up in loot, used for accessories / relics
-            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.treasures(1))
+            valueLookupBuilder(RPGSeriesItemTags.LootReference.treasures(1))
                     .add(Items.EMERALD, Items.ENCHANTED_BOOK, Items.GOLDEN_APPLE);
-            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.treasures(2))
+            valueLookupBuilder(RPGSeriesItemTags.LootReference.treasures(2))
                     .add(Items.DIAMOND, Items.HEART_OF_THE_SEA, Items.ENCHANTED_GOLDEN_APPLE, Items.DIAMOND_HORSE_ARMOR,
                          Items.MUSIC_DISC_13, Items.MUSIC_DISC_CAT, Items.MUSIC_DISC_OTHERSIDE,
                          Items.MUSIC_DISC_PIGSTEP, Items.MUSIC_DISC_RELIC, Items.MUSIC_DISC_5);
-            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.treasures(3))
+            valueLookupBuilder(RPGSeriesItemTags.LootReference.treasures(3))
                     .add(Items.TOTEM_OF_UNDYING, Items.NETHERITE_INGOT, Items.NETHERITE_SCRAP,
                          Items.NETHER_STAR, Items.ELYTRA);
-            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(0, WEAPONS))
+            valueLookupBuilder(RPGSeriesItemTags.LootReference.get(0, WEAPONS))
                     .add(Items.WOODEN_SWORD, Items.WOODEN_AXE,
                          Items.STONE_SWORD, Items.STONE_AXE);
-            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(RPGSeriesItemTags.LootReference.GOLDEN_WEAPONS))
+            valueLookupBuilder(RPGSeriesItemTags.LootReference.get(RPGSeriesItemTags.LootReference.GOLDEN_WEAPONS))
                     .add(Items.GOLDEN_SWORD, Items.GOLDEN_AXE);
-            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(0, ARMORS))
+            valueLookupBuilder(RPGSeriesItemTags.LootReference.get(0, ARMORS))
                     .add(Items.LEATHER_HELMET, Items.LEATHER_CHESTPLATE, Items.LEATHER_LEGGINGS, Items.LEATHER_BOOTS,
                          Items.GOLDEN_HELMET, Items.GOLDEN_CHESTPLATE, Items.GOLDEN_LEGGINGS, Items.GOLDEN_BOOTS);
-            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(1, WEAPONS))
+            valueLookupBuilder(RPGSeriesItemTags.LootReference.get(1, WEAPONS))
                     .add(Items.IRON_SWORD, Items.IRON_AXE, Items.BOW, Items.CROSSBOW);
-            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(1, ARMORS))
+            valueLookupBuilder(RPGSeriesItemTags.LootReference.get(1, ARMORS))
                     .add(Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS,
                          Items.CHAINMAIL_HELMET, Items.CHAINMAIL_CHESTPLATE, Items.CHAINMAIL_LEGGINGS, Items.CHAINMAIL_BOOTS,
                          Items.TURTLE_HELMET);
-            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(2, WEAPONS))
+            valueLookupBuilder(RPGSeriesItemTags.LootReference.get(2, WEAPONS))
                     .add(Items.DIAMOND_SWORD, Items.DIAMOND_AXE, Items.TRIDENT);
-            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(2, ARMORS))
+            valueLookupBuilder(RPGSeriesItemTags.LootReference.get(2, ARMORS))
                     .add(Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS);
-            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(3, WEAPONS))
+            valueLookupBuilder(RPGSeriesItemTags.LootReference.get(3, WEAPONS))
                     .add(Items.NETHERITE_SWORD, Items.NETHERITE_AXE, Items.MACE);
-            getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(3, ARMORS))
+            valueLookupBuilder(RPGSeriesItemTags.LootReference.get(3, ARMORS))
                     .add(Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS);
         }
 
         @Override
         protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
             for (var entry: RPGSeriesItemTags.WeaponType.ALL.entrySet()) {
-                var tag = getOrCreateTagBuilder(entry.getValue());
+                var tag = valueLookupBuilder(entry.getValue());
             }
             for (var archetype: RPGSeriesItemTags.RoleArchetype.values()) {
-                var tag = getOrCreateTagBuilder(RPGSeriesItemTags.Archetype.tag(archetype));
+                var tag = valueLookupBuilder(RPGSeriesItemTags.Archetype.tag(archetype));
                 for (var entry: RPGSeriesItemTags.WeaponType.ALL.entrySet()) {
                     if (RPGSeriesItemTags.Archetype.classify(entry.getKey()) == archetype) {
                         tag.addTag(entry.getValue());
@@ -81,15 +81,15 @@ public class RPGSeriesContent {
                 }
             }
             for (var entry: RPGSeriesItemTags.LootThemes.ALL.entrySet()) {
-                var tag = getOrCreateTagBuilder(entry.getValue());
+                var tag = valueLookupBuilder(entry.getValue());
             }
             for (int i = 0; i < RPGSeriesItemTags.LootTiers.DEFAULT_TIERS; i++) {
                 for (var category: RPGSeriesItemTags.LootCategory.values()) {
-                    var tag = getOrCreateTagBuilder(RPGSeriesItemTags.LootTiers.get(i, category));
+                    var tag = valueLookupBuilder(RPGSeriesItemTags.LootTiers.get(i, category));
                 }
             }
             for (var entry: RPGSeriesItemTags.ArmorType.ALL.entrySet()) {
-                var tag = getOrCreateTagBuilder(entry.getValue());
+                var tag = valueLookupBuilder(entry.getValue());
             }
             generateLootReferenceTags();
 
@@ -106,32 +106,32 @@ public class RPGSeriesContent {
 
             /// Spell Infinity enchantables
             var spellInfinityTypes = RPGSeriesDataGen.combine(fullSpellWeaponTypes, meleeSpellWeaponTypes);
-            var spellInfinityTag = getOrCreateTagBuilder(SpellEngineItemTags.ENCHANTABLE_SPELL_INFINITY);
+            var spellInfinityTag = valueLookupBuilder(SpellEngineItemTags.ENCHANTABLE_SPELL_INFINITY);
             for (var type: spellInfinityTypes) {
                 spellInfinityTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
 
             /// Spell Haste enchantables
-            var spellHasteTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.HASTE);
+            var spellHasteTag = valueLookupBuilder(SpellPowerTags.Items.Enchantable.HASTE);
             for (var type: fullSpellWeaponTypes) {
                 spellHasteTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
 
             /// Amplify Spell enchantables
-            var criticalDamageTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.CRITICAL_DAMAGE);
+            var criticalDamageTag = valueLookupBuilder(SpellPowerTags.Items.Enchantable.CRITICAL_DAMAGE);
             for (var type: fullSpellWeaponTypes) {
                 criticalDamageTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
 
             /// Spell Power enchantables
             var spellPowerTypes = RPGSeriesDataGen.combine(fullSpellWeaponTypes, meleeSpellWeaponTypes);
-            var spellPowerTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.SPELL_POWER_GENERIC);
+            var spellPowerTag = valueLookupBuilder(SpellPowerTags.Items.Enchantable.SPELL_POWER_GENERIC);
             for (var type: spellPowerTypes) {
                 spellPowerTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
 
             /// Spell Volatility enchantables
-            var spellVolatilityTag = getOrCreateTagBuilder(SpellPowerTags.Items.Enchantable.CRITICAL_CHANCE);
+            var spellVolatilityTag = valueLookupBuilder(SpellPowerTags.Items.Enchantable.CRITICAL_CHANCE);
             for (var type: fullSpellWeaponTypes) {
                 spellVolatilityTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
@@ -139,7 +139,7 @@ public class RPGSeriesContent {
 
             /// Unbreaking enchantables
             var unbreakingTypes = Equipment.WeaponType.values();
-            var unbreakingTag = getOrCreateTagBuilder(ItemTags.DURABILITY_ENCHANTABLE);
+            var unbreakingTag = valueLookupBuilder(ItemTags.DURABILITY_ENCHANTABLE);
             for (var type: unbreakingTypes) {
                 unbreakingTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
@@ -151,7 +151,7 @@ public class RPGSeriesContent {
                     Equipment.WeaponType.DAGGER, Equipment.WeaponType.SICKLE, Equipment.WeaponType.DOUBLE_AXE,
                     Equipment.WeaponType.GLAIVE, Equipment.WeaponType.SPELL_BLADE, Equipment.WeaponType.SPELL_SCYTHE
             );
-            var sharpTag = getOrCreateTagBuilder(ItemTags.SHARP_WEAPON_ENCHANTABLE);
+            var sharpTag = valueLookupBuilder(ItemTags.SHARP_WEAPON_ENCHANTABLE);
             for (var type: sharpWeaponTypes) {
                 sharpTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
@@ -162,7 +162,7 @@ public class RPGSeriesContent {
                     Equipment.WeaponType.SPEAR, Equipment.WeaponType.DAGGER, Equipment.WeaponType.SICKLE, Equipment.WeaponType.DOUBLE_AXE,
                     Equipment.WeaponType.GLAIVE
             );
-            var meleeTag = getOrCreateTagBuilder(ItemTags.SWORDS);
+            var meleeTag = valueLookupBuilder(ItemTags.SWORDS);
             for (var type: meleeWeaponTypes) {
                 meleeTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
@@ -170,12 +170,12 @@ public class RPGSeriesContent {
             /// Ranged enchantables
             var bowTypes = List.of(Equipment.WeaponType.SHORT_BOW, Equipment.WeaponType.LONG_BOW);
             for (var type: bowTypes) {
-                var tag = getOrCreateTagBuilder(ItemTags.BOW_ENCHANTABLE);
+                var tag = valueLookupBuilder(ItemTags.BOW_ENCHANTABLE);
                 tag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
             var crossbowTypes = List.of(Equipment.WeaponType.RAPID_CROSSBOW, Equipment.WeaponType.HEAVY_CROSSBOW);
             for (var type: crossbowTypes) {
-                var tag = getOrCreateTagBuilder(ItemTags.CROSSBOW_ENCHANTABLE);
+                var tag = valueLookupBuilder(ItemTags.CROSSBOW_ENCHANTABLE);
                 tag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
         }

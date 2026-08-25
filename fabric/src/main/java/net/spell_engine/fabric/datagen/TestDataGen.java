@@ -43,9 +43,9 @@ public class TestDataGen {
 
         @Override
         protected void configure(RegistryWrapper.WrapperLookup registries, Entries entries) {
-            RegistryEntryLookup<Item> itemLookup = registries.createRegistryLookup().getOrThrow(RegistryKeys.ITEM);
+            RegistryEntryLookup<Item> itemLookup = registries.getOrThrow(RegistryKeys.ITEM);
 
-            var equipmentSetLookup = registries.createRegistryLookup().getOrThrow(EquipmentSetRegistry.KEY);
+            var equipmentSetLookup = registries.getOrThrow(EquipmentSetRegistry.KEY);
 
             var setId = RegistryKey.of(EquipmentSetRegistry.KEY, Identifier.of(NAMESPACE, "fire_power"));
 
@@ -61,8 +61,7 @@ public class TestDataGen {
                                                     EntityAttributeModifier.Operation.ADD_VALUE
                                             ),
                                             AttributeModifierSlot.ARMOR)
-                            ),
-                            true
+                            )
                     ),
                     null);
             var fireball = new EquipmentSet.Bonus(

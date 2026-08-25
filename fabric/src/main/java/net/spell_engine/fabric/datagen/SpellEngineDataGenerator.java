@@ -82,9 +82,9 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
 
         @Override
         protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
-            getOrCreateTagBuilder(SpellEngineDamageTypeTags.EVADABLE)
+            builder(SpellEngineDamageTypeTags.EVADABLE)
                     // .addTag(DamageTypeTags.IS_PROJECTILE)
-                    .addOptionalTag(DamageTypeTags.IS_PROJECTILE.id())
+                    .addOptionalTag(DamageTypeTags.IS_PROJECTILE)
                     .add(DamageTypes.PLAYER_ATTACK)
                     .add(DamageTypes.GENERIC)
                     .add(DamageTypes.MOB_ATTACK)
@@ -92,17 +92,17 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         }
     }
 
-    public static class EntityTypeTagGen extends FabricTagProvider<EntityType<?>> {
+    public static class EntityTypeTagGen extends FabricTagProvider.EntityTypeTagProvider {
         public EntityTypeTagGen(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
-            super(output, RegistryKeys.ENTITY_TYPE, registriesFuture);
+            super(output, registriesFuture);
         }
 
         @Override
         protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
             SpellEngineEntityTags.Vulnerability.ALL.forEach(entry -> {
-                var builder = getOrCreateTagBuilder(entry.tag());
+                var builder = valueLookupBuilder(entry.tag());
                 entry.included().forEach(tag -> {
-                    builder.addOptionalTag(tag.id());
+                    builder.addOptionalTag(tag);
                 });
             });
         }

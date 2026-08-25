@@ -54,7 +54,8 @@ public abstract class NamespacedLangGenerator extends FabricLanguageProvider {
         });
     }
 
-    private Path getLangFilePath(String code) {
+    @Override
+    protected Path getLangFilePath(String code) {
         return dataOutput
                 .getResolver(DataOutput.OutputType.RESOURCE_PACK, "lang")
                 .resolveJson(Identifier.of(namespace, code));

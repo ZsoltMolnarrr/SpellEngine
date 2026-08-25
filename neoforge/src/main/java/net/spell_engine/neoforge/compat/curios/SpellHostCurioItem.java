@@ -17,15 +17,10 @@ public class SpellHostCurioItem extends Item implements ICurioItem {
     }
 
     @Override
-    public boolean isEnchantable(ItemStack stack) {
-        return false;
-    }
-
-    @Override
     public boolean canUnequip(SlotContext slotContext, ItemStack stack) {
         var isOnCooldown = false;
         if (slotContext.entity() instanceof PlayerEntity player) {
-            isOnCooldown = !player.isCreative() && player.getItemCooldownManager().isCoolingDown(stack.getItem());
+            isOnCooldown = !player.isCreative() && player.getItemCooldownManager().isCoolingDown(stack);
         }
         return ICurioItem.super.canUnequip(slotContext, stack) && !isOnCooldown;
     }
@@ -41,7 +36,7 @@ public class SpellHostCurioItem extends Item implements ICurioItem {
         if (entity == null) {
             return;
         }
-        var world = entity.getWorld();
+        var world = entity.getEntityWorld();
         if (world.isClient()                        // the server broadcast below reaches every nearby client
                 || entity.age <= 100                // gear already worn when entering a world/dimension
                 || prevStack.isOf(stack.getItem())) // same item, only its data changed

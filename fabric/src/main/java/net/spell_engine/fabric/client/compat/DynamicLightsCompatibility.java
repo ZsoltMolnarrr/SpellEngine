@@ -1,10 +1,14 @@
 package net.spell_engine.fabric.client.compat;
 
-import dev.lambdaurora.lambdynlights.api.DynamicLightHandlers;
+import com.mojang.serialization.MapCodec;
+import dev.lambdaurora.lambdynlights.api.DynamicLightsContext;
 import dev.lambdaurora.lambdynlights.api.DynamicLightsInitializer;
+import dev.lambdaurora.lambdynlights.api.entity.luminance.EntityLuminance;
 import dev.lambdaurora.lambdynlights.api.item.ItemLightSourceManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.util.Identifier;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellProjectile;
 
@@ -15,17 +19,12 @@ import java.util.function.ToIntFunction;
 public class DynamicLightsCompatibility implements DynamicLightsInitializer {
 
     /// One entity type paired with the light level it emits, read from the entity's client-visible state.
-    /// Deliberately carries a plain {@link ToIntFunction} rather than LambDynLights'
-    /// {@code DynamicLightHandler}, so that {@link #registrations()} — and anything mixing into it — stays
-    /// free of any LambDynLights type. That lets dependent mods contribute their own entity light sources
-    /// (by injecting into {@code registrations()}) without a hard dependency on LambDynLights: only
-    /// {@link #register} touches the LambDynLights API, and it runs solely under the LambDynLights-gated
-    /// entrypoint below.
+    /// Deliberately carries a plain {@link ToIntFunction} rather than a LambDynLights type, so that
+    /// {@link #registrations()} — and anything mixing into it — stays free of any LambDynLights type.
     public record Registration<T extends Entity>(EntityType<T> type, ToIntFunction<T> luminance) { }
 
     /// The entity light sources Spell Engine contributes to LambDynLights. The returned list is mutable by
-    /// design: dependent mods inject at its tail (via mixin) to append their own summons/entities, reusing
-    /// this single, already-LambDynLights-gated compat entrypoint instead of registering their own.
+    /// design: dependent mods inject at its tail (via mixin) to append their own summons/entities.
     public static List<Registration<?>> registrations() {
         var list = new ArrayList<Registration<?>>();
         list.add(new Registration<>(SpellProjectile.ENTITY_TYPE, entity -> {
@@ -40,19 +39,36 @@ public class DynamicLightsCompatibility implements DynamicLightsInitializer {
     }
 
     @Override
-    public void onInitializeDynamicLights(ItemLightSourceManager itemLightSourceManager) {
-        System.out.println("Spell Engine: Initializing Dynamic Lights compatibility...");
-        for (var registration : registrations()) {
-            register(registration);
-        }
+    public void onInitializeDynamicLights(DynamicLightsContext context) {
+        SpellEngineMod.LOGGER.info("Initializing Dynamic Lights compatibility");
+        // LambDynamicLights 4.x: entity light sources are (re)registered on every resource reload
+        context.entityLightSourceManager().onRegisterEvent().register(Identifier.of(SpellEngineMod.ID, "entity_light_sources"), registerContext -> {
+            for (var registration : registrations()) {
+                register(registerContext, registration);
+            }
+        });
     }
 
-    /// Bridges one registration to LambDynLights. Generic so the entity type and its luminance function
-    /// share the same captured `T` — a wildcard capture straight off the list iteration would not
-    /// type-check when handed to {@code registerDynamicLightHandler}.
-    private static <T extends Entity> void register(Registration<T> registration) {
-        DynamicLightHandlers.registerDynamicLightHandler(
-                registration.type(),
-                registration.luminance()::applyAsInt);
+    private static <T extends Entity> void register(dev.lambdaurora.lambdynlights.api.entity.EntityLightSourceManager.RegisterContext context, Registration<T> registration) {
+        context.register(registration.type(), new DynamicLuminance<>(registration));
+    }
+
+    /// Code-defined luminance (no data pack codec needed; the type only exists to satisfy the API)
+    private record DynamicLuminance<T extends Entity>(Registration<T> registration) implements EntityLuminance {
+        private static final Type TYPE = new Type(Identifier.of(SpellEngineMod.ID, "dynamic"), MapCodec.unit(new DynamicLuminance<>(null)));
+
+        @Override
+        public Type type() {
+            return TYPE;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public int getLuminance(ItemLightSourceManager itemLightSourceManager, Entity entity) {
+            if (registration == null || !registration.type().equals(entity.getType())) {
+                return 0;
+            }
+            return registration.luminance().applyAsInt((T) entity);
+        }
     }
 }

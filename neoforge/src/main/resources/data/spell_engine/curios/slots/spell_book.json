@@ -1,5 +1,5 @@
 {
   "icon": "spell_engine:slot/spell_book",
   "order": 2,
-  "drop_rule": "ALWAYS_KEEP"
+  "drop_rule": "always_keep"
 }
