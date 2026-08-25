@@ -28,8 +28,6 @@ import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreen;
 import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
 
 public final class FabricClientMod implements ClientModInitializer {
-    public static final net.minecraft.util.Identifier SPELL_HUD_ELEMENT_ID = net.minecraft.util.Identifier.of(net.spell_engine.SpellEngineMod.ID, "spell_hud");
-
     @Override
     public void onInitializeClient() {
         SpellEngineClient.init();
@@ -48,13 +46,11 @@ public final class FabricClientMod implements ClientModInitializer {
             }
         });
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> SpellEngineClient.onClientStarted());
-        // Spell HUD (hotbar, cast bar, error messages) as its own HUD element, right after the vanilla mount
-        // health bar - the position the 1.21.1 InGameHud injection had. Elements get their own GUI layer, so
-        // it is composited above the status bars instead of underneath them.
-        HudElementRegistry.attachElementAfter(VanillaHudElements.MOUNT_HEALTH, SPELL_HUD_ELEMENT_ID, (context, tickCounter) -> {
-            if (MinecraftClient.getInstance().options.hudHidden) { return; }
-            HudRenderHelper.render(context, tickCounter.getTickProgress(true));
-        });
+        // Spell HUD (hotbar, cast bar, error messages) as its own HUD element, right after the vanilla status-bar
+        // group (mount health is its last element on Fabric; NeoForge registers above AIR_LEVEL, the same spot).
+        // Elements get their own GUI layer, so it is composited above the status bars instead of underneath them.
+        HudElementRegistry.attachElementAfter(VanillaHudElements.MOUNT_HEALTH, HudRenderHelper.HUD_ELEMENT_ID, (context, tickCounter) ->
+                HudRenderHelper.renderHudElement(context, tickCounter.getTickProgress(true)));
         ItemTooltipCallback.EVENT.register((stack, tooltipContext, tooltipType, lines) ->
                 SpellEngineClient.addTooltipLines(stack, tooltipType, lines));
         // 1.21.9+ world render events are extraction/main split; AFTER_TRANSLUCENT is gone. Beams draw in END_MAIN.
