@@ -25,8 +25,7 @@ public class ModelEffectHelper {
                 continue;
             }
             if (effect.follow_entity && contextEntity != null) {
-                ((ModelEffectAttachment.Provider) contextEntity)
-                        .SpellEngine_attachModelFx(effect, world.getTime());
+                ModelEffectAttachment.attach(contextEntity, effect, world.getTime());
             } else {
                 var spawnPos = (contextEntity != null)
                         ? location.add(0, effect.positioning.vertical * contextEntity.getHeight(), 0)

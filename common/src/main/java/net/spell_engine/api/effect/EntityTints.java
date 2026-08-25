@@ -3,6 +3,7 @@ package net.spell_engine.api.effect;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
+import net.spell_engine.internals.SpellEngineAttachments;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -71,7 +72,7 @@ public final class EntityTints {
     }
 
     /// The combined tint of all registered tinting effects active on `entity`, `NEUTRAL` if none
-    /// reach it. Runs server side; the result travels to clients as tracked data (see Provider).
+    /// reach it. Runs server side; the result travels to clients as a synced attachment (see currentTint).
     /// <p>
     /// Blend rule: componentwise multiply (each channel as 0–1, product across all active tints).
     /// Neutral-identity, commutative, associative — order of effects can't matter — and alphas
@@ -100,13 +101,10 @@ public final class EntityTints {
         return (alpha << 24) | (red << 16) | (green << 8) | blue;
     }
 
-    /// The entity's current blended tint, synced to all tracking clients via tracked data.
+    /// The entity's current blended tint, synced to all tracking clients as an entity attachment
+    /// (`SpellEngineAttachments.TINT_ARGB`, written whenever the server re-resolves the effect set).
     public static int currentTint(LivingEntity entity) {
-        return ((Provider)entity).SpellEngine_entityTintArgb();
-    }
-
-    public interface Provider {
-        int SpellEngine_entityTintArgb();
+        return SpellEngineAttachments.TINT_ARGB.get(entity);
     }
 
     /// Render-thread context: the tint of the living entity currently being rendered.

@@ -34,6 +34,7 @@ import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellModelEffect;
 import net.spell_engine.entity.SpellProjectile;
 import net.spell_engine.misc.SpellEngineCommands;
+import net.spell_engine.internals.SpellEngineAttachments;
 import net.spell_engine.internals.SpellTriggers;
 import net.spell_engine.internals.container.SpellAssignments;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -85,6 +86,7 @@ public class SpellEngineMod {
         fallbackConfig.refresh();
 
         Platform.util().registerSyncedDataRegistry(SpellRegistry.KEY, SpellRegistry.LOCAL_CODEC, SpellRegistry.NETWORK_CODEC_V2);
+        SpellEngineAttachments.init();
 
         SpellAssignments.init();
 

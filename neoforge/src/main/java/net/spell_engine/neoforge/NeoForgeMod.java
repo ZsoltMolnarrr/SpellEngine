@@ -38,6 +38,8 @@ public final class NeoForgeMod {
     }
 
     public static void register(RegisterEvent event) {
+        // Synced entity attachments created during common init (see SpellEngineAttachments).
+        NeoForgeSyncedEntityData.onRegister(event);
         event.register(RegistryKeys.ENTITY_TYPE, reg -> {
             SpellEngineMod.registerEntityTypes();
         });

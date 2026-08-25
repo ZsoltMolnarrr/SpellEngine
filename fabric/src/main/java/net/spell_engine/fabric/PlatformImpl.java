@@ -9,8 +9,12 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
+import net.spell_engine.api.attachment.SyncedEntityData;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -68,6 +72,13 @@ public class PlatformImpl {
         @Override
         public <T> void registerSyncedDataRegistry(RegistryKey<Registry<T>> key, Codec<T> localCodec, Codec<T> networkCodec) {
             DynamicRegistries.registerSynced(key, localCodec, networkCodec);
+        }
+
+        @Override
+        public <T> SyncedEntityData<T> createSyncedEntityData(Identifier id, T defaultValue,
+                                                              PacketCodec<? super RegistryByteBuf, T> sync,
+                                                              @Nullable Codec<T> persistence) {
+            return new FabricSyncedEntityData<>(id, defaultValue, sync, persistence);
         }
     }
     private static final Platform.Util UTIL = new FabricUtil();

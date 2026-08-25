@@ -6,8 +6,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.CustomPayload;
+import net.spell_engine.api.attachment.SyncedEntityData;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -65,6 +69,12 @@ public class Platform {
         /// Fabric registers imperatively during init; NeoForge buffers it for its
         /// `DataPackRegistryEvent.NewRegistry`. A non-null `networkCodec` makes the registry client-synced.
         <T> void registerSyncedDataRegistry(RegistryKey<Registry<T>> key, Codec<T> localCodec, Codec<T> networkCodec);
+
+        /// Creates a synced per-entity attachment, see `SyncedEntityData.create`. Fabric registers
+        /// imperatively; NeoForge buffers the built type for its `ATTACHMENT_TYPES` register event.
+        <T> SyncedEntityData<T> createSyncedEntityData(Identifier id, T defaultValue,
+                                                       PacketCodec<? super RegistryByteBuf, T> sync,
+                                                       @Nullable Codec<T> persistence);
     }
 
     @ExpectPlatform

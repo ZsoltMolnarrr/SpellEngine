@@ -1,19 +1,12 @@
 package net.spell_engine.mixin.arrow;
 
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.EntityHitResult;
@@ -21,6 +14,7 @@ import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.entity.ConfigurableKnockback;
 import net.spell_engine.entity.SummonedEntity;
+import net.spell_engine.internals.SpellEngineAttachments;
 import net.spell_engine.internals.SpellTriggers;
 import net.spell_engine.internals.delivery.arrow.ArrowExtension;
 import net.spell_engine.internals.target.EntityRelation;
@@ -34,9 +28,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import net.spell_engine.internals.SpellExecution;
 import net.spell_engine.internals.impact.SpellImpacts;
 
@@ -56,95 +50,44 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
          return (PersistentProjectileEntity)(Object)this;
     }
 
-    private final List<Identifier> spellIds = new ArrayList<>();
-    private void addSpellId(Identifier id) {
-        if (!spellIds.contains(id)) {
-            spellIds.add(id);
-        }
-        var stringList = this.spellIds.stream().map(Identifier::toString).toList();
-        var json = gson.toJson(stringList);
-        arrow().getDataTracker().set(SPELL_ID_TRACKER, json);
+    // MARK: Carried spells — synced + persisted entity attachment (ARROW_SPELLS)
+
+    private List<Identifier> spellIds() {
+        return SpellEngineAttachments.ARROW_SPELLS.get(arrow());
     }
 
+    private void addSpellId(Identifier id) {
+        var ids = spellIds();
+        if (ids.contains(id)) { return; }
+        var updated = new ArrayList<>(ids);
+        updated.add(id);
+        SpellEngineAttachments.ARROW_SPELLS.set(arrow(), List.copyOf(updated));
+    }
+
+    /// Resolved spell entries, re-resolved whenever the carried id list changes (a new synced value
+    /// is a new list instance; identity is compared, so steady-state reads are free).
+    private List<Identifier> cachedSpellIds = null;
     private List<RegistryEntry<Spell>> cachedSpellEntry = List.of();
     @Nullable List<RegistryEntry<Spell>> spellEntries() {
-        if (cachedSpellEntry == null || cachedSpellEntry.size() != spellIds.size()) {
-            var entries = spellIds.stream()
+        var ids = spellIds();
+        if (cachedSpellIds != ids) {
+            cachedSpellEntry = ids.stream()
                     .map(id -> {
                         var reference = SpellRegistry.from(arrow().getEntityWorld()).getEntry(id).orElse(null);
                         return (RegistryEntry<Spell>)reference;
                     })
+                    .filter(Objects::nonNull)
                     .toList();
-            cachedSpellEntry = entries;
+            cachedSpellIds = ids;
         }
         return cachedSpellEntry;
     }
 
     private boolean arrowPerksAlreadyApplied(RegistryEntry<Spell> spell) {
-        var id = spell.getKey().get().getValue().toString();
-        return spellIds.contains(id);
-    }
-
-    // MARK: Persist extra data
-
-    private static final Gson gson = new Gson();
-    private static final Type stringListType = new TypeToken<ArrayList<String>>(){}.getType();
-    private static final String NBT_KEY_SPELL_ID = "spell_id";
-
-    @Inject(method = "writeCustomData", at = @At("TAIL"))
-    public void writeCustomData_TAIL_SpellEngine(WriteView view, CallbackInfo ci) {
-        var stringList = this.spellIds.stream().map(Identifier::toString).toList();
-        var json = gson.toJson(stringList);
-        view.putString(NBT_KEY_SPELL_ID, json);
-    }
-
-    @Inject(method = "readCustomData", at = @At("TAIL"))
-    public void readCustomData_TAIL_SpellEngine(ReadView view, CallbackInfo ci) {
-        var stringOpt = view.getOptionalString(NBT_KEY_SPELL_ID);
-        if (stringOpt.isPresent()) {
-            var string = stringOpt.get();
-            if (string != null && !string.isEmpty()) {
-                List<String> stringList = new Gson().fromJson(string, stringListType);
-                this.spellIds.clear();
-                for (var idString : stringList) {
-                    var id = Identifier.tryParse(idString);
-                    if (id != null) {
-                        addSpellId(Identifier.of(idString));
-                    }
-                }
-            }
-        }
-    }
-
-    // MARK: Sync data to client
-
-    private static final TrackedData<String> SPELL_ID_TRACKER = DataTracker.registerData(PersistentProjectileEntity.class, TrackedDataHandlerRegistry.STRING);
-    @Inject(method = "initDataTracker", at = @At("TAIL"))
-    private void initDataTracker_TAIL_SpellEngine(DataTracker.Builder builder, CallbackInfo ci) {
-        builder.add(SPELL_ID_TRACKER, "");
+        return spellIds().contains(spell.getKey().get().getValue());
     }
 
     // MARK: Tick
-
-    @Inject(method = "tick", at = @At("HEAD"))
-    private void tick_HEAD_SpellEngine(CallbackInfo ci) {
-        var arrow = arrow();
-        var world = arrow.getEntityWorld();
-        if (world.isClient() && this.spellIds.isEmpty()) {
-            var json = arrow().getDataTracker().get(SPELL_ID_TRACKER);
-            if (json.isEmpty()) {
-                return;
-            }
-            try {
-                List<String> stringList = new Gson().fromJson(json, stringListType);
-                this.spellIds.clear();
-                this.spellIds.addAll(stringList.stream().map(Identifier::of).toList());
-                this.spellEntries();
-            } catch (Exception e) {
-                System.err.println("Spell Engine: Failed to parse spell id from arrow data tracker: " + json);
-            }
-        }
-    }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick_TAIL_SpellEngine(CallbackInfo ci) {

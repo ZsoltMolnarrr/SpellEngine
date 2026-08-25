@@ -40,7 +40,7 @@ public class SpellCastInteractor {
 
     /// Entity-specific wiring, injected at construction. Every component is a lambda so hosts
     /// compose only what they have; this record names the full contract in one place. The sync
-    /// bindings lens raw synced values (tracked-data slots for players) — the interactor's
+    /// bindings lens raw synced values (synced entity attachments for players) — the interactor's
     /// synced state is stored THROUGH them, not next to them: the server write projects the
     /// authoritative object out to clients, the client read is the synced truth the interactor
     /// lazily parses. Binding writes must no-op on the client side.
@@ -57,7 +57,7 @@ public class SpellCastInteractor {
     ) { }
 
     /// Assembles the player wiring. The sync bindings are supplied by the caller
-    /// (`PlayerEntityMixin`), since the tracked data slots live there.
+    /// (`PlayerEntityMixin`), which binds them to the synced entity attachments.
     public static SpellCastInteractor forPlayer(PlayerEntity player,
                                                 Binding<String> processSync,
                                                 Binding<String> optionsSync) {

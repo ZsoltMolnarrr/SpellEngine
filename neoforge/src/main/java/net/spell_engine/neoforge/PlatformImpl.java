@@ -4,8 +4,12 @@ import com.mojang.serialization.Codec;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
+import net.spell_engine.api.attachment.SyncedEntityData;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -72,6 +76,14 @@ public class PlatformImpl {
         public <T> void registerSyncedDataRegistry(RegistryKey<Registry<T>> key, Codec<T> localCodec, Codec<T> networkCodec) {
             // Buffered until DataPackRegistryEvent.NewRegistry — NeoForge can't register these imperatively.
             SyncedDataRegistrar.buffer(key, localCodec, networkCodec);
+        }
+
+        @Override
+        public <T> SyncedEntityData<T> createSyncedEntityData(Identifier id, T defaultValue,
+                                                              PacketCodec<? super RegistryByteBuf, T> sync,
+                                                              @Nullable Codec<T> persistence) {
+            // Built now, registered in NeoForgeMod.register (RegisterEvent for ATTACHMENT_TYPES).
+            return new NeoForgeSyncedEntityData<>(id, defaultValue, sync, persistence);
         }
     }
     private static final Platform.Util UTIL = new NeoForgeUtil();

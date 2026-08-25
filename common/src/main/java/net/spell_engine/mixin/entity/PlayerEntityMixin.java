@@ -1,14 +1,12 @@
 package net.spell_engine.mixin.entity;
 
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
+import net.spell_engine.internals.SpellEngineAttachments;
 import net.spell_engine.internals.delivery.arrow.ArrowShootContext;
 import net.spell_engine.internals.casting.SpellCastInteractor;
 import net.spell_engine.utils.Binding;
@@ -24,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
-@Mixin(value = PlayerEntity.class, priority = 555)
+@Mixin(PlayerEntity.class)
 // Implements the DEPRECATED bridge type (extends SpellCaster.Player) on purpose: external
 // compat mods cast players to SpellCasterEntity — the cast only works if players implement it.
 public class PlayerEntityMixin implements SpellCaster.Player, SpellCasterEntity {
@@ -36,38 +34,28 @@ public class PlayerEntityMixin implements SpellCaster.Player, SpellCasterEntity 
     private final SpellCooldownManager spellCooldownManager = new SpellCooldownManager(player());
 
     /// The casting authority component. The two bindings lens its synced state (process,
-    /// options) onto the tracked data slots below: the server writes through them, the client
-    /// reads through them (the interactor parses lazily on change — no polling here).
+    /// options) onto the synced entity attachments: the server writes through them (which syncs
+    /// to the player's own client and to observers), the client reads through them (the
+    /// interactor parses lazily on change — no polling here).
     private final SpellCastInteractor interactor = SpellCastInteractor.forPlayer(player(),
             new Binding<>(
-                    () -> player().getDataTracker().get(SPELL_ENGINE_SPELL_PROGRESS),
+                    () -> SpellEngineAttachments.CAST_PROCESS.get(player()),
                     json -> {
                         if (!player().getEntityWorld().isClient()) {
-                            player().getDataTracker().set(SPELL_ENGINE_SPELL_PROGRESS, json);
+                            SpellEngineAttachments.CAST_PROCESS.set(player(), json);
                         }
                     }),
             new Binding<>(
-                    () -> player().getDataTracker().get(SPELL_ENGINE_OPTIONS),
+                    () -> SpellEngineAttachments.CAST_OPTIONS.get(player()),
                     json -> {
                         if (!player().getEntityWorld().isClient()) {
-                            player().getDataTracker().set(SPELL_ENGINE_OPTIONS, json);
+                            SpellEngineAttachments.CAST_OPTIONS.set(player(), json);
                         }
                     }));
 
     @Override
     public SpellCastInteractor getInteractor() {
         return interactor;
-    }
-
-    private static final TrackedData<String> SPELL_ENGINE_SPELL_PROGRESS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.STRING);
-    private static final TrackedData<String> SPELL_ENGINE_OPTIONS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.STRING);
-    private static final TrackedData<Float> SPELL_ENGINE_EXTRA_SLIPPERINESS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.FLOAT);
-
-    @Inject(method = "initDataTracker", at = @At("TAIL"))
-    private void initDataTracker_TAIL_SpellEngine_SyncEffects(DataTracker.Builder builder, CallbackInfo ci) {
-        builder.add(SPELL_ENGINE_SPELL_PROGRESS, "");
-        builder.add(SPELL_ENGINE_OPTIONS, "");
-        builder.add(SPELL_ENGINE_EXTRA_SLIPPERINESS, 0F);
     }
 
     private ArrowShootContext arrowShotContext = ArrowShootContext.empty();
@@ -110,11 +98,11 @@ public class PlayerEntityMixin implements SpellCaster.Player, SpellCasterEntity 
         if (attack != null) {
             slip = attack.attack.movement_slip();
         }
-        player().getDataTracker().set(SPELL_ENGINE_EXTRA_SLIPPERINESS, slip);
+        SpellEngineAttachments.EXTRA_SLIPPERINESS.set(player(), slip);
     }
     @Override
     public float getExtraSlipperiness() {
-        return player().getDataTracker().get(SPELL_ENGINE_EXTRA_SLIPPERINESS);
+        return SpellEngineAttachments.EXTRA_SLIPPERINESS.get(player());
     }
 
     @Nullable private RegistryEntry<Spell> activeMeleeSpell = null;
