@@ -4,17 +4,12 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.spell_engine.Platform;
 import net.spell_engine.client.SpellEngineClient;
-import net.spell_engine.client.gui.HudRenderHelper;
 import net.spell_engine.client.input.SpellHotbar;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(InGameHud.class)
 public class InGameHudMixin {
@@ -30,18 +25,4 @@ public class InGameHudMixin {
         }
     }
 
-    @Inject(method = "renderMainHud",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/hud/InGameHud;renderMountHealth(Lnet/minecraft/client/gui/DrawContext;)V",
-                    shift = At.Shift.AFTER)
-            , require = 0) // Gotta love the all-brilliant NeoForge
-    private void renderMainHud_AFTER_renderMountHealth(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        // NeoForge disables this mixin by erasing the parent function
-        // however some mods somewhat restore it, so we only run this on Fabric
-        // NeoForge specific invocation is in NeoForge-Client subscription
-        if (Platform.Fabric) {
-            HudRenderHelper.render(context, tickCounter.getTickProgress(true));
-        }
-    }
 }

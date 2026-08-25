@@ -54,6 +54,7 @@ public class CustomLayers {
         map.put(ENTITY_EMISSIVE_DEPTH_WRITE, PipelineKind.ENTITY_EMISSIVE);
         map.put(BEACON_BEAM_OPAQUE_CULL, PipelineKind.BEACON_BEAM);
         map.put(BEACON_BEAM_TRANSLUCENT_CULL, PipelineKind.BEACON_BEAM);
+        map.put(BEACON_BEAM_ADDITIVE, PipelineKind.BEACON_BEAM);
         map.put(itemGlowEmissivePipeline(), PipelineKind.ENTITY_EMISSIVE);
         map.put(itemGlowGlintPipeline(), PipelineKind.GLINT);
         return map;
@@ -177,6 +178,28 @@ public class CustomLayers {
         }
         return RenderLayer.of("spell_object", setup.build());
     });
+
+    /// Beacon-beam program blended additively (`SRC_ALPHA, ONE`, the old lightning transparency), no cull,
+    /// no depth write: the shader-pack variant of translucent glowing spell objects (e.g. Paladins' barrier),
+    /// which used to go through the lightning program on 1.21.1 (its 1.21.11 pipeline is POSITION_COLOR only).
+    private static final RenderPipeline BEACON_BEAM_ADDITIVE = RenderPipeline.builder(RenderPipelines.RENDERTYPE_BEACON_BEAM_SNIPPET)
+            .withLocation(pipelineId("beacon_beam_additive"))
+            .withCull(false)
+            .withBlend(BlendFunction.LIGHTNING)
+            .withDepthWrite(false)
+            .build();
+
+    private static final Function<Identifier, RenderLayer> SPELL_OBJECT_ADDITIVE = Util.memoize(texture ->
+            RenderLayer.of("spell_object_additive", RenderSetup.builder(BEACON_BEAM_ADDITIVE)
+                    .texture("Sampler0", texture)
+                    .translucent()
+                    .expectedBufferSize(256)
+                    .outlineMode(RenderSetup.OutlineMode.NONE)
+                    .build()));
+
+    public static RenderLayer spellObjectAdditive(Identifier texture) {
+        return SPELL_OBJECT_ADDITIVE.apply(texture);
+    }
 
     public static RenderLayer spellObject(Identifier texture, LightEmission lightEmission, boolean translucent) {
         return SPELL_OBJECT.apply(new SpellObjectKey(texture, lightEmission, translucent));

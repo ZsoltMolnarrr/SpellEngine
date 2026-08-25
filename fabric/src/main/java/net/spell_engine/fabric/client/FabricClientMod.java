@@ -2,6 +2,10 @@ package net.spell_engine.fabric.client;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
+import net.minecraft.client.MinecraftClient;
+import net.spell_engine.client.gui.HudRenderHelper;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
@@ -10,7 +14,6 @@ import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
-import net.minecraft.client.MinecraftClient;
 import net.spell_engine.client.render.BeamRenderer;
 import net.spell_engine.client.render.CustomModelRegistry;
 import net.spell_engine.client.render.SpellCloudRenderer;
@@ -25,6 +28,8 @@ import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreen;
 import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
 
 public final class FabricClientMod implements ClientModInitializer {
+    public static final net.minecraft.util.Identifier SPELL_HUD_ELEMENT_ID = net.minecraft.util.Identifier.of(net.spell_engine.SpellEngineMod.ID, "spell_hud");
+
     @Override
     public void onInitializeClient() {
         SpellEngineClient.init();
@@ -43,6 +48,13 @@ public final class FabricClientMod implements ClientModInitializer {
             }
         });
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> SpellEngineClient.onClientStarted());
+        // Spell HUD (hotbar, cast bar, error messages) as its own HUD element, right after the vanilla mount
+        // health bar - the position the 1.21.1 InGameHud injection had. Elements get their own GUI layer, so
+        // it is composited above the status bars instead of underneath them.
+        HudElementRegistry.attachElementAfter(VanillaHudElements.MOUNT_HEALTH, SPELL_HUD_ELEMENT_ID, (context, tickCounter) -> {
+            if (MinecraftClient.getInstance().options.hudHidden) { return; }
+            HudRenderHelper.render(context, tickCounter.getTickProgress(true));
+        });
         ItemTooltipCallback.EVENT.register((stack, tooltipContext, tooltipType, lines) ->
                 SpellEngineClient.addTooltipLines(stack, tooltipType, lines));
         // 1.21.9+ world render events are extraction/main split; AFTER_TRANSLUCENT is gone. Beams draw in END_MAIN.
