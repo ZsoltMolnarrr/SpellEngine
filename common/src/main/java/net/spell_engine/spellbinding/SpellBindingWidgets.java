@@ -103,8 +103,10 @@ public class SpellBindingWidgets {
 
         // Draw spell icon or item icon
         if (icon.spell != null && icon.spell.icon != null) {
+            // Unpowered (not enough bookshelves) spells draw at half opacity; the color argument replaced the
+            // 1.21.1 shader color state
             context.drawTexture(RenderPipelines.GUI_TEXTURED, icon.spell.icon, icon.x, icon.y,
-                    0, 0, icon.size, icon.size, icon.size, icon.size);
+                    0, 0, icon.size, icon.size, icon.size, icon.size, ColorHelper.fromFloats(alpha, 1F, 1F, 1F));
         }
     }
 
