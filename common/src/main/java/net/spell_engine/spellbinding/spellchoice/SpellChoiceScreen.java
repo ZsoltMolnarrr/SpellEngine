@@ -119,7 +119,7 @@ public class SpellChoiceScreen extends HandledScreen<SpellChoiceScreenHandler> {
         context.drawCenteredTextWithShadow(
                 textRenderer,
                 Text.translatable("gui.spell_engine.choose_for_item", handler.getChoiceItemStack().getName()),
-                this.width / 2, this.height / 2, 0xFFFFFF);
+                this.width / 2, this.height / 2, 0xFFFFFFFF);
 
         // Draw spell details tooltip on hover (like SpellBindingScreen)
         var player = this.client.player;
@@ -165,7 +165,7 @@ public class SpellChoiceScreen extends HandledScreen<SpellChoiceScreenHandler> {
     @Override
     protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
         // Draw title
-        context.drawText(this.textRenderer, this.title, this.titleX, this.titleY, 0x404040, false);
+        context.drawText(this.textRenderer, this.title, this.titleX, this.titleY, 0xFF404040, false);
     }
 
     @Override

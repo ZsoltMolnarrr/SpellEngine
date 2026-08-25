@@ -47,7 +47,7 @@
     "fabric-api": "*",
     "java": ">=21",
     "cloth-config": ">=${cloth_config_version}",
-    "player_animation_library": ">=1.1.10",
+    "player_animation_library": "*",
     "spell_power": ">=${spell_power_version}"
   },
   "recommends": {

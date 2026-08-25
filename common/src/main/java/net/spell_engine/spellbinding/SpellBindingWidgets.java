@@ -159,11 +159,11 @@ public class SpellBindingWidgets {
         if (textWidth < textRenderer.getWidth(bookName)) {
             int textY = book.y + 3;
             drawTextWrapped(context, textRenderer, bookName, textX, textY, textWidth,
-                    isUnlocked ? 0xFFFFFF : 0x808080);
+                    isUnlocked ? 0xFFFFFFFF : 0xFF808080);
         } else {
             int textY = book.y + (SpellBindingWidgets.TIER_ROW_HEIGHT - textRenderer.fontHeight) / 2;  // Vertically centered
             context.drawTextWithShadow(textRenderer, bookName, textX, textY,
-                    isUnlocked ? 0xFFFFFF : 0x808080);
+                    isUnlocked ? 0xFFFFFFFF : 0xFF808080);
         }
     }
 

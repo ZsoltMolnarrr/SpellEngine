@@ -94,10 +94,14 @@ public class SpellAnimationStack extends PlayerAnimationController {
         this.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(fadeIn, EasingType.EASE_IN_OUT_SINE), animationId);
     }
 
-    /// Fades the current animation out
+    /// Fades the current animation out.
+    /// Must go through the `Animation` overload: the `Identifier` overload is a no-op for null (looping cast
+    /// animations then never stop). A null stage yields an empty queue, so the controller stops, while the
+    /// FADE_IN modifier blends from the snapshot of the last pose to "nothing" and removes itself when done.
     public void stopWithFade() {
         int fadeOutLength = 5;
-        this.replaceAnimationWithFade(AbstractFadeModifier.standardFadeOut(fadeOutLength, EasingType.EASE_IN_OUT_SINE), (Identifier) null);
+        this.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(fadeOutLength, EasingType.EASE_IN_OUT_SINE),
+                (com.zigythebird.playeranimcore.animation.Animation) null);
         this.adjustment.fadeOut(fadeOutLength);
         this.speed.speed = 1F;
     }
@@ -109,9 +113,12 @@ public class SpellAnimationStack extends PlayerAnimationController {
                 return Optional.empty();
             }
             var player = this.getAvatar();
+            // Sign convention follows Better Combat's PAL AttackAnimationStack (verified in-game): PAL's `body`
+            // bone rotates the whole body, so body pitches +X and legs are counter-rotated -X to stay upright.
+            // (playerAnimator used body -X; keeping that here made legs swing backwards when looking up.)
             if (data.isFirstPersonPass()) {
                 var pitch = (float) Math.toRadians(player.getPitch());
-                if (isArm(partName)) {
+                if (partName.equals(EntityModelPartNames.BODY)) {
                     rotationX = pitch;
                 } else {
                     return Optional.empty();
@@ -119,7 +126,7 @@ public class SpellAnimationStack extends PlayerAnimationController {
             } else {
                 var pitch = (float) Math.toRadians(player.getPitch() / 2F);
                 if (partName.equals(EntityModelPartNames.BODY)) {
-                    rotationX = (-1F) * pitch;
+                    rotationX = pitch;
                 } else if (isArm(partName)) {
                     rotationX = pitch;
                 } else if (isLeg(partName)) {

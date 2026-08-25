@@ -262,7 +262,7 @@ public class HudConfigScreen extends Screen {
     private void rightAlignedText(DrawContext context, int x, int y, String text) {
         var translated = I18n.translate(text);
         var width = textRenderer.getWidth(translated);
-        context.drawText(textRenderer, translated, x - width, y, 0xFFFFFF, false);
+        context.drawText(textRenderer, translated, x - width, y, 0xFFFFFFFF, false);
     }
 
     private Dragged dragged;

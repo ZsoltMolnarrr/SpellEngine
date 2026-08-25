@@ -150,7 +150,7 @@ public class HudRenderHelper {
             int y = (int) starting.y;
             int opacity = 255;
             context.fill(x - 2, y - 2, x + textWidth + 2, y + textRenderer.fontHeight + 2, client.options.getTextBackgroundColor(0));
-            context.drawTextWithShadow(textRenderer, viewModel.text, x, y, 0xFFFFFF);
+            context.drawTextWithShadow(textRenderer, viewModel.text, x, y, 0xFFFFFFFF); // ARGB: alpha required since 1.21.11
         }
 
         public record ViewModel(String text) {
@@ -410,7 +410,7 @@ public class HudRenderHelper {
                 HudKeyVisuals.buttonLeading.draw(context, x - (textLength / 2), y, Drawable.Anchor.TRAILING, verticalAnchor);
                 HudKeyVisuals.buttonCenter.drawFlexibleWidth(context, x - (textLength / 2), y, textLength, verticalAnchor);
                 HudKeyVisuals.buttonTrailing.draw(context, x + (textLength / 2), y, Drawable.Anchor.LEADING, verticalAnchor);
-                context.drawCenteredTextWithShadow(textRenderer, keybinding.label, x, y - 10, 0xFFFFFF);
+                context.drawCenteredTextWithShadow(textRenderer, keybinding.label, x, y - 10, 0xFFFFFFFF); // ARGB: alpha required since 1.21.11
             }
         }
 
