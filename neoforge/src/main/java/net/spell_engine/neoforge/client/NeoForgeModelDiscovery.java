@@ -8,7 +8,6 @@ import net.neoforged.neoforge.client.model.standalone.SimpleUnbakedStandaloneMod
 import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 import net.spell_engine.api.render.CustomModels;
 import net.spell_engine.client.render.CustomModelDiscovery;
-import net.spell_engine.client.render.CustomModelRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * NeoForge implementation of Spell Engine's raw model loading (projectiles, effects, explicitly registered ids).
+ * NeoForge implementation of Spell Engine's raw model loading (projectiles, effects).
  * Since 1.21.4 extra models are keyed: every id gets a {@link StandaloneModelKey} baked as a {@link BlockStateModel},
  * and {@link CustomModels#provider} resolves ids through those keys.
  */
@@ -39,12 +38,11 @@ public class NeoForgeModelDiscovery {
         try {
             var resourceManager = MinecraftClient.getInstance().getResourceManager();
             var discovered = CustomModelDiscovery.discoverScrollModels(resourceManager);
-            var all = CustomModelRegistry.allModelIds(discovered);
-            for (var modelId : all) {
+            for (var modelId : discovered) {
                 var key = keys.computeIfAbsent(modelId, id -> new StandaloneModelKey<>(id::toString));
                 event.register(key, SimpleUnbakedStandaloneModel.blockStateModel(modelId));
             }
-            LOGGER.info("Registered {} standalone spell models", all.size());
+            LOGGER.info("Registered {} standalone spell models", discovered.size());
         } catch (Exception e) {
             LOGGER.error("Error registering spell models for NeoForge", e);
         }

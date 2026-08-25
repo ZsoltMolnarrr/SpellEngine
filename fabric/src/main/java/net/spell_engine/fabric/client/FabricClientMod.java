@@ -15,7 +15,6 @@ import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.client.render.BeamRenderer;
-import net.spell_engine.client.render.CustomModelRegistry;
 import net.spell_engine.client.render.SpellCloudRenderer;
 import net.spell_engine.client.render.SpellModelEffectRenderer;
 import net.spell_engine.client.render.SpellProjectileRenderer;

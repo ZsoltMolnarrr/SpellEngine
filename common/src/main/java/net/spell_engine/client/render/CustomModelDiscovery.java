@@ -32,7 +32,8 @@ public class CustomModelDiscovery {
      * @return List of discovered model Identifiers (without platform-specific wrapping)
      */
     public static List<Identifier> discoverScrollModels(ResourceManager resourceManager) {
-        List<Identifier> discoveredModels = new ArrayList<>();
+        // LinkedHashSet: the same model file can be reported once per resource pack layer
+        var discoveredModels = new java.util.LinkedHashSet<Identifier>();
 
         try {
             // Find all resources matching the pattern
@@ -66,7 +67,7 @@ public class CustomModelDiscovery {
         } catch (Exception e) {
             LOGGER.error("Error scanning for spell models in {}", e);
         }
-        return discoveredModels;
+        return new ArrayList<>(discoveredModels);
     }
 
     /**

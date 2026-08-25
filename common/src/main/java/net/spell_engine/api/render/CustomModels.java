@@ -9,19 +9,17 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
-import net.spell_engine.client.render.CustomModelRegistry;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Set;
 
 /// Raw JSON models (`models/spell_projectile/*`, `models/spell_effect/*`, …) rendered by Spell Engine.
 ///
 /// Since 1.21.4 baked models are no longer addressable by identifier: they are loaded as "extra"
 /// (Fabric: `ExtraModelKey`) / "standalone" (NeoForge) models keyed at registration. The platform module
-/// registers every id from [CustomModelRegistry] and installs a [ModelProvider] that resolves them.
+/// registers every id discovered by `CustomModelDiscovery` and installs a [ModelProvider] that resolves them.
 /// Rendering goes through the render command queue (1.21.9+), as a custom command drawing the model's quads.
 public class CustomModels {
     private static final Logger LOGGER = LoggerFactory.getLogger("SpellEngine/CustomModels");
@@ -32,12 +30,6 @@ public class CustomModels {
 
     /// Installed by the platform client initializer
     public static ModelProvider provider = modelId -> null;
-
-    /// Registers additional raw model ids to be loaded (must be called before resource loading).
-    /// Still used by Quiver renderer registration.
-    public static void registerModelIds(List<Identifier> ids) {
-        CustomModelRegistry.modelIds.addAll(ids);
-    }
 
     @Nullable
     public static BlockStateModel get(Identifier modelId) {
@@ -52,7 +44,7 @@ public class CustomModels {
         var model = get(modelId);
         if (model == null) {
             if (warned.add(modelId)) {
-                LOGGER.warn("Custom model not loaded: {} (is it under a discovered folder or registered via CustomModels.registerModelIds?)", modelId);
+                LOGGER.warn("Custom model not loaded: {} (is it under a discovered folder: models/spell_projectile or models/spell_effect?)", modelId);
             }
             return;
         }

@@ -9,13 +9,12 @@ import net.minecraft.client.render.model.BlockStateModel;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.render.CustomModels;
 import net.spell_engine.client.render.CustomModelDiscovery;
-import net.spell_engine.client.render.CustomModelRegistry;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Fabric implementation of Spell Engine's raw model loading (projectiles, effects, explicitly registered ids).
+ * Fabric implementation of Spell Engine's raw model loading (projectiles, effects).
  * Since 1.21.4 extra models are keyed: every id gets an {@link ExtraModelKey} baked as a {@link BlockStateModel},
  * and {@link CustomModels#provider} resolves ids through those keys.
  */
@@ -37,7 +36,7 @@ public class FabricModelDiscovery implements ModelLoadingPlugin {
     public void initialize(Context pluginContext) {
         var resourceManager = MinecraftClient.getInstance().getResourceManager();
         var discovered = CustomModelDiscovery.discoverScrollModels(resourceManager);
-        for (var modelId : CustomModelRegistry.allModelIds(discovered)) {
+        for (var modelId : discovered) {
             var key = keys.computeIfAbsent(modelId, id -> ExtraModelKey.create(id::toString));
             pluginContext.addModel(key, SimpleUnbakedExtraModel.blockStateModel(modelId));
         }
