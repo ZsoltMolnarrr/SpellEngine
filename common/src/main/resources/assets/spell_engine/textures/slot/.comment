@@ -1,0 +1,2 @@
+Curios slot icons: Curios adds `textures/slot/` to the gui atlas (block atlas on Curios 9) with prefix `slot/`,
+so `"icon": "spell_engine:slot/<name>"` in the Curios slot JSON resolves here.
