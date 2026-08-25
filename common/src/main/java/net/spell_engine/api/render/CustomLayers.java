@@ -55,6 +55,7 @@ public class CustomLayers {
         map.put(BEACON_BEAM_OPAQUE_CULL, PipelineKind.BEACON_BEAM);
         map.put(BEACON_BEAM_TRANSLUCENT_CULL, PipelineKind.BEACON_BEAM);
         map.put(BEACON_BEAM_ADDITIVE, PipelineKind.BEACON_BEAM);
+        map.put(ARMOR_CUTOUT_NO_CULL_TRANSLUCENT, PipelineKind.ENTITY_TRANSLUCENT);
         map.put(itemGlowEmissivePipeline(), PipelineKind.ENTITY_EMISSIVE);
         map.put(itemGlowGlintPipeline(), PipelineKind.GLINT);
         return map;
@@ -196,6 +197,33 @@ public class CustomLayers {
                     .expectedBufferSize(256)
                     .outlineMode(RenderSetup.OutlineMode.NONE)
                     .build()));
+
+    /// Vanilla `ARMOR_CUTOUT_NO_CULL` with translucent blending, for armor on a translucently tinted entity
+    /// (see `RenderLayersMixin` / [net.spell_engine.api.effect.EntityTints]). Only used while such a tint is
+    /// active; untinted armor stays on the vanilla pipeline.
+    private static final RenderPipeline ARMOR_CUTOUT_NO_CULL_TRANSLUCENT = RenderPipeline.builder(RenderPipelines.ENTITY_SNIPPET)
+            .withLocation(pipelineId("armor_cutout_no_cull_translucent"))
+            .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+            .withShaderDefine("NO_OVERLAY")
+            .withShaderDefine("PER_FACE_LIGHTING")
+            .withCull(false)
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .build();
+
+    private static final Function<Identifier, RenderLayer> ARMOR_TRANSLUCENT = Util.memoize(texture ->
+            RenderLayer.of("spell_engine_armor_cutout_no_cull_translucent", RenderSetup.builder(ARMOR_CUTOUT_NO_CULL_TRANSLUCENT)
+                    .texture("Sampler0", texture)
+                    .useLightmap()
+                    .useOverlay()
+                    .layeringTransform(net.minecraft.client.render.LayeringTransform.VIEW_OFFSET_Z_LAYERING)
+                    .crumbling()
+                    .outlineMode(RenderSetup.OutlineMode.AFFECTS_OUTLINE)
+                    .build()));
+
+    /// The armor layer for a translucently tinted entity (same setup as `RenderLayers.armorCutoutNoCull`, blending on)
+    public static RenderLayer armorCutoutNoCullTranslucent(Identifier texture) {
+        return ARMOR_TRANSLUCENT.apply(texture);
+    }
 
     /// Vanilla's lightning pipeline (`POSITION_COLOR`: flat vertex color, no texture, `SRC_ALPHA, ONE`) on the
     /// main target — the 1.21.1 shader-pack variant of glowing spell objects (Paladins' barrier). Being a vanilla
