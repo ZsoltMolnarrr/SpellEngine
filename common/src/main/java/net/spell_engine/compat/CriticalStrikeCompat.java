@@ -1,94 +1,38 @@
 package net.spell_engine.compat;
-import net.spell_engine.Platform;
 
-import net.critical_strike.api.CriticalDamageSource;
-import net.critical_strike.internal.CriticalStriker;
 import net.minecraft.entity.damage.DamageSource;
-import net.spell_engine.api.spell.ExternalSpellSchools;
-import net.spell_power.api.SpellSchool;
+import net.spell_engine.Platform;
+import net.spell_engine.SpellEngineMod;
 
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
+/**
+ * Facade over the Critical Strike integration. The implementation ({@code CriticalStrikeCompatImpl}) imports
+ * Critical Strike classes and is only compiled when the Gradle property {@code enable_critical_strike} is true
+ * (no Critical Strike build exists for every game version). Reached via reflection so this class never links
+ * against the mod.
+ */
 public class CriticalStrikeCompat {
+    private static final String MOD_ID = "critical_strike";
+    private static final String IMPL = "net.spell_engine.compat.CriticalStrikeCompatImpl";
     private static Predicate<DamageSource> isCriticalStrike = ds -> false;
-    private static BiConsumer<DamageSource, Float> setCriticalStrike = (ds, crit) -> {
-        // No-op
-    };
+    private static BiConsumer<DamageSource, Float> setCriticalStrike = (ds, crit) -> { };
+
+    @SuppressWarnings("unchecked")
     public static void init() {
-        if (Platform.util().isModLoaded("critical_strike")) {
-            isCriticalStrike = ds -> ((CriticalDamageSource)ds).rng_isCritical();
-            setCriticalStrike = (ds, multiplier) -> ((CriticalDamageSource)ds).rng_setCriticalDamageMultiplier(multiplier);
-
-            // Using interface based querying instead of directly reading attributes,
-            // to allow custom implementations of CriticalStriker.
-
-
-
-            ExternalSpellSchools.PHYSICAL_RANGED.addSource(SpellSchool.Trait.CRIT_CHANCE, SpellSchool.Apply.ADD, query ->  {
-                if (query.entity() instanceof CriticalStriker criticalStriker) {
-                    return criticalStriker.rng_criticalChance();
-                }
-                return 0.0;
-            });
-            ExternalSpellSchools.PHYSICAL_RANGED.addSource(SpellSchool.Trait.CRIT_DAMAGE, SpellSchool.Apply.ADD, query -> {
-                if (query.entity() instanceof CriticalStriker criticalStriker) {
-                    return criticalStriker.rng_criticalDamageMultiplier() - 1;
-                }
-                return 0.0;
-            });
-            ExternalSpellSchools.PHYSICAL_MELEE.addSource(SpellSchool.Trait.CRIT_CHANCE, SpellSchool.Apply.ADD, query ->  {
-                if (query.entity() instanceof CriticalStriker criticalStriker) {
-                    return criticalStriker.rng_criticalChance();
-                }
-                return 0.0;
-            });
-            ExternalSpellSchools.PHYSICAL_MELEE.addSource(SpellSchool.Trait.CRIT_DAMAGE, SpellSchool.Apply.ADD, query -> {
-                if (query.entity() instanceof CriticalStriker criticalStriker) {
-                    return criticalStriker.rng_criticalDamageMultiplier() - 1;
-                }
-                return 0.0;
-            });
-            ExternalSpellSchools.PHYSICAL_MELEE_DUAL.addSource(SpellSchool.Trait.CRIT_CHANCE, SpellSchool.Apply.ADD, query ->  {
-                if (query.entity() instanceof CriticalStriker criticalStriker) {
-                    return criticalStriker.rng_criticalChance();
-                }
-                return 0.0;
-            });
-            ExternalSpellSchools.PHYSICAL_MELEE_DUAL.addSource(SpellSchool.Trait.CRIT_DAMAGE, SpellSchool.Apply.ADD, query -> {
-                if (query.entity() instanceof CriticalStriker criticalStriker) {
-                    return criticalStriker.rng_criticalDamageMultiplier() - 1;
-                }
-                return 0.0;
-            });
-//            ExternalSpellSchools.PHYSICAL_RANGED.addSource(SpellSchool.Trait.CRIT_CHANCE, SpellSchool.Apply.ADD, query ->  {
-//                if (!query.entity().getAttributes().hasAttribute(CriticalStrikeAttributes.CHANCE.attributeEntry)) {
-//                    return 0.0;
-//                }
-//                var value = query.entity().getAttributeValue(CriticalStrikeAttributes.CHANCE.attributeEntry);    // 20
-//                return (double) CriticalStrikeAttributes.CHANCE.asChance(value); // 0.2
-//            });
-//            ExternalSpellSchools.PHYSICAL_RANGED.addSource(SpellSchool.Trait.CRIT_DAMAGE, SpellSchool.Apply.ADD, query -> {
-//                if (!query.entity().getAttributes().hasAttribute(CriticalStrikeAttributes.DAMAGE.attributeEntry)) {
-//                    return 0.0;
-//                }
-//                var value = query.entity().getAttributeValue(CriticalStrikeAttributes.DAMAGE.attributeEntry); // 150
-//                return CriticalStrikeAttributes.DAMAGE.asMultiplier(value) - 1;
-//            });
-//            ExternalSpellSchools.PHYSICAL_MELEE.addSource(SpellSchool.Trait.CRIT_CHANCE, SpellSchool.Apply.ADD, query ->  {
-//                if (!query.entity().getAttributes().hasAttribute(CriticalStrikeAttributes.CHANCE.attributeEntry)) {
-//                    return 0.0;
-//                }
-//                var value = query.entity().getAttributeValue(CriticalStrikeAttributes.CHANCE.attributeEntry);    // 20
-//                return (double) CriticalStrikeAttributes.CHANCE.asChance(value); // 0.2
-//            });
-//            ExternalSpellSchools.PHYSICAL_MELEE.addSource(SpellSchool.Trait.CRIT_DAMAGE, SpellSchool.Apply.ADD, query -> {
-//                if (!query.entity().getAttributes().hasAttribute(CriticalStrikeAttributes.DAMAGE.attributeEntry)) {
-//                    return 0.0;
-//                }
-//                var value = query.entity().getAttributeValue(CriticalStrikeAttributes.DAMAGE.attributeEntry); // 150
-//                return CriticalStrikeAttributes.DAMAGE.asMultiplier(value) - 1;
-//            });
+        if (!Platform.util().isModLoaded(MOD_ID)) {
+            return;
+        }
+        try {
+            var impl = Class.forName(IMPL);
+            impl.getMethod("init").invoke(null);
+            isCriticalStrike = (Predicate<DamageSource>) impl.getMethod("isCriticalStrikePredicate").invoke(null);
+            setCriticalStrike = (BiConsumer<DamageSource, Float>) impl.getMethod("setCriticalStrikeConsumer").invoke(null);
+        } catch (ClassNotFoundException e) {
+            SpellEngineMod.LOGGER.warn("Critical Strike is loaded but Spell Engine was built without its compat (enable_critical_strike=false)");
+        } catch (Exception e) {
+            SpellEngineMod.LOGGER.error("Failed to initialize Critical Strike compat", e);
         }
     }
 

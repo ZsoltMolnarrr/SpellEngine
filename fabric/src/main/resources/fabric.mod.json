@@ -44,9 +44,10 @@
   "depends": {
     "minecraft": ">=${minecraft_compat_version}",
     "fabricloader": ">=${fabric_loader_version}",
-    "fabric": ">=${fabric_api_version}",
+    "fabric-api": "*",
+    "java": ">=21",
     "cloth-config": ">=${cloth_config_version}",
-    "playeranimator": ">=1.9.0",
+    "player_animation_library": ">=1.1.10",
     "spell_power": ">=${spell_power_version}"
   },
   "recommends": {

@@ -5,13 +5,17 @@ architectury {
 // Dummy platform for common compile
 def platform = "fabric";
 
+if (!rootProject.enable_critical_strike.toBoolean()) {
+    sourceSets.main.java.exclude 'net/spell_engine/compat/CriticalStrikeCompatImpl.java'
+}
+
 loom {
     accessWidenerPath = file("src/main/resources/spell_engine.accesswidener")
 }
 
 repositories {
-    maven { url 'https://maven.kosmx.dev/' }
-    maven { url 'https://maven.shedaniel.me/' }
+    maven { url = 'https://repo.redlance.org/public' } // PAL (Player Animation Library)
+    maven { url = 'https://maven.shedaniel.me/' }
     maven {
         name = 'Modrinth'
         url = 'https://api.modrinth.com/maven'
@@ -49,18 +53,22 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:$project.fabric_loader_version"
     modImplementation "net.fabricmc.fabric-api:fabric-api:$project.fabric_api_version"
 
-    modImplementation("dev.kosmx.player-anim:player-animation-lib-${platform}:${project.player_anim_version}")
+    modApi("com.zigythebird.playeranim:PlayerAnimationLibCommon:${project.player_anim_version}")
+    // Core has no Minecraft references: plain implementation (remapping it would poison the loom cache)
+    implementation("com.zigythebird.playeranim:PlayerAnimationLibCore:${project.player_anim_version}")
     modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${project.cloth_config_version}")
 
     modImplementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}")
 //    modImplementation("net.tiny_config:tiny_config-${platform}:${project.tiny_config_version}")
-    modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
-//    modImplementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
-    modImplementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
-//    modImplementation("net.foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
-    modCompileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
-//    modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}")
-    modCompileOnly("maven.modrinth:critical-strike:${project.critical_strike_version}-${platform}")
+//    modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
+    modImplementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
+//    modImplementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
+    modImplementation("net.foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
+//    modCompileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
+    modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}")
+    if (rootProject.enable_critical_strike.toBoolean()) {
+        modCompileOnly("maven.modrinth:critical-strike:${project.critical_strike_version}-${platform}")
+    }
 
     // Compatibility
 
@@ -73,6 +81,6 @@ dependencies {
     modCompileOnly("maven.modrinth:combat-roll:${project.combat_roll_version}-${platform}")
     modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${project.ftb_teams_version}")
     modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
-    modCompileOnly("maven.modrinth:iris:${project.iris_version}")
+    modCompileOnly("maven.modrinth:iris:${project.iris_version}-${platform}")
 
 }
