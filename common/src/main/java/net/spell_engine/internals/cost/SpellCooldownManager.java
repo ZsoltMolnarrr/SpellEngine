@@ -51,11 +51,6 @@ public class SpellCooldownManager {
         return this.getCooldownProgress(spell, 0.0f) > 0.0f;
     }
 
-    @Deprecated
-    protected boolean isCoolingDown(Identifier spell) {
-        return this.getCooldownProgress(spell, 0.0f) > 0.0f;
-    }
-
     public float getCooldownProgress(RegistryEntry<Spell> spell, float tickDelta) {
         var id = spell.getKey().get().getValue();
         var groupId = groupId(spell.value());
@@ -153,11 +148,6 @@ public class SpellCooldownManager {
             this.entries.put(spell, new Entry(this.tick, this.tick + duration));
             this.cooldownSet(spell, duration);
         }
-    }
-
-    @Deprecated
-    private void set(Identifier spell, int duration) {
-        this.set(spell, duration, true);
     }
 
     public void remove(Identifier spell) {
