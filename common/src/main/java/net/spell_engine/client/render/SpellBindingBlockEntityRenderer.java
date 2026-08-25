@@ -25,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
 // Copied from EnchantingTableBlockEntityRenderer (1.21.11: render state + command queue)
 public class SpellBindingBlockEntityRenderer implements BlockEntityRenderer<SpellBindingBlockEntity, SpellBindingBlockEntityRenderer.State> {
 
-    public static final SpriteIdentifier BOOK_TEXTURE = TexturedRenderLayers.ENTITY_SPRITE_MAPPER.map(Identifier.of(SpellEngineMod.ID, "entity/spell_binding_book"));
+    public static final SpriteIdentifier BOOK_TEXTURE = TexturedRenderLayers.ENTITY_SPRITE_MAPPER.map(Identifier.of(SpellEngineMod.ID, "spell_binding_book")); // mapper prepends "entity/" itself
 
     public static class State extends BlockEntityRenderState {
         public float ticks;
