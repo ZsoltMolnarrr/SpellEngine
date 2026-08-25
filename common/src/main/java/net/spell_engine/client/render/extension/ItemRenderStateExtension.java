@@ -1,4 +1,4 @@
-package net.spell_engine.mixin.client.render.item;
+package net.spell_engine.client.render.extension;
 
 import net.spell_engine.client.util.Color;
 import org.jetbrains.annotations.Nullable;

@@ -1,4 +1,4 @@
-package net.spell_engine.mixin.client.render.state;
+package net.spell_engine.client.render.extension;
 
 import net.minecraft.entity.Entity;
 import org.jetbrains.annotations.Nullable;

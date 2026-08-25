@@ -85,7 +85,7 @@ public class SpellChoiceScreenHandler extends ScreenHandler {
 
         var itemStack = this.getChoiceItemStack();
 
-        if (itemStack.isEmpty() || !itemStack.contains(SpellDataComponents.SPELL_CHOICE)) {
+        if (itemStack.isEmpty() || itemStack.get(SpellDataComponents.SPELL_CHOICE) == null /* not contains(): Yarn/NeoForge name mismatch */) {
             return;
         }
 

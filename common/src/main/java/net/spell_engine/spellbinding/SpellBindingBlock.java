@@ -33,7 +33,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class SpellBindingBlock extends BlockWithEntity {
-    public static SpellBindingBlock INSTANCE = new SpellBindingBlock(AbstractBlock.Settings.create().hardness(4F).nonOpaque());
+    public static SpellBindingBlock INSTANCE = new SpellBindingBlock(AbstractBlock.Settings.create().registryKey(RegistryKey.of(RegistryKeys.BLOCK, SpellBinding.ID)).hardness(4F).nonOpaque());
     // Block#appendTooltip is gone since 1.21.5; the description lives on the item
     public static final BlockItem ITEM = new BlockItem(INSTANCE, new Item.Settings().registryKey(RegistryKey.of(RegistryKeys.ITEM, SpellBinding.ID)).useBlockPrefixedTranslationKey()) {
         @Override

@@ -10,6 +10,7 @@ import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.Util;
@@ -153,7 +154,7 @@ public class RangedWeapon {
                 config = entry.defaults;
                 rangedConfig.put(entry.id.toString(), config);
             }
-            var settings = new Item.Settings();
+            var settings = new Item.Settings().registryKey(RegistryKey.of(RegistryKeys.ITEM, entry.id()));
             if (entry.tier.getNumber() >= Equipment.Tier.TIER_3.getNumber()) {
                 settings.fireproof();
             }

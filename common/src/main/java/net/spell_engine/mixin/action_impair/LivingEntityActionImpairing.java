@@ -55,9 +55,9 @@ public abstract class LivingEntityActionImpairing implements EntityActionsAllowe
 
     @Shadow @Final private Map<RegistryEntry<StatusEffect>, StatusEffectInstance> activeStatusEffects;
 
-    //    @Inject(method = "tickStatusEffects", at = @At("HEAD")) // This way, we don't get notified about removals on server side
-    @Inject(method = "tickStatusEffects", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/LivingEntity;effectsChanged:Z", shift = At.Shift.BEFORE, ordinal = 0))
-    private void tickStatusEffects_HEAD_SpellEngine(CallbackInfo ci) {
+    // 1.21.11: the `effectsChanged` check moved out of `tickStatusEffects` into `handleEffectsChanged` (called right after it)
+    @Inject(method = "handleEffectsChanged", at = @At("HEAD"))
+    private void handleEffectsChanged_HEAD_SpellEngine(CallbackInfo ci) {
         if (effectsChanged) {
             updateEntityActionsAllowed();
         }

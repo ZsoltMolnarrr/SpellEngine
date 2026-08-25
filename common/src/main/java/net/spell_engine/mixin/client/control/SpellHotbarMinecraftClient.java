@@ -14,7 +14,6 @@ import net.spell_engine.client.input.*;
 import net.spell_engine.compat.CombatRollCompat;
 import net.spell_engine.internals.casting.SpellCaster;
 import org.jetbrains.annotations.Nullable;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -112,7 +111,7 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
 
     @WrapOperation(
             method = "handleInputEvents",
-            at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerInventory;selectedSlot:I", ordinal = 0, opcode = Opcodes.PUTFIELD),
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;setSelectedSlot(I)V", ordinal = 0), // 1.21.11: hotbar keys call setSelectedSlot() instead of writing the field
             require = 0
     )
     private void selectSlot_Wrap(PlayerInventory instance, int index, Operation<Void> original) {

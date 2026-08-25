@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import com.google.common.base.Suppliers;
@@ -39,7 +40,7 @@ public class SpellEngineItems {
         // items get created (thus factories read) during item registration, which
         // runs before the loader entrypoints reach compat init.
         Platform.util().awakeSlotModCompat();
-        var settings = new Item.Settings().maxCount(1);
+        var settings = new Item.Settings().registryKey(RegistryKey.of(RegistryKeys.ITEM, ScrollItem.ID)).maxCount(1);
         var args = new SlotModCompat.SpellScrollArs(settings);
         var factory = SlotModCompat.spellScrollFactory;
         return factory != null ? factory.apply(args) : new ScrollItem(args.settings());
@@ -47,7 +48,7 @@ public class SpellEngineItems {
 
     public static final Supplier<Item> SPELL_BOOK = Suppliers.memoize(() -> {
         Platform.util().awakeSlotModCompat();
-        var settings = new Item.Settings().maxCount(1);
+        var settings = new Item.Settings().registryKey(RegistryKey.of(RegistryKeys.ITEM, UniversalSpellBookItem.ID)).maxCount(1);
         var args = new SlotModCompat.SpellBookArgs(settings);
         var factory = SlotModCompat.spellBookFactory;
         return factory != null ? factory.apply(args) : new UniversalSpellBookItem(args.settings());

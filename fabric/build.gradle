@@ -120,8 +120,9 @@ dependencies {
     modImplementation("maven.modrinth:modmenu:${project.mod_menu_version}")
     modImplementation("maven.modrinth:trinkets-updated:${project.trinkets_version}") // Trinkets Updated (Patbox); mod id + API package unchanged
     // Cardinal Components is JiJ'd inside Trinkets Updated (no POM); needed on the compile classpath for TrinketComponent
-    modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}")
-    modCompileOnly("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}")
+    // Trinkets Updated JiJs CCA in production; dev runtime needs it on the classpath explicitly
+    modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-base:${project.cardinal_components_version}")
+    modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}")
 
     modCompileOnly("dev.lambdaurora.lambdynamiclights:lambdynamiclights-api:${project.lamb_dynamic_lights_version}")
 }

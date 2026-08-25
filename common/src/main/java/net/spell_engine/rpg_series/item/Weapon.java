@@ -19,6 +19,7 @@ import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
@@ -225,7 +226,7 @@ public class Weapon {
             }
             if (!entry.isRequiredModInstalled()) { continue; }
 
-            var settings = new Item.Settings();
+            var settings = new Item.Settings().registryKey(RegistryKey.of(RegistryKeys.ITEM, entry.id()));
             switch (entry.category) {
                 case DAMAGE_STAFF, HEALING_STAFF, DAMAGE_WAND, HEALING_WAND -> entry.material.applyBaseSettings(settings);
                 default -> entry.material.applySwordSettings(settings);

@@ -2,12 +2,12 @@ package net.spell_engine.api.item.set;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.client.gui.SpellTooltip;
-import net.spell_engine.mixin.client.ItemStackTooltipAccessor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -83,15 +83,10 @@ public class EquipmentSetTooltip {
         var bonusTitle = Text.translatable("equipment_set.logic.bonus.count", bonus.requiredPieceCount());
         var bonusLines = new ArrayList<Text>();
         if (bonus.attributes() != null) {
-            var tooltipUtil = (ItemStackTooltipAccessor) (Object) ItemStack.EMPTY;
+            // 1.21.5+: per-modifier tooltip lines are produced by AttributeModifiersComponent.Display (no ItemStack invoker needed)
+            var display = AttributeModifiersComponent.Display.getDefault();
             for (var modifier: bonus.attributes().modifiers()) {
-                tooltipUtil
-                        .spellEngine_appendAttributeModifierTooltip(
-                                bonusLines::add,
-                                player,
-                                modifier.attribute(),
-                                modifier.modifier()
-                        );
+                display.addTooltip(bonusLines::add, player, modifier.attribute(), modifier.modifier());
             }
         }
         if (bonus.spells() != null) {

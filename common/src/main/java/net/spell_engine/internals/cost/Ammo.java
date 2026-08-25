@@ -46,7 +46,9 @@ public class Ammo {
         }
         public String getTranslationKey() {
             if (tag != null) {
-                return tag.getTranslationKey();
+                // TagKey#getTranslationKey is a Fabric API interface injection (absent on NeoForge); same format inline
+                var id = tag.id();
+                return "tag." + tag.registryRef().getValue().getPath() + "." + id.getNamespace() + "." + id.getPath().replace("/", ".");
             } else if (item != null) {
                 return item.getTranslationKey();
             }

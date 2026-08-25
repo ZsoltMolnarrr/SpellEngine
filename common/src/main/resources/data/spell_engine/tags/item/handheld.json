@@ -1,8 +1,10 @@
 {
   "values": [
     "#minecraft:enchantable/weapon",
-    "#c:shields",
-    "#c:tools/ranged_weapons",
+    { "id": "#c:shields", "required": false },
+    { "id": "#c:tools/shield", "required": false },
+    { "id": "#c:tools/ranged_weapons", "required": false },
+    { "id": "#c:tools/ranged_weapon", "required": false },
     "#minecraft:enchantable/bow",
     "#minecraft:enchantable/crossbow"
   ]

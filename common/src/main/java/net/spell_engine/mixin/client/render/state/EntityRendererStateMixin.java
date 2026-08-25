@@ -1,5 +1,7 @@
 package net.spell_engine.mixin.client.render.state;
 
+import net.spell_engine.client.render.extension.EntityRenderStateExtension;
+
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.state.EntityRenderState;
 import net.minecraft.entity.Entity;

@@ -76,8 +76,11 @@ public class UniversalSpellBookItem extends Item {
      * Generate model ID for this spell book variant.
      * Tag: wizards:spell_book/fire -> Model: wizards:item/fire_spell_book
      */
+    /// 1.21.11: the `minecraft:item_model` component names an item-model definition, resolved at
+    /// `assets/<ns>/items/<path>.json`, so the pool id maps 1:1 (e.g. `paladins:spell_book/paladin`
+    /// → `assets/paladins/items/spell_book/paladin.json`).
     public static Identifier modelIdForPool(Identifier tagId) {
-        return Identifier.of(tagId.getNamespace(), "item/" + tagId.getPath());
+        return tagId;
     }
 
     /**

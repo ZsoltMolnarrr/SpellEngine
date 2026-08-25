@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 @Mixin(LivingEntity.class)
 public class LivingEntityNeoMovementMixin {
     // NeoForge completely rewrites slipperiness handling, hence the custom mixin
-    @WrapOperation(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;getFriction(Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/Entity;)F"), require = 0)
+    @WrapOperation(method = "travelMidAir", at = @At(value = "INVOKE", target = "Lnet/minecraft/block/BlockState;getFriction(Lnet/minecraft/world/WorldView;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/Entity;)F"), require = 0)
     private float getFriction_Wrapped(BlockState instance, WorldView worldView, BlockPos blockPos, Entity entity, Operation<Float> original) {
         var result = original.call(instance, worldView, blockPos, entity);
         // var entity = (LivingEntity) (Object) this;

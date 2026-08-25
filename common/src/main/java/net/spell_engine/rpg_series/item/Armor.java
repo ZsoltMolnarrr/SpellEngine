@@ -15,6 +15,7 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import net.spell_engine.rpg_series.config.ArmorSetConfig;
 import org.jetbrains.annotations.Nullable;
@@ -141,12 +142,16 @@ public class Armor {
                                    Equipment.LootProperties lootProperties, @Nullable ItemSettingsTweaker settingsTweaker) {
 
             var helmetSettings = new Item.Settings()
+                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, id.withSuffixedPath("_" + EquipmentType.HELMET.getEquipmentSlot().getName())))
                     .maxDamage(EquipmentType.HELMET.getMaxDamage(durability));
             var chestplateSettings = new Item.Settings()
+                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, id.withSuffixedPath("_" + EquipmentType.CHESTPLATE.getEquipmentSlot().getName())))
                     .maxDamage(EquipmentType.CHESTPLATE.getMaxDamage(durability));
             var leggingsSettings = new Item.Settings()
+                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, id.withSuffixedPath("_" + EquipmentType.LEGGINGS.getEquipmentSlot().getName())))
                     .maxDamage(EquipmentType.LEGGINGS.getMaxDamage(durability));
             var bootsSettings = new Item.Settings()
+                    .registryKey(RegistryKey.of(RegistryKeys.ITEM, id.withSuffixedPath("_" + EquipmentType.BOOTS.getEquipmentSlot().getName())))
                     .maxDamage(EquipmentType.BOOTS.getMaxDamage(durability));
             if (settingsTweaker != null) {
                 settingsTweaker.helmet.accept(helmetSettings);

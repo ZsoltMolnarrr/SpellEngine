@@ -9,7 +9,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.spell_engine.api.spell.fx.ModelEffectAttachment;
 import net.spell_engine.client.render.ModelEffectOperations;
-import net.spell_engine.mixin.client.render.state.EntityRenderStateExtension;
+import net.spell_engine.client.render.extension.EntityRenderStateExtension;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

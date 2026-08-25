@@ -1,5 +1,7 @@
 package net.spell_engine.mixin.client.render.item;
 
+import net.spell_engine.client.render.extension.ItemRenderStateExtension;
+
 import net.minecraft.client.item.ItemModelManager;
 import net.minecraft.client.render.item.ItemRenderState;
 import net.minecraft.entity.LivingEntity;

@@ -5,10 +5,10 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "IItemExtensionMixin",
-    "LivingEntityNeoMovementMixin"
+    "LivingEntityNeoMovementMixin",
+    "CommonHooksTrackedDataCheckMixin"
   ],
-  "client": [
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   }

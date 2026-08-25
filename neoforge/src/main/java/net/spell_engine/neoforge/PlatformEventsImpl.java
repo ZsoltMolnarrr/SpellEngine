@@ -16,10 +16,13 @@ import net.neoforged.neoforge.event.LootTableLoadEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.spell_engine.PlatformEvents;
+import net.minecraft.entity.player.PlayerEntity;
+import net.spell_engine.api.event.CombatEvents;
 import net.spell_engine.api.util.TriState;
 
 import java.util.ArrayList;
@@ -66,6 +69,26 @@ public class PlatformEventsImpl {
         // Side-effect hook only; never cancels.
         NeoForge.EVENT_BUS.addListener(LivingIncomingDamageEvent.class, event ->
                 callback.accept(event.getEntity(), event.getSource(), event.getAmount()));
+    }
+
+    /// NeoForge counterpart of the Fabric-only shield-block wrap in `LivingEntityEvents` (NeoForge patches
+    /// `BlocksAttacksComponent.onShieldHit` with an extra argument, so the common mixin cannot match it).
+    /// Fires the same CombatEvents once NeoForge has confirmed the block.
+    public static void registerShieldBlockBridge() {
+        NeoForge.EVENT_BUS.addListener(LivingShieldBlockEvent.class, event -> {
+            if (!event.getBlocked()) { return; }
+            var entity = event.getEntity();
+            var source = event.getDamageSource();
+            var blockedAmount = event.getBlockedDamage();
+            if (CombatEvents.ENTITY_SHIELD_BLOCK.isListened()) {
+                var args = new CombatEvents.EntityShieldBlock.Args(entity, source, blockedAmount);
+                CombatEvents.ENTITY_SHIELD_BLOCK.invoke(listener -> listener.onShieldBlock(args));
+            }
+            if (entity instanceof PlayerEntity player && CombatEvents.PLAYER_SHIELD_BLOCK.isListened()) {
+                var args = new CombatEvents.PlayerShieldBlock.Args(player, source, blockedAmount);
+                CombatEvents.PLAYER_SHIELD_BLOCK.invoke(listener -> listener.onShieldBlock(args));
+            }
+        });
     }
 
     public static void onCommandRegistration(PlatformEvents.CommandRegistration callback) {

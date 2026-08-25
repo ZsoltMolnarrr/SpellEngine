@@ -14,13 +14,13 @@ public interface LivingEntityAccessor {
     DamageSource spellEngine_getLastDamageSource();
 //    @Accessor
 //    int getLastAttackedTicks();
-//    @Accessor("lastAttackedTicks")
+//    @Accessor("lastAttackTime")
 //    void setLastAttackedTicks(int lastAttackedTicks);
     @Invoker("turnHead")
-    float spellEngine_invoke_TurnHead(float bodyRotation, float headRotation);
+    void spellEngine_invoke_TurnHead(float bodyRotation);
 
-    @Accessor("lastAttackedTicks")
+    @Accessor("lastAttackTime")
     int spellEngine_getLastAttackedTicks();
-    @Accessor("lastAttackedTicks")
+    @Accessor("lastAttackTime")
     void spellEngine_setLastAttackedTicks(int lastAttackedTicks);
 }

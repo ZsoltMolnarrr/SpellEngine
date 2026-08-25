@@ -22,7 +22,7 @@ public class ProjectileEvasionMixin {
             method = "onEntityHit",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"
+                    target = "Lnet/minecraft/entity/Entity;sidedDamage(Lnet/minecraft/entity/damage/DamageSource;F)Z"
             )
     )
     private boolean entityHit_SpellEngine_SaveDamageSource(Entity instance, DamageSource source, float amount, Operation<Boolean> original) {

@@ -3,6 +3,7 @@ package net.spell_engine.mixin.entity;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.spell_engine.api.entity.LivingEntityImmunity;
@@ -41,7 +42,7 @@ public class LivingEntityImmunityMixin implements LivingEntityImmunity.Owner {
     }
 
     @ModifyReturnValue(method = "isInvulnerableTo", at = @At("RETURN"))
-    private boolean isInvulnerableTo_RETURN_SpellEngine_Immunity(boolean original, DamageSource damageSource) {
+    private boolean isInvulnerableTo_RETURN_SpellEngine_Immunity(boolean original, ServerWorld world, DamageSource damageSource) {
         return original || LivingEntityImmunity.isDamageProtected(immunities, damageSource);
     }
 

@@ -25,7 +25,7 @@ public class WeaponCompatibility {
 
             // Try melee weapons group
             if (config.melee_weapons.enabled &&
-                    (item.getComponents().contains(DataComponentTypes.WEAPON) || item instanceof TridentItem || item instanceof MaceItem || item instanceof AxeItem) ) {
+                    (item.getComponents().get(DataComponentTypes.WEAPON) != null /* not contains(): Yarn/NeoForge name mismatch */ || item instanceof TridentItem || item instanceof MaceItem || item instanceof AxeItem) ) {
                 SpellContainer container = processCompatGroup(
                         itemEntry,
                         config.melee_weapons

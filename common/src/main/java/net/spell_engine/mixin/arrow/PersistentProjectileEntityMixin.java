@@ -42,7 +42,7 @@ import net.spell_engine.internals.impact.SpellImpacts;
 
 @Mixin(PersistentProjectileEntity.class)
 public abstract class PersistentProjectileEntityMixin implements ArrowExtension {
-    @Shadow protected boolean inGround;
+    @Shadow public abstract boolean isInGround(); // 1.21.11: tracked-data backed, no field
 
     @Shadow public abstract byte getPierceLevel();
 
@@ -50,7 +50,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
 
     @Shadow public abstract void setDamage(double damage);
 
-    @Shadow public abstract double getDamage();
+    @Shadow private double damage; // 1.21.11: no public getter
 
     private PersistentProjectileEntity arrow() {
          return (PersistentProjectileEntity)(Object)this;
@@ -170,7 +170,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
 
     @Override
     public boolean isInGround_SpellEngine() {
-        return inGround;
+        return isInGround();
     }
 
     @Nullable public List<RegistryEntry<Spell>> getCarriedSpells() {
@@ -191,7 +191,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
                 var newPierce = (byte)(getPierceLevel() + perks.pierce);
                 setPierceLevel(newPierce);
             }
-            this.setDamage(this.getDamage() * perks.damage_multiplier);
+            this.setDamage(this.damage * perks.damage_multiplier);
         }
         var spellId = spellEntry.getKey().get().getValue();
         this.addSpellId(spellId);
@@ -230,7 +230,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
 
     // MARK: Apply impact effects
 
-    @Inject(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"), cancellable = true)
+    @Inject(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;sidedDamage(Lnet/minecraft/entity/damage/DamageSource;F)Z"), cancellable = true)
     private void onEntityHit_BeforeDamage_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
         for (var spellEntry : spellEntries()) {
             var spell = spellEntry.value();
@@ -248,7 +248,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         }
     }
 
-    @WrapOperation(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z"))
+    @WrapOperation(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;sidedDamage(Lnet/minecraft/entity/damage/DamageSource;F)Z"))
     private boolean wrapDamageEntity(
             // Mixin Parameters
             Entity entity, DamageSource damageSource, float amount, Operation<Boolean> original,

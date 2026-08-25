@@ -20,6 +20,7 @@ public final class NeoForgeMod {
     public NeoForgeMod(IEventBus modBus) {
         // Run our common setup.
         SpellEngineMod.init();
+        PlatformEventsImpl.registerShieldBlockBridge();
         NeoForgeCompatFeatures.init();
         modBus.addListener(RegisterEvent.class, NeoForgeMod::register);
         // Summoned-entity default attributes are buffered by content mods during entity registration

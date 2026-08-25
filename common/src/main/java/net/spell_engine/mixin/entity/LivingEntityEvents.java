@@ -4,6 +4,11 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.component.type.BlocksAttacksComponent;
+import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Hand;
+import net.minecraft.world.World;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.api.event.CombatEvents;
@@ -57,7 +62,7 @@ public abstract class LivingEntityEvents {
 //    }
 
     @Inject(method = "damage", at = @At("RETURN"))
-    private void damage_RETURN_entity(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    private void damage_RETURN_entity(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (cir.getReturnValue()) {
             var entity = (LivingEntity) (Object) this;
             if (CombatEvents.ENTITY_DAMAGE_TAKEN.isListened()) {
@@ -74,7 +79,7 @@ public abstract class LivingEntityEvents {
     }
 
     @Inject(method = "tickItemStackUsage", at = @At("HEAD"))
-    private void tickItemStackUsage_HEAD_Event(CallbackInfo ci) {
+    private void tickItemStackUsage_HEAD_Event(ItemStack stack, CallbackInfo ci) {
         var entity = (LivingEntity) (Object) this;
         if (CombatEvents.ITEM_USE.isListened()) {
             var args = new CombatEvents.ItemUse.Args(entity, CombatEvents.ItemUse.Stage.TICK);
@@ -84,29 +89,34 @@ public abstract class LivingEntityEvents {
 
 
     /**
-     * `damageShield` is the first thing that is called when a shield block happens
+     * 1.21.11: shield blocking moved into `getDamageBlockedAmount`, and the durability hit is
+     * `BlocksAttacksComponent.onShieldHit(...)` — the first thing called once a block is confirmed.
+     *
+     * Fabric only (`require = 0`): NeoForge patches this call with an extra `shieldDamage` argument, so the
+     * descriptor never matches there; the NeoForge module fires the same CombatEvents from
+     * `LivingShieldBlockEvent` instead (see `PlatformEventsImpl`).
      */
     @WrapOperation(
-            method = "damage",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damageShield(F)V")
+            method = "getDamageBlockedAmount",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/component/type/BlocksAttacksComponent;onShieldHit(Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/util/Hand;F)V"),
+            require = 0
     )
-    private void damage_WRAP_damageShield(
+    private void getDamageBlockedAmount_WRAP_onShieldHit(
             // Mixin parameters
-            LivingEntity instance, float durabilityAmount, Operation<Void> original,
+            BlocksAttacksComponent component, World world, ItemStack stack, LivingEntity instance, Hand hand, float blockedAmount, Operation<Void> original,
             // Context parameters
-            DamageSource source, float damageAmount
+            ServerWorld serverWorld, DamageSource source, float damageAmount
     ) {
-        // Seems like `damageAmount` and `durabilityAmount` are the same
         if (CombatEvents.ENTITY_SHIELD_BLOCK.isListened()) {
-            var args = new CombatEvents.EntityShieldBlock.Args(instance, source, durabilityAmount);
+            var args = new CombatEvents.EntityShieldBlock.Args(instance, source, blockedAmount);
             CombatEvents.ENTITY_SHIELD_BLOCK.invoke(listener -> listener.onShieldBlock(args));
         }
         if (instance instanceof PlayerEntity player) {
             if (CombatEvents.PLAYER_SHIELD_BLOCK.isListened()) {
-                var args = new CombatEvents.PlayerShieldBlock.Args(player, source, durabilityAmount);
+                var args = new CombatEvents.PlayerShieldBlock.Args(player, source, blockedAmount);
                 CombatEvents.PLAYER_SHIELD_BLOCK.invoke(listener -> listener.onShieldBlock(args));
             }
         }
-        original.call(instance, durabilityAmount);
+        original.call(component, world, stack, instance, hand, blockedAmount);
     }
 }

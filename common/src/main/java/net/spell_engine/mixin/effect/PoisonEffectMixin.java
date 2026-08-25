@@ -3,6 +3,7 @@ package net.spell_engine.mixin.effect;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.PoisonStatusEffect;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,14 +15,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class PoisonEffectMixin {
     @WrapOperation(
             method = "applyUpdateEffect",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damage(Lnet/minecraft/entity/damage/DamageSource;F)Z")
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;damage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)Z")
     )
     public boolean applyUpdateEffect_SpellEngine(
-            LivingEntity instance, DamageSource source, float amount, Operation<Boolean> original,
-            LivingEntity entity, int amplifier) {
+            LivingEntity instance, ServerWorld world, DamageSource source, float amount, Operation<Boolean> original,
+            ServerWorld contextWorld, LivingEntity entity, int amplifier) {
         var amplifiedAmount = amount * (amplifier + 1);
         var cappedAmount = Math.min(amplifiedAmount, entity.getHealth() - 1.0F);
-        return original.call(instance, source, cappedAmount);
+        return original.call(instance, world, source, cappedAmount);
     }
 
     @Inject(method = "canApplyUpdateEffect", at = @At("HEAD"), cancellable = true, require = 0)

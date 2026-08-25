@@ -40,8 +40,11 @@ public class ScrollItem extends Item {
         return "item." + poolId.getNamespace() + "." + poolId.getPath();
     }
 
+    /// 1.21.11: the `minecraft:item_model` component names an item-model definition, resolved at
+    /// `assets/<ns>/items/<path>.json`, so the pool id maps 1:1 (e.g. `paladins:spell_scroll/paladin`
+    /// → `assets/paladins/items/spell_scroll/paladin.json`).
     public static Identifier modelIdForPool(Identifier poolId) {
-        return Identifier.of(poolId.getNamespace(), "item/" + poolId.getPath());
+        return poolId;
     }
 
     public static void onSpellAdded(ItemStack itemStack, RegistryEntry<Spell> spellEntry, @Nullable TagKey<Spell> pool) {

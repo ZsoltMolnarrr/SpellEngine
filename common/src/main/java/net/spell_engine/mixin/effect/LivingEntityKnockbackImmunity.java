@@ -23,8 +23,9 @@ public abstract class LivingEntityKnockbackImmunity implements KnockbackImmunity
     @Shadow private boolean effectsChanged;
     @Shadow @Final private Map<RegistryEntry<StatusEffect>, StatusEffectInstance> activeStatusEffects;
 
-    @Inject(method = "tickStatusEffects", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/LivingEntity;effectsChanged:Z", shift = At.Shift.BEFORE, ordinal = 0))
-    private void tickStatusEffects_HEAD_KnockbackImmunity_SpellEngine(CallbackInfo ci) {
+    // 1.21.11: the `effectsChanged` check moved out of `tickStatusEffects` into `handleEffectsChanged` (called right after it)
+    @Inject(method = "handleEffectsChanged", at = @At("HEAD"))
+    private void handleEffectsChanged_HEAD_KnockbackImmunity_SpellEngine(CallbackInfo ci) {
         if (effectsChanged) {
             knockbackImmune_SpellEngine = KnockbackImmunity.anyImmune(activeStatusEffects.keySet());
         }

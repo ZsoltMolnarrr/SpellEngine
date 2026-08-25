@@ -10,6 +10,7 @@ import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
@@ -248,7 +249,7 @@ public class Shield {
             }
 
             // Create item settings
-            var settings = new Item.Settings();
+            var settings = new Item.Settings().registryKey(RegistryKey.of(RegistryKeys.ITEM, entry.id()));
             if (entry.tier().getNumber() >= Equipment.Tier.TIER_3.getNumber()) {
                 settings.fireproof();
             }

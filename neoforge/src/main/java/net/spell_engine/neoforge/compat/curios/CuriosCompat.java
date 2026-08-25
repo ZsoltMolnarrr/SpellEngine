@@ -39,7 +39,13 @@ public class CuriosCompat {
                 SpellContainerSource.MAIN_HAND.name()
         );
 
-        NeoForge.EVENT_BUS.addListener((CurioChangeEvent event) -> {
+        // Curios 14: CurioChangeEvent is abstract; listen to both concrete variants (item swapped / item state changed)
+        NeoForge.EVENT_BUS.addListener((CurioChangeEvent.Item event) -> {
+            if (event.getEntity() instanceof PlayerEntity player) {
+                SpellContainerSource.setDirty(player, spellSourceName);
+            }
+        });
+        NeoForge.EVENT_BUS.addListener((CurioChangeEvent.State event) -> {
             if (event.getEntity() instanceof PlayerEntity player) {
                 SpellContainerSource.setDirty(player, spellSourceName);
             }
