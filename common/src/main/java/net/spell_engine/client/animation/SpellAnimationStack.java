@@ -3,6 +3,7 @@ package net.spell_engine.client.animation;
 import com.zigythebird.playeranim.animation.PlayerAnimResources;
 import com.zigythebird.playeranim.animation.PlayerAnimationController;
 import com.zigythebird.playeranimcore.animation.ExtraAnimationData;
+import com.zigythebird.playeranimcore.animation.RawAnimation;
 import com.zigythebird.playeranimcore.animation.layered.modifier.AbstractFadeModifier;
 import com.zigythebird.playeranimcore.animation.layered.modifier.AdjustmentModifier;
 import com.zigythebird.playeranimcore.animation.layered.modifier.MirrorModifier;
@@ -94,14 +95,16 @@ public class SpellAnimationStack extends PlayerAnimationController {
         this.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(fadeIn, EasingType.EASE_IN_OUT_SINE), animationId);
     }
 
-    /// Fades the current animation out.
-    /// Must go through the `Animation` overload: the `Identifier` overload is a no-op for null (looping cast
-    /// animations then never stop). A null stage yields an empty queue, so the controller stops, while the
-    /// FADE_IN modifier blends from the snapshot of the last pose to "nothing" and removes itself when done.
+    /// Fades the current animation out over `fadeOutLength` ticks.
+    /// PAL only renders a controller while it is active, so stopping it outright (or triggering a null animation,
+    /// which empties the queue) drops the fade modifier on the floor and the pose snaps. Instead a `wait` stage of the
+    /// fade length keeps the controller running on an identity pose while the FADE_IN modifier blends the snapshot
+    /// of the last pose into it; afterwards the queue empties and the controller stops by itself.
+    /// (The `Identifier` overload with null is a silent no-op — never use it to stop.)
     public void stopWithFade() {
         int fadeOutLength = 5;
         this.replaceAnimationWithFade(AbstractFadeModifier.standardFadeIn(fadeOutLength, EasingType.EASE_IN_OUT_SINE),
-                (com.zigythebird.playeranimcore.animation.Animation) null);
+                RawAnimation.begin().thenWait(fadeOutLength));
         this.adjustment.fadeOut(fadeOutLength);
         this.speed.speed = 1F;
     }
