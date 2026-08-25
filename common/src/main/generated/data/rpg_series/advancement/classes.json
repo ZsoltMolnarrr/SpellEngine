@@ -1,0 +1,30 @@
+{
+  "parent": "rpg_series:root",
+  "criteria": {
+    "book": {
+      "conditions": {
+        "complete": true,
+        "spell_pool": "spell_engine:visit_spell_binding_table"
+      },
+      "trigger": "spell_engine:spell_binding"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.rpg_series.classes.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:book"
+    },
+    "title": {
+      "translate": "advancements.rpg_series.classes.title"
+    }
+  },
+  "requirements": [
+    [
+      "book"
+    ]
+  ]
+}

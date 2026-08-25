@@ -1,0 +1,27 @@
+{
+  "criteria": {
+    "always": {
+      "trigger": "minecraft:tick"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "background": "minecraft:block/chiseled_quartz_block",
+    "description": {
+      "translate": "advancements.rpg_series.root.description"
+    },
+    "icon": {
+      "count": 1,
+      "id": "spell_engine:spell_binding"
+    },
+    "show_toast": false,
+    "title": {
+      "translate": "advancements.rpg_series.root.title"
+    }
+  },
+  "requirements": [
+    [
+      "always"
+    ]
+  ]
+}

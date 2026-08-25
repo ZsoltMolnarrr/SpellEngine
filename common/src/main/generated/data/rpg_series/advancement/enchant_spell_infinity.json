@@ -1,0 +1,29 @@
+{
+  "parent": "rpg_series:misc_items",
+  "criteria": {
+    "enchant": {
+      "conditions": {
+        "enchant_id": "spell_engine:spell_infinity"
+      },
+      "trigger": "spell_engine:enchant_specific"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.rpg_series.enchant_spell_infinity.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "count": 1,
+      "id": "minecraft:enchanted_book"
+    },
+    "title": {
+      "translate": "advancements.rpg_series.enchant_spell_infinity.title"
+    }
+  },
+  "requirements": [
+    [
+      "enchant"
+    ]
+  ]
+}

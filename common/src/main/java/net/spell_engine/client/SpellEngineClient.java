@@ -26,7 +26,9 @@ import net.spell_engine.api.spell.fx.ParticleGroupBuilder;
 import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.client.animation.SpellAnimationStack;
 import net.spell_engine.client.compatibility.CompatFeatures;
+import net.fabric_extras.ranged_weapon.client.RangedWeaponItemProperties;
 import net.spell_engine.client.gui.SpellTooltip;
+import net.spell_engine.client.render.RangedWeaponCastAnimation;
 import net.spell_engine.client.particle.*;
 import net.spell_engine.client.render.*;
 import net.spell_engine.client.util.Color;
@@ -84,9 +86,16 @@ public class SpellEngineClient {
     /// Ran once the client has started (registries frozen). Fabric: `ClientLifecycleEvents.CLIENT_STARTED`;
     /// NeoForge: `FMLClientSetupEvent`.
     public static void onClientStarted() {
-        // TODO(post-migration): `pull`/`pulling`/`charged` model predicates were injected onto every bow here
-        // so spell casts could drive the pull animation. Item model properties are data-driven since 1.21.4;
-        // decision: route through Ranged Weapon API's `ranged_weapon:pull` property (RWA consults Spell Engine).
+        // Ranged weapon spells animate the held bow's draw. The vanilla properties those models
+        // dispatch on (`minecraft:using_item`, `minecraft:use_duration`, `minecraft:crossbow/pull`)
+        // are handled by mixins; RPG Series ranged weapons dispatch on Ranged Weapon API's own
+        // `ranged_weapon:pull` instead, which we feed here. See `RangedWeaponCastAnimation`.
+        try {
+            RangedWeaponItemProperties.setPullOverride(RangedWeaponCastAnimation::pullRatio);
+        } catch (Throwable e) {
+            // Best effort: without Ranged Weapon API present the bow simply will not animate mid-cast.
+            SpellEngineMod.LOGGER.warn("Failed to install the ranged weapon cast pull override", e);
+        }
     }
 
     /// Append Spell Engine tooltip lines. Fabric: `ItemTooltipCallback`; NeoForge: `ItemTooltipEvent`.
