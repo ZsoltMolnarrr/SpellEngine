@@ -197,6 +197,21 @@ public class CustomLayers {
                     .outlineMode(RenderSetup.OutlineMode.NONE)
                     .build()));
 
+    /// Vanilla's lightning pipeline (`POSITION_COLOR`: flat vertex color, no texture, `SRC_ALPHA, ONE`) on the
+    /// main target — the 1.21.1 shader-pack variant of glowing spell objects (Paladins' barrier). Being a vanilla
+    /// pipeline, Iris routes it through its lightning handling rather than the full-bright beacon-beam program,
+    /// which is what keeps it from blooming out. Texture/overlay/light/normal writes are dropped by the format.
+    private static final Supplier<RenderLayer> SPELL_OBJECT_LIGHTNING = Suppliers.memoize(() ->
+            RenderLayer.of("spell_object_lightning", RenderSetup.builder(RenderPipelines.RENDERTYPE_LIGHTNING)
+                    .translucent()
+                    .expectedBufferSize(256)
+                    .outlineMode(RenderSetup.OutlineMode.NONE)
+                    .build()));
+
+    public static RenderLayer spellObjectLightning() {
+        return SPELL_OBJECT_LIGHTNING.get();
+    }
+
     public static RenderLayer spellObjectAdditive(Identifier texture) {
         return SPELL_OBJECT_ADDITIVE.apply(texture);
     }
