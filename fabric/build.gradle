@@ -41,6 +41,7 @@ configurations {
 
 repositories {
     maven { url = 'https://repo.redlance.org/public' } // PAL (Player Animation Library)
+    maven { url = 'https://maven.puffish.net' } // Pufferfish Skills (TEMP: SkillTree in-workspace testing)
     maven { url = 'https://maven.shedaniel.me/' }
     maven {
         name = 'Modrinth'
@@ -98,6 +99,12 @@ dependencies {
     localRuntime("net.rpg_series:wizards-fabric:3.2.0.001+1.21.11:dev-shadow") { transitive = false }
     localRuntime("net.rpg_series:paladins-fabric:3.2.0.001+1.21.11:dev-shadow") { transitive = false }
     localRuntime("net.rpg_series:rogues-fabric:3.2.0.001+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.arsenal:arsenal-fabric:1.6.0.001+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:armory-fabric:1.6.0.001+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:relics-fabric:1.5.0.001+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:jewelry-fabric:2.5.0.001+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:skill_tree-fabric:1.7.0.001+1.21.11:dev-shadow") { transitive = false }
+    modLocalRuntime("net.puffish:skillsmod:0.18.3+1.21.11:fabric") // SkillTree's hard dependency (real mod jar, remapped by Loom)
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
