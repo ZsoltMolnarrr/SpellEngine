@@ -128,6 +128,8 @@
 
   "text.autoconfig.spell_engine.option.client.renderBeamsHighLuminance" : "High luminance beams",
   "text.autoconfig.spell_engine.option.client.renderBeamsHighLuminance.@Tooltip" : "Render spell beams with high luminance, for better spectacular visual effects",
+  "text.autoconfig.spell_engine.option.client.weaponGlowSmooth" : "Weapon Glow is smooth",
+  "text.autoconfig.spell_engine.option.client.weaponGlowSmooth.@Tooltip" : "Smoothly filtered glow streaks on weapons (off: pixelated)",
   "text.autoconfig.spell_engine.option.client.holdToCastChannelled" : "Hold to cast CHANNELLED spells",
   "text.autoconfig.spell_engine.option.client.holdToCastChannelled.@Tooltip" : "This applies for channeled spells only! If enabled, the spell casting stops when releasing the key, otherwise when the key is pressed again",
   "text.autoconfig.spell_engine.option.client.holdToCastCharged" : "Hold to cast CHARGED spells",

@@ -1,6 +1,12 @@
 package net.spell_engine.api.render;
 
 import com.google.common.base.Suppliers;
+import org.jetbrains.annotations.Nullable;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.render.VertexFormats;
+import com.mojang.blaze3d.textures.AddressMode;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DepthTestFunction;
@@ -38,7 +44,7 @@ public class CustomLayers {
     // MARK: Pipelines
 
     /// Iris program category of a custom pipeline (see `IrisCompatibility.assignPipelines`)
-    public enum PipelineKind { ENTITY_TRANSLUCENT, ENTITY_EMISSIVE, BEACON_BEAM }
+    public enum PipelineKind { ENTITY_TRANSLUCENT, ENTITY_EMISSIVE, BEACON_BEAM, GLINT }
 
     /// Every custom `RenderPipeline` Spell Engine builds, with its Iris program category.
     /// Shader-pack mods (Iris) map pipelines to shader programs and warn on every draw of an unknown one.
@@ -48,7 +54,8 @@ public class CustomLayers {
         map.put(ENTITY_EMISSIVE_DEPTH_WRITE, PipelineKind.ENTITY_EMISSIVE);
         map.put(BEACON_BEAM_OPAQUE_CULL, PipelineKind.BEACON_BEAM);
         map.put(BEACON_BEAM_TRANSLUCENT_CULL, PipelineKind.BEACON_BEAM);
-        map.put(ITEM_GLOW_PIPELINE, PipelineKind.ENTITY_EMISSIVE);
+        map.put(itemGlowEmissivePipeline(), PipelineKind.ENTITY_EMISSIVE);
+        map.put(itemGlowGlintPipeline(), PipelineKind.GLINT);
         return map;
     }
 
@@ -87,18 +94,6 @@ public class CustomLayers {
             .withDepthWrite(false)
             .build();
 
-    /// The item glow: emissive entity shader drawn additively over the item, depth tested for `EQUAL`
-    /// (see [#ITEM_GLOW_EMISSIVE]).
-    private static final RenderPipeline ITEM_GLOW_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_EMISSIVE_SNIPPET)
-            .withLocation(pipelineId("item_glow"))
-            .withShaderDefine("ALPHA_CUTOUT", 0.1F)
-            .withShaderDefine("PER_FACE_LIGHTING")
-            .withSampler("Sampler1")
-            .withBlend(BlendFunction.ADDITIVE)
-            .withCull(true)
-            .withDepthWrite(false)
-            .withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST)
-            .build();
 
     // MARK: Beams
 
@@ -194,62 +189,175 @@ public class CustomLayers {
 
     // MARK: Item glow
 
-    /// Grayscale streaks, so the vertex color can tint them to any color.
+    /// Grayscale streaks, so the color modulator can tint them to any color.
+    /// The vanilla glint texture is deeply purple, and the glint shader multiplies by it,
+    /// which would poison every color it is tinted with.
     public static final Identifier ITEM_GLOW_TEXTURE = Identifier.of("spell_engine", "textures/misc/item_glow.png");
     private static final float ITEM_GLOW_SCALE = 8F;
 
-    /// How hard the glow is driven into the frame buffer (coverage, not peak — see the 1.21.1 notes).
-    /// Read live, so it can be tuned at runtime.
+    /// How hard the glow is driven into the frame buffer.
+    ///
+    /// The additive glow cannot burn brighter than white: the frame buffer is fixed point, so the
+    /// fragment is clamped to `[0, 1]` before it is blended. Brightness past that point is bought with
+    /// coverage instead of peak: a gain above `1` drives the mid tones of the streaks up into the clamp,
+    /// so more of the texture reaches full white and the streaks read broader and hotter. Read live.
     public static float itemGlowGain = 3F;
 
     private static final Set<RenderLayer> itemGlowLayers = ConcurrentHashMap.newKeySet();
+    /// Color modulator per glint glow layer, applied by `RenderLayerItemGlowMixin` when the layer draws
+    /// (the 1.21.1 `RenderSystem.setShaderColor` is gone; `RenderLayer.draw` hard-codes white).
+    private static final java.util.Map<RenderLayer, org.joml.Vector4f> itemGlowColors = new ConcurrentHashMap<>();
 
-    /// Layers returned by [#itemGlow], drawn as an extra pass after the item they sit on.
+    /// Layers returned by [#itemGlow] / [#itemGlowEmissive], which need a dedicated buffer to draw in the
+    /// correct order (after the item they sit on). See `ImmediateItemGlowMixin`.
     public static boolean isItemGlowLayer(RenderLayer layer) {
         return itemGlowLayers.contains(layer);
     }
 
+    /// The color modulator a glint glow layer draws with, null for every other layer
+    public static @Nullable org.joml.Vector4fc itemGlowColorModulator(RenderLayer layer) {
+        return itemGlowColors.get(layer);
+    }
+
     private static RenderLayer itemGlowLayer(RenderLayer layer) {
         itemGlowLayers.add(layer);
-        if (!ShaderCompatibility.isVanillaRenderSystem()) {
-            IrisCompatibility.markAsDecal(layer);
-        }
         return layer;
     }
 
-    /// The glow pass: the streak texture drawn additively over the item's quads through the emissive
-    /// entity shader, so it is bloomed by shader packs. Color rides on the vertices (see
-    /// [net.spell_engine.client.util.ItemGlowVertexConsumer]), so one layer serves every color.
-    /// `EQUAL` depth test confines it to the pixels the item wrote; it must be submitted after the item.
-    private static final Supplier<RenderLayer> ITEM_GLOW_EMISSIVE = Suppliers.memoize(() -> itemGlowLayer(
-            RenderLayer.of("spell_engine_item_glow", RenderSetup.builder(ITEM_GLOW_PIPELINE)
-                    .texture("Sampler0", ITEM_GLOW_TEXTURE)
-                    .useOverlay()
-                    .useLightmap()
-                    .translucent()
-                    .expectedBufferSize(1536)
-                    .textureTransform(TextureTransform.GLINT_TEXTURING)
-                    .outlineMode(RenderSetup.OutlineMode.NONE)
-                    .build())));
-
-    /// Since 1.21.11 there is a single glow layer: the glint program cannot be tinted any more
-    /// (shader color state is gone), so the emissive pass carries both luminance and color.
-    public static RenderLayer itemGlow(net.spell_engine.client.util.Color color) {
-        return ITEM_GLOW_EMISSIVE.get();
-    }
-
-    public static RenderLayer itemGlowEmissive() {
-        return ITEM_GLOW_EMISSIVE.get();
-    }
-
-    /// Scrolls the streaks across the item, the same motion the vanilla glint uses. Applied on the CPU
-    /// to the glow pass' UVs (see [net.spell_engine.client.util.ItemGlowVertexConsumer]).
+    /// Scrolls the streaks across the item, the same motion the vanilla glint uses (applied by the
+    /// glint shader through `TextureMat`; the emissive pass applies it on the CPU, see
+    /// [net.spell_engine.client.util.ItemGlowVertexConsumer]). Both read it from here, so they scroll as one.
     public static Matrix4f itemGlowTextureMatrix() {
-        var time = (long)(Util.getMeasuringTimeMs() * MinecraftClient.getInstance().options.getGlintSpeed().getValue() * 8.0);
+        // The speed factor scales the clock, not the offsets: the offsets must still wrap by exactly one
+        // texture period (1.0) or the wrap is a visible snap.
+        var time = (long)(Util.getMeasuringTimeMs() * MinecraftClient.getInstance().options.getGlintSpeed().getValue() * 8.0 * itemGlowScrollSpeed);
         var x = (float)(time % 110000L) / 110000.0F;
         var y = (float)(time % 30000L) / 30000.0F;
         var textureMatrix = new Matrix4f().translation(-x, y, 0.0F);
         textureMatrix.rotateZ((float) (Math.PI / 18)).scale(ITEM_GLOW_SCALE);
         return textureMatrix;
     }
+
+    /// The streak density the 1.21.1 glow had: its UVs were the item's slice of the *block* atlas, and the
+    /// 1.21.11 `items` atlas is much smaller, so the same item spans a far larger UV range there — sampled
+    /// through the same 8x scroll matrix that zooms the streaks in until the item reads as flat full bright.
+    /// UVs are rescaled as if the atlas were this wide. Read live, so it can be tuned at runtime.
+    public static float itemGlowReferenceAtlasWidth = 2048F;
+
+    /// Scroll speed of the streaks relative to the vanilla glint's (the 1.21.1 glow scrolled at 1x, but over a
+    /// larger UV footprint — the smaller footprint after atlas compensation crosses the item faster for the same
+    /// texture-space motion). Read live, so it can be tuned at runtime.
+    public static float itemGlowScrollSpeed = 0.5F;
+
+    /// Atlas-size compensation for one item layer's quads, per axis (1,1 when no sprite can be read).
+    /// Per axis matters: the `items` atlas is frequently non-square, which gives a square sprite a
+    /// non-square UV footprint; a uniform factor would keep that distortion and skew the streak angle on
+    /// the item (the 1.21.1 block atlas was square).
+    public static org.joml.Vector2f itemGlowUvScale(java.util.List<net.minecraft.client.render.model.BakedQuad> quads) {
+        for (var quad : quads) {
+            var sprite = quad.sprite();
+            if (sprite == null) continue;
+            float spanU = sprite.getMaxU() - sprite.getMinU();
+            float spanV = sprite.getMaxV() - sprite.getMinV();
+            if (spanU <= 0F || spanV <= 0F) continue;
+            float atlasWidth = sprite.getContents().getWidth() / spanU;
+            float atlasHeight = sprite.getContents().getHeight() / spanV;
+            // A sprite spans `px / atlasSize` of its atlas; shrink each axis so the span matches a square reference atlas
+            return new org.joml.Vector2f(atlasWidth / itemGlowReferenceAtlasWidth, atlasHeight / itemGlowReferenceAtlasWidth);
+        }
+        return new org.joml.Vector2f(1F, 1F);
+    }
+
+    private static final TextureTransform ITEM_GLOW_TEXTURING = new TextureTransform("spell_engine_item_glow_texturing", CustomLayers::itemGlowTextureMatrix);
+
+    /// The vanilla glint program (`core/glint`: texture x ColorModulator, no lighting, no vertex color),
+    /// but blended plain additive. The vanilla glint blends `SRC_COLOR, ONE`, squaring the source and
+    /// dimming it into the faint shimmer it is; adding it outright is what makes this glow burn.
+    /// `EQUAL` depth test is the mask: it confines the streaks to the pixels the item wrote, so the pass
+    /// must be drawn after the item (see `ImmediateItemGlowMixin`). Do not relax it to `LEQUAL`.
+    private static final RenderPipeline ITEM_GLOW_GLINT_PIPELINE = RenderPipeline.builder(
+                    RenderPipelines.TRANSFORMS_AND_PROJECTION_SNIPPET, RenderPipelines.FOG_SNIPPET, RenderPipelines.GLOBALS_SNIPPET)
+            .withLocation(pipelineId("item_glow_glint"))
+            .withVertexShader("core/glint")
+            .withFragmentShader("core/glint")
+            .withSampler("Sampler0")
+            .withDepthWrite(false)
+            .withCull(false)
+            .withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST)
+            .withBlend(BlendFunction.ADDITIVE)
+            .withVertexFormat(VertexFormats.POSITION_TEXTURE, VertexFormat.DrawMode.QUADS)
+            .build();
+
+    private static Supplier<net.minecraft.client.gl.GpuSampler> itemGlowSampler(boolean smooth) {
+        // Bilinear (the 1.21.1 `blur = true` texture flag) or nearest, per the `weaponGlowSmooth` client config.
+        // REPEAT is essential: the scroll offset cycles through [0, 1) and wraps, which is only seamless when the
+        // texture tiles. `SamplerCache.get(FilterMode)` is the clamped overlay/lightmap sampler — with it the item
+        // sits on a stretched edge texel (solid "fully lit") for seconds and snaps when the offset wraps.
+        var filter = smooth ? FilterMode.LINEAR : FilterMode.NEAREST;
+        return () -> RenderSystem.getSamplerCache().get(AddressMode.REPEAT, AddressMode.REPEAT, filter, filter, false);
+    }
+
+    private static boolean smoothGlow() {
+        var config = net.spell_engine.client.SpellEngineClient.config;
+        return config == null || config.weaponGlowSmooth;
+    }
+
+    private record ItemGlowKey(int argb, boolean smooth) { }
+
+    /// Color is baked into the layer (the glint shader takes it as a uniform, and the vertex format
+    /// carries no color channel), so layers are memoized per color to keep them batchable.
+    private static final Function<ItemGlowKey, RenderLayer> ITEM_GLOW = Util.memoize(key -> {
+        var color = net.spell_engine.client.util.Color.fromARGB(key.argb);
+        var layer = RenderLayer.of("spell_engine_item_glow", RenderSetup.builder(ITEM_GLOW_GLINT_PIPELINE)
+                .texture("Sampler0", ITEM_GLOW_TEXTURE, itemGlowSampler(key.smooth))
+                .textureTransform(ITEM_GLOW_TEXTURING)
+                .translucent()
+                .expectedBufferSize(1536)
+                .outlineMode(RenderSetup.OutlineMode.NONE)
+                .build());
+        // Opacity is folded into the color instead of the alpha, because the additive blend scales by
+        // color, and the glint shader discards fragments below `alpha < 0.1`.
+        var intensity = color.alpha() * itemGlowGain;
+        itemGlowColors.put(layer, new org.joml.Vector4f(color.red() * intensity, color.green() * intensity, color.blue() * intensity, 1F));
+        return itemGlowLayer(layer);
+    });
+
+    /// The luminance pass: gain drives the streaks up into the clamp.
+    public static RenderLayer itemGlow(net.spell_engine.client.util.Color color) {
+        return ITEM_GLOW.apply(new ItemGlowKey((int) color.toARGB(), smoothGlow()));
+    }
+
+    /// The same streaks drawn again through an emissive program, purely to be bloomed by shader packs
+    /// (they bloom what they read as emissive, by program). Only submitted while a shader pack is in use.
+    /// The emissive shader applies no `TextureMat` (needs `APPLY_TEXTURE_MATRIX`), so the scroll is applied
+    /// per vertex by `ItemGlowVertexConsumer`; color rides on the vertices, so one layer serves every color.
+    private static final RenderPipeline ITEM_GLOW_PIPELINE = RenderPipeline.builder(RenderPipelines.ENTITY_EMISSIVE_SNIPPET)
+            .withLocation(pipelineId("item_glow"))
+            .withShaderDefine("ALPHA_CUTOUT", 0.1F)
+            .withShaderDefine("NO_CARDINAL_LIGHTING")
+            .withSampler("Sampler1")
+            .withBlend(BlendFunction.ADDITIVE)
+            .withCull(true)
+            .withDepthWrite(false)
+            .withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST)
+            .build();
+
+    private static final Function<Boolean, RenderLayer> ITEM_GLOW_EMISSIVE = Util.memoize(smooth -> itemGlowLayer(
+            RenderLayer.of("spell_engine_item_glow_emissive", RenderSetup.builder(ITEM_GLOW_PIPELINE)
+                    .texture("Sampler0", ITEM_GLOW_TEXTURE, itemGlowSampler(smooth))
+                    .useOverlay()
+                    .useLightmap()
+                    .translucent()
+                    .expectedBufferSize(1536)
+                    .outlineMode(RenderSetup.OutlineMode.NONE)
+                    .build())));
+
+    public static RenderLayer itemGlowEmissive() {
+        return ITEM_GLOW_EMISSIVE.apply(smoothGlow());
+    }
+
+    /// Every custom `RenderPipeline` Spell Engine builds, with its Iris program category — see the
+    /// declaration in `customPipelines()`; the glow pipelines are listed there too.
+    static RenderPipeline itemGlowGlintPipeline() { return ITEM_GLOW_GLINT_PIPELINE; }
+    static RenderPipeline itemGlowEmissivePipeline() { return ITEM_GLOW_PIPELINE; }
 }

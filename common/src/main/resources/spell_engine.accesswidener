@@ -23,3 +23,7 @@ accessible    class    net/minecraft/block/entity/BlockEntityType$BlockEntityFac
 accessible    field    net/minecraft/client/gl/RenderPipelines    ENTITY_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 accessible    field    net/minecraft/client/gl/RenderPipelines    ENTITY_EMISSIVE_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 accessible    field    net/minecraft/client/gl/RenderPipelines    RENDERTYPE_BEACON_BEAM_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+# Item glow: the glint program pipeline (core/glint) is rebuilt with additive blending
+accessible    field    net/minecraft/client/gl/RenderPipelines    TRANSFORMS_AND_PROJECTION_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible    field    net/minecraft/client/gl/RenderPipelines    FOG_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible    field    net/minecraft/client/gl/RenderPipelines    GLOBALS_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;

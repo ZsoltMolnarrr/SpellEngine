@@ -81,7 +81,9 @@
     "client.render.MinecraftClientMixin",
     "client.render.ProjectileEntityRendererMixin",
     "client.render.tint.ModelPartMixin",
-    "client.render.tint.RenderLayersMixin"
+    "client.render.tint.RenderLayersMixin",
+    "client.render.ImmediateItemGlowMixin",
+    "client.render.RenderLayerItemGlowMixin"
   ],
   "injectors": {
     "defaultRequire": 1

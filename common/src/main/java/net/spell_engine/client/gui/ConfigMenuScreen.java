@@ -52,7 +52,6 @@ public class ConfigMenuScreen extends Screen {
     }
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
-        super.render(context, mouseX, mouseY, delta);
+        super.render(context, mouseX, mouseY, delta); // renders the background itself since 1.21.11 (blurring twice per frame crashes)
     }
 }

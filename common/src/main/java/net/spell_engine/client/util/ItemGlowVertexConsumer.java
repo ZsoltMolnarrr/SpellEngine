@@ -34,9 +34,20 @@ public class ItemGlowVertexConsumer implements VertexConsumer {
         return this;
     }
 
+    private final float uvScaleU, uvScaleV;
+
     public ItemGlowVertexConsumer(VertexConsumer delegate, Color color) {
+        this(delegate, color, new org.joml.Vector2f(1F, 1F), true);
+    }
+
+    /// @param uvScale multiplies the atlas UVs (per axis) before the scroll (atlas-size compensation, see
+    ///                `CustomLayers.itemGlowUvScale`)
+    /// @param scroll  apply the scroll matrix here (emissive pass); false when the shader applies it (glint pass)
+    public ItemGlowVertexConsumer(VertexConsumer delegate, Color color, org.joml.Vector2f uvScale, boolean scroll) {
         this.delegate = delegate;
-        this.textureMatrix = CustomLayers.itemGlowTextureMatrix();
+        this.uvScaleU = uvScale.x;
+        this.uvScaleV = uvScale.y;
+        this.textureMatrix = scroll ? CustomLayers.itemGlowTextureMatrix() : new Matrix4f();
         var tint = color.toIntFormat();
         this.red = tint.red();
         this.green = tint.green();
@@ -46,7 +57,7 @@ public class ItemGlowVertexConsumer implements VertexConsumer {
 
     @Override
     public VertexConsumer texture(float u, float v) {
-        var scrolled = textureMatrix.transformPosition(scratch.set(u, v, 0F));
+        var scrolled = textureMatrix.transformPosition(scratch.set(u * uvScaleU, v * uvScaleV, 0F));
         delegate.texture(scrolled.x(), scrolled.y());
         return this;
     }

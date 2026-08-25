@@ -40,6 +40,8 @@ public class ClientConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip
     public boolean renderBeamsHighLuminance = true;
     @ConfigEntry.Gui.Tooltip
+    public boolean weaponGlowSmooth = true;
+    @ConfigEntry.Gui.Tooltip
     public boolean highlightTarget = true;
     @ConfigEntry.Gui.Tooltip
     public boolean filterInvalidTargets = true;

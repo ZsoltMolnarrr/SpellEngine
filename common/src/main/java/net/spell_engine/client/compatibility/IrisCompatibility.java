@@ -37,6 +37,7 @@ public class IrisCompatibility {
                     case ENTITY_TRANSLUCENT -> net.irisshaders.iris.api.v0.IrisProgram.ENTITIES_TRANSLUCENT;
                     case ENTITY_EMISSIVE -> net.irisshaders.iris.api.v0.IrisProgram.EMISSIVE_ENTITIES;
                     case BEACON_BEAM -> net.irisshaders.iris.api.v0.IrisProgram.BEACON_BEAM;
+                    case GLINT -> net.irisshaders.iris.api.v0.IrisProgram.ARMOR_GLINT;
                 };
                 api.assignPipeline(entry.getKey(), program);
             }
