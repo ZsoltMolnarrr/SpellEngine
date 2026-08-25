@@ -6,6 +6,7 @@ import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.util.Identifier;
 import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import net.spell_engine.api.attachment.SyncedEntityData;
@@ -54,12 +55,13 @@ public final class NeoForgeSyncedEntityData<T> implements SyncedEntityData<T> {
     @Override
     public T get(Entity entity) {
         // getExistingDataOrNull: `getData` would default-create AND sync the attachment on every first read.
-        var value = entity.getExistingDataOrNull(type);
+        // Called through the interface so the reference doesn't name the NeoForge-patched Entity superclass.
+        var value = ((IAttachmentHolder) entity).getExistingDataOrNull(type);
         return value != null ? value : defaultValue;
     }
 
     @Override
     public void set(Entity entity, T value) {
-        entity.setData(type, value);
+        ((IAttachmentHolder) entity).setData(type, value);
     }
 }
