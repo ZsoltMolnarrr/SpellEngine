@@ -19,7 +19,6 @@ import net.minecraft.client.texture.SpriteAtlasTexture;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.client.compatibility.IrisCompatibility;
 import net.spell_engine.client.compatibility.ShaderCompatibility;
 import org.joml.Matrix4f;
 

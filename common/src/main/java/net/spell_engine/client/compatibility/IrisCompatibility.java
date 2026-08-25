@@ -1,6 +1,5 @@
 package net.spell_engine.client.compatibility;
 
-import net.minecraft.client.render.RenderLayer;
 import net.spell_engine.Platform;
 import net.spell_engine.api.render.CustomLayers;
 import org.slf4j.Logger;
@@ -14,7 +13,6 @@ import org.slf4j.LoggerFactory;
  */
 public class IrisCompatibility {
     private static final Logger LOGGER = LoggerFactory.getLogger("SpellEngine/IrisCompat");
-    private static boolean warned = false;
 
     /// Call once from client init
     public static void assignPipelines() {
@@ -42,15 +40,6 @@ public class IrisCompatibility {
                 api.assignPipeline(entry.getKey(), program);
             }
             LOGGER.info("Registered {} custom pipelines with Iris", CustomLayers.customPipelines().size());
-        }
-    }
-
-    /// Iris 1.10 removed the decal (`BlendingStateHolder`) API the item glow used to be ordered with;
-    /// the glow pipeline is now declared as an emissive-entity program instead (see `assignPipelines`).
-    public static void markAsDecal(RenderLayer layer) {
-        if (!warned) {
-            warned = true;
-            LOGGER.debug("Iris decal marking is not available on this Iris version; glow uses the emissive entity program");
         }
     }
 }
