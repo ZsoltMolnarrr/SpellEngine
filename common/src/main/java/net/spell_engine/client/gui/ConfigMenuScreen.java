@@ -1,6 +1,6 @@
 package net.spell_engine.client.gui;
 
-import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.AutoConfigClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -31,7 +31,7 @@ public class ConfigMenuScreen extends Screen {
         );
         addDrawableChild(
                 ButtonWidget.builder(Text.translatable("gui.spell_engine.settings"), button -> {
-                    client.setScreen(AutoConfig.getConfigScreen(ClientConfigWrapper.class, this).get());
+                    client.setScreen(AutoConfigClient.getConfigScreen(ClientConfigWrapper.class, this).get());
                 })
                 .position(buttonCenterX, buttonCenterY)
                 .size(buttonWidth, buttonHeight)
