@@ -66,20 +66,22 @@ public class RPGSeriesAdvancements extends FabricAdvancementProvider {
         var list = new ArrayList<AdvancementEntry>();
 
         // Tab root — granted on the first tick, so the tab is always visible.
-        list.add(root("root", item("spell_engine:spell_binding"),
-                "always", TickCriterion.Conditions.createTick()));
+        var root = root("root", item("spell_engine:spell_binding"),
+                "always", TickCriterion.Conditions.createTick());
+        list.add(root);
 
         // Hub: class progression. Parent of every class mod's `path_choose_*` advancement.
-        list.add(advancement("classes", "rpg_series:root", new ItemStack(Items.BOOK), AdvancementFrame.GOAL,
+        list.add(advancement("classes", root, new ItemStack(Items.BOOK), AdvancementFrame.GOAL,
                 true, true, false,
                 "book", spellBinding(SpellBinding.ADVANCEMENT_VISIT_ID.toString(), true)));
 
         // Hub: miscellaneous items. Parent of the villager-trade and item advancements.
-        list.add(advancement("misc_items", "rpg_series:root", new ItemStack(Items.CHEST), AdvancementFrame.TASK,
+        var miscItems = advancement("misc_items", root, new ItemStack(Items.CHEST), AdvancementFrame.TASK,
                 false, false, false,
-                "always", TickCriterion.Conditions.createTick()));
+                "always", TickCriterion.Conditions.createTick());
+        list.add(miscItems);
 
-        list.add(advancement("enchant_spell_infinity", "rpg_series:misc_items", new ItemStack(Items.ENCHANTED_BOOK),
+        list.add(advancement("enchant_spell_infinity", miscItems, new ItemStack(Items.ENCHANTED_BOOK),
                 AdvancementFrame.CHALLENGE, true, true, false,
                 "enchant", enchantment("spell_engine:spell_infinity")));
 
@@ -96,13 +98,12 @@ public class RPGSeriesAdvancements extends FabricAdvancementProvider {
                 .build(id);
     }
 
-    @SuppressWarnings("deprecation") // Advancement.Builder.parent(Identifier) is the only way to reference parents built outside this provider.
-    private static AdvancementEntry advancement(String idPath, String parent, ItemStack icon, AdvancementFrame frame,
+    private static AdvancementEntry advancement(String idPath, AdvancementEntry parent, ItemStack icon, AdvancementFrame frame,
                                                 boolean showToast, boolean announceToChat, boolean hidden,
                                                 String criterionName, AdvancementCriterion<?> criterion) {
         var id = Identifier.of(NAMESPACE, idPath);
         return builder(id, icon, null, frame, showToast, announceToChat, hidden)
-                .parent(Identifier.of(parent))
+                .parent(parent)
                 .criterion(criterionName, criterion)
                 .build(id);
     }
