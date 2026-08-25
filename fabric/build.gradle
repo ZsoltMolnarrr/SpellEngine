@@ -85,6 +85,19 @@ repositories {
 }
 
 dependencies {
+    // TEMPORARY — in-world testing of the 1.21.11 ecosystem inside this workspace (strip before release).
+    // The named `dev-shadow` jars go on the runtime classpath: production jars dropped into run/mods are
+    // runtime-remapped by Fabric Loader, which cannot resolve overrides inherited through *named* SpellEngine
+    // classes (e.g. `LevitateStatusEffect extends CustomStatusEffect`), so those overrides silently stop
+    // overriding. See memory `run-content-mod-in-se-workspace` / LESSONS §4.39.
+    localRuntime("net.rpg_foundation:armor_model_api-fabric:1.1.0.004+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:runes-fabric:1.4.0.006+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.foundation:structure_pool_api-fabric:1.3.0.001+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("com.github.TheRedBrain:bundle-api-fabric:1.2.0.002+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:archers-fabric:3.2.0.001+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:wizards-fabric:3.2.0.001+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:paladins-fabric:3.2.0.001+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:rogues-fabric:3.2.0.001+1.21.11:dev-shadow") { transitive = false }
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
