@@ -101,39 +101,13 @@ public final class EntityTints {
     }
 
     /// The entity's current blended tint, synced to all tracking clients via tracked data.
+    /// Client side, `LivingEntityRenderer.updateRenderState` copies it onto the entity's render state
+    /// (`EntityRenderStateExtension.spellEngine_getTint`), which is what the render pass reads.
     public static int currentTint(LivingEntity entity) {
         return ((Provider)entity).SpellEngine_entityTintArgb();
     }
 
     public interface Provider {
         int SpellEngine_entityTintArgb();
-    }
-
-    /// Render-thread context: the tint of the living entity currently being rendered.
-    /// Set around `LivingEntityRenderer.render` so that `ModelPart` level color multiplication
-    /// (see ModelPartMixin) can apply without any renderer knowing about it.
-    public static final class Current {
-        private static int argb = NEUTRAL;
-
-        public static void set(int value) {
-            argb = value;
-        }
-
-        public static void clear() {
-            argb = NEUTRAL;
-        }
-
-        public static boolean isActive() {
-            return argb != NEUTRAL;
-        }
-
-        /// True when the active tint has alpha below 1, so the entity needs a blending-capable render layer.
-        public static boolean isTranslucent() {
-            return isActive() && (argb >>> 24) < 0xFF;
-        }
-
-        public static int apply(int color) {
-            return argb == NEUTRAL ? color : multiply(color, argb);
-        }
     }
 }
