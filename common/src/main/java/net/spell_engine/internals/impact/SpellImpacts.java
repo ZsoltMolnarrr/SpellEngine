@@ -824,10 +824,15 @@ public class SpellImpacts {
                                 target.setVelocity(Vec3d.ZERO);
                             }
                             target.addVelocity(impulse.x, impulse.y, impulse.z);
-                            // Force a velocity sync. For a player this reaches their own client too (via
-                            // EntityTrackerEntry.sendSyncPacket), which is required since player movement
-                            // is client-authoritative — the same path vanilla knockback rides on.
+                            // Force a velocity sync to the entity's trackers.
                             target.velocityDirty = true;
+                            // 1.21.11: the tracker only broadcasts velocity to *other* players (`sendToListeners`);
+                            // the old `velocityModified → sendSyncPacket` path that also reached the moved player is
+                            // gone. Player movement is client-authoritative, so the player's own client must be told
+                            // explicitly — the same way vanilla knockback does it (PlayerEntity#attack).
+                            if (target instanceof net.minecraft.server.network.ServerPlayerEntity serverPlayer) {
+                                serverPlayer.networkHandler.sendPacket(new net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket(serverPlayer));
+                            }
                             success = true;
                         }
                     }
