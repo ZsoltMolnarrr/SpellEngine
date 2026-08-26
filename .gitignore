@@ -133,3 +133,6 @@ src/main/generated/.cache
 common/src/main/generated/.cache
 
 .claude/
+
+# RPG Series local dev-workspace switch (see workspace.properties.example)
+/workspace.properties
