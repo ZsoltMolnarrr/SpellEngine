@@ -162,7 +162,7 @@ publishMods {
         projectId = providers.environmentVariable("CURSEFORGE_PROJECT_ID")   // numeric id
         accessToken = providers.environmentVariable("CURSEFORGE_API_KEY")
         minecraftVersions.add(project.minecraft_version)
-        minecraftVersions.add(project.minecraft_compat_version)
+        if (project.minecraft_compat_version != project.minecraft_version) minecraftVersions.add(project.minecraft_compat_version)
         client = true                    // >=1 of client/server REQUIRED by CurseForge (Error 1021)
         server = true
         changelogType = "markdown"
@@ -174,7 +174,7 @@ publishMods {
         projectId = providers.environmentVariable("MODRINTH_PROJECT_RAW_ID")
         accessToken = providers.environmentVariable("MODRINTH_API_KEY")
         minecraftVersions.add(project.minecraft_version)
-        minecraftVersions.add(project.minecraft_compat_version)
+        if (project.minecraft_compat_version != project.minecraft_version) minecraftVersions.add(project.minecraft_compat_version)
         requires { slug = "cloth-config" }
         requires { slug = "player-animation-library" }
         requires { slug = "spell-power" }
