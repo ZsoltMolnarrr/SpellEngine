@@ -1,13 +1,12 @@
 package net.spell_engine.internals;
 
+import net.spell_engine.rpg_series.config.ConfigUtil;
 import com.google.common.base.Suppliers;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -364,7 +363,7 @@ public class SpellExecution {
                 power = SpellPower.getSpellPower(school, caster);
             }
             if (impact.attribute != null && !impact.attribute.isEmpty()) {
-                var attributeEntry = Registries.ATTRIBUTE.getEntry(Identifier.of(impact.attribute));
+                var attributeEntry = ConfigUtil.attribute(impact.attribute);
                 if (attributeEntry.isPresent()) {
                     var attribute = attributeEntry.get();
                     double value;

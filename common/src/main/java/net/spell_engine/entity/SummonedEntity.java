@@ -1,5 +1,6 @@
 package net.spell_engine.entity;
 
+import net.spell_engine.rpg_series.config.ConfigUtil;
 import net.minecraft.server.world.ServerWorld;
 import com.google.common.base.Suppliers;
 import com.google.gson.Gson;
@@ -567,7 +568,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
                 .add(EntityAttributes.MOVEMENT_SPEED, entry.common.movement_speed)
                 .add(EntityAttributes.ATTACK_DAMAGE, entry.common.attack_damage);
         for (var custom : entry.custom) {
-            Registries.ATTRIBUTE.getEntry(Identifier.of(custom.id)).ifPresent(e -> builder.add(e, custom.value));
+            ConfigUtil.attribute(custom.id).ifPresent(e -> builder.add(e, custom.value));
         }
         return builder;
     }
@@ -576,14 +577,14 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         if (attributeScaling == null) return;
         var healthRatio = this.getHealth() / this.getMaxHealth();
         for (var entry : attributeScaling.entries) {
-            var targetAttrOpt = Registries.ATTRIBUTE.getEntry(Identifier.of(entry.attribute_id));
+            var targetAttrOpt = ConfigUtil.attribute(entry.attribute_id);
             if (targetAttrOpt.isEmpty()) continue;
             var instance = this.getAttributeInstance(targetAttrOpt.get());
             if (instance == null) continue;
 
             double bonus = 0;
             for (var modifier : entry.modifiers) {
-                var ownerAttrOpt = Registries.ATTRIBUTE.getEntry(Identifier.of(modifier.attribute_id));
+                var ownerAttrOpt = ConfigUtil.attribute(modifier.attribute_id);
                 if (ownerAttrOpt.isEmpty()) continue;
                 var ownerInstance = owner.getAttributeInstance(ownerAttrOpt.get());
                 if (ownerInstance == null) continue;

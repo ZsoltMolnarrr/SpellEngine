@@ -1,4 +1,5 @@
 package net.spell_engine.rpg_series.item;
+import net.spell_engine.rpg_series.config.ConfigUtil;
 import net.spell_engine.Platform;
 
 import net.spell_engine.PlatformEvents;
@@ -268,8 +269,7 @@ public class Weapon {
                 AttributeModifierSlot.MAINHAND);
         for(var attribute: config.selectedAttributes()) {
             try {
-                var attributeId = Identifier.of(attribute.attribute);
-                var entityAttribute = Registries.ATTRIBUTE.getEntry(attributeId).get();
+                var entityAttribute = ConfigUtil.attribute(attribute.attribute).orElseThrow();
                 builder.add(entityAttribute,
                         new EntityAttributeModifier(
                                 equipmentBonusId,
@@ -287,8 +287,7 @@ public class Weapon {
         AttributeModifiersComponent.Builder builder = AttributeModifiersComponent.builder();
         for(var attribute: attributes) {
             try {
-                var attributeId = Identifier.of(attribute.attribute);
-                var entityAttribute = Registries.ATTRIBUTE.getEntry(attributeId).get();
+                var entityAttribute = ConfigUtil.attribute(attribute.attribute).orElseThrow();
                 builder.add(entityAttribute,
                         new EntityAttributeModifier(
                                 equipmentBonusId,
@@ -303,6 +302,5 @@ public class Weapon {
     }
 
     private static final Identifier equipmentBonusId = Identifier.of("equipment_bonus");
-    private static final Identifier attackDamageId = Identifier.of("generic.attack_damage");
     private static final Identifier projectileDamageId = Identifier.of("projectile_damage", "generic");
 }

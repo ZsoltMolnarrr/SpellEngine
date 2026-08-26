@@ -1,5 +1,6 @@
 package net.spell_engine.rpg_series.item;
 
+import net.spell_engine.rpg_series.config.ConfigUtil;
 import net.spell_engine.PlatformEvents;
 import net.minecraft.component.type.AttributeModifierSlot;
 import net.minecraft.component.type.AttributeModifiersComponent;
@@ -262,7 +263,7 @@ public class Armor {
         }
         for (var attribute: piece.selectedAttributes()) {
             try {
-                var entityAttribute = Registries.ATTRIBUTE.getEntry(Identifier.of(attribute.attribute)).orElseThrow();
+                var entityAttribute = ConfigUtil.attribute(attribute.attribute).orElseThrow();
                 builder.add(entityAttribute,
                         new EntityAttributeModifier(
                                 modifierId,
