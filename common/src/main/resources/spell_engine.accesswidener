@@ -15,4 +15,6 @@ accessible    field    net/minecraft/loot/LootTable    type    Lnet/minecraft/lo
 accessible    field    net/minecraft/loot/LootTable    randomSequenceId    Ljava/util/Optional;
 accessible    field    net/minecraft/loot/LootTable    pools    Ljava/util/List;
 accessible    field    net/minecraft/loot/LootTable    functions    Ljava/util/List;
+# LootHelper.inspect reads pool entries (Fabric API widens this on Fabric; NeoForge needs our own AT)
+accessible    field    net/minecraft/loot/LootPool    entries    Ljava/util/List;
 accessible    method    net/minecraft/loot/LootTable    <init>    (Lnet/minecraft/loot/context/LootContextType;Ljava/util/Optional;Ljava/util/List;Ljava/util/List;)V

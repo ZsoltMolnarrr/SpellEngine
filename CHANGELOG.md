@@ -1,3 +1,7 @@
+# 1.10.4
+
+- Fix NeoForge launch crash (loot injection entry access) #208
+
 # 1.10.3
 
 Functional changes:
