@@ -38,11 +38,11 @@ dependencies {
     }
     if (flags.rpg_series_gear) {
     localRuntime("net.arsenal:arsenal-fabric:1.5.1.002+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:armory-fabric:1.5.2.002+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:armory-fabric:1.5.2.003+1.21.11:dev-shadow") { transitive = false }
     }
     if (flags.rpg_series_accessories) {
-    localRuntime("net.rpg_series:jewelry-fabric:2.4.1.002+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:relics-fabric:1.4.1.002+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:jewelry-fabric:2.4.1.004+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:relics-fabric:1.4.1.003+1.21.11:dev-shadow") { transitive = false }
     }
     if (flags.rpg_series_skills) {
     localRuntime("net.rpg_series:skill_tree-fabric:1.6.1.002+1.21.11:dev-shadow") { transitive = false }
