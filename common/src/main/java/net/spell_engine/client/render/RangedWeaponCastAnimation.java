@@ -11,11 +11,9 @@ import org.jetbrains.annotations.Nullable;
 ///
 /// Before 1.21.4 this was done by injecting `pull`/`pulling`/`charged` model predicates onto every
 /// registered ranged weapon. Item models are data-driven now, so instead the item model *properties*
-/// those models dispatch on are patched to report the cast (see the `client.render.item` mixins),
-/// plus Ranged Weapon API's own `ranged_weapon:pull` via
-/// {@link net.fabric_extras.ranged_weapon.client.RangedWeaponItemProperties#setPullOverride}.
-/// Patching the properties rather than the models means vanilla and third-party bows animate too,
-/// without either side having to opt in.
+/// those models dispatch on are patched to report the cast (see the `client.render.item` mixins).
+/// Patching the properties rather than the models means vanilla, third-party and Ranged Weapon API
+/// bows (which use the vanilla definition shape) animate too, without either side having to opt in.
 ///
 /// Every entry point is best effort: a resolution failure returns `null` (or `false`) and the
 /// caller falls through to untouched vanilla behaviour. Item model properties are evaluated every
