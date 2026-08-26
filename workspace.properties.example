@@ -1,0 +1,6 @@
+# Copy to `workspace.properties` (gitignored) to load RPG Series content mods into this dev runtime
+# from mavenLocal — see fabric/workspace-runtime.gradle and docs LESSONS §4.39. Enable per group:
+rpg_series_classes=true
+rpg_series_gear=true
+rpg_series_accessories=true
+rpg_series_skills=true

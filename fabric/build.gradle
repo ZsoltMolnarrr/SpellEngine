@@ -41,7 +41,6 @@ configurations {
 
 repositories {
     maven { url = 'https://repo.redlance.org/public' } // PAL (Player Animation Library)
-    maven { url = 'https://maven.puffish.net' } // Pufferfish Skills (TEMP: SkillTree in-workspace testing)
     maven { url = 'https://maven.shedaniel.me/' }
     maven {
         name = 'Modrinth'
@@ -85,26 +84,17 @@ repositories {
     mavenLocal()
 }
 
+// Ecosystem workspace runtime (opt-in, dev only): puts the RPG Series content mods on the run classpath
+// so they can be tested against SpellEngine from source. Enabled per group by a gitignored
+// `workspace.properties` next to the root build.gradle (copy workspace.properties.example):
+// rpg_series_classes / rpg_series_gear / rpg_series_accessories / rpg_series_skills. `-P<flag>=false`
+// overrides it to reproduce CI. CI and fresh clones never resolve it.
+// Pins live in workspace-runtime.gradle (tracked). See LESSONS §4.39.
+if (rootProject.ext.rpgSeriesWorkspaceAny) {
+    apply from: "workspace-runtime.gradle"
+}
+
 dependencies {
-    // TEMPORARY — in-world testing of the 1.21.11 ecosystem inside this workspace (strip before release).
-    // The named `dev-shadow` jars go on the runtime classpath: production jars dropped into run/mods are
-    // runtime-remapped by Fabric Loader, which cannot resolve overrides inherited through *named* SpellEngine
-    // classes (e.g. `LevitateStatusEffect extends CustomStatusEffect`), so those overrides silently stop
-    // overriding. See memory `run-content-mod-in-se-workspace` / LESSONS §4.39.
-    localRuntime("net.rpg_foundation:armor_model_api-fabric:1.0.1.001+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:runes-fabric:1.3.2.001+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.foundation:structure_pool_api-fabric:1.2.1.001+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("com.github.TheRedBrain:bundle-api-fabric:1.1.1.003+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:archers-fabric:3.1.2.002+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:wizards-fabric:3.1.2.002+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:paladins-fabric:3.1.2.002+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:rogues-fabric:3.1.2.002+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.arsenal:arsenal-fabric:1.5.1.002+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:armory-fabric:1.5.2.002+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:relics-fabric:1.4.1.002+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:jewelry-fabric:2.4.1.002+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:skill_tree-fabric:1.6.1.002+1.21.11:dev-shadow") { transitive = false }
-    modLocalRuntime("net.puffish:skillsmod:0.18.3+1.21.11:fabric") // SkillTree's hard dependency (real mod jar, remapped by Loom)
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }

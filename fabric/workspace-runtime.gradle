@@ -1,0 +1,51 @@
+// Dev-only ecosystem runtime for the SpellEngine workspace — applied by build.gradle ONLY when at least
+// one group flag is enabled in the gitignored `workspace.properties` (template: workspace.properties.example):
+//   rpg_series_classes      Archers, Wizards, Paladins, Rogues
+//   rpg_series_gear         Arsenal, Armory
+//   rpg_series_accessories  Jewelry, Relics
+//   rpg_series_skills       SkillTree (+ Pufferfish Skills)
+// Shared libraries the groups depend on (ArmorModelAPI, Runes, StructurePoolAPI, BundleAPI) load with any group.
+// CI and other developers never evaluate this file.
+//
+// The named `dev-shadow` jars go on the runtime classpath: production jars dropped into run/mods are
+// runtime-remapped by the loader, which cannot resolve overrides inherited through *named* SpellEngine
+// classes (e.g. `LevitateStatusEffect extends CustomStatusEffect`), so those overrides silently stop
+// overriding. See memory `run-content-mod-in-se-workspace` / LESSONS §4.39.
+//
+// After publishing a content mod to mavenLocal, bump its pin here (and in the other loader's copy).
+
+def flags = rootProject.ext.rpgSeriesWorkspace
+
+repositories {
+    if (flags.rpg_series_skills) {
+        maven { url = 'https://maven.puffish.net' } // Pufferfish Skills (SkillTree's hard dependency)
+    }
+    mavenLocal()
+}
+
+dependencies {
+    // Shared libraries
+    localRuntime("net.rpg_foundation:armor_model_api-fabric:1.0.1.001+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:runes-fabric:1.3.2.001+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.foundation:structure_pool_api-fabric:1.2.1.001+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("com.github.TheRedBrain:bundle-api-fabric:1.1.1.003+1.21.11:dev-shadow") { transitive = false }
+
+    if (flags.rpg_series_classes) {
+    localRuntime("net.rpg_series:archers-fabric:3.1.2.002+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:wizards-fabric:3.1.2.002+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:paladins-fabric:3.1.2.002+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:rogues-fabric:3.1.2.002+1.21.11:dev-shadow") { transitive = false }
+    }
+    if (flags.rpg_series_gear) {
+    localRuntime("net.arsenal:arsenal-fabric:1.5.1.002+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:armory-fabric:1.5.2.002+1.21.11:dev-shadow") { transitive = false }
+    }
+    if (flags.rpg_series_accessories) {
+    localRuntime("net.rpg_series:jewelry-fabric:2.4.1.002+1.21.11:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:relics-fabric:1.4.1.002+1.21.11:dev-shadow") { transitive = false }
+    }
+    if (flags.rpg_series_skills) {
+    localRuntime("net.rpg_series:skill_tree-fabric:1.6.1.002+1.21.11:dev-shadow") { transitive = false }
+        modLocalRuntime("net.puffish:skillsmod:0.18.3+1.21.11:fabric") // real mod jar, remapped by Loom
+    }
+}
