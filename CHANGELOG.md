@@ -1,6 +1,10 @@
 # 1.10.4
 
+Functional changes:
 - Fix NeoForge launch crash (loot injection entry access) #208
+ 
+API changes:
+- Make CriticalStrike compat externally configurable
 
 # 1.10.3
 

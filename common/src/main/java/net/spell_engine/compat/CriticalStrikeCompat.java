@@ -11,8 +11,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 public class CriticalStrikeCompat {
-    private static Predicate<DamageSource> isCriticalStrike = ds -> false;
-    private static BiConsumer<DamageSource, Float> setCriticalStrike = (ds, crit) -> {
+    public static Predicate<DamageSource> isCriticalStrike = ds -> false;
+    public static BiConsumer<DamageSource, Float> setCriticalStrike = (ds, crit) -> {
         // No-op
     };
     public static void init() {
