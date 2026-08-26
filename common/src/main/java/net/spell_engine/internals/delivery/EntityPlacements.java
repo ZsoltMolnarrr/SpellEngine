@@ -1,10 +1,10 @@
 package net.spell_engine.internals.delivery;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.utils.TargetHelper;
 import org.jetbrains.annotations.Nullable;
@@ -18,23 +18,23 @@ public class EntityPlacements {
     /// free-space search (which would also have to look sideways).
     private static final int PLACEMENT_LIFT_LIMIT = 2;
 
-    public static void applyEntityPlacement(Entity entity, Entity target, Vec3d initialPosition, Spell.EntityPlacement placement) {
-        applyEntityPlacement(target.getEntityWorld(), entity, target.getYaw(), target.getPitch(), target, initialPosition, placement);
+    public static void applyEntityPlacement(Entity entity, Entity target, Vec3 initialPosition, Spell.EntityPlacement placement) {
+        applyEntityPlacement(target.level(), entity, target.getYRot(), target.getXRot(), target, initialPosition, placement);
     }
 
-    public static void applyEntityPlacement(World world, Entity placedEntity,
+    public static void applyEntityPlacement(Level world, Entity placedEntity,
                                             float targetedYaw, float targetedPitch, @Nullable Entity rayCastEntity,
-                                            Vec3d initialPosition, Spell.EntityPlacement placement) {
+                                            Vec3 initialPosition, Spell.EntityPlacement placement) {
         var position = initialPosition;
         if (placement != null) {
             if (placement.location_offset_by_look > 0) {
                 float yaw = targetedYaw + placement.location_yaw_offset;
-                position = position.add(Vec3d.fromPolar(0, yaw).multiply(placement.location_offset_by_look));
+                position = position.add(Vec3.directionFromRotation(0, yaw).scale(placement.location_offset_by_look));
             }
-            position = position.add(new Vec3d(placement.location_offset_x, placement.location_offset_y, placement.location_offset_z));
+            position = position.add(new Vec3(placement.location_offset_x, placement.location_offset_y, placement.location_offset_z));
             if (placement.force_onto_ground) {
                 var searchPosition = position;
-                var blockPos = BlockPos.ofFloored(searchPosition.getX(), searchPosition.getY(), searchPosition.getZ());
+                var blockPos = BlockPos.containing(searchPosition.x(), searchPosition.y(), searchPosition.z());
                 if (world.getBlockState(blockPos).isSolid()) {
                     searchPosition = searchPosition.add(0, 2, 0);
                 }
@@ -42,17 +42,17 @@ public class EntityPlacements {
                 position = groundPosBelow != null ? groundPosBelow : position;
             }
             if (placement.apply_yaw) {
-                placedEntity.setYaw(targetedYaw);
+                placedEntity.setYRot(targetedYaw);
             }
             if (placement.apply_pitch) {
-                placedEntity.setPitch(targetedPitch);
+                placedEntity.setXRot(targetedPitch);
             }
         }
         // Safeguard against a placement that resolved inside terrain — a look-offset pushed into a
         // wall, a formation slot fanned into a hillside, `force_onto_ground` finding a floor that is
         // itself buried. No-op whenever the placement already fits.
         position = liftedOutOfBlocks(world, placedEntity, position);
-        placedEntity.setPosition(position.getX(), position.getY(), position.getZ());
+        placedEntity.setPos(position.x(), position.y(), position.z());
     }
 
     /// Whether `box` is clear of **block** collisions for `entity`.
@@ -61,7 +61,7 @@ public class EntityPlacements {
     /// routinely anchored on top of the caster (a zero look-offset puts the entity at their feet), and
     /// an entity-aware check would read that overlap as "blocked" and nudge every such placement
     /// skyward. Only terrain should move a placement.
-    private static boolean fitsBetweenBlocks(World world, Entity entity, Box box) {
+    private static boolean fitsBetweenBlocks(Level world, Entity entity, AABB box) {
         for (var shape : world.getBlockCollisions(entity, box)) {
             if (!shape.isEmpty()) return false;
         }
@@ -77,13 +77,13 @@ public class EntityPlacements {
     /// keep their tuned geometry. Only vertical embedding is recovered — a look-offset pushed sideways
     /// into a wall face is not resolved here (`EntityPlacement.line_of_sight` is the existing opt-in
     /// for that case).
-    private static Vec3d liftedOutOfBlocks(World world, Entity entity, Vec3d position) {
-        if (entity.noClip) return position;
+    private static Vec3 liftedOutOfBlocks(Level world, Entity entity, Vec3 position) {
+        if (entity.noPhysics) return position;
         var dimensions = entity.getDimensions(entity.getPose());
-        if (fitsBetweenBlocks(world, entity, dimensions.getBoxAt(position))) return position;
+        if (fitsBetweenBlocks(world, entity, dimensions.makeBoundingBox(position))) return position;
         for (int lift = 1; lift <= PLACEMENT_LIFT_LIMIT; lift++) {
             var candidate = position.add(0, lift, 0);
-            if (fitsBetweenBlocks(world, entity, dimensions.getBoxAt(candidate))) return candidate;
+            if (fitsBetweenBlocks(world, entity, dimensions.makeBoundingBox(candidate))) return candidate;
         }
         return position;
     }

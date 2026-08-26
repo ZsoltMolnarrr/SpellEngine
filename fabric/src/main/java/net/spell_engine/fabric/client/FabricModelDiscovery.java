@@ -4,9 +4,9 @@ import net.fabricmc.fabric.api.client.model.loading.v1.ExtraModelKey;
 import net.fabricmc.fabric.api.client.model.loading.v1.FabricBakedModelManager;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.model.loading.v1.SimpleUnbakedExtraModel;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.model.BlockStateModel;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.api.render.CustomModels;
 import net.spell_engine.client.render.CustomModelDiscovery;
 
@@ -28,13 +28,13 @@ public class FabricModelDiscovery implements ModelLoadingPlugin {
             if (key == null) {
                 return null;
             }
-            return ((FabricBakedModelManager) MinecraftClient.getInstance().getBakedModelManager()).getModel(key);
+            return ((FabricBakedModelManager) Minecraft.getInstance().getModelManager()).getModel(key);
         };
     }
 
     @Override
     public void initialize(Context pluginContext) {
-        var resourceManager = MinecraftClient.getInstance().getResourceManager();
+        var resourceManager = Minecraft.getInstance().getResourceManager();
         var discovered = CustomModelDiscovery.discoverScrollModels(resourceManager);
         for (var modelId : discovered) {
             var key = keys.computeIfAbsent(modelId, id -> ExtraModelKey.create(id::toString));

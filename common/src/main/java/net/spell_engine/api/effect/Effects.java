@@ -1,10 +1,10 @@
 package net.spell_engine.api.effect;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.effect.MobEffect;
 import net.spell_engine.rpg_series.config.ConfigUtil;
 import net.spell_engine.rpg_series.config.EffectConfig;
 
@@ -16,15 +16,15 @@ public class Effects {
         public final Identifier id;
         public final String title;
         public final String description;
-        public final StatusEffect effect;
+        public final MobEffect effect;
         public final EffectConfig defaults;
         public EffectConfig config;
-        public RegistryEntry<StatusEffect> entry;
+        public Holder<MobEffect> entry;
 
-        public Entry(Identifier id, String title, String description, StatusEffect effect) {
+        public Entry(Identifier id, String title, String description, MobEffect effect) {
             this(id, title, description, effect, EffectConfig.EMPTY);
         }
-        public Entry(Identifier id, String title, String description, StatusEffect effect, EffectConfig config) {
+        public Entry(Identifier id, String title, String description, MobEffect effect, EffectConfig config) {
             this.id = id;
             this.title = title;
             this.description = description;
@@ -53,13 +53,13 @@ public class Effects {
                 entry.effect
                         .addAttributeModifier(modifier.attribute(),
                                 modifier.modifier().id(),
-                                modifier.modifier().value(),
+                                modifier.modifier().amount(),
                                 modifier.modifier().operation());
             }
         }
 
         for (var entry: entries) {
-            entry.entry = Registry.registerReference(Registries.STATUS_EFFECT, entry.id, entry.effect);
+            entry.entry = Registry.registerForHolder(BuiltInRegistries.MOB_EFFECT, entry.id, entry.effect);
         }
     }
 }

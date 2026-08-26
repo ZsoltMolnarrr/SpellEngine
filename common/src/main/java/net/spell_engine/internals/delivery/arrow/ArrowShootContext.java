@@ -1,6 +1,6 @@
 package net.spell_engine.internals.delivery.arrow;
 
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
 import net.spell_engine.api.spell.Spell;
 
 import java.util.ArrayList;
@@ -12,5 +12,5 @@ public class ArrowShootContext {
     };
 
     public boolean firedBySpell = false;
-    public List<RegistryEntry<Spell>> activeSpells = new ArrayList<>();
+    public List<Holder<Spell>> activeSpells = new ArrayList<>();
 }

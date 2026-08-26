@@ -1,13 +1,13 @@
 package net.spell_engine.api.effect;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageType;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.sound.SoundEvent;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.utils.SoundHelper;
@@ -23,32 +23,32 @@ import java.util.Map;
  */
 public class Protection {
     public record Pop(List<ParticleGroup> particles, @Nullable SoundEvent sound) { }
-    public record Entry(RegistryEntry<StatusEffect> effectEntry, TagKey<DamageType> protects,
+    public record Entry(Holder<MobEffect> effectEntry, TagKey<DamageType> protects,
                         int decrement, Pop onDecrement, Pop onRemove) { }
-    public static final Map<RegistryKey<StatusEffect>, Entry> PROTECTIONS = new HashMap<>();
+    public static final Map<ResourceKey<MobEffect>, Entry> PROTECTIONS = new HashMap<>();
 
-    public static void register(RegistryEntry<StatusEffect> effectEntry, Pop pop) {
-        register(effectEntry.getKey().get(), new Entry(effectEntry, null, 1, pop, pop));
+    public static void register(Holder<MobEffect> effectEntry, Pop pop) {
+        register(effectEntry.unwrapKey().get(), new Entry(effectEntry, null, 1, pop, pop));
     }
 
-    public static void register(RegistryEntry<StatusEffect> effectEntry, TagKey<DamageType> protects, Pop pop) {
-        register(effectEntry.getKey().get(), new Entry(effectEntry, protects, 1, pop, pop));
+    public static void register(Holder<MobEffect> effectEntry, TagKey<DamageType> protects, Pop pop) {
+        register(effectEntry.unwrapKey().get(), new Entry(effectEntry, protects, 1, pop, pop));
     }
 
-    public static void register(RegistryKey<StatusEffect> key, Entry entry) {
+    public static void register(ResourceKey<MobEffect> key, Entry entry) {
         PROTECTIONS.put(key, entry);
     }
 
     public static boolean tryProtect(LivingEntity entity, DamageSource damageSource) {
-        for (var entry: entity.getActiveStatusEffects().entrySet()) {
-            var optionalKey = entry.getKey().getKey();
+        for (var entry: entity.getActiveEffectsMap().entrySet()) {
+            var optionalKey = entry.getKey().unwrapKey();
             if (optionalKey.isEmpty()) { // Should never happen, added due to some incompatibility crash
                 continue;
             }
             var key = optionalKey.get();
             var protection = PROTECTIONS.get(key);
             if (protection != null) {
-                if (protection.protects != null && !damageSource.isIn(protection.protects)) {
+                if (protection.protects != null && !damageSource.is(protection.protects)) {
                     continue; // This protection does not apply to this damage type
                 }
                 var effect = entry.getValue();
@@ -58,7 +58,7 @@ public class Protection {
                 if (pop != null) {
                     ParticleHelper.sendBatches(entity, pop.particles);
                     if (pop.sound != null) {
-                        SoundHelper.playSoundEvent(entity.getEntityWorld(), entity, pop.sound);
+                        SoundHelper.playSoundEvent(entity.level(), entity, pop.sound);
                     }
                 }
                 StatusEffectUtil.applyChanges(entity, List.of(

@@ -1,9 +1,9 @@
 package net.spell_engine.api.spell.fx;
 
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKeys;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.spell_engine.utils.PatternMatching;
 import org.jetbrains.annotations.Nullable;
 
@@ -64,13 +64,13 @@ public class PlayerAnimation {
                 if (slot == null && itemMatcher == null) {
                     continue;
                 }
-                var equippedItem = entity.getEquippedStack(slot);
-                if (PatternMatching.matches(equippedItem.getRegistryEntry(), RegistryKeys.ITEM, itemMatcher)) {
+                var equippedItem = entity.getItemBySlot(slot);
+                if (PatternMatching.matches(equippedItem.getItemHolder(), Registries.ITEM, itemMatcher)) {
                     return override.id;
                 }
             }
             if (override.two_handed_weapon != null) {
-                if (twoHandedChecker.apply(entity.getMainHandStack()) == override.two_handed_weapon) {
+                if (twoHandedChecker.apply(entity.getMainHandItem()) == override.two_handed_weapon) {
                     return override.id;
                 }
             }

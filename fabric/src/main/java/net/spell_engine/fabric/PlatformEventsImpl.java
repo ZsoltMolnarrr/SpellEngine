@@ -9,11 +9,11 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.util.TriState;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.loot.LootPool;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.level.storage.loot.LootPool;
 import net.spell_engine.PlatformEvents;
 import net.spell_engine.mixin.loot.LootTableBuilderAccessor;
 
@@ -34,11 +34,11 @@ public class PlatformEventsImpl {
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, resourceManager, success) -> callback.run());
     }
 
-    public static void onPlayerJoin(Consumer<net.minecraft.server.network.ServerPlayerEntity> callback) {
+    public static void onPlayerJoin(Consumer<net.minecraft.server.level.ServerPlayer> callback) {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> callback.accept(handler.getPlayer()));
     }
 
-    public static void onPlayerChangedWorld(Consumer<net.minecraft.server.network.ServerPlayerEntity> callback) {
+    public static void onPlayerChangedWorld(Consumer<net.minecraft.server.level.ServerPlayer> callback) {
         ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, target) -> callback.accept(player));
     }
 
@@ -57,10 +57,10 @@ public class PlatformEventsImpl {
 
     public static void onLootTableModify(Consumer<PlatformEvents.LootTableModifyContext> callback) {
         LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) ->
-                callback.accept(new FabricLootContext(registries, key.getValue(), tableBuilder)));
+                callback.accept(new FabricLootContext(registries, key.identifier(), tableBuilder)));
     }
 
-    public static void onItemGroupModify(RegistryKey<ItemGroup> group, PlatformEvents.ItemGroupModifier callback) {
+    public static void onItemGroupModify(ResourceKey<CreativeModeTab> group, PlatformEvents.ItemGroupModifier callback) {
         ItemGroupEvents.modifyEntriesEvent(group).register(content -> callback.modify(content, content.getContext()));
     }
 
@@ -74,8 +74,8 @@ public class PlatformEventsImpl {
                 });
     }
 
-    private record FabricLootContext(RegistryWrapper.WrapperLookup registries, Identifier tableId,
-                                     net.minecraft.loot.LootTable.Builder builder)
+    private record FabricLootContext(HolderLookup.Provider registries, Identifier tableId,
+                                     net.minecraft.world.level.storage.loot.LootTable.Builder builder)
             implements PlatformEvents.LootTableModifyContext {
         @Override
         public java.util.List<LootPool> existingPools() {

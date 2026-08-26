@@ -1,8 +1,8 @@
 package net.spell_engine.client.input;
 
-import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Options;
 import net.spell_engine.mixin.client.control.KeybindingAccessor;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,36 +27,36 @@ public class WrappedKeybinding {
         }
 
         @Nullable
-        public KeyBinding keyBindingFrom(GameOptions options) {
+        public KeyMapping keyBindingFrom(Options options) {
             return switch (this) {
-                case USE_KEY -> options.useKey;
-                case HOTBAR_KEY_1 -> options.hotbarKeys[0];
-                case HOTBAR_KEY_2 -> options.hotbarKeys[1];
-                case HOTBAR_KEY_3 -> options.hotbarKeys[2];
-                case HOTBAR_KEY_4 -> options.hotbarKeys[3];
-                case HOTBAR_KEY_5 -> options.hotbarKeys[4];
-                case HOTBAR_KEY_6 -> options.hotbarKeys[5];
-                case HOTBAR_KEY_7 -> options.hotbarKeys[6];
-                case HOTBAR_KEY_8 -> options.hotbarKeys[7];
-                case HOTBAR_KEY_9 -> options.hotbarKeys[8];
+                case USE_KEY -> options.keyUse;
+                case HOTBAR_KEY_1 -> options.keyHotbarSlots[0];
+                case HOTBAR_KEY_2 -> options.keyHotbarSlots[1];
+                case HOTBAR_KEY_3 -> options.keyHotbarSlots[2];
+                case HOTBAR_KEY_4 -> options.keyHotbarSlots[3];
+                case HOTBAR_KEY_5 -> options.keyHotbarSlots[4];
+                case HOTBAR_KEY_6 -> options.keyHotbarSlots[5];
+                case HOTBAR_KEY_7 -> options.keyHotbarSlots[6];
+                case HOTBAR_KEY_8 -> options.keyHotbarSlots[7];
+                case HOTBAR_KEY_9 -> options.keyHotbarSlots[8];
                 default -> null;
             };
         }
     }
 
-    public KeyBinding original;
+    public KeyMapping original;
     public VanillaAlternative alternative;
 
-    public WrappedKeybinding(KeyBinding original, VanillaAlternative alternative) {
+    public WrappedKeybinding(KeyMapping original, VanillaAlternative alternative) {
         this.original = original;
         this.alternative = alternative;
     }
 
-    public record Unwrapped(KeyBinding keyBinding, @Nullable Category vanillaHandle) { }
+    public record Unwrapped(KeyMapping keyBinding, @Nullable Category vanillaHandle) { }
     @Nullable
-    public Unwrapped get(GameOptions options) {
+    public Unwrapped get(Options options) {
         var assignedKey = ((KeybindingAccessor)original).spellEngine_getBoundKey();
-        if (assignedKey != null && assignedKey.getCode() != InputUtil.UNKNOWN_KEY.getCode()) {
+        if (assignedKey != null && assignedKey.getValue() != InputConstants.UNKNOWN.getValue()) {
             return new Unwrapped(original, null);
         }
 

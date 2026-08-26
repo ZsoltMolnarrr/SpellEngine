@@ -1,26 +1,25 @@
 package net.spell_engine.entity;
 
-import net.minecraft.entity.AnimationState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityDimensions;
-import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.Ownable;
-
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 import net.spell_engine.api.spell.fx.Fx;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.AnimationState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.TraceableEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.fx.ParticleHelper;
@@ -33,7 +32,7 @@ import java.util.UUID;
 import net.spell_engine.internals.SpellExecution;
 import net.spell_engine.internals.impact.SpellImpacts;
 
-public class SpellCloud extends Entity implements Ownable {
+public class SpellCloud extends Entity implements TraceableEntity {
     public static EntityType<SpellCloud> ENTITY_TYPE;
     @Nullable
     private LivingEntity owner;
@@ -62,17 +61,17 @@ public class SpellCloud extends Entity implements Ownable {
     public static final byte PHASE_ACTIVE     = 1;
     public static final byte PHASE_DESPAWNING = 2;
 
-    public SpellCloud(EntityType<? extends SpellCloud> entityType, World world) {
+    public SpellCloud(EntityType<? extends SpellCloud> entityType, Level world) {
         super(entityType, world);
         // Eagerly start the spawn animation so the first render frame already has its t=0 keyframes
         // (e.g. scale 0), avoiding a one-frame flash at full size before setupAnimationStates() runs.
         // Harmless when there's no spawning phase: the first client tick stops it via setRunning(false).
-        spawnAnimationState.startIfNotRunning(0);
+        spawnAnimationState.startIfStopped(0);
     }
 
-    public SpellCloud(World world) {
+    public SpellCloud(Level world) {
         super(ENTITY_TYPE, world);
-        this.noClip = true;
+        this.noPhysics = true;
     }
 
     public void onCreatedFromSpell(Identifier spellId, Spell.Delivery.Cloud cloudData, SpellExecution.ImpactContext context, float time_to_live_seconds, Spell.Modifier.Cloud cloudModifier) {
@@ -90,9 +89,9 @@ public class SpellCloud extends Entity implements Ownable {
             }
             this.dataIndex = index;
         }
-        this.getDataTracker().set(SPELL_ID_TRACKER, this.spellId.toString());
-        this.getDataTracker().set(DATA_INDEX_TRACKER, this.dataIndex);
-        this.getDataTracker().set(RADIUS_TRACKER, radiusForAge(this.age));
+        this.getEntityData().set(SPELL_ID_TRACKER, this.spellId.toString());
+        this.getEntityData().set(DATA_INDEX_TRACKER, this.dataIndex);
+        this.getEntityData().set(RADIUS_TRACKER, radiusForAge(this.tickCount));
 
         // Carve the lifetime into spawning / active / despawning, like a summoned entity.
         // `time_to_live_seconds` is the ACTIVE duration; spawn/despawn bracket it.
@@ -105,9 +104,9 @@ public class SpellCloud extends Entity implements Ownable {
 
     // MARK: Phase accessors
 
-    public boolean isSpawning()   { return getDataTracker().get(PHASE_TRACKER) == PHASE_SPAWNING; }
-    public boolean isActive()     { return getDataTracker().get(PHASE_TRACKER) == PHASE_ACTIVE; }
-    public boolean isDespawning() { return getDataTracker().get(PHASE_TRACKER) == PHASE_DESPAWNING; }
+    public boolean isSpawning()   { return getEntityData().get(PHASE_TRACKER) == PHASE_SPAWNING; }
+    public boolean isActive()     { return getEntityData().get(PHASE_TRACKER) == PHASE_ACTIVE; }
+    public boolean isDespawning() { return getEntityData().get(PHASE_TRACKER) == PHASE_DESPAWNING; }
 
     /// Server-side: cut the remaining lifetime short and enter DESPAWNING for `ticks`, after which
     /// `tick()` discards this entity through the normal `age >= timeToLive` path.
@@ -121,7 +120,7 @@ public class SpellCloud extends Entity implements Ownable {
     /// a subclass may pick its own wind-down length from `onImpactPerformed` before the impact-cap
     /// check in `tick()` falls back to the cloud's configured `despawn_ticks`.
     protected void beginDespawn(int ticks) {
-        if (getEntityWorld().isClient() || isDespawning()) {
+        if (level().isClientSide() || isDespawning()) {
             return;
         }
         if (ticks <= 0) {
@@ -129,7 +128,7 @@ public class SpellCloud extends Entity implements Ownable {
             return;
         }
         this.despawnDuration = ticks;
-        this.timeToLive = this.age + ticks;
+        this.timeToLive = this.tickCount + ticks;
         // Publish now; waiting for the next tick would leak one frame of the ACTIVE pose.
         setPhase(PHASE_DESPAWNING);
     }
@@ -137,8 +136,8 @@ public class SpellCloud extends Entity implements Ownable {
     /// Server-side: publishes the current phase and the absolute age at which it ends, so the client
     /// can drive the spawn/despawn scale without knowing the raw boundary fields (mirrors SummonedEntity).
     private void setPhase(byte phase) {
-        if (getDataTracker().get(PHASE_TRACKER) != phase) {
-            getDataTracker().set(PHASE_TRACKER, phase);
+        if (getEntityData().get(PHASE_TRACKER) != phase) {
+            getEntityData().set(PHASE_TRACKER, phase);
             // Fire the wind-down FX exactly on the ACTIVE -> DESPAWNING transition. This is the sole
             // server-side choke point for phase changes (both the age-based expiry in `tick()` and
             // `beginDespawn()` route through here), and the tracker guard makes it run once. Mirrors the
@@ -154,7 +153,7 @@ public class SpellCloud extends Entity implements Ownable {
             case PHASE_DESPAWNING -> timeToLive;
             default               -> 0;
         };
-        getDataTracker().set(END_OF_PHASE_AGE, endOfPhaseAge);
+        getEntityData().set(END_OF_PHASE_AGE, endOfPhaseAge);
     }
 
     // MARK: Animation states
@@ -184,22 +183,22 @@ public class SpellCloud extends Entity implements Ownable {
     /// modifier.
     public float getRenderScale(float tickDelta) {
         if (spawnRenderRadius <= 0F) return 1F;
-        return net.minecraft.util.math.MathHelper.lerp(tickDelta, prevRenderRadius, renderRadius) / spawnRenderRadius;
+        return net.minecraft.util.Mth.lerp(tickDelta, prevRenderRadius, renderRadius) / spawnRenderRadius;
     }
 
     /// Client-side: keeps the three lifecycle animation states in sync with the current phase.
     private void setupAnimationStates() {
-        spawnAnimationState.setRunning(isSpawning(), this.age);
+        spawnAnimationState.animateWhen(isSpawning(), this.tickCount);
         boolean despawning = isDespawning();
-        if (despawning && !despawnAnimationState.isRunning()) {
+        if (despawning && !despawnAnimationState.isStarted()) {
             // END_OF_PHASE_AGE = timeToLive during DESPAWNING (a future absolute age). Starting the
             // state there makes getTimeRunning() begin negative, so a renderer can play the spawn clip
             // at speedMultiplier=-1F to scale back out as despawn completes (same trick as SummonedEntity).
-            despawnAnimationState.start(getDataTracker().get(END_OF_PHASE_AGE));
+            despawnAnimationState.start(getEntityData().get(END_OF_PHASE_AGE));
         } else if (!despawning) {
             despawnAnimationState.stop();
         }
-        idleAnimationState.setRunning(isActive(), this.age);
+        idleAnimationState.animateWhen(isActive(), this.tickCount);
     }
 
     /// Server-side: emit the cloud's configured despawn FX (sound, particles, model effects), broadcast
@@ -211,11 +210,11 @@ public class SpellCloud extends Entity implements Ownable {
         }
         var despawn = cloudData.despawn;
         if (despawn.sound != null) {
-            SoundHelper.playSound(getEntityWorld(), this, despawn.sound);
+            SoundHelper.playSound(level(), this, despawn.sound);
         }
         var despawnVisuals = despawn.visuals.resolved(Fx.Context.NONE);
         ParticleHelper.sendBatches(this, despawnVisuals.particles);
-        ModelEffectHelper.spawn(getEntityWorld(), this.getEntityPos(), this.getYaw(), despawnVisuals.models, null);
+        ModelEffectHelper.spawn(level(), this.position(), this.getYRot(), despawnVisuals.models, null);
     }
 
     /// The cloud's radius before any lifetime growth: the configured base plus power scaling, plus the
@@ -274,12 +273,12 @@ public class SpellCloud extends Entity implements Ownable {
         return Math.max(base + steps * step, 0F);
     }
 
-    public EntityDimensions getDimensions(EntityPose pose) {
+    public EntityDimensions getDimensions(Pose pose) {
         var cloudData = getCloudData();
         if (cloudData != null) {
-            var radius = getDataTracker().get(RADIUS_TRACKER);
+            var radius = getEntityData().get(RADIUS_TRACKER);
             var heightMultiplier = cloudData.volume.area.vertical_range_multiplier;
-            return EntityDimensions.changing(radius * 2, radius * heightMultiplier);
+            return EntityDimensions.scalable(radius * 2, radius * heightMultiplier);
         } else {
             return super.getDimensions(pose);
         }
@@ -289,14 +288,14 @@ public class SpellCloud extends Entity implements Ownable {
 
     public void setOwner(@Nullable LivingEntity owner) {
         this.owner = owner;
-        this.ownerUuid = owner == null ? null : owner.getUuid();
+        this.ownerUuid = owner == null ? null : owner.getUUID();
     }
 
     @Nullable
     @Override
     public Entity getOwner() {
-        if (this.owner == null && this.ownerUuid != null && this.getEntityWorld() instanceof ServerWorld) {
-            Entity entity = ((ServerWorld)this.getEntityWorld()).getEntity(this.ownerUuid);
+        if (this.owner == null && this.ownerUuid != null && this.level() instanceof ServerLevel) {
+            Entity entity = ((ServerLevel)this.level()).getEntity(this.ownerUuid);
             if (entity instanceof LivingEntity) {
                 this.owner = (LivingEntity)entity;
             }
@@ -306,30 +305,30 @@ public class SpellCloud extends Entity implements Ownable {
 
     // MARK: Sync
 
-    private static final TrackedData<String> SPELL_ID_TRACKER  = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.STRING);
-    private static final TrackedData<Integer> DATA_INDEX_TRACKER = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Float> RADIUS_TRACKER = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.FLOAT);
-    private static final TrackedData<Byte> PHASE_TRACKER = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.BYTE);
-    private static final TrackedData<Integer> END_OF_PHASE_AGE = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final EntityDataAccessor<String> SPELL_ID_TRACKER  = SynchedEntityData.defineId(SpellCloud.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Integer> DATA_INDEX_TRACKER = SynchedEntityData.defineId(SpellCloud.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> RADIUS_TRACKER = SynchedEntityData.defineId(SpellCloud.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Byte> PHASE_TRACKER = SynchedEntityData.defineId(SpellCloud.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Integer> END_OF_PHASE_AGE = SynchedEntityData.defineId(SpellCloud.class, EntityDataSerializers.INT);
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        builder.add(SPELL_ID_TRACKER, "");
-        builder.add(DATA_INDEX_TRACKER, this.dataIndex);
-        builder.add(RADIUS_TRACKER, 0F);
-        builder.add(PHASE_TRACKER, PHASE_SPAWNING);
-        builder.add(END_OF_PHASE_AGE, 0);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(SPELL_ID_TRACKER, "");
+        builder.define(DATA_INDEX_TRACKER, this.dataIndex);
+        builder.define(RADIUS_TRACKER, 0F);
+        builder.define(PHASE_TRACKER, PHASE_SPAWNING);
+        builder.define(END_OF_PHASE_AGE, 0);
     }
 
-    public void onTrackedDataSet(TrackedData<?> data) {
-        super.onTrackedDataSet(data);
-        if (getEntityWorld().isClient()) {
-            var rawSpellId = this.getDataTracker().get(SPELL_ID_TRACKER);
+    public void onSyncedDataUpdated(EntityDataAccessor<?> data) {
+        super.onSyncedDataUpdated(data);
+        if (level().isClientSide()) {
+            var rawSpellId = this.getEntityData().get(SPELL_ID_TRACKER);
             if (rawSpellId != null && !rawSpellId.isEmpty()) {
-                this.spellId = Identifier.of(rawSpellId);
+                this.spellId = Identifier.parse(rawSpellId);
             }
-            this.dataIndex = this.getDataTracker().get(DATA_INDEX_TRACKER);
-            this.calculateDimensions();
+            this.dataIndex = this.getEntityData().get(DATA_INDEX_TRACKER);
+            this.refreshDimensions();
         }
     }
 
@@ -352,33 +351,33 @@ public class SpellCloud extends Entity implements Ownable {
     }
 
     @Override
-    protected void readCustomData(ReadView view) {
-        this.age = view.getInt(NBTKey.AGE.key, 0);
-        this.timeToLive = view.getInt(NBTKey.TIME_TO_LIVE.key, 0);
-        this.spawnDuration = view.getInt(NBTKey.SPAWN_DURATION.key, 0);
-        this.despawnDuration = view.getInt(NBTKey.DESPAWN_DURATION.key, 0);
-        this.spellId = Identifier.of(view.getString(NBTKey.SPELL_ID.key, ""));
-        this.dataIndex = view.getInt(NBTKey.DATA_INDEX.key, 0);
-        view.getOptionalReadView(NBTKey.CLOUD_MODIFIER.key).ifPresent(cm -> {
+    protected void readAdditionalSaveData(ValueInput view) {
+        this.tickCount = view.getIntOr(NBTKey.AGE.key, 0);
+        this.timeToLive = view.getIntOr(NBTKey.TIME_TO_LIVE.key, 0);
+        this.spawnDuration = view.getIntOr(NBTKey.SPAWN_DURATION.key, 0);
+        this.despawnDuration = view.getIntOr(NBTKey.DESPAWN_DURATION.key, 0);
+        this.spellId = Identifier.parse(view.getStringOr(NBTKey.SPELL_ID.key, ""));
+        this.dataIndex = view.getIntOr(NBTKey.DATA_INDEX.key, 0);
+        view.child(NBTKey.CLOUD_MODIFIER.key).ifPresent(cm -> {
             var modifier = new Spell.Modifier.Cloud();
-            modifier.radius_add = cm.getFloat("RadiusAdd", 0);
-            modifier.growth.radius_step = cm.getFloat("GrowthStep", 0);
-            modifier.growth.step_interval = cm.getInt("GrowthInterval", 0);
-            modifier.growth.start_tick = cm.getInt("GrowthStart", 0);
-            modifier.growth.duration_ticks = cm.getInt("GrowthDuration", 0);
+            modifier.radius_add = cm.getFloatOr("RadiusAdd", 0);
+            modifier.growth.radius_step = cm.getFloatOr("GrowthStep", 0);
+            modifier.growth.step_interval = cm.getIntOr("GrowthInterval", 0);
+            modifier.growth.start_tick = cm.getIntOr("GrowthStart", 0);
+            modifier.growth.duration_ticks = cm.getIntOr("GrowthDuration", 0);
             this.cloudModifier = modifier;
         });
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
-        view.putInt(NBTKey.AGE.key, this.age);
+    protected void addAdditionalSaveData(ValueOutput view) {
+        view.putInt(NBTKey.AGE.key, this.tickCount);
         view.putInt(NBTKey.TIME_TO_LIVE.key, this.timeToLive);
         view.putInt(NBTKey.SPAWN_DURATION.key, this.spawnDuration);
         view.putInt(NBTKey.DESPAWN_DURATION.key, this.despawnDuration);
         view.putString(NBTKey.SPELL_ID.key, this.spellId.toString());
         view.putInt(NBTKey.DATA_INDEX.key, this.dataIndex);
-        var cm = view.get(NBTKey.CLOUD_MODIFIER.key);
+        var cm = view.child(NBTKey.CLOUD_MODIFIER.key);
         cm.putFloat("RadiusAdd", cloudModifier.radius_add);
         cm.putFloat("GrowthStep", cloudModifier.growth.radius_step);
         cm.putInt("GrowthInterval", cloudModifier.growth.step_interval);
@@ -387,7 +386,7 @@ public class SpellCloud extends Entity implements Ownable {
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
         return false;
     }
 
@@ -406,10 +405,10 @@ public class SpellCloud extends Entity implements Ownable {
             // this.discard();
             return;
         }
-        var world = this.getEntityWorld();
-        if (world.isClient()) {
+        var world = this.level();
+        if (world.isClientSide()) {
             // Client side tick
-            float trackedRadius = getDataTracker().get(RADIUS_TRACKER);
+            float trackedRadius = getEntityData().get(RADIUS_TRACKER);
             if (spawnRenderRadius < 0F) {
                 spawnRenderRadius = prevRenderRadius = renderRadius = trackedRadius;
             } else {
@@ -418,7 +417,7 @@ public class SpellCloud extends Entity implements Ownable {
             }
             setupAnimationStates();
             var clientData = cloudData.client_data;
-            var spawnParticles = clientData.particle_spawn_interval <= 1 || (this.age % clientData.particle_spawn_interval) == 0;
+            var spawnParticles = clientData.particle_spawn_interval <= 1 || (this.tickCount % clientData.particle_spawn_interval) == 0;
             if (spawnParticles) {
                 for (var particleBatch : clientData.interval_particles) {
                     ParticleHelper.play(world, this, particleBatch);
@@ -430,9 +429,9 @@ public class SpellCloud extends Entity implements Ownable {
 
             var presence_sound = cloudData.presence_sound;
             if (!presenceSoundFired && presence_sound != null) {
-                var soundEvent = Registries.SOUND_EVENT.get(Identifier.of(presence_sound.id()));
+                var soundEvent = BuiltInRegistries.SOUND_EVENT.getValue(Identifier.parse(presence_sound.id()));
                 if (soundEvent != null) {
-                    ((SoundPlayerWorld) world).playSoundFromEntity(this, soundEvent, SoundCategory.PLAYERS,
+                    ((SoundPlayerWorld) world).playSoundFromEntity(this, soundEvent, SoundSource.PLAYERS,
                             presence_sound.volume(),
                             presence_sound.randomizedPitch());
                     presenceSoundFired = true;
@@ -443,16 +442,16 @@ public class SpellCloud extends Entity implements Ownable {
 
         } else {
             // Server side tick
-            if (this.age >= this.timeToLive) {
+            if (this.tickCount >= this.timeToLive) {
                 this.discard();
                 return;
             }
             // Advance the lifecycle phase. Impacts are only performed while ACTIVE — the
             // spawning and despawning phases are warm-up / wind-down, matching SummonedEntity.
             byte phase;
-            if (this.age < spawnDuration) {
+            if (this.tickCount < spawnDuration) {
                 phase = PHASE_SPAWNING;
-            } else if (this.age >= timeToLive - despawnDuration) {
+            } else if (this.tickCount >= timeToLive - despawnDuration) {
                 phase = PHASE_DESPAWNING;
             } else {
                 phase = PHASE_ACTIVE;
@@ -461,12 +460,12 @@ public class SpellCloud extends Entity implements Ownable {
             // Lifetime growth: recompute the radius from the current age and republish it only when it
             // actually changes (i.e. on a growth-step boundary), so rendering/collision follow and sync
             // traffic stays minimal. `radiusForAge` is a no-op unless `growth` is configured.
-            float grownRadius = radiusForAge(this.age);
-            if (grownRadius != getDataTracker().get(RADIUS_TRACKER)) {
-                getDataTracker().set(RADIUS_TRACKER, grownRadius);
-                calculateDimensions();
+            float grownRadius = radiusForAge(this.tickCount);
+            if (grownRadius != getEntityData().get(RADIUS_TRACKER)) {
+                getEntityData().set(RADIUS_TRACKER, grownRadius);
+                refreshDimensions();
             }
-            if (phase == PHASE_ACTIVE && (this.age % cloudData.impact_tick_interval) == 0) {
+            if (phase == PHASE_ACTIVE && (this.tickCount % cloudData.impact_tick_interval) == 0) {
                 // Impact tick due
                 var area_impact = cloudData.volume;
                 var owner = (LivingEntity) this.getOwner();
@@ -478,7 +477,7 @@ public class SpellCloud extends Entity implements Ownable {
                         context = new SpellExecution.ImpactContext();
                     }
                     var performed = SpellImpacts.lookupAndPerformAreaImpact(area_impact, spellEntry, owner,null,
-                            this, spell.impacts, context.position(this.getEntityPos()), true, grownRadius);
+                            this, spell.impacts, context.position(this.position()), true, grownRadius);
                     if (performed) {
                         onImpactPerformed(owner, world, cloudData, context);
                         if (this.impactCap > 0 && this.impactsPerformed >= this.impactCap) {
@@ -496,7 +495,7 @@ public class SpellCloud extends Entity implements Ownable {
         }
     }
 
-    protected void onImpactPerformed(LivingEntity owner, World world, Spell.Delivery.Cloud cloudData, SpellExecution.ImpactContext context) {
+    protected void onImpactPerformed(LivingEntity owner, Level world, Spell.Delivery.Cloud cloudData, SpellExecution.ImpactContext context) {
         // Server-side call site: `ParticleHelper.play` bottoms out in `World.addParticle`, which is an
         // empty method on anything but ClientWorld — it has to be broadcast instead. Detached (rather
         // than entity-anchored) because a cloud whose `despawn_ticks` is 0 is discarded on this very
@@ -505,7 +504,7 @@ public class SpellCloud extends Entity implements Ownable {
         this.impactsPerformed++;
     }
 
-    protected void onImpactFailed(LivingEntity owner, World world, Spell.Delivery.Cloud cloudData, SpellExecution.ImpactContext context) {
+    protected void onImpactFailed(LivingEntity owner, Level world, Spell.Delivery.Cloud cloudData, SpellExecution.ImpactContext context) {
         // No-op by default; override in subclasses to handle failed impacts (e.g. play a sound).
     }
 
@@ -518,7 +517,7 @@ public class SpellCloud extends Entity implements Ownable {
         return null;
     }
 
-    @Nullable public RegistryEntry<Spell> getSpellEntry() {
-        return SpellRegistry.from(this.getEntityWorld()).getEntry(this.spellId).orElse(null);
+    @Nullable public Holder<Spell> getSpellEntry() {
+        return SpellRegistry.from(this.level()).get(this.spellId).orElse(null);
     }
 }

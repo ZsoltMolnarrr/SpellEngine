@@ -1,30 +1,30 @@
 accessWidener	v2	named
-accessible    class    net/minecraft/entity/effect/PoisonStatusEffect
-accessible    method    net/minecraft/client/render/RenderLayer    of    (Ljava/lang/String;Lnet/minecraft/client/render/RenderSetup;)Lnet/minecraft/client/render/RenderLayer;
-accessible    method    net/minecraft/client/render/block/entity/BlockEntityRendererFactories    register    (Lnet/minecraft/block/entity/BlockEntityType;Lnet/minecraft/client/render/block/entity/BlockEntityRendererFactory;)V
+accessible	class	net/minecraft/world/effect/PoisonMobEffect
+accessible	method	net/minecraft/client/renderer/rendertype/RenderType	create	(Ljava/lang/String;Lnet/minecraft/client/renderer/rendertype/RenderSetup;)Lnet/minecraft/client/renderer/rendertype/RenderType;
+accessible	method	net/minecraft/client/renderer/blockentity/BlockEntityRenderers	register	(Lnet/minecraft/world/level/block/entity/BlockEntityType;Lnet/minecraft/client/renderer/blockentity/BlockEntityRendererProvider;)V
 # Loader-neutral replacement for Fabric API's PlayerLookup.tracking(Entity):
 # reach the vanilla entity-tracker listener set so common code can enumerate the
 # server players tracking an entity without depending on any loader networking API.
-accessible    field    net/minecraft/server/world/ServerChunkLoadingManager    entityTrackers    Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
-accessible    class    net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker
-accessible    field    net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker    listeners    Ljava/util/Set;
+accessible	field	net/minecraft/server/level/ChunkMap	entityMap	Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
+accessible	class	net/minecraft/server/level/ChunkMap$TrackedEntity
+accessible	field	net/minecraft/server/level/ChunkMap$TrackedEntity	seenBy	Ljava/util/Set;
 # NeoForge has no LootTable.Builder in its LootTableLoadEvent (it exposes a built LootTable), so the
 # NeoForge loot-modify path reconstructs the table with extra pools. Needs the vanilla fields + ctor.
-accessible    field    net/minecraft/loot/LootTable    type    Lnet/minecraft/util/context/ContextType;
-accessible    field    net/minecraft/loot/LootTable    randomSequenceId    Ljava/util/Optional;
-accessible    field    net/minecraft/loot/LootTable    pools    Ljava/util/List;
-accessible    field    net/minecraft/loot/LootTable    functions    Ljava/util/List;
+accessible	field	net/minecraft/world/level/storage/loot/LootTable	paramSet	Lnet/minecraft/util/context/ContextKeySet;
+accessible	field	net/minecraft/world/level/storage/loot/LootTable	randomSequence	Ljava/util/Optional;
+accessible	field	net/minecraft/world/level/storage/loot/LootTable	pools	Ljava/util/List;
+accessible	field	net/minecraft/world/level/storage/loot/LootTable	functions	Ljava/util/List;
 # LootHelper.inspect reads pool entries (Fabric API widens this on Fabric; NeoForge needs our own AT)
-accessible    field    net/minecraft/loot/LootPool    entries    Ljava/util/List;
-accessible    method    net/minecraft/loot/LootTable    <init>    (Lnet/minecraft/util/context/ContextType;Ljava/util/Optional;Ljava/util/List;Ljava/util/List;)V
+accessible	field	net/minecraft/world/level/storage/loot/LootPool	entries	Ljava/util/List;
+accessible	method	net/minecraft/world/level/storage/loot/LootTable	<init>	(Lnet/minecraft/util/context/ContextKeySet;Ljava/util/Optional;Ljava/util/List;Ljava/util/List;)V
 # Vanilla BlockEntityType constructor is private since 1.21.2; used to create the spell binding block entity type
-accessible    method    net/minecraft/block/entity/BlockEntityType    <init>    (Lnet/minecraft/block/entity/BlockEntityType$BlockEntityFactory;Ljava/util/Set;)V
-accessible    class    net/minecraft/block/entity/BlockEntityType$BlockEntityFactory
+accessible	method	net/minecraft/world/level/block/entity/BlockEntityType	<init>	(Lnet/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier;Ljava/util/Set;)V
+accessible	class	net/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier
 # Pipeline snippets to derive Spell Engine render pipelines from (blend/depth/cull variants of vanilla ones)
-accessible    field    net/minecraft/client/gl/RenderPipelines    ENTITY_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
-accessible    field    net/minecraft/client/gl/RenderPipelines    ENTITY_EMISSIVE_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
-accessible    field    net/minecraft/client/gl/RenderPipelines    RENDERTYPE_BEACON_BEAM_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible	field	net/minecraft/client/renderer/RenderPipelines	ENTITY_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible	field	net/minecraft/client/renderer/RenderPipelines	ENTITY_EMISSIVE_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible	field	net/minecraft/client/renderer/RenderPipelines	BEACON_BEAM_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 # Item glow: the glint program pipeline (core/glint) is rebuilt with additive blending
-accessible    field    net/minecraft/client/gl/RenderPipelines    TRANSFORMS_AND_PROJECTION_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
-accessible    field    net/minecraft/client/gl/RenderPipelines    FOG_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
-accessible    field    net/minecraft/client/gl/RenderPipelines    GLOBALS_SNIPPET    Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible	field	net/minecraft/client/renderer/RenderPipelines	MATRICES_PROJECTION_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible	field	net/minecraft/client/renderer/RenderPipelines	FOG_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible	field	net/minecraft/client/renderer/RenderPipelines	GLOBALS_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;

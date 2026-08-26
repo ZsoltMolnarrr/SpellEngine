@@ -1,9 +1,9 @@
 package net.spell_engine.api.entity;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageType;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.entity.DamageSourceExtension;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,12 +18,12 @@ public class LivingEntityImmunity {
             int validUntil
     ) {
         public boolean protectsAgainst(DamageSource source) {
-            var sourceType = source.getType();
+            var sourceType = source.type();
             if (damageType != null) {
                 if (sourceType == null || sourceType != damageType) return false;
             }
             if (damageTypeTag != null) {
-                if (sourceType == null || !source.isIn(damageTypeTag)) return false;
+                if (sourceType == null || !source.is(damageTypeTag)) return false;
             }
             if (damageIndirect != null) {
                 var isInDirect = ((DamageSourceExtension)source).isSpellIndirect();
@@ -73,7 +73,7 @@ public class LivingEntityImmunity {
                              @Nullable DamageType damageType, @Nullable TagKey<DamageType> damageTypeTag, @Nullable Boolean indirect,
                              boolean effectAnyHarmful,
                              int ticks) {
-        var time = livingEntity.age;
+        var time = livingEntity.tickCount;
         var validUntil = time + ticks;
         var entry = new Entry(damageType, damageTypeTag, indirect, effectAnyHarmful, validUntil);
         ((Owner)livingEntity).addImmunity(entry);

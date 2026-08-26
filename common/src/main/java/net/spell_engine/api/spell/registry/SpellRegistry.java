@@ -2,14 +2,14 @@ package net.spell_engine.api.spell.registry;
 
 import com.google.gson.*;
 import com.mojang.serialization.*;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.dynamic.Codecs;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
+import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.level.Level;
 import net.spell_engine.api.spell.Spell;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,14 +26,14 @@ public class SpellRegistry {
      * instead of this:
      * `data/MOD/spell_engine/spell/SPELL.json`
      */
-    public static final Identifier ID = Identifier.ofVanilla("spell");
-    public static final RegistryKey<Registry<Spell>> KEY = RegistryKey.ofRegistry(ID);
-    public static Registry<Spell> from(World world) {
-        return world.getRegistryManager().getOrThrow(KEY);
+    public static final Identifier ID = Identifier.withDefaultNamespace("spell");
+    public static final ResourceKey<Registry<Spell>> KEY = ResourceKey.createRegistryKey(ID);
+    public static Registry<Spell> from(Level world) {
+        return world.registryAccess().lookupOrThrow(KEY);
     }
     
     private static final Gson gson = new GsonBuilder().create();
-    public static final Codec<Spell> LOCAL_CODEC = Codecs.JSON_ELEMENT.xmap(
+    public static final Codec<Spell> LOCAL_CODEC = ExtraCodecs.JSON.xmap(
             json -> {
                 return gson.fromJson(json, Spell.class);
             },
@@ -71,14 +71,14 @@ public class SpellRegistry {
             }
     );
 
-    public static RegistryEntryList.Named<Spell> find(World world, Identifier tagId) {
-        var manager = world.getRegistryManager();
-        var lookup = manager.getOrThrow(KEY);
-        var tag = TagKey.of(KEY, tagId);
+    public static HolderSet.Named<Spell> find(Level world, Identifier tagId) {
+        var manager = world.registryAccess();
+        var lookup = manager.lookupOrThrow(KEY);
+        var tag = TagKey.create(KEY, tagId);
         return lookup.getOrThrow(tag);
     }
 
-    public static List<RegistryEntry<Spell>> entries(World world, @Nullable Identifier id) {
+    public static List<Holder<Spell>> entries(Level world, @Nullable Identifier id) {
         try {
             return find(world, id).stream().toList();
         } catch (Exception e) {
@@ -86,17 +86,17 @@ public class SpellRegistry {
         }
     }
 
-    public static List<RegistryEntry<Spell>> entries(World world, @Nullable String pool) {
+    public static List<Holder<Spell>> entries(Level world, @Nullable String pool) {
         if (pool == null || pool.isEmpty()) {
             return List.of();
         }
-        var id = Identifier.of(pool);
+        var id = Identifier.parse(pool);
         return entries(world, id);
     }
 
-    public static Stream<RegistryEntry.Reference<Spell>> stream(World world) {
-        var manager = world.getRegistryManager();
-        var registry = manager.getOrThrow(KEY);
-        return registry.streamEntries();
+    public static Stream<Holder.Reference<Spell>> stream(Level world) {
+        var manager = world.registryAccess();
+        var registry = manager.lookupOrThrow(KEY);
+        return registry.listElements();
     }
 }

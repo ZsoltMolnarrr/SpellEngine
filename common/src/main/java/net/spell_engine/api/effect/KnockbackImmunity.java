@@ -1,10 +1,9 @@
 package net.spell_engine.api.effect;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.registry.entry.RegistryEntry;
-
 import java.util.Collection;
+import net.minecraft.core.Holder;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.LivingEntity;
 
 /// Marks a status effect as granting immunity to knockback taken from damage
 /// (`LivingEntity#takeKnockback`).
@@ -16,19 +15,19 @@ import java.util.Collection;
 /// so the check on the hot path is one field read.
 public interface KnockbackImmunity {
     boolean immuneToKnockback();
-    StatusEffect setImmuneToKnockback(boolean value);
+    MobEffect setImmuneToKnockback(boolean value);
 
-    static void configure(StatusEffect effect) {
+    static void configure(MobEffect effect) {
         configure(effect, true);
     }
 
-    static void configure(StatusEffect effect, boolean value) {
+    static void configure(MobEffect effect, boolean value) {
         ((KnockbackImmunity) effect).setImmuneToKnockback(value);
     }
 
     /// True if any of the given effects grants knockback immunity. Called only when an entity's
     /// active effects change, to refresh the cached {@link Bearer} state — never on the hot path.
-    static boolean anyImmune(Collection<RegistryEntry<StatusEffect>> effects) {
+    static boolean anyImmune(Collection<Holder<MobEffect>> effects) {
         for (var effect : effects) {
             if (((KnockbackImmunity) effect.value()).immuneToKnockback()) {
                 return true;

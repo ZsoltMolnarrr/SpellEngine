@@ -1,12 +1,12 @@
 package net.spell_engine.client.gui;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.SpellEngineMod;
 
 import java.util.Map;
 
 public class HudKeyVisuals {
-    private static final Drawable.Texture mouseTexture = new Drawable.Texture(Identifier.of(SpellEngineMod.ID, "textures/hud/widgets.png"), 256, 256);
+    private static final Drawable.Texture mouseTexture = new Drawable.Texture(Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "textures/hud/widgets.png"), 256, 256);
     public static Map<String, Drawable.Component> custom = Map.ofEntries(
             Map.entry("key.mouse.left", new Drawable.Component(
                     new Drawable.DrawRect(0, 0, 10, 12),

@@ -1,8 +1,8 @@
 package net.spell_engine.api.spell.summon;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.Platform;
 import net.spell_engine.entity.SummonedEntity;
 

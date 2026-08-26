@@ -3,16 +3,16 @@ package net.spell_engine.fabric.datagen;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.item.Item;
-import net.minecraft.registry.RegistryEntryLookup;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.spell_engine.api.datagen.SpellBuilder;
 import net.spell_engine.api.datagen.SpellGenerator;
 import net.spell_engine.api.item.set.EquipmentSet;
@@ -37,30 +37,30 @@ public class TestDataGen {
 
     public static class TestEquipmentSetGenerator extends FabricDynamicRegistryProvider {
 
-        public TestEquipmentSetGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+        public TestEquipmentSetGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, registriesFuture);
         }
 
         @Override
-        protected void configure(RegistryWrapper.WrapperLookup registries, Entries entries) {
-            RegistryEntryLookup<Item> itemLookup = registries.getOrThrow(RegistryKeys.ITEM);
+        protected void configure(HolderLookup.Provider registries, Entries entries) {
+            HolderGetter<Item> itemLookup = registries.lookupOrThrow(Registries.ITEM);
 
-            var equipmentSetLookup = registries.getOrThrow(EquipmentSetRegistry.KEY);
+            var equipmentSetLookup = registries.lookupOrThrow(EquipmentSetRegistry.KEY);
 
-            var setId = RegistryKey.of(EquipmentSetRegistry.KEY, Identifier.of(NAMESPACE, "fire_power"));
+            var setId = ResourceKey.create(EquipmentSetRegistry.KEY, Identifier.fromNamespaceAndPath(NAMESPACE, "fire_power"));
 
             var firePowerBonus = new EquipmentSet.Bonus(
                     1,
-                    new AttributeModifiersComponent(
+                    new ItemAttributeModifiers(
                             List.of(
-                                    new AttributeModifiersComponent.Entry(
+                                    new ItemAttributeModifiers.Entry(
                                             SpellSchools.FIRE.attributeEntry,
-                                            new EntityAttributeModifier(
-                                                    Identifier.of("fire_power_bonus"),
+                                            new AttributeModifier(
+                                                    Identifier.parse("fire_power_bonus"),
                                                     1,
-                                                    EntityAttributeModifier.Operation.ADD_VALUE
+                                                    AttributeModifier.Operation.ADD_VALUE
                                             ),
-                                            AttributeModifierSlot.ARMOR)
+                                            EquipmentSlotGroup.ARMOR)
                             )
                     ),
                     null);
@@ -68,27 +68,27 @@ public class TestDataGen {
                     2,
                     null,
                     SpellContainers.forMagicWeapon()
-                            .withSpellId(Identifier.of("wizards", "fireball"))
+                            .withSpellId(Identifier.fromNamespaceAndPath("wizards", "fireball"))
             );
             var fireProc = new EquipmentSet.Bonus(
                     3,
                     null,
                     SpellContainers.forMagicWeapon()
-                            .withSpellId(Identifier.of("relics_rpgs", "lesser_proc_arcane_fire"))
+                            .withSpellId(Identifier.fromNamespaceAndPath("relics_rpgs", "lesser_proc_arcane_fire"))
             );
             var explodingProc = new EquipmentSet.Bonus(
                     4,
                     null,
                     SpellContainers.forMagicWeapon()
-                            .withSpellId(Identifier.of("arsenal", "exploding_melee"))
+                            .withSpellId(Identifier.fromNamespaceAndPath("arsenal", "exploding_melee"))
             );
 
-            var items = RegistryEntryList.of(
+            var items = HolderSet.direct(
                     // Iron armor
-                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("iron_helmet"))),
-                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("iron_chestplate"))),
-                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("iron_leggings"))),
-                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("iron_boots")))
+                    itemLookup.getOrThrow(ResourceKey.create(Registries.ITEM, Identifier.withDefaultNamespace("iron_helmet"))),
+                    itemLookup.getOrThrow(ResourceKey.create(Registries.ITEM, Identifier.withDefaultNamespace("iron_chestplate"))),
+                    itemLookup.getOrThrow(ResourceKey.create(Registries.ITEM, Identifier.withDefaultNamespace("iron_leggings"))),
+                    itemLookup.getOrThrow(ResourceKey.create(Registries.ITEM, Identifier.withDefaultNamespace("iron_boots")))
             );
             entries.add(setId,
                     new EquipmentSet.Definition(
@@ -106,7 +106,7 @@ public class TestDataGen {
     }
 
     public static class TestSpellGen extends SpellGenerator {
-        public TestSpellGen(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+        public TestSpellGen(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, registryLookup);
         }
 
@@ -125,7 +125,7 @@ public class TestDataGen {
 
         @Override
         public void generateSpells(Builder builder) {
-            builder.add(Identifier.of(NAMESPACE, "shout_taunt"), shoutTaunt());
+            builder.add(Identifier.fromNamespaceAndPath(NAMESPACE, "shout_taunt"), shoutTaunt());
         }
     }
 }

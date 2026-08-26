@@ -3,10 +3,10 @@ package net.spell_engine.internals.delivery;
 import com.google.common.base.Suppliers;
 import net.spell_engine.Platform;
 import net.spell_engine.PlatformEvents;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.registry.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.SpellTriggers;
@@ -26,11 +26,11 @@ public class SpellStashHelper {
     }
 
     private static void link(MinecraftServer minecraftServer) {
-        var manager = minecraftServer.getRegistryManager();
-        var registry = manager.getOrThrow(SpellRegistry.KEY);
-        registry.streamEntries().forEach(entry -> {
+        var manager = minecraftServer.registryAccess();
+        var registry = manager.lookupOrThrow(SpellRegistry.KEY);
+        registry.listElements().forEach(entry -> {
             var spell = entry.value();
-            var id = entry.getKey().get().getValue();
+            var id = entry.unwrapKey().get().identifier();
             if (spell.deliver.type == Spell.Delivery.Type.STASH_EFFECT) {
                 if (spell.deliver.stash_effect == null) {
                     System.err.println("Spell Engine: Stash spell linking error! Spell:" + id + " is missing `stash_effect`!");
@@ -46,8 +46,8 @@ public class SpellStashHelper {
                     System.err.println("Spell Engine: Stash spell linking error! Spell:" + id + " is missing `stash_effect.trigger`!");
                     return;
                 }
-                var effectId = Identifier.of(stashEffect.id);
-                var statusEffect = Registries.STATUS_EFFECT.get(effectId);
+                var effectId = Identifier.parse(stashEffect.id);
+                var statusEffect = BuiltInRegistries.MOB_EFFECT.getValue(effectId);
                 if (statusEffect == null) {
                     System.err.println("Spell Engine: Stash spell linking error! Spell:" + id + " found no status effect for `stash_effect.id`: " + stashEffect.id);
                     return;
@@ -68,9 +68,9 @@ public class SpellStashHelper {
 
     public static void useStashes(SpellTriggers.Event event) {
         var caster = event.player;
-        var world = caster.getEntityWorld();
-        Map<StatusEffectInstance, StatusEffectUtil.Diff> effectChanges = new HashMap<>();
-        var activeEffects = Map.copyOf(caster.getActiveStatusEffects()); // Create copy to avoid concurrent modification
+        var world = caster.level();
+        Map<MobEffectInstance, StatusEffectUtil.Diff> effectChanges = new HashMap<>();
+        var activeEffects = Map.copyOf(caster.getActiveEffectsMap()); // Create copy to avoid concurrent modification
         for(var entry: activeEffects.entrySet()) {
             var effect = entry.getKey().value();
             var stack = entry.getValue();
@@ -95,11 +95,11 @@ public class SpellStashHelper {
                             var power = SpellPower.getSpellPower(spell.school, event.player);
                             var impactContext = new SpellExecution.ImpactContext(1F, 1F, null, power, SpellTarget.FocusMode.DIRECT, 0);
                             if (target != null) {
-                                impactContext = impactContext.position(target.getEntityPos());
+                                impactContext = impactContext.position(target.position());
                             } else if (aoeSource != null) {
-                                impactContext = impactContext.position(aoeSource.getEntityPos());
+                                impactContext = impactContext.position(aoeSource.position());
                             } else {
-                                impactContext = impactContext.position(caster.getEntityPos());
+                                impactContext = impactContext.position(caster.position());
                             }
                             SpellImpacts.performImpacts(world, caster, target, aoeSource, spellEntry, spellEntry.value().impacts, impactContext);
                         }

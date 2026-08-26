@@ -1,12 +1,12 @@
 package net.spell_engine.mixin.client.control;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.client.SpellEngineClient;
@@ -22,29 +22,29 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
-@Mixin(ClientPlayerInteractionManager.class)
+@Mixin(MultiPlayerGameMode.class)
 public class ClientPlayerInteractionManagerMixin {
-    @Shadow @Final private MinecraftClient client;
+    @Shadow @Final private Minecraft minecraft;
 
-    @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
-    public void interactItem_HEAD_LockHotbar(PlayerEntity player, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
-        if (player instanceof ClientPlayerEntity clientPlayer) {
-            ItemStack stack = player.getStackInHand(hand);
+    @Inject(method = "useItem", at = @At("HEAD"), cancellable = true)
+    public void interactItem_HEAD_LockHotbar(Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
+        if (player instanceof LocalPlayer clientPlayer) {
+            ItemStack stack = player.getItemInHand(hand);
             if (SpellChoices.from(stack) != null) {
                 return;
             }
             
             if (SpellHotbar.INSTANCE.lastHandled() == null) {
-                var handled = SpellHotbar.INSTANCE.handleUseKey(clientPlayer, client.options);
-                ((MinecraftClientExtension) client).onSpellHotbarInputHandled(handled);
+                var handled = SpellHotbar.INSTANCE.handleUseKey(clientPlayer, minecraft.options);
+                ((MinecraftClientExtension) minecraft).onSpellHotbarInputHandled(handled);
             }
-            if (((MinecraftClientExtension)client).isSpellCastLockActive()) {
-                cir.setReturnValue(ActionResult.FAIL);
+            if (((MinecraftClientExtension)minecraft).isSpellCastLockActive()) {
+                cir.setReturnValue(InteractionResult.FAIL);
                 cir.cancel();
             }
         }
         if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ITEM_USE, true)) {
-            cir.setReturnValue(ActionResult.FAIL);
+            cir.setReturnValue(InteractionResult.FAIL);
             cir.cancel();
         }
     }

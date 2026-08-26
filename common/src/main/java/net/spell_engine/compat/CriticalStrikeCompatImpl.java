@@ -3,7 +3,7 @@ import net.spell_engine.Platform;
 
 import net.critical_strike.api.CriticalDamageSource;
 import net.critical_strike.internal.CriticalStriker;
-import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_power.api.SpellSchool;
 

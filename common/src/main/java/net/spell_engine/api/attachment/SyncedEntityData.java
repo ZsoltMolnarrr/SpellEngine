@@ -1,10 +1,10 @@
 package net.spell_engine.api.attachment;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Entity;
 import net.spell_engine.Platform;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,12 +37,12 @@ public interface SyncedEntityData<T> {
     /// `persistence` codec is given; otherwise the value lives for the entity instance and is
     /// dropped on death/respawn, exactly like tracked data was.
     static <T> SyncedEntityData<T> create(Identifier id, T defaultValue,
-                                          PacketCodec<? super RegistryByteBuf, T> sync,
+                                          StreamCodec<? super RegistryFriendlyByteBuf, T> sync,
                                           @Nullable Codec<T> persistence) {
         return Platform.util().createSyncedEntityData(id, defaultValue, sync, persistence);
     }
 
-    static <T> SyncedEntityData<T> create(Identifier id, T defaultValue, PacketCodec<? super RegistryByteBuf, T> sync) {
+    static <T> SyncedEntityData<T> create(Identifier id, T defaultValue, StreamCodec<? super RegistryFriendlyByteBuf, T> sync) {
         return create(id, defaultValue, sync, null);
     }
 }

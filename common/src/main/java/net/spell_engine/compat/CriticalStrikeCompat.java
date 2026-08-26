@@ -1,6 +1,6 @@
 package net.spell_engine.compat;
 
-import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.spell_engine.Platform;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;

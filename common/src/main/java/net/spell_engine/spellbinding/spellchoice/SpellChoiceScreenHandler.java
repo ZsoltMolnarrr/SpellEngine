@@ -1,84 +1,83 @@
 package net.spell_engine.spellbinding.spellchoice;
 
-import net.minecraft.screen.Property;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.screen.ScreenHandlerType;
-
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.resource.featuretoggle.FeatureFlags;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.DataSlot;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.fx.SpellEngineSounds;
 
-public class SpellChoiceScreenHandler extends ScreenHandler {
+public class SpellChoiceScreenHandler extends AbstractContainerMenu {
     public static final int MAXIMUM_SPELL_COUNT = 32;
     private static final int SPELL_ID_RAW_NONE = -1;
 
-    public static final ScreenHandlerType<SpellChoiceScreenHandler> HANDLER_TYPE =
-        new ScreenHandlerType<>(SpellChoiceScreenHandler::new, FeatureFlags.VANILLA_FEATURES);
+    public static final MenuType<SpellChoiceScreenHandler> HANDLER_TYPE =
+        new MenuType<>(SpellChoiceScreenHandler::new, FeatureFlags.VANILLA_SET);
 
     // Synchronized spell IDs (raw registry IDs)
     public final int[] spellId = new int[MAXIMUM_SPELL_COUNT];
-    protected final Inventory input;
+    protected final Container input;
     protected final Slot slot;
-    private final ScreenHandlerContext context;
+    private final ContainerLevelAccess context;
 
     // Constructor called from client
-    public SpellChoiceScreenHandler(int syncId, PlayerInventory playerInventory) {
-        this(syncId, ItemStack.EMPTY, playerInventory, ScreenHandlerContext.EMPTY);
+    public SpellChoiceScreenHandler(int syncId, Inventory playerInventory) {
+        this(syncId, ItemStack.EMPTY, playerInventory, ContainerLevelAccess.NULL);
     }
 
     public static class ReadOnlySlot extends Slot {
-        public ReadOnlySlot(Inventory inventory, int index, int x, int y) {
+        public ReadOnlySlot(Container inventory, int index, int x, int y) {
             super(inventory, index, x, y);
         }
         @Override
-        public boolean canInsert(ItemStack stack) {
+        public boolean mayPlace(ItemStack stack) {
             return false;
         }
         @Override
-        public boolean canTakeItems(PlayerEntity player) {
+        public boolean mayPickup(Player player) {
             return false;
         }
-        public boolean canBeHighlighted() {
+        public boolean isHighlightable() {
             return false;
         }
     }
 
     // Full constructor
-    public SpellChoiceScreenHandler(int syncId, ItemStack stack, PlayerInventory playerInventory, ScreenHandlerContext context) {
+    public SpellChoiceScreenHandler(int syncId, ItemStack stack, Inventory playerInventory, ContainerLevelAccess context) {
         super(HANDLER_TYPE, syncId);
         this.context = context;
-        this.input = new SimpleInventory(1) {
+        this.input = new SimpleContainer(1) {
             @Override
-            public void markDirty() {
-                super.markDirty();
-                SpellChoiceScreenHandler.this.onContentChanged(this);
+            public void setChanged() {
+                super.setChanged();
+                SpellChoiceScreenHandler.this.slotsChanged(this);
             }
         };
         this.slot = this.addSlot(new ReadOnlySlot(this.input, 0, (176 - 16) / 2, (166 - 48) / 2));
         // Register properties for syncing
         for (int i = 0; i < MAXIMUM_SPELL_COUNT; ++i) {
-            this.addProperty(Property.create(this.spellId, i));
+            this.addDataSlot(DataSlot.shared(this.spellId, i));
         }
-        slot.setStack(stack);
+        slot.setByPlayer(stack);
         // Initialize spell offers from mainhand item
         updateSpellOffers();
     }
 
     public ItemStack getChoiceItemStack() {
         // return this.input.getStack(0);
-        return this.slot.getStack();
+        return this.slot.getItem();
     }
 
     private void updateSpellOffers() {
@@ -100,32 +99,32 @@ public class SpellChoiceScreenHandler extends ScreenHandler {
         }
 
         // Resolve spells from pool on server
-        this.context.run((world, pos) -> {
-            var poolId = Identifier.of(spellChoice.pool());
+        this.context.execute((world, pos) -> {
+            var poolId = Identifier.parse(spellChoice.pool());
             var spells = SpellRegistry.entries(world, poolId);
             var registry = SpellRegistry.from(world);
 
             for (int i = 0; i < Math.min(spells.size(), MAXIMUM_SPELL_COUNT); ++i) {
                 var spellEntry = spells.get(i);
-                this.spellId[i] = registry.getRawId(spellEntry.value());
+                this.spellId[i] = registry.getId(spellEntry.value());
             }
 
-            this.sendContentUpdates();
+            this.broadcastChanges();
         });
     }
 
     @Override
-    public boolean canUse(PlayerEntity player) {
+    public boolean stillValid(Player player) {
         return true;
     }
 
     @Override
-    public ItemStack quickMove(PlayerEntity player, int index) {
+    public ItemStack quickMoveStack(Player player, int index) {
         return ItemStack.EMPTY;
     }
 
     @Override
-    public boolean onButtonClick(PlayerEntity player, int id) {
+    public boolean clickMenuButton(Player player, int id) {
         try {
             // Get synced spell ID
             var rawId = spellId[id];
@@ -140,15 +139,15 @@ public class SpellChoiceScreenHandler extends ScreenHandler {
             }
 
             // Perform spell binding in world context
-            this.context.run((world, pos) -> {
+            this.context.execute((world, pos) -> {
                 // Get spell entry from registry
-                var spellEntry = SpellRegistry.from(world).getEntry(rawId);
+                var spellEntry = SpellRegistry.from(world).get(rawId);
                 if (spellEntry.isEmpty()) {
                     return;  // Invalid spell entry
                 }
 
                 // Extract spell identifier
-                var selectedSpellId = spellEntry.get().getKey().get().getValue();
+                var selectedSpellId = spellEntry.get().unwrapKey().get().identifier();
 
                 // Bind spell to the item's spell container
                 SpellContainerHelper.addSpell(world, selectedSpellId, itemStack);
@@ -159,7 +158,7 @@ public class SpellChoiceScreenHandler extends ScreenHandler {
                 if (spellChoice != null) {
                     var changes = spellChoice.applyOnChoiceFor(selectedSpellId);
                     if (!changes.isEmpty()) {
-                        itemStack.applyChanges(changes);
+                        itemStack.applyComponentsAndValidate(changes);
                     }
                 }
 
@@ -167,13 +166,13 @@ public class SpellChoiceScreenHandler extends ScreenHandler {
                 itemStack.set(SpellDataComponents.SPELL_CHOICE, SpellChoice.EMPTY);
 
                 // Mark inventory dirty to trigger updates
-                this.input.markDirty();
-                this.onContentChanged(this.input);
+                this.input.setChanged();
+                this.slotsChanged(this.input);
 
                 // Play sound feedback
                 world.playSound(null, pos,
                     SpellEngineSounds.BIND_SPELL.soundEvent(),
-                    SoundCategory.PLAYERS,
+                    SoundSource.PLAYERS,
                     1.0f,
                     world.random.nextFloat() * 0.1f + 0.9f);
             });
@@ -187,8 +186,8 @@ public class SpellChoiceScreenHandler extends ScreenHandler {
     }
 
     @Override
-    public void onContentChanged(Inventory inventory) {
-        super.onContentChanged(inventory);
+    public void slotsChanged(Container inventory) {
+        super.slotsChanged(inventory);
         updateSpellOffers();
     }
 }

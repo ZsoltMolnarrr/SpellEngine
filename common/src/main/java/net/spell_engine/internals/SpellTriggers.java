@@ -1,15 +1,15 @@
 package net.spell_engine.internals;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.api.event.CombatEvents;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
@@ -41,7 +41,7 @@ public class SpellTriggers {
         public final Spell.Trigger.Type type;
         public Spell.Trigger.Stage stage = Spell.Trigger.Stage.POST;
         /// Player that triggers the event
-        public final PlayerEntity player;
+        public final Player player;
         /// Entity to be used as the source of the area of effect
         @Nullable private final Entity aoeSource;
         /// Target of the player, or the entity that deals damage against the player
@@ -49,9 +49,9 @@ public class SpellTriggers {
         /// Arrow that was fired
         public ArrowExtension arrow;
         /// Location of the trigger
-        @Nullable private Vec3d location;
+        @Nullable private Vec3 location;
 
-        @Nullable public RegistryEntry<Spell> spell;
+        @Nullable public Holder<Spell> spell;
         @Nullable public Spell.Impact impact;
         boolean criticalImpact = false;
 
@@ -61,11 +61,11 @@ public class SpellTriggers {
 
         @Nullable public MeleeCompat.Attack melee;
 
-        @Nullable public RegistryEntry<StatusEffect> statusEffect;
+        @Nullable public Holder<MobEffect> statusEffect;
 
         public boolean arrowFiredBySpell = false;
 
-        public Event(Spell.Trigger.Type type, PlayerEntity player, @Nullable Entity aoeSource, @Nullable Entity target) {
+        public Event(Spell.Trigger.Type type, Player player, @Nullable Entity aoeSource, @Nullable Entity target) {
             this.type = type;
             this.player = player;
             this.aoeSource = aoeSource;
@@ -124,7 +124,7 @@ public class SpellTriggers {
         });
     }
 
-    public static void onArrowShot(ArrowExtension arrow, PlayerEntity player, boolean firedBySpell) {
+    public static void onArrowShot(ArrowExtension arrow, Player player, boolean firedBySpell) {
         var event = new Event(Spell.Trigger.Type.ARROW_SHOT, player, player, null);
         event.stage = Spell.Trigger.Stage.POST;
         event.arrow = arrow;
@@ -132,7 +132,7 @@ public class SpellTriggers {
         fireTriggers(event);
     }
 
-    public static void onArrowImpact(ArrowExtension arrow, PlayerEntity player, Entity target, DamageSource damageSource, float damageAmount) {
+    public static void onArrowImpact(ArrowExtension arrow, Player player, Entity target, DamageSource damageSource, float damageAmount) {
         var event = new Event(Spell.Trigger.Type.ARROW_IMPACT, player, target, target);
         event.arrow = arrow;
         event.damageSource = damageSource;
@@ -141,7 +141,7 @@ public class SpellTriggers {
         fireTriggers(event);
     }
 
-    public static void onMeleeImpact(PlayerEntity player, Entity target) {
+    public static void onMeleeImpact(Player player, Entity target) {
         var event = new Event(Spell.Trigger.Type.MELEE_IMPACT, player, target, target);
         if (target instanceof LivingEntity livingTarget) {
             event.damageSource = ((LivingEntityAccessor)livingTarget).spellEngine_getLastDamageSource();
@@ -157,13 +157,13 @@ public class SpellTriggers {
         fireTriggers(event);
     }
 
-    public static void onSpellImpactAny(PlayerEntity player, Entity target, Entity aoeSource, RegistryEntry<Spell> spell) {
+    public static void onSpellImpactAny(Player player, Entity target, Entity aoeSource, Holder<Spell> spell) {
         var event = new Event(Spell.Trigger.Type.SPELL_IMPACT_ANY, player, aoeSource, target);
         event.spell = spell;
         fireTriggers(event);
     }
 
-    public static void onSpellImpactSpecific(PlayerEntity player, Entity target, RegistryEntry<Spell> spell, Spell.Impact impact, boolean critical, Spell.Trigger.Stage stage) {
+    public static void onSpellImpactSpecific(Player player, Entity target, Holder<Spell> spell, Spell.Impact impact, boolean critical, Spell.Trigger.Stage stage) {
         var event = new Event(Spell.Trigger.Type.SPELL_IMPACT_SPECIFIC, player, target, target);
         event.spell = spell;
         event.impact = impact;
@@ -172,7 +172,7 @@ public class SpellTriggers {
         fireTriggers(event);
     }
 
-    public static void onSpellCast(PlayerEntity player, RegistryEntry<Spell> spell, List<Entity> targets) {
+    public static void onSpellCast(Player player, Holder<Spell> spell, List<Entity> targets) {
         var firstTarget = targets.isEmpty() ? null : targets.getFirst();
         var target = ObjectHelper.coalesce(firstTarget, player);
         var event = new Event(Spell.Trigger.Type.SPELL_CAST, player, player, target);
@@ -180,21 +180,21 @@ public class SpellTriggers {
         fireTriggers(event);
     }
 
-    public static void onSpellAreaImpact(PlayerEntity player, @Nullable Entity target, Vec3d location, RegistryEntry<Spell> spell) {
+    public static void onSpellAreaImpact(Player player, @Nullable Entity target, Vec3 location, Holder<Spell> spell) {
         var event = new Event(Spell.Trigger.Type.SPELL_AREA_IMPACT, player, target, target);
         event.location = location;
         event.spell = spell;
         fireTriggers(event);
     }
 
-    public static void onEffectTick(PlayerEntity player, RegistryEntry<StatusEffect> effect) {
+    public static void onEffectTick(Player player, Holder<MobEffect> effect) {
         var event = new Event(Spell.Trigger.Type.EFFECT_TICK, player, player, null);
         event.statusEffect = effect;
         fireTriggers(event);
     }
 
-    public static void onDamageIncoming(PlayerEntity player, DamageSource source, float amount) {
-        Entity sourceEntity = source.getAttacker();
+    public static void onDamageIncoming(Player player, DamageSource source, float amount) {
+        Entity sourceEntity = source.getEntity();
         if (sourceEntity == null) {
             return; // No event without attacker (environmental damage)
         }
@@ -207,8 +207,8 @@ public class SpellTriggers {
         fireTriggers(event);
     }
 
-    public static void onDamageTaken(PlayerEntity player, DamageSource source, float amount) {
-        Entity sourceEntity = source.getAttacker();
+    public static void onDamageTaken(Player player, DamageSource source, float amount) {
+        Entity sourceEntity = source.getEntity();
         if (sourceEntity == null) {
             return; // No event without attacker (environmental damage)
         }
@@ -220,8 +220,8 @@ public class SpellTriggers {
         fireTriggers(event);
     }
 
-    public static void onShieldBlock(PlayerEntity player, DamageSource source, float amount) {
-        Entity sourceEntity = source.getAttacker();
+    public static void onShieldBlock(Player player, DamageSource source, float amount) {
+        Entity sourceEntity = source.getEntity();
         if (sourceEntity == null) {
             return; // No event without attacker (environmental damage)
         }
@@ -232,16 +232,16 @@ public class SpellTriggers {
         fireTriggers(event);
     }
 
-    public static void onRoll(PlayerEntity player) {
+    public static void onRoll(Player player) {
         var event = new Event(Spell.Trigger.Type.ROLL, player, player, null);
         fireTriggers(event);
     }
 
     public static void onEvasion(LivingEntity entity, float damageAmount, DamageSource source) {
-        if (!(entity instanceof PlayerEntity player)) {
+        if (!(entity instanceof Player player)) {
             return;
         }
-        Entity sourceEntity = source.getAttacker();
+        Entity sourceEntity = source.getEntity();
         if (sourceEntity == null) {
             return; // No event without attacker (environmental damage)
         }
@@ -253,7 +253,7 @@ public class SpellTriggers {
     }
 
     private static void fireTriggers(Event event) {
-        if (event.player.getEntityWorld().isClient()) { return; }
+        if (event.player.level().isClientSide()) { return; }
         // Iterate stash effects
         SpellStashHelper.useStashes(event);
         // Iterate passive spells
@@ -261,7 +261,7 @@ public class SpellTriggers {
         var caster = (SpellCaster.Player)player;
         for(var spellEntry: SpellContainerSource.passiveSpellsOf(event.player)) {
             var spell = spellEntry.value();
-            var spellId = spellEntry.getKey().get().getValue();
+            var spellId = spellEntry.unwrapKey().get().identifier();
             if (spell.passive != null && !caster.getCooldownManager().isCoolingDown(spellEntry)) {
                 for (var trigger : spell.passive.triggers) {
                     if (evaluateTrigger(spellEntry, trigger, event)) {
@@ -277,11 +277,11 @@ public class SpellTriggers {
                             targetResult = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), true);
                         }
                         if (trigger.fire_delay > 0) {
-                            ((WorldScheduler)player.getEntityWorld()).schedule(trigger.fire_delay - 1, () -> {
-                                SpellExecution.performSpell(player.getEntityWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
+                            ((WorldScheduler)player.level()).schedule(trigger.fire_delay - 1, () -> {
+                                SpellExecution.performSpell(player.level(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
                             });
                         } else {
-                            SpellExecution.performSpell(player.getEntityWorld(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
+                            SpellExecution.performSpell(player.level(), player, spellEntry, targetResult, SpellCast.Action.TRIGGER, 1);
                         }
                         break;
                     }
@@ -291,14 +291,14 @@ public class SpellTriggers {
     }
 
     private static final Random random = new Random();
-    public static boolean evaluateTrigger(RegistryEntry<Spell> spellEntry, Spell.Trigger trigger, Event event) {
+    public static boolean evaluateTrigger(Holder<Spell> spellEntry, Spell.Trigger trigger, Event event) {
         if (trigger.type != event.type) {
             return false;
         }
         if (trigger.stage != event.stage) {
             return false;
         }
-        var spellId = spellEntry.getKey().get().getValue();
+        var spellId = spellEntry.unwrapKey().get().identifier();
         int triggerCount = 0;
         if (trigger.cap_per_tick > 0) {
             triggerCount = ((SpellBatcher)event.player).getBatchTriggerCount(spellId);
@@ -345,7 +345,7 @@ public class SpellTriggers {
              * Avoid triggering main-hand spells from off-hand strikes (and vice versa)
              * Needs `equipment_condition` to be set to `MAINHAND`
              */
-            var container = SpellContainerHelper.containerFromItemStack(event.player.getEquippedStack(trigger.equipment_condition));
+            var container = SpellContainerHelper.containerFromItemStack(event.player.getItemBySlot(trigger.equipment_condition));
             if (container == null || !container.contains(spellId)) {
                 return false;
             }
@@ -353,7 +353,7 @@ public class SpellTriggers {
         if (trigger.weapon_condition != null) {
             var weapon = triggeringWeapon(event);
             if (weapon == null || weapon.isEmpty()
-                    || !PatternMatching.matches(weapon.getItem().getRegistryEntry(), RegistryKeys.ITEM, trigger.weapon_condition)) {
+                    || !PatternMatching.matches(weapon.getItem().builtInRegistryHolder(), Registries.ITEM, trigger.weapon_condition)) {
                 return false;
             }
         }
@@ -409,22 +409,22 @@ public class SpellTriggers {
     private static ItemStack triggeringWeapon(Event event) {
         switch (event.type) {
             case ARROW_SHOT, ARROW_IMPACT -> {
-                if (event.arrow instanceof PersistentProjectileEntity projectile) {
-                    return projectile.getWeaponStack();
+                if (event.arrow instanceof AbstractArrow projectile) {
+                    return projectile.getWeaponItem();
                 }
                 return null;
             }
             case MELEE_IMPACT -> {
                 var offhand = event.melee != null && event.melee.isOffhand();
-                return offhand ? event.player.getOffHandStack() : event.player.getMainHandStack();
+                return offhand ? event.player.getOffhandItem() : event.player.getMainHandItem();
             }
             default -> {
-                return event.player.getMainHandStack();
+                return event.player.getMainHandItem();
             }
         }
     }
 
-    private static boolean evaluateSpellCast(@Nullable RegistryEntry<Spell> spellEntry, @Nullable Spell.Trigger.SpellCondition condition) {
+    private static boolean evaluateSpellCast(@Nullable Holder<Spell> spellEntry, @Nullable Spell.Trigger.SpellCondition condition) {
         if (condition == null) {
             return true;
         }
@@ -479,7 +479,7 @@ public class SpellTriggers {
             return true;
         }
         if (condition.damage_type != null && event.damageSource != null
-                && !PatternMatching.matches(event.damageSource.getTypeRegistryEntry(), RegistryKeys.DAMAGE_TYPE, condition.damage_type)) {
+                && !PatternMatching.matches(event.damageSource.typeHolder(), Registries.DAMAGE_TYPE, condition.damage_type)) {
             return false;
         }
         if (condition.amount_min != null && event.damageAmount < condition.amount_min) {
@@ -526,9 +526,9 @@ public class SpellTriggers {
         }
         // PatternMatching.matches(event.statusEffect, Registries.STATUS_EFFECT.getKey(), condition.effect_id)
         // doesn't work due to the legacy type of Registries.STATUS_EFFECT
-        var key = event.statusEffect.getKey();
+        var key = event.statusEffect.unwrapKey();
         if (condition.id != null && key.isPresent()
-                && !Objects.equals(key.get().getValue().toString(), condition.id)) {
+                && !Objects.equals(key.get().identifier().toString(), condition.id)) {
             return false;
         }
         return true;

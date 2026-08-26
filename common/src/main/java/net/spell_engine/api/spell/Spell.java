@@ -1,6 +1,6 @@
 package net.spell_engine.api.spell;
 
-import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.api.spell.fx.ModelEffect;
@@ -82,7 +82,7 @@ public class Spell {
 
             /// The casting mechanic, for a timed cast (duration > 0). Exactly one — the matching
             /// sub-struct below is read, the others are ignored.
-            public Type type = Type.STANDARD;
+            public net.spell_engine.api.spell.Spell.Active.Cast.Type type = net.spell_engine.api.spell.Spell.Active.Cast.Type.STANDARD;
             public enum Type {
                 STANDARD,  /// Single delivery on full completion; cannot be released early.
                 CHANNEL,   /// Repeated deliveries spread evenly across the duration.
@@ -156,11 +156,11 @@ public class Spell {
             // never have to null-check a block that only applies to one casting mechanic.
 
             public int channelTicks() {
-                if (type == Type.CHANNEL && channel != null) { return channel.ticks; }
+                if (type == net.spell_engine.api.spell.Spell.Active.Cast.Type.CHANNEL && channel != null) { return channel.ticks; }
                 return 0;
             }
             public boolean channelReleaseFx() {
-                return type == Type.CHANNEL && channel != null && channel.release_fx;
+                return type == net.spell_engine.api.spell.Spell.Active.Cast.Type.CHANNEL && channel != null && channel.release_fx;
             }
 
             public PlayerAnimation animation;
@@ -300,7 +300,7 @@ public class Spell {
 
     public Target target = new Target();
     public static class Target {
-        public Type type = Type.CASTER;
+        public net.spell_engine.api.spell.Spell.Target.Type type = net.spell_engine.api.spell.Spell.Target.Type.CASTER;
         public enum Type {
             NONE, CASTER, AIM, BEAM, AREA, FROM_TRIGGER
         }
@@ -349,7 +349,7 @@ public class Spell {
 
     public Delivery deliver = new Delivery();
     public static class Delivery {
-        public Type type = Type.DIRECT;
+        public net.spell_engine.api.spell.Spell.Delivery.Type type = net.spell_engine.api.spell.Spell.Delivery.Type.DIRECT;
         public enum Type {
             DIRECT, PROJECTILE, METEOR, CLOUD, SHOOT_ARROW, AFFECT_ARROW, MELEE, STASH_EFFECT, CUSTOM
         }
@@ -617,7 +617,7 @@ public class Spell {
             /// - DENY: Executes the impact if conditions are NOT met
             public TriState execute = TriState.PASS;
             /// Applies power modifiers for this impact (if executed)
-            @Nullable public Modifier modifier;
+            @Nullable public net.spell_engine.api.spell.Spell.Impact.Modifier modifier;
         }
         public static class Modifier {
             // Combined as `ADD_MULTIPLIED_BASE` in `EntityAttributeModifier.Operation`
@@ -630,7 +630,7 @@ public class Spell {
 
         public Action action;
         public static class Action { public Action() { }
-            public Type type;
+            public net.spell_engine.api.spell.Spell.Impact.Action.Type type;
             /// Whether as an area impact, should be executed on the center target
             public boolean allow_on_center_target = true;
             public boolean apply_to_caster = false;
@@ -1053,7 +1053,7 @@ public class Spell {
             DAMAGE_TAKEN, SHIELD_BLOCK,
             ROLL  /// Only works when Combat Roll mod is installed
         }
-        public Type type;
+        public net.spell_engine.api.spell.Spell.Trigger.Type type;
         public enum Stage { PRE, POST }
         /// Represents when the trigger happens
         /// - PRE: Before the actual event

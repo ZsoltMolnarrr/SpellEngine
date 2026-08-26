@@ -7,11 +7,11 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonWriter;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.data.DataOutput;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
-import net.minecraft.data.DataWriter;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.Identifier;
+import net.minecraft.data.PackOutput;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.Easing;
@@ -35,13 +35,13 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class SpellGenerator implements DataProvider {
-    private final CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup;
+    private final CompletableFuture<HolderLookup.Provider> registryLookup;
     protected final FabricDataOutput dataOutput;
 
     public enum OutputFormat { COMPACT, VERBOSE }
     public OutputFormat outputFormat = OutputFormat.COMPACT;
 
-    public SpellGenerator(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+    public SpellGenerator(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
         this.dataOutput = dataOutput;
         this.registryLookup = registryLookup;
     }
@@ -119,7 +119,7 @@ public abstract class SpellGenerator implements DataProvider {
             .create();
 
     @Override
-    public CompletableFuture<?> run(DataWriter writer) {
+    public CompletableFuture<?> run(CachedOutput writer) {
         var builder = new Builder();
         generateSpells(builder);
         var entries = builder.entries;
@@ -137,7 +137,7 @@ public abstract class SpellGenerator implements DataProvider {
         return CompletableFuture.allOf(writes.toArray(new CompletableFuture[0]));
     }
 
-    private static CompletableFuture<?> writeOriginalFormat(DataWriter writer, JsonElement json, Path path) {
+    private static CompletableFuture<?> writeOriginalFormat(CachedOutput writer, JsonElement json, Path path) {
         return CompletableFuture.runAsync(() -> {
             try {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -160,13 +160,13 @@ public abstract class SpellGenerator implements DataProvider {
                 }
 
                 jsonWriter.close();
-                writer.write(path, byteArrayOutputStream.toByteArray(), hashingOutputStream.hash());
+                writer.writeIfNeeded(path, byteArrayOutputStream.toByteArray(), hashingOutputStream.hash());
             } catch (IOException var10) {
                 IOException iOException = var10;
                 LOGGER.error("Failed to save file to {}", path, iOException);
             }
 
-        }, Util.getMainWorkerExecutor());
+        }, Util.backgroundExecutor());
     }
 
     @Override
@@ -175,7 +175,7 @@ public abstract class SpellGenerator implements DataProvider {
     }
 
     private Path getFilePath(Identifier spellId) {
-        return this.dataOutput.getResolver(DataOutput.OutputType.DATA_PACK, "spell").resolveJson(spellId);
+        return this.dataOutput.createPathProvider(PackOutput.Target.DATA_PACK, "spell").json(spellId);
     }
 
 

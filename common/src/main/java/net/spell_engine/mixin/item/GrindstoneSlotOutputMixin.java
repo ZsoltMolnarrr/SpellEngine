@@ -1,8 +1,8 @@
 package net.spell_engine.mixin.item;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.tags.SpellEngineItemTags;
@@ -17,26 +17,26 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 // Anonymous mixin class to modify GrindstoneScreenHandler `new Slot(...) { ... }` instance
 // Using `targets = ...` here due to being an anonymous class
 // Class name found by clicking into the class, and using `Top menu > View > Show Bytecode`
-@Mixin(targets = "net.minecraft.screen.GrindstoneScreenHandler$4")
+@Mixin(targets = "net.minecraft.world.inventory.GrindstoneMenu$4")
 public class GrindstoneSlotOutputMixin {
 
-    @Nullable private World world;
+    @Nullable private Level world;
 
-    @Inject(method = "getExperience(Lnet/minecraft/world/World;)I", at = @At("HEAD"), cancellable = true)
-    private void getExperience_enter_SpellEngine(World world, CallbackInfoReturnable<Integer> cir) {
+    @Inject(method = "getExperienceAmount(Lnet/minecraft/world/level/Level;)I", at = @At("HEAD"), cancellable = true)
+    private void getExperience_enter_SpellEngine(Level world, CallbackInfoReturnable<Integer> cir) {
         this.world = world;
     }
 
-    @Inject(method = "getExperience(Lnet/minecraft/item/ItemStack;)I", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getExperienceFromItem(Lnet/minecraft/world/item/ItemStack;)I", at = @At("HEAD"), cancellable = true)
     private void getExperience_SpellEngine(ItemStack stack, CallbackInfoReturnable<Integer> cir) {
-        if (this.world != null && stack.isIn(SpellEngineItemTags.GRINDABLE) ) {
+        if (this.world != null && stack.is(SpellEngineItemTags.GRINDABLE) ) {
             var container = SpellContainerHelper.containerFromItemStack(stack);
             int experience = 0;
             if (container != null) {
                 var registry = SpellRegistry.from(world);
                 for (var idString: container.spell_ids()) {
-                    var id = Identifier.of(idString);
-                    var spellEntry = registry.getEntry(id);
+                    var id = Identifier.parse(idString);
+                    var spellEntry = registry.get(id);
                     if (spellEntry.isPresent()) {
                         var spell = spellEntry.get().value();
                         if (spell.learn != null) {

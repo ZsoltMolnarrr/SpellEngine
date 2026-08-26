@@ -1,13 +1,13 @@
 package net.spell_engine.client.gui;
 
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
 
 public class Drawable {
     public enum Anchor { LEADING, TRAILING, CENTER }
     public record Component(DrawRect draw, Texture texture) {
-        public void draw(DrawContext context, int x, int y, Anchor hAnchor, Anchor vAnchor) {
+        public void draw(GuiGraphics context, int x, int y, Anchor hAnchor, Anchor vAnchor) {
             switch (hAnchor) {
                 case LEADING -> {
                     x = x;
@@ -30,10 +30,10 @@ public class Drawable {
                     y -= draw().height;
                 }
             }
-            context.drawTexture(RenderPipelines.GUI_TEXTURED, texture().id, x, y, draw().u, draw().v, draw().width, draw().height, texture().width, texture().height);
+            context.blit(RenderPipelines.GUI_TEXTURED, texture().id, x, y, draw().u, draw().v, draw().width, draw().height, texture().width, texture().height);
         }
 
-        public void drawFlexibleWidth(DrawContext context, int x, int y, int width, Anchor vAnchor) {
+        public void drawFlexibleWidth(GuiGraphics context, int x, int y, int width, Anchor vAnchor) {
             switch (vAnchor) {
                 case LEADING -> {
                     y = y;
@@ -45,7 +45,7 @@ public class Drawable {
                     y -= draw().height;
                 }
             }
-            context.drawTexture(RenderPipelines.GUI_TEXTURED, texture().id, x, y, draw().u, draw().v, width, draw().height, texture().width, texture().height);
+            context.blit(RenderPipelines.GUI_TEXTURED, texture().id, x, y, draw().u, draw().v, width, draw().height, texture().width, texture().height);
         }
     }
     public record DrawRect(int u, int v, int width, int height) {}

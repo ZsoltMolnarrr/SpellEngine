@@ -1,44 +1,9 @@
 package net.spell_engine.entity;
 
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.ai.goal.LookAroundGoal;
-import net.minecraft.entity.ai.goal.LookAtEntityGoal;
-import net.minecraft.entity.ai.goal.SwimGoal;
-
 import net.spell_engine.rpg_series.config.ConfigUtil;
-import net.minecraft.server.world.ServerWorld;
 import com.google.common.base.Suppliers;
 import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.AnimationState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityDimensions;
-import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LazyEntityReference;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.Tameable;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.passive.GolemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.util.Uuids;
-import net.minecraft.registry.Registries;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
-import net.minecraft.world.explosion.Explosion;
 import net.spell_engine.api.entity.TwoWayCollisionChecker;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.fx.Sound;
@@ -53,6 +18,39 @@ import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.casting.SpellCast;
 import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.cost.SpellCooldownManager;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.AnimationState;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.OwnableEntity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.animal.golem.AbstractGolem;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.internals.target.EntityRelation;
 import net.spell_engine.internals.target.EntityRelations;
@@ -65,26 +63,26 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import net.spell_engine.internals.SpellParameters;
 
-public abstract class SummonedEntity extends GolemEntity implements SpellSummoned, Tameable, SpellCaster.Entity {
+public abstract class SummonedEntity extends AbstractGolem implements SpellSummoned, OwnableEntity, SpellCaster.Entity {
 
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public static final TrackedData<Optional<LazyEntityReference<LivingEntity>>> OWNER_UUID =
-            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.LAZY_ENTITY_REFERENCE);
-    public static final TrackedData<Byte> PHASE =
-            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.BYTE);
-    public static final TrackedData<Byte> COLLISION_MODE =
-            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.BYTE);
-    public static final TrackedData<Float> BOUNDING_BOX_WIDTH =
-            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.FLOAT);
-    public static final TrackedData<Float> BOUNDING_BOX_HEIGHT =
-            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.FLOAT);
-    public static final TrackedData<Integer> END_OF_PHASE_AGE =
-            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    public static final EntityDataAccessor<Optional<EntityReference<LivingEntity>>> OWNER_UUID =
+            SynchedEntityData.defineId(SummonedEntity.class, EntityDataSerializers.OPTIONAL_LIVING_ENTITY_REFERENCE);
+    public static final EntityDataAccessor<Byte> PHASE =
+            SynchedEntityData.defineId(SummonedEntity.class, EntityDataSerializers.BYTE);
+    public static final EntityDataAccessor<Byte> COLLISION_MODE =
+            SynchedEntityData.defineId(SummonedEntity.class, EntityDataSerializers.BYTE);
+    public static final EntityDataAccessor<Float> BOUNDING_BOX_WIDTH =
+            SynchedEntityData.defineId(SummonedEntity.class, EntityDataSerializers.FLOAT);
+    public static final EntityDataAccessor<Float> BOUNDING_BOX_HEIGHT =
+            SynchedEntityData.defineId(SummonedEntity.class, EntityDataSerializers.FLOAT);
+    public static final EntityDataAccessor<Integer> END_OF_PHASE_AGE =
+            SynchedEntityData.defineId(SummonedEntity.class, EntityDataSerializers.INT);
     /// Synced cast process (JSON of SpellCast.Process.SyncFormat, "" = none) — drives the beam
     /// visual, beam particles and cast sound on clients while this summon channels a spell.
-    public static final TrackedData<String> CAST_PROCESS =
-            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.STRING);
+    public static final EntityDataAccessor<String> CAST_PROCESS =
+            SynchedEntityData.defineId(SummonedEntity.class, EntityDataSerializers.STRING);
     // One packed tracker per action type — kept separate so a spell cast and a melee swing
     // can animate in parallel without one stomping the other's state.
     //
@@ -100,17 +98,17 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     // value and skip the packet, leaving the animation desynced. Including the monotonic
     // startAge in the same long guarantees every action start changes the value, forcing
     // a sync.
-    public static final TrackedData<Long> ATTACK_ANIMATION =
-            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.LONG);
-    public static final TrackedData<Long> SPELL_CAST_ANIMATION =
-            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.LONG);
-    public static final TrackedData<Long> SPELL_RELEASE_ANIMATION =
-            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.LONG);
+    public static final EntityDataAccessor<Long> ATTACK_ANIMATION =
+            SynchedEntityData.defineId(SummonedEntity.class, EntityDataSerializers.LONG);
+    public static final EntityDataAccessor<Long> SPELL_CAST_ANIMATION =
+            SynchedEntityData.defineId(SummonedEntity.class, EntityDataSerializers.LONG);
+    public static final EntityDataAccessor<Long> SPELL_RELEASE_ANIMATION =
+            SynchedEntityData.defineId(SummonedEntity.class, EntityDataSerializers.LONG);
     // Compact, one-time-synced descriptor of the behaviour's existence particles (Gson JSON). The
     // client parses it once and spawns the particles locally each interval (see tick()), so
     // continuous ambient particles cost no per-tick network traffic. Empty = none.
-    public static final TrackedData<String> EXISTENCE_PARTICLES =
-            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.STRING);
+    public static final EntityDataAccessor<String> EXISTENCE_PARTICLES =
+            SynchedEntityData.defineId(SummonedEntity.class, EntityDataSerializers.STRING);
 
     // Client-visible mirror of `behaviour.is_attackable`. The `behaviour` field is server-only (set at
     // spawn / on NBT load, never synced), so the combat/targeting getters below can't read it on the
@@ -118,8 +116,8 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     // client's own spell target search (TargetHelper.targetsFromArea/…, which filters on canHit) would
     // highlight and select non-attackable summons — e.g. an AoE heal targeting a Lightwell. Synced here
     // so both sides agree. Defaults true (matches the historical `behaviour == null` fallback).
-    public static final TrackedData<Boolean> IS_ATTACKABLE =
-            DataTracker.registerData(SummonedEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    public static final EntityDataAccessor<Boolean> IS_ATTACKABLE =
+            SynchedEntityData.defineId(SummonedEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static long packAnim(int variant, int duration, int startAge) {
         return ((long)(variant  & 0xFF))
@@ -147,7 +145,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     // than part of the runtime behaviour, and the resulting attribute modifiers are temporary.
     @Nullable public AttributeScaling attributeScaling = null;
 
-    public SummonedEntity(EntityType<? extends SummonedEntity> entityType, World world) {
+    public SummonedEntity(EntityType<? extends SummonedEntity> entityType, Level world) {
         super(entityType, world);
         // Eagerly start the spawn AnimationState so the very first render frame already
         // has the spawn animation's t=0 keyframes applied. Otherwise the renderer can
@@ -157,20 +155,20 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         // size/pose before the scale-from-0 spawn animation takes over.
         // Safe for the loaded-from-NBT (non-spawning) case: the next setupAnimationStates()
         // call stops the state via setRunning(isSpawning(), age) → stop().
-        spawnAnimationState.startIfNotRunning(0);
+        spawnAnimationState.startIfStopped(0);
     }
 
     @Override
-    public EntityDimensions getBaseDimensions(EntityPose pose) {
-        float w = getDataTracker().get(BOUNDING_BOX_WIDTH);
-        float h = getDataTracker().get(BOUNDING_BOX_HEIGHT);
+    public EntityDimensions getDefaultDimensions(Pose pose) {
+        float w = getEntityData().get(BOUNDING_BOX_WIDTH);
+        float h = getEntityData().get(BOUNDING_BOX_HEIGHT);
         // 0 (or anything <= 0) = "no override is configured" — defer to vanilla, which
         // returns type.getDimensions().scaled(getScaleFactor()) (handles baby scale etc.).
-        if (w <= 0 || h <= 0) return super.getBaseDimensions(pose);
+        if (w <= 0 || h <= 0) return super.getDefaultDimensions(pose);
         // `changing` (fixed=false) is required: `EntityDimensions.scaled()` short-circuits
         // and returns `this` unchanged when `fixed=true`, which would silently swallow the
         // GENERIC_SCALE attribute multiplier vanilla applies in LivingEntity.getDimensions.
-        return EntityDimensions.changing(w, h);
+        return EntityDimensions.scalable(w, h);
     }
 
     @Override
@@ -184,7 +182,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     /// spell target search filters on `canHit()`, and a stale client-side `true` would wrongly select
     /// non-attackable summons. Defaults true before `setBehaviour` runs.
     public boolean isAttackableSummon() {
-        return getDataTracker().get(IS_ATTACKABLE);
+        return getEntityData().get(IS_ATTACKABLE);
     }
 
     @Override
@@ -193,17 +191,17 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     }
 
     @Override
-    public boolean canHit() {
-        return isAttackableSummon() && super.canHit();
+    public boolean isPickable() {
+        return isAttackableSummon() && super.isPickable();
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
-        return isAttackableSummon() && super.damage(world, source, amount);
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
+        return isAttackableSummon() && super.hurtServer(world, source, amount);
     }
 
     @Override
-    public boolean isInvulnerableTo(ServerWorld world, DamageSource damageSource) {
+    public boolean isInvulnerableTo(ServerLevel world, DamageSource damageSource) {
         return !isAttackableSummon() && super.isInvulnerableTo(world, damageSource);
     }
 
@@ -223,15 +221,15 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     }
 
     @Override
-    public boolean isImmuneToExplosion(Explosion explosion) {
-        return !isAttackableSummon() && super.isImmuneToExplosion(explosion);
+    public boolean ignoreExplosion(Explosion explosion) {
+        return !isAttackableSummon() && super.ignoreExplosion(explosion);
     }
 
-    public void takeKnockback(double strength, double x, double z) {
+    public void knockback(double strength, double x, double z) {
         if (!isAttackableSummon()) {
             return;
         }
-        super.takeKnockback(strength, x, z);
+        super.knockback(strength, x, z);
     }
 
     /// Gates vanilla suffocation on the behaviour's `movement.suffocates` (default false = immune).
@@ -247,8 +245,8 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     /// `onSummonedBySpell` and `readCustomDataFromNbt` install the behaviour before the first tick.
     /// A null behaviour falls through to immune, matching the field's default.
     @Override
-    public boolean isInsideWall() {
-        return behaviour != null && behaviour.movement.suffocates && super.isInsideWall();
+    public boolean isInWall() {
+        return behaviour != null && behaviour.movement.suffocates && super.isInWall();
     }
 
     // --- Sounds ---
@@ -277,7 +275,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private static SoundEvent resolveEvent(@Nullable Sound sound) {
         if (sound == null || sound.id() == null || sound.id().isBlank()) return null;
         Identifier id = Identifier.tryParse(sound.id());
-        return id != null ? Registries.SOUND_EVENT.get(id) : null;
+        return id != null ? BuiltInRegistries.SOUND_EVENT.getValue(id) : null;
     }
 
     @Override
@@ -316,12 +314,12 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     // Sound resolves to, re-emit it honoring that Sound's volume/pitch/randomness. All other vanilla
     // single-arg playSound calls pass straight through.
     @Override
-    public void playSound(@Nullable SoundEvent sound) {
+    public void makeSound(@Nullable SoundEvent sound) {
         if (sound != null && behaviour != null) {
             if (sound == hurtEvent.get())  { playConfiguredSound(behaviour.sounds.hurt);  return; }
             if (sound == deathEvent.get()) { playConfiguredSound(behaviour.sounds.death); return; }
         }
-        super.playSound(sound);
+        super.makeSound(sound);
     }
 
     // Vanilla MobEntity.playAmbientSound() is `this.playSound(this.getAmbientSound())` with NO null
@@ -336,7 +334,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         }
         SoundEvent sound = super.getAmbientSound();
         if (sound != null) {
-            playSound(sound, getSoundVolume(), getSoundPitch());
+            playSound(sound, getSoundVolume(), getVoicePitch());
         }
     }
 
@@ -360,43 +358,43 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     public void playConfiguredSound(@Nullable Sound sound) {
         SoundEvent event = resolveEvent(sound);
         if (event == null) return;
-        getEntityWorld().playSound(null, getX(), getY(), getZ(),
-                event, getSoundCategory(), sound.volume(), sound.randomizedPitch());
+        level().playSound(null, getX(), getY(), getZ(),
+                event, getSoundSource(), sound.volume(), sound.randomizedPitch());
     }
 
     private SummonBehaviour.Movement.CollisionMode collisionMode() {
-        return SummonBehaviour.Movement.CollisionMode.values()[getDataTracker().get(COLLISION_MODE)];
+        return SummonBehaviour.Movement.CollisionMode.values()[getEntityData().get(COLLISION_MODE)];
     }
 
     @Override
-    public boolean isCollidable(@Nullable Entity entity) {
+    public boolean canBeCollidedWith(@Nullable Entity entity) {
         if (collisionMode() == SummonBehaviour.Movement.CollisionMode.NONE) return false;
-        return super.isCollidable(entity);
+        return super.canBeCollidedWith(entity);
     }
 
     @Override
-    public boolean collidesWith(Entity other) {
+    public boolean canCollideWith(Entity other) {
         switch (collisionMode()) {
             case NONE -> { return false; }
-            case ALL  -> { return super.collidesWith(other); }
+            case ALL  -> { return super.canCollideWith(other); }
             case ENEMIES -> {
                 var collidesAccordingToRelation = false;
                 if (getOwner() != null) {
                     var relation = EntityRelations.getRelation(getOwner(), other);
                     collidesAccordingToRelation = relation == EntityRelation.HOSTILE || relation == EntityRelation.NEUTRAL;
                 }
-                return super.collidesWith(other) && collidesAccordingToRelation;
+                return super.canCollideWith(other) && collidesAccordingToRelation;
             }
         }
-        return super.collidesWith(other);
+        return super.canCollideWith(other);
     }
 
     // Stops tickCramming() from pushing other entities through player.pushAwayFrom(this).
     // Both client and server call pushAway(), so the DataTracker-synced collisionMode() is enough.
     @Override
-    protected void pushAway(Entity entity) {
+    protected void doPush(Entity entity) {
         if (collisionMode() != SummonBehaviour.Movement.CollisionMode.NONE) {
-            super.pushAway(entity);
+            super.doPush(entity);
         }
     }
 
@@ -404,10 +402,10 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     // so SpellEngine's EntityCollision mixin also lets everything pass through this entity.
     // Runs on both sides: server when setBehaviour sets the value, client when the DataTracker update arrives.
     @Override
-    public void onTrackedDataSet(TrackedData<?> data) {
-        super.onTrackedDataSet(data);
+    public void onSyncedDataUpdated(EntityDataAccessor<?> data) {
+        super.onSyncedDataUpdated(data);
         if (data.equals(BOUNDING_BOX_WIDTH) || data.equals(BOUNDING_BOX_HEIGHT)) {
-            calculateDimensions();
+            refreshDimensions();
         }
         if (data.equals(COLLISION_MODE)) {
             if (collisionMode() == SummonBehaviour.Movement.CollisionMode.NONE) {
@@ -433,7 +431,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     @Nullable private SummonBehaviour.ExistenceParticles[] clientExistenceParticles = null;
 
     private void parseExistenceParticles() {
-        var json = getDataTracker().get(EXISTENCE_PARTICLES);
+        var json = getEntityData().get(EXISTENCE_PARTICLES);
         if (json == null || json.isEmpty()) {
             clientExistenceParticles = null;
             return;
@@ -450,11 +448,11 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private void emitSpawnFx() {
         if (behaviour == null || behaviour.spawn_fx == null) return;
         var fx = behaviour.spawn_fx.resolved(Fx.Context.NONE);
-        var world = getEntityWorld();
+        var world = level();
         if (!fx.particles.isEmpty()) {
             ParticleHelper.sendBatches(this, fx.particles);
         }
-        ModelEffectHelper.spawn(world, getEntityPos(), getYaw(), fx.models, this);
+        ModelEffectHelper.spawn(world, position(), getYRot(), fx.models, this);
     }
 
     /// Server-side: emits the individual despawn FX once, when the entity enters its despawn phase.
@@ -463,53 +461,53 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private void emitDespawnFx() {
         if (behaviour == null || behaviour.despawn_fx == null) return;
         var fx = behaviour.despawn_fx.resolved(Fx.Context.NONE);
-        var world = getEntityWorld();
+        var world = level();
         if (!fx.particles.isEmpty()) {
             ParticleHelper.sendBatches(this, fx.particles);
         }
-        ModelEffectHelper.spawn(world, getEntityPos(), getYaw(), fx.models, this);
+        ModelEffectHelper.spawn(world, position(), getYRot(), fx.models, this);
     }
 
     /// Client-side: spawns the configured existence particles locally on their interval, during the
     /// ACTIVE phase. No network traffic — the config was synced once via EXISTENCE_PARTICLES.
     private void spawnExistenceParticles() {
         if (clientExistenceParticles == null || !isActive()) return;
-        var world = getEntityWorld();
+        var world = level();
         for (var ep : clientExistenceParticles) {
             if (ep == null || ep.particles == null || ep.particles.isEmpty() || ep.interval_ticks <= 0) {
                 continue;
             }
-            if (((this.age - ep.offset_ticks) % ep.interval_ticks) == 0) {
+            if (((this.tickCount - ep.offset_ticks) % ep.interval_ticks) == 0) {
                 ParticleHelper.play(world, this, ep.particles);
             }
         }
     }
 
-    private void syncActionAnimationState(AnimationState state, TrackedData<Long> descriptor) {
-        if (animDuration(getDataTracker().get(descriptor)) > 0) {
-            state.start(age);
+    private void syncActionAnimationState(AnimationState state, EntityDataAccessor<Long> descriptor) {
+        if (animDuration(getEntityData().get(descriptor)) > 0) {
+            state.start(tickCount);
         } else {
             state.stop();
         }
     }
 
-    public boolean isSpawning()   { return getDataTracker().get(PHASE) == PHASE_SPAWNING; }
-    public boolean isDespawning() { return getDataTracker().get(PHASE) == PHASE_DESPAWNING; }
-    public boolean isActive()     { return getDataTracker().get(PHASE) == PHASE_ACTIVE; }
+    public boolean isSpawning()   { return getEntityData().get(PHASE) == PHASE_SPAWNING; }
+    public boolean isDespawning() { return getEntityData().get(PHASE) == PHASE_DESPAWNING; }
+    public boolean isActive()     { return getEntityData().get(PHASE) == PHASE_ACTIVE; }
     private void setPhase(byte phase) {
-        byte previous = getDataTracker().get(PHASE);
+        byte previous = getEntityData().get(PHASE);
         if (previous != phase && phase == PHASE_DESPAWNING && behaviour != null) {
             playConfiguredSound(behaviour.sounds.despawn);
             emitDespawnFx();
         }
-        getDataTracker().set(PHASE, phase);
+        getEntityData().set(PHASE, phase);
         int endAge = switch (phase) {
             case PHASE_SPAWNING   -> spawnEndAge;
             case PHASE_ACTIVE     -> despawnStartAge;
             case PHASE_DESPAWNING -> timeToLive;
             default               -> 0;
         };
-        getDataTracker().set(END_OF_PHASE_AGE, endAge);
+        getEntityData().set(END_OF_PHASE_AGE, endAge);
     }
 
     @Override
@@ -518,7 +516,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         this.spawnEndAge     = ls.spawn_ticks;
         this.timeToLive      = ls.spawn_ticks + ls.active_seconds * 20 + ls.despawn_ticks;
         this.despawnStartAge = this.timeToLive - ls.despawn_ticks;
-        setOwnerUuid(args.owner.getUuid());
+        setOwnerUuid(args.owner.getUUID());
         this.attributeScaling = args.attribute_scaling; // set before setBehaviour applies it
         setBehaviour(args.behaviour);
         // Defer to the first server tick: callers like WizardEntities run
@@ -535,42 +533,42 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private void setBehaviour(SummonBehaviour behaviour) {
         if (this.behaviour != null) return;
         this.behaviour = behaviour;
-        this.initGoals();
+        this.registerGoals();
         LivingEntity owner = getOwner();
         if (owner != null) {
             this.applyAttributeScaling(owner);
         }
-        getDataTracker().set(COLLISION_MODE, (byte) behaviour.movement.collision.ordinal());
-        getDataTracker().set(IS_ATTACKABLE, behaviour.is_attackable);
+        getEntityData().set(COLLISION_MODE, (byte) behaviour.movement.collision.ordinal());
+        getEntityData().set(IS_ATTACKABLE, behaviour.is_attackable);
         // Sync the existence-particle config once so the client can spawn them locally (no per-tick
         // packets). Only the particle FX travels — not the whole behaviour.
         if (!behaviour.existence_particles.isEmpty()) {
-            getDataTracker().set(EXISTENCE_PARTICLES, GSON.toJson(behaviour.existence_particles));
+            getEntityData().set(EXISTENCE_PARTICLES, GSON.toJson(behaviour.existence_particles));
         }
         // Dimensions are EntityType-seeded in initDataTracker. Only override when the
         // behaviour explicitly carries a non-null Dimensions block.
         if (behaviour.dimensions != null) {
-            getDataTracker().set(BOUNDING_BOX_WIDTH,  behaviour.dimensions.width);
-            getDataTracker().set(BOUNDING_BOX_HEIGHT, behaviour.dimensions.height);
+            getEntityData().set(BOUNDING_BOX_WIDTH,  behaviour.dimensions.width);
+            getEntityData().set(BOUNDING_BOX_HEIGHT, behaviour.dimensions.height);
         }
-        calculateDimensions();
+        refreshDimensions();
         if (!behaviour.movement.affected_by_gravity) {
             this.setNoGravity(true);
         }
         if (!behaviour.movement.is_pushable) {
-            this.getAttributeInstance(EntityAttributes.EXPLOSION_KNOCKBACK_RESISTANCE).addTemporaryModifier(new EntityAttributeModifier(Identifier.of("unpushable"), 9999, EntityAttributeModifier.Operation.ADD_VALUE));
+            this.getAttribute(Attributes.EXPLOSION_KNOCKBACK_RESISTANCE).addTransientModifier(new AttributeModifier(Identifier.parse("unpushable"), 9999, AttributeModifier.Operation.ADD_VALUE));
         }
     }
 
     /// Builds the default attribute container for a summoned entity type from its config entry: the four
     /// common attributes plus any custom (e.g. spell-power school) attributes. Shared by all summon entity
     /// types — registered via `SummonedEntities.registerAttributes` rather than a per-entity method.
-    public static DefaultAttributeContainer.Builder createAttributes(SummonedEntityConfig.Entry entry) {
+    public static AttributeSupplier.Builder createAttributes(SummonedEntityConfig.Entry entry) {
         var builder = LivingEntity.createLivingAttributes()
-                .add(EntityAttributes.FOLLOW_RANGE, entry.common.follow_range)
-                .add(EntityAttributes.MAX_HEALTH, entry.common.max_health)
-                .add(EntityAttributes.MOVEMENT_SPEED, entry.common.movement_speed)
-                .add(EntityAttributes.ATTACK_DAMAGE, entry.common.attack_damage);
+                .add(Attributes.FOLLOW_RANGE, entry.common.follow_range)
+                .add(Attributes.MAX_HEALTH, entry.common.max_health)
+                .add(Attributes.MOVEMENT_SPEED, entry.common.movement_speed)
+                .add(Attributes.ATTACK_DAMAGE, entry.common.attack_damage);
         for (var custom : entry.custom) {
             ConfigUtil.attribute(custom.id).ifPresent(e -> builder.add(e, custom.value));
         }
@@ -583,27 +581,27 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         for (var entry : attributeScaling.entries) {
             var targetAttrOpt = ConfigUtil.attribute(entry.attribute_id);
             if (targetAttrOpt.isEmpty()) continue;
-            var instance = this.getAttributeInstance(targetAttrOpt.get());
+            var instance = this.getAttribute(targetAttrOpt.get());
             if (instance == null) continue;
 
             double bonus = 0;
             for (var modifier : entry.modifiers) {
                 var ownerAttrOpt = ConfigUtil.attribute(modifier.attribute_id);
                 if (ownerAttrOpt.isEmpty()) continue;
-                var ownerInstance = owner.getAttributeInstance(ownerAttrOpt.get());
+                var ownerInstance = owner.getAttribute(ownerAttrOpt.get());
                 if (ownerInstance == null) continue;
                 bonus += modifier.base + ownerInstance.getValue() * modifier.coefficient;
             }
 
-            var modifierId = Identifier.of(SpellEngineMod.ID, "summon_scaling/" + entry.attribute_id.replace(":", "/"));
+            var modifierId = Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "summon_scaling/" + entry.attribute_id.replace(":", "/"));
             instance.removeModifier(modifierId);
-            instance.addTemporaryModifier(new EntityAttributeModifier(modifierId, bonus, EntityAttributeModifier.Operation.ADD_VALUE));
+            instance.addTransientModifier(new AttributeModifier(modifierId, bonus, AttributeModifier.Operation.ADD_VALUE));
         }
         this.setHealth(this.getMaxHealth() * healthRatio);
     }
 
     @Override
-    protected void initGoals() {
+    protected void registerGoals() {
         if (behaviour == null) return;
 
         // --- Goal selector ---
@@ -612,54 +610,54 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         // to swim-capable). A summon that cannot move must stay put — including in water — so only
         // install it when movement is enabled. Otherwise a stationary summon would drift upward.
         if (behaviour.movement.can_move) {
-            goalSelector.add(0, new SwimGoal(this));
+            goalSelector.addGoal(0, new FloatGoal(this));
         }
-        goalSelector.add(1, new PhaseBlockGoal(this));
+        goalSelector.addGoal(1, new PhaseBlockGoal(this));
         // Teleport is intentionally ordered above action goals so it preempts an in-progress
         // melee swing or spell cast. Walk-follow stays below them (added later, priority
         // after FaceTargetGoal) so normal catch-up doesn't interrupt active combat.
         if (behaviour.movement.can_move && behaviour.movement.follow != null) {
-            goalSelector.add(2, new TeleportToSummonerGoal(this));
+            goalSelector.addGoal(2, new TeleportToSummonerGoal(this));
         }
         int actionPriority = 10;
         for (var action : behaviour.actions) {
             switch (action.type) {
-                case MELEE_ATTACK -> goalSelector.add(actionPriority, new DynamicMeleeAttackGoal(this, action.melee_attack));
-                case SPELL_CAST -> goalSelector.add(actionPriority, new SpellCastGoal(this, action.spell_cast));
+                case MELEE_ATTACK -> goalSelector.addGoal(actionPriority, new DynamicMeleeAttackGoal(this, action.melee_attack));
+                case SPELL_CAST -> goalSelector.addGoal(actionPriority, new SpellCastGoal(this, action.spell_cast));
             }
             actionPriority++;
         }
         int priority = actionPriority;
-        goalSelector.add(priority++, new FaceTargetGoal(this));
+        goalSelector.addGoal(priority++, new FaceTargetGoal(this));
         var movement = behaviour.movement;
         if (movement.can_move) {
             if (movement.follow != null) {
-                goalSelector.add(priority++, new FollowSummonerGoal(this));
+                goalSelector.addGoal(priority++, new FollowSummonerGoal(this));
             }
-            goalSelector.add(priority++, new WanderWhenIdleGoal(this, movement.wander.speed, movement.wander.probability));
+            goalSelector.addGoal(priority++, new WanderWhenIdleGoal(this, movement.wander.speed, movement.wander.probability));
         }
         if (behaviour.targeting.look_around) {
-            goalSelector.add(priority++, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-            goalSelector.add(priority, new LookAroundGoal(this));
+            goalSelector.addGoal(priority++, new LookAtPlayerGoal(this, Player.class, 8.0F));
+            goalSelector.addGoal(priority, new RandomLookAroundGoal(this));
         }
 
         // --- Target selector ---
 
         if (behaviour.targeting.attack_with_owner) {
-            targetSelector.add(1, new DefendOwnerGoal(this));
-            targetSelector.add(3, new MirrorOwnerAttackGoal(this));
+            targetSelector.addGoal(1, new DefendOwnerGoal(this));
+            targetSelector.addGoal(3, new MirrorOwnerAttackGoal(this));
         }
         if (behaviour.targeting.revenge) {
-            targetSelector.add(2, new ClosestAttackerRevengeGoal(this));
+            targetSelector.addGoal(2, new ClosestAttackerRevengeGoal(this));
         }
         // Friendly goal added first (lower priority number) so wounded-ally healing takes
         // precedence over hostile acquisition when BOTH is configured.
         switch (behaviour.targeting.automatic_targeting) {
-            case FRIENDLY -> targetSelector.add(4, new DetectionRangeTargetGoal<>(this, LivingEntity.class, 10, true, false, this::shouldHealTarget));
-            case HOSTILE  -> targetSelector.add(4, new DetectionRangeTargetGoal<>(this, MobEntity.class,    10, true, false, this::shouldTarget));
+            case FRIENDLY -> targetSelector.addGoal(4, new DetectionRangeTargetGoal<>(this, LivingEntity.class, 10, true, false, this::shouldHealTarget));
+            case HOSTILE  -> targetSelector.addGoal(4, new DetectionRangeTargetGoal<>(this, Mob.class,    10, true, false, this::shouldTarget));
             case BOTH     -> {
-                targetSelector.add(4, new DetectionRangeTargetGoal<>(this, LivingEntity.class, 10, true, false, this::shouldHealTarget));
-                targetSelector.add(5, new DetectionRangeTargetGoal<>(this, MobEntity.class,    10, true, false, this::shouldTarget));
+                targetSelector.addGoal(4, new DetectionRangeTargetGoal<>(this, LivingEntity.class, 10, true, false, this::shouldHealTarget));
+                targetSelector.addGoal(5, new DetectionRangeTargetGoal<>(this, Mob.class,    10, true, false, this::shouldTarget));
             }
             case NONE     -> { /* no auto-acquisition */ }
         }
@@ -669,7 +667,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         LivingEntity owner = getOwner();
         if (owner == null) return false;
         if (candidate == owner) return false;
-        if (candidate instanceof Tameable t && owner.getUuid().equals(EntityRelations.ownerUuid(t))) return false;
+        if (candidate instanceof OwnableEntity t && owner.getUUID().equals(EntityRelations.ownerUuid(t))) return false;
         return EntityRelations.getRelation(owner, candidate) == EntityRelation.HOSTILE;
     }
 
@@ -681,7 +679,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         // a full-health ally and the heal action would burn cooldowns on no-ops.
         if (candidate.getHealth() >= candidate.getMaxHealth()) return false;
         if (candidate == owner) return true;
-        if (candidate instanceof Tameable t && owner.getUuid().equals(EntityRelations.ownerUuid(t))) return true;
+        if (candidate instanceof OwnableEntity t && owner.getUUID().equals(EntityRelations.ownerUuid(t))) return true;
         return EntityRelations.getRelation(owner, candidate) == EntityRelation.FRIENDLY;
     }
 
@@ -696,7 +694,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     /// FOLLOW_RANGE mode, a null config (e.g. legacy NBT), or a MAXIMUM_ACTION_RANGE that
     /// resolves to nothing.
     public double detectionRange() {
-        double followRange = getAttributeValue(EntityAttributes.FOLLOW_RANGE);
+        double followRange = getAttributeValue(Attributes.FOLLOW_RANGE);
         var config = behaviour != null ? behaviour.targeting.detection_range : null;
         if (config == null) return followRange;
         return switch (config.mode) {
@@ -733,7 +731,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
 
     private double spellActionRange(SummonBehaviour.Action.SpellCast spell) {
         if (spell == null) return 0;
-        var entry = SpellRegistry.from(getEntityWorld()).getEntry(Identifier.of(spell.spell_id)).orElse(null);
+        var entry = SpellRegistry.from(level()).get(Identifier.parse(spell.spell_id)).orElse(null);
         if (entry == null) return 0;
         // Effective range folds in caster modifiers; range.max is the action's engagement edge.
         return SpellParameters.getRange(this, entry) * spell.range.max;
@@ -783,10 +781,10 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         if (behaviour == null || !behaviour.targeting.attack_with_owner) return;
         LivingEntity owner = getOwner();
         if (owner == null) return;
-        int attackTime = owner.getLastAttackTime();
+        int attackTime = owner.getLastHurtMobTimestamp();
         if (attackTime == ownerLastAttackTimeSeen) return; // no new attack since last tick
         ownerLastAttackTimeSeen = attackTime;
-        LivingEntity attacked = owner.getAttacking();
+        LivingEntity attacked = owner.getLastHurtMob();
         if (attacked == null) return;
         if (attacked == ownerHitTarget) {
             ownerHitCount++;
@@ -803,7 +801,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         if (target == null) {
             hasAcquiredTarget = false;
         } else if (target != previous) {
-            targetAcquiredAtAge = age;
+            targetAcquiredAtAge = tickCount;
             hasAcquiredTarget = true;
         }
         // target == previous (non-null) → no-op: timer keeps counting from the
@@ -840,13 +838,13 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         if (clear == null) return;
         var target = getTarget();
         if (target == null) return;
-        if (clear.after_ticks != null && age - targetAcquiredAtAge >= clear.after_ticks.ticks) {
+        if (clear.after_ticks != null && tickCount - targetAcquiredAtAge >= clear.after_ticks.ticks) {
             setTarget(null);
             return;
         }
         if (clear.out_of_detection_range != null) {
             double threshold = clear.out_of_detection_range.multiplier * detectionRange();
-            if (squaredDistanceTo(target) > threshold * threshold) {
+            if (distanceToSqr(target) > threshold * threshold) {
                 setTarget(null);
             }
         }
@@ -865,51 +863,51 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     /// the target's eyes. Used during active engagement — spell casts and melee swings —
     /// to keep the entity locked on without the 30°/tick smoothing lag of `lookAt`.
     public void lockRotationTo(LivingEntity target) {
-        Vec3d toTarget = target.getEyePos().subtract(getEyePos()).normalize();
+        Vec3 toTarget = target.getEyePosition().subtract(getEyePosition()).normalize();
         float yaw   = (float)  Math.toDegrees(Math.atan2(-toTarget.x, toTarget.z));
         float pitch = (float) -Math.toDegrees(Math.asin(Math.max(-1.0, Math.min(1.0, toTarget.y))));
-        setYaw(yaw);
-        setHeadYaw(yaw);
-        setBodyYaw(yaw);
-        setPitch(pitch);
+        setYRot(yaw);
+        setYHeadRot(yaw);
+        setYBodyRot(yaw);
+        setXRot(pitch);
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(OWNER_UUID, Optional.empty());
-        builder.add(PHASE, PHASE_SPAWNING);
-        builder.add(COLLISION_MODE, (byte) SummonBehaviour.Movement.CollisionMode.ALL.ordinal());
-        builder.add(IS_ATTACKABLE, true);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(OWNER_UUID, Optional.empty());
+        builder.define(PHASE, PHASE_SPAWNING);
+        builder.define(COLLISION_MODE, (byte) SummonBehaviour.Movement.CollisionMode.ALL.ordinal());
+        builder.define(IS_ATTACKABLE, true);
         // 0 = sentinel for "no override". When the behaviour later sets a non-null
         // Dimensions, setBehaviour replaces these with the override values and
         // getBaseDimensions starts returning them; otherwise it falls through to
         // super.getBaseDimensions (the EntityType-declared size).
-        builder.add(BOUNDING_BOX_WIDTH,  0F);
-        builder.add(BOUNDING_BOX_HEIGHT, 0F);
-        builder.add(END_OF_PHASE_AGE, 0);
-        builder.add(CAST_PROCESS, "");
+        builder.define(BOUNDING_BOX_WIDTH,  0F);
+        builder.define(BOUNDING_BOX_HEIGHT, 0F);
+        builder.define(END_OF_PHASE_AGE, 0);
+        builder.define(CAST_PROCESS, "");
         // duration = 0 → all action animations start inactive.
         long inactive = packAnim(0, 0, 0);
-        builder.add(ATTACK_ANIMATION, inactive);
-        builder.add(SPELL_CAST_ANIMATION, inactive);
-        builder.add(SPELL_RELEASE_ANIMATION, inactive);
-        builder.add(EXISTENCE_PARTICLES, "");
+        builder.define(ATTACK_ANIMATION, inactive);
+        builder.define(SPELL_CAST_ANIMATION, inactive);
+        builder.define(SPELL_RELEASE_ANIMATION, inactive);
+        builder.define(EXISTENCE_PARTICLES, "");
     }
 
     public void setOwnerUuid(@Nullable UUID uuid) {
-        this.getDataTracker().set(OWNER_UUID, Optional.ofNullable(uuid == null ? null : LazyEntityReference.ofUUID(uuid)));
+        this.getEntityData().set(OWNER_UUID, Optional.ofNullable(uuid == null ? null : EntityReference.of(uuid)));
     }
 
     @Nullable
     public UUID getOwnerUuid() {
-        return this.getDataTracker().get(OWNER_UUID).map(LazyEntityReference::getUuid).orElse(null);
+        return this.getEntityData().get(OWNER_UUID).map(EntityReference::getUUID).orElse(null);
     }
 
     @Override
     @Nullable
-    public LazyEntityReference<LivingEntity> getOwnerReference() {
-        return this.getDataTracker().get(OWNER_UUID).orElse(null);
+    public EntityReference<LivingEntity> getOwnerReference() {
+        return this.getEntityData().get(OWNER_UUID).orElse(null);
     }
 
     @Override
@@ -917,7 +915,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     public LivingEntity getOwner() {
         UUID uuid = getOwnerUuid();
         if (uuid == null) return null;
-        return this.getEntityWorld().getPlayerByUuid(uuid);
+        return this.level().getPlayerByUUID(uuid);
     }
 
     // --- Animation states ---
@@ -934,18 +932,18 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
 
     /** Called each client tick. Default drives the five standard states from lifecycle phase. */
     protected void setupAnimationStates() {
-        spawnAnimationState.setRunning(isSpawning(), this.age);
+        spawnAnimationState.animateWhen(isSpawning(), this.tickCount);
         boolean despawning = isDespawning();
-        if (despawning && !despawnAnimationState.isRunning()) {
+        if (despawning && !despawnAnimationState.isStarted()) {
             // END_OF_PHASE_AGE = timeToLive during DESPAWNING (a future absolute age).
             // getTimeRunning() starts negative; with speedMultiplier=-1F it maps to
             // the end of the spawn animation and counts down to 0 as despawn progresses.
-            despawnAnimationState.start(getDataTracker().get(END_OF_PHASE_AGE));
+            despawnAnimationState.start(getEntityData().get(END_OF_PHASE_AGE));
         } else if (!despawning) {
             despawnAnimationState.stop();
         }
-        idleAnimationState.setRunning(isActive(), this.age);
-        moveAnimationState.setRunning(isActive() && this.getVelocity().horizontalLength() > 0.01, this.age);
+        idleAnimationState.animateWhen(isActive(), this.tickCount);
+        moveAnimationState.animateWhen(isActive() && this.getDeltaMovement().horizontalDistance() > 0.01, this.tickCount);
 
         // Auto-stop fixed-duration action animations once their duration has elapsed.
         autoStopActionAnimation(attackAnimationState,       ATTACK_ANIMATION);
@@ -953,9 +951,9 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         autoStopActionAnimation(spellReleaseAnimationState, SPELL_RELEASE_ANIMATION);
     }
 
-    private void autoStopActionAnimation(AnimationState state, TrackedData<Long> descriptor) {
-        if (!state.isRunning()) return;
-        long d = getDataTracker().get(descriptor);
+    private void autoStopActionAnimation(AnimationState state, EntityDataAccessor<Long> descriptor) {
+        if (!state.isStarted()) return;
+        long d = getEntityData().get(descriptor);
         int duration = animDuration(d);
         if (duration <= 0) {
             state.stop();
@@ -963,7 +961,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         }
         if (duration == DURATION_ENDLESS) return; // runs until an explicit stop arrives
         int startAge = animStartAge(d);
-        if (age - startAge >= duration) state.stop();
+        if (tickCount - startAge >= duration) state.stop();
     }
 
     /**
@@ -972,29 +970,29 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
      * starts, and short, premature stops felt choppy.
      */
     public void onSpellCastStarted(int variant) {
-        getDataTracker().set(SPELL_CAST_ANIMATION, packAnim(variant, DURATION_ENDLESS, age));
+        getEntityData().set(SPELL_CAST_ANIMATION, packAnim(variant, DURATION_ENDLESS, tickCount));
     }
 
     /** Stops the cast animation (e.g., on cancel or release). */
     public void onSpellCastEnded() {
         // duration=0 = inactive; age in the payload guarantees a dirty write so the client
         // gets the stop transition even when the previous value was already "stopped".
-        getDataTracker().set(SPELL_CAST_ANIMATION, packAnim(0, 0, age));
+        getEntityData().set(SPELL_CAST_ANIMATION, packAnim(0, 0, tickCount));
     }
 
     /** Called when a spell is released. Animation plays for `durationTicks`. */
     public void onSpellReleased(int variant, int durationTicks) {
-        getDataTracker().set(SPELL_RELEASE_ANIMATION, packAnim(variant, durationTicks, age));
+        getEntityData().set(SPELL_RELEASE_ANIMATION, packAnim(variant, durationTicks, tickCount));
     }
 
     /** Called when a melee swing begins. The animation plays for `durationTicks`. */
     public void onAttackAnimated(int durationTicks, int variant) {
-        getDataTracker().set(ATTACK_ANIMATION, packAnim(variant, durationTicks, age));
+        getEntityData().set(ATTACK_ANIMATION, packAnim(variant, durationTicks, tickCount));
     }
 
-    public int getAttackVariant()        { return animVariant(getDataTracker().get(ATTACK_ANIMATION)); }
-    public int getSpellCastVariant()     { return animVariant(getDataTracker().get(SPELL_CAST_ANIMATION)); }
-    public int getSpellReleaseVariant()  { return animVariant(getDataTracker().get(SPELL_RELEASE_ANIMATION)); }
+    public int getAttackVariant()        { return animVariant(getEntityData().get(ATTACK_ANIMATION)); }
+    public int getSpellCastVariant()     { return animVariant(getEntityData().get(SPELL_CAST_ANIMATION)); }
+    public int getSpellReleaseVariant()  { return animVariant(getEntityData().get(SPELL_RELEASE_ANIMATION)); }
 
     // Empty/null pool → variant 1 (the always-present default).
     public int pickVariant(@Nullable List<Integer> pool) {
@@ -1008,13 +1006,13 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
      * current swing's configured duration.
      */
     public float getAttackAnimationSpeed(float animationLengthTicks) {
-        int duration = animDuration(getDataTracker().get(ATTACK_ANIMATION));
+        int duration = animDuration(getEntityData().get(ATTACK_ANIMATION));
         return duration > 0 ? animationLengthTicks / duration : 1F;
     }
 
     /** Same as `getAttackAnimationSpeed` but for the spell-release animation. */
     public float getSpellReleaseAnimationSpeed(float animationLengthTicks) {
-        int duration = animDuration(getDataTracker().get(SPELL_RELEASE_ANIMATION));
+        int duration = animDuration(getEntityData().get(SPELL_RELEASE_ANIMATION));
         return duration > 0 ? animationLengthTicks / duration : 1F;
     }
 
@@ -1025,7 +1023,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     @Override
     public void tick() {
         super.tick();
-        if (this.getEntityWorld().isClient()) {
+        if (this.level().isClientSide()) {
             setupAnimationStates();
             spawnExistenceParticles();
         } else {
@@ -1037,11 +1035,11 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
                 }
             }
             cooldownManager.tickUpdate();
-            if (timeToLive > 0 && this.age >= timeToLive) {
+            if (timeToLive > 0 && this.tickCount >= timeToLive) {
                 this.discard();
-            } else if (this.age < spawnEndAge) {
+            } else if (this.tickCount < spawnEndAge) {
                 setPhase(PHASE_SPAWNING);
-            } else if (timeToLive > 0 && this.age >= despawnStartAge) {
+            } else if (timeToLive > 0 && this.tickCount >= despawnStartAge) {
                 setPhase(PHASE_DESPAWNING);
             } else {
                 setPhase(PHASE_ACTIVE);
@@ -1074,14 +1072,14 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         castProcess = process;
         var raw = process != null ? process.fastSyncJSON() : "";
         lastCastProcessRaw = raw;
-        this.dataTracker.set(CAST_PROCESS, raw);
+        this.entityData.set(CAST_PROCESS, raw);
     }
 
     /// Read-through parse-cache over the synced raw value — same pattern as the player
     /// interactor: the server never re-parses its own writes, the client re-parses on change.
     @Override
     @Nullable public SpellCast.Process getSpellCastProcess() {
-        var raw = this.dataTracker.get(CAST_PROCESS);
+        var raw = this.entityData.get(CAST_PROCESS);
         if (!raw.equals(lastCastProcessRaw)) {
             lastCastProcessRaw = raw;
             if (raw.isEmpty()) {
@@ -1089,7 +1087,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
             } else {
                 var syncFormat = GSON.fromJson(raw, SpellCast.Process.SyncFormat.class);
                 // Summons hold no casting item — the process `item` slot is player machinery
-                castProcess = SpellCast.Process.fromSync(this, this.getEntityWorld(), syncFormat, null, this.getEntityWorld().getTime());
+                castProcess = SpellCast.Process.fromSync(this, this.level(), syncFormat, null, this.level().getGameTime());
             }
         }
         return castProcess;
@@ -1102,25 +1100,25 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     private static final String NBT_ATTRIBUTE_SCALING = "AttributeScaling";
 
     @Override
-    public void readCustomData(ReadView view) {
-        super.readCustomData(view);
-        view.read(NBT_OWNER_UUID, Uuids.INT_STREAM_CODEC).ifPresent(this::setOwnerUuid);
-        this.timeToLive      = view.getInt(NBT_TTL, 0);
-        this.spawnEndAge     = view.getInt(NBT_SPAWN_END_AGE, 0);
-        this.despawnStartAge = view.getInt(NBT_DESPAWN_START_AGE, 0);
+    public void readAdditionalSaveData(ValueInput view) {
+        super.readAdditionalSaveData(view);
+        view.read(NBT_OWNER_UUID, UUIDUtil.CODEC).ifPresent(this::setOwnerUuid);
+        this.timeToLive      = view.getIntOr(NBT_TTL, 0);
+        this.spawnEndAge     = view.getIntOr(NBT_SPAWN_END_AGE, 0);
+        this.despawnStartAge = view.getIntOr(NBT_DESPAWN_START_AGE, 0);
         // Read before setBehaviour, which (re-)applies the scaling.
-        view.getOptionalString(NBT_ATTRIBUTE_SCALING).ifPresent(json ->
+        view.getString(NBT_ATTRIBUTE_SCALING).ifPresent(json ->
                 this.attributeScaling = GSON.fromJson(json, AttributeScaling.class));
-        view.getOptionalString(NBT_BEHAVIOUR).ifPresent(json ->
+        view.getString(NBT_BEHAVIOUR).ifPresent(json ->
                 setBehaviour(GSON.fromJson(json, SummonBehaviour.class)));
     }
 
     @Override
-    public void writeCustomData(WriteView view) {
-        super.writeCustomData(view);
+    public void addAdditionalSaveData(ValueOutput view) {
+        super.addAdditionalSaveData(view);
         UUID uuid = getOwnerUuid();
         if (uuid != null) {
-            view.put(NBT_OWNER_UUID, Uuids.INT_STREAM_CODEC, uuid);
+            view.store(NBT_OWNER_UUID, UUIDUtil.CODEC, uuid);
         }
         view.putInt(NBT_TTL, this.timeToLive);
         view.putInt(NBT_SPAWN_END_AGE, this.spawnEndAge);

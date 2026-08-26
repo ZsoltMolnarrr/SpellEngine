@@ -2,18 +2,18 @@ package net.spell_engine.rpg_series.item;
 
 import net.rpg_foundation.ranged_weapon.api.RangedConfig;
 import net.spell_engine.PlatformEvents;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ToolMaterial;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Rarity;
+import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Util;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.ToolMaterial;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
@@ -25,7 +25,7 @@ import java.util.Map;
 public class RangedWeapon {
 
     public interface RangedFactory {
-        Item create(Item.Settings settings, RangedConfig config);
+        Item create(Item.Properties settings, RangedConfig config);
     }
 
     public static final class Entry {
@@ -90,8 +90,8 @@ public class RangedWeapon {
 
         /// Durability and repair (`minecraft:repairable`) are applied to `settings` here, before the factory runs.
         /// `repairable(TagKey)` requires an unfrozen ITEM registry — always true while items are registered at mod init.
-        public Item create(Item.Settings settings, RangedConfig config) {
-            settings.maxDamage(durability());
+        public Item create(Item.Properties settings, RangedConfig config) {
+            settings.durability(durability());
             if (repairItems != null) {
                 settings.repairable(repairItems);
             }
@@ -109,7 +109,7 @@ public class RangedWeapon {
         }
 
         public String translationKey() {
-            return Util.createTranslationKey("item", id());
+            return Util.makeDescriptionId("item", id());
         }
 
         public Entry spellChoice(SpellChoice choice) {
@@ -123,18 +123,18 @@ public class RangedWeapon {
         }
 
         public Entry withSpellChoices(String pool) {
-            this.spellContainer = this.spellContainer.withBindingPool(Identifier.of(pool));
+            this.spellContainer = this.spellContainer.withBindingPool(Identifier.parse(pool));
             this.spellChoice = SpellChoice.of(pool);
             return this;
         }
 
         /// Registers component changes to apply to this item when `spellId` is chosen from the pool.
         /// Lets the chosen spell drive the item's appearance (`custom_model_data`, `custom_name`, ...).
-        public Entry applyOnChoice(String spellId, ComponentChanges changes) {
+        public Entry applyOnChoice(String spellId, DataComponentPatch changes) {
             if (this.spellChoice == null) {
                 this.spellChoice = SpellChoice.EMPTY;
             }
-            this.spellChoice = this.spellChoice.withApplyOnChoice(Identifier.of(spellId), changes);
+            this.spellChoice = this.spellChoice.withApplyOnChoice(Identifier.parse(spellId), changes);
             return this;
         }
 
@@ -149,16 +149,16 @@ public class RangedWeapon {
         }
     }
     
-    public static void register(Map<String, RangedConfig> rangedConfig, List<Entry> entries, RegistryKey<ItemGroup> itemGroupKey) {
+    public static void register(Map<String, RangedConfig> rangedConfig, List<Entry> entries, ResourceKey<CreativeModeTab> itemGroupKey) {
         for (var entry: entries) {
             var config = rangedConfig.get(entry.id.toString());
             if (config == null) {
                 config = entry.defaults;
                 rangedConfig.put(entry.id.toString(), config);
             }
-            var settings = new Item.Settings().registryKey(RegistryKey.of(RegistryKeys.ITEM, entry.id()));
+            var settings = new Item.Properties().setId(ResourceKey.create(Registries.ITEM, entry.id()));
             if (entry.tier.getNumber() >= Equipment.Tier.TIER_3.getNumber()) {
-                settings.fireproof();
+                settings.fireResistant();
             }
             if (entry.rarity != Rarity.COMMON) {
                 settings.rarity(entry.rarity);
@@ -170,11 +170,11 @@ public class RangedWeapon {
                 settings.component(SpellDataComponents.SPELL_CONTAINER, entry.spellContainer);
             }
             var item = entry.create(settings, config);
-            Registry.register(Registries.ITEM, entry.id, item);
+            Registry.register(BuiltInRegistries.ITEM, entry.id, item);
         }
         PlatformEvents.onItemGroupModify(itemGroupKey, (content, context) -> {
             for (var entry: entries) {
-                content.add(entry.registeredItem);
+                content.accept(entry.registeredItem);
             }
         });
     }

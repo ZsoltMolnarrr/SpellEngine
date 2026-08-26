@@ -1,6 +1,6 @@
 package net.spell_engine.api.render;
 
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.api.effect.CustomParticleStatusEffect;
 import net.spell_engine.api.spell.fx.ParticleGroupBuilder;
 import net.spell_engine.api.spell.fx.ParticleGroup;
@@ -115,7 +115,7 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
 
     @Override
     public void spawnParticles(LivingEntity livingEntity, int amplifier) {
-        var time = livingEntity.age;
+        var time = livingEntity.tickCount;
         var spawn = frequency == 0
                 || (!invertedFrequency ? (time % frequency == 0) : (time % (frequency / (amplifier + 1)) == 0));
         if (spawn) {
@@ -139,11 +139,11 @@ public class BuffParticleSpawner implements CustomParticleStatusEffect.Spawner {
                 }
                 scaledParticles = copies;
             }
-            ParticleHelper.play(livingEntity.getEntityWorld(), livingEntity, scaledParticles);
+            ParticleHelper.play(livingEntity.level(), livingEntity, scaledParticles);
         }
         if (groundEffect != null && groundFrequency > 0) {
-            if (livingEntity.age % groundFrequency == 0) {
-                ParticleHelper.play(livingEntity.getEntityWorld(), livingEntity, groundEffect);
+            if (livingEntity.tickCount % groundFrequency == 0) {
+                ParticleHelper.play(livingEntity.level(), livingEntity, groundEffect);
             }
         }
     }

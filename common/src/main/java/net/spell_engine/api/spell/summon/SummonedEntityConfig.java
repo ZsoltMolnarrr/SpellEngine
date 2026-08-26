@@ -1,6 +1,6 @@
 package net.spell_engine.api.spell.summon;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 import net.tiny_config.versioning.VersionableConfig;
 
 import java.util.ArrayList;

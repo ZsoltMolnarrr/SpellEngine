@@ -1,10 +1,10 @@
 package net.spell_engine.rpg_series.tags;
 
-import net.minecraft.item.Item;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
 import net.spell_engine.rpg_series.item.Equipment;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.spell_engine.rpg_series.RPGSeriesCore;
 
 import java.util.LinkedHashMap;
@@ -18,8 +18,8 @@ public class RPGSeriesItemTags {
         public static final LinkedHashMap<Equipment.WeaponType, TagKey<Item>> ALL = new LinkedHashMap<>();
         static {
             for(var category: Equipment.WeaponType.values()) {
-                var id = Identifier.of(NAMESPACE, FOLDER + "/" + category.toString().toLowerCase(Locale.ROOT));
-                var tag = TagKey.of(RegistryKeys.ITEM, id);
+                var id = Identifier.fromNamespaceAndPath(NAMESPACE, FOLDER + "/" + category.toString().toLowerCase(Locale.ROOT));
+                var tag = TagKey.create(Registries.ITEM, id);
                 ALL.put(category, tag);
             }
         }
@@ -28,7 +28,7 @@ public class RPGSeriesItemTags {
             return ALL.get(category);
         }
         public static String tagString(Equipment.WeaponType category) {
-            return "#" + get(category).id().toString();
+            return "#" + get(category).location().toString();
         }
     }
 
@@ -39,11 +39,11 @@ public class RPGSeriesItemTags {
         public static final String FOLDER = "armor_type";
         public static final LinkedHashMap<ArmorMetaType, TagKey<Item>> ALL = new LinkedHashMap<>();
         public static Identifier id(ArmorMetaType category) {
-            return Identifier.of(NAMESPACE, FOLDER + "/" + category.toString().toLowerCase(Locale.ROOT));
+            return Identifier.fromNamespaceAndPath(NAMESPACE, FOLDER + "/" + category.toString().toLowerCase(Locale.ROOT));
         }
         static {
             for(var category: ArmorMetaType.values()) {
-                var tag = TagKey.of(RegistryKeys.ITEM, id(category));
+                var tag = TagKey.create(Registries.ITEM, id(category));
                 ALL.put(category, tag);
             }
         }
@@ -59,11 +59,11 @@ public class RPGSeriesItemTags {
         public static final String FOLDER = "archetype";
         public static final LinkedHashMap<RoleArchetype, TagKey<Item>> TAGS = new LinkedHashMap<>();
         public static Identifier id(RoleArchetype archetype) {
-            return Identifier.of(NAMESPACE, FOLDER + "/" + archetype.toString().toLowerCase(Locale.ROOT) + "_weapon");
+            return Identifier.fromNamespaceAndPath(NAMESPACE, FOLDER + "/" + archetype.toString().toLowerCase(Locale.ROOT) + "_weapon");
         }
         static {
             for(var archetype: RoleArchetype.values()) {
-                var tag = TagKey.of(RegistryKeys.ITEM, id(archetype));
+                var tag = TagKey.create(Registries.ITEM, id(archetype));
                 TAGS.put(archetype, tag);
             }
         }
@@ -108,7 +108,7 @@ public class RPGSeriesItemTags {
         public static final LinkedHashMap<LootTheme, TagKey<Item>> ALL = new LinkedHashMap<>();
 
         public static TagKey<Item> get(String theme) {
-            return TagKey.of(RegistryKeys.ITEM, id(theme.toLowerCase(Locale.ROOT)));
+            return TagKey.create(Registries.ITEM, id(theme.toLowerCase(Locale.ROOT)));
         }
 
         public static Identifier id(LootTheme theme) {
@@ -116,13 +116,13 @@ public class RPGSeriesItemTags {
         }
 
         public static Identifier id(String theme) {
-            return Identifier.of(NAMESPACE, FOLDER + "/" + theme);
+            return Identifier.fromNamespaceAndPath(NAMESPACE, FOLDER + "/" + theme);
         }
 
         static {
             for(var theme: LootTheme.values()) {
                 var id = id(theme.toString().toLowerCase(Locale.ROOT));
-                var tag = TagKey.of(RegistryKeys.ITEM, id);
+                var tag = TagKey.create(Registries.ITEM, id);
                 ALL.put(theme, tag);
             }
         }
@@ -137,11 +137,11 @@ public class RPGSeriesItemTags {
     public static class LootReference {
         public static final String FOLDER = "loot_reference";
         public static TagKey<Item> get(int tier, LootCategory category) {
-            return TagKey.of(RegistryKeys.ITEM, id(tier, category));
+            return TagKey.create(Registries.ITEM, id(tier, category));
         }
         public static Identifier id(int tier, LootCategory category) {
             var name = category.toString().toLowerCase(Locale.ROOT);
-            return Identifier.of(NAMESPACE, FOLDER + "/" + "tier_" + tier + "_" + name);
+            return Identifier.fromNamespaceAndPath(NAMESPACE, FOLDER + "/" + "tier_" + tier + "_" + name);
         }
         public static String tagString(int tier, LootCategory category) {
             return "#" + id(tier, category);
@@ -150,7 +150,7 @@ public class RPGSeriesItemTags {
         /// Vanilla treasure items signalling a valuable chest (diamonds, totems, ...), drive accessory / relic injection.
         public static final String TREASURES = "treasures";
         public static TagKey<Item> treasures(int tier) {
-            return TagKey.of(RegistryKeys.ITEM, id("tier_" + tier + "_" + TREASURES));
+            return TagKey.create(Registries.ITEM, id("tier_" + tier + "_" + TREASURES));
         }
         public static String treasuresTagString(int tier) {
             return "#" + id("tier_" + tier + "_" + TREASURES);
@@ -159,10 +159,10 @@ public class RPGSeriesItemTags {
         /// Themed (non-tiered) reference gear, e.g. golden weapons found in nether structures.
         public static final String GOLDEN_WEAPONS = "golden_weapons";
         public static TagKey<Item> get(String theme) {
-            return TagKey.of(RegistryKeys.ITEM, id(theme));
+            return TagKey.create(Registries.ITEM, id(theme));
         }
         public static Identifier id(String theme) {
-            return Identifier.of(NAMESPACE, FOLDER + "/" + theme);
+            return Identifier.fromNamespaceAndPath(NAMESPACE, FOLDER + "/" + theme);
         }
         public static String tagString(String theme) {
             return "#" + id(theme);
@@ -173,11 +173,11 @@ public class RPGSeriesItemTags {
         public static final int DEFAULT_TIERS = 10;
         public static final String FOLDER = "loot_tier";
         public static TagKey<Item> get(int tier, LootCategory category) {
-            return TagKey.of(RegistryKeys.ITEM, id(tier, category));
+            return TagKey.create(Registries.ITEM, id(tier, category));
         }
         public static Identifier id(int tier, LootCategory category) {
             var name = category.toString().toLowerCase(Locale.ROOT);
-            return Identifier.of(NAMESPACE, FOLDER + "/" + "tier_" + tier + "_" + name);
+            return Identifier.fromNamespaceAndPath(NAMESPACE, FOLDER + "/" + "tier_" + tier + "_" + name);
         }
     }
 }

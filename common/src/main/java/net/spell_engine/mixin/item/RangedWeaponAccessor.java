@@ -1,23 +1,23 @@
 package net.spell_engine.mixin.item;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.RangedWeaponItem;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Hand;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 import java.util.List;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ProjectileWeaponItem;
 
-@Mixin(RangedWeaponItem.class)
+@Mixin(ProjectileWeaponItem.class)
 public interface RangedWeaponAccessor {
-    @Invoker("shootAll")
+    @Invoker("shoot")
     public void shootAll_SpellEngine(
-            ServerWorld world,
+            ServerLevel world,
             LivingEntity shooter,
-            Hand hand,
+            InteractionHand hand,
             ItemStack stack,
             List<ItemStack> projectiles,
             float speed,
@@ -26,7 +26,7 @@ public interface RangedWeaponAccessor {
             @Nullable LivingEntity target
     );
 
-    @Invoker("load")
+    @Invoker("draw")
     public static List<ItemStack> load_SpellEngine(ItemStack stack, ItemStack projectileStack, LivingEntity shooter) {
         throw new AssertionError();
     }

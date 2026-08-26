@@ -1,18 +1,18 @@
 package net.spell_engine.client.particle;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleFactory;
-import net.minecraft.client.particle.BillboardParticle;
-import net.minecraft.client.particle.BillboardParticleSubmittable;
-import net.minecraft.client.particle.SpriteProvider;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.renderer.state.QuadParticleRenderState;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.api.spell.fx.Easing;
 import net.spell_engine.api.spell.fx.ParticleGroup;
 import net.spell_engine.client.util.Color;
@@ -31,8 +31,8 @@ import org.joml.Vector3f;
 /// merges the two. This replaces the V1 zoo of hand-written particle classes
 /// (flame, universal, area, smoke, snowflake, explosion, shifted) and their
 /// per-entry factory wiring.
-public class SpellParticle extends BillboardParticle {
-    private final SpriteProvider spriteProvider;
+public class SpellParticle extends SingleQuadParticle {
+    private final SpriteSet spriteProvider;
     private final int frameCount;
     private final boolean reversedPlayback;
 
@@ -50,17 +50,17 @@ public class SpellParticle extends BillboardParticle {
     private final ParticleGroup.Motion motion;
     private final ParticleGroup.Attachment attachment;
     @Nullable private final Entity followEntity;
-    private Vec3d followDiff = Vec3d.ZERO;
+    private Vec3 followDiff = Vec3.ZERO;
     private double groundY;
     private boolean skipRender = false;
 
-    protected SpellParticle(ClientWorld world, double x, double y, double z,
+    protected SpellParticle(ClientLevel world, double x, double y, double z,
                             double velocityX, double velocityY, double velocityZ,
-                            SpriteProvider spriteProvider,
+                            SpriteSet spriteProvider,
                             SpellEngineParticles.Entry entry,
                             ParticleGroup.Appearance config,
                             @Nullable Entity sourceEntity) {
-        super(world, x, y, z, spriteProvider.getSprite(world.getRandom()));
+        super(world, x, y, z, spriteProvider.get(world.getRandom()));
         this.spriteProvider = spriteProvider;
         this.frameCount = entry.texture().frames();
         this.pivot = entry.pivot();
@@ -73,72 +73,72 @@ public class SpellParticle extends BillboardParticle {
 
         // MARK: Motion preset (constants ported from V1 SpellUniversalParticle)
 
-        this.collidesWithWorld = config.collides;
+        this.hasPhysics = config.collides;
         switch (motion) {
             case STATIC -> {
-                this.velocityX = velocityX;
-                this.velocityY = velocityY;
-                this.velocityZ = velocityZ;
-                this.velocityMultiplier = 1F;
-                this.gravityStrength = 0F;
+                this.xd = velocityX;
+                this.yd = velocityY;
+                this.zd = velocityZ;
+                this.friction = 1F;
+                this.gravity = 0F;
             }
             case FLOAT, DECELERATE -> {
-                this.velocityMultiplier = motion == ParticleGroup.Motion.DECELERATE ? 0.768F : 0.96F;
-                this.gravityStrength = 0F;
-                this.velocityX = velocityX + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
-                this.velocityY = velocityY + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
-                this.velocityZ = velocityZ + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
+                this.friction = motion == ParticleGroup.Motion.DECELERATE ? 0.768F : 0.96F;
+                this.gravity = 0F;
+                this.xd = velocityX + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
+                this.yd = velocityY + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
+                this.zd = velocityZ + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
                 this.x += (this.random.nextFloat() - this.random.nextFloat()) * 0.05F;
                 this.y += (this.random.nextFloat() - this.random.nextFloat()) * 0.05F;
                 this.z += (this.random.nextFloat() - this.random.nextFloat()) * 0.05F;
                 this.setPos(this.x, this.y, this.z);
             }
             case ASCEND -> {
-                this.velocityMultiplier = 0.96F;
-                this.gravityStrength = -0.1F;
-                this.ascending = true;
-                this.velocityX = velocityX * (velocityX == 0 && velocityZ == 0 ? 0.1F : 1F)
+                this.friction = 0.96F;
+                this.gravity = -0.1F;
+                this.speedUpWhenYMotionIsBlocked = true;
+                this.xd = velocityX * (velocityX == 0 && velocityZ == 0 ? 0.1F : 1F)
                         + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
-                this.velocityY = velocityY * 0.2F + 0.02F;
-                this.velocityZ = velocityZ * (velocityX == 0 && velocityZ == 0 ? 0.1F : 1F)
+                this.yd = velocityY * 0.2F + 0.02F;
+                this.zd = velocityZ * (velocityX == 0 && velocityZ == 0 ? 0.1F : 1F)
                         + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
             }
             case BURST -> {
-                this.velocityMultiplier = 0.7F;
-                this.gravityStrength = 0.5F;
-                this.velocityX = velocityX * 0.4F + (this.random.nextFloat() - this.random.nextFloat()) * 0.02F;
-                this.velocityY = velocityY * 0.4F + (this.random.nextFloat() - this.random.nextFloat()) * 0.02F;
-                this.velocityZ = velocityZ * 0.4F + (this.random.nextFloat() - this.random.nextFloat()) * 0.02F;
+                this.friction = 0.7F;
+                this.gravity = 0.5F;
+                this.xd = velocityX * 0.4F + (this.random.nextFloat() - this.random.nextFloat()) * 0.02F;
+                this.yd = velocityY * 0.4F + (this.random.nextFloat() - this.random.nextFloat()) * 0.02F;
+                this.zd = velocityZ * 0.4F + (this.random.nextFloat() - this.random.nextFloat()) * 0.02F;
             }
             case DRIFT -> {
                 // Vanilla SnowflakeParticle's motion: a wide random scatter, gravity,
                 // and per-axis damping that bleeds vertical speed faster than lateral,
                 // so particles fan out as they settle rather than dropping in a line.
-                this.velocityMultiplier = 1F;
-                this.gravityStrength = 0.225F;
-                this.velocityX = velocityX + (Math.random() * 2.0 - 1.0) * 0.05F;
-                this.velocityY = velocityY + (Math.random() * 2.0 - 1.0) * 0.05F;
-                this.velocityZ = velocityZ + (Math.random() * 2.0 - 1.0) * 0.05F;
+                this.friction = 1F;
+                this.gravity = 0.225F;
+                this.xd = velocityX + (Math.random() * 2.0 - 1.0) * 0.05F;
+                this.yd = velocityY + (Math.random() * 2.0 - 1.0) * 0.05F;
+                this.zd = velocityZ + (Math.random() * 2.0 - 1.0) * 0.05F;
             }
         }
         if (config.gravity != null) {
-            this.gravityStrength = config.gravity;
+            this.gravity = config.gravity;
         }
         if (config.drag != null) {
-            this.velocityMultiplier = config.drag;
+            this.friction = config.drag;
         }
 
         // MARK: Lifetime & playback
 
         float playbackSpeed = config.playback_speed == 0F ? 1F : config.playback_speed;
         this.reversedPlayback = playbackSpeed < 0F;
-        float lifetimeRoll = 1F + (this.random.nextFloat() * 2F - 1F) * MathHelper.clamp(config.lifetime_variance, 0F, 1F);
-        this.maxAge = Math.max(1, Math.round(
+        float lifetimeRoll = 1F + (this.random.nextFloat() * 2F - 1F) * Mth.clamp(config.lifetime_variance, 0F, 1F);
+        this.lifetime = Math.max(1, Math.round(
                 entry.lifetime() * motion.lifetime_factor * lifetimeRoll / Math.abs(playbackSpeed)));
 
         // MARK: Appearance
 
-        float darken = 1F - this.random.nextFloat() * MathHelper.clamp(config.color_variance, 0F, 1F);
+        float darken = 1F - this.random.nextFloat() * Mth.clamp(config.color_variance, 0F, 1F);
         float colorAlpha = 1F;
         if (config.color >= 0) {
             var color = Color.fromRGBA(config.color);
@@ -151,9 +151,9 @@ public class SpellParticle extends BillboardParticle {
         this.opacityCurve = config.opacity_curve;
         this.alpha = baseOpacity * (opacityCurve != null ? opacityCurve.sample(0F) : 1F);
 
-        float scaleVariance = MathHelper.clamp(config.scale_variance, 0F, 1F);
+        float scaleVariance = Mth.clamp(config.scale_variance, 0F, 1F);
         this.spawnScale = config.scale * (1F + (this.random.nextFloat() * 2F - 1F) * scaleVariance);
-        this.scale = spawnScale;
+        this.quadSize = spawnScale;
         this.scaleEasing = config.scale_easing;
         this.scaleMultiplier = config.scale_multiplier;
 
@@ -162,7 +162,7 @@ public class SpellParticle extends BillboardParticle {
         this.attachment = config.attachment;
         this.followEntity = attachment != ParticleGroup.Attachment.NONE ? sourceEntity : null;
         if (followEntity != null) {
-            this.followDiff = new Vec3d(this.x - followEntity.getX(), this.y - followEntity.getY(), this.z - followEntity.getZ());
+            this.followDiff = new Vec3(this.x - followEntity.getX(), this.y - followEntity.getY(), this.z - followEntity.getZ());
         }
         // Seed the ground cache with the spawn height (a GROUND-anchored batch already
         // resolves to the floor), so the first frame is correct before any re-probe.
@@ -177,34 +177,34 @@ public class SpellParticle extends BillboardParticle {
     @Override
     public void tick() {
         super.tick();
-        if (this.dead) {
+        if (this.removed) {
             return;
         }
         if (motion == ParticleGroup.Motion.DRIFT) {
             // Per-axis, so it cannot be expressed through the scalar `drag` field
-            this.velocityX *= 0.95F;
-            this.velocityY *= 0.9F;
-            this.velocityZ *= 0.95F;
+            this.xd *= 0.95F;
+            this.yd *= 0.9F;
+            this.zd *= 0.95F;
         }
-        float progress = (float) this.age / (float) this.maxAge;
+        float progress = (float) this.age / (float) this.lifetime;
         updateSprite();
         this.alpha = baseOpacity * (opacityCurve != null ? opacityCurve.sample(progress) : 1F) * elevationFade();
         float eased = scaleEasing != null
-                ? MathHelper.lerp(Easing.apply(scaleEasing, progress), 1F, scaleMultiplier)
+                ? Mth.lerp(Easing.apply(scaleEasing, progress), 1F, scaleMultiplier)
                 : 1F;
         float entityScale = attachment == ParticleGroup.Attachment.POSITION_SCALED
                 && followEntity instanceof LivingEntity livingEntity
                 ? livingEntity.getScale() : 1F;
-        this.scale = spawnScale * eased * entityScale;
+        this.quadSize = spawnScale * eased * entityScale;
         updateSkipRender();
     }
 
     private void updateSprite() {
         if (frameCount > 1) {
-            int frameAge = reversedPlayback ? (this.maxAge - this.age) : this.age;
-            this.setSprite(spriteProvider.getSprite(MathHelper.clamp(frameAge, 0, this.maxAge), this.maxAge));
+            int frameAge = reversedPlayback ? (this.lifetime - this.age) : this.age;
+            this.setSprite(spriteProvider.get(Mth.clamp(frameAge, 0, this.lifetime), this.lifetime));
         } else if (this.sprite == null) {
-            this.setSprite(spriteProvider.getSprite(this.random));
+            this.setSprite(spriteProvider.get(this.random));
         }
     }
 
@@ -213,7 +213,7 @@ public class SpellParticle extends BillboardParticle {
         if (followEntity != null && !followEntity.isRemoved()) {
             // Following: accumulate own motion into the offset, then track the entity
             this.followDiff = followDiff.add(dx, dy, dz);
-            var position = followEntity.getEntityPos().add(followDiff);
+            var position = followEntity.position().add(followDiff);
             double y = attachment == ParticleGroup.Attachment.POSITION_HORIZONTAL
                     ? groundBelow(position.x, position.z)
                     : position.y;
@@ -236,8 +236,8 @@ public class SpellParticle extends BillboardParticle {
     /// The floor height directly under a horizontal position. A miss (a gap, an overhang,
     /// the void) holds the last known height rather than dropping the particle to y=0.
     private double groundBelow(double x, double z) {
-        var from = new Vec3d(x, followEntity.getY() + GROUND_PROBE_UP, z);
-        var hit = TargetHelper.findSolidBelow(followEntity, from, followEntity.getEntityWorld(),
+        var from = new Vec3(x, followEntity.getY() + GROUND_PROBE_UP, z);
+        var hit = TargetHelper.findSolidBelow(followEntity, from, followEntity.level(),
                 -(GROUND_PROBE_UP + GROUND_PROBE_DOWN));
         if (hit != null) {
             groundY = hit.y + GROUND_LIFT;
@@ -254,9 +254,9 @@ public class SpellParticle extends BillboardParticle {
         if (attachment != ParticleGroup.Attachment.POSITION_HORIZONTAL || followEntity == null) {
             return 1F;
         }
-        float fadeReach = 2F * Math.max(followEntity.getHeight(), 0.1F);
+        float fadeReach = 2F * Math.max(followEntity.getBbHeight(), 0.1F);
         float gap = (float) (followEntity.getY() - groundY);
-        return 1F - MathHelper.clamp(gap / fadeReach, 0F, 1F);
+        return 1F - Mth.clamp(gap / fadeReach, 0F, 1F);
     }
 
     // MARK: Rendering
@@ -264,38 +264,38 @@ public class SpellParticle extends BillboardParticle {
     /// V1 `SpellAreaParticle.checkSkip`: a camera-facing quad attached to the camera
     /// entity would fill the screen in first person.
     private void updateSkipRender() {
-        var client = MinecraftClient.getInstance();
+        var client = Minecraft.getInstance();
         this.skipRender = facing == ParticleGroup.Facing.CAMERA
                 && followEntity != null
                 && followEntity == client.getCameraEntity()
-                && client.options.getPerspective().isFirstPerson();
+                && client.options.getCameraType().isFirstPerson();
     }
 
     /// Render type = atlas + pipeline since 1.21.9. `LIT` had no dedicated sheet since 1.21.2; it maps to translucent.
     @Override
-    protected RenderType getRenderType() {
+    protected Layer getLayer() {
         return switch (render) {
-            case OPAQUE -> RenderType.PARTICLE_ATLAS_OPAQUE;
-            case TRANSLUCENT, LIT -> RenderType.PARTICLE_ATLAS_TRANSLUCENT;
+            case OPAQUE -> Layer.OPAQUE;
+            case TRANSLUCENT, LIT -> Layer.TRANSLUCENT;
         };
     }
 
     @Override
-    public int getBrightness(float tint) {
-        return glow ? 255 : super.getBrightness(tint);
+    public int getLightColor(float tint) {
+        return glow ? 255 : super.getLightColor(tint);
     }
 
     /// -90 and not +90: particle sheets render with backface culling, and vanilla's
     /// corner winding rotated by +90 would leave the quad facing down — invisible
     /// from above. (V1 `SpellAreaParticle` used +90 with mirrored corner winding,
     /// which is the same visible face.)
-    private static final Rotator GROUND_ROTATOR = (quaternion, camera, tickDelta) ->
+    private static final FacingCameraMode GROUND_ROTATOR = (quaternion, camera, tickDelta) ->
             quaternion.rotationX((float) Math.toRadians(-90));
 
-    private final Rotator velocityRotator = (quaternion, camera, tickDelta) -> {
-        var direction = new Vector3f((float) this.velocityX, (float) this.velocityY, (float) this.velocityZ);
+    private final FacingCameraMode velocityRotator = (quaternion, camera, tickDelta) -> {
+        var direction = new Vector3f((float) this.xd, (float) this.yd, (float) this.zd);
         if (direction.lengthSquared() < 1.0E-6F) {
-            quaternion.set(camera.getRotation());
+            quaternion.set(camera.rotation());
         } else {
             direction.normalize();
             quaternion.rotationTo(0F, 1F, 0F, direction.x, direction.y, direction.z);
@@ -303,10 +303,10 @@ public class SpellParticle extends BillboardParticle {
     };
 
     @Override
-    public Rotator getRotator() {
+    public FacingCameraMode getFacingCameraMode() {
         return switch (facing) {
-            case CAMERA -> Rotator.ALL_AXIS;
-            case UPRIGHT -> Rotator.Y_AND_W_ONLY;
+            case CAMERA -> FacingCameraMode.LOOKAT_XYZ;
+            case UPRIGHT -> FacingCameraMode.LOOKAT_Y;
             case GROUND -> GROUND_ROTATOR;
             case VELOCITY -> velocityRotator;
         };
@@ -315,11 +315,11 @@ public class SpellParticle extends BillboardParticle {
     /// Vanilla resolves [#getRotator] itself before submitting the quad (queue-based particle rendering
     /// since 1.21.9), so the former Sodium workaround is no longer needed; only the first-person skip remains.
     @Override
-    public void render(BillboardParticleSubmittable submittable, Camera camera, float tickProgress) {
+    public void extract(QuadParticleRenderState submittable, Camera camera, float tickProgress) {
         if (skipRender) {
             return;
         }
-        super.render(submittable, camera, tickProgress);
+        super.extract(submittable, camera, tickProgress);
     }
 
     /// Applies the entry's pivot: shifts the quad vertically in units of its size
@@ -330,30 +330,30 @@ public class SpellParticle extends BillboardParticle {
     /// on the floor, so they should be visible from underneath too — a second quad,
     /// flipped 180° about an in-plane axis, presents the opposite face.
     @Override
-    protected void renderVertex(BillboardParticleSubmittable submittable, Quaternionf rotation, float x, float y, float z, float tickProgress) {
-        float shiftedY = y + pivot * this.getSize(tickProgress);
-        super.renderVertex(submittable, rotation, x, shiftedY, z, tickProgress);
+    protected void extractRotatedQuad(QuadParticleRenderState submittable, Quaternionf rotation, float x, float y, float z, float tickProgress) {
+        float shiftedY = y + pivot * this.getQuadSize(tickProgress);
+        super.extractRotatedQuad(submittable, rotation, x, shiftedY, z, tickProgress);
         if (facing == ParticleGroup.Facing.GROUND) {
             var backFace = new Quaternionf(rotation).rotateX((float) Math.PI);
-            super.renderVertex(submittable, backFace, x, shiftedY, z, tickProgress);
+            super.extractRotatedQuad(submittable, backFace, x, shiftedY, z, tickProgress);
         }
     }
 
     // MARK: Factory
 
-    public static class Factory implements ParticleFactory<ParticleGroupType> {
-        private final SpriteProvider spriteProvider;
+    public static class Factory implements ParticleProvider<ParticleGroupType> {
+        private final SpriteSet spriteProvider;
         private final SpellEngineParticles.Entry entry;
 
-        public Factory(SpriteProvider spriteProvider, SpellEngineParticles.Entry entry) {
+        public Factory(SpriteSet spriteProvider, SpellEngineParticles.Entry entry) {
             this.spriteProvider = spriteProvider;
             this.entry = entry;
         }
 
         @Override
-        public Particle createParticle(ParticleGroupType type, ClientWorld world,
+        public Particle createParticle(ParticleGroupType type, ClientLevel world,
                                        double x, double y, double z,
-                                       double velocityX, double velocityY, double velocityZ, Random random) {
+                                       double velocityX, double velocityY, double velocityZ, RandomSource random) {
             var resolved = resolve(entry, type.payload());
             return new SpellParticle(world, x, y, z, velocityX, velocityY, velocityZ,
                     spriteProvider, entry, resolved, type.sourceEntity());

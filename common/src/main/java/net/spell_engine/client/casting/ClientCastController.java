@@ -1,9 +1,9 @@
 package net.spell_engine.client.casting;
 
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.spell_engine.Platform;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.EntityActionsAllowed;
@@ -35,9 +35,9 @@ import java.util.List;
 ///   every tick IF CHANGED while a cursor-driven cast is active, consumed by the server's
 ///   authoritative fires.
 public class ClientCastController {
-    private final ClientPlayerEntity player;
+    private final LocalPlayer player;
 
-    public ClientCastController(ClientPlayerEntity player) {
+    public ClientCastController(LocalPlayer player) {
         this.player = player;
     }
 
@@ -67,7 +67,7 @@ public class ClientCastController {
 
     @Nullable public SpellCast.Progress progress() {
         if (predictedProcess != null) {
-            return predictedProcess.progress(player.getEntityWorld().getTime());
+            return predictedProcess.progress(player.level().getGameTime());
         }
         return null;
     }
@@ -78,7 +78,7 @@ public class ClientCastController {
 
     // MARK: Cast lifecycle
 
-    public SpellCast.Attempt startSpellCast(ItemStack itemStack, RegistryEntry<Spell> spellEntry) {
+    public SpellCast.Attempt startSpellCast(ItemStack itemStack, Holder<Spell> spellEntry) {
         if (player.isSpectator()) {
             return SpellCast.Attempt.none();
         }
@@ -87,7 +87,7 @@ public class ClientCastController {
             return SpellCast.Attempt.none();
         }
         var spell = spellEntry.value();
-        var spellId = spellEntry.getKey().get().getValue();
+        var spellId = spellEntry.unwrapKey().get().identifier();
         if ((predictedProcess != null && predictedProcess.id().equals(spellId))
                 || spell == null) {
             return SpellCast.Attempt.none();
@@ -111,7 +111,7 @@ public class ClientCastController {
                 // Predicted process only (display); the server starts its own on the request.
                 // Current aim rides along so the server has targets from tick one.
                 var details = SpellParameters.getCastTimeDetails(player, spell);
-                setProcess(new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.getEntityWorld().getTime()));
+                setProcess(new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.level().getGameTime()));
                 predictionConfirmed = false;
                 spellTarget = SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), SpellEngineClient.config.filterInvalidTargets, targetingRange(spellEntry));
                 var snapshot = snapshotFor(spellEntry, spellTarget);
@@ -168,7 +168,7 @@ public class ClientCastController {
         if (process != null) {
             var caster = (SpellCaster.Client) player;
             if (!player.isAlive()
-                    || player.getMainHandStack().getItem() != process.item()
+                    || player.getMainHandItem().getItem() != process.item()
                     || caster.getCooldownManager().isCoolingDown(process.spell())
                     || EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.CAST_SPELL, true)
             ) {
@@ -181,7 +181,7 @@ public class ClientCastController {
 
             // Prediction only — the server owns the timeline and fires on its own clock.
             var mode = SpellCast.Mode.from(spell);
-            var castTicks = process.spellCastTicksSoFar(player.getEntityWorld().getTime());
+            var castTicks = process.spellCastTicksSoFar(player.level().getGameTime());
             var declared = caster.getInteractor().process();
             var declaredMatches = declared != null && declared.id().equals(process.id());
             if (declaredMatches) {
@@ -244,12 +244,12 @@ public class ClientCastController {
             } else {
                 predictingOptions = true;
                 declaredAtPredictionStart = declared;
-                optionsPredictionStartedAt = player.age;
+                optionsPredictionStartedAt = player.tickCount;
             }
         }
         if (predictingOptions) {
             var declarationArrived = !declared.equals(declaredAtPredictionStart);
-            var timedOut = player.age - optionsPredictionStartedAt > OPTIONS_PREDICTION_TIMEOUT_TICKS;
+            var timedOut = player.tickCount - optionsPredictionStartedAt > OPTIONS_PREDICTION_TIMEOUT_TICKS;
             if (declarationArrived || timedOut) {
                 predictingOptions = false;
             } else {
@@ -284,8 +284,8 @@ public class ClientCastController {
     /// terrain collision) at this widest reach; the server filters to the true (ratio-scaled)
     /// range at fire. Falls back to local derivation while no declaration covers the spell yet
     /// (e.g. the round-trip gap right after an equipment swap).
-    private float targetingRange(RegistryEntry<Spell> spellEntry) {
-        var id = spellEntry.getKey().get().getValue();
+    private float targetingRange(Holder<Spell> spellEntry) {
+        var id = spellEntry.unwrapKey().get().identifier();
         for (var option : ((SpellCaster.Player) player).getInteractor().options()) {
             if (option.id().equals(id)) {
                 return option.range();
@@ -296,7 +296,7 @@ public class ClientCastController {
 
     /// The snapshot to ship for this spell: the current targeting for cursor-driven shapes,
     /// EMPTY for server-resolved shapes (whose payloads the server would reject anyway).
-    private static SpellCast.TargetSnapshot snapshotFor(RegistryEntry<Spell> spellEntry, SpellTarget.SearchResult targetResult) {
+    private static SpellCast.TargetSnapshot snapshotFor(Holder<Spell> spellEntry, SpellTarget.SearchResult targetResult) {
         return SpellCast.Option.Targeting.of(spellEntry.value()).clientResolved()
                 ? SpellCast.TargetSnapshot.of(targetResult)
                 : SpellCast.TargetSnapshot.EMPTY;
@@ -344,7 +344,7 @@ public class ClientCastController {
     public Reaction keyHeld(SpellCast.Option option, boolean freshForStart, boolean freshForStop) {
         switch (option.mode()) {
             case INSTANT -> {
-                var attempt = startSpellCast(player.getMainHandStack(), option.spell());
+                var attempt = startSpellCast(player.getMainHandItem(), option.spell());
                 return new Reaction(Reaction.Type.STARTED, attempt);
             }
             case CASTING, CHANNEL -> {
@@ -354,7 +354,7 @@ public class ClientCastController {
                         return new Reaction(Reaction.Type.STOPPED, null);
                     }
                 } else if (freshForStart) {
-                    var attempt = startSpellCast(player.getMainHandStack(), option.spell());
+                    var attempt = startSpellCast(player.getMainHandItem(), option.spell());
                     return new Reaction(Reaction.Type.STARTED, attempt);
                 }
             }
@@ -365,7 +365,7 @@ public class ClientCastController {
                         return new Reaction(Reaction.Type.RELEASED, null);
                     }
                 } else if (freshForStart) {
-                    var attempt = startSpellCast(player.getMainHandStack(), option.spell());
+                    var attempt = startSpellCast(player.getMainHandItem(), option.spell());
                     return new Reaction(Reaction.Type.STARTED, attempt);
                 }
             }

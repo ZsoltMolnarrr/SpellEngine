@@ -1,6 +1,6 @@
 package net.spell_engine.mixin.entity;
 
-import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.world.damagesource.DamageSource;
 import net.spell_engine.entity.DamageSourceExtension;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;

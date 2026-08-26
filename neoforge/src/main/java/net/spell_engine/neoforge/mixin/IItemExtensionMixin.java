@@ -1,8 +1,8 @@
 package net.spell_engine.neoforge.mixin;
 
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.neoforged.neoforge.common.extensions.IItemExtension;
 import net.spell_engine.neoforge.PlatformEventsImpl;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,11 +23,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(IItemExtension.class)
 public interface IItemExtensionMixin {
     @Inject(
-            method = "supportsEnchantment(Lnet/minecraft/item/ItemStack;Lnet/minecraft/registry/entry/RegistryEntry;)Z",
+            method = "supportsEnchantment(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/core/Holder;)Z",
             at = @At("RETURN"),
             cancellable = true,
             remap = false)
-    default void spellEngine$supportsEnchantment(ItemStack stack, RegistryEntry<Enchantment> enchantment, CallbackInfoReturnable<Boolean> cir) {
+    default void spellEngine$supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment, CallbackInfoReturnable<Boolean> cir) {
         switch (PlatformEventsImpl.evaluateAllowEnchanting(enchantment, stack)) {
             case ALLOW -> cir.setReturnValue(true);
             case DENY -> cir.setReturnValue(false);

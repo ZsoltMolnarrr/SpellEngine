@@ -1,18 +1,18 @@
 package net.spell_engine.mixin.client;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
 import net.spell_engine.utils.SoundPlayerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(ClientWorld.class)
+@Mixin(ClientLevel.class)
 public class ClientWorldMixin implements SoundPlayerWorld {
-    public void playSoundFromEntity(Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch) {
-        var clientWorld = (ClientWorld) (Object) this;
-        var clientPlayer = MinecraftClient.getInstance().player;
-        clientWorld.playSoundFromEntity(clientPlayer, entity, sound, category, volume, pitch);
+    public void playSoundFromEntity(Entity entity, SoundEvent sound, SoundSource category, float volume, float pitch) {
+        var clientWorld = (ClientLevel) (Object) this;
+        var clientPlayer = Minecraft.getInstance().player;
+        clientWorld.playSound(clientPlayer, entity, sound, category, volume, pitch);
     }
 }

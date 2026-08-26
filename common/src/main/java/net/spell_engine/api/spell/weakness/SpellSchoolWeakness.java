@@ -1,6 +1,6 @@
 package net.spell_engine.api.spell.weakness;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.tags.SpellEngineEntityTags;
@@ -67,7 +67,7 @@ public class SpellSchoolWeakness {
         // Healing school: Cannot heal mechanical entities, +100% crit vs undead
         var healingDenyMechanical = new Spell.Impact.TargetModifier();
         var healingMechanicalCondition = new Spell.TargetCondition();
-        healingMechanicalCondition.entity_type = "#" + SpellEngineEntityTags.mechanical.id();
+        healingMechanicalCondition.entity_type = "#" + SpellEngineEntityTags.mechanical.location();
         healingDenyMechanical.conditions = List.of(healingMechanicalCondition);
         healingDenyMechanical.execute = TriState.DENY;
 

@@ -1,9 +1,9 @@
 package net.spell_engine.api.entity;
 
-import net.minecraft.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Function;
+import net.minecraft.world.entity.Entity;
 
 public interface TwoWayCollisionChecker {
     enum CollisionResult {

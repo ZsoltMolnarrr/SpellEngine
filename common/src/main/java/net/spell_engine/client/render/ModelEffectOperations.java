@@ -1,20 +1,19 @@
 package net.spell_engine.client.render;
 
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.RotationAxis;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.api.render.CustomModels;
 import net.spell_engine.api.spell.fx.Easing;
 import net.spell_engine.api.spell.fx.ModelEffect;
-
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ModelEffectOperations {
     @FunctionalInterface
     public interface OperationHandler {
-        void apply(MatrixStack matrices, float progress, ModelEffect.Transform transform);
+        void apply(PoseStack matrices, float progress, ModelEffect.Transform transform);
     }
 
     private static final Map<String, OperationHandler> REGISTRY = new HashMap<>();
@@ -34,9 +33,9 @@ public class ModelEffectOperations {
             matrices.translate(progress * t.x, progress * t.y, progress * t.z);
         });
         register("rotate", (matrices, progress, t) -> {
-            if (t.x != 0) matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(progress * t.x));
-            if (t.y != 0) matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(progress * t.y));
-            if (t.z != 0) matrices.multiply(RotationAxis.POSITIVE_Z.rotationDegrees(progress * t.z));
+            if (t.x != 0) matrices.mulPose(Axis.XP.rotationDegrees(progress * t.x));
+            if (t.y != 0) matrices.mulPose(Axis.YP.rotationDegrees(progress * t.y));
+            if (t.z != 0) matrices.mulPose(Axis.ZP.rotationDegrees(progress * t.z));
         });
     }
 
@@ -44,7 +43,7 @@ public class ModelEffectOperations {
     /// matrices. Does NOT push/pop, does NOT apply `positioning`, and does NOT draw — callers handle
     /// those. Shared by `renderEffect` and the projectile composite renderer so both drive animation
     /// through identical logic. `age` is elapsed time in ticks (with tick delta).
-    public static void applyTransforms(MatrixStack matrixStack, ModelEffect effect, float age) {
+    public static void applyTransforms(PoseStack matrixStack, ModelEffect effect, float age) {
         // Scale deltas accumulated additively and applied as a single call,
         // because MatrixStack.scale() composes multiplicatively — chaining scale(0)*scale(s) = 0 forever.
         float sx = 0, sy = 0, sz = 0;
@@ -79,16 +78,16 @@ public class ModelEffectOperations {
 
     /// Applies transforms and renders a single ModelEffect.
     /// `age` is the elapsed time in ticks (with tick delta) used to evaluate animations.
-    public static void renderEffect(ModelEffect effect, float age, MatrixStack matrixStack,
-                                    OrderedRenderCommandQueue queue, int light, int entityId) {
-        matrixStack.push();
+    public static void renderEffect(ModelEffect effect, float age, PoseStack matrixStack,
+                                    SubmitNodeCollector queue, int light, int entityId) {
+        matrixStack.pushPose();
         applyTransforms(matrixStack, effect, age);
 
         // Render model
-        var modelId = Identifier.of(effect.model_id);
+        var modelId = Identifier.parse(effect.model_id);
         var layer = SpellModelHelper.LAYERS.get(effect.light_emission);
         CustomModels.render(layer, modelId, matrixStack, queue, light, entityId);
 
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 }

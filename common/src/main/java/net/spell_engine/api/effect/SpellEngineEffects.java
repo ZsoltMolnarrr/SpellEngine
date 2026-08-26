@@ -1,9 +1,8 @@
 package net.spell_engine.api.effect;
 
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.effect.StatusEffectCategory;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.rpg_series.config.AttributeModifier;
 import net.spell_engine.rpg_series.config.EffectConfig;
@@ -20,47 +19,47 @@ public class SpellEngineEffects {
         return entry;
     }
 
-    public static Effects.Entry STUN = add(new Effects.Entry(Identifier.of(SpellEngineMod.ID,"stun"),
+    public static Effects.Entry STUN = add(new Effects.Entry(Identifier.fromNamespaceAndPath(SpellEngineMod.ID,"stun"),
             "Stunned",
             "Cannot move or act.",
-            new CustomStatusEffect(StatusEffectCategory.HARMFUL, 0x888800),
+            new CustomStatusEffect(MobEffectCategory.HARMFUL, 0x888800),
             new EffectConfig(List.of(
                     new AttributeModifier(
-                            EntityAttributes.JUMP_STRENGTH.getIdAsString(),
+                            Attributes.JUMP_STRENGTH.getRegisteredName(),
                             0,
-                            EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+                            net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
                     )
             ))
     ));
 
-    public static Effects.Entry IMMOBILIZE = add(new Effects.Entry(Identifier.of(SpellEngineMod.ID,"immobilize"),
+    public static Effects.Entry IMMOBILIZE = add(new Effects.Entry(Identifier.fromNamespaceAndPath(SpellEngineMod.ID,"immobilize"),
             "Immobilized",
             "Cannot move or jump.",
-            new CustomStatusEffect(StatusEffectCategory.HARMFUL, 0xcc0000),
+            new CustomStatusEffect(MobEffectCategory.HARMFUL, 0xcc0000),
             new EffectConfig(List.of(
                     new AttributeModifier(
-                            EntityAttributes.JUMP_STRENGTH.getIdAsString(),
+                            Attributes.JUMP_STRENGTH.getRegisteredName(),
                             -10,
-                            EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+                            net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
                     ),
                     new AttributeModifier(
-                            EntityAttributes.MOVEMENT_SPEED.getIdAsString(),
+                            Attributes.MOVEMENT_SPEED.getRegisteredName(),
                             -10,
-                            EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+                            net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
                     )
             ))
     ));
 
-    public static Effects.Entry BLEED = add(new Effects.Entry(Identifier.of(SpellEngineMod.ID,"bleed"),
+    public static Effects.Entry BLEED = add(new Effects.Entry(Identifier.fromNamespaceAndPath(SpellEngineMod.ID,"bleed"),
             "Bleed",
             "Losing health over time, worse while moving.",
-            new BleedStatusEffect(StatusEffectCategory.HARMFUL, 0xb30000)
+            new BleedStatusEffect(MobEffectCategory.HARMFUL, 0xb30000)
     ));
 
-    public static Effects.Entry ENERGY = add(new Effects.Entry(Identifier.of(SpellEngineMod.ID,"energy"),
+    public static Effects.Entry ENERGY = add(new Effects.Entry(Identifier.fromNamespaceAndPath(SpellEngineMod.ID,"energy"),
             "Energy",
             "The held weapon burns with energy.",
-            new CustomStatusEffect(StatusEffectCategory.BENEFICIAL, 0xffffcc)
+            new CustomStatusEffect(MobEffectCategory.BENEFICIAL, 0xffffcc)
     ));
 
     /// Stacks reach full opacity at amplifier 9, the tenth stack

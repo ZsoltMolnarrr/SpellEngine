@@ -1,9 +1,9 @@
 package net.spell_engine.internals.casting;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.Tameable;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.OwnableEntity;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.summon.SummonBehaviour;
@@ -37,7 +37,7 @@ public class MobCastController {
     private final SummonBehaviour.Action.SpellCast config;
 
     // Spell registry entry — resolved lazily and cached (registry is stable at runtime)
-    @Nullable private RegistryEntry<Spell> spellEntry = null;
+    @Nullable private Holder<Spell> spellEntry = null;
     private boolean spellLookupAttempted = false;
 
     // Per-activation state
@@ -58,27 +58,27 @@ public class MobCastController {
     }
 
     @Nullable
-    private RegistryEntry<Spell> resolveSpell() {
+    private Holder<Spell> resolveSpell() {
         if (spellLookupAttempted) return spellEntry;
         spellLookupAttempted = true;
-        var id = Identifier.of(config.spell_id);
-        spellEntry = SpellRegistry.from(entity.getEntityWorld()).getEntry(id).orElse(null);
+        var id = Identifier.parse(config.spell_id);
+        spellEntry = SpellRegistry.from(entity.level()).get(id).orElse(null);
         return spellEntry;
     }
 
     // Resolved engagement distances. The `range.{min,max,preferred}` fields are FRACTIONS of the
     // spell's effective range (`SpellParameters.getRange`, which applies caster-level modifiers), so they
     // auto-scale per caster.
-    private float spellRange(RegistryEntry<Spell> entry) {
+    private float spellRange(Holder<Spell> entry) {
         return SpellParameters.getRange(entity, entry);
     }
-    private float effectiveMin(RegistryEntry<Spell> entry) {
+    private float effectiveMin(Holder<Spell> entry) {
         return config.range.min * spellRange(entry);
     }
-    private float effectiveMax(RegistryEntry<Spell> entry) {
+    private float effectiveMax(Holder<Spell> entry) {
         return config.range.max * spellRange(entry);
     }
-    private float effectivePreferred(RegistryEntry<Spell> entry) {
+    private float effectivePreferred(Holder<Spell> entry) {
         return config.range.preferred * spellRange(entry);
     }
 
@@ -109,10 +109,10 @@ public class MobCastController {
                 // schedule (the same Process machinery players use), declared on the entity so
                 // clients render the beam and play the cast presentation.
                 var details = SpellParameters.getCastTimeDetails(entity, spell);
-                channel = new SpellCast.Process(entity, entry, null, details.speed(), details.length(), entity.getEntityWorld().getTime());
+                channel = new SpellCast.Process(entity, entry, null, details.speed(), details.length(), entity.level().getGameTime());
                 channelFired = false;
                 entity.declareCastProcess(channel);
-                SoundHelper.playSound(entity.getEntityWorld(), entity, spell.active.cast.start_sound);
+                SoundHelper.playSound(entity.level(), entity, spell.active.cast.start_sound);
             } else {
                 castDuration = SpellParameters.isInstant(spell)
                         ? 1
@@ -121,7 +121,7 @@ public class MobCastController {
             }
         }
         entity.onSpellCastStarted(entity.pickVariant(config.cast_animation_variants));
-        entity.setAttacking(true);
+        entity.setAggressive(true);
     }
 
     public boolean shouldContinue() {
@@ -129,7 +129,7 @@ public class MobCastController {
     }
 
     public void end() {
-        entity.setAttacking(false);
+        entity.setAggressive(false);
         entity.getNavigation().stop();
         aim = null;
         if (channel != null) {
@@ -169,8 +169,8 @@ public class MobCastController {
     /// Channel timeline: wall-clock schedule, matching player channels — no engagement pause;
     /// a broken line of sight just means the beam hits a wall and the raycast finds no targets.
     /// Aim aborts (target dead / out of max range) still end the channel via `shouldContinue`.
-    private void tickChannel(RegistryEntry<Spell> entry, Spell spell) {
-        var time = entity.getEntityWorld().getTime();
+    private void tickChannel(Holder<Spell> entry, Spell spell) {
+        var time = entity.level().getGameTime();
         if (channel.isDue(time)) {
             channel.markDue();
             aim.orient(); // final orient before the raycast reads the look vector
@@ -183,8 +183,8 @@ public class MobCastController {
         }
     }
 
-    private void releaseSpell(RegistryEntry<Spell> entry, Spell spell) {
-        if (entity.getEntityWorld().isClient()) return;
+    private void releaseSpell(Holder<Spell> entry, Spell spell) {
+        if (entity.level().isClientSide()) return;
         // Final orient before the engine reads the look vector.
         aim.orient();
         performSpell(entry);
@@ -195,9 +195,9 @@ public class MobCastController {
 
     /// One tick of a channeled cast: the spell's output split across the channel's ticks,
     /// exactly like the player path — including the sub-tick interval compensation.
-    private void fireChannelTick(RegistryEntry<Spell> spellEntry, Spell spell) {
-        var world = entity.getEntityWorld();
-        if (world.isClient()) return;
+    private void fireChannelTick(Holder<Spell> spellEntry, Spell spell) {
+        var world = entity.level();
+        if (world.isClientSide()) return;
         var multiplier = SpellParameters.channelValueMultiplier(spell);
         var interval = channel.channelInterval(entity);
         if (interval < 1) {
@@ -217,9 +217,9 @@ public class MobCastController {
 
     /// Natural end of a channel: release FX (unless every tick already played it), release
     /// animation, cooldown. Impacts happened on the ticks — nothing fires here.
-    private void finishChannel(RegistryEntry<Spell> entry, Spell spell) {
-        if (!entity.getEntityWorld().isClient() && !spell.active.cast.channelReleaseFx()) {
-            ReleaseFx.send(entity.getEntityWorld(), entity, entry, 1F);
+    private void finishChannel(Holder<Spell> entry, Spell spell) {
+        if (!entity.level().isClientSide() && !spell.active.cast.channelReleaseFx()) {
+            ReleaseFx.send(entity.level(), entity, entry, 1F);
         }
         entity.onSpellCastEnded();
         entity.onSpellReleased(entity.pickVariant(config.release_animation_variants), config.release_animation_duration);
@@ -227,7 +227,7 @@ public class MobCastController {
     }
 
     /// Cooldown: use spell's own duration if set, else fall back to config override (ticks)
-    private void applyCooldown(RegistryEntry<Spell> entry, Spell spell) {
+    private void applyCooldown(Holder<Spell> entry, Spell spell) {
         int cooldownTicks;
         if (spell.cost.cooldown != null && spell.cost.cooldown.duration > 0) {
             cooldownTicks = Math.round(SpellParameters.getCooldownDuration(entity, entry) * 20F);
@@ -242,9 +242,9 @@ public class MobCastController {
     /// The cost-free server-side fire (formerly `SpellExecution.targetAndPerformSpell`):
     /// targeting from the entity's current rotation/position, then the full delivery pipeline.
     /// No player costs (ammo, exhaust, cooldown) — this controller manages its own cooldown.
-    private void performSpell(RegistryEntry<Spell> spellEntry) {
-        var world = entity.getEntityWorld();
-        if (world.isClient()) return;
+    private void performSpell(Holder<Spell> spellEntry) {
+        var world = entity.level();
+        if (world.isClientSide()) return;
         var spell = spellEntry.value();
         if (spell.active == null) return;
 
@@ -263,8 +263,8 @@ public class MobCastController {
 
     /// A pet's helpful casts attribute to its owner.
     private SpellExecution.ImpactContext ownerAdjusted(SpellExecution.ImpactContext context) {
-        if (!entity.isAttackable() && entity instanceof Tameable) {
-            var owner = ((Tameable) entity).getOwner();
+        if (!entity.isAttackable() && entity instanceof OwnableEntity) {
+            var owner = ((OwnableEntity) entity).getOwner();
             if (owner != null) {
                 return context.effectiveCaster(owner);
             }
@@ -274,12 +274,12 @@ public class MobCastController {
 
     /// Server-side targeting from the entity's current rotation/position, with the target cap
     /// applied (sorted by distance to the caster).
-    private SpellTarget.SearchResult cappedTargets(RegistryEntry<Spell> spellEntry, Spell spell) {
+    private SpellTarget.SearchResult cappedTargets(Holder<Spell> spellEntry, Spell spell) {
         var targetResult = SpellTarget.findTargets(entity, spellEntry, SpellTarget.SearchResult.empty(), true);
         var targets = targetResult.entities();
         if (spell.target.cap > 0) {
             targets = targets.stream()
-                    .sorted(Comparator.comparingDouble(t -> t.squaredDistanceTo(entity.getEntityPos())))
+                    .sorted(Comparator.comparingDouble(t -> t.distanceToSqr(entity.position())))
                     .limit(spell.target.cap)
                     .toList();
             targetResult = new SpellTarget.SearchResult(targets, targetResult.location());
@@ -292,7 +292,7 @@ public class MobCastController {
     /// Picks how this activation aims: the live target when targeting is enabled and a usable target
     /// sits inside the engagement band, otherwise the configured fallback. Null = nothing to fire at.
     @Nullable
-    private CastAim resolveAim(RegistryEntry<Spell> entry) {
+    private CastAim resolveAim(Holder<Spell> entry) {
         if (config.aiming.accept_target && entry != null) {
             var target = entity.getTarget();
             if (target != null && target.isAlive() && withinBand(entry, target)) {
@@ -307,8 +307,8 @@ public class MobCastController {
     }
 
     /// True when the target sits inside `[min, max] × effective range`.
-    private boolean withinBand(RegistryEntry<Spell> entry, LivingEntity target) {
-        double distSq = entity.squaredDistanceTo(target);
+    private boolean withinBand(Holder<Spell> entry, LivingEntity target) {
+        double distSq = entity.distanceToSqr(target);
         float maxR = effectiveMax(entry);
         if (distSq > (double) maxR * maxR) return false;
         float minR = effectiveMin(entry);
@@ -342,20 +342,20 @@ public class MobCastController {
             // Enforce the upper engagement edge mid-cast (a target leaving `max` aborts). The lower
             // edge is intentionally not re-checked.
             float maxR = effectiveMax(spellEntry);
-            return entity.squaredDistanceTo(target) <= (double) maxR * maxR;
+            return entity.distanceToSqr(target) <= (double) maxR * maxR;
         }
 
         @Override
         public void approach() {
             float preferred = effectivePreferred(spellEntry);
             double preferredSq = (double) preferred * preferred;
-            inPreferredRange = entity.squaredDistanceTo(target) <= preferredSq;
-            boolean canSee = entity.getVisibilityCache().canSee(target);
+            inPreferredRange = entity.distanceToSqr(target) <= preferredSq;
+            boolean canSee = entity.getSensing().hasLineOfSight(target);
             if (canSee) { if (seeingTicker < 10) seeingTicker++; }
             else        { if (seeingTicker > 0)  seeingTicker--; }
             // Close in until inside preferred range (or while sight is broken); then hold.
             if (!inPreferredRange || seeingTicker <= 0) {
-                entity.getNavigation().startMovingTo(target, 1.0);
+                entity.getNavigation().moveTo(target, 1.0);
             } else {
                 entity.getNavigation().stop();
             }
@@ -384,9 +384,9 @@ public class MobCastController {
     /// feet; self-centred AoE spells are unaffected by rotation.
     private final CastAim selfAim = new StationaryAim() {
         @Override public void orient() {
-            entity.setPitch(90F);
-            entity.setHeadYaw(entity.getYaw());
-            entity.setBodyYaw(entity.getYaw());
+            entity.setXRot(90F);
+            entity.setYHeadRot(entity.getYRot());
+            entity.setYBodyRot(entity.getYRot());
         }
     };
 }

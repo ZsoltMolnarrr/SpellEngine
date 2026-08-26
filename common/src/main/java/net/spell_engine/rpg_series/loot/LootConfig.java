@@ -188,7 +188,7 @@ public class LootConfig {
         public Pool scroll(int min, int max) {
             Entry entry = new Entry(ScrollItem.ID.toString());
             var spell_bind = new Entry.SpellBind();
-            spell_bind.pool = SpellTags.TREASURE.id().toString();
+            spell_bind.pool = SpellTags.TREASURE.location().toString();
             spell_bind.tier_min = min;
             spell_bind.tier_max = max;
             entry.spell_bind = spell_bind;

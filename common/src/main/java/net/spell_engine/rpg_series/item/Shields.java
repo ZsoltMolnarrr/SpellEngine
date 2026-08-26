@@ -1,12 +1,12 @@
 package net.spell_engine.rpg_series.item;
 
-import net.minecraft.entity.attribute.EntityAttributeModifier.Operation;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.item.Item;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import net.spell_engine.rpg_series.config.AttributeModifier;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,8 +33,8 @@ import java.util.List;
 public class Shields {
 
     // Attribute ids derived from the registry entries (1.21.2 dropped the `generic.` prefix — never hardcode them)
-    private static final String ARMOR_TOUGHNESS = EntityAttributes.ARMOR_TOUGHNESS.getIdAsString();
-    private static final String MAX_HEALTH = EntityAttributes.MAX_HEALTH.getIdAsString();
+    private static final String ARMOR_TOUGHNESS = Attributes.ARMOR_TOUGHNESS.getRegisteredName();
+    private static final String MAX_HEALTH = Attributes.MAX_HEALTH.getRegisteredName();
 
     /**
      * Create a shield entry with tier-based durability and custom attributes.
@@ -53,9 +53,9 @@ public class Shields {
             Equipment.Tier tier,
             @Nullable TagKey<Item> repairItems,
             List<AttributeModifier> attributes,
-            RegistryEntry<SoundEvent> equipSound
+            Holder<SoundEvent> equipSound
     ) {
-        var id = Identifier.of(namespace, name);
+        var id = Identifier.fromNamespaceAndPath(namespace, name);
         var entry = new Shield.Entry(
                 id,
                 tier,
@@ -90,7 +90,7 @@ public class Shields {
             String name,
             Equipment.Tier tier,
             @Nullable TagKey<Item> repairItems,
-            RegistryEntry<SoundEvent> equipSound
+            Holder<SoundEvent> equipSound
     ) {
         return create(namespace, name, tier, repairItems,
                 standardAttributes(tier), equipSound);

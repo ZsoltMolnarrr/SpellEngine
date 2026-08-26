@@ -5,10 +5,10 @@ import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentTarget;
 import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Entity;
 import net.spell_engine.api.attachment.SyncedEntityData;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +22,7 @@ public final class FabricSyncedEntityData<T> implements SyncedEntityData<T> {
     private final T defaultValue;
 
     public FabricSyncedEntityData(Identifier id, T defaultValue,
-                                  PacketCodec<? super RegistryByteBuf, T> sync,
+                                  StreamCodec<? super RegistryFriendlyByteBuf, T> sync,
                                   @Nullable Codec<T> persistence) {
         this.defaultValue = defaultValue;
         this.type = AttachmentRegistry.create(id, builder -> {

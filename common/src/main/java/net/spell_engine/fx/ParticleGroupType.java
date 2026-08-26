@@ -1,11 +1,11 @@
 package net.spell_engine.fx;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleType;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.world.entity.Entity;
 import net.spell_engine.api.spell.fx.ParticleGroup;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,9 +21,9 @@ import org.jetbrains.annotations.Nullable;
 /// The codecs are placeholders (payload-less), matching the V1 behaviour:
 /// customized spawns only travel through Spell Engine's own packet, not
 /// through vanilla particle serialization.
-public class ParticleGroupType extends ParticleType<ParticleGroupType> implements ParticleEffect {
+public class ParticleGroupType extends ParticleType<ParticleGroupType> implements ParticleOptions {
     private final MapCodec<ParticleGroupType> codec = MapCodec.unit(this::getType);
-    private final PacketCodec<RegistryByteBuf, ParticleGroupType> packetCodec = PacketCodec.unit(this);
+    private final StreamCodec<RegistryFriendlyByteBuf, ParticleGroupType> packetCodec = StreamCodec.unit(this);
 
     private ParticleGroupType root = this;
     private SpellEngineParticles.Entry entry;
@@ -72,12 +72,12 @@ public class ParticleGroupType extends ParticleType<ParticleGroupType> implement
     }
 
     @Override
-    public MapCodec<ParticleGroupType> getCodec() {
+    public MapCodec<ParticleGroupType> codec() {
         return codec;
     }
 
     @Override
-    public PacketCodec<? super RegistryByteBuf, ParticleGroupType> getPacketCodec() {
+    public StreamCodec<? super RegistryFriendlyByteBuf, ParticleGroupType> streamCodec() {
         return packetCodec;
     }
 }

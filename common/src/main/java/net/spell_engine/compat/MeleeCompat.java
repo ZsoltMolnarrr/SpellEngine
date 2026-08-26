@@ -6,8 +6,8 @@ import net.bettercombat.api.fx.TrailAppearance;
 import net.bettercombat.api.fx.TrailAppearanceOverride;
 import net.bettercombat.logic.TargetHelper;
 import net.bettercombat.logic.WeaponRegistry;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.spell_engine.api.effect.GlowingItemStatusEffect;
 import net.spell_engine.api.spell.fx.PlayerAnimation;
 import net.spell_engine.client.util.Color;
@@ -19,8 +19,8 @@ public class MeleeCompat {
     public record Attack(boolean isCombo, boolean isOffhand) {
         public static final Attack EMPTY = new Attack(false, false);
     }
-    public static Function<PlayerEntity, Attack> attackProperties = player -> {
-        var isCombo = player.getLastAttackTime() == (player.getAttackCooldownProgressPerTick() * 20);
+    public static Function<Player, Attack> attackProperties = player -> {
+        var isCombo = player.getLastHurtMobTimestamp() == (player.getCurrentItemAttackStrengthDelay() * 20);
         var isOffhand = false;
         return new Attack(isCombo, isOffhand);
     };

@@ -11,9 +11,9 @@ import com.zigythebird.playeranimcore.animation.layered.modifier.SpeedModifier;
 import com.zigythebird.playeranimcore.easing.EasingType;
 import com.zigythebird.playeranimcore.enums.PlayState;
 import com.zigythebird.playeranimcore.math.Vec3f;
-import net.minecraft.client.render.entity.model.EntityModelPartNames;
-import net.minecraft.entity.PlayerLikeEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.model.geom.PartNames;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Avatar;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.compatibility.FirstPersonAnimationCompatibility;
 import net.spell_engine.internals.casting.SpellCast;
@@ -29,9 +29,9 @@ import java.util.Optional;
  * with per-part enabling done in the post-animation-setup consumer (formerly {@code StateCollectionHelper}).
  */
 public class SpellAnimationStack extends PlayerAnimationController {
-    public static final Identifier CASTING_ID = Identifier.of(SpellEngineMod.ID, "casting");
-    public static final Identifier RELEASE_ID = Identifier.of(SpellEngineMod.ID, "release");
-    public static final Identifier MISC_ID = Identifier.of(SpellEngineMod.ID, "misc");
+    public static final Identifier CASTING_ID = Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "casting");
+    public static final Identifier RELEASE_ID = Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "release");
+    public static final Identifier MISC_ID = Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "misc");
 
     public static Identifier idFor(SpellCast.Animation type) {
         return switch (type) {
@@ -59,7 +59,7 @@ public class SpellAnimationStack extends PlayerAnimationController {
     /// Whether the current animation should follow the player's pitch (see `Spell.Active.Cast.animation_pitch`)
     public boolean pitching = true;
 
-    public SpellAnimationStack(PlayerLikeEntity player, SpellCast.Animation type) {
+    public SpellAnimationStack(Avatar player, SpellCast.Animation type) {
         super(player, (controller, state, animSetter) -> PlayState.STOP);
         this.type = type;
         this.adjustment = createPitchAdjustment();
@@ -71,13 +71,13 @@ public class SpellAnimationStack extends PlayerAnimationController {
         this.setPostAnimationSetupConsumer((bone) -> {
             // Formerly: copy.torso.fullyEnablePart(true); copy.head.pitch disabled, yaw enabled
             bone.apply("torso").setEnabled(true);
-            var head = bone.apply(EntityModelPartNames.HEAD);
+            var head = bone.apply(PartNames.HEAD);
             head.rotXEnabled = false;
             head.rotYEnabled = true;
             // Formerly StateCollectionHelper: no leg animation while mounted (evaluated every frame now)
             if (this.getAvatar().getVehicle() != null) {
-                bone.apply(EntityModelPartNames.RIGHT_LEG).setEnabled(false);
-                bone.apply(EntityModelPartNames.LEFT_LEG).setEnabled(false);
+                bone.apply(PartNames.RIGHT_LEG).setEnabled(false);
+                bone.apply(PartNames.LEFT_LEG).setEnabled(false);
             }
         });
     }
@@ -120,15 +120,15 @@ public class SpellAnimationStack extends PlayerAnimationController {
             // bone rotates the whole body, so body pitches +X and legs are counter-rotated -X to stay upright.
             // (playerAnimator used body -X; keeping that here made legs swing backwards when looking up.)
             if (data.isFirstPersonPass()) {
-                var pitch = (float) Math.toRadians(player.getPitch());
-                if (partName.equals(EntityModelPartNames.BODY)) {
+                var pitch = (float) Math.toRadians(player.getXRot());
+                if (partName.equals(PartNames.BODY)) {
                     rotationX = pitch;
                 } else {
                     return Optional.empty();
                 }
             } else {
-                var pitch = (float) Math.toRadians(player.getPitch() / 2F);
-                if (partName.equals(EntityModelPartNames.BODY)) {
+                var pitch = (float) Math.toRadians(player.getXRot() / 2F);
+                if (partName.equals(PartNames.BODY)) {
                     rotationX = pitch;
                 } else if (isArm(partName)) {
                     rotationX = pitch;
@@ -146,10 +146,10 @@ public class SpellAnimationStack extends PlayerAnimationController {
     }
 
     private static boolean isArm(String partName) {
-        return partName.equals(EntityModelPartNames.RIGHT_ARM) || partName.equals(EntityModelPartNames.LEFT_ARM);
+        return partName.equals(PartNames.RIGHT_ARM) || partName.equals(PartNames.LEFT_ARM);
     }
 
     private static boolean isLeg(String partName) {
-        return partName.equals(EntityModelPartNames.RIGHT_LEG) || partName.equals(EntityModelPartNames.LEFT_LEG);
+        return partName.equals(PartNames.RIGHT_LEG) || partName.equals(PartNames.LEFT_LEG);
     }
 }

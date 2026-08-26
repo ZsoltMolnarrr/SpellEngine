@@ -1,9 +1,9 @@
 package net.spell_engine.api.event;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 
 public class CombatEvents {
     public static final Event<EntityAttack> ENTITY_ANY_ATTACK = new Event<EntityAttack>();
@@ -14,7 +14,7 @@ public class CombatEvents {
     public static final Event<PlayerAttack> PLAYER_ANY_ATTACK = new Event<PlayerAttack>();
     public static final Event<PlayerAttack> PLAYER_MELEE_ATTACK = new Event<PlayerAttack>();
     public interface PlayerAttack {
-        record Args(PlayerEntity player, Entity target) {}
+        record Args(Player player, Entity target) {}
         void onPlayerAttack(Args args);
     }
 
@@ -35,7 +35,7 @@ public class CombatEvents {
     public static final Event<PlayerDamageTaken> PLAYER_DAMAGE_INCOMING = new Event<PlayerDamageTaken>();
     public static final Event<PlayerDamageTaken> PLAYER_DAMAGE_TAKEN = new Event<PlayerDamageTaken>();
     public interface PlayerDamageTaken {
-        record Args(PlayerEntity player, DamageSource source, float amount) {}
+        record Args(Player player, DamageSource source, float amount) {}
         void onPlayerDamageTaken(Args args);
     }
 
@@ -47,7 +47,7 @@ public class CombatEvents {
 
     public static final Event<PlayerShieldBlock> PLAYER_SHIELD_BLOCK = new Event<PlayerShieldBlock>();
     public interface PlayerShieldBlock {
-        record Args(PlayerEntity player, DamageSource source, float amount) {}
+        record Args(Player player, DamageSource source, float amount) {}
         void onShieldBlock(Args args);
     }
 

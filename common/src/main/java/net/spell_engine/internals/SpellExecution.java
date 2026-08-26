@@ -2,14 +2,14 @@ package net.spell_engine.internals;
 
 import net.spell_engine.rpg_series.config.ConfigUtil;
 import com.google.common.base.Suppliers;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.Platform;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.event.SpellEvents;
@@ -62,12 +62,12 @@ public class SpellExecution {
 
     // MARK: Entry points
 
-    public static void performSpell(World world, PlayerEntity player, RegistryEntry<Spell> spellEntry, SpellTarget.SearchResult targetResult, SpellCast.Action action, float progress) {
+    public static void performSpell(Level world, Player player, Holder<Spell> spellEntry, SpellTarget.SearchResult targetResult, SpellCast.Action action, float progress) {
         if (player.isSpectator()) { return; }
         var spell = spellEntry.value();
-        var spellId = spellEntry.getKey().get().getValue();
+        var spellId = spellEntry.unwrapKey().get().identifier();
 
-        var heldItemStack = player.getMainHandStack();
+        var heldItemStack = player.getMainHandItem();
         var spellSource = SpellContainerSource.getFirstSourceOfSpell(spellId, player);
         if (spellSource == null) {
             return;
@@ -87,7 +87,7 @@ public class SpellExecution {
         boolean shouldPerformImpact = true;
         Spell.Modifier chargeModifier = null;
         var curvedRatio = 1F;
-        Supplier<Collection<ServerPlayerEntity>> trackingPlayers = Suppliers.memoize(() -> { // Suppliers.memoize = Lazy
+        Supplier<Collection<ServerPlayer>> trackingPlayers = Suppliers.memoize(() -> { // Suppliers.memoize = Lazy
             return Platform.tracking(player);
         });
         switch (action) {
@@ -144,7 +144,7 @@ public class SpellExecution {
             boolean success = true;
             if (targeting.cap > 0) {
                 targets = targets.stream()
-                        .sorted(Comparator.comparingDouble(target -> target.squaredDistanceTo(player.getEntityPos())))
+                        .sorted(Comparator.comparingDouble(target -> target.distanceToSqr(player.position())))
                         .limit(targeting.cap)
                         .toList();
             }
@@ -217,7 +217,7 @@ public class SpellExecution {
     /// need. **It is therefore not an output multiplier — scale damage with `total(spellEntry)`, not
     /// with this.** `chargeModifier` is the charge bonus already scaled by the same ratio, memoized
     /// here rather than rebuilt per impact. Both are inert (`1` / null) for other casts.
-    public record ImpactContext(float channel, float distance, @Nullable Vec3d position,
+    public record ImpactContext(float channel, float distance, @Nullable Vec3 position,
                                 SpellPower.Result power, SpellTarget.FocusMode focusMode,
                                 int channelTickIndex, @Nullable int effectiveCasterId,
                                 @Nullable Spell.Modifier chargeModifier, float charge) {
@@ -225,7 +225,7 @@ public class SpellExecution {
             this(1, 1, null, null, SpellTarget.FocusMode.DIRECT, 0, 0, null, 1);
         }
 
-        public ImpactContext(float channel, float distance, @Nullable Vec3d position,
+        public ImpactContext(float channel, float distance, @Nullable Vec3 position,
                              SpellPower.Result power, SpellTarget.FocusMode focusMode,
                              int channelTickIndex) {
             this(channel, distance, position, power, focusMode, channelTickIndex, 0, null, 1);
@@ -239,7 +239,7 @@ public class SpellExecution {
             return new ImpactContext(channel, multiplier, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier, charge);
         }
 
-        public ImpactContext position(Vec3d position) {
+        public ImpactContext position(Vec3 position) {
             return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier, charge);
         }
 
@@ -264,15 +264,15 @@ public class SpellExecution {
             return new ImpactContext(channel, distance, position, power, focusMode, channelTickIndex, effectiveCasterId, chargeModifier, charge);
         }
 
-        public @Nullable LivingEntity effectiveCaster(World world) {
-            return effectiveCasterId != 0 ? (LivingEntity) world.getEntityById(effectiveCasterId) : null;
+        public @Nullable LivingEntity effectiveCaster(Level world) {
+            return effectiveCasterId != 0 ? (LivingEntity) world.getEntity(effectiveCasterId) : null;
         }
 
         public boolean hasOffset() {
             return position != null;
         }
 
-        public Vec3d knockbackDirection(Vec3d targetPosition) {
+        public Vec3 knockbackDirection(Vec3 targetPosition) {
             return targetPosition.subtract(position).normalize();
         }
 
@@ -280,7 +280,7 @@ public class SpellExecution {
             return channel != 1;
         }
 
-        public float total(@Nullable RegistryEntry<Spell> spellEntry) {
+        public float total(@Nullable Holder<Spell> spellEntry) {
             return channel * distance * SpellParameters.chargeOutputMultiplier(spellEntry, charge);
         }
     }
@@ -383,7 +383,7 @@ public class SpellExecution {
         /// Clamps a power result to the impact action's `min_power`/`max_power` bounds.
         public static SpellPower.Result clamped(SpellPower.Result power, Spell.Impact.Action action) {
             if (power.baseValue() < action.min_power || power.baseValue() > action.max_power) {
-                var clampedValue = MathHelper.clamp(power.baseValue(), action.min_power, action.max_power);
+                var clampedValue = Mth.clamp(power.baseValue(), action.min_power, action.max_power);
                 return new SpellPower.Result(power.school(), clampedValue, power.criticalChance(), power.criticalDamage());
             }
             return power;

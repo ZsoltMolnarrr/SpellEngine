@@ -1,10 +1,10 @@
 package net.spell_engine.internals.casting;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
@@ -58,7 +58,7 @@ public class SpellCastInteractor {
 
     /// Assembles the player wiring. The sync bindings are supplied by the caller
     /// (`PlayerEntityMixin`), which binds them to the synced entity attachments.
-    public static SpellCastInteractor forPlayer(PlayerEntity player,
+    public static SpellCastInteractor forPlayer(Player player,
                                                 Binding<String> processSync,
                                                 Binding<String> optionsSync) {
         return new SpellCastInteractor(player, new Ports(
@@ -70,10 +70,10 @@ public class SpellCastInteractor {
 
     /// Used directly by the gate, fire and sound paths; would move behind ports only if a
     /// second host type ever joins this component.
-    private final PlayerEntity player;
+    private final Player player;
     private final Ports ports;
 
-    public SpellCastInteractor(PlayerEntity player, Ports ports) {
+    public SpellCastInteractor(Player player, Ports ports) {
         this.player = player;
         this.ports = ports;
     }
@@ -120,7 +120,7 @@ public class SpellCastInteractor {
         }
         var syncFormats = syncGson.fromJson(raw, SpellCast.Option.SyncFormat[].class);
         return Arrays.stream(syncFormats)
-                .map(sync -> SpellCast.Option.fromSync(player.getEntityWorld(), sync))
+                .map(sync -> SpellCast.Option.fromSync(player.level(), sync))
                 .filter(Objects::nonNull)
                 .toList();
     }
@@ -157,8 +157,8 @@ public class SpellCastInteractor {
             return null;
         }
         var syncFormat = syncGson.fromJson(raw, SpellCast.Process.SyncFormat.class);
-        return SpellCast.Process.fromSync(player, player.getEntityWorld(), syncFormat,
-                player.getMainHandStack().getItem(), player.getEntityWorld().getTime());
+        return SpellCast.Process.fromSync(player, player.level(), syncFormat,
+                player.getMainHandItem().getItem(), player.level().getGameTime());
     }
 
     // MARK: Owned state — channel tick counter
@@ -188,8 +188,8 @@ public class SpellCastInteractor {
     /// [FIRE] Performs the spell with server-resolved targets: cursor-driven shapes rehydrate the
     /// latest streamed snapshot; server-resolved shapes (SELF / AROUND_CASTER / NONE) run the same
     /// server-side lookup the mob path uses.
-    private void fire(RegistryEntry<Spell> spellEntry, SpellCast.Action action, float progress) {
-        SpellExecution.performSpell(player.getEntityWorld(), player, spellEntry, resolveTargets(spellEntry, progress), action, progress);
+    private void fire(Holder<Spell> spellEntry, SpellCast.Action action, float progress) {
+        SpellExecution.performSpell(player.level(), player, spellEntry, resolveTargets(spellEntry, progress), action, progress);
     }
 
     /// Resolves the targets of a fire at the TRUE range: the caster-resolved range plus the charge
@@ -198,7 +198,7 @@ public class SpellCastInteractor {
     /// the option's MAX range, the server only validates magnitudes — cheap squared-distance checks
     /// against each submitted target's bounding box. Validation clamps, never rejects: out-of-range
     /// entities are dropped individually, an out-of-range location is pulled back onto the range.
-    private SpellTarget.SearchResult resolveTargets(RegistryEntry<Spell> spellEntry, float progress) {
+    private SpellTarget.SearchResult resolveTargets(Holder<Spell> spellEntry, float progress) {
         // The one true range of this fire, shared by every branch below (the caster scale is
         // applied inside `findTargets` for the server-resolved shapes, explicitly here for the rest)
         var range = SpellParameters.getRange(player, spellEntry, progress);
@@ -206,25 +206,25 @@ public class SpellCastInteractor {
         if (!targeting.clientResolved()) {
             return SpellTarget.findTargets(player, spellEntry, SpellTarget.SearchResult.empty(), true, range);
         }
-        var snapshot = latestSnapshot(spellEntry.getKey().get().getValue());
-        if (snapshot == null || !(player.getEntityWorld() instanceof ServerWorld serverWorld)) {
+        var snapshot = latestSnapshot(spellEntry.unwrapKey().get().identifier());
+        if (snapshot == null || !(player.level() instanceof ServerLevel serverWorld)) {
             return SpellTarget.SearchResult.empty();
         }
         var scaledRange = range * player.getScale();
         var allowed = scaledRange + SpellEngineMod.config.spell_target_range_tolerance;
         var squaredAllowed = allowed * allowed;
-        var origin = player.getEyePos(); // client raycasts originate at the eye
+        var origin = player.getEyePosition(); // client raycasts originate at the eye
         List<Entity> targets = new ArrayList<>();
         for (var targetId : snapshot.entityIds()) {
-            var entity = serverWorld.getEntityById(targetId);
+            var entity = serverWorld.getEntity(targetId);
             if (entity != null && !entity.isRemoved()
-                    && entity.getBoundingBox().squaredMagnitude(origin) <= squaredAllowed) {
+                    && entity.getBoundingBox().distanceToSqr(origin) <= squaredAllowed) {
                 targets.add(entity);
             }
         }
         var location = snapshot.location();
-        if (location != null && location.squaredDistanceTo(origin) > squaredAllowed) {
-            location = origin.add(location.subtract(origin).normalize().multiply(scaledRange));
+        if (location != null && location.distanceToSqr(origin) > squaredAllowed) {
+            location = origin.add(location.subtract(origin).normalize().scale(scaledRange));
         }
         return new SpellTarget.SearchResult(targets, location);
     }
@@ -238,12 +238,12 @@ public class SpellCastInteractor {
         }
         var spell = process.spell().value();
         var mode = SpellCast.Mode.from(spell);
-        var time = player.getEntityWorld().getTime();
+        var time = player.level().getGameTime();
 
         // Cancellation conditions, server-side. The client predicts the same and also sends an
         // end-input, but the authority must not depend on that packet arriving in time.
         if (!player.isAlive()
-                || player.getMainHandStack().getItem() != process.item()
+                || player.getMainHandItem().getItem() != process.item()
                 || ((SpellCaster.Player) player).getCooldownManager().isCoolingDown(process.spell())) {
             requestClear();
             return;
@@ -291,7 +291,7 @@ public class SpellCastInteractor {
     /// Instants carry their targeting snapshot and fire immediately; timed casts start the
     /// server-owned process (server-computed timing) and are fed by the target stream.
     public void requestCast(Identifier spellId, SpellCast.TargetSnapshot snapshot) {
-        var spellEntry = SpellRegistry.from(player.getEntityWorld()).getEntry(spellId).orElse(null);
+        var spellEntry = SpellRegistry.from(player.level()).get(spellId).orElse(null);
         if (spellEntry == null) {
             return;
         }
@@ -303,7 +303,7 @@ public class SpellCastInteractor {
         if (SpellContainerSource.getFirstSourceOfSpell(spellId, player) == null) {
             return;
         }
-        var itemStack = player.getMainHandStack();
+        var itemStack = player.getMainHandItem();
         var attempt = SpellCasting.attempt(player, itemStack, spellId);
         if (!attempt.isSuccess()) {
             return;
@@ -321,10 +321,10 @@ public class SpellCastInteractor {
         }
         // Server-computed cast timing — the client's prediction is display-only from here
         var details = SpellParameters.getCastTimeDetails(player, spell);
-        var process = new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.getEntityWorld().getTime());
+        var process = new SpellCast.Process(player, spellEntry, itemStack.getItem(), details.speed(), details.length(), player.level().getGameTime());
         channelTickIndex = 0;
         setProcess(process);
-        SoundHelper.playSound(player.getEntityWorld(), player, spell.active.cast.start_sound);
+        SoundHelper.playSound(player.level(), player, spell.active.cast.start_sound);
     }
 
     /// [END-input] The player let go: cancels a timed cast (no cost), completes a channel early
@@ -339,7 +339,7 @@ public class SpellCastInteractor {
         }
         var spell = process.spell().value();
         var mode = SpellCast.Mode.from(spell);
-        var ratio = process.progress(player.getEntityWorld().getTime()).ratio();
+        var ratio = process.progress(player.level().getGameTime()).ratio();
         switch (mode) {
             case CASTING -> requestClear(); // cancelled before completion — nothing fires
             case CHANNEL -> {
@@ -368,7 +368,7 @@ public class SpellCastInteractor {
     /// wire contract and stored; arrival order is delivery order (ordered channel), so a plain
     /// overwrite keeps the slot newest.
     public void submitTargets(Identifier spellId, SpellCast.TargetSnapshot snapshot) {
-        var spellEntry = SpellRegistry.from(player.getEntityWorld()).getEntry(spellId).orElse(null);
+        var spellEntry = SpellRegistry.from(player.level()).get(spellId).orElse(null);
         if (spellEntry == null) {
             return;
         }

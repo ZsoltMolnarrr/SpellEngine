@@ -1,16 +1,17 @@
 package net.spell_engine.neoforge;
 
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootPool;
-import net.minecraft.loot.LootTable;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -21,7 +22,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.spell_engine.PlatformEvents;
-import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.api.event.CombatEvents;
 import net.spell_engine.api.util.TriState;
 
@@ -49,17 +49,17 @@ public class PlatformEventsImpl {
         NeoForge.EVENT_BUS.addListener(OnDatapackSyncEvent.class, event -> callback.run());
     }
 
-    public static void onPlayerJoin(Consumer<ServerPlayerEntity> callback) {
+    public static void onPlayerJoin(Consumer<ServerPlayer> callback) {
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
-            if (event.getEntity() instanceof ServerPlayerEntity player) {
+            if (event.getEntity() instanceof ServerPlayer player) {
                 callback.accept(player);
             }
         });
     }
 
-    public static void onPlayerChangedWorld(Consumer<ServerPlayerEntity> callback) {
+    public static void onPlayerChangedWorld(Consumer<ServerPlayer> callback) {
         NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, event -> {
-            if (event.getEntity() instanceof ServerPlayerEntity player) {
+            if (event.getEntity() instanceof ServerPlayer player) {
                 callback.accept(player);
             }
         });
@@ -84,7 +84,7 @@ public class PlatformEventsImpl {
                 var args = new CombatEvents.EntityShieldBlock.Args(entity, source, blockedAmount);
                 CombatEvents.ENTITY_SHIELD_BLOCK.invoke(listener -> listener.onShieldBlock(args));
             }
-            if (entity instanceof PlayerEntity player && CombatEvents.PLAYER_SHIELD_BLOCK.isListened()) {
+            if (entity instanceof Player player && CombatEvents.PLAYER_SHIELD_BLOCK.isListened()) {
                 var args = new CombatEvents.PlayerShieldBlock.Args(player, source, blockedAmount);
                 CombatEvents.PLAYER_SHIELD_BLOCK.invoke(listener -> listener.onShieldBlock(args));
             }
@@ -105,19 +105,19 @@ public class PlatformEventsImpl {
                 var table = event.getTable();
                 var pools = new ArrayList<>(table.pools);
                 pools.addAll(context.pools);
-                event.setTable(new LootTable(table.type, table.randomSequenceId, pools, table.functions));
+                event.setTable(new LootTable(table.paramSet, table.randomSequence, pools, table.functions));
             }
         });
     }
 
     // Item-group callbacks are collected here and replayed by NeoForgeMod's mod-bus handler.
-    private static final Map<RegistryKey<ItemGroup>, List<PlatformEvents.ItemGroupModifier>> itemGroupModifiers = new HashMap<>();
+    private static final Map<ResourceKey<CreativeModeTab>, List<PlatformEvents.ItemGroupModifier>> itemGroupModifiers = new HashMap<>();
 
-    public static void onItemGroupModify(RegistryKey<ItemGroup> group, PlatformEvents.ItemGroupModifier callback) {
+    public static void onItemGroupModify(ResourceKey<CreativeModeTab> group, PlatformEvents.ItemGroupModifier callback) {
         itemGroupModifiers.computeIfAbsent(group, key -> new ArrayList<>()).add(callback);
     }
 
-    public static void dispatchItemGroup(RegistryKey<ItemGroup> group, ItemGroup.Entries entries, ItemGroup.DisplayContext context) {
+    public static void dispatchItemGroup(ResourceKey<CreativeModeTab> group, CreativeModeTab.Output entries, CreativeModeTab.ItemDisplayParameters context) {
         var modifiers = itemGroupModifiers.get(group);
         if (modifiers != null) {
             for (var modifier : modifiers) {
@@ -135,7 +135,7 @@ public class PlatformEventsImpl {
     }
 
     /// Combined enchant decision for the mixin. DENY wins over ALLOW; both win over PASS.
-    public static TriState evaluateAllowEnchanting(RegistryEntry<Enchantment> enchantment, ItemStack stack) {
+    public static TriState evaluateAllowEnchanting(Holder<Enchantment> enchantment, ItemStack stack) {
         var result = TriState.PASS;
         for (var callback : enchantCallbacks) {
             switch (callback.allow(enchantment, stack)) {
@@ -148,18 +148,18 @@ public class PlatformEventsImpl {
     }
 
     private static final class NeoForgeLootContext implements PlatformEvents.LootTableModifyContext {
-        private final RegistryWrapper.WrapperLookup registries;
+        private final HolderLookup.Provider registries;
         private final Identifier tableId;
         private final List<LootPool> existingPools;
         private final List<LootPool> pools = new ArrayList<>();
 
-        private NeoForgeLootContext(RegistryWrapper.WrapperLookup registries, Identifier tableId, List<LootPool> existingPools) {
+        private NeoForgeLootContext(HolderLookup.Provider registries, Identifier tableId, List<LootPool> existingPools) {
             this.registries = registries;
             this.tableId = tableId;
             this.existingPools = existingPools;
         }
 
-        @Override public RegistryWrapper.WrapperLookup registries() { return registries; }
+        @Override public HolderLookup.Provider registries() { return registries; }
         @Override public Identifier tableId() { return tableId; }
         @Override public List<LootPool> existingPools() { return existingPools; }
         @Override public void addPool(LootPool pool) { pools.add(pool); }

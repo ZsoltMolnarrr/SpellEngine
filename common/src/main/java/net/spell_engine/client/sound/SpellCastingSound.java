@@ -1,15 +1,15 @@
 package net.spell_engine.client.sound;
 
-import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.sound.SoundInstance;
-import net.minecraft.client.sound.TickableSoundInstance;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.resources.sounds.TickableSoundInstance;
+import net.minecraft.resources.Identifier;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.internals.casting.SpellCaster;
 import org.jetbrains.annotations.Nullable;
 
-public class SpellCastingSound extends PositionedSoundInstance implements SoundInstance, TickableSoundInstance {
+public class SpellCastingSound extends SimpleSoundInstance implements SoundInstance, TickableSoundInstance {
     public interface Listener {
         void onSpellCastingSoundDone();
     }
@@ -19,8 +19,8 @@ public class SpellCastingSound extends PositionedSoundInstance implements SoundI
     public @Nullable Listener listener;
 
     public SpellCastingSound(LivingEntity emitter, Identifier id, float volume, float pitch) {
-        super(id, SoundCategory.PLAYERS, volume, pitch,
-                SoundInstance.createRandom(), true, 0, AttenuationType.LINEAR,
+        super(id, SoundSource.PLAYERS, volume, pitch,
+                SoundInstance.createUnseededRandom(), true, 0, Attenuation.LINEAR,
                 emitter.getX(), emitter.getY(), emitter.getZ(), false);
         this.emitter = emitter;
     }
@@ -30,13 +30,13 @@ public class SpellCastingSound extends PositionedSoundInstance implements SoundI
     }
 
     @Override
-    public boolean isDone() {
+    public boolean isStopped() {
         return done;
     }
 
     protected final void setDone() {
         this.done = true;
-        this.repeat = false;
+        this.looping = false;
         this.volume = 0;
         if (listener != null) {
             listener.onSpellCastingSoundDone();

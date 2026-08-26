@@ -2,17 +2,17 @@ package net.spell_engine.rpg_series.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricAdvancementProvider;
-import net.minecraft.advancement.Advancement;
-import net.minecraft.advancement.AdvancementCriterion;
-import net.minecraft.advancement.AdvancementEntry;
-import net.minecraft.advancement.AdvancementFrame;
-import net.minecraft.advancement.criterion.TickCriterion;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementType;
+import net.minecraft.advancements.Criterion;
+import net.minecraft.advancements.criterion.PlayerTrigger;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.spell_engine.misc.criteria.EnchantmentSpecificCriteria;
 import net.spell_engine.spellbinding.SpellBinding;
 import net.spell_engine.spellbinding.SpellBindingCriteria;
@@ -49,40 +49,40 @@ public class RPGSeriesAdvancements extends FabricAdvancementProvider {
      * {@code minecraft:textures/....png} form (the pre-1.21.9 syntax) makes the game look for
      * {@code textures/textures/....png.png} and render the missing-texture checkerboard instead.
      */
-    public static final Identifier TAB_BACKGROUND = Identifier.of("minecraft", "block/chiseled_quartz_block");
+    public static final Identifier TAB_BACKGROUND = Identifier.fromNamespaceAndPath("minecraft", "block/chiseled_quartz_block");
 
-    public RPGSeriesAdvancements(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+    public RPGSeriesAdvancements(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registryLookup) {
         super(output, registryLookup);
     }
 
     @Override
-    public void generateAdvancement(RegistryWrapper.WrapperLookup registryLookup, Consumer<AdvancementEntry> consumer) {
+    public void generateAdvancement(HolderLookup.Provider registryLookup, Consumer<AdvancementHolder> consumer) {
         entries().forEach(consumer);
     }
 
     // MARK: Definitions
 
-    public static List<AdvancementEntry> entries() {
-        var list = new ArrayList<AdvancementEntry>();
+    public static List<AdvancementHolder> entries() {
+        var list = new ArrayList<AdvancementHolder>();
 
         // Tab root — granted on the first tick, so the tab is always visible.
         var root = root("root", item("spell_engine:spell_binding"),
-                "always", TickCriterion.Conditions.createTick());
+                "always", PlayerTrigger.TriggerInstance.tick());
         list.add(root);
 
         // Hub: class progression. Parent of every class mod's `path_choose_*` advancement.
-        list.add(advancement("classes", root, new ItemStack(Items.BOOK), AdvancementFrame.GOAL,
+        list.add(advancement("classes", root, new ItemStack(Items.BOOK), AdvancementType.GOAL,
                 true, true, false,
                 "book", spellBinding(SpellBinding.ADVANCEMENT_VISIT_ID.toString(), true)));
 
         // Hub: miscellaneous items. Parent of the villager-trade and item advancements.
-        var miscItems = advancement("misc_items", root, new ItemStack(Items.CHEST), AdvancementFrame.TASK,
+        var miscItems = advancement("misc_items", root, new ItemStack(Items.CHEST), AdvancementType.TASK,
                 false, false, false,
-                "always", TickCriterion.Conditions.createTick());
+                "always", PlayerTrigger.TriggerInstance.tick());
         list.add(miscItems);
 
         list.add(advancement("enchant_spell_infinity", miscItems, new ItemStack(Items.ENCHANTED_BOOK),
-                AdvancementFrame.CHALLENGE, true, true, false,
+                AdvancementType.CHALLENGE, true, true, false,
                 "enchant", enchantment("spell_engine:spell_infinity")));
 
         return list;
@@ -90,33 +90,33 @@ public class RPGSeriesAdvancements extends FabricAdvancementProvider {
 
     // MARK: Builder shorthands
 
-    private static AdvancementEntry root(String idPath, ItemStack icon,
-                                         String criterionName, AdvancementCriterion<?> criterion) {
-        var id = Identifier.of(NAMESPACE, idPath);
-        return builder(id, icon, TAB_BACKGROUND, AdvancementFrame.TASK, false, false, false)
-                .criterion(criterionName, criterion)
+    private static AdvancementHolder root(String idPath, ItemStack icon,
+                                         String criterionName, Criterion<?> criterion) {
+        var id = Identifier.fromNamespaceAndPath(NAMESPACE, idPath);
+        return builder(id, icon, TAB_BACKGROUND, AdvancementType.TASK, false, false, false)
+                .addCriterion(criterionName, criterion)
                 .build(id);
     }
 
-    private static AdvancementEntry advancement(String idPath, AdvancementEntry parent, ItemStack icon, AdvancementFrame frame,
+    private static AdvancementHolder advancement(String idPath, AdvancementHolder parent, ItemStack icon, AdvancementType frame,
                                                 boolean showToast, boolean announceToChat, boolean hidden,
-                                                String criterionName, AdvancementCriterion<?> criterion) {
-        var id = Identifier.of(NAMESPACE, idPath);
+                                                String criterionName, Criterion<?> criterion) {
+        var id = Identifier.fromNamespaceAndPath(NAMESPACE, idPath);
         return builder(id, icon, null, frame, showToast, announceToChat, hidden)
                 .parent(parent)
-                .criterion(criterionName, criterion)
+                .addCriterion(criterionName, criterion)
                 .build(id);
     }
 
-    private static Advancement.Builder builder(Identifier id, ItemStack icon, Identifier background, AdvancementFrame frame,
+    private static Advancement.Builder builder(Identifier id, ItemStack icon, Identifier background, AdvancementType frame,
                                                boolean showToast, boolean announceToChat, boolean hidden) {
         // The original data-pack advancements did not send telemetry events (vanilla default is off),
         // so keep them untelemetered rather than using the telemetered Advancement.Builder.create().
-        return Advancement.Builder.createUntelemetered()
+        return Advancement.Builder.recipeAdvancement()
                 .display(
                         icon,
-                        Text.translatable(translationKey(id, "title")),
-                        Text.translatable(translationKey(id, "description")),
+                        Component.translatable(translationKey(id, "title")),
+                        Component.translatable(translationKey(id, "description")),
                         background,
                         frame,
                         showToast,
@@ -131,18 +131,18 @@ public class RPGSeriesAdvancements extends FabricAdvancementProvider {
     // MARK: Icon helpers
 
     private static ItemStack item(String itemId) {
-        return new ItemStack(Registries.ITEM.get(Identifier.of(itemId)));
+        return new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(itemId)));
     }
 
     // MARK: Criterion helpers
 
-    private static AdvancementCriterion<?> spellBinding(String spellPool, boolean complete) {
-        return SpellBindingCriteria.INSTANCE.create(
+    private static Criterion<?> spellBinding(String spellPool, boolean complete) {
+        return SpellBindingCriteria.INSTANCE.createCriterion(
                 new SpellBindingCriteria.Condition(Optional.empty(), Optional.of(spellPool), Optional.of(complete)));
     }
 
-    private static AdvancementCriterion<?> enchantment(String enchantmentId) {
-        return EnchantmentSpecificCriteria.INSTANCE.create(
+    private static Criterion<?> enchantment(String enchantmentId) {
+        return EnchantmentSpecificCriteria.INSTANCE.createCriterion(
                 new EnchantmentSpecificCriteria.Condition(Optional.empty(), Optional.of(enchantmentId)));
     }
 }

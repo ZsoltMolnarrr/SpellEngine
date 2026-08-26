@@ -1,6 +1,6 @@
 package net.spell_engine.entity.goal;
 
-import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.entity.SummonedEntity;
 import net.spell_engine.internals.casting.MobCastController;
@@ -15,20 +15,20 @@ public class SpellCastGoal extends Goal {
 
     public SpellCastGoal(SummonedEntity entity, SummonBehaviour.Action.SpellCast config) {
         this.controller = new MobCastController(entity, config);
-        setControls(EnumSet.of(Control.MOVE, Control.LOOK));
+        setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
     @Override
-    public boolean shouldRunEveryTick() { return true; }
+    public boolean requiresUpdateEveryTick() { return true; }
 
     @Override
-    public boolean canStart() { return controller.canBegin(); }
+    public boolean canUse() { return controller.canBegin(); }
 
     @Override
     public void start() { controller.begin(); }
 
     @Override
-    public boolean shouldContinue() { return controller.shouldContinue(); }
+    public boolean canContinueToUse() { return controller.shouldContinue(); }
 
     @Override
     public void stop() { controller.end(); }

@@ -1,7 +1,7 @@
 package net.spell_engine.neoforge.compat.curios;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.common.NeoForge;
 import net.spell_engine.Platform;
 import net.spell_engine.compat.container.ContainerCompat;
@@ -41,12 +41,12 @@ public class CuriosCompat {
 
         // Curios 14: CurioChangeEvent is abstract; listen to both concrete variants (item swapped / item state changed)
         NeoForge.EVENT_BUS.addListener((CurioChangeEvent.Item event) -> {
-            if (event.getEntity() instanceof PlayerEntity player) {
+            if (event.getEntity() instanceof Player player) {
                 SpellContainerSource.setDirty(player, spellSourceName);
             }
         });
         NeoForge.EVENT_BUS.addListener((CurioChangeEvent.State event) -> {
-            if (event.getEntity() instanceof PlayerEntity player) {
+            if (event.getEntity() instanceof Player player) {
                 SpellContainerSource.setDirty(player, spellSourceName);
             }
         });
@@ -60,7 +60,7 @@ public class CuriosCompat {
         return enabled;
     }
 
-    private static List<ItemStack> getAll(PlayerEntity player) {
+    private static List<ItemStack> getAll(Player player) {
         var inventory = CuriosApi.getCuriosInventory(player);
         if (inventory.isEmpty()) {
             return List.of();
@@ -80,7 +80,7 @@ public class CuriosCompat {
         return stacks;
     }
 
-    public static List<ItemStack> getEquippedStacks(PlayerEntity player) {
+    public static List<ItemStack> getEquippedStacks(Player player) {
         var inventory = CuriosApi.getCuriosInventory(player);
         if (inventory.isEmpty()) {
             return List.of();

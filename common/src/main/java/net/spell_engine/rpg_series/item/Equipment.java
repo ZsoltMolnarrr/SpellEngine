@@ -1,6 +1,6 @@
 package net.spell_engine.rpg_series.item;
 
-import net.minecraft.item.ToolMaterial;
+import net.minecraft.world.item.ToolMaterial;
 import org.jetbrains.annotations.Nullable;
 
 public class Equipment {

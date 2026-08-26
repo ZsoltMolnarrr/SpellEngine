@@ -1,6 +1,6 @@
 package net.spell_engine.api.item.set;
 
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 import net.spell_engine.Platform;
 import net.spell_engine.internals.container.SpellContainerSource;
 
@@ -12,7 +12,7 @@ public class EquipmentSetFeature {
         Platform.util().registerSyncedDataRegistry(EquipmentSetRegistry.KEY, EquipmentSet.Definition.CODEC, EquipmentSet.Definition.CODEC);
         SpellContainerSource.addSource(new SpellContainerSource.Entry("equipment_set", new SpellContainerSource.Source() {
             @Override
-            public List<SpellContainerSource.SourcedContainer> getSpellContainers(PlayerEntity player, String name) {
+            public List<SpellContainerSource.SourcedContainer> getSpellContainers(Player player, String name) {
                 return List.of();
             }
         }, null)); // Dirty checker relying on equipment changes

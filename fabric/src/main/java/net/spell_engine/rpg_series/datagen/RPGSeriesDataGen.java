@@ -2,14 +2,14 @@ package net.spell_engine.rpg_series.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.item.Item;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.spell_engine.rpg_series.item.Equipment;
 import net.spell_engine.rpg_series.item.Armor;
 import net.spell_engine.rpg_series.item.Weapon;
@@ -27,26 +27,26 @@ public class RPGSeriesDataGen {
     public record BowEntry(Identifier id, Equipment.WeaponType weaponType, Equipment.LootProperties lootProperties) {}
 
     public static abstract class ItemTagGenerator extends FabricTagProvider<Item> {
-        public ItemTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
-            super(output, RegistryKeys.ITEM, registriesFuture);
+        public ItemTagGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+            super(output, Registries.ITEM, registriesFuture);
         }
 
         public void generateWeaponTags(List<Weapon.Entry> weapons) {
             for (var weapon: weapons) {
                 var weaponType = RPGSeriesItemTags.WeaponType.get(weapon.category());
                 var weaponTag = builder(weaponType);
-                weaponTag.addOptional(RegistryKey.of(RegistryKeys.ITEM, weapon.id()));
+                weaponTag.addOptional(ResourceKey.create(Registries.ITEM, weapon.id()));
 
                 var tier = weapon.lootProperties().tier();
                 if (tier >= 0) {
                     var tierTag = builder(RPGSeriesItemTags.LootTiers.get(tier, RPGSeriesItemTags.LootCategory.WEAPONS));
-                    tierTag.addOptional(RegistryKey.of(RegistryKeys.ITEM, weapon.id()));
+                    tierTag.addOptional(ResourceKey.create(Registries.ITEM, weapon.id()));
                 }
 
                 var lootTheme = weapon.lootProperties().theme();
                 if (lootTheme != null && !lootTheme.isEmpty()) {
                     var themeTag = builder(RPGSeriesItemTags.LootThemes.get(lootTheme));
-                    themeTag.addOptional(RegistryKey.of(RegistryKeys.ITEM, weapon.id()));
+                    themeTag.addOptional(ResourceKey.create(Registries.ITEM, weapon.id()));
                 }
             }
         }
@@ -83,19 +83,19 @@ public class RPGSeriesDataGen {
 
                 var set = armor.armorSet();
                 var headTag = builder(ItemTags.HEAD_ARMOR);
-                headTag.add(RegistryKey.of(RegistryKeys.ITEM, Registries.ITEM.getId(set.head)));
+                headTag.add(ResourceKey.create(Registries.ITEM, BuiltInRegistries.ITEM.getKey(set.head)));
                 var chestTag = builder(ItemTags.CHEST_ARMOR);
-                chestTag.add(RegistryKey.of(RegistryKeys.ITEM, Registries.ITEM.getId(set.chest)));
+                chestTag.add(ResourceKey.create(Registries.ITEM, BuiltInRegistries.ITEM.getKey(set.chest)));
                 var legsTag = builder(ItemTags.LEG_ARMOR);
-                legsTag.add(RegistryKey.of(RegistryKeys.ITEM, Registries.ITEM.getId(set.legs)));
+                legsTag.add(ResourceKey.create(Registries.ITEM, BuiltInRegistries.ITEM.getKey(set.legs)));
                 var feetTag = builder(ItemTags.FOOT_ARMOR);
-                feetTag.add(RegistryKey.of(RegistryKeys.ITEM, Registries.ITEM.getId(set.feet)));
+                feetTag.add(ResourceKey.create(Registries.ITEM, BuiltInRegistries.ITEM.getKey(set.feet)));
 
                 var tier = armor.lootProperties().tier();
                 if (options.allowLootTierTags && tier >= 0) {
                     var tierTag = builder(RPGSeriesItemTags.LootTiers.get(tier, RPGSeriesItemTags.LootCategory.ARMORS));
                     for (var id: armor.armorSet().pieceIds()) {
-                        tierTag.addOptional(RegistryKey.of(RegistryKeys.ITEM, (Identifier) id));
+                        tierTag.addOptional(ResourceKey.create(Registries.ITEM, (Identifier) id));
                     }
                 }
 
@@ -103,14 +103,14 @@ public class RPGSeriesDataGen {
                 if (options.allowLootThemeTags && lootTheme != null && !lootTheme.isEmpty()) {
                     var themeTag = builder(RPGSeriesItemTags.LootThemes.get(lootTheme));
                     for (var id: armor.armorSet().pieceIds()) {
-                        themeTag.addOptional(RegistryKey.of(RegistryKeys.ITEM, (Identifier) id));
+                        themeTag.addOptional(ResourceKey.create(Registries.ITEM, (Identifier) id));
                     }
                 }
 
                 for (var metaType: metaTypes) {
                     var metaTag = builder(RPGSeriesItemTags.ArmorType.get(metaType));
                     for (var id: armor.armorSet().pieceIds()) {
-                        metaTag.addOptional(RegistryKey.of(RegistryKeys.ITEM, (Identifier) id));
+                        metaTag.addOptional(ResourceKey.create(Registries.ITEM, (Identifier) id));
                     }
                 }
             }
@@ -121,7 +121,7 @@ public class RPGSeriesDataGen {
                 var id = entry.id();
                 var weaponType = RPGSeriesItemTags.WeaponType.get(entry.weaponType());
                 var weaponTag = builder(weaponType);
-                weaponTag.addOptional(RegistryKey.of(RegistryKeys.ITEM, (Identifier) id));
+                weaponTag.addOptional(ResourceKey.create(Registries.ITEM, (Identifier) id));
             }
             generateLootTags(bows.stream().collect(Collectors.toMap(BowEntry::id, BowEntry::lootProperties)),
                     RPGSeriesItemTags.LootCategory.WEAPONS);
@@ -132,7 +132,7 @@ public class RPGSeriesDataGen {
                 var id = entry.id();
                 var weaponType = RPGSeriesItemTags.WeaponType.get(Equipment.WeaponType.SHIELD);
                 var weaponTag = builder(weaponType);
-                weaponTag.addOptional(RegistryKey.of(RegistryKeys.ITEM, (Identifier) id));
+                weaponTag.addOptional(ResourceKey.create(Registries.ITEM, (Identifier) id));
             }
             generateLootTags(shields.stream().collect(Collectors.toMap(ShieldEntry::id, ShieldEntry::lootProperties)),
                     RPGSeriesItemTags.LootCategory.WEAPONS);
@@ -154,20 +154,20 @@ public class RPGSeriesDataGen {
                 var tier = lootProperties.tier();
                 if (tier >= 0) {
                     var tierTag = builder(RPGSeriesItemTags.LootTiers.get(tier, category));
-                    tierTag.addOptional(RegistryKey.of(RegistryKeys.ITEM, (Identifier) id));
+                    tierTag.addOptional(ResourceKey.create(Registries.ITEM, (Identifier) id));
                 }
 
                 var lootTheme = lootProperties.theme();
                 if (lootTheme != null && !lootTheme.isEmpty()) {
                     var themeTag = builder(RPGSeriesItemTags.LootThemes.get(lootTheme));
-                    themeTag.addOptional(RegistryKey.of(RegistryKeys.ITEM, (Identifier) id));
+                    themeTag.addOptional(ResourceKey.create(Registries.ITEM, (Identifier) id));
                 }
             }
         }
     }
 
     public static abstract class SpellTagGenerator extends FabricTagProvider<Spell> {
-        public SpellTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+        public SpellTagGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, SpellRegistry.KEY, registriesFuture);
         }
 
@@ -175,7 +175,7 @@ public class RPGSeriesDataGen {
             TagKey<Spell> tagKey = SpellTags.spellScroll(namespace, scroll);
             var scrollTag = builder(tagKey);
             for (var id: spellIds) {
-                scrollTag.add(RegistryKey.of(SpellRegistry.KEY, id));
+                scrollTag.add(ResourceKey.create(SpellRegistry.KEY, id));
             }
         }
 
@@ -183,7 +183,7 @@ public class RPGSeriesDataGen {
             TagKey<Spell> tagKey = SpellTags.spellBook(namespace, book);
             var bookTag = builder(tagKey);
             for (var id: spellIds) {
-                bookTag.add(RegistryKey.of(SpellRegistry.KEY, id));
+                bookTag.add(ResourceKey.create(SpellRegistry.KEY, id));
             }
         }
 
@@ -191,7 +191,7 @@ public class RPGSeriesDataGen {
             TagKey<Spell> tagKey = SpellTags.weapon(namespace, weapon);
             var weaponTag = builder(tagKey);
             for (var id: spellIds) {
-                weaponTag.add(RegistryKey.of(SpellRegistry.KEY, id));
+                weaponTag.add(ResourceKey.create(SpellRegistry.KEY, id));
             }
         }
     }

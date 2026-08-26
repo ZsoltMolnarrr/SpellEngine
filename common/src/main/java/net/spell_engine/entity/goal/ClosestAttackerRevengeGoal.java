@@ -1,8 +1,8 @@
 package net.spell_engine.entity.goal;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.TargetPredicate;
-import net.minecraft.entity.ai.goal.TrackTargetGoal;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.target.TargetGoal;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.spell_engine.entity.SummonedEntity;
 
 import java.util.EnumSet;
@@ -16,7 +16,7 @@ import java.util.EnumSet;
 /// became a target — most visibly the owner themselves, who only has to clip their own summon with a
 /// stray AoE or melee swing to have it turn on them. ALLY and FRIENDLY attackers (the owner, the
 /// owner's other pets, teammates) can no longer be revenge targets.
-public class ClosestAttackerRevengeGoal extends TrackTargetGoal {
+public class ClosestAttackerRevengeGoal extends TargetGoal {
     private final SummonedEntity entity;
     private int lastAttackedTime;
     // The attacker canStart() validated, carried into start() so the target actually set is the one
@@ -26,14 +26,14 @@ public class ClosestAttackerRevengeGoal extends TrackTargetGoal {
     public ClosestAttackerRevengeGoal(SummonedEntity entity) {
         super(entity, true);
         this.entity = entity;
-        setControls(EnumSet.of(Control.TARGET));
+        setFlags(EnumSet.of(Flag.TARGET));
     }
 
     @Override
-    public boolean canStart() {
-        int time = entity.getLastAttackedTime();
+    public boolean canUse() {
+        int time = entity.getLastHurtByMobTimestamp();
         if (time == lastAttackedTime) return false;
-        LivingEntity attacker = entity.getAttacker();
+        LivingEntity attacker = entity.getLastHurtByMob();
         if (attacker == null) return false;
         this.attacker = attacker;
         LivingEntity owner = entity.getOwner();
@@ -46,10 +46,10 @@ public class ClosestAttackerRevengeGoal extends TrackTargetGoal {
             lastAttackedTime = time;
             return false;
         }
-        if (!canTrack(attacker, TargetPredicate.DEFAULT)) return false;
+        if (!canAttack(attacker, TargetingConditions.DEFAULT)) return false;
         LivingEntity currentTarget = entity.getTarget();
         if (currentTarget != null && currentTarget.isAlive()
-                && entity.squaredDistanceTo(attacker) >= entity.squaredDistanceTo(currentTarget)) {
+                && entity.distanceToSqr(attacker) >= entity.distanceToSqr(currentTarget)) {
             // Attacker isn't closer — consume the hit so canStart doesn't re-fire every tick.
             lastAttackedTime = time;
             return false;
@@ -60,7 +60,7 @@ public class ClosestAttackerRevengeGoal extends TrackTargetGoal {
     @Override
     public void start() {
         entity.setTarget(attacker);
-        lastAttackedTime = entity.getLastAttackedTime();
+        lastAttackedTime = entity.getLastHurtByMobTimestamp();
         super.start();
     }
 }

@@ -1,11 +1,11 @@
 package net.spell_engine.utils;
 
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class VectorHelper {
-    public static double angleBetween(Vec3d a, Vec3d b) {
-        var cosineTheta = a.dotProduct(b) / (a.length() * b.length());
+    public static double angleBetween(Vec3 a, Vec3 b) {
+        var cosineTheta = a.dot(b) / (a.length() * b.length());
         var angle = Math.acos(cosineTheta) * (180.0 / Math.PI);
         if (Double.isNaN(angle)) {
             return 0;
@@ -13,11 +13,11 @@ public class VectorHelper {
         return angle;
     }
 
-    public static double angleWithSignBetween(Vec3d a, Vec3d b, Vec3d planeNormal) {
-        var cosineTheta = a.dotProduct(b) / (a.length() * b.length());
+    public static double angleWithSignBetween(Vec3 a, Vec3 b, Vec3 planeNormal) {
+        var cosineTheta = a.dot(b) / (a.length() * b.length());
         var angle = Math.toDegrees(Math.acos(cosineTheta));
-        var cross = a.crossProduct(b);
-        angle *= Math.signum(cross.dotProduct(planeNormal));
+        var cross = a.cross(b);
+        angle *= Math.signum(cross.dot(planeNormal));
         if (Double.isNaN(angle)) {
             return 0;
         }
@@ -27,7 +27,7 @@ public class VectorHelper {
     /**
      * Calculates distance vector FROM the given point TO the given box.
      */
-    public static Vec3d distanceVector(Vec3d point, Box box) {
+    public static Vec3 distanceVector(Vec3 point, AABB box) {
         double dx = 0;
         if (box.minX > point.x) {
             dx = box.minX - point.x;
@@ -46,7 +46,7 @@ public class VectorHelper {
         } else if (box.maxZ < point.z) {
             dz = box.maxZ - point.z;
         }
-        return new Vec3d(dx, dy, dz);
+        return new Vec3(dx, dy, dz);
     }
 
     /**
@@ -56,15 +56,15 @@ public class VectorHelper {
      * @param angleToRotate angle in degrees
      * @return
      */
-    public static Vec3d rotateTowards(Vec3d vector, Vec3d towards, double angleToRotate) {
+    public static Vec3 rotateTowards(Vec3 vector, Vec3 towards, double angleToRotate) {
         if (angleToRotate == 0) {
             return vector;
         }
-        var originalVector = new Vec3d(vector.x, vector.y, vector.z);
+        var originalVector = new Vec3(vector.x, vector.y, vector.z);
         vector = vector.normalize();
         towards = towards.normalize();
-        Vec3d rotated;
-        var angleBetween = angleWithSignBetween(vector, towards, vector.crossProduct(towards));
+        Vec3 rotated;
+        var angleBetween = angleWithSignBetween(vector, towards, vector.cross(towards));
         // System.out.println("Pre Angle between vectors: " + angleBetween);
         if (angleBetween == 0) {
             return originalVector;
@@ -74,16 +74,16 @@ public class VectorHelper {
         } else {
             var v1 = vector;
             var towardsLength = Math.sin(Math.toRadians(angleToRotate)) / Math.cos(Math.toRadians(90.0 - angleBetween + angleToRotate));
-            var v2 = towards.multiply(towardsLength);
+            var v2 = towards.scale(towardsLength);
            // System.out.println("Angle: " + angleBetween + " T':" + towardsLength);
             rotated = v1.add(v2).normalize();
         }
-        rotated = rotated.multiply(originalVector.length());
+        rotated = rotated.scale(originalVector.length());
         // System.out.println("Post Angle between vectors: " + angleBetween(rotated, towards));
         return rotated;
     }
 
-    public static Vec3d axisFromRotation(float yaw, float pitch) {
+    public static Vec3 axisFromRotation(float yaw, float pitch) {
         double yawRadians = Math.toRadians(-yaw);
         double pitchRadians = Math.toRadians(-pitch);
 
@@ -91,16 +91,16 @@ public class VectorHelper {
         double y = -Math.sin(pitchRadians);
         double z = Math.cos(yawRadians) * Math.cos(pitchRadians);
 
-        return new Vec3d(x, y, z).normalize();
+        return new Vec3(x, y, z).normalize();
     }
 
-    public static Vec3d rotateAround(Vec3d vector, float angleDegrees, float yaw, float pitch) {
-        Vec3d axisOfRotation = axisFromRotation(yaw, pitch);
+    public static Vec3 rotateAround(Vec3 vector, float angleDegrees, float yaw, float pitch) {
+        Vec3 axisOfRotation = axisFromRotation(yaw, pitch);
         // Now, rotate the vector around this axis by the given angle
         return rotateAround(vector, axisOfRotation, angleDegrees);
     }
 
-    public static Vec3d rotateAround(Vec3d vector, Vec3d axisOfRotation, double angleDegrees) {
+    public static Vec3 rotateAround(Vec3 vector, Vec3 axisOfRotation, double angleDegrees) {
         double angleRadians = Math.toRadians(angleDegrees);
         double sinHalfAngle = Math.sin(angleRadians / 2);
         double cosHalfAngle = Math.cos(angleRadians / 2);
@@ -119,7 +119,7 @@ public class VectorHelper {
         double[] p = multiplyQuaternions(q, new double[]{invRx, invRy, invRz, invRw});
 
         // Return the rotated vector
-        return new Vec3d(p[0], p[1], p[2]);
+        return new Vec3(p[0], p[1], p[2]);
     }
 
     private static double[] multiplyQuaternions(double[] q1, double[] q2) {
@@ -130,11 +130,11 @@ public class VectorHelper {
         return new double[]{x, y, z, w};
     }
 
-    public static double yawFromNormalized(Vec3d vector) {
+    public static double yawFromNormalized(Vec3 vector) {
         return Math.toDegrees(Math.atan2(-vector.x, vector.z));
     }
 
-    public static double pitchFromNormalized(Vec3d vector) {
+    public static double pitchFromNormalized(Vec3 vector) {
         return Math.toDegrees(-Math.asin(vector.y));
     }
 }

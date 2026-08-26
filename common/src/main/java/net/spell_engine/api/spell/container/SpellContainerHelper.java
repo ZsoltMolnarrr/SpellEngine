@@ -1,9 +1,9 @@
 package net.spell_engine.api.spell.container;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.spell_engine.api.spell.*;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.container.SpellAssignments;
@@ -23,13 +23,13 @@ public class SpellContainerHelper {
         if (component != null) {
             return component;
         }
-        var id = itemStack.getItem().getRegistryEntry().getKey().get().getValue();
+        var id = itemStack.getItem().builtInRegistryHolder().unwrapKey().get().identifier();
         return SpellAssignments.containerForItem(id);
     }
 
     public static Identifier getPoolId(SpellContainer container) {
         if (container != null && container.pool() != null) {
-            return Identifier.of(container.pool());
+            return Identifier.parse(container.pool());
         }
         return null;
     }
@@ -40,11 +40,11 @@ public class SpellContainerHelper {
 
     // Misc helpers (Spell Binding)
 
-    public static List<String> sortedSpells(World world, List<String> spellIds) {
+    public static List<String> sortedSpells(Level world, List<String> spellIds) {
         HashMap<Identifier, Spell> spells = new HashMap<>();
         for (var idString : spellIds) {
-            var id = Identifier.of(idString);
-            var spellEntry = SpellRegistry.from(world).getEntry(id).orElse(null);
+            var id = Identifier.parse(idString);
+            var spellEntry = SpellRegistry.from(world).get(id).orElse(null);
             if (spellEntry != null) {
                 spells.put(id, spellEntry.value());
             }
@@ -55,13 +55,13 @@ public class SpellContainerHelper {
                 .collect(Collectors.toList());
     }
 
-    public static SpellContainer addSpell(World world, Identifier spellId, SpellContainer container) {
+    public static SpellContainer addSpell(Level world, Identifier spellId, SpellContainer container) {
         var spellIds = new ArrayList<String>(container.spell_ids());
         spellIds.add(spellId.toString());
         return container.copyWith(sortedSpells(world, spellIds));
     }
 
-    public static void addSpell(World world, Identifier spellId, ItemStack itemStack) {
+    public static void addSpell(Level world, Identifier spellId, ItemStack itemStack) {
         var container = containerFromItemStack(itemStack);
         if (container == null || !container.isValid()) {
             System.err.println("Trying to add spell: " + spellId + " to an ItemStack without valid spell container");
@@ -71,13 +71,13 @@ public class SpellContainerHelper {
         itemStack.set(SpellDataComponents.SPELL_CONTAINER, modifiedContainer);
     }
 
-    public static SpellContainer removeSpell(World world, Identifier spellId, SpellContainer container) {
+    public static SpellContainer removeSpell(Level world, Identifier spellId, SpellContainer container) {
         var spellIds = new ArrayList<String>(container.spell_ids());
         spellIds.remove(spellId.toString());
         return container.copyWith(sortedSpells(world, spellIds));
     }
 
-    public static void removeSpell(World world, Identifier spellId, ItemStack itemStack) {
+    public static void removeSpell(Level world, Identifier spellId, ItemStack itemStack) {
         var container = containerFromItemStack(itemStack);
         if (container == null || !container.isValid()) {
             System.err.println("Trying to remove spell: " + spellId + " from an ItemStack without valid spell container");
@@ -136,9 +136,9 @@ public class SpellContainerHelper {
             compareInCatalog(entry1.getKey(), entry1.getValue(), entry2.getKey(), entry2.getValue());
 
     /// `compareInCatalog` over registry entries, for streams straight off the spell registry.
-    public static final Comparator<RegistryEntry<Spell>> catalogEntrySorter = (entry1, entry2) ->
-            compareInCatalog(entry1.getKey().get().getValue(), entry1.value(),
-                    entry2.getKey().get().getValue(), entry2.value());
+    public static final Comparator<Holder<Spell>> catalogEntrySorter = (entry1, entry2) ->
+            compareInCatalog(entry1.unwrapKey().get().identifier(), entry1.value(),
+                    entry2.unwrapKey().get().identifier(), entry2.value());
 
     // Container queries
 
@@ -156,7 +156,7 @@ public class SpellContainerHelper {
         return container != null && (container.isUsable() || container.isResolver());
     }
 
-    public static int poolTierSize(List<RegistryEntry<Spell>> spells) {
+    public static int poolTierSize(List<Holder<Spell>> spells) {
         var tiers = new HashSet<Integer>();
         for (var spellEntry : spells) {
             var spell = spellEntry.value();

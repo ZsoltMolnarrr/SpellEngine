@@ -1,14 +1,14 @@
 package net.spell_engine.mixin.action_impair;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.network.ServerPlayerInteractionManager;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerPlayerGameMode;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
 import net.spell_engine.spellbinding.spellchoice.SpellChoices;
@@ -17,21 +17,21 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ServerPlayerInteractionManager.class)
+@Mixin(ServerPlayerGameMode.class)
 public class ServerPlayerInteractionManagerMixin {
-    @Inject(method = "interactItem", at = @At("HEAD"), cancellable = true)
-    private void interactItem_HEAD_SpellEngine(ServerPlayerEntity player, World world, ItemStack stack, Hand hand, CallbackInfoReturnable<ActionResult> cir) {
+    @Inject(method = "useItem", at = @At("HEAD"), cancellable = true)
+    private void interactItem_HEAD_SpellEngine(ServerPlayer player, Level world, ItemStack stack, InteractionHand hand, CallbackInfoReturnable<InteractionResult> cir) {
         if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ITEM_USE)) {
-            cir.setReturnValue(ActionResult.FAIL);
+            cir.setReturnValue(InteractionResult.FAIL);
             cir.cancel();
         }
         if (SpellChoices.from(stack) != null) {
-            player.openHandledScreen(new SimpleNamedScreenHandlerFactory(
+            player.openMenu(new SimpleMenuProvider(
                     (syncId, inventory, playerEntity) ->
-                            new SpellChoiceScreenHandler(syncId, stack, inventory, ScreenHandlerContext.create(world, player.getBlockPos())),
-                    Text.translatable("spell.tooltip.choice.list.spell")
+                            new SpellChoiceScreenHandler(syncId, stack, inventory, ContainerLevelAccess.create(world, player.blockPosition())),
+                    Component.translatable("spell.tooltip.choice.list.spell")
             ));
-            cir.setReturnValue(ActionResult.SUCCESS);
+            cir.setReturnValue(InteractionResult.SUCCESS);
             cir.cancel();
         }
     }

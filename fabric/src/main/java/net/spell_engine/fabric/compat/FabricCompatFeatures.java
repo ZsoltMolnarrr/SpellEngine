@@ -3,7 +3,7 @@ package net.spell_engine.fabric.compat;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.ResourcePackActivationType;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.fabric.compat.trinkets.TrinketsCompat;
 import net.spell_engine.fabric.compat.trinkets.TrinketsCompatHeader;
@@ -31,7 +31,7 @@ public class FabricCompatFeatures {
             selectedSlotMod = TrinketsCompatHeader.MOD_ID;
             var container = FabricLoader.getInstance().getModContainer(SpellEngineMod.ID);
             ResourceManagerHelper.registerBuiltinResourcePack(
-                    Identifier.of(SpellEngineMod.ID, TrinketsCompatHeader.MOD_ID + "_compat"),
+                    Identifier.fromNamespaceAndPath(SpellEngineMod.ID, TrinketsCompatHeader.MOD_ID + "_compat"),
                     container.get(), ResourcePackActivationType.ALWAYS_ENABLED);
         }
         return selectedSlotMod;

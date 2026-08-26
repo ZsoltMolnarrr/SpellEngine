@@ -1,11 +1,11 @@
 package net.spell_engine.api.item.set;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.client.gui.SpellTooltip;
 import org.jetbrains.annotations.Nullable;
@@ -14,23 +14,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EquipmentSetTooltip {
-    public static void appendLines(ItemStack stack, List<Text> tooltip) {
+    public static void appendLines(ItemStack stack, List<Component> tooltip) {
         if (stack.get(SpellDataComponents.EQUIPMENT_SET) != null) {
-            var text = textFor(stack, MinecraftClient.getInstance().player);
+            var text = textFor(stack, Minecraft.getInstance().player);
             if (!text.isEmpty()) {
                 tooltip.addAll(text);
             }
         }
     }
 
-    public static List<Text> textFor(ItemStack stack, @Nullable PlayerEntity player) {
-        var text = new ArrayList<Text>();
+    public static List<Component> textFor(ItemStack stack, @Nullable Player player) {
+        var text = new ArrayList<Component>();
         var component = stack.get(SpellDataComponents.EQUIPMENT_SET);
         if (component == null) {
             return text;
         }
-        var optionalEntry = EquipmentSetRegistry.from(player.getEntityWorld()).getEntry(component);
-        if (optionalEntry.isPresent() && player != null && player.getEntityWorld() != null) {
+        var optionalEntry = EquipmentSetRegistry.from(player.level()).get(component);
+        if (optionalEntry.isPresent() && player != null && player.level() != null) {
             var equipmentSetEntry = optionalEntry.get();
             var equipmentSet = equipmentSetEntry.value();
             var setSize = equipmentSet.items().size();
@@ -38,19 +38,19 @@ public class EquipmentSetTooltip {
             var activeSets = ((EquipmentSet.Owner) player).getActiveEquipmentSets();
             List<ItemStack> wornItems = List.of();
             for (var entry : activeSets) {
-                if (entry.set().getKey().get().equals(equipmentSetEntry.getKey().get())) {
+                if (entry.set().unwrapKey().get().equals(equipmentSetEntry.unwrapKey().get())) {
                     wornItems = entry.items();
                 }
             }
 
-            text.add(Text.literal(" "));
+            text.add(Component.literal(" "));
 
             // Title:
             // Justicar Raiment (2/4)
             text.add(
-                    Text.translatable(EquipmentSet.translationKey(equipmentSetEntry))
-                            .append(Text.literal(" (" + wornItems.size() + "/" + setSize + ")"))
-                            .formatted(Formatting.GOLD)
+                    Component.translatable(EquipmentSet.translationKey(equipmentSetEntry))
+                            .append(Component.literal(" (" + wornItems.size() + "/" + setSize + ")"))
+                            .withStyle(ChatFormatting.GOLD)
             );
 
             // Items:
@@ -59,11 +59,11 @@ public class EquipmentSetTooltip {
             //  Justicar Leggings
             //  Justicar Boots
             for (var item : equipmentSet.items()) {
-                var isWorn = wornItems.stream().anyMatch(wornItem -> wornItem.isOf(item.value()));
+                var isWorn = wornItems.stream().anyMatch(wornItem -> wornItem.is(item.value()));
                 text.add(
-                        Text.literal(" ").append(
-                                Text.translatable(item.value().getTranslationKey())
-                                        .formatted(isWorn ? Formatting.GRAY : Formatting.DARK_GRAY)
+                        Component.literal(" ").append(
+                                Component.translatable(item.value().getDescriptionId())
+                                        .withStyle(isWorn ? ChatFormatting.GRAY : ChatFormatting.DARK_GRAY)
                         )
                 );
             }
@@ -79,14 +79,14 @@ public class EquipmentSetTooltip {
         return text;
     }
 
-    public static List<Text> bonusText(PlayerEntity player, ItemStack itemStack, EquipmentSet.Bonus bonus, boolean isActive) {
-        var bonusTitle = Text.translatable("equipment_set.logic.bonus.count", bonus.requiredPieceCount());
-        var bonusLines = new ArrayList<Text>();
+    public static List<Component> bonusText(Player player, ItemStack itemStack, EquipmentSet.Bonus bonus, boolean isActive) {
+        var bonusTitle = Component.translatable("equipment_set.logic.bonus.count", bonus.requiredPieceCount());
+        var bonusLines = new ArrayList<Component>();
         if (bonus.attributes() != null) {
             // 1.21.5+: per-modifier tooltip lines are produced by AttributeModifiersComponent.Display (no ItemStack invoker needed)
-            var display = AttributeModifiersComponent.Display.getDefault();
+            var display = ItemAttributeModifiers.Display.attributeModifiers();
             for (var modifier: bonus.attributes().modifiers()) {
-                display.addTooltip(bonusLines::add, player, modifier.attribute(), modifier.modifier());
+                display.apply(bonusLines::add, player, modifier.attribute(), modifier.modifier());
             }
         }
         if (bonus.spells() != null) {
@@ -96,21 +96,21 @@ public class EquipmentSetTooltip {
             }
         }
 
-        var finalLines = new ArrayList<Text>();
-        Formatting formatting = isActive ? Formatting.GRAY : Formatting.DARK_GRAY;
+        var finalLines = new ArrayList<Component>();
+        ChatFormatting formatting = isActive ? ChatFormatting.GRAY : ChatFormatting.DARK_GRAY;
         if (bonusLines.size() == 1) {
             var line = bonusLines.get(0);
             finalLines.add(
-                    bonusTitle.append(isActive ? line : Text.literal(line.getString()))
-                            .formatted(formatting)
+                    bonusTitle.append(isActive ? line : Component.literal(line.getString()))
+                            .withStyle(formatting)
             );
         } else {
-            finalLines.add(bonusTitle.formatted(formatting));
+            finalLines.add(bonusTitle.withStyle(formatting));
             for (var line : bonusLines) {
                 finalLines.add(
-                        Text.literal(" ")
-                                .append(isActive ? line : Text.literal(line.getString()))
-                                .formatted(formatting)
+                        Component.literal(" ")
+                                .append(isActive ? line : Component.literal(line.getString()))
+                                .withStyle(formatting)
                 );
             }
         }

@@ -1,8 +1,8 @@
 package net.spell_engine.api.effect;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.client.gui.HudMessages;
 
 import java.util.Collection;
@@ -52,7 +52,7 @@ public record EntityActionsAllowed(
         void updateEntityActionsAllowed();
     }
 
-    public static EntityActionsAllowed fromEffects(Collection<RegistryEntry<StatusEffect>> effects) {
+    public static EntityActionsAllowed fromEffects(Collection<Holder<MobEffect>> effects) {
         var initial = EntityActionsAllowed.ANY;
         var limiters = effects.stream()
                 .map(effect -> ((ActionImpairing)effect.value()).actionsAllowed())
@@ -118,7 +118,7 @@ public record EntityActionsAllowed(
                 allowed = actionsAllowed.players().canCastSpell();
             }
         }
-        if (player.getEntityWorld().isClient() && showError && !allowed) {
+        if (player.level().isClientSide() && showError && !allowed) {
             HudMessages.INSTANCE.actionImpaired(actionsAllowed.reason());
         }
         return !allowed;

@@ -1,10 +1,8 @@
 package net.spell_engine.mixin.client.render;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.BufferAllocator;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.spell_engine.api.render.CustomLayers;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,7 +10,8 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.SequencedMap;
 
 /**
@@ -26,26 +25,26 @@ import java.util.SequencedMap;
  * Giving the glow layer a buffer here appends it to {@code layerBuffers}, which is ordered, so it is
  * drawn last: after the item, and after the vanilla glint.
  */
-@Mixin(VertexConsumerProvider.Immediate.class)
+@Mixin(MultiBufferSource.BufferSource.class)
 public class ImmediateItemGlowMixin {
-    @Shadow @Final protected SequencedMap<RenderLayer, BufferAllocator> layerBuffers;
+    @Shadow @Final protected SequencedMap<RenderType, ByteBufferBuilder> fixedBuffers;
 
     @Inject(method = "getBuffer", at = @At("HEAD"))
-    private void getBuffer_HEAD_SpellEngine_bufferItemGlowLayer(RenderLayer renderLayer, CallbackInfoReturnable<VertexConsumer> cir) {
+    private void getBuffer_HEAD_SpellEngine_bufferItemGlowLayer(RenderType renderLayer, CallbackInfoReturnable<VertexConsumer> cir) {
         // An `Immediate` built by `VertexConsumerProvider.immediate(allocator)` holds an immutable empty
         // map, and putting into one throws. The entity provider, the only one a held item is drawn
         // through, is built with a populated mutable map, so an empty map here means we do not belong.
-        if (layerBuffers.isEmpty()
-                || layerBuffers.containsKey(renderLayer)
+        if (fixedBuffers.isEmpty()
+                || fixedBuffers.containsKey(renderLayer)
                 || !CustomLayers.isItemGlowLayer(renderLayer)) {
             return;
         }
         // Only the entity provider: the GUI item path also draws through an `Immediate` with a populated map,
         // and a glow buffer appended there would flush the streaks over hotbar/inventory items.
-        var entityProvider = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
+        var entityProvider = Minecraft.getInstance().renderBuffers().bufferSource();
         if ((Object) this != entityProvider) {
             return;
         }
-        layerBuffers.put(renderLayer, new BufferAllocator(renderLayer.getExpectedBufferSize()));
+        fixedBuffers.put(renderLayer, new ByteBufferBuilder(renderLayer.bufferSize()));
     }
 }

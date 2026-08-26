@@ -1,38 +1,37 @@
 package net.spell_engine.api.effect;
 
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-
+import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.LivingEntity;
 
 public final class CustomModelStatusEffect {
     public interface Renderer {
         void renderEffect(long appliedAtWorldTime, int amplifier, LivingEntity livingEntity, float delta,
-                          MatrixStack matrixStack, OrderedRenderCommandQueue queue, int light);
+                          PoseStack matrixStack, SubmitNodeCollector queue, int light);
     }
     public record Args(boolean scaleWithEntity) {
         public static final Args DEFAULT = new Args(true);
     }
     public record Entry(Renderer renderer, Args args) { }
 
-    private static final Map<StatusEffect, Entry> renderers = new HashMap<>();
+    private static final Map<MobEffect, Entry> renderers = new HashMap<>();
 
-    public static void register(StatusEffect statusEffect, Renderer renderer) {
+    public static void register(MobEffect statusEffect, Renderer renderer) {
         register(statusEffect, renderer, Args.DEFAULT);
     }
 
-    public static void register(StatusEffect statusEffect, Renderer renderer, Args args) {
+    public static void register(MobEffect statusEffect, Renderer renderer, Args args) {
         renderers.put(statusEffect, new Entry(renderer, args));
     }
 
-    public static Entry entryOf(StatusEffect statusEffect) {
+    public static Entry entryOf(MobEffect statusEffect) {
         return renderers.get(statusEffect);
     }
 
-    public static Renderer rendererOf(StatusEffect statusEffect) {
+    public static Renderer rendererOf(MobEffect statusEffect) {
         return renderers.get(statusEffect).renderer();
     }
 }

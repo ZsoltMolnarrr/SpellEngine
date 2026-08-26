@@ -1,7 +1,7 @@
 package net.spell_engine.mixin;
 
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.spell_engine.utils.WorldScheduler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,14 +14,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
 
-@Mixin(ServerWorld.class)
+@Mixin(ServerLevel.class)
 public abstract class ServerWorldMixin implements WorldScheduler {
 
     // MARK: WorldScheduler
 
     @Override
     public long getSchedulerTime() {
-        return ((World)((Object)this)).getTime();
+        return ((Level)((Object)this)).getGameTime();
     }
 
     private Map<Long, List<Runnable>> scheduledTasks = new HashMap<>();

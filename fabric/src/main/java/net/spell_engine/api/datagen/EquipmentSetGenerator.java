@@ -1,11 +1,11 @@
 package net.spell_engine.api.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.data.DataOutput;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
-import net.minecraft.data.DataWriter;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.Identifier;
+import net.minecraft.data.PackOutput;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.api.item.set.EquipmentSet;
 import net.spell_engine.api.item.set.EquipmentSetRegistry;
 
@@ -13,10 +13,10 @@ import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 public class EquipmentSetGenerator implements DataProvider {
-    private final CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup;
+    private final CompletableFuture<HolderLookup.Provider> registryLookup;
     protected final FabricDataOutput dataOutput;
 
-    public EquipmentSetGenerator(CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup, FabricDataOutput dataOutput) {
+    public EquipmentSetGenerator(CompletableFuture<HolderLookup.Provider> registryLookup, FabricDataOutput dataOutput) {
         this.registryLookup = registryLookup;
         this.dataOutput = dataOutput;
     }
@@ -24,7 +24,7 @@ public class EquipmentSetGenerator implements DataProvider {
     public record Entry(Identifier id, EquipmentSet.Definition equipmentSet) { }
 
     @Override
-    public CompletableFuture<?> run(DataWriter writer) {
+    public CompletableFuture<?> run(CachedOutput writer) {
         return null;
     }
 
@@ -34,6 +34,6 @@ public class EquipmentSetGenerator implements DataProvider {
     }
 
     private Path getFilePath(Identifier id) {
-        return this.dataOutput.getResolver(DataOutput.OutputType.DATA_PACK, EquipmentSetRegistry.ID.getPath()).resolveJson(id);
+        return this.dataOutput.createPathProvider(PackOutput.Target.DATA_PACK, EquipmentSetRegistry.ID.getPath()).json(id);
     }
 }

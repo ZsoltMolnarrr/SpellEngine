@@ -1,9 +1,9 @@
 package net.spell_engine.api.spell.tooltip;
 
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.player.Player;
 import net.spell_engine.api.spell.Spell;
 import org.jetbrains.annotations.Nullable;
 
@@ -100,7 +100,7 @@ public final class TooltipTokens {
 
         /// Renders a resolved modifier value: applies this format's sign handling, then the
         /// operation-aware [#bonus] formatting (percent for multiplied operations, flat otherwise).
-        public String render(float value, EntityAttributeModifier.Operation operation) {
+        public String render(float value, AttributeModifier.Operation operation) {
             var magnitude = (this == ABS) ? Math.abs(value) : value;
             var formatted = bonus(magnitude, operation);
             // `bonus` already prefixes negatives with '-'; only a non-negative needs a forced '+'.
@@ -187,7 +187,7 @@ public final class TooltipTokens {
 
     /// Operation-aware value formatting: flat number for `ADD_VALUE`, percentage for the multiplied
     /// operations (`ADD_MULTIPLIED_TOTAL` is offset by 1 so a total-multiplier of 1.1 reads "10%").
-    public static String bonus(float amount, EntityAttributeModifier.Operation operation) {
+    public static String bonus(float amount, AttributeModifier.Operation operation) {
         switch (operation) {
             case ADD_VALUE -> {
                 return formattedNumber(amount);
@@ -212,7 +212,7 @@ public final class TooltipTokens {
     /// the content that implements it — never pulls in client-only code.
     public interface Custom {
         String resolve(Args args);
-        record Args(String description, PlayerEntity player, RegistryEntry<Spell> spellEntry) { }
+        record Args(String description, Player player, Holder<Spell> spellEntry) { }
     }
 
     private static final Map<Identifier, Custom> customs = new HashMap<>();

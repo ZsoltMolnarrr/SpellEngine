@@ -1,11 +1,11 @@
 package net.spell_engine.api.entity;
 
-import net.minecraft.entity.attribute.ClampedEntityAttribute;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.spell_engine.SpellEngineMod;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,20 +22,20 @@ public class SpellEngineAttributes {
     public static class Entry {
         public final Identifier id;
         public final String translationKey;
-        public final EntityAttribute attribute;
+        public final Attribute attribute;
         public final double baseValue;
         @Nullable
-        public RegistryEntry<EntityAttribute> entry;
+        public Holder<Attribute> entry;
 
         public Entry(String name, double minValue, double baseValue, boolean tracked) {
-            this.id = Identifier.of(NAMESPACE, name);
+            this.id = Identifier.fromNamespaceAndPath(NAMESPACE, name);
             this.translationKey = "attribute.name." + NAMESPACE + "." + name;
-            this.attribute = new ClampedEntityAttribute(translationKey, baseValue, minValue, 2048).setTracked(tracked);
+            this.attribute = new RangedAttribute(translationKey, baseValue, minValue, 2048).setSyncable(tracked);
             this.baseValue = baseValue;
         }
 
-        public Entry category(EntityAttribute.Category category) {
-            attribute.setCategory(category);
+        public Entry category(Attribute.Sentiment category) {
+            attribute.setSentiment(category);
             return this;
         }
 
@@ -48,13 +48,13 @@ public class SpellEngineAttributes {
         }
 
         public void register() {
-            entry = Registry.registerReference(Registries.ATTRIBUTE, id, attribute);
+            entry = Registry.registerForHolder(BuiltInRegistries.ATTRIBUTE, id, attribute);
         }
     }
 
     public static Entry HEALING_TAKEN = add(new Entry("healing_taken", 0, 100, false));
     public static Entry DAMAGE_TAKEN = add(new Entry("damage_taken", 0, 100, false))
-            .category(EntityAttribute.Category.NEGATIVE);
+            .category(Attribute.Sentiment.NEGATIVE);
     public static Entry EVASION_CHANCE = add(new Entry("evasion_chance", 0, 100, false));
 
     public static void register() {

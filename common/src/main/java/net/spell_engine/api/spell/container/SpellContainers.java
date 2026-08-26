@@ -1,7 +1,7 @@
 package net.spell_engine.api.spell.container;
 
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.api.spell.Spell;
 
 import java.util.List;
@@ -43,7 +43,7 @@ public class SpellContainers {
         return new SpellContainer(SpellContainer.ContentType.NONE, "", "", 0, List.of(spellId.toString()));
     }
 
-    public static SpellContainer forScroll(RegistryEntry<Spell> spellEntry) {
-        return new SpellContainer(SpellContainer.ContentType.NONE, "", "", 0, List.of(spellEntry.getKey().get().getValue().toString()));
+    public static SpellContainer forScroll(Holder<Spell> spellEntry) {
+        return new SpellContainer(SpellContainer.ContentType.NONE, "", "", 0, List.of(spellEntry.unwrapKey().get().identifier().toString()));
     }
 }

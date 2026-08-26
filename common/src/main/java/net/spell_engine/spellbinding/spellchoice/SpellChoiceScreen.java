@@ -1,15 +1,15 @@
 package net.spell_engine.spellbinding.spellchoice;
 
-import net.minecraft.client.gui.Click;
-import net.minecraft.client.gl.RenderPipelines;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ingame.HandledScreen;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.Slot;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.gui.SpellTooltip;
 import net.spell_engine.client.util.SpellRender;
@@ -17,40 +17,40 @@ import net.spell_engine.client.util.SpellRender;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SpellChoiceScreen extends HandledScreen<SpellChoiceScreenHandler> {
+public class SpellChoiceScreen extends AbstractContainerScreen<SpellChoiceScreenHandler> {
     private static final int SPELL_ICON_SIZE = 16;
     private static final int ICON_SPACING = 16;
 
     private List<SpellIconViewModel> spellIcons = new ArrayList<>();
 
-    public SpellChoiceScreen(SpellChoiceScreenHandler handler, PlayerInventory inventory, Text title) {
-        super(handler, inventory, Text.empty());
+    public SpellChoiceScreen(SpellChoiceScreenHandler handler, Inventory inventory, Component title) {
+        super(handler, inventory, Component.empty());
     }
 
     @Override
     protected void init() {
         super.init();
-        this.titleX = (this.backgroundWidth - this.textRenderer.getWidth(this.title)) / 2;
-        this.titleY = 20;
+        this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
+        this.titleLabelY = 20;
     }
 
     private List<SpellIconViewModel> createSpellIcons() {
         List<SpellIconViewModel> icons = new ArrayList<>();
-        var world = this.client.world;
+        var world = this.minecraft.level;
         if (world == null) return icons;
 
         // Collect valid spells
         List<SpellData> spells = new ArrayList<>();
         for (int i = 0; i < SpellChoiceScreenHandler.MAXIMUM_SPELL_COUNT; i++) {
-            var rawId = handler.spellId[i];
+            var rawId = menu.spellId[i];
             if (rawId < 0) continue;
 
-            var spellEntry = SpellRegistry.from(world).getEntry(rawId);
+            var spellEntry = SpellRegistry.from(world).get(rawId);
             if (spellEntry.isEmpty()) continue;
 
             var spell = spellEntry.get();
-            var spellId = spell.getKey().get().getValue();
-            var spellName = Text.translatable(SpellTooltip.spellTranslationKey(spellId));
+            var spellId = spell.unwrapKey().get().identifier();
+            var spellName = Component.translatable(SpellTooltip.spellTranslationKey(spellId));
             var spellIcon = SpellRender.iconTexture(spellId);
 
             spells.add(new SpellData(i, new SpellViewModel(spellId, spellIcon, spellName)));
@@ -84,17 +84,17 @@ public class SpellChoiceScreen extends HandledScreen<SpellChoiceScreenHandler> {
 
     // Disable Slot clicks to protect the read-only slot
     @Override
-    protected void onMouseClick(Slot slot, int slotId, int button, SlotActionType actionType) {
+    protected void slotClicked(Slot slot, int slotId, int button, ClickType actionType) {
         // Do nothing
     }
 
     @Override
-    protected void handledScreenTick() {
-        super.handledScreenTick();
+    protected void containerTick() {
+        super.containerTick();
         this.spellIcons = createSpellIcons();
     }
 
-    private void drawSpellIcon(DrawContext context, SpellIconViewModel icon, int mouseX, int mouseY) {
+    private void drawSpellIcon(GuiGraphics context, SpellIconViewModel icon, int mouseX, int mouseY) {
         boolean mouseOver = icon.mouseOver(mouseX, mouseY);
 
         // Draw hover highlight (white overlay)
@@ -106,47 +106,47 @@ public class SpellChoiceScreen extends HandledScreen<SpellChoiceScreenHandler> {
 
         // Draw spell icon texture
         if (icon.spell != null && icon.spell.icon != null) {
-            context.drawTexture(RenderPipelines.GUI_TEXTURED, icon.spell.icon, icon.x, icon.y,
+            context.blit(RenderPipelines.GUI_TEXTURED, icon.spell.icon, icon.x, icon.y,
                     0, 0, icon.size, icon.size, icon.size, icon.size);
         }
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
 
         // Draw text
-        context.drawCenteredTextWithShadow(
-                textRenderer,
-                Text.translatable("gui.spell_engine.choose_for_item", handler.getChoiceItemStack().getName()),
+        context.drawCenteredString(
+                font,
+                Component.translatable("gui.spell_engine.choose_for_item", menu.getChoiceItemStack().getHoverName()),
                 this.width / 2, this.height / 2, 0xFFFFFFFF);
 
         // Draw spell details tooltip on hover (like SpellBindingScreen)
-        var player = this.client.player;
-        var itemStack = handler.getChoiceItemStack();
+        var player = this.minecraft.player;
+        var itemStack = menu.getChoiceItemStack();
 
         for (var icon : spellIcons) {
             if (icon.mouseOver(mouseX, mouseY) && icon.spell != null) {
-                ArrayList<Text> tooltip = new ArrayList<>();
+                ArrayList<Component> tooltip = new ArrayList<>();
                 tooltip.addAll(SpellTooltip.spellEntry(icon.spell.id, player, itemStack, true, 0));
-                context.drawTooltip(this.textRenderer, tooltip, mouseX, mouseY);
+                context.setComponentTooltipForNextFrame(this.font, tooltip, mouseX, mouseY);
                 break;
             }
         }
     }
 
     @Override
-    public boolean mouseClicked(Click click, boolean doubled) {
+    public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
         double mouseX = click.x(), mouseY = click.y();
         int button = click.button();
         if (button == 0) {  // Left click
             for (var icon : spellIcons) {
                 if (icon.mouseOver((int) mouseX, (int) mouseY)) {
                     // Send selection to server
-                    if (this.client.interactionManager != null) {
-                        this.client.interactionManager.clickButton(this.handler.syncId, icon.index);
+                    if (this.minecraft.gameMode != null) {
+                        this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, icon.index);
                     }
-                    this.close();
+                    this.onClose();
                     return true;
                 }
             }
@@ -155,7 +155,7 @@ public class SpellChoiceScreen extends HandledScreen<SpellChoiceScreenHandler> {
     }
 
     @Override
-    protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphics context, float delta, int mouseX, int mouseY) {
         // Draw spell icons (following SpellBindingScreen pattern)
         for (var icon : spellIcons) {
             drawSpellIcon(context, icon, mouseX, mouseY);
@@ -163,18 +163,18 @@ public class SpellChoiceScreen extends HandledScreen<SpellChoiceScreenHandler> {
     }
 
     @Override
-    protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
+    protected void renderLabels(GuiGraphics context, int mouseX, int mouseY) {
         // Draw title
-        context.drawText(this.textRenderer, this.title, this.titleX, this.titleY, 0xFF404040, false);
+        context.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 0xFF404040, false);
     }
 
     @Override
-    public boolean shouldPause() {
+    public boolean isPauseScreen() {
         return false;
     }
 
     // View model records
-    private record SpellViewModel(Identifier id, Identifier icon, Text name) { }
+    private record SpellViewModel(Identifier id, Identifier icon, Component name) { }
 
     private record SpellIconViewModel(
         int index,           // Index in handler.spellId array

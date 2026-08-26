@@ -1,10 +1,10 @@
 package net.spell_engine.internals.delivery;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.entity.SpellProjectile;
@@ -22,12 +22,12 @@ public class ProjectileLauncher {
 
     // MARK: Projectile
 
-    public static void shootProjectile(World world, LivingEntity caster, Entity target, RegistryEntry<Spell> spellEntry, ImpactContext context) {
+    public static void shootProjectile(Level world, LivingEntity caster, Entity target, Holder<Spell> spellEntry, ImpactContext context) {
         shootProjectile(world, caster, target, spellEntry, context, 0);
     }
 
-    public static void shootProjectile(World world, LivingEntity caster, Entity target, RegistryEntry<Spell> spellEntry, ImpactContext context, int sequenceIndex) {
-        if (world.isClient()) {
+    public static void shootProjectile(Level world, LivingEntity caster, Entity target, Holder<Spell> spellEntry, ImpactContext context, int sequenceIndex) {
+        if (world.isClientSide()) {
             return;
         }
 
@@ -53,7 +53,7 @@ public class ProjectileLauncher {
         var owner = effectiveCaster != null ? effectiveCaster : caster;
 
         var projectile = new SpellProjectile(world, owner,
-                launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
+                launchPoint.x(), launchPoint.y(), launchPoint.z(),
                 SpellProjectile.Behaviour.FLY, spellEntry, context, mutablePerks);
         projectile.setScaleMultiplier(scaleMultiplier);
 
@@ -63,16 +63,16 @@ public class ProjectileLauncher {
         }
         var velocity = mutableLaunchProperties.velocity;
         var divergence = projectileData.divergence;
-        var directionPitch = data.inherit_shooter_pitch ? caster.getPitch() : 0;
-        var directionYaw = data.inherit_shooter_yaw ? caster.getYaw() : 0;
+        var directionPitch = data.inherit_shooter_pitch ? caster.getXRot() : 0;
+        var directionYaw = data.inherit_shooter_yaw ? caster.getYRot() : 0;
         if (data.direct_towards_target && target != null) {
-            var directionVector = target.getEntityPos().subtract(caster.getEntityPos()).normalize();
+            var directionVector = target.position().subtract(caster.position()).normalize();
             // Yaw and pitch from distance vector
             directionPitch = (float) VectorHelper.pitchFromNormalized(directionVector);
             directionYaw = (float) VectorHelper.yawFromNormalized(directionVector);
         }
         if (data.inherit_shooter_velocity) {
-            projectile.setVelocity(caster, directionPitch, directionYaw, 0, velocity, divergence);
+            projectile.shootFromRotation(caster, directionPitch, directionYaw, 0, velocity, divergence);
         } else {
             if (data.direction_offsets != null && data.direction_offsets.length > 0
                 && (!data.direction_offsets_require_target || target != null)) {
@@ -83,17 +83,17 @@ public class ProjectileLauncher {
                 directionYaw += offset.yaw;
             }
             // var look = caster.getRotationVector().normalize();
-            var look = caster.getRotationVector(directionPitch, directionYaw).normalize();
-            projectile.setVelocity(look.x, look.y, look.z, velocity, divergence);
+            var look = caster.calculateViewVector(directionPitch, directionYaw).normalize();
+            projectile.shoot(look.x, look.y, look.z, velocity, divergence);
         }
         // Charge `bonus.range_add` extends the projectile's flight distance (already ratio-scaled).
         var chargeModifier = context.chargeModifier();
         projectile.range = spell.range + (chargeModifier != null ? chargeModifier.range_add : 0F);
-        projectile.setPitch(directionPitch);
-        projectile.setYaw(directionYaw);
+        projectile.setXRot(directionPitch);
+        projectile.setYRot(directionYaw);
 
         projectile.setFollowedTarget(target);
-        world.spawnEntity(projectile);
+        world.addFreshEntity(projectile);
         SoundHelper.playSound(world, projectile, mutableLaunchProperties.sound);
 
         var allowExtraShoot = (context.isChanneled() && mutableLaunchProperties.extra_launch_mod >= 0)
@@ -115,16 +115,16 @@ public class ProjectileLauncher {
 
     // MARK: Meteor
 
-    public static boolean fallProjectile(World world, LivingEntity caster, Entity target, @Nullable Vec3d targetLocation, RegistryEntry<Spell> spellEntry, ImpactContext context) {
+    public static boolean fallProjectile(Level world, LivingEntity caster, Entity target, @Nullable Vec3 targetLocation, Holder<Spell> spellEntry, ImpactContext context) {
         return fallProjectile(world, caster, target, targetLocation, spellEntry, context, 0);
     }
 
-    public static boolean fallProjectile(World world, LivingEntity caster, Entity target, @Nullable Vec3d targetLocation, RegistryEntry<Spell> spellEntry, ImpactContext context, int sequenceIndex) {
-        if (world.isClient()) {
+    public static boolean fallProjectile(Level world, LivingEntity caster, Entity target, @Nullable Vec3 targetLocation, Holder<Spell> spellEntry, ImpactContext context, int sequenceIndex) {
+        if (world.isClientSide()) {
             return false;
         }
 
-        Vec3d targetPosition = (target != null) ? target.getEntityPos() : targetLocation;
+        Vec3 targetPosition = (target != null) ? target.position() : targetLocation;
         if (targetPosition == null) {
             return false;
         }
@@ -152,7 +152,7 @@ public class ProjectileLauncher {
         }
 
         var projectile = new SpellProjectile(world, caster,
-                launchPoint.getX(), launchPoint.getY(), launchPoint.getZ(),
+                launchPoint.x(), launchPoint.y(), launchPoint.z(),
                 SpellProjectile.Behaviour.FALL, spellEntry, context, mutablePerks);
         projectile.setScaleMultiplier(scaleMultiplier);
 
@@ -160,13 +160,13 @@ public class ProjectileLauncher {
             SpellEvents.PROJECTILE_FALL.invoke((listener) -> listener.onProjectileLaunch(new SpellEvents.ProjectileLaunchEvent(projectile, mutableLaunchProperties, caster, target, spellEntry, context, sequenceIndex)));
         }
 
-        projectile.setYaw(0);
-        projectile.setPitch(90);
+        projectile.setYRot(0);
+        projectile.setXRot(90);
 
         if (launchSequenceEligible(sequenceIndex, meteor.divergence_requires_sequence)) {
             projectile.setVelocity( 0, - 1, 0, mutableLaunchProperties.velocity, 0.5F, projectileData.divergence);
         } else {
-            projectile.setVelocity(new Vec3d(0, - mutableLaunchProperties.velocity, 0));
+            projectile.setDeltaMovement(new Vec3(0, - mutableLaunchProperties.velocity, 0));
         }
         if (launchSequenceEligible(sequenceIndex, meteor.follow_target_requires_sequence)) {
             projectile.setFollowedTarget(target);
@@ -175,15 +175,15 @@ public class ProjectileLauncher {
         }
         if (launchRadius > 0 && launchSequenceEligible(sequenceIndex, meteor.offset_requires_sequence)) {
             var randomAngle = Math.toRadians(world.random.nextFloat() * 360);
-            var offset = (new Vec3d(launchRadius, 0, 0)).rotateY((float) randomAngle);
-            projectile.setPosition(projectile.getEntityPos().add(offset));
+            var offset = (new Vec3(launchRadius, 0, 0)).yRot((float) randomAngle);
+            projectile.setPos(projectile.position().add(offset));
         }
 
-        projectile.lastYaw = projectile.getYaw();
-        projectile.lastPitch = projectile.getPitch();
+        projectile.yRotO = projectile.getYRot();
+        projectile.xRotO = projectile.getXRot();
         projectile.range = height;
 
-        world.spawnEntity(projectile);
+        world.addFreshEntity(projectile);
 
         if (sequenceIndex == 0 && mutableLaunchProperties.extra_launch_count > 0) {
             for (int i = 0; i < mutableLaunchProperties.extra_launch_count; i++) {

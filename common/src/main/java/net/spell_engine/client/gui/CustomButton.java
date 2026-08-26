@@ -1,24 +1,21 @@
 package net.spell_engine.client.gui;
 
-import net.minecraft.client.gl.RenderPipelines;
-import net.minecraft.util.math.ColorHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.spell_engine.SpellEngineMod;
 
-public class CustomButton extends ButtonWidget {
+public class CustomButton extends Button {
 
-    private static final Identifier BUTTONS_TEXTURE = Identifier.of(SpellEngineMod.ID, "textures/gui/buttons.png");
+    private static final Identifier BUTTONS_TEXTURE = Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "textures/gui/buttons.png");
     private int u;
     private int v;
     private int stateOffsetY;
 
-    public CustomButton(int x, int y, Type type, PressAction onPress) {
-        super(x, y, type.width(), type.height(), net.minecraft.text.Text.literal(""), onPress, DEFAULT_NARRATION_SUPPLIER);
+    public CustomButton(int x, int y, Type type, OnPress onPress) {
+        super(x, y, type.width(), type.height(), net.minecraft.network.chat.Component.literal(""), onPress, DEFAULT_NARRATION);
         this.u = type.u();
         this.v = type.v();
         this.stateOffsetY = type.stateOffsetY();
@@ -70,8 +67,8 @@ public class CustomButton extends ButtonWidget {
     }
 
     @Override
-    protected void drawIcon(DrawContext context, int mouseX, int mouseY, float delta) {
-        context.drawTexture(RenderPipelines.GUI_TEXTURED, BUTTONS_TEXTURE, this.getX(), this.getY(), this.u, this.getTextureY(), this.getWidth(), this.getHeight(), 256, 256, ColorHelper.fromFloats(this.alpha, 1F, 1F, 1F));
+    protected void renderContents(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        context.blit(RenderPipelines.GUI_TEXTURED, BUTTONS_TEXTURE, this.getX(), this.getY(), this.u, this.getTextureY(), this.getWidth(), this.getHeight(), 256, 256, ARGB.colorFromFloat(this.alpha, 1F, 1F, 1F));
         // context.drawNineSlicedTexture(BUTTONS_TEXTURE, this.getX(), this.getY(), this.getWidth(), this.getHeight(), 20, 4, 200, 20, 0, this.getTextureY());
         int i = this.active ? 0xFFFFFF : 0xA0A0A0;
         // this.drawMessage(context, minecraftClient.textRenderer, i | MathHelper.ceil(this.alpha * 255.0f) << 24);

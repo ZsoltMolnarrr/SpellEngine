@@ -1,12 +1,12 @@
 package net.spell_engine.entity;
 
 import org.joml.Vector3fc;
-import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.animation.AnimationChannel;
+import net.minecraft.client.animation.AnimationDefinition;
+import net.minecraft.client.animation.Keyframe;
 import net.minecraft.client.model.Model;
-import net.minecraft.client.render.entity.animation.AnimationDefinition;
-import net.minecraft.client.render.entity.animation.Keyframe;
-import net.minecraft.client.render.entity.animation.Transformation;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.util.Mth;
 import org.joml.Vector3f;
 
 import java.util.List;
@@ -23,7 +23,7 @@ public final class ModelAnimations {
 
     /**
      * Seamless-loop variant of vanilla
-     * {@link net.minecraft.client.render.entity.animation.AnimationHelper#animate}.
+     * {@link net.minecraft.client.animation.KeyframeAnimations#animate}.
      *
      * <p>Vanilla treats a looping clip's boundary like a dead end: at the segment touching the first
      * or last keyframe, catmull-rom <em>clamps</em> its outer neighbour ({@code max(0, start-1)} /
@@ -54,11 +54,11 @@ public final class ModelAnimations {
         }
         final float time = f;
 
-        for (Map.Entry<String, List<Transformation>> entry : animation.boneAnimations().entrySet()) {
-            List<Transformation> transformations = entry.getValue();
-            var part = findPart(model.getRootPart(), entry.getKey());
+        for (Map.Entry<String, List<AnimationChannel>> entry : animation.boneAnimations().entrySet()) {
+            List<AnimationChannel> transformations = entry.getValue();
+            var part = findPart(model.root(), entry.getKey());
             if (part == null) continue;
-            for (Transformation transformation : transformations) {
+            for (AnimationChannel transformation : transformations) {
                 apply(part, transformation, time, looping, scale, temp);
             }
         }
@@ -67,22 +67,22 @@ public final class ModelAnimations {
     /// Depth-first lookup by name; ModelPart no longer exposes an Optional child getter
     @org.jetbrains.annotations.Nullable
     private static ModelPart findPart(ModelPart root, String name) {
-        for (var candidate : root.traverse()) {
+        for (var candidate : root.getAllParts()) {
             if (candidate.hasChild(name)) return candidate.getChild(name);
         }
         return null;
     }
 
-    private static void apply(ModelPart part, Transformation transformation, float time, boolean looping, float scale, Vector3f temp) {
+    private static void apply(ModelPart part, AnimationChannel transformation, float time, boolean looping, float scale, Vector3f temp) {
         Keyframe[] keyframes = transformation.keyframes();
         int last = keyframes.length - 1;
-        int i = Math.max(0, MathHelper.binarySearch(0, keyframes.length, index -> time <= keyframes[index].timestamp()) - 1);
+        int i = Math.max(0, Mth.binarySearch(0, keyframes.length, index -> time <= keyframes[index].timestamp()) - 1);
         int j = Math.min(last, i + 1);
         Keyframe from = keyframes[i];
         Keyframe to = keyframes[j];
         float delta = 0.0F;
         if (j != i) {
-            delta = MathHelper.clamp((time - from.timestamp()) / (to.timestamp() - from.timestamp()), 0.0F, 1.0F);
+            delta = Mth.clamp((time - from.timestamp()) / (to.timestamp() - from.timestamp()), 0.0F, 1.0F);
         }
 
         // Only the boundary segment of a looping clip diverges from vanilla; everything else is
@@ -94,9 +94,9 @@ public final class ModelAnimations {
             Vector3fc p2 = to.postTarget();
             Vector3fc p3 = keyframes[j == last ? 1 : j + 1].postTarget();           // wrap the post-neighbour
             temp.set(
-                    MathHelper.catmullRom(delta, p0.x(), p1.x(), p2.x(), p3.x()) * scale,
-                    MathHelper.catmullRom(delta, p0.y(), p1.y(), p2.y(), p3.y()) * scale,
-                    MathHelper.catmullRom(delta, p0.z(), p1.z(), p2.z(), p3.z()) * scale
+                    Mth.catmullrom(delta, p0.x(), p1.x(), p2.x(), p3.x()) * scale,
+                    Mth.catmullrom(delta, p0.y(), p1.y(), p2.y(), p3.y()) * scale,
+                    Mth.catmullrom(delta, p0.z(), p1.z(), p2.z(), p3.z()) * scale
             );
         } else {
             to.interpolation().apply(temp, delta, keyframes, i, j, scale);

@@ -3,8 +3,8 @@ package net.spell_engine.fabric.compat.trinkets;
 import dev.emi.trinkets.api.TrinketsApi;
 import dev.emi.trinkets.api.event.TrinketEquipCallback;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.spell_engine.compat.container.ContainerCompat;
 import net.spell_engine.internals.container.SpellContainerSource;
 
@@ -37,7 +37,7 @@ public class TrinketsCompat {
                 SpellContainerSource.MAIN_HAND.name()
         );
         TrinketEquipCallback.EVENT.register((stack, slot, entity) -> {
-            if (entity instanceof PlayerEntity player) {
+            if (entity instanceof Player player) {
                 SpellContainerSource.setDirty(player, spellSourceName);
             }
         });
@@ -47,20 +47,20 @@ public class TrinketsCompat {
         return enabled;
     }
 
-    private static List<ItemStack> getAll(PlayerEntity player) {
+    private static List<ItemStack> getAll(Player player) {
         var component = TrinketsApi.getTrinketComponent(player);
         if (component.isEmpty()) {
             return List.of();
         }
         var trinketComponent = component.get();
-        return trinketComponent.getAllEquipped().stream().map(reference -> reference.getRight()).toList();
+        return trinketComponent.getAllEquipped().stream().map(reference -> reference.getB()).toList();
     }
 
     public static boolean isEnabled() {
         return enabled;
     }
 
-    public static List<ItemStack> getEquippedStacks(PlayerEntity player) {
+    public static List<ItemStack> getEquippedStacks(Player player) {
         var component = TrinketsApi.getTrinketComponent(player);
         if (component.isEmpty()) {
             return List.of();
@@ -68,11 +68,11 @@ public class TrinketsCompat {
         var equipped = new ArrayList<ItemStack>();
         var trinketComponent = component.get();
         trinketComponent.getAllEquipped().forEach(pair -> {
-            var stack = pair.getRight();
+            var stack = pair.getB();
             if (stack.isEmpty()) {
                 return;
             }
-            if (pair.getLeft().getId().contains("spell/book")) {
+            if (pair.getA().getId().contains("spell/book")) {
                 equipped.addFirst(stack);
             } else {
                 equipped.add(stack);

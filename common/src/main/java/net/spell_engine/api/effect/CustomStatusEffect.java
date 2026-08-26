@@ -1,13 +1,13 @@
 package net.spell_engine.api.effect;
 
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
 
 /**
  * Just a plain status effect, that has accessible constructor.
  */
-public class CustomStatusEffect extends StatusEffect {
-    public CustomStatusEffect(StatusEffectCategory category, int color) {
+public class CustomStatusEffect extends MobEffect {
+    public CustomStatusEffect(MobEffectCategory category, int color) {
         super(category, color);
     }
 }

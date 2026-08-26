@@ -1,7 +1,7 @@
 package net.spell_engine.mixin.client.render;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.Entity;
 import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.utils.TargetHelper;
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,11 +11,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Entity.class)
 public class EntityMixin {
-    @Inject(method = "getTeamColorValue", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getTeamColor", at = @At("HEAD"), cancellable = true)
     private void getTeamColorValue_HEAD_SpellEngine(CallbackInfoReturnable<Integer> cir) {
         var entity = (Entity) ((Object)this);
-        if (entity.getEntityWorld().isClient() /* && SpellEngineClient.config.useMagicColorForHighlight */) {
-            var clientPlayer = MinecraftClient.getInstance().player;
+        if (entity.level().isClientSide() /* && SpellEngineClient.config.useMagicColorForHighlight */) {
+            var clientPlayer = Minecraft.getInstance().player;
             if (TargetHelper.isTargetedByPlayer(entity, clientPlayer)) {
                 var spell = ((SpellCaster.Client) clientPlayer).getCastedSpell();
                 if (spell != null) {

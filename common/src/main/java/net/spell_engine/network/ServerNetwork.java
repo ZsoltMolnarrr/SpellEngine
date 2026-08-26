@@ -2,8 +2,8 @@ package net.spell_engine.network;
 
 import com.google.common.collect.Iterables;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -22,59 +22,59 @@ public class ServerNetwork {
 
     // MARK: Casting protocol — signals into the caster's SpellCastInteractor
 
-    public static void handleCastRequest(Packets.CastRequest packet, MinecraftServer server, ServerPlayerEntity player) {
-        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getEntityWorld())
+    public static void handleCastRequest(Packets.CastRequest packet, MinecraftServer server, ServerPlayer player) {
+        ServerLevel world = Iterables.tryFind(server.getAllLevels(), (element) -> element == player.level())
                 .orNull();
-        if (world == null || world.isClient()) {
+        if (world == null || world.isClientSide()) {
             return;
         }
-        world.getServer().executeSync(() -> {
+        world.getServer().executeIfPossible(() -> {
             ((SpellCaster.Player) player).getInteractor().requestCast(packet.spellId(), packet.snapshot());
         });
     }
 
-    public static void handleTargetStream(Packets.TargetStream packet, MinecraftServer server, ServerPlayerEntity player) {
-        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getEntityWorld())
+    public static void handleTargetStream(Packets.TargetStream packet, MinecraftServer server, ServerPlayer player) {
+        ServerLevel world = Iterables.tryFind(server.getAllLevels(), (element) -> element == player.level())
                 .orNull();
-        if (world == null || world.isClient()) {
+        if (world == null || world.isClientSide()) {
             return;
         }
-        world.getServer().executeSync(() -> {
+        world.getServer().executeIfPossible(() -> {
             ((SpellCaster.Player) player).getInteractor().submitTargets(packet.spellId(), packet.snapshot());
         });
     }
 
-    public static void handleCastInput(Packets.CastInput packet, MinecraftServer server, ServerPlayerEntity player) {
-        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getEntityWorld())
+    public static void handleCastInput(Packets.CastInput packet, MinecraftServer server, ServerPlayer player) {
+        ServerLevel world = Iterables.tryFind(server.getAllLevels(), (element) -> element == player.level())
                 .orNull();
-        if (world == null || world.isClient()) {
+        if (world == null || world.isClientSide()) {
             return;
         }
-        world.getServer().executeSync(() -> {
+        world.getServer().executeIfPossible(() -> {
             ((SpellCaster.Player) player).getInteractor().requestEnd(packet.spellId(), packet.snapshot());
         });
     }
 
-    public static void handleAttackFxBroadcast(Packets.AttackFxBroadcast packet, MinecraftServer server, ServerPlayerEntity player) {
-        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getEntityWorld())
+    public static void handleAttackFxBroadcast(Packets.AttackFxBroadcast packet, MinecraftServer server, ServerPlayer player) {
+        ServerLevel world = Iterables.tryFind(server.getAllLevels(), (element) -> element == player.level())
                 .orNull();
-        if (world == null || world.isClient()) {
+        if (world == null || world.isClientSide()) {
             return;
         }
 
-        world.getServer().executeSync(() -> {
+        world.getServer().executeIfPossible(() -> {
             Melee.broadcastAttackFx(player, packet.attackContext());
         });
     }
 
-    public static void handleAttackPerform(Packets.AttackPerform packet, MinecraftServer server, ServerPlayerEntity player) {
-        ServerWorld world = Iterables.tryFind(server.getWorlds(), (element) -> element == player.getEntityWorld())
+    public static void handleAttackPerform(Packets.AttackPerform packet, MinecraftServer server, ServerPlayer player) {
+        ServerLevel world = Iterables.tryFind(server.getAllLevels(), (element) -> element == player.level())
                 .orNull();
-        if (world == null || world.isClient()) {
+        if (world == null || world.isClientSide()) {
             return;
         }
 
-        world.getServer().executeSync(() -> {
+        world.getServer().executeIfPossible(() -> {
             Melee.performAttackAgainstTargets(player, packet.attackContext(), packet.targetIds());
         });
     }
@@ -82,7 +82,7 @@ public class ServerNetwork {
     /// Invoked when a player joins or changes dimension: re-sync their spell cooldowns and
     /// server-side spell containers. Wired to `ServerPlayConnectionEvents.JOIN` /
     /// `ServerEntityWorldChangeEvents` on Fabric and to `PlayerEvent` on NeoForge.
-    public static void onPlayerConnectOrChangeWorld(ServerPlayerEntity player) {
+    public static void onPlayerConnectOrChangeWorld(ServerPlayer player) {
         ((SpellCaster.Player) player).getCooldownManager().pushSync();
         SpellContainerSource.syncServerSideContainers(player);
     }

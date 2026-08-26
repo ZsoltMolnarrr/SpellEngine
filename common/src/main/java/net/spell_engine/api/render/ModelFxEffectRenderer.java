@@ -1,13 +1,12 @@
 package net.spell_engine.api.render;
 
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.RotationAxis;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.api.effect.CustomModelStatusEffect;
 import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.client.render.ModelEffectOperations;
-
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import java.util.List;
 
 /// Renders a list of {@link ModelEffect} animations directly on a living entity as a status effect visual,
@@ -47,7 +46,7 @@ public class ModelFxEffectRenderer implements CustomModelStatusEffect.Renderer {
         }
         /// Computes the scale factor for the given entity: {@code clamp(pow(size / baseline, exponent), min, max)}.
         public float scaleFor(LivingEntity entity) {
-            float size = (axis == SizeAxis.WIDTH) ? entity.getWidth() : entity.getHeight();
+            float size = (axis == SizeAxis.WIDTH) ? entity.getBbWidth() : entity.getBbHeight();
             return Math.clamp((float) Math.pow(size / baseline, exponent), min, max);
         }
     }
@@ -95,17 +94,17 @@ public class ModelFxEffectRenderer implements CustomModelStatusEffect.Renderer {
     }
 
     @Override
-    public void renderEffect(long appliedAtWorldTime, int amplifier, LivingEntity livingEntity, float delta, MatrixStack matrixStack,
-                 OrderedRenderCommandQueue queue, int light) {
+    public void renderEffect(long appliedAtWorldTime, int amplifier, LivingEntity livingEntity, float delta, PoseStack matrixStack,
+                 SubmitNodeCollector queue, int light) {
         // World time, not Entity.age: the server stamps `appliedAtWorldTime` in its clock, and the
         // client's World.getTime() tracks it (shared origin, re-synced each second). Entity.age counts
         // from whenever each side first saw the entity, so `age - appliedAtAge` could start deeply
         // negative and skip the whole animation for seconds. See Synchronized.Effect.
-        float rawTime = (livingEntity.getEntityWorld().getTime() - appliedAtWorldTime) + delta;
+        float rawTime = (livingEntity.level().getGameTime() - appliedAtWorldTime) + delta;
 
         if (followYaw) {
-            float yaw = livingEntity.getYaw(delta);
-            matrixStack.multiply(RotationAxis.NEGATIVE_Y.rotationDegrees(yaw));
+            float yaw = livingEntity.getViewYRot(delta);
+            matrixStack.mulPose(Axis.YN.rotationDegrees(yaw));
         }
 
         if (entityScaling != null) {

@@ -1,6 +1,6 @@
 package net.spell_engine.mixin.client.render.tint;
 
-import net.minecraft.client.render.command.BatchingRenderCommandQueue;
+import net.minecraft.client.renderer.SubmitNodeCollection;
 import net.spell_engine.api.effect.EntityTints;
 import net.spell_engine.client.render.tint.EntityTintPass;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 /// The body already carries it (mixed in via `getMixColor`, see `LivingEntityRendererMixin`); this multiplies it
 /// into everything submitted during the entity's feature pass ([EntityTintPass]): vanilla and modded armor,
 /// capes, elytra and other feature models, exactly like the per-part multiply of 1.21.1 did.
-@Mixin(BatchingRenderCommandQueue.class)
+@Mixin(SubmitNodeCollection.class)
 public class BatchingRenderCommandQueueTintMixin {
     // submitModel(model, state, matrices, renderLayer, int light, int overlay, int tintedColor, sprite, int outlineColor, crumbling)
     @ModifyVariable(method = "submitModel", at = @At("HEAD"), argsOnly = true, ordinal = 2)

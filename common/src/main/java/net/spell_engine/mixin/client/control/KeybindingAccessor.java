@@ -1,15 +1,15 @@
 package net.spell_engine.mixin.client.control;
 
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.KeyMapping;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(KeyBinding.class)
+@Mixin(KeyMapping.class)
 public interface KeybindingAccessor {
-    @Invoker("reset")
+    @Invoker("release")
     void spellEngine_reset();
-    @Accessor("boundKey")
-    InputUtil.Key spellEngine_getBoundKey();
+    @Accessor("key")
+    InputConstants.Key spellEngine_getBoundKey();
 }

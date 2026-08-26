@@ -1,25 +1,25 @@
 package net.spell_engine.fabric.compat.trinkets;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.spell_engine.client.SpellEngineClient;
 
 import java.util.List;
 
 public class SpellScrollTrinketItem extends SpellHostTrinketItem {
-    public SpellScrollTrinketItem(Settings settings, SoundEvent equipSound) {
+    public SpellScrollTrinketItem(Properties settings, SoundEvent equipSound) {
         super(settings, equipSound);
     }
 
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType type) {
+    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag type) {
         if (SpellEngineClient.config.showSpellBindingTooltip) {
-            tooltip.add(Text
+            tooltip.add(Component
                     .translatable("item.spell_engine.scroll.table_hint")
-                    .formatted(Formatting.GRAY)
+                    .withStyle(ChatFormatting.GRAY)
             );
         }
     }

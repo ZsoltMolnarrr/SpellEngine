@@ -2,14 +2,14 @@ package net.spell_engine.mixin.arrow;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
+import net.minecraft.world.phys.EntityHitResult;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.entity.ConfigurableKnockback;
@@ -34,7 +34,7 @@ import java.util.Objects;
 import net.spell_engine.internals.SpellExecution;
 import net.spell_engine.internals.impact.SpellImpacts;
 
-@Mixin(PersistentProjectileEntity.class)
+@Mixin(AbstractArrow.class)
 public abstract class PersistentProjectileEntityMixin implements ArrowExtension {
     @Shadow public abstract boolean isInGround(); // 1.21.11: tracked-data backed, no field
 
@@ -42,12 +42,12 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
 
     @Shadow public abstract void setPierceLevel(byte level);
 
-    @Shadow public abstract void setDamage(double damage);
+    @Shadow public abstract void setBaseDamage(double damage);
 
-    @Shadow private double damage; // 1.21.11: no public getter
+    @Shadow private double baseDamage; // 1.21.11: no public getter
 
-    private PersistentProjectileEntity arrow() {
-         return (PersistentProjectileEntity)(Object)this;
+    private AbstractArrow arrow() {
+         return (AbstractArrow)(Object)this;
     }
 
     // MARK: Carried spells — synced + persisted entity attachment (ARROW_SPELLS)
@@ -67,14 +67,14 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
     /// Resolved spell entries, re-resolved whenever the carried id list changes (a new synced value
     /// is a new list instance; identity is compared, so steady-state reads are free).
     private List<Identifier> cachedSpellIds = null;
-    private List<RegistryEntry<Spell>> cachedSpellEntry = List.of();
-    @Nullable List<RegistryEntry<Spell>> spellEntries() {
+    private List<Holder<Spell>> cachedSpellEntry = List.of();
+    @Nullable List<Holder<Spell>> spellEntries() {
         var ids = spellIds();
         if (cachedSpellIds != ids) {
             cachedSpellEntry = ids.stream()
                     .map(id -> {
-                        var reference = SpellRegistry.from(arrow().getEntityWorld()).getEntry(id).orElse(null);
-                        return (RegistryEntry<Spell>)reference;
+                        var reference = SpellRegistry.from(arrow().level()).get(id).orElse(null);
+                        return (Holder<Spell>)reference;
                     })
                     .filter(Objects::nonNull)
                     .toList();
@@ -83,8 +83,8 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         return cachedSpellEntry;
     }
 
-    private boolean arrowPerksAlreadyApplied(RegistryEntry<Spell> spell) {
-        return spellIds().contains(spell.getKey().get().getValue());
+    private boolean arrowPerksAlreadyApplied(Holder<Spell> spell) {
+        return spellIds().contains(spell.unwrapKey().get().identifier());
     }
 
     // MARK: Tick
@@ -97,7 +97,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
             if (perks != null && perks.travel_particles != null) {
                 var arrow = arrow();
                 for (var travel_particles : perks.travel_particles) {
-                    ParticleHelper.play(arrow.getEntityWorld(), arrow, arrow.getYaw(), arrow.getPitch(), travel_particles);
+                    ParticleHelper.play(arrow.level(), arrow, arrow.getYRot(), arrow.getXRot(), travel_particles);
                 }
             }
         }
@@ -116,27 +116,27 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         return isInGround();
     }
 
-    @Nullable public List<RegistryEntry<Spell>> getCarriedSpells() {
+    @Nullable public List<Holder<Spell>> getCarriedSpells() {
         return spellEntries();
     }
 
     @Override
-    public void applyArrowPerks(RegistryEntry<Spell> spellEntry, Spell.ArrowPerks perks) {
+    public void applyArrowPerks(Holder<Spell> spellEntry, Spell.ArrowPerks perks) {
         if(arrowPerksAlreadyApplied(spellEntry)) {
             return;
         }
         var arrow = arrow();
         if (perks != null) {
             if (perks.velocity_multiplier != 1.0F) {
-                arrow.setVelocity(arrow.getVelocity().multiply(perks.velocity_multiplier));
+                arrow.setDeltaMovement(arrow.getDeltaMovement().scale(perks.velocity_multiplier));
             }
             if (perks.pierce > 0) {
                 var newPierce = (byte)(getPierceLevel() + perks.pierce);
                 setPierceLevel(newPierce);
             }
-            this.setDamage(this.damage * perks.damage_multiplier);
+            this.setBaseDamage(this.baseDamage * perks.damage_multiplier);
         }
-        var spellId = spellEntry.getKey().get().getValue();
+        var spellId = spellEntry.unwrapKey().get().identifier();
         this.addSpellId(spellId);
     }
 
@@ -151,7 +151,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
     /// Summons of HOSTILE / NEUTRAL parties stay hittable, as does any summon whose owner cannot be
     /// resolved (an offline owner falls through to the config's fallback relation). `SummonedEntity`'s
     /// own `canHit` / `is_attackable` gate still applies on top of this.
-    @Inject(method = "canHit", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "canHitEntity", at = @At("HEAD"), cancellable = true)
     private void canHit_HEAD_SpellEngine(Entity entity, CallbackInfoReturnable<Boolean> cir) {
         if (!(entity instanceof SummonedEntity summon)) return;
         var owner = arrow().getOwner();
@@ -159,7 +159,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         // Own summon: matched by owner UUID rather than by relation, so the shooter's arrows keep
         // passing through their own pets even on a server that configures `player_relation_to_owned_pets`
         // as something other than ALLY (the config comment invites exactly that, to allow pet friendly fire).
-        if (owner.getUuid().equals(summon.getOwnerUuid())) {
+        if (owner.getUUID().equals(summon.getOwnerUuid())) {
             cir.setReturnValue(false);
             return;
         }
@@ -173,7 +173,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
 
     // MARK: Apply impact effects
 
-    @Inject(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;sidedDamage(Lnet/minecraft/entity/damage/DamageSource;F)Z"), cancellable = true)
+    @Inject(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;hurtOrSimulate(Lnet/minecraft/world/damagesource/DamageSource;F)Z"), cancellable = true)
     private void onEntityHit_BeforeDamage_SpellEngine(EntityHitResult entityHitResult, CallbackInfo ci) {
         for (var spellEntry : spellEntries()) {
             var spell = spellEntry.value();
@@ -191,7 +191,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         }
     }
 
-    @WrapOperation(method = "onEntityHit", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;sidedDamage(Lnet/minecraft/entity/damage/DamageSource;F)Z"))
+    @WrapOperation(method = "onHitEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/Entity;hurtOrSimulate(Lnet/minecraft/world/damagesource/DamageSource;F)Z"))
     private boolean wrapDamageEntity(
             // Mixin Parameters
             Entity entity, DamageSource damageSource, float amount, Operation<Boolean> original,
@@ -200,16 +200,16 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         var spellEntries = spellEntries();
         var arrow = arrow();
         var owner = arrow.getOwner();
-        if (entity.getEntityWorld().isClient() || spellEntries.isEmpty()) {
+        if (entity.level().isClientSide() || spellEntries.isEmpty()) {
 
             var result = original.call(entity, damageSource, amount);
-            if (owner instanceof PlayerEntity shooter) {
+            if (owner instanceof Player shooter) {
                 SpellTriggers.onArrowImpact((ArrowExtension) arrow, shooter, entity, damageSource, amount);
             }
             return result;
         } else {
             int iFrameToRestore = 0;
-            var originalIFrame = entity.timeUntilRegen;
+            var originalIFrame = entity.invulnerableTime;
             float knockbackMultiplier = 1.0F;
 
             for (var spellEnrty : spellEntries) {
@@ -220,10 +220,10 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
                         knockbackMultiplier *= arrowPerks.knockback;
                     }
                     if (arrowPerks.bypass_iframes) {
-                        if (entity.timeUntilRegen == originalIFrame) {
-                            iFrameToRestore = entity.timeUntilRegen;
+                        if (entity.invulnerableTime == originalIFrame) {
+                            iFrameToRestore = entity.invulnerableTime;
                         }
-                        entity.timeUntilRegen = 0;
+                        entity.invulnerableTime = 0;
                     }
                     if (arrowPerks.iframe_to_set > 0) {
                         iFrameToRestore = arrowPerks.iframe_to_set;
@@ -243,7 +243,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
             for (var spellEntry : spellEntries) {
                 performImpacts(spellEntry, entity, entityHitResult);
             }
-            if (owner instanceof PlayerEntity shooter) {
+            if (owner instanceof Player shooter) {
                 SpellTriggers.onArrowImpact((ArrowExtension) arrow, shooter, entity, damageSource, amount);
             }
 
@@ -251,20 +251,20 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
                 ((ConfigurableKnockback) entity).popKnockbackMultiplier_SpellEngine();
             }
             if (iFrameToRestore != 0) {
-                entity.timeUntilRegen = iFrameToRestore;
+                entity.invulnerableTime = iFrameToRestore;
             }
             return result;
         }
     }
 
-    private void performImpacts(RegistryEntry<Spell> spellEntry, Entity target, EntityHitResult entityHitResult) {
+    private void performImpacts(Holder<Spell> spellEntry, Entity target, EntityHitResult entityHitResult) {
         var arrow = arrow();
         var owner = arrow.getOwner();
         if (spellEntry != null
                 && spellEntry.value().impacts != null
                 && owner instanceof LivingEntity shooter) {
             SpellImpacts.arrowImpact(shooter, arrow, target, spellEntry,
-                    new SpellExecution.ImpactContext().position(entityHitResult.getPos()));
+                    new SpellExecution.ImpactContext().position(entityHitResult.getLocation()));
         }
     }
 }

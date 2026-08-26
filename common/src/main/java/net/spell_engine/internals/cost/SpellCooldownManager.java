@@ -1,14 +1,14 @@
 package net.spell_engine.internals.cost;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.spell_engine.Platform;
 
 import com.google.common.collect.Maps;
-import net.minecraft.entity.Entity;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.network.Packets;
 import org.jetbrains.annotations.Nullable;
@@ -41,18 +41,18 @@ public class SpellCooldownManager {
         if (spell.cost.cooldown != null) {
             var group = spell.cost.cooldown.group;
             if (group != null) {
-                return Identifier.of("group", group);
+                return Identifier.fromNamespaceAndPath("group", group);
             }
         }
         return null;
     }
 
-    public boolean isCoolingDown(RegistryEntry<Spell> spell) {
+    public boolean isCoolingDown(Holder<Spell> spell) {
         return this.getCooldownProgress(spell, 0.0f) > 0.0f;
     }
 
-    public float getCooldownProgress(RegistryEntry<Spell> spell, float tickDelta) {
-        var id = spell.getKey().get().getValue();
+    public float getCooldownProgress(Holder<Spell> spell, float tickDelta) {
+        var id = spell.unwrapKey().get().identifier();
         var groupId = groupId(spell.value());
         if (groupId == null) {
             return this.getCooldownProgress(id, tickDelta);
@@ -69,13 +69,13 @@ public class SpellCooldownManager {
         if (entry != null) {
             float f = entry.endTick - entry.startTick;
             float g = (float)entry.endTick - ((float)this.tick + tickDelta);
-            return MathHelper.clamp(g / f, 0.0f, 1.0f);
+            return Mth.clamp(g / f, 0.0f, 1.0f);
         }
         return 0.0f;
     }
 
-    public int getCooldownDuration(RegistryEntry<Spell> spell) {
-        var id = spell.getKey().get().getValue();
+    public int getCooldownDuration(Holder<Spell> spell) {
+        var id = spell.unwrapKey().get().identifier();
         var groupId = groupId(spell.value());
         if (groupId == null) {
             return this.getCooldownDuration(id);
@@ -95,8 +95,8 @@ public class SpellCooldownManager {
         return 0;
     }
 
-    public void setDurationLeft(RegistryEntry<Spell> spell, int duration) {
-        var spellId = spell.getKey().get().getValue();
+    public void setDurationLeft(Holder<Spell> spell, int duration) {
+        var spellId = spell.unwrapKey().get().identifier();
         this.setDurationLeft(spellId, duration);
         var groupId = groupId(spell.value());
         if (groupId != null) {
@@ -127,12 +127,12 @@ public class SpellCooldownManager {
         }
     }
 
-    public void set(RegistryEntry<Spell> spell, int duration) {
+    public void set(Holder<Spell> spell, int duration) {
         this.set(spell, duration, true);
     }
 
-    public void set(RegistryEntry<Spell> spell, int duration, boolean force) {
-        var spellId = spell.getKey().get().getValue();
+    public void set(Holder<Spell> spell, int duration, boolean force) {
+        var spellId = spell.unwrapKey().get().identifier();
         this.set(spellId, duration, force);
         var groupId = groupId(spell.value());
         if (groupId != null) {
@@ -156,38 +156,38 @@ public class SpellCooldownManager {
     }
 
     protected void cooldownSet(Identifier spell, int duration) {
-        if (owner instanceof ServerPlayerEntity serverPlayer) {
+        if (owner instanceof ServerPlayer serverPlayer) {
             Platform.util().networkS2C_Send(serverPlayer, new Packets.SpellCooldown(spell, duration));
         }
     }
 
     protected void cooldownCleared(Identifier spell) {
-        if (owner instanceof ServerPlayerEntity serverPlayer) {
+        if (owner instanceof ServerPlayer serverPlayer) {
             Platform.util().networkS2C_Send(serverPlayer, new Packets.SpellCooldown(spell, 0));
         }
     }
 
     private static final String NBT_KEY = "spell_engine_cooldowns";
     // Stored as a list (ReadView cannot enumerate keys), one element per spell
-    public void writeCustomData(WriteView view) {
-        var cooldowns = view.getList(NBT_KEY);
+    public void writeCustomData(ValueOutput view) {
+        var cooldowns = view.childrenList(NBT_KEY);
         for (var entry: entries.entrySet()) {
             var spell = entry.getKey();
             var cooldown = entry.getValue();
-            var cooldownData = cooldowns.add();
+            var cooldownData = cooldowns.addChild();
             cooldownData.putString("spell", spell.toString());
             cooldownData.putInt("start", cooldown.startTick - tick);
             cooldownData.putInt("end", cooldown.endTick - tick);
         }
     }
 
-    public void readCustomData(ReadView view) {
-        view.getOptionalListReadView(NBT_KEY).ifPresent(cooldowns -> cooldowns.stream().forEach(cooldownData -> {
-            var spellString = cooldownData.getString("spell", "");
+    public void readCustomData(ValueInput view) {
+        view.childrenList(NBT_KEY).ifPresent(cooldowns -> cooldowns.stream().forEach(cooldownData -> {
+            var spellString = cooldownData.getStringOr("spell", "");
             if (spellString.isEmpty()) { return; }
-            var spell = Identifier.of(spellString);
-            var start = cooldownData.getInt("start", 0);
-            var end = cooldownData.getInt("end", 0);
+            var spell = Identifier.parse(spellString);
+            var start = cooldownData.getIntOr("start", 0);
+            var end = cooldownData.getIntOr("end", 0);
             entries.put(spell, new Entry(start, end));
         }));
     }
@@ -202,7 +202,7 @@ public class SpellCooldownManager {
     }
 
     public void pushSync() {
-        if (owner instanceof ServerPlayerEntity serverPlayer) {
+        if (owner instanceof ServerPlayer serverPlayer) {
             Platform.util().networkS2C_Send(serverPlayer, new Packets.SpellCooldownSync(this.tick, Map.copyOf(this.entries)));
         }
     }

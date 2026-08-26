@@ -1,12 +1,12 @@
 package net.spell_engine.client.render;
 
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 /**
  * Platform-agnostic utility for discovering spell-related models across all loaded mods.
@@ -37,7 +37,7 @@ public class CustomModelDiscovery {
 
         try {
             // Find all resources matching the pattern
-            var resources = resourceManager.findResources(
+            var resources = resourceManager.listResources(
                     MODEL_FOLDER,
                     id -> {
                         var path = id.getPath();
@@ -101,6 +101,6 @@ public class CustomModelDiscovery {
         }
         path = path.substring(0, path.length() - ".json".length());
 
-        return Identifier.of(resourceId.getNamespace(), path);
+        return Identifier.fromNamespaceAndPath(resourceId.getNamespace(), path);
     }
 }

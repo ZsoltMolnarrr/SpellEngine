@@ -1,6 +1,6 @@
 package net.spell_engine.api.spell.fx;
 
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.internals.SpellEngineAttachments;
 
 import java.util.ArrayList;

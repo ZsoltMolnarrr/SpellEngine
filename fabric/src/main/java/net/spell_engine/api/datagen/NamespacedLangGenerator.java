@@ -3,12 +3,11 @@ package net.spell_engine.api.datagen;
 import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
-import net.minecraft.data.DataOutput;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
-import net.minecraft.data.DataWriter;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.data.PackOutput;
+import net.minecraft.resources.Identifier;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
@@ -16,10 +15,10 @@ import java.util.TreeMap;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class NamespacedLangGenerator extends FabricLanguageProvider {
-    private final CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup;
+    private final CompletableFuture<HolderLookup.Provider> registryLookup;
     private final String languageCode;
     private final String namespace;
-    protected NamespacedLangGenerator(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup, String namespace) {
+    protected NamespacedLangGenerator(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup, String namespace) {
         super(dataOutput, "en_us", registryLookup);
         this.languageCode = "en_us";
         this.registryLookup = registryLookup;
@@ -29,7 +28,7 @@ public abstract class NamespacedLangGenerator extends FabricLanguageProvider {
     // Copied from FabricLanguageProvider
 
     @Override
-    public CompletableFuture<?> run(DataWriter writer) {
+    public CompletableFuture<?> run(CachedOutput writer) {
         TreeMap<String, String> translationEntries = new TreeMap<>();
 
         return this.registryLookup.thenCompose(lookup -> {
@@ -50,14 +49,14 @@ public abstract class NamespacedLangGenerator extends FabricLanguageProvider {
                 langEntryJson.addProperty(entry.getKey(), entry.getValue());
             }
 
-            return DataProvider.writeToPath(writer, langEntryJson, getLangFilePath(this.languageCode));
+            return DataProvider.saveStable(writer, langEntryJson, getLangFilePath(this.languageCode));
         });
     }
 
     @Override
     protected Path getLangFilePath(String code) {
         return dataOutput
-                .getResolver(DataOutput.OutputType.RESOURCE_PACK, "lang")
-                .resolveJson(Identifier.of(namespace, code));
+                .createPathProvider(PackOutput.Target.RESOURCE_PACK, "lang")
+                .json(Identifier.fromNamespaceAndPath(namespace, code));
     }
 }

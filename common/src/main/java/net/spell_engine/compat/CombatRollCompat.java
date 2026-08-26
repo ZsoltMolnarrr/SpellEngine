@@ -3,13 +3,13 @@ import net.spell_engine.Platform;
 
 import net.combat_roll.api.event.ServerSideRollEvents;
 import net.combat_roll.internals.RollingEntity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 import net.spell_engine.internals.SpellTriggers;
 
 import java.util.function.Function;
 
 public class CombatRollCompat {
-    public static Function<PlayerEntity, Boolean> isRolling = player -> {
+    public static Function<Player, Boolean> isRolling = player -> {
         return false;
     };
 

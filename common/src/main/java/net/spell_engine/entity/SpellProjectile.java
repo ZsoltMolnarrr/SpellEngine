@@ -1,34 +1,32 @@
 package net.spell_engine.entity;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityDimensions;
-import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.FlyingItemEntity;
-import net.minecraft.entity.LivingEntity;
-
 import com.google.gson.Gson;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.entity.projectile.ProjectileUtil;
-import net.minecraft.item.ItemStack;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.entity.TwoWayCollisionChecker;
 import net.spell_engine.api.spell.Spell;
@@ -55,20 +53,20 @@ import net.spell_engine.internals.SpellExecution;
 import net.spell_engine.internals.impact.SpellImpacts;
 import net.spell_engine.internals.target.SpellIntents;
 
-public class SpellProjectile extends ProjectileEntity implements FlyingSpellEntity {
+public class SpellProjectile extends Projectile implements FlyingSpellEntity {
     public static EntityType<SpellProjectile> ENTITY_TYPE;
     private static Random random = new Random();
 
     public float range = 128;
     private Spell.ProjectileData.Perks perks;
     private SpellExecution.ImpactContext context;
-    public Vec3d previousVelocity;
+    public Vec3 previousVelocity;
 
-    public SpellProjectile(EntityType<? extends ProjectileEntity> entityType, World world) {
+    public SpellProjectile(EntityType<? extends Projectile> entityType, Level world) {
         super(entityType, world);
     }
 
-    protected SpellProjectile(World world, LivingEntity owner) {
+    protected SpellProjectile(Level world, LivingEntity owner) {
         super(ENTITY_TYPE, world);
         this.setOwner(owner);
     }
@@ -77,10 +75,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         FLY, FALL
     }
 
-    public SpellProjectile(World world, LivingEntity caster, double x, double y, double z,
-                           Behaviour behaviour, RegistryEntry<Spell> spellEntry, SpellExecution.ImpactContext context, Spell.ProjectileData.Perks mutablePerks) {
+    public SpellProjectile(Level world, LivingEntity caster, double x, double y, double z,
+                           Behaviour behaviour, Holder<Spell> spellEntry, SpellExecution.ImpactContext context, Spell.ProjectileData.Perks mutablePerks) {
         this(world, caster);
-        this.setPosition(x, y, z);
+        this.setPos(x, y, z);
 
         this.setBehaviour(behaviour);
         this.setSpell(spellEntry);
@@ -91,7 +89,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         // Capture the held item once if any model wants to render as it.
         if (projectileData.client_data != null && projectileData.client_data.composite_model != null
                 && projectileData.client_data.composite_model.models.stream().anyMatch(m -> m.use_held_item)) {
-            setItemStackModel(caster.getMainHandStack());
+            setItemStackModel(caster.getMainHandItem());
         }
     }
 
@@ -124,27 +122,27 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     public void setVelocity(double x, double y, double z, float speed, float spread, float divergence) {
         var rotX = Math.toRadians(divergence * random.nextFloat(spread, 1F));
         var rotY = Math.toRadians(360 * random.nextFloat());
-        Vec3d vec3d = (new Vec3d(x, y, z))
-                .rotateX((float) rotX)
-                .rotateY((float) rotY)
-                .multiply(speed);
-        this.setVelocity(vec3d);
-        double d = vec3d.horizontalLength();
-        this.setYaw((float)(MathHelper.atan2(vec3d.x, vec3d.z) * 57.2957763671875));
-        this.setPitch((float)(MathHelper.atan2(vec3d.y, d) * 57.2957763671875));
-        this.lastYaw = this.getYaw();
-        this.lastPitch = this.getPitch();
+        Vec3 vec3d = (new Vec3(x, y, z))
+                .xRot((float) rotX)
+                .yRot((float) rotY)
+                .scale(speed);
+        this.setDeltaMovement(vec3d);
+        double d = vec3d.horizontalDistance();
+        this.setYRot((float)(Mth.atan2(vec3d.x, vec3d.z) * 57.2957763671875));
+        this.setXRot((float)(Mth.atan2(vec3d.y, d) * 57.2957763671875));
+        this.yRotO = this.getYRot();
+        this.xRotO = this.getXRot();
     }
 
     private boolean hasCustomDimensions = false;
-    public EntityDimensions getDimensions(EntityPose pose) {
+    public EntityDimensions getDimensions(Pose pose) {
         var data = projectileData();
         if (data != null && data.hitbox != null) {
             this.hasCustomDimensions = true;
             var scale = getScaleMultiplier();
             var width = data.hitbox.width * scale;
             var height = data.hitbox.height * scale;
-            return EntityDimensions.changing(width, height);
+            return EntityDimensions.scalable(width, height);
         } else {
             return super.getDimensions(pose);
         }
@@ -152,10 +150,10 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     public Entity getFollowedTarget() {
         Entity entityReference = null;
-        if (getEntityWorld().isClient()) {
-            var id = this.getDataTracker().get(TRACKER_TARGET_ID);
+        if (level().isClientSide()) {
+            var id = this.getEntityData().get(TRACKER_TARGET_ID);
             if (id != null && id > 0) {
-                entityReference = getEntityWorld().getEntityById(id);
+                entityReference = level().getEntity(id);
             }
         } else {
             entityReference = followedTarget;
@@ -171,8 +169,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 //        super.setVelocityClient(x, y, z);
 //    }
 
-    public boolean shouldRender(double distance) {
-        double d0 = this.getBoundingBox().getAverageSideLength() * 4.0;
+    public boolean shouldRenderAtSqrDistance(double distance) {
+        double d0 = this.getBoundingBox().getSize() * 4.0;
         if (Double.isNaN(d0)) {
             d0 = 4.0;
         }
@@ -189,7 +187,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         Entity entity = this.getOwner();
         var behaviour = getBehaviour();
         var spellEntry = getSpellEntry();
-        if (!this.getEntityWorld().isClient()) {
+        if (!this.level().isClientSide()) {
             // Server side
             if (spellEntry == null) {
                 System.err.println("Spell Projectile safeguard termination, failed to resolve spell: " + spellId());
@@ -198,45 +196,45 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             }
             switch (behaviour) {
                 case FLY -> {
-                    if (distanceTraveled >= range || age > 1200) { // 1200 ticks = 1 minute
+                    if (moveDist >= range || tickCount > 1200) { // 1200 ticks = 1 minute
                         this.discard();
                         return;
                     }
                 }
                 case FALL -> {
                     var fallDistance = range * 0.98F;
-                    if (distanceTraveled >= fallDistance) {
+                    if (moveDist >= fallDistance) {
                         // Travel advances in whole velocity steps, so this threshold is overshot
                         // by up to a full step (e.g. velocity 1.5 against a 9.8 threshold ends
                         // 0.7 too low — below the aimed surface). Snap back along the travel
                         // direction so the impact and its area FX land where the threshold was
                         // actually crossed.
-                        var overshoot = distanceTraveled - fallDistance;
-                        var velocity = this.getVelocity();
-                        if (overshoot > 0 && velocity.lengthSquared() > 1e-6) {
-                            this.setPosition(this.getEntityPos().subtract(velocity.normalize().multiply(overshoot)));
+                        var overshoot = moveDist - fallDistance;
+                        var velocity = this.getDeltaMovement();
+                        if (overshoot > 0 && velocity.lengthSqr() > 1e-6) {
+                            this.setPos(this.position().subtract(velocity.normalize().scale(overshoot)));
                         }
                         finishFalling();
                         this.discard();
                         return;
                     }
-                    if (age > 1200) { // 1200 ticks = 1 minute
+                    if (tickCount > 1200) { // 1200 ticks = 1 minute
                         this.discard();
                         return;
                     }
                 }
             }
-            if (distanceTraveled >= range || age > 1200) { // 1200 ticks = 1 minute
+            if (moveDist >= range || tickCount > 1200) { // 1200 ticks = 1 minute
                 this.discard();
                 return;
             }
         }
-        this.previousVelocity = new Vec3d(getVelocity().x, getVelocity().y, getVelocity().z);
-        if (this.getEntityWorld().isClient() || (entity == null || !entity.isRemoved()) && this.getEntityWorld().isChunkLoaded(this.getBlockPos())) {
+        this.previousVelocity = new Vec3(getDeltaMovement().x, getDeltaMovement().y, getDeltaMovement().z);
+        if (this.level().isClientSide() || (entity == null || !entity.isRemoved()) && this.level().hasChunkAt(this.blockPosition())) {
             super.tick();
 
-            if (!getEntityWorld().isClient()) {
-                HitResult hitResult = ProjectileUtil.getCollision(this, this::canHit);
+            if (!level().isClientSide()) {
+                HitResult hitResult = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
                 var data = projectileData();
                 if (data != null && data.hitbox != null) {
                     if (hitResult.getType() == HitResult.Type.BLOCK) {
@@ -251,7 +249,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                     handleHitResult(hitResult, behaviour, spellEntry);
                     if (hitResult.getType() == HitResult.Type.MISS && hasCustomDimensions) {
                         var boundingBox = this.getBoundingBox();
-                        for (Entity areaTarget : this.getEntityWorld().getOtherEntities(entity, this.getBoundingBox().expand(1), this::canHit)) {
+                        for (Entity areaTarget : this.level().getEntities(entity, this.getBoundingBox().inflate(1), this::canHitEntity)) {
                             if (areaTarget.getBoundingBox().intersects(boundingBox)) {
                                 var areaHitResult = new EntityHitResult(areaTarget);
                                 handleHitResult(areaHitResult, behaviour, spellEntry);
@@ -261,7 +259,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 }
             }
 
-            this.tickBlockCollision();
+            this.applyEffectsFromBlocks();
 
             // Travel
             if (!skipTravel) {
@@ -273,40 +271,40 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 if (this.isRemoved()) {
                     return;
                 }
-                Vec3d velocity = this.getVelocity();
+                Vec3 velocity = this.getDeltaMovement();
                 double d = this.getX() + velocity.x;
                 double e = this.getY() + velocity.y;
                 double f = this.getZ() + velocity.z;
-                ProjectileUtil.setRotationFromVelocity(this, 0.2F);
+                ProjectileUtil.rotateTowardsMovement(this, 0.2F);
 
-                if (this.isTouchingWater()) {
+                if (this.isInWater()) {
                     for(int i = 0; i < 4; ++i) {
-                        this.getEntityWorld().addParticleClient(ParticleTypes.BUBBLE, d - velocity.x * 0.25, e - velocity.y * 0.25, f - velocity.z * 0.25, velocity.x, velocity.y, velocity.z);
+                        this.level().addParticle(ParticleTypes.BUBBLE, d - velocity.x * 0.25, e - velocity.y * 0.25, f - velocity.z * 0.25, velocity.x, velocity.y, velocity.z);
                     }
                 }
 
                 var data = projectileData();
                 if (data != null) {
-                    if (getEntityWorld().isClient()) {
+                    if (level().isClientSide()) {
                         for (var travel_particles : data.client_data.travel_particles) {
-                            ParticleHelper.play(getEntityWorld(), this, getYaw(), getPitch(), travel_particles);
+                            ParticleHelper.play(level(), this, getYRot(), getXRot(), travel_particles);
                         }
                     } else {
-                        if (data.travel_sound != null && age % data.travel_sound_interval == 0) {
-                            SoundHelper.playSound(getEntityWorld(), this, data.travel_sound);
+                        if (data.travel_sound != null && tickCount % data.travel_sound_interval == 0) {
+                            SoundHelper.playSound(level(), this, data.travel_sound);
                         }
                     }
                 }
 
-                this.setPosition(d, e, f);
-                this.distanceTraveled += velocity.length();
+                this.setPos(d, e, f);
+                this.moveDist += velocity.length();
             }
         } else {
             this.discard();
         }
     }
 
-    private void handleHitResult(HitResult hitResult, Behaviour behaviour, RegistryEntry<Spell> spellEntry) {
+    private void handleHitResult(HitResult hitResult, Behaviour behaviour, Holder<Spell> spellEntry) {
         if (hitResult.getType() != HitResult.Type.MISS) {
             switch (behaviour) {
                 case FLY -> {
@@ -329,7 +327,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                         }
                     }
                     if (shouldCollideWithEntity) {
-                        this.onCollision(hitResult);
+                        this.onHit(hitResult);
                     } else {
                         this.setFollowedTarget(null);
                     }
@@ -352,7 +350,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
     private void performVolumetricEntityCollision(
             Behaviour behaviour,
-            RegistryEntry<Spell> spellEntry,
+            Holder<Spell> spellEntry,
             Spell.ProjectileData data) {
 
         // 1. Determine OBB dimensions from hitbox (caller guarantees hitbox is non-null)
@@ -361,11 +359,11 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         float obbWidth  = hitbox.width * scale;
         float obbHeight = hitbox.height * scale;
         float obbLength = ((hitbox.length > 0) ? hitbox.length : hitbox.width) * scale;
-        Vec3d obbCenter = this.getEntityPos().add(this.getVelocity().normalize().multiply(obbLength));
+        Vec3 obbCenter = this.position().add(this.getDeltaMovement().normalize().scale(obbLength));
 
         // point backward and miss targets that are clearly in the travel path.
-        float obbYaw = this.getYaw();
-        float obbPitch = this.getPitch();
+        float obbYaw = this.getYRot();
+        float obbPitch = this.getXRot();
 
         // NOTE: OBB constructor param order is (pitch_value, yaw_value) — matches fromPolar(pitch, yaw)
         var obb = new OrientedBoundingBox(
@@ -377,9 +375,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
 
         // 3. Broad-phase: query candidate entities in a conservative search box
         double searchRadius = effectiveLength / 2.0 + Math.max(obbWidth, obbHeight) / 2.0 + 1.0;
-        var broadPhaseBox = this.getBoundingBox().expand(searchRadius);
-        List<Entity> candidates = this.getEntityWorld().getOtherEntities(
-                this, broadPhaseBox, this::canHit);
+        var broadPhaseBox = this.getBoundingBox().inflate(searchRadius);
+        List<Entity> candidates = this.level().getEntities(
+                this, broadPhaseBox, this::canHitEntity);
 
 //        // === DEBUG LOG ===
 //        if (age <= 60) {
@@ -411,15 +409,15 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         // 4. Narrow-phase: SAT test (OBB vs entity AABB, plus center-point containment check)
         List<Entity> hits = new ArrayList<>();
         for (Entity candidate : candidates) {
-            if (obb.intersects(candidate.getBoundingBox().expand(candidate.getTargetingMargin()))
-                    || obb.contains(candidate.getEntityPos().add(0, candidate.getHeight() / 2.0, 0))) {
+            if (obb.intersects(candidate.getBoundingBox().inflate(candidate.getPickRadius()))
+                    || obb.contains(candidate.position().add(0, candidate.getBbHeight() / 2.0, 0))) {
                 hits.add(candidate);
             }
         }
         if (hits.isEmpty()) return;
 
         // 5. Sort by distance to mid-center: nearest processed first (pierce/ricochet consistency)
-        hits.sort(Comparator.comparingDouble(e -> e.squaredDistanceTo(obbCenter)));
+        hits.sort(Comparator.comparingDouble(e -> e.distanceToSqr(obbCenter)));
 
         // 6. Process hits sequentially; stop if projectile is killed mid-loop
         for (Entity hitEntity : hits) {
@@ -442,7 +440,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             return;
         }
         if (owner instanceof LivingEntity livingEntity) {
-            SpellImpacts.fallImpact(livingEntity, this, this.getSpellEntry(), context.position(this.getEntityPos()));
+            SpellImpacts.fallImpact(livingEntity, this, this.getSpellEntry(), context.position(this.position()));
         }
     }
 
@@ -459,21 +457,21 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         }
         if (target != null && homing_angle > 0) {
             if (data.homing_after_relative_distance > 0 || data.homing_after_absolute_distance > 0) {
-                var shouldFollow = distanceTraveled >= (distanceToFollow * data.homing_after_relative_distance)
-                        || distanceTraveled >= data.homing_after_absolute_distance;
+                var shouldFollow = moveDist >= (distanceToFollow * data.homing_after_relative_distance)
+                        || moveDist >= data.homing_after_absolute_distance;
                 if (!shouldFollow) {
                     return;
                 }
             }
 //            System.out.println((this.getWorld().isClient ? "Client: " : "Server: ") + "Following target: " + target + " with angle: " + homing_angle);
-            var distanceVector = (target.getEntityPos().add(0, target.getHeight() / 2F, 0))
-                    .subtract(this.getEntityPos().add(0, this.getHeight() / 2F, 0));
+            var distanceVector = (target.position().add(0, target.getBbHeight() / 2F, 0))
+                    .subtract(this.position().add(0, this.getBbHeight() / 2F, 0));
 //            System.out.println((world.isClient ? "Client: " : "Server: ") + "Distance: " + distanceVector);
 //            System.out.println((world.isClient ? "Client: " : "Server: ") + "Velocity: " + getVelocity());
-            var newVelocity = VectorHelper.rotateTowards(getVelocity(), distanceVector, homing_angle);
-            if (newVelocity.lengthSquared() > 0) {
+            var newVelocity = VectorHelper.rotateTowards(getDeltaMovement(), distanceVector, homing_angle);
+            if (newVelocity.lengthSqr() > 0) {
 //                System.out.println((world.isClient ? "Client: " : "Server: ") + "Rotated to: " + newVelocity);
-                this.setVelocity(newVelocity);
+                this.setDeltaMovement(newVelocity);
                 // this.velocityDirty = true;
                 followTicks += 1;
             }
@@ -499,12 +497,12 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         // `drag` here is the fraction of speed lost per tick (0 = constant speed).
         float drag = motion.drag;
         float gravityMultiply = 1F;
-        var fluidState = getEntityWorld().getFluidState(getBlockPos());
+        var fluidState = level().getFluidState(blockPosition());
         if (!fluidState.isEmpty()) {
             boolean matched = false;
-            var fluidEntry = fluidState.getFluid().getRegistryEntry();
+            var fluidEntry = fluidState.getType().builtInRegistryHolder();
             for (var override : motion.fluid_overrides) {
-                if (PatternMatching.matches(fluidEntry, RegistryKeys.FLUID, override.fluid)) {
+                if (PatternMatching.matches(fluidEntry, Registries.FLUID, override.fluid)) {
                     drag = override.drag;
                     gravityMultiply = override.gravity_multiply;
                     matched = true;
@@ -516,15 +514,15 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             }
         }
 
-        var velocity = this.getVelocity();
+        var velocity = this.getDeltaMovement();
         if (motion.gravity != 0F) {
             velocity = velocity.subtract(0, motion.gravity * gravityMultiply, 0);
         }
         if (drag != 0F) {
             // Retained fraction; clamp at 0 so drag > 1 fully stops rather than reversing.
-            velocity = velocity.multiply(Math.max(0F, 1F - drag));
+            velocity = velocity.scale(Math.max(0F, 1F - drag));
         }
-        this.setVelocity(velocity);
+        this.setDeltaMovement(velocity);
 
         if (motion.min_speed > 0F && velocity.length() < motion.min_speed) {
             this.discard();
@@ -532,8 +530,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
 
     @Override
-    protected void onEntityHit(EntityHitResult entityHitResult) {
-        if (!getEntityWorld().isClient()) {
+    protected void onHitEntity(EntityHitResult entityHitResult) {
+        if (!level().isClientSide()) {
             var target = entityHitResult.getEntity();
             if (target != null
                     && !impactHistory.contains(target.getId())
@@ -544,7 +542,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 if (context == null) {
                     context = new SpellExecution.ImpactContext();
                     var spell = this.getSpellEntry().value();
-                    if (getOwner() instanceof PlayerEntity player && spell != null)  {
+                    if (getOwner() instanceof Player player && spell != null)  {
                         context = context.power(SpellPower.getSpellPower(spell.school, player));
                     }
                 }
@@ -553,9 +551,9 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                     return;
                 }
 
-                var prevProjectilePos = new Vec3d(this.lastX, this.lastY, this.lastZ);
-                var hitVector = entityHitResult.getPos().subtract(prevProjectilePos).normalize().multiply(this.getWidth() * 0.5F);
-                var hitPosition = entityHitResult.getPos().subtract(hitVector);
+                var prevProjectilePos = new Vec3(this.xo, this.yo, this.zo);
+                var hitVector = entityHitResult.getLocation().subtract(prevProjectilePos).normalize().scale(this.getBbWidth() * 0.5F);
+                var hitPosition = entityHitResult.getLocation().subtract(hitVector);
 
                 var performed = SpellImpacts.projectileImpact(caster, this, target, this.getSpellEntry(), context.position(hitPosition));
                 if (performed) {
@@ -586,7 +584,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         impactHistory.add(target.getId());
 
         // Find next target
-        var box = this.getBoundingBox().expand(
+        var box = this.getBoundingBox().inflate(
                 this.perks.ricochet_range,
                 this.perks.ricochet_range,
                 this.perks.ricochet_range);
@@ -599,30 +597,30 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             }
             return intentAllows;
         };
-        var otherTargets = this.getEntityWorld().getOtherEntities(this, box, (entity) -> {
+        var otherTargets = this.level().getEntities(this, box, (entity) -> {
             return entity.isAttackable()
                     && entity instanceof LivingEntity // Avoid targeting unliving entities like other projectiles
                     && !impactHistory.contains(entity.getId())
                     && intentMatches.test(entity)
-                    && !entity.getEntityPos().equals(target.getEntityPos());
+                    && !entity.position().equals(target.position());
         });
         if (otherTargets.isEmpty()) {
             this.setFollowedTarget(null);
             return false;
         }
 
-        otherTargets.sort(Comparator.comparingDouble(o -> o.squaredDistanceTo(target)));
+        otherTargets.sort(Comparator.comparingDouble(o -> o.distanceToSqr(target)));
 
         // Set trajectory
         var newTarget = otherTargets.get(0);
-        this.setPosition(target.getEntityPos().add(0, target.getHeight() * 0.5F, 0));
+        this.setPos(target.position().add(0, target.getBbHeight() * 0.5F, 0));
         this.setFollowedTarget(newTarget);
 
-        var distanceVector = (newTarget.getEntityPos().add(0, newTarget.getHeight() / 2F, 0))
-                .subtract(this.getEntityPos().add(0, this.getHeight() / 2F, 0));
-        var newVelocity = distanceVector.normalize().multiply(this.getVelocity().length());
-        this.setVelocity(newVelocity);
-        this.velocityDirty = true;
+        var distanceVector = (newTarget.position().add(0, newTarget.getBbHeight() / 2F, 0))
+                .subtract(this.position().add(0, this.getBbHeight() / 2F, 0));
+        var newVelocity = distanceVector.normalize().scale(this.getDeltaMovement().length());
+        this.setDeltaMovement(newVelocity);
+        this.needsSync = true;
 
         this.perks.ricochet -= 1;
         if (this.perks.bounce_ricochet_sync) {
@@ -648,8 +646,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         // to enforce velocity update on the client.
         // (Otherwise the projectile is going crazy on the client)
         var tiny = 0.01 * ((-1) * (this.perks.pierce % 2));
-        this.setVelocity(this.getVelocity().multiply(1 + tiny));
-        this.velocityDirty = true;
+        this.setDeltaMovement(this.getDeltaMovement().scale(1 + tiny));
+        this.needsSync = true;
 
         return true;
     }
@@ -660,50 +658,50 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             return false;
         }
 
-        var previousPosition = getEntityPos();
-        var previousDirection = getVelocity();
-        var impactPosition = blockHitResult.getPos();
-        var impactSide = blockHitResult.getSide();
-        var speed = getVelocity().length();
+        var previousPosition = position();
+        var previousDirection = getDeltaMovement();
+        var impactPosition = blockHitResult.getLocation();
+        var impactSide = blockHitResult.getDirection();
+        var speed = getDeltaMovement().length();
 
-        Vec3d surfaceNormal = getSurfaceNormal(impactSide);
-        Vec3d newDirection = calculateBounceVector(previousDirection, surfaceNormal);
+        Vec3 surfaceNormal = getSurfaceNormal(impactSide);
+        Vec3 newDirection = calculateBounceVector(previousDirection, surfaceNormal);
 
         // Calculate the remaining distance the projectile should travel after bouncing
         double remainingDistance = previousDirection.length() - (impactPosition.subtract(previousPosition)).length();
 
         // Calculate the final position after the remaining distance
-        Vec3d finalPosition = impactPosition.add(newDirection.normalize().multiply(remainingDistance));
+        Vec3 finalPosition = impactPosition.add(newDirection.normalize().scale(remainingDistance));
 
         // Set the new position and velocity
-        this.setPos(finalPosition.getX(), finalPosition.getY(), finalPosition.getZ());
+        this.setPosRaw(finalPosition.x(), finalPosition.y(), finalPosition.z());
         // Reflection preserves magnitude, so `newDirection` already has length == `speed`.
         // Re-normalize before applying the speed to avoid squaring it on every bounce.
-        this.setVelocity(newDirection.normalize().multiply(speed));
-        ProjectileUtil.setRotationFromVelocity(this, 0.2F);
+        this.setDeltaMovement(newDirection.normalize().scale(speed));
+        ProjectileUtil.rotateTowardsMovement(this, 0.2F);
 
         this.perks.bounce -= 1;
         if (this.perks.bounce_ricochet_sync) {
             this.perks.ricochet -= 1;
         }
-        this.velocityDirty = true;
+        this.needsSync = true;
         this.skipTravel = true;
         return true;
     }
 
-    public Vec3d calculateBounceVector(Vec3d previousDirection, Vec3d normal) {
+    public Vec3 calculateBounceVector(Vec3 previousDirection, Vec3 normal) {
         // Calculate the reflection of the incident vector with respect to the surface normal
-        return previousDirection.subtract(normal.multiply(2.0 * previousDirection.dotProduct(normal)));
+        return previousDirection.subtract(normal.scale(2.0 * previousDirection.dot(normal)));
     }
 
-    public Vec3d getSurfaceNormal(Direction blockSide) {
+    public Vec3 getSurfaceNormal(Direction blockSide) {
         return switch (blockSide) {
-            case DOWN -> new Vec3d(0, -1, 0);
-            case UP -> new Vec3d(0, 1, 0);
-            case NORTH -> new Vec3d(0, 0, -1);
-            case SOUTH -> new Vec3d(0, 0, 1);
-            case WEST -> new Vec3d(-1, 0, 0);
-            case EAST -> new Vec3d(1, 0, 0);
+            case DOWN -> new Vec3(0, -1, 0);
+            case UP -> new Vec3(0, 1, 0);
+            case NORTH -> new Vec3(0, 0, -1);
+            case SOUTH -> new Vec3(0, 0, 1);
+            case WEST -> new Vec3(-1, 0, 0);
+            case EAST -> new Vec3(1, 0, 0);
         };
     }
     
@@ -714,16 +712,16 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 || impactHistory.contains(target)) {
             return;
         }
-        if (getEntityWorld().isClient()) {
+        if (level().isClientSide()) {
             return;
         }
         var spellEntry = this.getSpellEntry();
         if (spellEntry == null) {
             return;
         }
-        var position = this.getEntityPos();
+        var position = this.position();
         var spawnCount = this.perks.chain_reaction_size;
-        var launchVector = new Vec3d(1, 0, 0).multiply(this.getVelocity().length());
+        var launchVector = new Vec3(1, 0, 0).scale(this.getDeltaMovement().length());
         var launchAngle = 360 / spawnCount;
         var launchAngleOffset = random.nextFloat() * launchAngle;
 
@@ -732,16 +730,16 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         this.perks.chain_reaction_size += this.perks.chain_reaction_increment;
 
         for (int i = 0; i < spawnCount; i++) {
-            var projectile = new SpellProjectile(getEntityWorld(), (LivingEntity)this.getOwner(),
-                    position.getX(), position.getY(), position.getZ(),
+            var projectile = new SpellProjectile(level(), (LivingEntity)this.getOwner(),
+                    position.x(), position.y(), position.z(),
                     this.getBehaviour(), spellEntry, context, this.perks.copy());
 
             var angle = launchAngle * i + launchAngleOffset;
-            projectile.setVelocity(launchVector.rotateY((float) Math.toRadians(angle)));
+            projectile.setDeltaMovement(launchVector.yRot((float) Math.toRadians(angle)));
             projectile.range = this.range;
-            ProjectileUtil.setRotationFromVelocity(projectile, 0.2F);
+            ProjectileUtil.rotateTowardsMovement(projectile, 0.2F);
             projectile.impactHistory = new HashSet<>(this.impactHistory);
-            getEntityWorld().spawnEntity(projectile);
+            level().addFreshEntity(projectile);
         }
     }
 
@@ -769,27 +767,27 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     /// Synced registry id of the caster's captured held item (empty when none). Used by the
     /// composite renderer for models with `use_held_item`.
     public String heldItemModelId() {
-        return this.getDataTracker().get(TRACKER_ITEM_MODEL_ID);
+        return this.getEntityData().get(TRACKER_ITEM_MODEL_ID);
     }
 
     /// Required by `FlyingItemEntity`. Spell projectiles draw themselves through
     /// `composite_model` rather than as an item stack, so there is nothing to hand back —
     /// models that render as the caster's held item go through `heldItemModelId()` instead.
     @Override
-    public ItemStack getStack() {
+    public ItemStack getItem() {
         return ItemStack.EMPTY;
     }
 
     @Override
-    protected void onBlockHit(BlockHitResult blockHitResult) {
-        super.onBlockHit(blockHitResult);
+    protected void onHitBlock(BlockHitResult blockHitResult) {
+        super.onHitBlock(blockHitResult);
         if (bounceFrom(blockHitResult)) {
             return;
         }
 
         if (this.getOwner() != null
                 && this.getOwner() instanceof LivingEntity caster) {
-            var hitPosition = blockHitResult.getPos();
+            var hitPosition = blockHitResult.getLocation();
             var performed = SpellImpacts.projectileImpact(caster, this, null, this.getSpellEntry(), context.position(hitPosition));
         }
         this.discard();
@@ -801,40 +799,40 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     // MARK: Stored data
 
     public void setBehaviour(Behaviour behaviour) {
-        this.getDataTracker().set(TRACKER_BEHAVIOUR, behaviour.toString());
+        this.getEntityData().set(TRACKER_BEHAVIOUR, behaviour.toString());
     }
 
     /// Per-instance multiplier applied to the projectile's render scale and hitbox (1 = unchanged).
     /// Accumulated from spell modifiers (e.g. charge `bonus.projectile_scale_multiply`) at launch.
     public float getScaleMultiplier() {
-        return this.getDataTracker().get(TRACKER_SCALE);
+        return this.getEntityData().get(TRACKER_SCALE);
     }
     public void setScaleMultiplier(float scale) {
-        this.getDataTracker().set(TRACKER_SCALE, scale);
-        this.calculateDimensions();
+        this.getEntityData().set(TRACKER_SCALE, scale);
+        this.refreshDimensions();
     }
     public Behaviour getBehaviour() {
-        var string = this.getDataTracker().get(TRACKER_BEHAVIOUR);
+        var string = this.getEntityData().get(TRACKER_BEHAVIOUR);
         if (string == null || string.isEmpty()) {
             return Behaviour.FLY;
         }
         return Behaviour.valueOf(string);
     }
 
-    private RegistryEntry<Spell> spellEntry;
-    public void setSpell(RegistryEntry<Spell> entry) {
+    private Holder<Spell> spellEntry;
+    public void setSpell(Holder<Spell> entry) {
         this.spellEntry = entry;
-        if (!getEntityWorld().isClient()) {
-            this.getDataTracker().set(TRACKER_SPELL_ID, spellId().toString());
+        if (!level().isClientSide()) {
+            this.getEntityData().set(TRACKER_SPELL_ID, spellId().toString());
         }
-        this.calculateDimensions();
+        this.refreshDimensions();
     }
-    @Nullable public RegistryEntry<Spell> getSpellEntry() {
+    @Nullable public Holder<Spell> getSpellEntry() {
         return spellEntry;
     }
     private Identifier spellId() {
         if (spellEntry != null) {
-            return spellEntry.getKey().get().getValue();
+            return spellEntry.unwrapKey().get().identifier();
         }
         return null;
     }
@@ -850,23 +848,23 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
             distanceToFollow = 0;
         }
         var id = -1;
-        if (!getEntityWorld().isClient()) {
+        if (!level().isClientSide()) {
             if (target != null) {
                 id = target.getId();
             }
-            this.getDataTracker().set(TRACKER_TARGET_ID, id);
+            this.getEntityData().set(TRACKER_TARGET_ID, id);
         }
     }
 
     private ItemStack itemStackModel;
     public void setItemStackModel(ItemStack itemStack) {
-        var modelId = Registries.ITEM.getId(itemStack.getItem());
-        this.getDataTracker().set(TRACKER_ITEM_MODEL_ID, modelId.toString());
+        var modelId = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
+        this.getEntityData().set(TRACKER_ITEM_MODEL_ID, modelId.toString());
     }
     private void updateItemModel(String idString) {
         if (idString != null && !idString.isEmpty()) {
-            var id = Identifier.of(this.getDataTracker().get(TRACKER_ITEM_MODEL_ID));
-            itemStackModel = Registries.ITEM.get(id).getDefaultStack();
+            var id = Identifier.parse(this.getEntityData().get(TRACKER_ITEM_MODEL_ID));
+            itemStackModel = BuiltInRegistries.ITEM.getValue(id).getDefaultInstance();
         }
     }
 
@@ -880,8 +878,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     private static String NBT_SCALE = "Scale";
 
     @Override
-    public void writeCustomData(WriteView view) {
-        super.writeCustomData(view);
+    public void addAdditionalSaveData(ValueOutput view) {
+        super.addAdditionalSaveData(view);
         view.putString(NBT_BEHAVIOUR, this.getBehaviour().toString());
 
         if (this.spellId() != null) {
@@ -891,29 +889,29 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         view.putString(NBT_PERKS, gson.toJson(this.perks));
         view.putFloat(NBT_SCALE, getScaleMultiplier());
 
-        var itemModelId = getDataTracker().get(TRACKER_ITEM_MODEL_ID);
+        var itemModelId = getEntityData().get(TRACKER_ITEM_MODEL_ID);
         if (!itemModelId.isEmpty()) {
             view.putString(NBT_ITEM_MODEL_ID, itemModelId);
         }
     }
 
     @Override
-    public void readCustomData(ReadView view) {
-        super.readCustomData(view);
-        var spellIdString = view.getOptionalString(NBT_SPELL_ID);
+    public void readAdditionalSaveData(ValueInput view) {
+        super.readAdditionalSaveData(view);
+        var spellIdString = view.getString(NBT_SPELL_ID);
         if (spellIdString.isPresent()) {
             try {
-                var behaviour = Behaviour.valueOf(view.getString(NBT_BEHAVIOUR, Behaviour.FLY.toString()));
+                var behaviour = Behaviour.valueOf(view.getStringOr(NBT_BEHAVIOUR, Behaviour.FLY.toString()));
                 this.setBehaviour(behaviour);
 
-                var spellId = Identifier.of(spellIdString.get());
-                this.setSpell(SpellRegistry.from(this.getEntityWorld()).getEntry(spellId).orElse(null));
+                var spellId = Identifier.parse(spellIdString.get());
+                this.setSpell(SpellRegistry.from(this.level()).get(spellId).orElse(null));
 
-                this.context = gson.fromJson(view.getString(NBT_IMPACT_CONTEXT, "{}"), SpellExecution.ImpactContext.class);
-                this.perks = gson.fromJson(view.getString(NBT_PERKS, "{}"), Spell.ProjectileData.Perks.class);
-                this.setScaleMultiplier(view.getFloat(NBT_SCALE, getScaleMultiplier()));
+                this.context = gson.fromJson(view.getStringOr(NBT_IMPACT_CONTEXT, "{}"), SpellExecution.ImpactContext.class);
+                this.perks = gson.fromJson(view.getStringOr(NBT_PERKS, "{}"), Spell.ProjectileData.Perks.class);
+                this.setScaleMultiplier(view.getFloatOr(NBT_SCALE, getScaleMultiplier()));
 
-                view.getOptionalString(NBT_ITEM_MODEL_ID).ifPresent(this::updateItemModel);
+                view.getString(NBT_ITEM_MODEL_ID).ifPresent(this::updateItemModel);
             } catch (Exception e) {
                 System.err.println("SpellProjectile - Failed to read spell data from NBT " + e.getMessage());
             }
@@ -923,46 +921,46 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     // MARK: DataTracker (client-server sync)
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        builder.add(TRACKER_SPELL_ID, "");
-        builder.add(TRACKER_BEHAVIOUR, Behaviour.FLY.toString());
-        builder.add(TRACKER_TARGET_ID, 0);
-        builder.add(TRACKER_ITEM_MODEL_ID, "");
-        builder.add(TRACKER_SCALE, 1F);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(TRACKER_SPELL_ID, "");
+        builder.define(TRACKER_BEHAVIOUR, Behaviour.FLY.toString());
+        builder.define(TRACKER_TARGET_ID, 0);
+        builder.define(TRACKER_ITEM_MODEL_ID, "");
+        builder.define(TRACKER_SCALE, 1F);
     }
 
-    private static final TrackedData<String> TRACKER_SPELL_ID;
-    private static final TrackedData<String> TRACKER_BEHAVIOUR;
-    private static final TrackedData<Integer> TRACKER_TARGET_ID;
-    private static final TrackedData<String> TRACKER_ITEM_MODEL_ID;
-    private static final TrackedData<Float> TRACKER_SCALE;
+    private static final EntityDataAccessor<String> TRACKER_SPELL_ID;
+    private static final EntityDataAccessor<String> TRACKER_BEHAVIOUR;
+    private static final EntityDataAccessor<Integer> TRACKER_TARGET_ID;
+    private static final EntityDataAccessor<String> TRACKER_ITEM_MODEL_ID;
+    private static final EntityDataAccessor<Float> TRACKER_SCALE;
 
     static {
-        TRACKER_SPELL_ID = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.STRING);
-        TRACKER_BEHAVIOUR = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.STRING);
-        TRACKER_TARGET_ID = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.INTEGER);
-        TRACKER_ITEM_MODEL_ID = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.STRING);
-        TRACKER_SCALE = DataTracker.registerData(SpellProjectile.class, TrackedDataHandlerRegistry.FLOAT);
+        TRACKER_SPELL_ID = SynchedEntityData.defineId(SpellProjectile.class, EntityDataSerializers.STRING);
+        TRACKER_BEHAVIOUR = SynchedEntityData.defineId(SpellProjectile.class, EntityDataSerializers.STRING);
+        TRACKER_TARGET_ID = SynchedEntityData.defineId(SpellProjectile.class, EntityDataSerializers.INT);
+        TRACKER_ITEM_MODEL_ID = SynchedEntityData.defineId(SpellProjectile.class, EntityDataSerializers.STRING);
+        TRACKER_SCALE = SynchedEntityData.defineId(SpellProjectile.class, EntityDataSerializers.FLOAT);
     }
 
-    public void onTrackedDataSet(TrackedData<?> data) {
-        super.onTrackedDataSet(data);
-        if (this.getEntityWorld().isClient()) {
+    public void onSyncedDataUpdated(EntityDataAccessor<?> data) {
+        super.onSyncedDataUpdated(data);
+        if (this.level().isClientSide()) {
             if (data.equals(TRACKER_SPELL_ID)) {
-                var spellId = this.getDataTracker().get(TRACKER_SPELL_ID);
-                var spellEntry = SpellRegistry.from(this.getEntityWorld()).getEntry(Identifier.of(spellId)).orElse(null);
+                var spellId = this.getEntityData().get(TRACKER_SPELL_ID);
+                var spellEntry = SpellRegistry.from(this.level()).get(Identifier.parse(spellId)).orElse(null);
                 this.setSpell(spellEntry);
             }
             if (data.equals(TRACKER_ITEM_MODEL_ID)) {
-                updateItemModel(this.getDataTracker().get(TRACKER_ITEM_MODEL_ID));
+                updateItemModel(this.getEntityData().get(TRACKER_ITEM_MODEL_ID));
             }
             if (data.equals(TRACKER_TARGET_ID)) {
-                var id = this.getDataTracker().get(TRACKER_TARGET_ID);
-                var target = id > 0 ? this.getEntityWorld().getEntityById(id) : null;
+                var id = this.getEntityData().get(TRACKER_TARGET_ID);
+                var target = id > 0 ? this.level().getEntity(id) : null;
                 this.setFollowedTarget(target);
             }
             if (data.equals(TRACKER_SCALE)) {
-                this.calculateDimensions();
+                this.refreshDimensions();
             }
         }
     }

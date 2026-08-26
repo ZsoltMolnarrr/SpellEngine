@@ -1,8 +1,8 @@
 package net.spell_engine.api.datagen;
 
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.api.entity.SpellEntityPredicates;
 import net.spell_engine.api.render.LightEmission;
@@ -814,7 +814,7 @@ public class SpellBuilder {
             cleanse.action.status_effect = new Spell.Impact.Action.StatusEffect();
             cleanse.action.status_effect.apply_mode = Spell.Impact.Action.StatusEffect.ApplyMode.REMOVE;
             cleanse.action.status_effect.remove = new Spell.Impact.Action.StatusEffect.Remove();
-            cleanse.action.status_effect.remove.id = "!" + StatusEffects.TRIAL_OMEN.getIdAsString();
+            cleanse.action.status_effect.remove.id = "!" + MobEffects.TRIAL_OMEN.getRegisteredName();
             cleanse.action.status_effect.remove.selector = Spell.Impact.Action.StatusEffect.Remove.Selector.RANDOM;
             cleanse.action.status_effect.remove.select_beneficial = false;
             cleanse.sound = new Sound(SpellEngineSounds.GENERIC_DISPEL_1.id());

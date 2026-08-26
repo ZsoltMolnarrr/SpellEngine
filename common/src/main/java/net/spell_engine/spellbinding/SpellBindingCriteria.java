@@ -2,32 +2,31 @@ package net.spell_engine.spellbinding;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancement.criterion.AbstractCriterion;
-import net.minecraft.predicate.entity.EntityPredicate;
-import net.minecraft.predicate.entity.LootContextPredicate;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-
 import java.util.Optional;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 
-public class SpellBindingCriteria extends AbstractCriterion<SpellBindingCriteria.Condition> {
+public class SpellBindingCriteria extends SimpleCriterionTrigger<SpellBindingCriteria.Condition> {
     public static final Identifier ID = SpellBinding.ID;
     public static final SpellBindingCriteria INSTANCE = new SpellBindingCriteria();
 
     @Override
-    public Codec<SpellBindingCriteria.Condition> getConditionsCodec() {
+    public Codec<SpellBindingCriteria.Condition> codec() {
         return Condition.CODEC;
     }
 
-    public void trigger(ServerPlayerEntity player, Identifier spellPoolId, boolean isComplete) {
+    public void trigger(ServerPlayer player, Identifier spellPoolId, boolean isComplete) {
         trigger(player, condition -> {
             return condition.matches(spellPoolId, isComplete);
         });
     }
 
-    public record Condition(Optional<LootContextPredicate> player, Optional<String> spell_pool, Optional<Boolean> complete) implements AbstractCriterion.Conditions {
+    public record Condition(Optional<ContextAwarePredicate> player, Optional<String> spell_pool, Optional<Boolean> complete) implements SimpleCriterionTrigger.SimpleInstance {
         public static final Codec<SpellBindingCriteria.Condition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                EntityPredicate.LOOT_CONTEXT_PREDICATE_CODEC.optionalFieldOf("player").forGetter(SpellBindingCriteria.Condition::player),
+                EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(SpellBindingCriteria.Condition::player),
                 Codec.optionalField("spell_pool", Codec.STRING, true).forGetter(SpellBindingCriteria.Condition::spell_pool),
                 Codec.optionalField("complete", Codec.BOOL, true).forGetter(SpellBindingCriteria.Condition::complete)
             )
@@ -46,7 +45,7 @@ public class SpellBindingCriteria extends AbstractCriterion<SpellBindingCriteria
         }
 
 
-        public Optional<LootContextPredicate> player() {
+        public Optional<ContextAwarePredicate> player() {
             return this.player;
         }
 

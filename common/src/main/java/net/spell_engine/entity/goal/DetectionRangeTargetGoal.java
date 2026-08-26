@@ -1,7 +1,7 @@
 package net.spell_engine.entity.goal;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.ActiveTargetGoal;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.spell_engine.entity.SummonedEntity;
 
 import java.util.function.Predicate;
@@ -10,7 +10,7 @@ import java.util.function.Predicate;
 /// GENERIC_FOLLOW_RANGE attribute. getFollowRange() drives both the candidate search box and the
 /// predicate's max-distance filter, and is used by TrackTargetGoal.shouldContinue for retention —
 /// so overriding it scopes the whole acquire/keep lifecycle to detection_range.
-public class DetectionRangeTargetGoal<T extends LivingEntity> extends ActiveTargetGoal<T> {
+public class DetectionRangeTargetGoal<T extends LivingEntity> extends NearestAttackableTargetGoal<T> {
 
     public DetectionRangeTargetGoal(SummonedEntity entity, Class<T> targetClass, int reciprocalChance,
                                     boolean checkVisibility, boolean checkCanNavigate,
@@ -19,7 +19,7 @@ public class DetectionRangeTargetGoal<T extends LivingEntity> extends ActiveTarg
     }
 
     @Override
-    protected double getFollowRange() {
+    protected double getFollowDistance() {
         // Read the summon via the inherited `mob` field, NOT a constructor-assigned field:
         // ActiveTargetGoal's constructor calls getFollowRange() while building its target predicate,
         // before this subclass's constructor body runs. `mob` is already set by the TrackTargetGoal

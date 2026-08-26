@@ -1,7 +1,7 @@
 package net.spell_engine.mixin.client;
 
-import net.minecraft.entity.LivingEntity;
 import net.spell_engine.api.spell.Spell;
+import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.api.effect.CustomParticleStatusEffect;
 import net.spell_engine.api.effect.Synchronized;
 import net.spell_engine.client.render.BeamEmitterEntity;
@@ -37,27 +37,27 @@ public class LivingEntityVisualMixin implements BeamEmitterEntity {
             beam = caster.getBeam();
         }
         var renderedBeam = lastRenderedBeam;
-        if (livingEntity.getEntityWorld().isClient() && beam != null && renderedBeam != null) {
+        if (livingEntity.level().isClientSide() && beam != null && renderedBeam != null) {
             var position = renderedBeam.position();
             var appearance = renderedBeam.appearance();
 
-            var yaw = livingEntity.getYaw();
+            var yaw = livingEntity.getYRot();
 
             if (position.hitBlock()) {
                 // Emitted purely client-side, with no server involvement, so nothing contextual
                 // (the caster's effective range included) can be resolved here.
                 for (var batch : appearance.block_hit.resolved(Fx.Context.NONE).particles) {
-                    ParticleHelper.play(livingEntity.getEntityWorld(), livingEntity.age, position.end(),
-                            appearance.width * 2, yaw, livingEntity.getPitch(), batch, livingEntity);
+                    ParticleHelper.play(livingEntity.level(), livingEntity.tickCount, position.end(),
+                            appearance.width * 2, yaw, livingEntity.getXRot(), batch, livingEntity);
                 }
             }
         }
     }
 
-    @Inject(method = "tickStatusEffects", at = @At("TAIL"))
+    @Inject(method = "tickEffects", at = @At("TAIL"))
     private void tickStatusEffects_TAIL_SpellEngine_CustomParticles(CallbackInfo ci) {
         var livingEntity = livingEntity();
-        if (!livingEntity.isAlive() || !livingEntity.getEntityWorld().isClient()) {
+        if (!livingEntity.isAlive() || !livingEntity.level().isClientSide()) {
             return;
         }
 

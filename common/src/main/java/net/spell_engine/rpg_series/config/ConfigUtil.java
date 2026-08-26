@@ -1,21 +1,20 @@
 package net.spell_engine.rpg_series.config;
 
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.EquipmentSlotGroup;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 public class ConfigUtil {
-    public record Entry(RegistryEntry<EntityAttribute> attribute, EntityAttributeModifier modifier) { }
+    public record Entry(Holder<Attribute> attribute, AttributeModifier modifier) { }
 
     private static final Set<String> reportedLegacyIds = new HashSet<>();
 
@@ -25,15 +24,15 @@ public class ConfigUtil {
     /// `zombie.spawn_reinforcements` → `spawn_reinforcements`), so files written on 1.21.1 carry
     /// ids that no longer exist. Those are mapped here once, for every mod resolving through
     /// Spell Engine, instead of each config format bumping its version.
-    public static Optional<RegistryEntry<EntityAttribute>> attribute(String idString) {
+    public static Optional<Holder<Attribute>> attribute(String idString) {
         if (idString == null || idString.isEmpty()) { return Optional.empty(); }
         var id = Identifier.tryParse(idString);
         if (id == null) { return Optional.empty(); }
-        Optional<RegistryEntry<EntityAttribute>> entry = Registries.ATTRIBUTE.getEntry(id).map(e -> e);
+        Optional<Holder<Attribute>> entry = BuiltInRegistries.ATTRIBUTE.get(id).map(e -> e);
         if (entry.isPresent()) { return entry; }
         var legacy = legacyVanillaId(id);
         if (legacy == null) { return Optional.empty(); }
-        entry = Registries.ATTRIBUTE.getEntry(legacy).map(e -> e);
+        entry = BuiltInRegistries.ATTRIBUTE.get(legacy).map(e -> e);
         if (entry.isPresent() && reportedLegacyIds.add(idString)) {
             System.err.println("[Spell Engine] Legacy attribute id `" + idString + "` resolved as `" + legacy + "`, update your config");
         }
@@ -47,31 +46,31 @@ public class ConfigUtil {
         var path = id.getPath();
         for (var prefix : new String[] { "generic.", "player.", "zombie." }) {
             if (path.startsWith(prefix)) {
-                return Identifier.ofVanilla(path.substring(prefix.length()));
+                return Identifier.withDefaultNamespace(path.substring(prefix.length()));
             }
         }
         return null;
     }
-    public static AttributeModifiersComponent.Builder attributesComponent(Identifier modifierId, List<AttributeModifier> attributesConfig) {
-        AttributeModifiersComponent.Builder componentBuilder = AttributeModifiersComponent.builder();
+    public static ItemAttributeModifiers.Builder attributesComponent(Identifier modifierId, List<net.spell_engine.rpg_series.config.AttributeModifier> attributesConfig) {
+        ItemAttributeModifiers.Builder componentBuilder = ItemAttributeModifiers.builder();
         var modifiers = modifiersFrom(modifierId, attributesConfig);
         for (var modifier : modifiers) {
-            componentBuilder.add(modifier.attribute(), modifier.modifier(), AttributeModifierSlot.ANY);
+            componentBuilder.add(modifier.attribute(), modifier.modifier(), EquipmentSlotGroup.ANY);
         }
         return componentBuilder;
     }
 
-    public static List<Entry> modifiersFrom(Identifier modifierId, List<AttributeModifier> attributesConfig) {
+    public static List<Entry> modifiersFrom(Identifier modifierId, List<net.spell_engine.rpg_series.config.AttributeModifier> attributesConfig) {
         var modifiers = new ArrayList<Entry>();
         for (var modifier : attributesConfig) {
             var attribute = attribute(modifier.attribute);
             if (attribute.isPresent()) {
                 var id = (modifier.id != null && !modifier.id.isEmpty())
-                        ? Identifier.of(modifier.id)
+                        ? Identifier.parse(modifier.id)
                         : modifierId;
                 modifiers.add(new Entry(
                         attribute.get(),
-                        new EntityAttributeModifier(
+                        new AttributeModifier(
                                 id,
                                 modifier.value,
                                 modifier.operation

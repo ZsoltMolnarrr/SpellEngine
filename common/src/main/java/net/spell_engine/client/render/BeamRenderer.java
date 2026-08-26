@@ -1,19 +1,19 @@
 package net.spell_engine.client.render;
 
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-
-import net.minecraft.client.MinecraftClient;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RotationAxis;
-import net.minecraft.util.math.Vec3d;
+import com.mojang.math.Axis;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.api.render.CustomLayers;
 import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.Spell;
@@ -23,15 +23,13 @@ import net.spell_engine.client.util.Color;
 import net.spell_engine.internals.delivery.Beam;
 import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.utils.TargetHelper;
-import net.minecraft.entity.LivingEntity;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import net.spell_engine.internals.delivery.LaunchGeometry;
 
 public class BeamRenderer {
-    public record LayerSet(RenderLayer inner, RenderLayer outer) { }
+    public record LayerSet(RenderType inner, RenderType outer) { }
     private static final Map<String, LayerSet> layerCache = new HashMap<>();
     public static LayerSet layerSetFor(Identifier texture, Spell.Target.Beam.Luminance luminance) {
         var key = texture.toString() + luminance.toString();
@@ -83,30 +81,30 @@ public class BeamRenderer {
     /// Beam world-render pass. Loader-neutral: takes the pose stack, camera and partial tick from
     /// whatever event the loader fires. Fabric: `WorldRenderEvents.END_MAIN` (AFTER_TRANSLUCENT was removed in 1.21.9); NeoForge:
     /// `RenderLevelStageEvent` (AFTER_TRANSLUCENT_BLOCKS).
-    public static void renderAfterTranslucent(MatrixStack matrices, Camera camera, float tickDelta) {
-        VertexConsumerProvider.Immediate vcProvider = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
-        renderAllInWorld(matrices, vcProvider, camera, LightmapTextureManager.MAX_LIGHT_COORDINATE, tickDelta);
+    public static void renderAfterTranslucent(PoseStack matrices, Camera camera, float tickDelta) {
+        MultiBufferSource.BufferSource vcProvider = Minecraft.getInstance().renderBuffers().bufferSource();
+        renderAllInWorld(matrices, vcProvider, camera, LightTexture.FULL_BRIGHT, tickDelta);
     }
 
-    public static void renderAllInWorld(MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, Camera camera, int light, float delta) {
-        var focusedEntity = camera.getFocusedEntity();
+    public static void renderAllInWorld(PoseStack matrices, MultiBufferSource.BufferSource vertexConsumers, Camera camera, int light, float delta) {
+        var focusedEntity = camera.entity();
         if (focusedEntity == null) {
             return;
         }
 
-        var world = MinecraftClient.getInstance().world;
+        var world = Minecraft.getInstance().level;
         if (world == null) {
             return;
         }
-        var renderDistance = MinecraftClient.getInstance().options.getViewDistance().getValue() * 24; // 24 = 16 * 1.5F
+        var renderDistance = Minecraft.getInstance().options.renderDistance().get() * 24; // 24 = 16 * 1.5F
         var squaredRenderDistance = renderDistance * renderDistance;
         // Any entity exposing a cast process can beam (players and summons alike)
         var casters = new ArrayList<LivingEntity>();
-        for (var entity : world.getEntities()) {
+        for (var entity : world.entitiesForRendering()) {
             if (entity instanceof LivingEntity livingEntity
                     && entity instanceof SpellCaster.Entity holder
                     && holder.getBeam() != null
-                    && entity.squaredDistanceTo(focusedEntity) < squaredRenderDistance) {
+                    && entity.distanceToSqr(focusedEntity) < squaredRenderDistance) {
                 casters.add(livingEntity);
             }
         }
@@ -114,64 +112,64 @@ public class BeamRenderer {
             return;
         }
 
-        matrices.push();
-        Vec3d camPos = camera.getCameraPos();
+        matrices.pushPose();
+        Vec3 camPos = camera.position();
         matrices.translate(-camPos.x, -camPos.y, -camPos.z);
         for (var livingEntity : casters) {
             var launchHeight = LaunchGeometry.launchHeight(livingEntity);
-            var offset = new Vec3d(0.0, launchHeight, LaunchGeometry.launchPointOffsetDefault);
+            var offset = new Vec3(0.0, launchHeight, LaunchGeometry.launchPointOffsetDefault);
             SpellCaster.Entity caster = (SpellCaster.Entity) livingEntity;
-            matrices.push();
-            var pos = new Vec3d(livingEntity.lastX, livingEntity.lastY, livingEntity.lastZ)
-                    .lerp(livingEntity.getEntityPos(), delta);
+            matrices.pushPose();
+            var pos = new Vec3(livingEntity.xo, livingEntity.yo, livingEntity.zo)
+                    .lerp(livingEntity.position(), delta);
             matrices.translate(pos.x, pos.y, pos.z);
 
-            Vec3d from = livingEntity.getEntityPos().add(0, launchHeight, 0);
-            var lookVector = Vec3d.ZERO;
-            if (livingEntity == MinecraftClient.getInstance().player) {
+            Vec3 from = livingEntity.position().add(0, launchHeight, 0);
+            var lookVector = Vec3.ZERO;
+            if (livingEntity == Minecraft.getInstance().player) {
                 // No lerp for local player
-                lookVector = Vec3d.fromPolar(livingEntity.getPitch(), livingEntity.getYaw());
+                lookVector = Vec3.directionFromRotation(livingEntity.getXRot(), livingEntity.getYRot());
             } else {
-                lookVector = Vec3d.fromPolar(livingEntity.lastPitch, livingEntity.lastYaw);
-                lookVector = lookVector.lerp(Vec3d.fromPolar(livingEntity.getPitch(), livingEntity.getYaw()), delta);
+                lookVector = Vec3.directionFromRotation(livingEntity.xRotO, livingEntity.yRotO);
+                lookVector = lookVector.lerp(Vec3.directionFromRotation(livingEntity.getXRot(), livingEntity.getYRot()), delta);
             }
             lookVector = lookVector.normalize();
             var beamPosition = TargetHelper.castBeam(livingEntity, lookVector, 32);
-            lookVector = lookVector.multiply(beamPosition.length());
-            Vec3d to = from.add(lookVector);
+            lookVector = lookVector.scale(beamPosition.length());
+            Vec3 to = from.add(lookVector);
 
             var beamAppearance = caster.getBeam();
             renderBeamFromPlayer(matrices, vertexConsumers, beamAppearance,
-                    from, to, offset, livingEntity.getEntityWorld().getTime(), delta);
+                    from, to, offset, livingEntity.level().getGameTime(), delta);
             ((BeamEmitterEntity)livingEntity).setLastRenderedBeam(new Beam.Rendered(beamPosition, beamAppearance));
-            matrices.pop();
+            matrices.popPose();
         }
-        vertexConsumers.draw();
-        matrices.pop();
+        vertexConsumers.endBatch();
+        matrices.popPose();
     }
 
-    private static void renderBeamFromPlayer(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider,
+    private static void renderBeamFromPlayer(PoseStack matrixStack, MultiBufferSource vertexConsumerProvider,
                                              Spell.Target.Beam beam,
-                                             Vec3d from, Vec3d to, Vec3d offset, long time, float tickDelta) {
+                                             Vec3 from, Vec3 to, Vec3 offset, long time, float tickDelta) {
         var absoluteTime = (float)Math.floorMod(time, 40) + tickDelta;
 
-        matrixStack.push();
+        matrixStack.pushPose();
         matrixStack.translate(0, offset.y, 0);
 
-        Vec3d beamVector = to.subtract(from);
+        Vec3 beamVector = to.subtract(from);
         float length = (float)beamVector.length();
 
         // Perform some rotation
         beamVector = beamVector.normalize();
         float n = (float)Math.acos(beamVector.y);
         float o = (float)Math.atan2(beamVector.z, beamVector.x);
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees((1.5707964F - o) * 57.295776F));
-        matrixStack.multiply(RotationAxis.POSITIVE_X.rotationDegrees(n * 57.295776F));
+        matrixStack.mulPose(Axis.YP.rotationDegrees((1.5707964F - o) * 57.295776F));
+        matrixStack.mulPose(Axis.XP.rotationDegrees(n * 57.295776F));
         matrixStack.translate(0, offset.z, 0); // At this point everything is so rotated, we need to translate along y to move along z
 
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(absoluteTime * 2.25F - 45.0F));
+        matrixStack.mulPose(Axis.YP.rotationDegrees(absoluteTime * 2.25F - 45.0F));
 
-        var texture = Identifier.of(beam.texture_id);
+        var texture = Identifier.parse(beam.texture_id);
         var outerColor = Color.IntFormat.fromLongRGBA(beam.color_rgba);
         var innerColor = Color.IntFormat.fromLongRGBA(beam.inner_color_rgba);
 
@@ -189,18 +187,18 @@ public class BeamRenderer {
                 innerColor, outerColor, renderLayers,
                 0, length, beam.width);
 
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 
 
-    public static void renderBeam(MatrixStack matrices, VertexConsumerProvider vertexConsumers,
+    public static void renderBeam(PoseStack matrices, MultiBufferSource vertexConsumers,
                                   long time, float tickDelta, float direction, boolean center,
                                   Color.IntFormat innerColor, Color.IntFormat outerColor, LayerSet renderLayers,
                                   float yOffset, float height, float width) {
-        matrices.push();
+        matrices.pushPose();
 
         float shift = (float)Math.floorMod(time, 40) + tickDelta;
-        float offset = MathHelper.fractionalPart(shift * 0.2f - (float)MathHelper.floor(shift * 0.1f)) * (- direction);
+        float offset = Mth.frac(shift * 0.2f - (float)Mth.floor(shift * 0.1f)) * (- direction);
 
         var originalWidth = width;
         if (center) {
@@ -224,15 +222,15 @@ public class BeamRenderer {
                 yOffset, height,
                 0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
                 0.0f, 1.0f, height, offset * 0.8F);
-        matrices.pop();
+        matrices.popPose();
     }
 
-    private static void renderBeamLayer(MatrixStack matrices, VertexConsumer vertices,
+    private static void renderBeamLayer(PoseStack matrices, VertexConsumer vertices,
                                         int red, int green, int blue, int alpha,
                                         float yOffset, float height,
                                         float x1, float z1, float x2, float z2, float x3, float z3, float x4,
                                         float z4, float u1, float u2, float v1, float v2) {
-        MatrixStack.Entry matrix = matrices.peek();
+        PoseStack.Pose matrix = matrices.last();
         renderBeamFace(matrix, vertices, red, green, blue, alpha, yOffset, height, x1, z1, x2, z2, u1, u2, v1, v2);
         renderBeamFace(matrix, vertices, red, green, blue, alpha, yOffset, height, x4, z4, x3, z3, u1, u2, v1, v2);
         renderBeamFace(matrix, vertices, red, green, blue, alpha, yOffset, height, x2, z2, x4, z4, u1, u2, v1, v2);
@@ -240,7 +238,7 @@ public class BeamRenderer {
     }
 
 
-    private static void renderBeamFace(MatrixStack.Entry matrix, VertexConsumer vertices, int red, int green, int blue, int alpha, float yOffset, float height, float x1, float z1, float x2, float z2, float u1, float u2, float v1, float v2) {
+    private static void renderBeamFace(PoseStack.Pose matrix, VertexConsumer vertices, int red, int green, int blue, int alpha, float yOffset, float height, float x1, float z1, float x2, float z2, float u1, float u2, float v1, float v2) {
         renderBeamVertex(matrix, vertices, red, green, blue, alpha, height, x1, z1, u2, v1);
         renderBeamVertex(matrix, vertices, red, green, blue, alpha, yOffset, x1, z1, u2, v2);
         renderBeamVertex(matrix, vertices, red, green, blue, alpha, yOffset, x2, z2, u1, v2);
@@ -251,12 +249,12 @@ public class BeamRenderer {
      * @param v the top-most coordinate of the texture region
      * @param u the left-most coordinate of the texture region
      */
-    private static void renderBeamVertex(MatrixStack.Entry matrix, VertexConsumer vertices, int red, int green, int blue, int alpha, float y, float x, float z, float u, float v) {
-        vertices.vertex(matrix, x, y, z)
-                .color(red, green, blue, alpha)
-                .texture(u, v)
-                .overlay(OverlayTexture.DEFAULT_UV)
-                .light(LightmapTextureManager.MAX_LIGHT_COORDINATE)
-                .normal(matrix, 0.0F, 1.0F, 0.0F);
+    private static void renderBeamVertex(PoseStack.Pose matrix, VertexConsumer vertices, int red, int green, int blue, int alpha, float y, float x, float z, float u, float v) {
+        vertices.addVertex(matrix, x, y, z)
+                .setColor(red, green, blue, alpha)
+                .setUv(u, v)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(LightTexture.FULL_BRIGHT)
+                .setNormal(matrix, 0.0F, 1.0F, 0.0F);
     }
 }

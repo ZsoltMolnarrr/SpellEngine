@@ -1,19 +1,19 @@
 package net.spell_engine.neoforge;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.network.packet.Packet;
 import net.spell_engine.api.attachment.SyncedEntityData;
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Registry;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -45,47 +45,47 @@ public class PlatformImpl {
         }
 
         @Override
-        public void sendVanillaPacket_S2C(ServerPlayerEntity player, Packet<?> packet) {
-            player.networkHandler.send(packet);
+        public void sendVanillaPacket_S2C(ServerPlayer player, Packet<?> packet) {
+            player.connection.send(packet);
         }
 
         @Override
-        public void registerSummonedEntityAttributes(EntityType<? extends LivingEntity> type, DefaultAttributeContainer.Builder builder) {
+        public void registerSummonedEntityAttributes(EntityType<? extends LivingEntity> type, AttributeSupplier.Builder builder) {
             // Buffered until EntityAttributeCreationEvent — NeoForge can't register attributes imperatively.
             SummonedEntityAttributeRegistrar.buffer(type, builder);
         }
 
         @Override
-        public boolean networkS2C_CanSend(ServerPlayerEntity player, Identifier packetId) {
+        public boolean networkS2C_CanSend(ServerPlayer player, Identifier packetId) {
             // NeoForge negotiates channels during configuration; a connected client that reached the
             // play phase always supports our registered payloads, and PacketDistributor drops the rest.
             return true;
         }
 
         @Override
-        public void sendPacket(ServerPlayerEntity player, net.minecraft.network.packet.Packet<?> packet) {
-            player.networkHandler.send(packet); // NeoForge-patched name (vanilla Yarn: sendPacket)
+        public void sendPacket(ServerPlayer player, net.minecraft.network.protocol.Packet<?> packet) {
+            player.connection.send(packet); // NeoForge-patched name (vanilla Yarn: sendPacket)
         }
 
         @Override
-        public void networkS2C_Send(ServerPlayerEntity player, CustomPayload payload) {
+        public void networkS2C_Send(ServerPlayer player, CustomPacketPayload payload) {
             PacketDistributor.sendToPlayer(player, payload);
         }
 
         @Override
-        public void networkC2S_Send(CustomPayload payload) {
+        public void networkC2S_Send(CustomPacketPayload payload) {
             ClientPacketDistributor.sendToServer(payload);
         }
 
         @Override
-        public <T> void registerSyncedDataRegistry(RegistryKey<Registry<T>> key, Codec<T> localCodec, Codec<T> networkCodec) {
+        public <T> void registerSyncedDataRegistry(ResourceKey<Registry<T>> key, Codec<T> localCodec, Codec<T> networkCodec) {
             // Buffered until DataPackRegistryEvent.NewRegistry — NeoForge can't register these imperatively.
             SyncedDataRegistrar.buffer(key, localCodec, networkCodec);
         }
 
         @Override
         public <T> SyncedEntityData<T> createSyncedEntityData(Identifier id, T defaultValue,
-                                                              PacketCodec<? super RegistryByteBuf, T> sync,
+                                                              StreamCodec<? super RegistryFriendlyByteBuf, T> sync,
                                                               @Nullable Codec<T> persistence) {
             // Built now, registered in NeoForgeMod.register (RegisterEvent for ATTACHMENT_TYPES).
             return new NeoForgeSyncedEntityData<>(id, defaultValue, sync, persistence);

@@ -1,31 +1,30 @@
 package net.spell_engine.utils;
 
-import net.minecraft.entity.EquipmentSlot;
-
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import org.jetbrains.annotations.NotNull;
 
 public class AttributeModifierUtil {
-    public static @NotNull Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> modifierMultimap(ItemStack itemStack) {
-        var modifiers = itemStack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
-        Multimap<RegistryEntry<EntityAttribute>, EntityAttributeModifier> modifiersMap = HashMultimap.create();
+    public static @NotNull Multimap<Holder<Attribute>, AttributeModifier> modifierMultimap(ItemStack itemStack) {
+        var modifiers = itemStack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+        Multimap<Holder<Attribute>, AttributeModifier> modifiersMap = HashMultimap.create();
         for (var entry : modifiers.modifiers()) {
             modifiersMap.put(entry.attribute(), entry.modifier());
         }
         return modifiersMap;
     }
 
-    public static boolean hasModifier(ItemStack itemStack, RegistryEntry<EntityAttribute> attribute) {
-        var modifiers = itemStack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
+    public static boolean hasModifier(ItemStack itemStack, Holder<Attribute> attribute) {
+        var modifiers = itemStack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
         for (var entry : modifiers.modifiers()) {
             if (entry.attribute().equals(attribute)) {
                 return true;
@@ -34,21 +33,21 @@ public class AttributeModifierUtil {
         return false;
     }
 
-    public static double flatBonusFrom(ItemStack itemStack, RegistryEntry<EntityAttribute> attribute) {
-        var modifiers = itemStack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
+    public static double flatBonusFrom(ItemStack itemStack, Holder<Attribute> attribute) {
+        var modifiers = itemStack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
         double value = 0;
         for (var entry : modifiers.modifiers()) {
-            if (entry.attribute().equals(attribute) && entry.modifier().operation() == EntityAttributeModifier.Operation.ADD_VALUE) {
-                value += entry.modifier().value();
+            if (entry.attribute().equals(attribute) && entry.modifier().operation() == AttributeModifier.Operation.ADD_VALUE) {
+                value += entry.modifier().amount();
             }
         }
         return value;
     }
 
-    public static double multipliersOf(RegistryEntry<EntityAttribute> attribute, LivingEntity entity) {
+    public static double multipliersOf(Holder<Attribute> attribute, LivingEntity entity) {
         double value = 1;
         double totalMultiplier = 1;
-        var attributeInstance = entity.getAttributes().getCustomInstance(attribute);
+        var attributeInstance = entity.getAttributes().getInstance(attribute);
         if (attributeInstance != null) {
             for (var modifier: attributeInstance.getModifiers()) {
                 switch (modifier.operation()) {
@@ -56,10 +55,10 @@ public class AttributeModifierUtil {
                         break;
                     }
                     case ADD_MULTIPLIED_BASE -> {
-                        value += modifier.value();
+                        value += modifier.amount();
                     }
                     case ADD_MULTIPLIED_TOTAL -> {
-                        totalMultiplier += modifier.value();
+                        totalMultiplier += modifier.amount();
                     }
                 }
             }
@@ -67,13 +66,13 @@ public class AttributeModifierUtil {
         return value * totalMultiplier;
     }
 
-    public static boolean isItemStackEquipped(ItemStack itemStack, PlayerEntity player) {
-        if (player.getMainHandStack().equals(itemStack)) {
+    public static boolean isItemStackEquipped(ItemStack itemStack, Player player) {
+        if (player.getMainHandItem().equals(itemStack)) {
             return true;
         }
         for (var slot: EquipmentSlot.VALUES) {
             if (slot == EquipmentSlot.MAINHAND) continue;
-            if (player.getEquippedStack(slot).equals(itemStack)) {
+            if (player.getItemBySlot(slot).equals(itemStack)) {
                 return true;
             }
         }

@@ -1,18 +1,18 @@
 package net.spell_engine.compat;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.function.Function;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.boss.enderdragon.EnderDragonPart;
 
 public class MultipartEntityCompat {
     public static final ArrayList<Function<Entity, Entity>> resolvers = new ArrayList<>();
     static {
         resolvers.add(entity -> {
             if (entity instanceof EnderDragonPart) {
-                return ((EnderDragonPart) entity).owner;
+                return ((EnderDragonPart) entity).parentMob;
             }
             return null;
         });

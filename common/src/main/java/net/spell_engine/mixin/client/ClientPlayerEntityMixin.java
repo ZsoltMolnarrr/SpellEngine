@@ -1,8 +1,8 @@
 package net.spell_engine.mixin.client;
 
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.Platform;
 import net.spell_engine.PlatformClient;
 import net.spell_engine.api.effect.EntityActionsAllowed;
@@ -25,11 +25,11 @@ import java.util.List;
 /// Attaches the local player's casting to {@link ClientCastController} (which owns the cast
 /// process state machine and targeting — Phase C1 of the server-side casting rework moved the
 /// logic there), and runs the client side of MELEE delivery (scheduled attacks).
-@Mixin(ClientPlayerEntity.class)
+@Mixin(LocalPlayer.class)
 public abstract class ClientPlayerEntityMixin implements SpellCaster.Client {
 
-    private ClientPlayerEntity player() {
-        return (ClientPlayerEntity) ((Object) this);
+    private LocalPlayer player() {
+        return (LocalPlayer) ((Object) this);
     }
 
     // MARK: Casting — delegated to the per-entity ClientCastController
@@ -60,15 +60,15 @@ public abstract class ClientPlayerEntityMixin implements SpellCaster.Client {
         return currentAttack;
     }
     @Unique
-    private void onTick_ScheduledAttacks(ClientPlayerEntity player) {
-        var time = player.age;
+    private void onTick_ScheduledAttacks(LocalPlayer player) {
+        var time = player.tickCount;
         if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ATTACK)) {
             currentAttack = null;
             return;
         }
         checkForNextAttack(player, time);
         if (currentAttack != null) {
-            if (currentAttack.weapon != player.getMainHandStack().getItem()) {
+            if (currentAttack.weapon != player.getMainHandItem().getItem()) {
                 // Weapon changed, cancel attack
                 currentAttack = null;
                 return;
@@ -82,11 +82,11 @@ public abstract class ClientPlayerEntityMixin implements SpellCaster.Client {
             }
         }
     }
-    private void checkForNextAttack(ClientPlayerEntity player, int time) {
+    private void checkForNextAttack(LocalPlayer player, int time) {
         if (currentAttack == null) {
             if (!scheduledAttacks.isEmpty()) {
                 var attack = scheduledAttacks.remove(0);
-                currentAttack = new Melee.ActiveAttack(attack, time, player.getMainHandStack().getItem());
+                currentAttack = new Melee.ActiveAttack(attack, time, player.getMainHandItem().getItem());
                 onAttackActivated(attack);
             }
         }
@@ -99,11 +99,11 @@ public abstract class ClientPlayerEntityMixin implements SpellCaster.Client {
         var player = player();
         var momentum = attack.forward_momentum();
         if (momentum > 0
-                && (attack.allow_momentum_airborne() || player.isOnGround()) ) {
-            var direction = new Vec3d(0, 0, 1)
-                    .rotateY((float) Math.toRadians((-1.0) * player.getYaw()))
-                    .multiply(attack.forward_momentum());
-            player.addVelocity(direction.x, direction.y, direction.z);
+                && (attack.allow_momentum_airborne() || player.onGround()) ) {
+            var direction = new Vec3(0, 0, 1)
+                    .yRot((float) Math.toRadians((-1.0) * player.getYRot()))
+                    .scale(attack.forward_momentum());
+            player.push(direction.x, direction.y, direction.z);
         }
 
         if (attack.context() != null) {
@@ -135,10 +135,10 @@ public abstract class ClientPlayerEntityMixin implements SpellCaster.Client {
         var player = player();
         castController.tick();
         if (isBeaming()) {
-            PlatformClient.util().sendVanillaPacket_C2S(player, new PlayerMoveC2SPacket.Full(
+            PlatformClient.util().sendVanillaPacket_C2S(player, new ServerboundMovePlayerPacket.PosRot(
                     player.getX(), player.getY(), player.getZ(),
-                    player.getYaw(), player.getPitch(),
-                    player.isOnGround(), player.horizontalCollision)
+                    player.getYRot(), player.getXRot(),
+                    player.onGround(), player.horizontalCollision)
             );
         }
         onTick_ScheduledAttacks(player);

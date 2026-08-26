@@ -1,10 +1,10 @@
 package net.spell_engine.api.spell.event;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.spell_engine.api.event.Event;
 import net.spell_engine.api.event.StagedEvent;
 import net.spell_engine.api.spell.Spell;
@@ -18,25 +18,25 @@ import net.spell_engine.internals.SpellExecution;
 public class SpellEvents {
     public static final StagedEvent<CastingAttemptEvent> CASTING_ATTEMPT = new StagedEvent<>();
     public interface CastingAttemptEvent {
-        record Args(PlayerEntity caster, RegistryEntry<Spell> spell, ItemStack itemStack) {}
+        record Args(Player caster, Holder<Spell> spell, ItemStack itemStack) {}
         @Nullable SpellCast.Attempt onCastingAttempt(Args args);
     }
 
     public static final Event<SpellCostConsumeEvent> COST_CONSUME = new Event<>();
     public interface SpellCostConsumeEvent {
-        record Args(PlayerEntity caster, RegistryEntry<Spell> spell, ItemStack itemStack) {}
+        record Args(Player caster, Holder<Spell> spell, ItemStack itemStack) {}
         void onSpellCostConsume(Args args);
     }
 
     public static final Event<SpellCastEvent> SPELL_CAST = new Event<SpellCastEvent>();
     public interface SpellCastEvent {
-        record Args(PlayerEntity caster, RegistryEntry<Spell> spell, List<Entity> targets, SpellCast.Action action, float progress) {}
+        record Args(Player caster, Holder<Spell> spell, List<Entity> targets, SpellCast.Action action, float progress) {}
         void onSpellCast(Args args);
     }
 
     public static final Event<HealEvent> HEAL = new Event<HealEvent>();
     public interface HealEvent {
-        record Args(LivingEntity caster, RegistryEntry<Spell> spell, LivingEntity target, float amount) {}
+        record Args(LivingEntity caster, Holder<Spell> spell, LivingEntity target, float amount) {}
         void onHeal(Args args);
     }
 
@@ -47,7 +47,7 @@ public class SpellEvents {
                                         Spell.LaunchProperties mutableLaunchProperties,
                                         LivingEntity caster,
                                         @Nullable Entity target,
-                                        RegistryEntry<Spell> spellEntry,
+                                        Holder<Spell> spellEntry,
                                         SpellExecution.ImpactContext context,
                                         int sequenceIndex) { }
     public interface ProjectileLaunch {

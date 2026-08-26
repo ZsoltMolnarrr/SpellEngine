@@ -1,10 +1,10 @@
 package net.spell_engine.internals.target;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.api.entity.SpellEntityPredicates;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.utils.PatternMatching;
@@ -23,7 +23,7 @@ public class SpellTarget {
         DIRECT, AREA
     }
 
-    public record SearchResult(List<Entity> entities, @Nullable Vec3d location) {
+    public record SearchResult(List<Entity> entities, @Nullable Vec3 location) {
         public static SearchResult empty() {
             return new SearchResult(List.of(), null);
         }
@@ -33,12 +33,12 @@ public class SpellTarget {
         public static SearchResult of(Entity entity) {
             return new SearchResult(List.of(entity), null);
         }
-        public static SearchResult of(Vec3d location) {
+        public static SearchResult of(Vec3 location) {
             return new SearchResult(List.of(), location);
         }
     }
 
-    public static SearchResult findTargets(LivingEntity caster, RegistryEntry<Spell> spellEntry, SearchResult previous, boolean filterInvalidTargets) {
+    public static SearchResult findTargets(LivingEntity caster, Holder<Spell> spellEntry, SearchResult previous, boolean filterInvalidTargets) {
         return findTargets(caster, spellEntry, previous, filterInvalidTargets, SpellParameters.getRange(caster, spellEntry));
     }
 
@@ -46,11 +46,11 @@ public class SpellTarget {
     /// multiplier (applied here). Callers override it to search at something other than the
     /// plain resolved range: the client targets at the option's maximum (full-charge) range,
     /// the server fires at the true (charge-ratio-scaled) range.
-    public static SearchResult findTargets(LivingEntity caster, RegistryEntry<Spell> spellEntry, SearchResult previous, boolean filterInvalidTargets, float resolvedRange) {
+    public static SearchResult findTargets(LivingEntity caster, Holder<Spell> spellEntry, SearchResult previous, boolean filterInvalidTargets, float resolvedRange) {
         var currentSpell = spellEntry.value();
         List<Entity> targets = List.of();
         var previousTargets = previous.entities;
-        Vec3d location = null;
+        Vec3 location = null;
         if (currentSpell == null || currentSpell.impacts == null) {
             return new SearchResult(targets, location);
         }
@@ -137,7 +137,7 @@ public class SpellTarget {
         }
 
         if (condition.entity_type != null) {
-            if (!PatternMatching.matches(testedEntity.getType().getRegistryEntry(), RegistryKeys.ENTITY_TYPE, condition.entity_type)) {
+            if (!PatternMatching.matches(testedEntity.getType().builtInRegistryHolder(), Registries.ENTITY_TYPE, condition.entity_type)) {
                 return false;
             }
         }

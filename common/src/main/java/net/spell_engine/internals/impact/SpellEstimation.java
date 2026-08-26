@@ -1,8 +1,8 @@
 package net.spell_engine.internals.impact;
 
 import net.spell_engine.rpg_series.config.ConfigUtil;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.SpellExecution;
 import net.spell_engine.internals.SpellParameters;
@@ -17,7 +17,7 @@ import java.util.List;
 /// stay in agreement.
 public class SpellEstimation {
 
-    public static EstimatedOutput estimate(Spell spell, PlayerEntity caster, ItemStack itemStack) {
+    public static EstimatedOutput estimate(Spell spell, Player caster, ItemStack itemStack) {
         var spellSchool = spell.school;
         var damageEffects = new ArrayList<EstimatedValue>();
         var healEffects = new ArrayList<EstimatedValue>();

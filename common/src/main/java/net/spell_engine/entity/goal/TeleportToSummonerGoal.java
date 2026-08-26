@@ -1,7 +1,7 @@
 package net.spell_engine.entity.goal;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.spell_engine.api.spell.summon.SummonBehaviour;
 import net.spell_engine.entity.SummonedEntity;
 
@@ -15,7 +15,7 @@ public class TeleportToSummonerGoal extends Goal {
 
     public TeleportToSummonerGoal(SummonedEntity entity) {
         this.entity = entity;
-        setControls(EnumSet.of(Control.MOVE));
+        setFlags(EnumSet.of(Flag.MOVE));
     }
 
     private SummonBehaviour.Movement.Follow follow() {
@@ -23,22 +23,22 @@ public class TeleportToSummonerGoal extends Goal {
     }
 
     @Override
-    public boolean canStart() {
+    public boolean canUse() {
         LivingEntity owner = entity.getOwner();
         if (owner == null) return false;
         float teleportDist = follow().teleport_after_distance;
         if (teleportDist <= 0) return false;
-        return entity.squaredDistanceTo(owner) > teleportDist * teleportDist;
+        return entity.distanceToSqr(owner) > teleportDist * teleportDist;
     }
 
     @Override
-    public boolean shouldContinue() { return false; }
+    public boolean canContinueToUse() { return false; }
 
     @Override
     public void start() {
         LivingEntity owner = entity.getOwner();
         if (owner == null) return;
-        entity.teleport(owner.getX(), owner.getY(), owner.getZ(), false);
+        entity.randomTeleport(owner.getX(), owner.getY(), owner.getZ(), false);
         entity.setTarget(null);
         entity.getNavigation().stop();
     }

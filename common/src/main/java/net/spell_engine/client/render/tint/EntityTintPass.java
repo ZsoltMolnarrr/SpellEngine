@@ -1,6 +1,6 @@
 package net.spell_engine.client.render.tint;
 
-import net.minecraft.client.render.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.spell_engine.api.effect.EntityTints;
 import net.spell_engine.client.render.extension.EntityRenderStateExtension;
 import org.jetbrains.annotations.Nullable;

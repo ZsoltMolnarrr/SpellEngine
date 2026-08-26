@@ -1,19 +1,18 @@
 package net.spell_engine.internals.delivery.arrow;
 
-import net.minecraft.item.BowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.RangedWeaponItem;
-
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.level.Level;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.fx.ModelEffectHelper;
@@ -30,24 +29,24 @@ import java.util.function.Supplier;
 import net.spell_engine.internals.SpellExecution;
 
 public class ArrowHelper {
-    public static void shootArrow(World world, LivingEntity shooter, RegistryEntry<Spell> spellEntry, SpellExecution.ImpactContext context) {
+    public static void shootArrow(Level world, LivingEntity shooter, Holder<Spell> spellEntry, SpellExecution.ImpactContext context) {
         shootArrow(world, shooter, spellEntry, context, 0);
     }
 
-    public static void shootArrow(World world, LivingEntity shooter, RegistryEntry<Spell> spellEntry, SpellExecution.ImpactContext context, int sequenceIndex) {
+    public static void shootArrow(Level world, LivingEntity shooter, Holder<Spell> spellEntry, SpellExecution.ImpactContext context, int sequenceIndex) {
         var spell = spellEntry.value();
         var shoot_arrow = spell.deliver.shoot_arrow;
-        var weaponStack = shooter.getMainHandStack();
+        var weaponStack = shooter.getMainHandItem();
 
         // var weapon = weaponStack.getItem();
         // Using CROSSBOW statically, so arrows fired behave consistently
         // When using any bow, divergence is applied in an unhelpful manner
         var weapon = Items.CROSSBOW;
         if (shoot_arrow != null
-                && (world instanceof ServerWorld serverWorld)
-                && (weapon instanceof RangedWeaponItem rangedWeapon)) {
+                && (world instanceof ServerLevel serverWorld)
+                && (weapon instanceof ProjectileWeaponItem rangedWeapon)) {
             var mutableLaunchProperties = shoot_arrow.launch_properties.copy();
-            if (shooter instanceof PlayerEntity player) {
+            if (shooter instanceof Player player) {
                 var spellModifiers = SpellModifiers.of(player, spellEntry);
                 for (var modifier: spellModifiers) {
                     if (modifier.projectile_launch != null) {
@@ -57,8 +56,8 @@ public class ArrowHelper {
             }
 
             ItemStack ammo;
-            if (shooter instanceof PlayerEntity player) {
-                ammo = player.getProjectileType(weaponStack);
+            if (shooter instanceof Player player) {
+                ammo = player.getProjectile(weaponStack);
             } else {
                 ammo = new ItemStack(Items.ARROW);
             }
@@ -78,7 +77,7 @@ public class ArrowHelper {
             ((RangedWeaponAccessor) rangedWeapon).shootAll_SpellEngine(
                     serverWorld,
                     shooter,
-                    Hand.MAIN_HAND,
+                    InteractionHand.MAIN_HAND,
                     weaponStack,
                     loadedAmmo,
                     shoot_arrow.launch_properties.velocity,
@@ -94,8 +93,8 @@ public class ArrowHelper {
                         shooter.getX(),
                         shooter.getY(),
                         shooter.getZ(),
-                        SoundEvents.ENTITY_ARROW_SHOOT,
-                        SoundCategory.PLAYERS,
+                        SoundEvents.ARROW_SHOOT,
+                        SoundSource.PLAYERS,
                         1.0F,
                         1.0F / (world.getRandom().nextFloat() * 0.4F + 1.2F) + 1 * 0.5F
                 );
@@ -129,9 +128,9 @@ public class ArrowHelper {
     /// (`knockback`, `bypass_iframes`, `iframe_to_set`, `skip_arrow_damage`) are re-read straight off the
     /// spell by `PersistentProjectileEntityMixin` once the arrow lands, so a modifier cannot reach them.
     @Nullable
-    public static Spell.ArrowPerks effectiveArrowPerks(LivingEntity shooter, RegistryEntry<Spell> spellEntry) {
+    public static Spell.ArrowPerks effectiveArrowPerks(LivingEntity shooter, Holder<Spell> spellEntry) {
         var base = spellEntry.value().arrow_perks;
-        if (!(shooter instanceof PlayerEntity player)) {
+        if (!(shooter instanceof Player player)) {
             return base;
         }
         Spell.ArrowPerks effective = null;
@@ -148,15 +147,15 @@ public class ArrowHelper {
         return (effective != null) ? effective : base;
     }
 
-    public static void onArrowShot(ArrowExtension arrow, LivingEntity shooter, RegistryEntry<Spell> spellEntry,
-                                   Supplier<Collection<ServerPlayerEntity>> trackers) {
+    public static void onArrowShot(ArrowExtension arrow, LivingEntity shooter, Holder<Spell> spellEntry,
+                                   Supplier<Collection<ServerPlayer>> trackers) {
         var arrowPerks = effectiveArrowPerks(shooter, spellEntry);
         if (arrowPerks != null) {
-            var world = shooter.getEntityWorld();
+            var world = shooter.level();
             arrow.applyArrowPerks(spellEntry, arrowPerks);
             var launchVisuals = arrowPerks.launch_visuals.resolved(Fx.Context.NONE);
             ParticleHelper.sendBatches(shooter, launchVisuals.particles, 1F, trackers.get());
-            ModelEffectHelper.spawn(world, shooter.getEntityPos(), shooter.getYaw(), launchVisuals.models, shooter);
+            ModelEffectHelper.spawn(world, shooter.position(), shooter.getYRot(), launchVisuals.models, shooter);
             SoundHelper.playSound(world, shooter, arrowPerks.launch_sound);
         }
     }

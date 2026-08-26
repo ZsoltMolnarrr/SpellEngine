@@ -1,7 +1,7 @@
 package net.spell_engine.entity.goal;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.spell_engine.entity.SummonedEntity;
 
 import java.util.EnumSet;
@@ -14,26 +14,26 @@ public class FaceTargetGoal extends Goal {
 
     public FaceTargetGoal(SummonedEntity entity) {
         this.entity = entity;
-        setControls(EnumSet.of(Control.LOOK));
+        setFlags(EnumSet.of(Flag.LOOK));
     }
 
     @Override
-    public boolean canStart() {
+    public boolean canUse() {
         LivingEntity target = entity.getTarget();
         return target != null && target.isAlive() && entity.isActive();
     }
 
     @Override
-    public boolean shouldContinue() { return canStart(); }
+    public boolean canContinueToUse() { return canUse(); }
 
     @Override
-    public boolean shouldRunEveryTick() { return true; }
+    public boolean requiresUpdateEveryTick() { return true; }
 
     @Override
     public void tick() {
         LivingEntity target = entity.getTarget();
         if (target == null) return;
-        entity.getLookControl().lookAt(target, 30F, 30F);
-        entity.setBodyYaw(entity.getHeadYaw());
+        entity.getLookControl().setLookAt(target, 30F, 30F);
+        entity.setYBodyRot(entity.getYHeadRot());
     }
 }

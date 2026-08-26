@@ -1,9 +1,8 @@
 package net.spell_engine.api.spell.fx;
 
-import net.minecraft.util.Identifier;
-
 import java.util.Objects;
 import java.util.Random;
+import net.minecraft.resources.Identifier;
 
 public final class Sound {
     /**

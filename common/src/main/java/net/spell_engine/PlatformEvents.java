@@ -2,21 +2,21 @@ package net.spell_engine;
 
 import com.mojang.brigadier.CommandDispatcher;
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootPool;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.storage.loot.LootPool;
 import net.spell_engine.api.util.TriState;
 
 import java.util.function.Consumer;
@@ -50,14 +50,14 @@ public class PlatformEvents {
     /// A player joined the server. Fabric: `ServerPlayConnectionEvents.JOIN`; NeoForge:
     /// `PlayerEvent.PlayerLoggedInEvent`.
     @ExpectPlatform
-    public static void onPlayerJoin(Consumer<ServerPlayerEntity> callback) {
+    public static void onPlayerJoin(Consumer<ServerPlayer> callback) {
         throw new AssertionError();
     }
 
     /// A player changed dimension. Fabric: `ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD`;
     /// NeoForge: `PlayerEvent.PlayerChangedDimensionEvent`.
     @ExpectPlatform
-    public static void onPlayerChangedWorld(Consumer<ServerPlayerEntity> callback) {
+    public static void onPlayerChangedWorld(Consumer<ServerPlayer> callback) {
         throw new AssertionError();
     }
 
@@ -84,7 +84,7 @@ public class PlatformEvents {
     /// `BuildCreativeModeTabContentsEvent` (dispatched by tab key). Both `ItemGroup.Entries` and
     /// `ItemGroup.DisplayContext` are vanilla types the callback can use directly.
     @ExpectPlatform
-    public static void onItemGroupModify(RegistryKey<ItemGroup> group, ItemGroupModifier callback) {
+    public static void onItemGroupModify(ResourceKey<CreativeModeTab> group, ItemGroupModifier callback) {
         throw new AssertionError();
     }
 
@@ -106,15 +106,15 @@ public class PlatformEvents {
 
     @FunctionalInterface
     public interface CommandRegistration {
-        void register(CommandDispatcher<ServerCommandSource> dispatcher,
-                      CommandRegistryAccess registryAccess,
-                      CommandManager.RegistrationEnvironment environment);
+        void register(CommandDispatcher<CommandSourceStack> dispatcher,
+                      CommandBuildContext registryAccess,
+                      Commands.CommandSelection environment);
     }
 
     /// Handed to a loot-table-modify callback: exposes the table being loaded and lets the
     /// callback append pools without any loader-specific builder type.
     public interface LootTableModifyContext {
-        RegistryWrapper.WrapperLookup registries();
+        HolderLookup.Provider registries();
         Identifier tableId();
         /// Snapshot of the pools the table already has (as parsed from the datapack, plus anything
         /// other mods added before us). Read-only; used to inspect what the table drops.
@@ -124,13 +124,13 @@ public class PlatformEvents {
 
     @FunctionalInterface
     public interface ItemGroupModifier {
-        void modify(ItemGroup.Entries entries, ItemGroup.DisplayContext context);
+        void modify(CreativeModeTab.Output entries, CreativeModeTab.ItemDisplayParameters context);
     }
 
     @FunctionalInterface
     public interface AllowEnchanting {
         /// Return {@code ALLOW} to force-allow, {@code DENY} to forbid, or {@code PASS} to defer to
         /// vanilla rules.
-        TriState allow(RegistryEntry<Enchantment> enchantment, ItemStack stack);
+        TriState allow(Holder<Enchantment> enchantment, ItemStack stack);
     }
 }

@@ -1,15 +1,15 @@
 package net.spell_engine.internals.delivery.melee;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.RaycastContext;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.compat.MeleeCompat;
 import net.spell_engine.utils.VectorHelper;
 import org.jetbrains.annotations.Nullable;
@@ -28,14 +28,14 @@ public class TargetFinder {
         }
     }
 
-    public static TargetResult findAttackTargetResult(PlayerEntity player, @Nullable Entity cursorTarget, Vec3d hitboxSize, double arc, double attackRange, float roll) {
+    public static TargetResult findAttackTargetResult(Player player, @Nullable Entity cursorTarget, Vec3 hitboxSize, double arc, double attackRange, float roll) {
 //        long startTime = System.nanoTime();
-        Vec3d origin = getInitialTracingPoint(player);
+        Vec3 origin = getInitialTracingPoint(player);
         List<Entity> entities = getInitialTargets(player, cursorTarget, attackRange);
 
         boolean isSpinAttack = arc > 180;
-        Vec3d size = hitboxSize;
-        var obb = new OrientedBoundingBox(origin, size, player.getPitch(), player.getYaw(), roll);
+        Vec3 size = hitboxSize;
+        var obb = new OrientedBoundingBox(origin, size, player.getXRot(), player.getYRot(), roll);
         if (!isSpinAttack) {
             obb = obb.offsetAlongAxisZ(size.z / 2F);
         }
@@ -50,16 +50,16 @@ public class TargetFinder {
         return new TargetResult(cursorTarget, entities, obb);
     }
     
-    public static Vec3d getInitialTracingPoint(PlayerEntity player) {
-        double shoulderHeight = player.getHeight() * 0.15 * player.getScaleFactor();
-        return player.getEyePos().subtract(0, shoulderHeight, 0);
+    public static Vec3 getInitialTracingPoint(Player player) {
+        double shoulderHeight = player.getBbHeight() * 0.15 * player.getAgeScale();
+        return player.getEyePosition().subtract(0, shoulderHeight, 0);
     }
 
-    public static List<Entity> getInitialTargets(PlayerEntity player, Entity cursorTarget, double attackRange) {
-        Box box = player.getBoundingBox().expand(attackRange * 2F + 1.0);
+    public static List<Entity> getInitialTargets(Player player, Entity cursorTarget, double attackRange) {
+        AABB box = player.getBoundingBox().inflate(attackRange * 2F + 1.0);
         List<Entity> entities = player
-                .getEntityWorld()
-                .getOtherEntities(player, box, entity ->  !entity.isSpectator() && entity.canHit())
+                .level()
+                .getEntities(player, box, entity ->  !entity.isSpectator() && entity.isPickable())
                 .stream()
                 .filter(entity -> entity != player
                         && entity.isAttackable()
@@ -74,7 +74,7 @@ public class TargetFinder {
     }
 
     public static boolean isAttackableMount(Entity entity) {
-        return entity instanceof HostileEntity || MeleeCompat.isEntityHostileVehicle.apply(entity);
+        return entity instanceof Monster || MeleeCompat.isEntityHostileVehicle.apply(entity);
     }
 
     public interface Filter {
@@ -91,24 +91,24 @@ public class TargetFinder {
         @Override
         public List<Entity> filter(List<Entity> entities) {
             return entities.stream()
-                    .filter(entity -> obb.intersects(entity.getBoundingBox().expand(entity.getTargetingMargin()))
-                                || obb.contains(entity.getEntityPos().add(0, entity.getHeight() / 2F, 0))
+                    .filter(entity -> obb.intersects(entity.getBoundingBox().inflate(entity.getPickRadius()))
+                                || obb.contains(entity.position().add(0, entity.getBbHeight() / 2F, 0))
                     )
                     .collect(Collectors.toList());
         }
     }
 
     public static class RadialFilter implements Filter {
-        final private Vec3d origin;
-        final private Vec3d orientation;
+        final private Vec3 origin;
+        final private Vec3 orientation;
         final private double attackRange;
         final private double attackAngle;
 
-        public RadialFilter(Vec3d origin, Vec3d orientation, double attackRange, double attackAngle) {
+        public RadialFilter(Vec3 origin, Vec3 orientation, double attackRange, double attackAngle) {
             this.origin = origin;
             this.orientation = orientation;
             this.attackRange = attackRange;
-            this.attackAngle = MathHelper.clamp(attackAngle, 0, 360);
+            this.attackAngle = Mth.clamp(attackAngle, 0, 360);
         }
 
         @Override
@@ -116,8 +116,8 @@ public class TargetFinder {
             return entities.stream()
                     .filter(entity -> {
                         var maxAngleDif = (attackAngle / 2.0);
-                        Vec3d distanceVector = VectorHelper.distanceVector(origin, entity.getBoundingBox());
-                        Vec3d positionVector = entity.getEntityPos().add(0, entity.getHeight() / 2F, 0).subtract(origin);
+                        Vec3 distanceVector = VectorHelper.distanceVector(origin, entity.getBoundingBox());
+                        Vec3 positionVector = entity.position().add(0, entity.getBbHeight() / 2F, 0).subtract(origin);
                         return distanceVector.length() <= attackRange
                                 && ((attackAngle == 0)
                                     || (VectorHelper.angleBetween(positionVector, orientation) <= maxAngleDif
@@ -128,11 +128,11 @@ public class TargetFinder {
                     .collect(Collectors.toList());
         }
 
-        private static boolean rayContainsNoObstacle(Vec3d start, Vec3d end) {
-            var client = MinecraftClient.getInstance();
+        private static boolean rayContainsNoObstacle(Vec3 start, Vec3 end) {
+            var client = Minecraft.getInstance();
             BlockHitResult hit = null;
-            if (client.world != null) {
-                hit = client.world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, client.player));
+            if (client.level != null) {
+                hit = client.level.clip(new ClipContext(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, client.player));
             }
             if (hit != null) {
                 return hit.getType() != HitResult.Type.BLOCK;

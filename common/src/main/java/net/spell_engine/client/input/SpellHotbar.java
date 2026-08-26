@@ -1,14 +1,13 @@
 package net.spell_engine.client.input;
 
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
-import net.minecraft.item.consume.UseAction;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Options;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.Holder;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.gui.HudMessages;
@@ -27,14 +26,14 @@ public class SpellHotbar {
 
     /// A castable {@link SpellCast.Option} decorated with client-only input state (keybinding).
     /// A null option is the item-use bypass slot (right-click usage of the held item).
-    public record Slot(@Nullable SpellCast.Option option, @Nullable ItemStack itemStack, @Nullable WrappedKeybinding keybinding, @Nullable KeyBinding modifier) {
-        @Nullable public RegistryEntry<Spell> spell() {
+    public record Slot(@Nullable SpellCast.Option option, @Nullable ItemStack itemStack, @Nullable WrappedKeybinding keybinding, @Nullable KeyMapping modifier) {
+        @Nullable public Holder<Spell> spell() {
             return option != null ? option.spell() : null;
         }
         public SpellCast.Mode castMode() {
             return option != null ? option.mode() : SpellCast.Mode.ITEM_USE;
         }
-        @Nullable public KeyBinding getKeyBinding(GameOptions options) {
+        @Nullable public KeyMapping getKeyBinding(Options options) {
             if (keybinding != null) {
                 var unwrapped = keybinding.get(options);
                 if (unwrapped != null) {
@@ -48,7 +47,7 @@ public class SpellHotbar {
     public StructuredSlots structuredSlots = new StructuredSlots(null, List.of());
     public record StructuredSlots(@Nullable Slot onUseKey, List<Slot> other) { }
 
-    public boolean update(ClientPlayerEntity player, GameOptions options) {
+    public boolean update(LocalPlayer player, Options options) {
         var changed = false;
         var initialSlotCount = slots.size();
         // Server-declared options — with a client-side prediction bridging the round-trip gap
@@ -60,8 +59,8 @@ public class SpellHotbar {
         Slot onUseKey = null;
 
         var allBindings = Keybindings.Wrapped.all();
-        var useKey = ((KeybindingAccessor) options.useKey).spellEngine_getBoundKey();
-        var useKeyBinding = new WrappedKeybinding(options.useKey, WrappedKeybinding.VanillaAlternative.USE_KEY);
+        var useKey = ((KeybindingAccessor) options.keyUse).spellEngine_getBoundKey();
+        var useKeyBinding = new WrappedKeybinding(options.keyUse, WrappedKeybinding.VanillaAlternative.USE_KEY);
 
         if (!castOptions.isEmpty()) {
             var itemUseExpectation = expectedUseStack(player);
@@ -135,19 +134,19 @@ public class SpellHotbar {
         this.updateDebounced();
     }
 
-    @Nullable public Handle handleAll(ClientPlayerEntity player, GameOptions options, List<KeyBinding> exclude) {
+    @Nullable public Handle handleAll(LocalPlayer player, Options options, List<KeyMapping> exclude) {
         return handleSlotsInternal(player, this.slots, options, exclude);
     }
 
-    @Nullable public Handle handleUseKey(ClientPlayerEntity player, GameOptions options) {
+    @Nullable public Handle handleUseKey(LocalPlayer player, Options options) {
         return handleSlotsInternal(player, this.structuredSlots.onUseKey != null ? List.of(this.structuredSlots.onUseKey) : List.of(), options, List.of());
     }
 
-    @Nullable public Handle handleOther(ClientPlayerEntity player, GameOptions options, List<KeyBinding> exclude) {
+    @Nullable public Handle handleOther(LocalPlayer player, Options options, List<KeyMapping> exclude) {
         return handleSlotsInternal(player, this.structuredSlots.other(), options, exclude);
     }
 
-    @Nullable public Handle handleSome(ClientPlayerEntity player, @Nullable Slot slot, GameOptions options, List<KeyBinding> exclude) {
+    @Nullable public Handle handleSome(LocalPlayer player, @Nullable Slot slot, Options options, List<KeyMapping> exclude) {
         if (slot == null) { return null; }
         return handleSlotsInternal(player, List.of(slot), options, exclude);
     }
@@ -156,8 +155,8 @@ public class SpellHotbar {
         return handledThisTick;
     }
 
-    public record Handle(RegistryEntry<Spell> spell, KeyBinding keyBinding, @Nullable WrappedKeybinding.Category category, SpellCast.Attempt attempt) {
-        public static Handle from(Slot slot, KeyBinding keyBinding, @Nullable WrappedKeybinding.Category category) {
+    public record Handle(Holder<Spell> spell, KeyMapping keyBinding, @Nullable WrappedKeybinding.Category category, SpellCast.Attempt attempt) {
+        public static Handle from(Slot slot, KeyMapping keyBinding, @Nullable WrappedKeybinding.Category category) {
             return new Handle(slot.spell(), keyBinding, category, null);
         }
         public Handle withAttempt(SpellCast.Attempt attempt) {
@@ -166,15 +165,15 @@ public class SpellHotbar {
         public boolean isSuccessfulAttempt() {
             return attempt != null && attempt.isSuccess();
         }
-        public boolean isUseKey(GameOptions options) {
-            return keyBinding == null ? false : keyBinding.equals(options.useKey);
+        public boolean isUseKey(Options options) {
+            return keyBinding == null ? false : keyBinding.same(options.keyUse);
         }
     }
 
-    @Nullable private Handle handleSlotsInternal(ClientPlayerEntity player, List<Slot> slots, GameOptions options, List<KeyBinding> exclude) {
+    @Nullable private Handle handleSlotsInternal(LocalPlayer player, List<Slot> slots, Options options, List<KeyMapping> exclude) {
         if (handledThisTick != null || player.isSpectator()) { return null; }
-        if (Keybindings.bypass_spell_hotbar.isPressed()
-                || (SpellEngineClient.config.sneakingByPassSpellHotbar && options.sneakKey.isPressed())) {
+        if (Keybindings.bypass_spell_hotbar.isDown()
+                || (SpellEngineClient.config.sneakingByPassSpellHotbar && options.keyShift.isDown())) {
             return null;
         }
 //        if (itemUseCooldown > 0) {
@@ -188,14 +187,14 @@ public class SpellHotbar {
                 if (exclude.contains(keyBinding)) {
                     continue;
                 }
-                var pressed = keyBinding.isPressed();
+                var pressed = keyBinding.isDown();
                 var handle = Handle.from(slot, keyBinding, unwrapped.vanillaHandle());
                 if (pressed) {
                     this.lastPressed = handle;
                 }
 
                 if (slot.castMode() == SpellCast.Mode.ITEM_USE) {
-                    if (options.useKey.isPressed()) {
+                    if (options.keyUse.isDown()) {
                         return null;
                     }
                 } else if (pressed) {
@@ -235,8 +234,8 @@ public class SpellHotbar {
         return null;
     }
 
-    private RegistryEntry<Spell> attemptedSpell = null;
-    private void displayAttempt(SpellCast.Attempt attempt, RegistryEntry<Spell> spell) {
+    private Holder<Spell> attemptedSpell = null;
+    private void displayAttempt(SpellCast.Attempt attempt, Holder<Spell> spell) {
         if (Objects.equals(spell, attemptedSpell)) {
             return;
         }
@@ -247,31 +246,31 @@ public class SpellHotbar {
     }
 
     private enum UseCase { START, STOP }
-    private final HashMap<KeyBinding, UseCase> debounced = new HashMap<>();
+    private final HashMap<KeyMapping, UseCase> debounced = new HashMap<>();
 
-    private boolean isReleased(KeyBinding keybinding, UseCase use) {
+    private boolean isReleased(KeyMapping keybinding, UseCase use) {
         return debounced.get(keybinding) != use;
     }
 
-    private void debounce(KeyBinding keybinding, UseCase use) {
+    private void debounce(KeyMapping keybinding, UseCase use) {
         debounced.put(keybinding, use);
     }
 
     private void updateDebounced() {
-         debounced.entrySet().removeIf(entry -> !entry.getKey().isPressed());
+         debounced.entrySet().removeIf(entry -> !entry.getKey().isDown());
     }
 
 
-    public record ItemUseExpectation(Hand hand, ItemStack itemStack) {
+    public record ItemUseExpectation(InteractionHand hand, ItemStack itemStack) {
         public boolean isMainHand() {
-            return hand == Hand.MAIN_HAND;
+            return hand == InteractionHand.MAIN_HAND;
         }
     }
 
-    public static ItemUseExpectation expectedUseStack(PlayerEntity player) {
-        for (Hand hand : Hand.values()) {
-            ItemStack itemStack = player.getStackInHand(hand);
-            if (itemStack.getUseAction() != UseAction.NONE) {
+    public static ItemUseExpectation expectedUseStack(Player player) {
+        for (InteractionHand hand : InteractionHand.values()) {
+            ItemStack itemStack = player.getItemInHand(hand);
+            if (itemStack.getUseAnimation() != ItemUseAnimation.NONE) {
                 return new ItemUseExpectation(hand, itemStack);
             }
         }

@@ -1,6 +1,6 @@
 package net.spell_engine.api.spell.fx;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.fx.SpellEngineParticles;
 

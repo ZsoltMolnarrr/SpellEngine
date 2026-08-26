@@ -1,8 +1,8 @@
 package net.spell_engine.fx;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.internals.SpellModifiers;
@@ -13,7 +13,7 @@ import net.spell_engine.utils.SoundHelper;
 /// release visuals contributed by the caster's spell modifiers, broadcast anchored on the caster.
 public class ReleaseFx {
 
-    public static void send(World world, LivingEntity caster, RegistryEntry<Spell> spellEntry, float progress) {
+    public static void send(Level world, LivingEntity caster, Holder<Spell> spellEntry, float progress) {
         var spell = spellEntry.value();
         // The caster's own reach is the one magnitude a release can honestly describe, so it is
         // the only one bound here; effects asking for anything else fall back to their authored
@@ -39,12 +39,12 @@ public class ReleaseFx {
 
     /// Emits a visual bundle anchored on `caster`, resolving each effect's contextual scaling
     /// first. Scaled and unscaled effects go out together, in one particle batch.
-    private static void emitVisuals(World world, LivingEntity caster, Fx.Visuals visuals, Fx.Context context) {
+    private static void emitVisuals(Level world, LivingEntity caster, Fx.Visuals visuals, Fx.Context context) {
         if (visuals == null || visuals.isEmpty()) {
             return;
         }
         var resolved = visuals.resolved(context);
         ParticleHelper.sendBatches(caster, resolved.particles);
-        ModelEffectHelper.spawn(world, caster.getEntityPos(), caster.getYaw(), resolved.models, caster);
+        ModelEffectHelper.spawn(world, caster.position(), caster.getYRot(), resolved.models, caster);
     }
 }

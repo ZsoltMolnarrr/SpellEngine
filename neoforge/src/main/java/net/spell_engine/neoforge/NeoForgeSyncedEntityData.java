@@ -1,10 +1,10 @@
 package net.spell_engine.neoforge;
 
 import com.mojang.serialization.Codec;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Entity;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
@@ -28,7 +28,7 @@ public final class NeoForgeSyncedEntityData<T> implements SyncedEntityData<T> {
     private final T defaultValue;
 
     public NeoForgeSyncedEntityData(Identifier id, T defaultValue,
-                                    PacketCodec<? super RegistryByteBuf, T> sync,
+                                    StreamCodec<? super RegistryFriendlyByteBuf, T> sync,
                                     @Nullable Codec<T> persistence) {
         this.id = id;
         this.defaultValue = defaultValue;

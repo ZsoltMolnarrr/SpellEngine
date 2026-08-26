@@ -1,15 +1,15 @@
 package net.spell_engine.internals.delivery;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.Platform;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.event.SpellHandlers;
@@ -43,9 +43,9 @@ public class SpellDelivery {
     /// spell's targeting type. Called from both the player cast path and the entity cast path
     /// (see {@link net.spell_engine.internals.casting.SpellCasting}).
     public static boolean resolveAndDeliver(
-            World world,
+            Level world,
             LivingEntity caster,
-            RegistryEntry<Spell> spellEntry,
+            Holder<Spell> spellEntry,
             SpellTarget.SearchResult targetResult,
             ImpactContext context,
             @Nullable Consumer<DeliveryCompletion> completion) {
@@ -81,13 +81,13 @@ public class SpellDelivery {
                 }
                 // Very specific attempt failure display, generic solution would be very difficult
                 if (!success && aim.required && firstTarget.isEmpty()) {
-                    if (caster instanceof ServerPlayerEntity serverPlayer) {
-                        Platform.util().networkS2C_Send(serverPlayer, new Packets.SpellMessage("hud.cast_attempt_error.missing_target", Formatting.RED));
+                    if (caster instanceof ServerPlayer serverPlayer) {
+                        Platform.util().networkS2C_Send(serverPlayer, new Packets.SpellMessage("hud.cast_attempt_error.missing_target", ChatFormatting.RED));
                     }
                 }
             }
             case AREA -> {
-                var center = caster.getEntityPos().add(0, caster.getHeight() / 2F, 0);
+                var center = caster.position().add(0, caster.getBbHeight() / 2F, 0);
                 var area = spell.target.area;
                 var range = SpellParameters.getRangeCurved(caster, spellEntry, context.charge()) * caster.getScale();
                 final var centeredContext = context; // .position(center);
@@ -97,7 +97,7 @@ public class SpellDelivery {
                     switch (area.distance_dropoff) {
                         case NONE -> { }
                         case SQUARED -> {
-                            distanceBasedMultiplier = (float) ((squaredRange - target.squaredDistanceTo(center)) / squaredRange);
+                            distanceBasedMultiplier = (float) ((squaredRange - target.distanceToSqr(center)) / squaredRange);
                             distanceBasedMultiplier = Math.max(distanceBasedMultiplier, 0F);
                         }
                     }
@@ -120,12 +120,12 @@ public class SpellDelivery {
         return success;
     }
 
-    public static boolean deliver(World world, RegistryEntry<Spell> spellEntry, LivingEntity caster, List<DeliveryTarget> targets, ImpactContext context, @Nullable Vec3d targetLocation, Consumer<DeliveryCompletion> completion) {
+    public static boolean deliver(Level world, Holder<Spell> spellEntry, LivingEntity caster, List<DeliveryTarget> targets, ImpactContext context, @Nullable Vec3 targetLocation, Consumer<DeliveryCompletion> completion) {
         return deliver(world, spellEntry, caster, targets, context, targetLocation, completion, false, false);
     }
 
-    public static boolean deliver(World world, RegistryEntry<Spell> spellEntry, LivingEntity caster, List<DeliveryTarget> targets, ImpactContext context,
-                                  @Nullable Vec3d targetLocation, @Nullable Consumer<DeliveryCompletion> completion, boolean forceSuccess, boolean scheduled) {
+    public static boolean deliver(Level world, Holder<Spell> spellEntry, LivingEntity caster, List<DeliveryTarget> targets, ImpactContext context,
+                                  @Nullable Vec3 targetLocation, @Nullable Consumer<DeliveryCompletion> completion, boolean forceSuccess, boolean scheduled) {
         var spell = spellEntry.value();
 
         if (spell.deliver.delay > 0) {
@@ -146,7 +146,7 @@ public class SpellDelivery {
         switch (spell.deliver.type) {
             case DIRECT -> {
                 var anySuccess = false;
-                var casterPos = caster.getEntityPos().add(0, caster.getHeight() / 2F, 0);
+                var casterPos = caster.position().add(0, caster.getBbHeight() / 2F, 0);
                 if (targets.isEmpty() && targetLocation != null
                         && spell.area_impact != null) { // Special check to allow area impacts only, in the absence of targets
                     var position = targetLocation.lerp(casterPos, 0.001F);
@@ -158,7 +158,7 @@ public class SpellDelivery {
                         var target = targeted.entity();
                         var position = target == caster
                                 ? casterPos
-                                : target.getEntityPos().add(0, target.getHeight() / 2F, 0).lerp(casterPos, 0.01F);
+                                : target.position().add(0, target.getBbHeight() / 2F, 0).lerp(casterPos, 0.01F);
                         var targetSpecificContext = targeted.context().position(position);
                         var result = SpellImpacts.performImpacts(world, caster, target, target, spellEntry, spell.impacts, targetSpecificContext);
                         anySuccess = anySuccess || result;
@@ -226,17 +226,17 @@ public class SpellDelivery {
                             ? targets.stream().map(e -> e.entity()).toList()
                             : List.of(caster);
                     var meleeData = spell.deliver.melee;
-                    var spellId = spellEntry.getKey().get().getValue();
+                    var spellId = spellEntry.unwrapKey().get().identifier();
                     var attacks = meleeData.attacks;
                     if (context.isChanneled()) {
                         var index = context.channelTickIndex() % attacks.size();
                         attacks = List.of(attacks.get(index));
                     }
                     for (var attacker: attackers) {
-                        if (!attacker.isOnGround() && !spell.deliver.melee.allow_airborne) {
+                        if (!attacker.onGround() && !spell.deliver.melee.allow_airborne) {
                             break;
                         }
-                        if (attacker instanceof ServerPlayerEntity serverPlayer) {
+                        if (attacker instanceof ServerPlayer serverPlayer) {
                             // Map to resolved MeleeAttack structures
                             var meleeAttacks = Melee.createMeleeAttacks(serverPlayer, attacks, spellEntry,
                                     context.charge(), context.chargeModifier());
@@ -251,8 +251,8 @@ public class SpellDelivery {
             case STASH_EFFECT -> {
                 var anyAdded = false;
                 var stash = spell.deliver.stash_effect;
-                var id = Identifier.of(stash.id);
-                var effect = Registries.STATUS_EFFECT.getEntry(id).get();
+                var id = Identifier.parse(stash.id);
+                var effect = BuiltInRegistries.MOB_EFFECT.get(id).get();
 
                 var amplifier = stash.amplifier;
                 if (stash.amplifier_power_multiplier != 0) {
@@ -266,17 +266,17 @@ public class SpellDelivery {
                     if (targeted.entity() instanceof LivingEntity livingEntity) {
                         if (stash.stacking) {
                             var stack = -1;
-                            var existingInstance = livingEntity.getStatusEffect(effect);
+                            var existingInstance = livingEntity.getEffect(effect);
                             if (existingInstance != null) {
                                 stack = existingInstance.getAmplifier();
-                                livingEntity.removeStatusEffect(effect);
+                                livingEntity.removeEffect(effect);
                             }
                             stack += 1;
-                            var instance = new StatusEffectInstance(effect, (int) (stash.duration * 20), Math.min(stack, amplifier), false, stash.show_particles, true);
-                            livingEntity.addStatusEffect(instance);
+                            var instance = new MobEffectInstance(effect, (int) (stash.duration * 20), Math.min(stack, amplifier), false, stash.show_particles, true);
+                            livingEntity.addEffect(instance);
                         } else {
-                            var instance = new StatusEffectInstance(effect, (int) (stash.duration * 20), amplifier, false, stash.show_particles, true);
-                            livingEntity.addStatusEffect(instance);
+                            var instance = new MobEffectInstance(effect, (int) (stash.duration * 20), amplifier, false, stash.show_particles, true);
+                            livingEntity.addEffect(instance);
                         }
                         anyAdded = true;
                     }

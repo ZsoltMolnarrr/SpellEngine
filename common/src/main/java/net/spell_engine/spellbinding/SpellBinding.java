@@ -1,12 +1,12 @@
 package net.spell_engine.spellbinding;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
@@ -19,9 +19,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class SpellBinding {
-    public static final Identifier ADVANCEMENT_VISIT_ID = Identifier.of(SpellEngineMod.ID, "visit_spell_binding_table");
+    public static final Identifier ADVANCEMENT_VISIT_ID = Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "visit_spell_binding_table");
     public static final String name = "spell_binding";
-    public static final Identifier ID = Identifier.of(SpellEngineMod.ID, name);
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(SpellEngineMod.ID, name);
     private static final float LIBRARY_POWER_BASE = 10;
     private static final float LIBRARY_POWER_MULTIPLIER = 1.5F;
     private static final int LIBRARY_POWER_CAP = 18;
@@ -30,20 +30,20 @@ public class SpellBinding {
     public record Offer(int id, int levelCost, int levelRequirement, int lapisCost, boolean isPowered) {  }
     public record OfferResult(Mode mode, List<Offer> offers) { }
 
-    public static List<TagKey<Spell>> availableSpellBookTags(World world) {
-        var wrapper = world.getRegistryManager().getOptional(SpellRegistry.KEY);
+    public static List<TagKey<Spell>> availableSpellBookTags(Level world) {
+        var wrapper = world.registryAccess().lookup(SpellRegistry.KEY);
         if (wrapper.isEmpty()) {
             return List.of();
         }
-        return wrapper.get().streamTags()
-                .filter(tag -> tag.getTag().id().getPath().startsWith(SpellTags.SPELL_BOOK_PREFIX)
+        return wrapper.get().getTags()
+                .filter(tag -> tag.key().location().getPath().startsWith(SpellTags.SPELL_BOOK_PREFIX)
                         && tag.size() > 0)  // Filter out empty tags
-                .map(tag -> tag.getTag())
-                .sorted(Comparator.comparing(tag -> tag.id().getNamespace() + "_" + tag.id().getPath()))
+                .map(tag -> tag.key())
+                .sorted(Comparator.comparing(tag -> tag.location().getNamespace() + "_" + tag.location().getPath()))
                 .toList();
     }
 
-    public static OfferResult offersFor(World world, boolean creative, ItemStack itemStack, ItemStack consumableStack, int libraryPower) {
+    public static OfferResult offersFor(Level world, boolean creative, ItemStack itemStack, ItemStack consumableStack, int libraryPower) {
         if (itemStack.getItem() == Items.BOOK) {
             var tags = availableSpellBookTags(world);
             var offers = new ArrayList<Offer>();
@@ -73,27 +73,27 @@ public class SpellBinding {
             return new OfferResult(Mode.SPELL, List.of());
         }
 
-        List<RegistryEntry<Spell>> spells;
+        List<Holder<Spell>> spells;
         var consumableContainer = SpellContainerHelper.containerFromItemStack(consumableStack);
         var scrollMode = false;
-        if (consumableStack.isIn(SpellEngineItemTags.SPELL_BOOK_MERGEABLE) && consumableContainer != null) {
+        if (consumableStack.is(SpellEngineItemTags.SPELL_BOOK_MERGEABLE) && consumableContainer != null) {
             scrollMode = true;
             var spellRegistry = SpellRegistry.from(world);
             var consumableSpells = consumableContainer.spell_ids().stream()
-                    .map(Identifier::of)
-                    .map(spellRegistry::getEntry)
+                    .map(Identifier::parse)
+                    .map(spellRegistry::get)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .toList();
             var availableSpellIds = pool.stream()
-                    .map(entry -> entry.getKey().get().getValue())
+                    .map(entry -> entry.unwrapKey().get().identifier())
                     .collect(Collectors.toSet());
             spells = consumableSpells.stream()
                     .filter(entry -> {
-                        var spellId = entry.getKey().get().getValue();
+                        var spellId = entry.unwrapKey().get().identifier();
                         return availableSpellIds.contains(spellId) || creative;
                     })
-                    .map(entry -> (RegistryEntry<Spell>) entry)
+                    .map(entry -> (Holder<Spell>) entry)
                     .toList();
         } else {
             spells = pool;
@@ -102,7 +102,7 @@ public class SpellBinding {
         var spellMap = new HashMap<Identifier, Spell>(); // Refactor: remove this conversion
         spells.forEach(entry -> {
             var spell = entry.value();
-            spellMap.put(entry.getKey().get().getValue(), spell);
+            spellMap.put(entry.unwrapKey().get().identifier(), spell);
         });
         final var finalScrollMode = scrollMode;
         return new OfferResult(Mode.SPELL,
@@ -148,10 +148,10 @@ public class SpellBinding {
         );
     }
 
-    private static int rawSpellId(World world, Identifier spellId) {
+    private static int rawSpellId(Level world, Identifier spellId) {
         var registry = SpellRegistry.from(world);
-        var entry = registry.getEntry(spellId).get();
-        return registry.getRawId(entry.value());
+        var entry = registry.get(spellId).get();
+        return registry.getId(entry.value());
     }
 
     public static class State {
@@ -164,14 +164,14 @@ public class SpellBinding {
 
         public Requirements requirements;
         public record Requirements(int lapisCost, int levelCost, int requiredLevel) {
-            public boolean satisfiedFor(PlayerEntity player, int lapisCount) {
+            public boolean satisfiedFor(Player player, int lapisCount) {
                 return player.isCreative() ||
                         (metRequiredLevel(player)
                         && hasEnoughLapis(lapisCount)
                         && hasEnoughLevelsToSpend(player));
             }
 
-            public boolean metRequiredLevel(PlayerEntity player) {
+            public boolean metRequiredLevel(Player player) {
                 return player.experienceLevel >= requiredLevel;
             }
 
@@ -179,21 +179,21 @@ public class SpellBinding {
                 return lapisCount >= lapisCost;
             }
 
-            public boolean hasEnoughLevelsToSpend(PlayerEntity player) {
+            public boolean hasEnoughLevelsToSpend(Player player) {
                 return player.experienceLevel >= levelCost;
             }
         }
 
-        public static State of(World world, int spellId, ItemStack itemStack, int levelCost, int requiredLevel, int lapisCost) {
+        public static State of(Level world, int spellId, ItemStack itemStack, int levelCost, int requiredLevel, int lapisCost) {
             var registry = SpellRegistry.from(world);
-            var spellEntry = registry.getEntry(spellId);
+            var spellEntry = registry.get(spellId);
             if (spellEntry.isEmpty()) {
                 return new State(ApplyState.INVALID, null);
             }
-            return State.of(world, spellEntry.get().getKey().get().getValue(), itemStack, levelCost, requiredLevel, lapisCost);
+            return State.of(world, spellEntry.get().unwrapKey().get().identifier(), itemStack, levelCost, requiredLevel, lapisCost);
         }
 
-        public static State of(World world, Identifier spellId, ItemStack itemStack, int levelCost, int requiredLevel, int lapisCost) {
+        public static State of(Level world, Identifier spellId, ItemStack itemStack, int levelCost, int requiredLevel, int lapisCost) {
             var container = SpellContainerHelper.containerFromItemStack(itemStack);
             var requirements = new Requirements(
                     lapisCost,
@@ -211,14 +211,14 @@ public class SpellBinding {
 
             // Check for tier conflicts
             var registry = SpellRegistry.from(world);
-            var spellEntry = registry.getEntry(spellId);
+            var spellEntry = registry.get(spellId);
             if (spellEntry.isPresent()) {
                 var newSpellTier = spellEntry.get().value().tier;
                 var otherSpellsInTier = 0;
                 // Check existing spell with the same tier
                 for (var existingSpellIdString : container.spell_ids()) {
-                    var existingSpellId = Identifier.of(existingSpellIdString);
-                    var existingSpellEntry = registry.getEntry(existingSpellId);
+                    var existingSpellId = Identifier.parse(existingSpellIdString);
+                    var existingSpellEntry = registry.get(existingSpellId);
                     if (existingSpellEntry.isPresent() && existingSpellEntry.get().value().tier == newSpellTier) {
                         otherSpellsInTier += 1;
                     }
@@ -231,7 +231,7 @@ public class SpellBinding {
             return new State(ApplyState.APPLICABLE, requirements);
         }
 
-        public boolean readyToApply(PlayerEntity player, int lapisCount) {
+        public boolean readyToApply(Player player, int lapisCount) {
             return state == SpellBinding.State.ApplyState.APPLICABLE
                     && requirements != null
                     && requirements.satisfiedFor(player, lapisCount);

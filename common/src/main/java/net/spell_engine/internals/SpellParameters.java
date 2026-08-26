@@ -1,10 +1,10 @@
 package net.spell_engine.internals;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.Holder;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.effect.InstantCast;
 import net.spell_engine.api.spell.Spell;
@@ -50,11 +50,11 @@ public class SpellParameters {
     // with the curved ratio, so the whole reach grows with the hold. Otherwise modifier bonuses
     // apply flat and the ratio is ignored.
 
-    public static float getRange(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
+    public static float getRange(LivingEntity caster, Holder<Spell> spellEntry) {
         return getRangeCurved(caster, spellEntry, 1F);
     }
 
-    public static float getRange(LivingEntity caster, RegistryEntry<Spell> spellEntry, float chargeRatio) {
+    public static float getRange(LivingEntity caster, Holder<Spell> spellEntry, float chargeRatio) {
         var charge = chargeConfigOf(spellEntry.value());
         return getRangeCurved(caster, spellEntry, charge != null ? charge.curve.apply(chargeRatio) : 1F);
     }
@@ -63,26 +63,26 @@ public class SpellParameters {
     /// charge. This is what `SpellCast.Option` flattens — the client runs its expensive
     /// targeting (raycasts, collision checks) at this bound, and the server filters down to
     /// the true (ratio-scaled) range at fire.
-    public static float getMaxRange(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
+    public static float getMaxRange(LivingEntity caster, Holder<Spell> spellEntry) {
         return getRange(caster, spellEntry, 1F);
     }
 
-    public static float getRangeCurved(LivingEntity caster, RegistryEntry<Spell> spellEntry, float curvedRatio) {
+    public static float getRangeCurved(LivingEntity caster, Holder<Spell> spellEntry, float curvedRatio) {
         var spell = spellEntry.value();
         var range = spell.range;
         if (spell.range_mechanic != null) {
             switch (spell.range_mechanic) {
                 case MELEE -> {
                     double meleeRange = 3;
-                    if (caster instanceof PlayerEntity player) {
-                        meleeRange = player.getEntityInteractionRange();
+                    if (caster instanceof Player player) {
+                        meleeRange = player.entityInteractionRange();
                     }
                     range = (float) (meleeRange + spell.range);
                 }
             }
         }
         var bonus = 0F;
-        if (caster instanceof PlayerEntity player) {
+        if (caster instanceof Player player) {
             for (var modifier: SpellModifiers.of(player, spellEntry)) {
                 bonus += modifier.range_add;
             }
@@ -116,7 +116,7 @@ public class SpellParameters {
         return new SpellCast.Duration(haste, Math.round(duration * 20F));
     }
 
-    public static boolean isInstantCast(RegistryEntry<Spell> spellEntry, LivingEntity caster) {
+    public static boolean isInstantCast(Holder<Spell> spellEntry, LivingEntity caster) {
         var spell = spellEntry.value();
         if (spell.active == null) { return true; }
         return spell.active.cast.duration == 0
@@ -130,9 +130,9 @@ public class SpellParameters {
 
     // MARK: Channel
 
-    public static int channelTicks(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
+    public static int channelTicks(LivingEntity caster, Holder<Spell> spellEntry) {
         var ticks = spellEntry.value().active.cast.channelTicks();
-        if (caster instanceof PlayerEntity player) {
+        if (caster instanceof Player player) {
             var modifiers = SpellModifiers.of(player, spellEntry);
             for (var modifier: modifiers) {
                 ticks += modifier.channel_ticks_add;
@@ -157,14 +157,14 @@ public class SpellParameters {
 
     // MARK: Cooldown
 
-    public static float getCooldownDuration(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
+    public static float getCooldownDuration(LivingEntity caster, Holder<Spell> spellEntry) {
         return getCooldownDuration(caster, spellEntry, null);
     }
 
-    public static float getCooldownDuration(LivingEntity caster, RegistryEntry<Spell> spellEntry, ItemStack provisionedWeapon) {
+    public static float getCooldownDuration(LivingEntity caster, Holder<Spell> spellEntry, ItemStack provisionedWeapon) {
         var spell = spellEntry.value();
         var duration = spell.cost.cooldown.duration;
-        if (caster instanceof PlayerEntity player) {
+        if (caster instanceof Player player) {
             duration -= SpellModifiers.cooldownDeduction(player, spellEntry);
         }
         if (duration > 0) {
@@ -186,7 +186,7 @@ public class SpellParameters {
         return spell.active.cast.charge;
     }
 
-    @Nullable public static Spell.Active.Cast.Charge chargeConfigOf(@Nullable RegistryEntry<Spell> spellEntry) {
+    @Nullable public static Spell.Active.Cast.Charge chargeConfigOf(@Nullable Holder<Spell> spellEntry) {
         return spellEntry == null ? null : chargeConfigOf(spellEntry.value());
     }
 
@@ -195,10 +195,10 @@ public class SpellParameters {
     /// Returns `1` for anything that does not charge.
     public static float chargeOutputMultiplier(@Nullable Spell spell, float curvedRatio) {
         var charge = chargeConfigOf(spell);
-        return charge == null ? 1F : MathHelper.lerp(charge.output_scaling, 1F, curvedRatio);
+        return charge == null ? 1F : Mth.lerp(charge.output_scaling, 1F, curvedRatio);
     }
 
-    public static float chargeOutputMultiplier(@Nullable RegistryEntry<Spell> spellEntry, float curvedRatio) {
+    public static float chargeOutputMultiplier(@Nullable Holder<Spell> spellEntry, float curvedRatio) {
         return chargeOutputMultiplier(spellEntry == null ? null : spellEntry.value(), curvedRatio);
     }
 }

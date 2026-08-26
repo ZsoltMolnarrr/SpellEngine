@@ -1,12 +1,12 @@
 package net.spell_engine.mixin.effect;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
 import net.spell_engine.api.effect.EntityTints;
 import net.spell_engine.api.effect.Synchronized;
 import net.spell_engine.api.spell.fx.ModelEffectAttachment;
@@ -29,28 +29,28 @@ import java.util.Map;
 /// directly (`Synchronized.effectsOf`, `EntityTints.currentTint`, `ModelEffectAttachment.of`).
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityStatusEffectSync extends Entity {
-    @Shadow @Final private Map<RegistryEntry<StatusEffect>, StatusEffectInstance> activeStatusEffects;
+    @Shadow @Final private Map<Holder<MobEffect>, MobEffectInstance> activeEffects;
 
-    public LivingEntityStatusEffectSync(EntityType<?> type, World world) {
+    public LivingEntityStatusEffectSync(EntityType<?> type, Level world) {
         super(type, world);
     }
 
     /**
      * `updatePotionVisibility` is called upon effects of the entity are changed.
      */
-    @Inject(method = "updatePotionVisibility", at = @At("HEAD"))
+    @Inject(method = "updateInvisibilityStatus", at = @At("HEAD"))
     private void updatePotionVisibility_HEAD_SpellEngine_SyncEffects(CallbackInfo ci) {
-        if (getEntityWorld().isClient()) { return; }
+        if (level().isClientSide()) { return; }
         var entity = (LivingEntity) (Object) this;
         SpellEngineAttachments.SYNCED_EFFECTS.set(entity,
-                activeStatusEffects.isEmpty() ? List.of() : SpellEngine_synchronizedEffects());
+                activeEffects.isEmpty() ? List.of() : SpellEngine_synchronizedEffects());
         SpellEngineAttachments.TINT_ARGB.set(entity, EntityTints.resolve(entity));
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick_TAIL_SpellEngine_ModelFx(CallbackInfo ci) {
-        if (getEntityWorld().isClient()) { return; }
-        ModelEffectAttachment.expire((LivingEntity) (Object) this, getEntityWorld().getTime());
+        if (level().isClientSide()) { return; }
+        ModelEffectAttachment.expire((LivingEntity) (Object) this, level().getGameTime());
     }
 
     /// The `Synchronized` subset of the active effects, each keeping the world time it was first
@@ -61,10 +61,10 @@ public abstract class LivingEntityStatusEffectSync extends Entity {
     private List<Synchronized.Effect> SpellEngine_synchronizedEffects() {
         var previous = SpellEngineAttachments.SYNCED_EFFECTS.get(this);
         var effects = new ArrayList<Synchronized.Effect>();
-        for (var entry : activeStatusEffects.entrySet()) {
+        for (var entry : activeEffects.entrySet()) {
             var effect = entry.getKey().value();
             if (!((Synchronized) effect).shouldSynchronize()) { continue; }
-            long appliedAtWorldTime = getEntityWorld().getTime();
+            long appliedAtWorldTime = level().getGameTime();
             for (var synced : previous) {
                 if (synced.effect() == effect) {
                     appliedAtWorldTime = synced.appliedAtWorldTime();

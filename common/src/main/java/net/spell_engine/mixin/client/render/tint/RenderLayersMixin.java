@@ -1,8 +1,8 @@
 package net.spell_engine.mixin.client.render.tint;
 
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderLayers;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.api.effect.EntityTints;
 import net.spell_engine.api.render.CustomLayers;
 import net.spell_engine.client.render.tint.EntityTintPass;
@@ -16,10 +16,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /// vanilla armor layer is swapped for a translucent-blend clone (`CustomLayers.armorCutoutNoCullTranslucent`,
 /// declared to Iris as an entity-translucent program). Every other armor draw stays on vanilla's own pipeline —
 /// so it renders exactly like vanilla, including under shader packs.
-@Mixin(RenderLayers.class)
+@Mixin(RenderTypes.class)
 public abstract class RenderLayersMixin {
     @Inject(method = "armorCutoutNoCull", at = @At("HEAD"), cancellable = true)
-    private static void armorCutoutNoCull_HEAD_SpellEngine_Tint(Identifier texture, CallbackInfoReturnable<RenderLayer> cir) {
+    private static void armorCutoutNoCull_HEAD_SpellEngine_Tint(Identifier texture, CallbackInfoReturnable<RenderType> cir) {
         if (EntityTintPass.isTranslucent()) {
             cir.setReturnValue(CustomLayers.armorCutoutNoCullTranslucent(texture));
         }

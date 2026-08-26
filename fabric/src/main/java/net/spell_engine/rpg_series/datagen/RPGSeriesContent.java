@@ -2,11 +2,9 @@ package net.spell_engine.rpg_series.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.item.Item;
-import net.minecraft.item.Items;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.Items;
 import net.spell_engine.api.datagen.NamespacedLangGenerator;
 import net.spell_engine.api.datagen.SpellGenerator;
 import net.spell_engine.rpg_series.item.Equipment;
@@ -19,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class RPGSeriesContent {
     public static class EquipmentTagGen extends FabricTagProvider.ItemTagProvider {
-        public EquipmentTagGen(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+        public EquipmentTagGen(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, registriesFuture);
         }
 
@@ -68,7 +66,7 @@ public class RPGSeriesContent {
         }
 
         @Override
-        protected void configure(RegistryWrapper.WrapperLookup wrapperLookup) {
+        protected void addTags(HolderLookup.Provider wrapperLookup) {
             for (var entry: RPGSeriesItemTags.WeaponType.ALL.entrySet()) {
                 var tag = valueLookupBuilder(entry.getValue());
             }
@@ -200,7 +198,7 @@ public class RPGSeriesContent {
     }
 
     public static class WeaponSkillGen extends SpellGenerator {
-        public WeaponSkillGen(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+        public WeaponSkillGen(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, registryLookup);
         }
 
@@ -213,12 +211,12 @@ public class RPGSeriesContent {
     }
 
     public static class LangGenerator extends NamespacedLangGenerator {
-        public LangGenerator(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+        public LangGenerator(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, registryLookup, "rpg_series");
         }
 
         @Override
-        public void generateTranslations(RegistryWrapper.WrapperLookup wrapperLookup, TranslationBuilder translationBuilder) {
+        public void generateTranslations(HolderLookup.Provider wrapperLookup, TranslationBuilder translationBuilder) {
             WeaponSkills.entries.forEach(entry -> {
                 var id = entry.id();
                 translationBuilder.add("spell." + id.getNamespace() + "." + id.getPath() + ".name" , entry.title());

@@ -2,33 +2,33 @@ package net.spell_engine.misc.criteria;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancement.criterion.AbstractCriterion;
-import net.minecraft.predicate.entity.EntityPredicate;
-import net.minecraft.predicate.entity.LootContextPredicate;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.advancements.criterion.ContextAwarePredicate;
+import net.minecraft.advancements.criterion.EntityPredicate;
+import net.minecraft.advancements.criterion.SimpleCriterionTrigger;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.spell_engine.SpellEngineMod;
 
 import java.util.Optional;
 
-public class EnchantmentSpecificCriteria extends AbstractCriterion<EnchantmentSpecificCriteria.Condition> {
-    public static final Identifier ID = Identifier.of(SpellEngineMod.ID, "enchant_specific");
+public class EnchantmentSpecificCriteria extends SimpleCriterionTrigger<EnchantmentSpecificCriteria.Condition> {
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "enchant_specific");
     public static final EnchantmentSpecificCriteria INSTANCE = new EnchantmentSpecificCriteria();
 
     @Override
-    public Codec<EnchantmentSpecificCriteria.Condition> getConditionsCodec() {
+    public Codec<EnchantmentSpecificCriteria.Condition> codec() {
         return EnchantmentSpecificCriteria.Condition.CODEC;
     }
 
-    public void trigger(ServerPlayerEntity player, Identifier spellPoolId) {
+    public void trigger(ServerPlayer player, Identifier spellPoolId) {
         trigger(player, condition -> {
             return condition.matches(spellPoolId);
         });
     }
 
-    public record Condition(Optional<LootContextPredicate> player, Optional<String> enchant_id) implements AbstractCriterion.Conditions {
+    public record Condition(Optional<ContextAwarePredicate> player, Optional<String> enchant_id) implements SimpleCriterionTrigger.SimpleInstance {
         public static final Codec<EnchantmentSpecificCriteria.Condition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                                EntityPredicate.LOOT_CONTEXT_PREDICATE_CODEC.optionalFieldOf("player").forGetter(EnchantmentSpecificCriteria.Condition::player),
+                                EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(EnchantmentSpecificCriteria.Condition::player),
                                 Codec.optionalField("enchant_id", Codec.STRING, true).forGetter(EnchantmentSpecificCriteria.Condition::enchant_id)
                         )
                         .apply(instance, EnchantmentSpecificCriteria.Condition::new)
@@ -42,7 +42,7 @@ public class EnchantmentSpecificCriteria extends AbstractCriterion<EnchantmentSp
             return poolMatches;
         }
 
-        public Optional<LootContextPredicate> player() {
+        public Optional<ContextAwarePredicate> player() {
             return this.player;
         }
 

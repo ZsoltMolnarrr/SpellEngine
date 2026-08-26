@@ -1,12 +1,12 @@
 package net.spell_engine.client.render;
 
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.state.EntityRenderState;
-import net.minecraft.client.render.state.CameraRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.RotationAxis;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.entity.SpellCloud;
 import org.jetbrains.annotations.Nullable;
@@ -17,7 +17,7 @@ public class SpellCloudRenderer<T extends SpellCloud> extends EntityRenderer<T, 
         public float tickDelta;
     }
 
-    public SpellCloudRenderer(EntityRendererFactory.Context context) {
+    public SpellCloudRenderer(EntityRendererProvider.Context context) {
         super(context);
     }
 
@@ -27,15 +27,15 @@ public class SpellCloudRenderer<T extends SpellCloud> extends EntityRenderer<T, 
     }
 
     @Override
-    public void updateRenderState(T entity, State state, float tickDelta) {
-        super.updateRenderState(entity, state, tickDelta);
+    public void extractRenderState(T entity, State state, float tickDelta) {
+        super.extractRenderState(entity, state, tickDelta);
         state.cloud = entity;
         state.tickDelta = tickDelta;
     }
 
     @Override
-    public void render(State state, MatrixStack matrixStack, OrderedRenderCommandQueue queue, CameraRenderState cameraState) {
-        super.render(state, matrixStack, queue, cameraState);
+    public void submit(State state, PoseStack matrixStack, SubmitNodeCollector queue, CameraRenderState cameraState) {
+        super.submit(state, matrixStack, queue, cameraState);
         var entity = state.cloud;
         if (entity == null) {
             return;
@@ -46,15 +46,15 @@ public class SpellCloudRenderer<T extends SpellCloud> extends EntityRenderer<T, 
         }
         var clientData = data.client_data;
         if (!clientData.model_fx.isEmpty()) {
-            renderModelFx(entity, clientData, state.tickDelta, matrixStack, queue, state.light);
+            renderModelFx(entity, clientData, state.tickDelta, matrixStack, queue, state.lightCoords);
         }
     }
 
     /// Each model animated through the modelFX system, under the shared cloud-root transform. Animation time is the cloud's age (lines up with its lifecycle phases).
     private void renderModelFx(SpellCloud entity, Spell.Delivery.Cloud.ClientData clientData, float tickDelta,
-                               MatrixStack matrixStack, OrderedRenderCommandQueue queue, int light) {
-        matrixStack.push();
-        matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(-1F * entity.getYaw() + 180F));
+                               PoseStack matrixStack, SubmitNodeCollector queue, int light) {
+        matrixStack.pushPose();
+        matrixStack.mulPose(Axis.YP.rotationDegrees(-1F * entity.getYRot() + 180F));
         // Grow the model with the cloud's radius, applied about the ground origin (before the 0.5 lift)
         float renderScale = entity.getRenderScale(tickDelta);
         if (renderScale != 1F) {
@@ -62,19 +62,19 @@ public class SpellCloudRenderer<T extends SpellCloud> extends EntityRenderer<T, 
         }
         matrixStack.translate(0, 0.5, 0); // Compensate for translate within CustomModels.render
 
-        float age = entity.age + tickDelta;
+        float age = entity.tickCount + tickDelta;
         for (var effect : clientData.model_fx) {
             if (effect == null || effect.model_id == null || effect.model_id.isEmpty()) {
                 continue;
             }
-            matrixStack.push();
+            matrixStack.pushPose();
             if (effect.positioning != null && effect.positioning.vertical != 0) {
-                matrixStack.translate(0, effect.positioning.vertical * entity.getHeight(), 0);
+                matrixStack.translate(0, effect.positioning.vertical * entity.getBbHeight(), 0);
             }
             ModelEffectOperations.renderEffect(effect, age, matrixStack, queue, light, entity.getId());
-            matrixStack.pop();
+            matrixStack.popPose();
         }
 
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 }

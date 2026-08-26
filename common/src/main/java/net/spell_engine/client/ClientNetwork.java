@@ -1,8 +1,8 @@
 package net.spell_engine.client;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Language;
+import net.minecraft.client.Minecraft;
+import net.minecraft.locale.Language;
+import net.minecraft.world.entity.player.Player;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.animation.AnimatablePlayer;
@@ -31,46 +31,46 @@ public class ClientNetwork {
     // MARK: Play stage
 
     public static void handleParticleEffects(Packets.ParticleEffects packet) {
-        var client = MinecraftClient.getInstance();
-        var instructions = ParticleHelper.convertToInstructions(client.world, packet);
+        var client = Minecraft.getInstance();
+        var instructions = ParticleHelper.convertToInstructions(client.level, packet);
         client.execute(() -> {
             for (var instruction: instructions) {
-                instruction.perform(client.world);
+                instruction.perform(client.level);
             }
         });
     }
 
     public static void handleSpellAnimation(Packets.SpellAnimation packet) {
-        var client = MinecraftClient.getInstance();
+        var client = Minecraft.getInstance();
         client.execute(() -> {
-            var entity = client.world.getEntityById(packet.playerId());
-            if (entity instanceof PlayerEntity player) {
-                ((AnimatablePlayer) player).playSpellAnimation(packet.type(), packet.name(), packet.speed());
+            var entity = client.level.getEntity(packet.playerId());
+            if (entity instanceof Player player) {
+                ((AnimatablePlayer) player).playSpellAnimation(packet.animation(), packet.name(), packet.speed());
             }
         });
     }
 
     public static void handleSpellCooldown(Packets.SpellCooldown packet) {
-        var client = MinecraftClient.getInstance();
+        var client = Minecraft.getInstance();
         client.execute(() -> {
-            if (client.world == null) return;
-            var registry = SpellRegistry.from(client.world);
-            var spell = registry.getEntry(packet.spellId());
+            if (client.level == null) return;
+            var registry = SpellRegistry.from(client.level);
+            var spell = registry.get(packet.spellId());
             if (spell.isEmpty()) return;
             ((SpellCaster.Player) client.player).getCooldownManager().set(spell.get(), packet.duration());
         });
     }
 
     public static void handleSpellMessage(Packets.SpellMessage packet) {
-        var client = MinecraftClient.getInstance();
+        var client = Minecraft.getInstance();
         client.execute(() -> {
-            var translation = Language.getInstance().get(packet.translationKey());
+            var translation = Language.getInstance().getOrDefault(packet.translationKey());
             HudMessages.INSTANCE.error(translation);
         });
     }
 
     public static void handleSpellCooldownSync(Packets.SpellCooldownSync packet) {
-        var client = MinecraftClient.getInstance();
+        var client = Minecraft.getInstance();
         client.execute(() -> {
             var cooldownManager = ((SpellCaster.Player) client.player).getCooldownManager();
             var cooldownsBefore = cooldownManager.spellsOnCooldown();
@@ -81,7 +81,7 @@ public class ClientNetwork {
     }
 
     public static void handleSpellContainerSync(Packets.SpellContainerSync packet) {
-        var client = MinecraftClient.getInstance();
+        var client = Minecraft.getInstance();
         client.execute(() -> {
             var player = client.player;
             if (player != null) {
@@ -94,7 +94,7 @@ public class ClientNetwork {
     }
 
     public static void handleAttackAvailable(Packets.AttackAvailable packet) {
-        var client = MinecraftClient.getInstance();
+        var client = Minecraft.getInstance();
         client.execute(() -> {
             var player = client.player;
             if (player instanceof SpellCaster.Client caster) {

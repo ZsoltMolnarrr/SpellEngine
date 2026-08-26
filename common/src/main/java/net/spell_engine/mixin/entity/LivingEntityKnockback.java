@@ -1,6 +1,6 @@
 package net.spell_engine.mixin.entity;
 
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.entity.ConfigurableKnockback;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -37,7 +37,7 @@ public abstract class LivingEntityKnockback implements ConfigurableKnockback {
         customKnockbackMultipliers.pop();
     }
 
-    @ModifyVariable(method = "takeKnockback", at = @At("HEAD"), ordinal = 0, argsOnly = true)
+    @ModifyVariable(method = "knockback", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     public double takeKnockback_HEAD_changeStrength(double knockbackStrength) {
         return knockbackStrength * getKnockbackMultiplier_SpellEngine();
     }

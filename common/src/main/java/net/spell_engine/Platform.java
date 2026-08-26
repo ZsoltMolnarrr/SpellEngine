@@ -2,22 +2,21 @@ package net.spell_engine;
 
 import com.mojang.serialization.Codec;
 import dev.architectury.injectables.annotations.ExpectPlatform;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.core.Registry;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.spell_engine.api.attachment.SyncedEntityData;
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -48,35 +47,35 @@ public class Platform {
         /// NeoForge: `!FMLLoader.isProduction()`. Kept here so `common` needs no loader API for the check.
         boolean isDevelopmentEnvironment();
         void awakeSlotModCompat();
-        void sendVanillaPacket_S2C(ServerPlayerEntity player, Packet<?> packet);
+        void sendVanillaPacket_S2C(ServerPlayer player, Packet<?> packet);
         /// Registers a summoned entity's default attribute container with the loader. Fabric registers
         /// imperatively; NeoForge buffers it for its `EntityAttributeCreationEvent`. Kept here so `common`
         /// stays free of loader-specific attribute-registration APIs.
-        void registerSummonedEntityAttributes(EntityType<? extends LivingEntity> type, DefaultAttributeContainer.Builder builder);
+        void registerSummonedEntityAttributes(EntityType<? extends LivingEntity> type, AttributeSupplier.Builder builder);
 
         // MARK: Network hooks
         // Loader-native custom-payload send/query, replacing Fabric API's ServerPlayNetworking /
         // ClientPlayNetworking. `common` keeps every packet handler body; only the transport is here.
 
         /// Whether the given payload can be delivered to this player's connection.
-        boolean networkS2C_CanSend(ServerPlayerEntity player, Identifier packetId);
+        boolean networkS2C_CanSend(ServerPlayer player, Identifier packetId);
         /// Send a clientbound custom payload to a single player.
-        void networkS2C_Send(ServerPlayerEntity player, CustomPayload payload);
+        void networkS2C_Send(ServerPlayer player, CustomPacketPayload payload);
         /// Sends a vanilla packet to one player. Per loader because NeoForge's Yarn-patched jar names
         /// `ServerCommonNetworkHandler#sendPacket` `send` (LESSONS §4.15).
-        void sendPacket(ServerPlayerEntity player, net.minecraft.network.packet.Packet<?> packet);
+        void sendPacket(ServerPlayer player, net.minecraft.network.protocol.Packet<?> packet);
         /// Send a serverbound custom payload from the client. Invoked on the physical client only.
-        void networkC2S_Send(CustomPayload payload);
+        void networkC2S_Send(CustomPacketPayload payload);
 
         /// Register a synced datapack registry, replacing Fabric API's `DynamicRegistries.registerSynced`.
         /// Fabric registers imperatively during init; NeoForge buffers it for its
         /// `DataPackRegistryEvent.NewRegistry`. A non-null `networkCodec` makes the registry client-synced.
-        <T> void registerSyncedDataRegistry(RegistryKey<Registry<T>> key, Codec<T> localCodec, Codec<T> networkCodec);
+        <T> void registerSyncedDataRegistry(ResourceKey<Registry<T>> key, Codec<T> localCodec, Codec<T> networkCodec);
 
         /// Creates a synced per-entity attachment, see `SyncedEntityData.create`. Fabric registers
         /// imperatively; NeoForge buffers the built type for its `ATTACHMENT_TYPES` register event.
         <T> SyncedEntityData<T> createSyncedEntityData(Identifier id, T defaultValue,
-                                                       PacketCodec<? super RegistryByteBuf, T> sync,
+                                                       StreamCodec<? super RegistryFriendlyByteBuf, T> sync,
                                                        @Nullable Codec<T> persistence);
     }
 
@@ -89,16 +88,16 @@ public class Platform {
     /// mirroring Fabric API's `PlayerLookup.tracking(Entity)`. Loader-neutral: reads the vanilla
     /// entity-tracker listener set directly (widened via the access widener), so no loader
     /// networking API is involved and behaviour is identical on Fabric and NeoForge.
-    public static Collection<ServerPlayerEntity> tracking(Entity entity) {
-        if (!(entity.getEntityWorld() instanceof ServerWorld world)) {
+    public static Collection<ServerPlayer> tracking(Entity entity) {
+        if (!(entity.level() instanceof ServerLevel world)) {
             return List.of();
         }
-        var tracker = world.getChunkManager().chunkLoadingManager.entityTrackers.get(entity.getId());
+        var tracker = world.getChunkSource().chunkMap.entityMap.get(entity.getId());
         if (tracker == null) {
             return List.of();
         }
-        var players = new ArrayList<ServerPlayerEntity>(tracker.listeners.size());
-        for (var listener : tracker.listeners) {
+        var players = new ArrayList<ServerPlayer>(tracker.seenBy.size());
+        for (var listener : tracker.seenBy) {
             players.add(listener.getPlayer());
         }
         return players;

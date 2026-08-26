@@ -2,11 +2,11 @@ package net.spell_engine.api.spell.container;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.resources.Identifier;
 
 public record SpellContainer(
         /// Defines what spells this container can resolve for spell casting.

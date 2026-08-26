@@ -2,12 +2,12 @@ package net.spell_engine.mixin.effect;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.core.Holder;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.player.Player;
 import net.spell_engine.api.entity.SpellEngineAttributes;
 import net.spell_engine.api.event.CombatEvents;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,7 +17,7 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityHealthImpacting {
-    @Shadow public abstract double getAttributeValue(RegistryEntry<EntityAttribute> attribute);
+    @Shadow public abstract double getAttributeValue(Holder<Attribute> attribute);
 
     @ModifyVariable(method = "heal", at = @At("HEAD"), argsOnly = true)
     private float modifyHealingTaken_SpellEngine(float amount) {
@@ -25,25 +25,25 @@ public abstract class LivingEntityHealthImpacting {
                 .asMultiplier(getAttributeValue(SpellEngineAttributes.HEALING_TAKEN.entry));
     }
 
-    @ModifyVariable(method = "damage", at = @At("HEAD"), argsOnly = true)
+    @ModifyVariable(method = "hurtServer", at = @At("HEAD"), argsOnly = true)
     public float modifyDamageTaken_SpellEngine(float amount) {
         return amount * (float) SpellEngineAttributes.DAMAGE_TAKEN
                 .asMultiplier(getAttributeValue(SpellEngineAttributes.DAMAGE_TAKEN.entry));
     }
 
     @WrapOperation(
-            method = "damage",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;applyDamage(Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/entity/damage/DamageSource;F)V")
+            method = "hurtServer",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;actuallyHurt(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/damagesource/DamageSource;F)V")
     )
     private void damage_ApplyDamage_entity(
             // Mixin parameters
-            LivingEntity instance, ServerWorld world, DamageSource source, float amount, Operation<Void> original
+            LivingEntity instance, ServerLevel world, DamageSource source, float amount, Operation<Void> original
     ) {
         if (CombatEvents.ENTITY_DAMAGE_INCOMING.isListened()) {
             var args = new CombatEvents.EntityDamageTaken.Args(instance, source, amount);
             CombatEvents.ENTITY_DAMAGE_INCOMING.invoke(listener -> listener.onDamageTaken(args));
         }
-        if (instance instanceof PlayerEntity player) {
+        if (instance instanceof Player player) {
             if (CombatEvents.PLAYER_DAMAGE_INCOMING.isListened()) {
                 var args = new CombatEvents.PlayerDamageTaken.Args(player, source, amount);
                 CombatEvents.PLAYER_DAMAGE_INCOMING.invoke(listener -> listener.onPlayerDamageTaken(args));

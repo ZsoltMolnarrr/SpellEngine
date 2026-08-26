@@ -1,9 +1,9 @@
 package net.spell_engine.fx;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
 import net.spell_engine.api.spell.fx.ModelEffectAttachment;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.api.spell.fx.ModelEffect;
 import net.spell_engine.entity.SpellModelEffect;
 import org.jetbrains.annotations.Nullable;
@@ -11,11 +11,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class ModelEffectHelper {
-    public static void spawn(World world, Vec3d location, float yaw, List<ModelEffect> models) {
+    public static void spawn(Level world, Vec3 location, float yaw, List<ModelEffect> models) {
         spawn(world, location, yaw, models, null);
     }
 
-    public static void spawn(World world, Vec3d location, float yaw, List<ModelEffect> models,
+    public static void spawn(Level world, Vec3 location, float yaw, List<ModelEffect> models,
                              @Nullable LivingEntity contextEntity) {
         if (models == null || models.isEmpty()) {
             return;
@@ -25,16 +25,16 @@ public class ModelEffectHelper {
                 continue;
             }
             if (effect.follow_entity && contextEntity != null) {
-                ModelEffectAttachment.attach(contextEntity, effect, world.getTime());
+                ModelEffectAttachment.attach(contextEntity, effect, world.getGameTime());
             } else {
                 var spawnPos = (contextEntity != null)
-                        ? location.add(0, effect.positioning.vertical * contextEntity.getHeight(), 0)
+                        ? location.add(0, effect.positioning.vertical * contextEntity.getBbHeight(), 0)
                         : location;
                 var entity = new SpellModelEffect(world);
                 entity.setup(effect);
-                entity.setPosition(spawnPos);
-                entity.setYaw(yaw);
-                world.spawnEntity(entity);
+                entity.setPos(spawnPos);
+                entity.setYRot(yaw);
+                world.addFreshEntity(entity);
             }
         }
     }

@@ -1,14 +1,14 @@
 package net.spell_engine.utils;
 
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
 
 public class PatternMatching {
     public static final String ANY = "*";
@@ -20,7 +20,7 @@ public class PatternMatching {
         return REGEX_PREFIX + pattern;
     }
 
-    public static <T> boolean matches(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, @Nullable String pattern) {
+    public static <T> boolean matches(Holder<T> entry, ResourceKey<Registry<T>> registryKey, @Nullable String pattern) {
         if (pattern == null || pattern.isEmpty() || pattern.equals(ANY)) {
             return true;
         }
@@ -31,12 +31,12 @@ public class PatternMatching {
         }
     }
 
-    public static <T> boolean entryMatches(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, String pattern) {
+    public static <T> boolean entryMatches(Holder<T> entry, ResourceKey<Registry<T>> registryKey, String pattern) {
         if (pattern.startsWith(TAG_PREFIX)) {
-            var tag = TagKey.of(registryKey, Identifier.of(pattern.substring(1)));
-            return entry.isIn(tag);
+            var tag = TagKey.create(registryKey, Identifier.parse(pattern.substring(1)));
+            return entry.is(tag);
         }
-        var id = entry.getKey().get().getValue().toString();
+        var id = entry.unwrapKey().get().identifier().toString();
         if (pattern.startsWith(REGEX_PREFIX)) {
             return regexMatches(id, pattern.substring(1));
         } else {

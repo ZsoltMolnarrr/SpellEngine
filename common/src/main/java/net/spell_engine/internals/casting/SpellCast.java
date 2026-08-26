@@ -1,13 +1,13 @@
 package net.spell_engine.internals.casting;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -57,8 +57,8 @@ public class SpellCast {
     public static class TickHolder {
         public ArrayList<Float> ticks = new ArrayList<>();
     }
-    public record Process(RegistryEntry<Spell> spell, Item item, float speed, int length, long startedAt, TickHolder tickHolder) {
-        public Process(LivingEntity caster, RegistryEntry<Spell> spell, Item item, float speed, int length, long startedAt) {
+    public record Process(Holder<Spell> spell, Item item, float speed, int length, long startedAt, TickHolder tickHolder) {
+        public Process(LivingEntity caster, Holder<Spell> spell, Item item, float speed, int length, long startedAt) {
             this(spell, item, speed, length, startedAt, new TickHolder());
             if (SpellParameters.isChanneled(spell.value())) {
                 var channelCount = SpellParameters.channelTicks(caster, spell);
@@ -90,7 +90,7 @@ public class SpellCast {
         }
 
         public Identifier id() {
-            return spell.getKey().get().getValue();
+            return spell.unwrapKey().get().identifier();
         }
 
         // Both sync producers below are read at process start (the tracked data is written when
@@ -106,13 +106,13 @@ public class SpellCast {
         }
 
         @Nullable
-        public static Process fromSync(LivingEntity caster, World world, SyncFormat sync, Item item, long startedAt) {
+        public static Process fromSync(LivingEntity caster, Level world, SyncFormat sync, Item item, long startedAt) {
             var spellId = sync.i();
             if (spellId.isEmpty()) {
                 return null;
             }
-            var id = Identifier.of(spellId);
-            var spellEntry = SpellRegistry.from(world).getEntry(id).orElse(null);
+            var id = Identifier.parse(spellId);
+            var spellEntry = SpellRegistry.from(world).get(id).orElse(null);
             return new Process(caster, spellEntry, item, sync.s(), sync.l(), startedAt);
         }
 
@@ -193,12 +193,12 @@ public class SpellCast {
     /// spell fire instantly. Anything deciding actual cast behavior must consult the live,
     /// caster-aware checks (`SpellParameters.isInstantCast`, `getCastTimeDetails`) at the
     /// decision point; `mode` serves stable concerns only (input policy, wire contract, sorting).
-    public record Option(RegistryEntry<Spell> spell, Mode mode, Targeting targeting,
+    public record Option(Holder<Spell> spell, Mode mode, Targeting targeting,
                          float range, int channelTicks) {
 
         /// Caster-aware derivation: resolved values include the caster's spell modifiers;
         /// `range` is the maximum (full-charge) reach.
-        public static Option of(PlayerEntity caster, RegistryEntry<Spell> spellEntry) {
+        public static Option of(Player caster, Holder<Spell> spellEntry) {
             var spell = spellEntry.value();
             return new Option(spellEntry, Mode.from(spell), Targeting.of(spell),
                     SpellParameters.getMaxRange(caster, spellEntry),
@@ -209,14 +209,14 @@ public class SpellCast {
         /// (There is deliberately no caster-free derivation: call sites that only need
         /// classification use {@link Targeting#of} directly; resolved magnitudes always
         /// come from a caster.)
-        public static List<Option> allOf(PlayerEntity player) {
+        public static List<Option> allOf(Player player) {
             return SpellContainerSource.activeSpellsOf(player).stream()
                     .map(entry -> Option.of(player, entry))
                     .toList();
         }
 
         public Identifier id() {
-            return spell.getKey().get().getValue();
+            return spell.unwrapKey().get().identifier();
         }
 
         /// Wire format for the options tracked data (see `PlayerEntityMixin`): spell id +
@@ -227,8 +227,8 @@ public class SpellCast {
             return new SyncFormat(id().toString(), range, channelTicks);
         }
 
-        @Nullable public static Option fromSync(World world, SyncFormat sync) {
-            var entry = SpellRegistry.from(world).getEntry(Identifier.of(sync.i())).orElse(null);
+        @Nullable public static Option fromSync(Level world, SyncFormat sync) {
+            var entry = SpellRegistry.from(world).get(Identifier.parse(sync.i())).orElse(null);
             if (entry == null) {
                 return null;
             }
@@ -280,7 +280,7 @@ public class SpellCast {
     /// cursor selects right now"), never as an event. One structure serves all three submission
     /// positions: carried by an instant cast request, streamed while a timed cursor-driven cast
     /// is active, and carried by a charge release input.
-    public record TargetSnapshot(List<Integer> entityIds, @Nullable Vec3d location) {
+    public record TargetSnapshot(List<Integer> entityIds, @Nullable Vec3 location) {
         public static final TargetSnapshot EMPTY = new TargetSnapshot(List.of(), null);
 
         public static TargetSnapshot of(SpellTarget.SearchResult result) {

@@ -1,6 +1,6 @@
 package net.spell_engine.config;
 
-import net.minecraft.util.math.Vec2f;
+import net.minecraft.world.phys.Vec2;
 import net.spell_engine.client.gui.HudElement;
 
 import java.util.List;
@@ -35,14 +35,14 @@ public class HudConfig { public HudConfig() { }
 
     public static class Part { public Part() { }
         public boolean visible = true;
-        public Vec2f offset = Vec2f.ZERO;
-        public Part(boolean visible, Vec2f offset) {
+        public Vec2 offset = Vec2.ZERO;
+        public Part(boolean visible, Vec2 offset) {
             this.visible = visible;
             this.offset = offset;
         }
 
         public Part copy() {
-            return new Part(visible, new Vec2f(offset.x, offset.y));
+            return new Part(visible, new Vec2(offset.x, offset.y));
         }
     }
 
@@ -53,11 +53,11 @@ public class HudConfig { public HudConfig() { }
     // MARK: Default and Presets
 
     public static HudElement defaultHotBar() {
-        return new HudElement(HudElement.Origin.BOTTOM, new Vec2f(-170, -11));
+        return new HudElement(HudElement.Origin.BOTTOM, new Vec2(-170, -11));
     }
 
     public static HudElement defaultErrorMessage() {
-        return new HudElement(HudElement.Origin.BOTTOM, new Vec2f(0, -80));
+        return new HudElement(HudElement.Origin.BOTTOM, new Vec2(0, -80));
     }
 
     public static HudConfig createDefault() {
@@ -69,13 +69,13 @@ public class HudConfig { public HudConfig() { }
                 new CastBar(
                     new HudElement(
                         HudElement.Origin.BOTTOM,
-                        new Vec2f(0, -27)),
+                        new Vec2(0, -27)),
                     new Part(
                         false,
-                        new Vec2f(0, -12)),
+                        new Vec2(0, -12)),
                     new Part(
                         true,
-                        new Vec2f(-8, -25)),
+                        new Vec2(-8, -25)),
                     172
                 ),
                 defaultHotBar(),
@@ -96,37 +96,37 @@ public class HudConfig { public HudConfig() { }
         int offsetW = 70;
         int offsetH = 16;
         var barWidth = 90;
-        var offset = new Vec2f(0, 0);
+        var offset = new Vec2(0, 0);
         var target = new Part();
         var icon = new Part();
         switch (origin) {
             case TOP -> {
-                offset = new Vec2f(0, offsetH);
+                offset = new Vec2(0, offsetH);
                 target.offset = targetOffsetDown();
                 icon.offset = iconRight(barWidth);
             }
             case TOP_LEFT -> {
-                offset = new Vec2f(offsetW - 8, offsetH);
+                offset = new Vec2(offsetW - 8, offsetH);
                 target.offset = targetOffsetDown();
                 icon.offset = iconRight(barWidth);
             }
             case TOP_RIGHT -> {
-                offset = new Vec2f((-1) * offsetW + 8, offsetH);
+                offset = new Vec2((-1) * offsetW + 8, offsetH);
                 target.offset = targetOffsetDown();
                 icon.offset = iconLeft(barWidth);
             }
             case BOTTOM -> {
-                offset = new Vec2f(0, (-1) * offsetH);
+                offset = new Vec2(0, (-1) * offsetH);
                 target.offset = targetOffsetUp();
                 icon.offset = iconRight(barWidth);
             }
             case BOTTOM_LEFT -> {
-                offset = new Vec2f(offsetW - 8, (-1) * offsetH);
+                offset = new Vec2(offsetW - 8, (-1) * offsetH);
                 target.offset = targetOffsetUp();
                 icon.offset = iconRight(barWidth);
             }
             case BOTTOM_RIGHT -> {
-                offset = new Vec2f((-1) * offsetW + 8, (-1) * offsetH);
+                offset = new Vec2((-1) * offsetW + 8, (-1) * offsetH);
                 target.offset = targetOffsetUp();
                 icon.offset = iconLeft(barWidth);
             }
@@ -143,20 +143,20 @@ public class HudConfig { public HudConfig() { }
                 defaultErrorMessage());
     }
 
-    private static Vec2f targetOffsetUp() {
-        return new Vec2f(0, -12);
+    private static Vec2 targetOffsetUp() {
+        return new Vec2(0, -12);
     }
 
-    private static Vec2f targetOffsetDown() {
-        return new Vec2f(0, 12);
+    private static Vec2 targetOffsetDown() {
+        return new Vec2(0, 12);
     }
 
-    private static Vec2f iconLeft(int barWidth) {
-        return new Vec2f(- (barWidth / 2) - 10 - 16, -6);
+    private static Vec2 iconLeft(int barWidth) {
+        return new Vec2(- (barWidth / 2) - 10 - 16, -6);
     }
 
-    private static Vec2f iconRight(int barWidth) {
-        return new Vec2f((barWidth / 2) + 10, -6);
+    private static Vec2 iconRight(int barWidth) {
+        return new Vec2((barWidth / 2) + 10, -6);
     }
 
     public boolean isValid() {

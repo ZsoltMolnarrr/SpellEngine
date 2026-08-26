@@ -1,10 +1,10 @@
 package net.spell_engine.api.tags;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.EntityTypeTags;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.spell_engine.SpellEngineMod;
 import net.spell_power.api.SpellSchool;
 import net.spell_power.api.SpellSchools;
@@ -18,12 +18,12 @@ public class SpellEngineEntityTags {
      * Entities that are considered bosses.
      * Movement impairing and stun effects are disabled against these.
      */
-    public static final TagKey<EntityType<?>> bosses = TagKey.of(Registries.ENTITY_TYPE.getKey(), Identifier.of(SpellEngineMod.ID, "bosses"));
+    public static final TagKey<EntityType<?>> bosses = TagKey.create(BuiltInRegistries.ENTITY_TYPE.key(), Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "bosses"));
 
     /**
      * Categories of entities that are considered mechanical.
      */
-    public static final TagKey<EntityType<?>> mechanical = TagKey.of(Registries.ENTITY_TYPE.getKey(), Identifier.of(SpellEngineMod.ID, "mechanical"));
+    public static final TagKey<EntityType<?>> mechanical = TagKey.create(BuiltInRegistries.ENTITY_TYPE.key(), Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "mechanical"));
 
     public static class Vulnerability {
         enum Category {
@@ -32,10 +32,10 @@ public class SpellEngineEntityTags {
         }
         public record Entry(SpellSchool school, Category category, List<TagKey<EntityType<?>>> included) {
             public Identifier id() {
-                return Identifier.of(SpellEngineMod.ID, "vulnerability/" + category.name().toLowerCase(Locale.ROOT) + "_" + school.id.getPath());
+                return Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "vulnerability/" + category.name().toLowerCase(Locale.ROOT) + "_" + school.id.getPath());
             }
             public TagKey<EntityType<?>> tag() {
-                return TagKey.of(Registries.ENTITY_TYPE.getKey(), id());
+                return TagKey.create(BuiltInRegistries.ENTITY_TYPE.key(), id());
             }
         }
         public static final List<Entry> ALL = new ArrayList<>();

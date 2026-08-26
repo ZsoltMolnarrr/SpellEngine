@@ -1,8 +1,8 @@
 package net.spell_engine.client.render;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.spell_engine.internals.casting.SpellCaster;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,7 +39,7 @@ public class RangedWeaponCastAnimation {
                 return null;
             }
             // Only the weapon actually being cast with — never an off-hand or inventory copy.
-            if (entity.getMainHandStack() != stack) {
+            if (entity.getMainHandItem() != stack) {
                 return null;
             }
             var process = caster.getSpellCastProcess();
@@ -58,15 +58,15 @@ public class RangedWeaponCastAnimation {
             if (!spell.active.cast.animates_ranged_weapon) {
                 return null;
             }
-            var world = entity.getEntityWorld();
+            var world = entity.level();
             if (world == null) {
                 return null;
             }
-            var progress = process.progress(world.getTime());
+            var progress = process.progress(world.getGameTime());
             if (progress == null) {
                 return null;
             }
-            return MathHelper.clamp(progress.ratio(), 0F, 1F);
+            return Mth.clamp(progress.ratio(), 0F, 1F);
         } catch (Throwable ignored) {
             return null;
         }

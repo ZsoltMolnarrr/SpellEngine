@@ -2,9 +2,9 @@ package net.spell_engine.internals.container;
 
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import net.minecraft.resource.ResourceManager;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.utils.WeaponCompatibility;
 
@@ -38,17 +38,17 @@ public class SpellAssignments {
         Map<Identifier, SpellContainer> parsed = new HashMap<>();
         // Reading all attribute files
         var directory = "spell_assignments";
-        for (var entry : resourceManager.findResources(directory, fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
+        for (var entry : resourceManager.listResources(directory, fileName -> fileName.getPath().endsWith(".json")).entrySet()) {
             var identifier = entry.getKey();
             var resource = entry.getValue();
             try {
                 // System.out.println("Checking resource: " + identifier);
-                JsonReader reader = new JsonReader(new InputStreamReader(resource.getInputStream()));
+                JsonReader reader = new JsonReader(new InputStreamReader(resource.open()));
                 SpellContainer container = gson.fromJson(reader, SpellContainer.class);
                 var id = identifier
                         .toString().replace(directory + "/", "");
                 id = id.substring(0, id.lastIndexOf('.'));
-                parsed.put(Identifier.of(id), container);
+                parsed.put(Identifier.parse(id), container);
                 // System.out.println("loaded assignment - id: " + id +  " assignment: " + contaisner);
             } catch (Exception e) {
                 System.err.println("Spell Engine: Failed to parse spell_assignment: " + identifier + " | Reason: " + e.getMessage());
@@ -101,7 +101,7 @@ public class SpellAssignments {
         var gson = new Gson();
         SyncFormat sync = gson.fromJson(json, SyncFormat.class);
         sync.containers.forEach((key, value) -> {
-            containers.put(Identifier.of(key), value);
+            containers.put(Identifier.parse(key), value);
         });
     }
 }

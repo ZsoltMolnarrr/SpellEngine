@@ -82,7 +82,7 @@ public class FallbackConfig {
                 new CompatGroup.Specifier(RPGSeriesItemTags.WeaponType.tagString(Equipment.WeaponType.SWORD), Weapons.SWORD_CONTAINER),
                 new CompatGroup.Specifier(PatternMatching.regex("sword|blade"), Weapons.SWORD_CONTAINER)
         );
-        config.melee_weapons.blacklist = "#" + SpellEngineItemTags.NON_COMBAT_TOOLS.id().toString();
+        config.melee_weapons.blacklist = "#" + SpellEngineItemTags.NON_COMBAT_TOOLS.location().toString();
         return config;
     }
 }

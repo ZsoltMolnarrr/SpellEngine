@@ -1,6 +1,6 @@
 package net.spell_engine.entity.goal;
 
-import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.spell_engine.entity.SummonedEntity;
 
 import java.util.EnumSet;
@@ -11,12 +11,12 @@ public class PhaseBlockGoal extends Goal {
 
     public PhaseBlockGoal(SummonedEntity entity) {
         this.entity = entity;
-        setControls(EnumSet.of(Control.MOVE, Control.LOOK, Control.JUMP));
+        setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK, Flag.JUMP));
     }
 
     @Override
-    public boolean canStart() { return !entity.isActive(); }
+    public boolean canUse() { return !entity.isActive(); }
 
     @Override
-    public boolean shouldContinue() { return !entity.isActive(); }
+    public boolean canContinueToUse() { return !entity.isActive(); }
 }

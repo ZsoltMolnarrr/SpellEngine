@@ -2,15 +2,15 @@ package net.spell_engine.mixin.arrow;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.RangedWeaponItem;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ProjectileWeaponItem;
 import net.spell_engine.internals.cost.Ammo;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(RangedWeaponItem.class)
+@Mixin(ProjectileWeaponItem.class)
 public class RangedWeaponQuiverMixin {
 
     /**
@@ -19,8 +19,8 @@ public class RangedWeaponQuiverMixin {
      */
 
     @WrapOperation(
-            method = "getProjectile",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;split(I)Lnet/minecraft/item/ItemStack;"))
+            method = "useAmmo",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;split(I)Lnet/minecraft/world/item/ItemStack;"))
     private static ItemStack spell_engine_getProjectile_wrap_split(
             // Mixin parameters
             ItemStack projectileStack, int amount, Operation<ItemStack> original,
@@ -28,7 +28,7 @@ public class RangedWeaponQuiverMixin {
             ItemStack stack, ItemStack projectileStack2, LivingEntity shooter, boolean multishot
     ) {
         int takenFromContainer = 0;
-        if (shooter instanceof PlayerEntity player) {
+        if (shooter instanceof Player player) {
             var item = projectileStack.getItem();
             var asd = projectileStack.copy();
             var predicate = new Ammo.Searched(null, item).asPredicate();

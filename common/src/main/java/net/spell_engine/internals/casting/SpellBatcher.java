@@ -1,8 +1,7 @@
 package net.spell_engine.internals.casting;
 
-import net.minecraft.util.Identifier;
-
 import java.util.Map;
+import net.minecraft.resources.Identifier;
 
 public interface SpellBatcher {
     public class Batch {

@@ -1,33 +1,32 @@
 package net.spell_engine.client.input;
 
-import net.minecraft.util.Identifier;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
-
+import com.mojang.blaze3d.platform.InputConstants;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Keybindings {
-    public static final List<KeyBinding> all() {
+    public static final List<KeyMapping> all() {
         return mutableAll;
     }
-    public static final ArrayList<KeyBinding> mutableAll = new ArrayList<>();
+    public static final ArrayList<KeyMapping> mutableAll = new ArrayList<>();
 
-    private static KeyBinding add(KeyBinding keyBinding) {
+    private static KeyMapping add(KeyMapping keyBinding) {
         mutableAll.add(keyBinding);
         return keyBinding;
     }
 
     /// 1.21.9+ keybinding categories are registered objects (translation key: key.categories.<namespace>.<path>)
-    public static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of(SpellEngineMod.ID, "spell_engine"));
+    public static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "spell_engine"));
 
-    private static KeyBinding hotbarKey(int number) {
-        var key = new KeyBinding(
+    private static KeyMapping hotbarKey(int number) {
+        var key = new KeyMapping(
                 "keybindings." + SpellEngineMod.ID + ".spell_hotbar_" + number,
-                InputUtil.Type.KEYSYM,
-                InputUtil.UNKNOWN_KEY.getCode(),
+                InputConstants.Type.KEYSYM,
+                InputConstants.UNKNOWN.getValue(),
                 CATEGORY);
         add(key);
         return key;
@@ -38,27 +37,27 @@ public class Keybindings {
      * Unbound by default, in which case tooltips fall back to `bypass_spell_hotbar`.
      * GUI scoped, so it can share a key with an in-game binding (such as sneak) without disabling it.
      */
-    public static KeyBinding tooltip_details = add(new KeyBinding(
+    public static KeyMapping tooltip_details = add(new KeyMapping(
             "keybindings." + SpellEngineMod.ID + ".tooltip_details",
-            InputUtil.Type.KEYSYM,
-            InputUtil.UNKNOWN_KEY.getCode(),
+            InputConstants.Type.KEYSYM,
+            InputConstants.UNKNOWN.getValue(),
             CATEGORY));
 
-    public static KeyBinding bypass_spell_hotbar = add(new KeyBinding(
+    public static KeyMapping bypass_spell_hotbar = add(new KeyMapping(
             "keybindings." + SpellEngineMod.ID + ".bypass_spell_hotbar",
-            InputUtil.Type.KEYSYM,
-            InputUtil.GLFW_KEY_LEFT_ALT,
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_LALT,
             CATEGORY));
 
-    public static KeyBinding spell_hotbar_1 = hotbarKey(1);
-    public static KeyBinding spell_hotbar_2 = hotbarKey(2);
-    public static KeyBinding spell_hotbar_3 = hotbarKey(3);
-    public static KeyBinding spell_hotbar_4 = hotbarKey(4);
-    public static KeyBinding spell_hotbar_5 = hotbarKey(5);
-    public static KeyBinding spell_hotbar_6 = hotbarKey(6);
-    public static KeyBinding spell_hotbar_7 = hotbarKey(7);
-    public static KeyBinding spell_hotbar_8 = hotbarKey(8);
-    public static KeyBinding spell_hotbar_9 = hotbarKey(9);
+    public static KeyMapping spell_hotbar_1 = hotbarKey(1);
+    public static KeyMapping spell_hotbar_2 = hotbarKey(2);
+    public static KeyMapping spell_hotbar_3 = hotbarKey(3);
+    public static KeyMapping spell_hotbar_4 = hotbarKey(4);
+    public static KeyMapping spell_hotbar_5 = hotbarKey(5);
+    public static KeyMapping spell_hotbar_6 = hotbarKey(6);
+    public static KeyMapping spell_hotbar_7 = hotbarKey(7);
+    public static KeyMapping spell_hotbar_8 = hotbarKey(8);
+    public static KeyMapping spell_hotbar_9 = hotbarKey(9);
 
     public static class Wrapped {
         public static List<WrappedKeybinding> all() {

@@ -1,12 +1,11 @@
 package net.spell_engine.utils;
 
-import net.minecraft.inventory.Inventory;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.world.inventory.Slot;
 
 public class WrappedSlot extends Slot {
     public Slot wrapped;
     public WrappedSlot(Slot slot) {
-        super(slot.inventory, slot.getIndex(), slot.x, slot.y);
+        super(slot.container, slot.getContainerSlot(), slot.x, slot.y);
         wrapped = slot;
     }
 }

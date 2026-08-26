@@ -1,7 +1,7 @@
 package net.spell_engine.mixin.entity;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Player;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.*;
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public class PlayerSpellContainerMixin implements SpellContainerSource.Owner {
     private final Map<String, List<SpellContainerSource.SourcedContainer>> spellContainerCache = new LinkedHashMap<>();
     @Override
@@ -53,7 +53,7 @@ public class PlayerSpellContainerMixin implements SpellContainerSource.Owner {
     public Map<String, Object> lastProviderStates = new HashMap<>();
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick_TAIL_SpellEngine_SpellContainer(CallbackInfo ci) {
-        var player = (PlayerEntity) (Object) this;
+        var player = (Player) (Object) this;
 
         if (serverSideSpellContainersDirty) {
             // If the server-side containers are dirty, we need to update them
@@ -65,7 +65,7 @@ public class PlayerSpellContainerMixin implements SpellContainerSource.Owner {
         // as it changes the most frequently
         // Checking Container instead of ItemStack, as ItemStack instances sometimes
         // get their contents replaced, without a reference update
-        var mainHandContainer = SpellContainerHelper.containerFromItemStack(player.getMainHandStack());
+        var mainHandContainer = SpellContainerHelper.containerFromItemStack(player.getMainHandItem());
         if (!Objects.equals(mainHandContainer, lastMainHandContainer)) {
             SpellContainerSource.setDirty(player, SpellContainerSource.MAIN_HAND);
         }

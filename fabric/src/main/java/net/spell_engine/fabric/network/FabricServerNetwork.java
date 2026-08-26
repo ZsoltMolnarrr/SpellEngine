@@ -4,9 +4,8 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.server.network.ServerPlayerConfigurationTask;
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.config.ServerConfig;
 import net.spell_engine.internals.container.SpellAssignments;
@@ -32,7 +31,7 @@ public class FabricServerNetwork {
             if (ServerConfigurationNetworking.canSend(handler, Packets.ConfigSync.ID)) {
                 handler.addTask(new ConfigurationTask(SpellEngineMod.config));
             } else {
-                handler.disconnect(Text.literal("Network configuration task not supported: " + ServerNetwork.CONFIG_TASK_NAME));
+                handler.disconnect(Component.literal("Network configuration task not supported: " + ServerNetwork.CONFIG_TASK_NAME));
             }
         });
         ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
@@ -42,7 +41,7 @@ public class FabricServerNetwork {
                 }
                 handler.addTask(new SpellRegistrySyncTask(SpellAssignments.encoded));
             } else {
-                handler.disconnect(Text.literal("Network configuration task not supported: " + ServerNetwork.SPELL_REGISTRY_TASK_NAME));
+                handler.disconnect(Component.literal("Network configuration task not supported: " + ServerNetwork.SPELL_REGISTRY_TASK_NAME));
             }
         });
         ServerConfigurationNetworking.registerGlobalReceiver(Packets.Ack.PACKET_ID, (packet, context) -> {
@@ -81,31 +80,31 @@ public class FabricServerNetwork {
                 ServerNetwork.handleAttackPerform(packet, context.server(), context.player()));
     }
 
-    public record ConfigurationTask(ServerConfig config) implements ServerPlayerConfigurationTask {
-        public static final Key KEY = new Key(ServerNetwork.CONFIG_TASK_NAME);
+    public record ConfigurationTask(ServerConfig config) implements net.minecraft.server.network.ConfigurationTask {
+        public static final Type KEY = new Type(ServerNetwork.CONFIG_TASK_NAME);
 
         @Override
-        public Key getKey() {
+        public Type type() {
             return KEY;
         }
 
         @Override
-        public void sendPacket(Consumer<Packet<?>> sender) {
+        public void start(Consumer<Packet<?>> sender) {
             var packet = new Packets.ConfigSync(this.config);
             sender.accept(ServerConfigurationNetworking.createS2CPacket(packet));
         }
     }
 
-    public record SpellRegistrySyncTask(List<String> encodedChunks) implements ServerPlayerConfigurationTask {
-        public static final Key KEY = new Key(ServerNetwork.SPELL_REGISTRY_TASK_NAME);
+    public record SpellRegistrySyncTask(List<String> encodedChunks) implements net.minecraft.server.network.ConfigurationTask {
+        public static final Type KEY = new Type(ServerNetwork.SPELL_REGISTRY_TASK_NAME);
 
         @Override
-        public Key getKey() {
+        public Type type() {
             return KEY;
         }
 
         @Override
-        public void sendPacket(Consumer<Packet<?>> sender) {
+        public void start(Consumer<Packet<?>> sender) {
             var packet = new Packets.SpellRegistrySync(encodedChunks);
             sender.accept(ServerConfigurationNetworking.createS2CPacket(packet));
         }

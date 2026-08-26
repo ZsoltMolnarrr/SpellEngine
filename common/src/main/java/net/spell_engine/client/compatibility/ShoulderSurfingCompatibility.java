@@ -4,7 +4,7 @@ import com.github.exopandora.shouldersurfing.api.client.event.ComputePlayerAimSt
 import com.github.exopandora.shouldersurfing.api.client.event.handler.ComputePlayerAimStateEventHandler;
 import com.github.exopandora.shouldersurfing.api.event.IEventBus;
 import com.github.exopandora.shouldersurfing.api.plugin.IShoulderSurfingPlugin;
-import net.minecraft.entity.LivingEntity;
+import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.internals.casting.SpellCaster;
@@ -55,7 +55,7 @@ public class ShoulderSurfingCompatibility implements IShoulderSurfingPlugin {
             return;
         }
 
-        int age = entity.age;
+        int age = entity.tickCount;
         if (age < lastCastTick) {
             // Player entity was replaced (respawn / world change), its age restarted
             lastCastTick = Integer.MIN_VALUE;
@@ -69,7 +69,7 @@ public class ShoulderSurfingCompatibility implements IShoulderSurfingPlugin {
     }
 
     private static boolean holdsSpellContainer(LivingEntity entity) {
-        return SpellContainerHelper.hasUsableContainer(entity.getMainHandStack())
-                || SpellContainerHelper.hasUsableContainer(entity.getOffHandStack());
+        return SpellContainerHelper.hasUsableContainer(entity.getMainHandItem())
+                || SpellContainerHelper.hasUsableContainer(entity.getOffhandItem());
     }
 }

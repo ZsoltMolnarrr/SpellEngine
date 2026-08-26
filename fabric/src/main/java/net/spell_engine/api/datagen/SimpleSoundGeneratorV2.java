@@ -3,12 +3,11 @@ package net.spell_engine.api.datagen;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.minecraft.data.DataOutput;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
-import net.minecraft.data.DataWriter;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.data.PackOutput;
+import net.minecraft.resources.Identifier;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -16,10 +15,10 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class SimpleSoundGeneratorV2 implements DataProvider {
-    private final CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup;
+    private final CompletableFuture<HolderLookup.Provider> registryLookup;
     protected final FabricDataOutput dataOutput;
 
-    public SimpleSoundGeneratorV2(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+    public SimpleSoundGeneratorV2(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
         this.dataOutput = dataOutput;
         this.registryLookup = registryLookup;
     }
@@ -50,14 +49,14 @@ public abstract class SimpleSoundGeneratorV2 implements DataProvider {
     private static LinkedHashMap<String, Sound> createFileContent(String namespace, List<SoundEntry> soundEntries) {
         var map = new LinkedHashMap<String, Sound>();
         for (var sound: soundEntries) {
-            var soundIds = sound.variants().stream().map(variant -> Identifier.of(namespace, variant).toString()).toList();
+            var soundIds = sound.variants().stream().map(variant -> Identifier.fromNamespaceAndPath(namespace, variant).toString()).toList();
             map.put(sound.name, new Sound(soundIds));
         }
         return map;
     }
 
     @Override
-    public CompletableFuture<?> run(DataWriter writer) {
+    public CompletableFuture<?> run(CachedOutput writer) {
         var builder = new Builder();
         generateSounds(builder);
         var entries = builder.entries;
@@ -67,7 +66,7 @@ public abstract class SimpleSoundGeneratorV2 implements DataProvider {
             var content = createFileContent(entry.namespace(), entry.sounds);
             var json = gson.toJsonTree(content);
             var path = getFilePath(entry.namespace());
-            writes.add(DataProvider.writeToPath(writer, json, path));
+            writes.add(DataProvider.saveStable(writer, json, path));
         }
 
         return CompletableFuture.allOf(writes.toArray(new CompletableFuture[0]));
@@ -79,6 +78,6 @@ public abstract class SimpleSoundGeneratorV2 implements DataProvider {
     }
 
     private Path getFilePath(String namespace) {
-        return this.dataOutput.getResolver(DataOutput.OutputType.RESOURCE_PACK, "").resolveJson(Identifier.of(namespace, "sounds"));
+        return this.dataOutput.createPathProvider(PackOutput.Target.RESOURCE_PACK, "").json(Identifier.fromNamespaceAndPath(namespace, "sounds"));
     }
 }

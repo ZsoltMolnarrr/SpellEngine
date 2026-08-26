@@ -1,8 +1,8 @@
 package net.spell_engine.fx;
 
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.fx.Easing;
 import net.spell_engine.api.spell.fx.ParticleGroup;
@@ -38,22 +38,22 @@ public class SpellEngineParticles {
             this(id, 1, false);
         }
         public static Texture vanilla(String name) {
-            return new Texture(Identifier.ofVanilla(name));
+            return new Texture(Identifier.withDefaultNamespace(name));
         }
         public static Texture vanilla(String name, int frames) {
-            return new Texture(Identifier.ofVanilla(name), frames);
+            return new Texture(Identifier.withDefaultNamespace(name), frames);
         }
         public static Texture vanilla(String name, int frames, boolean reverseOrder) {
-            return new Texture(Identifier.ofVanilla(name), frames, reverseOrder);
+            return new Texture(Identifier.withDefaultNamespace(name), frames, reverseOrder);
         }
         public static Texture of(String name) {
-            return new Texture(Identifier.of(SpellEngineMod.ID, name));
+            return new Texture(Identifier.fromNamespaceAndPath(SpellEngineMod.ID, name));
         }
         public static Texture of(String name, int frames) {
-            return new Texture(Identifier.of(SpellEngineMod.ID, name), frames);
+            return new Texture(Identifier.fromNamespaceAndPath(SpellEngineMod.ID, name), frames);
         }
         public static Texture of(String name, int frames, boolean reverseOrder) {
-            return new Texture(Identifier.of(SpellEngineMod.ID, name), frames, reverseOrder);
+            return new Texture(Identifier.fromNamespaceAndPath(SpellEngineMod.ID, name), frames, reverseOrder);
         }
     }
 
@@ -74,7 +74,7 @@ public class SpellEngineParticles {
         private final ParticleGroupType type = new ParticleGroupType();
 
         Entry(String name, Texture texture) {
-            this(Identifier.of(SpellEngineMod.ID, name), texture);
+            this(Identifier.fromNamespaceAndPath(SpellEngineMod.ID, name), texture);
         }
         /// Creates an entry for `id`, rendered from `texture`.
         ///
@@ -262,7 +262,7 @@ public class SpellEngineParticles {
 
     public static void register() {
         for (var entry: entries) {
-            Registry.register(Registries.PARTICLE_TYPE, entry.id(), entry.type());
+            Registry.register(BuiltInRegistries.PARTICLE_TYPE, entry.id(), entry.type());
         }
     }
 }

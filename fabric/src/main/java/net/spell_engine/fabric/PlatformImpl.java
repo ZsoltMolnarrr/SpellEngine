@@ -6,19 +6,19 @@ import net.fabricmc.fabric.api.event.registry.DynamicRegistries;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.network.packet.Packet;
+import net.minecraft.core.Registry;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.spell_engine.api.attachment.SyncedEntityData;
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
 import net.spell_engine.Platform;
 import net.spell_engine.fabric.compat.FabricCompatFeatures;
 
@@ -44,44 +44,44 @@ public class PlatformImpl {
         }
 
         @Override
-        public void sendVanillaPacket_S2C(ServerPlayerEntity player, Packet<?> packet) {
-            player.networkHandler.sendPacket(packet);
+        public void sendVanillaPacket_S2C(ServerPlayer player, Packet<?> packet) {
+            player.connection.send(packet);
         }
 
         @Override
-        public void registerSummonedEntityAttributes(EntityType<? extends LivingEntity> type, DefaultAttributeContainer.Builder builder) {
+        public void registerSummonedEntityAttributes(EntityType<? extends LivingEntity> type, AttributeSupplier.Builder builder) {
             // Fabric registers default attributes imperatively — fine to call any time during init.
             FabricDefaultAttributeRegistry.register(type, builder.build());
         }
 
         @Override
-        public boolean networkS2C_CanSend(ServerPlayerEntity player, Identifier packetId) {
+        public boolean networkS2C_CanSend(ServerPlayer player, Identifier packetId) {
             return ServerPlayNetworking.canSend(player, packetId);
         }
 
         @Override
-        public void sendPacket(ServerPlayerEntity player, net.minecraft.network.packet.Packet<?> packet) {
-            player.networkHandler.sendPacket(packet);
+        public void sendPacket(ServerPlayer player, net.minecraft.network.protocol.Packet<?> packet) {
+            player.connection.send(packet);
         }
 
         @Override
-        public void networkS2C_Send(ServerPlayerEntity player, CustomPayload payload) {
+        public void networkS2C_Send(ServerPlayer player, CustomPacketPayload payload) {
             ServerPlayNetworking.send(player, payload);
         }
 
         @Override
-        public void networkC2S_Send(CustomPayload payload) {
+        public void networkC2S_Send(CustomPacketPayload payload) {
             ClientPlayNetworking.send(payload);
         }
 
         @Override
-        public <T> void registerSyncedDataRegistry(RegistryKey<Registry<T>> key, Codec<T> localCodec, Codec<T> networkCodec) {
+        public <T> void registerSyncedDataRegistry(ResourceKey<Registry<T>> key, Codec<T> localCodec, Codec<T> networkCodec) {
             DynamicRegistries.registerSynced(key, localCodec, networkCodec);
         }
 
         @Override
         public <T> SyncedEntityData<T> createSyncedEntityData(Identifier id, T defaultValue,
-                                                              PacketCodec<? super RegistryByteBuf, T> sync,
+                                                              StreamCodec<? super RegistryFriendlyByteBuf, T> sync,
                                                               @Nullable Codec<T> persistence) {
             return new FabricSyncedEntityData<>(id, defaultValue, sync, persistence);
         }

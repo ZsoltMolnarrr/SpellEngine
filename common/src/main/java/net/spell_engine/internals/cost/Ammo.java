@@ -1,15 +1,15 @@
 package net.spell_engine.internals.cost;
 
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.compat.container.ContainerCompat;
@@ -20,14 +20,14 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class Ammo {
-    private static final Identifier SPELL_INFINITY = Identifier.of(SpellEngineMod.ID, "spell_infinity");
+    private static final Identifier SPELL_INFINITY = Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "spell_infinity");
 
     public record Searched(@Nullable TagKey<Item> tag, @Nullable Item item) {
         public static Searched from(String stringId) {
             if (stringId.startsWith("#")) {
-                return new Searched(TagKey.of(RegistryKeys.ITEM, Identifier.of(stringId.substring(1))), null);
+                return new Searched(TagKey.create(Registries.ITEM, Identifier.parse(stringId.substring(1))), null);
             } else {
-                return new Searched(null, Registries.ITEM.get(Identifier.of(stringId)));
+                return new Searched(null, BuiltInRegistries.ITEM.getValue(Identifier.parse(stringId)));
             }
         }
         public boolean isValid() {
@@ -35,9 +35,9 @@ public class Ammo {
         }
         public boolean matches(ItemStack stack) {
             if (tag != null) {
-                return stack.isIn(tag);
+                return stack.is(tag);
             } else if (item != null) {
-                return stack.isOf(item);
+                return stack.is(item);
             }
             return false;
         }
@@ -47,10 +47,10 @@ public class Ammo {
         public String getTranslationKey() {
             if (tag != null) {
                 // TagKey#getTranslationKey is a Fabric API interface injection (absent on NeoForge); same format inline
-                var id = tag.id();
-                return "tag." + tag.registryRef().getValue().getPath() + "." + id.getNamespace() + "." + id.getPath().replace("/", ".");
+                var id = tag.location();
+                return "tag." + tag.registry().identifier().getPath() + "." + id.getNamespace() + "." + id.getPath().replace("/", ".");
             } else if (item != null) {
-                return item.getTranslationKey();
+                return item.getDescriptionId();
             }
             return "";
         }
@@ -58,25 +58,25 @@ public class Ammo {
 
     public record Source(ItemStack itemStack, int found, boolean isContainer) { }
     public record Result(boolean satisfied, Searched item, int consume, List<Source> sources) { }
-    public static Result ammoForSpell(PlayerEntity player, Spell spell, ItemStack casterStack) {
+    public static Result ammoForSpell(Player player, Spell spell, ItemStack casterStack) {
         boolean satisfied = true;
         Searched ammo = null;
         int consume = 0;
         List<Source> sources = List.of();
         if (spell.cost.item != null && spell.cost.item.id != null && !spell.cost.item.id.isEmpty()) {
             ammo = Searched.from(spell.cost.item.id);
-            if (player.getAbilities().creativeMode
+            if (player.getAbilities().instabuild
                     || !SpellEngineMod.config.spell_cost_item_allowed) {
                 return new Result(satisfied, ammo, consume, sources);
             }
-            var id = Identifier.of(spell.cost.item.id);
+            var id = Identifier.parse(spell.cost.item.id);
             var needsArrow = id.getPath().contains("arrow");
 
             var enchantmentQuery = needsArrow
-                    ? player.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getOptional(Enchantments.INFINITY)
-                    : player.getEntityWorld().getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT).getEntry(SPELL_INFINITY);
+                    ? player.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(Enchantments.INFINITY)
+                    : player.level().registryAccess().lookupOrThrow(Registries.ENCHANTMENT).get(SPELL_INFINITY);
             if (enchantmentQuery.isPresent() &&
-                    EnchantmentHelper.getLevel(enchantmentQuery.get(), casterStack) > 0) { // Has infinity
+                    EnchantmentHelper.getItemEnchantmentLevel(enchantmentQuery.get(), casterStack) > 0) { // Has infinity
                 return new Result(satisfied, ammo, consume, sources);
             }
 
@@ -91,7 +91,7 @@ public class Ammo {
         return new Result(satisfied, ammo, consume, sources);
     }
 
-    public static List<Source> findSources(PlayerEntity player, Searched searched, int totalAmount) {
+    public static List<Source> findSources(Player player, Searched searched, int totalAmount) {
         ArrayList<Source> sources = new ArrayList<>();
         var foundAmount = 0;
         var container = findContainer(player, searched.asPredicate(), totalAmount);
@@ -101,8 +101,8 @@ public class Ammo {
         }
         if (foundAmount < totalAmount) {
             var inventory = player.getInventory();
-            for (int i = 0; i < inventory.size(); ++i) {
-                var stack = inventory.getStack(i);
+            for (int i = 0; i < inventory.getContainerSize(); ++i) {
+                var stack = inventory.getItem(i);
                 if (searched.matches(stack)) {
                     var source = sourceFromStack(stack, totalAmount - foundAmount);
                     sources.add(source);
@@ -121,7 +121,7 @@ public class Ammo {
         return new Source(stack, found, false);
     }
 
-    @Nullable public static Ammo.Source findContainer(PlayerEntity player, Predicate<ItemStack> item, int amount) {
+    @Nullable public static Ammo.Source findContainer(Player player, Predicate<ItemStack> item, int amount) {
         for (var provider : ContainerCompat.providers) {
             var stacks = provider.apply(player);
             for (var stack : stacks) {
@@ -161,13 +161,13 @@ public class Ammo {
         return ItemStack.EMPTY;
     }
 
-    public static void consume(Result result, PlayerEntity player) {
+    public static void consume(Result result, Player player) {
         if (result.consume() > 0) {
             for (var source: result.sources()) {
                 if (source.isContainer()) {
                     takeFromContainer(source.itemStack(), result.item(), source.found());
                 } else {
-                    Inventories.remove(player.getInventory(), result.item().asPredicate(), source.found(), false);
+                    ContainerHelper.clearOrCountMatchingItems(player.getInventory(), result.item().asPredicate(), source.found(), false);
 //                    for (int i = 0; i < result.consume(); i++) {
 //                        player.getInventory().removeOne(source.itemStack());
 //                    }
@@ -190,7 +190,7 @@ public class Ammo {
                 var storedStack = bundle.get(i);
                 if (consumedItem.test(storedStack)) {
                     var decrementable = Math.min(storedStack.getCount(), toDecreement);
-                    storedStack.decrement(decrementable);
+                    storedStack.shrink(decrementable);
                     toDecreement -= decrementable;
                     taken += decrementable;
                 }

@@ -1,14 +1,13 @@
 package net.spell_engine.internals.delivery;
 
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.entity.SpellCloud;
@@ -28,9 +27,9 @@ import java.util.List;
 /// deferred by the placement's delay.
 public class CloudPlacer {
 
-    public static void placeCloud(World world, LivingEntity caster,
-                                  @Nullable Entity target, @Nullable Vec3d location,
-                                  RegistryEntry<Spell> spellEntry, ImpactContext context) {
+    public static void placeCloud(Level world, LivingEntity caster,
+                                  @Nullable Entity target, @Nullable Vec3 location,
+                                  Holder<Spell> spellEntry, ImpactContext context) {
         var spell = spellEntry.value();
         var clouds = spell.deliver.clouds;
         if (clouds == null || clouds.isEmpty()) {
@@ -82,20 +81,20 @@ public class CloudPlacer {
 
                 SpellCloud entity;
                 if (cloud.entity_type_id != null) {
-                    var id = Identifier.of(cloud.entity_type_id);
-                    var type = Registries.ENTITY_TYPE.get(id);
-                    entity = (SpellCloud) type.create(world, SpawnReason.MOB_SUMMONED);
+                    var id = Identifier.parse(cloud.entity_type_id);
+                    var type = BuiltInRegistries.ENTITY_TYPE.getValue(id);
+                    entity = (SpellCloud) type.create(world, EntitySpawnReason.MOB_SUMMONED);
                 } else {
                     entity = new SpellCloud(world);
                 }
                 entity.setOwner(caster);
-                entity.onCreatedFromSpell(spellEntry.getKey().get().getValue(), cloud, context, cloud.time_to_live_seconds + extraTimeToLive, cloudModifier);
+                entity.onCreatedFromSpell(spellEntry.unwrapKey().get().identifier(), cloud, context, cloud.time_to_live_seconds + extraTimeToLive, cloudModifier);
 
                 if (target != null) {
-                    EntityPlacements.applyEntityPlacement(entity, target, target.getEntityPos(), placement);
+                    EntityPlacements.applyEntityPlacement(entity, target, target.position(), placement);
                 } else if (location != null) {
-                    EntityPlacements.applyEntityPlacement(caster.getEntityWorld(), entity,
-                            caster.getYaw(), caster.getPitch(), null,
+                    EntityPlacements.applyEntityPlacement(caster.level(), entity,
+                            caster.getYRot(), caster.getXRot(), null,
                             location, placement);
                 } else {
                     continue;
@@ -103,14 +102,14 @@ public class CloudPlacer {
 
 
                 ((WorldScheduler)world).schedule(delay, () -> {
-                    world.spawnEntity(entity);
+                    world.addFreshEntity(entity);
                     var sound = cloud.spawn.sound;
                     if (sound != null) {
                         SoundHelper.playSound(world, entity, sound);
                     }
                     var spawnVisuals = cloud.spawn.visuals.resolved(Fx.Context.NONE);
                     ParticleHelper.sendBatches(entity, spawnVisuals.particles);
-                    ModelEffectHelper.spawn(world, entity.getEntityPos(), entity.getYaw(), spawnVisuals.models, null);
+                    ModelEffectHelper.spawn(world, entity.position(), entity.getYRot(), spawnVisuals.models, null);
                 });
 
                 if (cloud.placement_delay_stacks) {

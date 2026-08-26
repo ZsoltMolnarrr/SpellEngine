@@ -1,12 +1,11 @@
 package net.spell_engine.api.spell.event;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.spell_engine.api.spell.Spell;
 import net.spell_power.api.SpellPower;
 import org.jetbrains.annotations.Nullable;
@@ -19,9 +18,9 @@ import net.spell_engine.internals.SpellExecution;
 public class SpellHandlers {
     public static final Map<String, CustomDelivery> customDelivery = new HashMap<>();
     public interface CustomDelivery {
-        boolean onSpellDelivery(World world, RegistryEntry<Spell> spellEntry, LivingEntity caster,
+        boolean onSpellDelivery(Level world, Holder<Spell> spellEntry, LivingEntity caster,
                                 List<SpellExecution.DeliveryTarget> targets, SpellExecution.ImpactContext context,
-                                @Nullable Vec3d targetLocation);
+                                @Nullable Vec3 targetLocation);
     }
     public static void registerCustomDelivery(Identifier id, CustomDelivery delivery) {
         customDelivery.put(id.toString(), delivery);
@@ -30,7 +29,7 @@ public class SpellHandlers {
     public static final Map<String, CustomImpact> customImpact = new HashMap<>();
     public record ImpactResult(boolean success, boolean critical) { }
     public interface CustomImpact {
-        ImpactResult onSpellImpact(RegistryEntry<Spell> spellEntry, SpellPower.Result spellPower,
+        ImpactResult onSpellImpact(Holder<Spell> spellEntry, SpellPower.Result spellPower,
                            LivingEntity caster, @Nullable Entity target,
                            SpellExecution.ImpactContext context);
     }

@@ -1,8 +1,8 @@
 package net.spell_engine.internals;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.container.SpellContainerSource;
@@ -13,8 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SpellModifiers {
-    public static List<Spell.Modifier> of(PlayerEntity player, RegistryEntry<Spell> spellEntry) {
-        var spellId = spellEntry.getKey().get().getValue();
+    public static List<Spell.Modifier> of(Player player, Holder<Spell> spellEntry) {
+        var spellId = spellEntry.unwrapKey().get().identifier();
         var owner = (SpellContainerSource.Owner)player;
         var matchingModifiers = owner.spellModifierCache().get(spellId);
         if (matchingModifiers == null) {
@@ -35,7 +35,7 @@ public class SpellModifiers {
         return matchingModifiers;
     }
 
-    public static List<Spell.Modifier> ofImpact(PlayerEntity player, RegistryEntry<Spell> spellEntry,
+    public static List<Spell.Modifier> ofImpact(Player player, Holder<Spell> spellEntry,
                                           Spell.Impact impact) {
         return ofImpact((LivingEntity) player, spellEntry, impact, null);
     }
@@ -43,9 +43,9 @@ public class SpellModifiers {
     /// Equipment/skill-tree modifiers are resolved for players only (cached per spell). The optional
     /// `chargeModifier` (a charge-ratio-scaled bonus carried on the ImpactContext) is prepended for
     /// any caster, so non-player casters still receive it.
-    public static List<Spell.Modifier> of(LivingEntity caster, RegistryEntry<Spell> spellEntry,
+    public static List<Spell.Modifier> of(LivingEntity caster, Holder<Spell> spellEntry,
                                           @Nullable Spell.Modifier chargeModifier) {
-        var base = (caster instanceof PlayerEntity player) ? of(player, spellEntry) : List.<Spell.Modifier>of();
+        var base = (caster instanceof Player player) ? of(player, spellEntry) : List.<Spell.Modifier>of();
         if (chargeModifier == null) {
             return base;
         }
@@ -55,7 +55,7 @@ public class SpellModifiers {
         return merged;
     }
 
-    public static List<Spell.Modifier> ofImpact(LivingEntity caster, RegistryEntry<Spell> spellEntry,
+    public static List<Spell.Modifier> ofImpact(LivingEntity caster, Holder<Spell> spellEntry,
                                           Spell.Impact impact, @Nullable Spell.Modifier chargeModifier) {
         return of(caster, spellEntry, chargeModifier).stream()
                 .filter(modifier -> {
@@ -69,7 +69,7 @@ public class SpellModifiers {
                 .toList();
     }
 
-    private static boolean impactMatches(Spell.Impact impact, RegistryEntry<Spell> spellEntry, Spell.Modifier.ImpactFilter filter) {
+    private static boolean impactMatches(Spell.Impact impact, Holder<Spell> spellEntry, Spell.Modifier.ImpactFilter filter) {
         if (filter.school != null) {
             var school = impact.school != null ? impact.school : spellEntry.value().school;
             if (school != filter.school) {
@@ -82,7 +82,7 @@ public class SpellModifiers {
         return true;
     }
 
-    public static float cooldownDeduction(PlayerEntity player, RegistryEntry<Spell> spellEntry) {
+    public static float cooldownDeduction(Player player, Holder<Spell> spellEntry) {
         var modifiers = of(player, spellEntry);
         float value = 0;
         for (var modifier: modifiers) {
@@ -94,12 +94,12 @@ public class SpellModifiers {
 
     public record ExtendedImpacts(List<Spell.Impact> impacts, @Nullable Spell.AreaImpact areaImpact) { }
 
-    public static ExtendedImpacts extendedImpactsOf(LivingEntity caster, RegistryEntry<Spell> spellEntry) {
+    public static ExtendedImpacts extendedImpactsOf(LivingEntity caster, Holder<Spell> spellEntry) {
         var spell = spellEntry.value();
         var area_impact = spell.area_impact;
         var mutableImpacts = new ArrayList<>(spell.impacts);
 
-        if (caster instanceof PlayerEntity player) {
+        if (caster instanceof Player player) {
             var modifiers = SpellModifiers.of(player, spellEntry);
             for (var modifier: modifiers) {
                 if (modifier.mutate_impacts != null) {

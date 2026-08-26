@@ -1,8 +1,8 @@
 package net.spell_engine.internals.casting;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.spell_engine.api.spell.event.SpellEvents;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.cost.Ammo;
@@ -16,16 +16,16 @@ public class SpellCasting {
 
     // MARK: Cast attempt
 
-    public static SpellCast.Attempt attempt(PlayerEntity player, ItemStack itemStack, Identifier spellId) {
+    public static SpellCast.Attempt attempt(Player player, ItemStack itemStack, Identifier spellId) {
         return attempt(player, itemStack, spellId, true);
     }
 
     /// The gate in front of every cast, run on the server before starting or performing a spell, and
     /// on the client before a cast request is even sent. Composes the cooldown and ammo checks with
     /// the PRE/POST attempt events mods can inject a verdict through.
-    public static SpellCast.Attempt attempt(PlayerEntity player, ItemStack itemStack, Identifier spellId, boolean checkAmmo) {
+    public static SpellCast.Attempt attempt(Player player, ItemStack itemStack, Identifier spellId, boolean checkAmmo) {
         var caster = (SpellCaster.Player)player;
-        var spellEntry = SpellRegistry.from(player.getEntityWorld()).getEntry(spellId).orElse(null);
+        var spellEntry = SpellRegistry.from(player.level()).get(spellId).orElse(null);
         if (spellEntry == null) {
             return SpellCast.Attempt.none();
         }

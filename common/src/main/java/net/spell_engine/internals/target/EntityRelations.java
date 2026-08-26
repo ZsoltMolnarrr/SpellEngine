@@ -1,17 +1,17 @@
 package net.spell_engine.internals.target;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.Tameable;
-import net.minecraft.entity.decoration.AbstractDecorationEntity;
-import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.scoreboard.AbstractTeam;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.OwnableEntity;
+import net.minecraft.world.entity.decoration.HangingEntity;
+import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.scores.Team;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.compat.MultipartEntityCompat;
 import org.jetbrains.annotations.Nullable;
@@ -23,9 +23,9 @@ import java.util.Map;
 public class EntityRelations {
     /// Owner UUID of a tameable without resolving the entity (1.21.11 replaced `getOwnerUuid` with a lazy reference)
     @org.jetbrains.annotations.Nullable
-    public static java.util.UUID ownerUuid(net.minecraft.entity.Tameable tameable) {
+    public static java.util.UUID ownerUuid(net.minecraft.world.entity.OwnableEntity tameable) {
         var reference = tameable.getOwnerReference();
-        return reference == null ? null : reference.getUuid();
+        return reference == null ? null : reference.getUUID();
     }
 
     public static EntityRelation getRelation(LivingEntity attacker, Entity target) {
@@ -35,7 +35,7 @@ public class EntityRelations {
         }
         target = MultipartEntityCompat.coalesce(target);
 
-        if (attacker instanceof Tameable attackerTameable) {
+        if (attacker instanceof OwnableEntity attackerTameable) {
             var owner = attackerTameable.getOwner();
             if (owner != null) {
                 if (target == owner) {
@@ -43,7 +43,7 @@ public class EntityRelations {
                 }
             }
         }
-        if (target instanceof Tameable tameable) {
+        if (target instanceof OwnableEntity tameable) {
             // Ownership is resolved by UUID, NOT by `Tameable.getOwner()`. Vanilla's default
             // implementation of that is `getWorld().getPlayerByUuid(uuid)`, which returns null
             // whenever the owner is offline or in another dimension — on a server, the common case.
@@ -53,7 +53,7 @@ public class EntityRelations {
             // branch that decides whether a player's horse is safe.
             var ownerUuid = ownerUuid(tameable);
             if (ownerUuid != null) {
-                if (ownerUuid.equals(attacker.getUuid())) {
+                if (ownerUuid.equals(attacker.getUUID())) {
                     return config.player_relation_to_owned_pets;
                 }
                 var owner = tameable.getOwner();
@@ -70,7 +70,7 @@ public class EntityRelations {
         // no longer grants that (see TABLE_OF_ULTIMATE_JUSTICE). FRIENDLY keeps the exact behaviour
         // they had — deliberately breakable by a direct hit, immune to a stray AoE — and the healing
         // rows it additionally opts into are no-ops on a non-living entity.
-        if (target instanceof AbstractDecorationEntity) {
+        if (target instanceof HangingEntity) {
             return EntityRelation.FRIENDLY;
         }
 
@@ -83,21 +83,21 @@ public class EntityRelations {
             }
         }
 
-        var targetTypeEntry = Registries.ENTITY_TYPE.getEntry(target.getType());
-        var id = targetTypeEntry.getKey().get().getValue();
+        var targetTypeEntry = BuiltInRegistries.ENTITY_TYPE.wrapAsHolder(target.getType());
+        var id = targetTypeEntry.unwrapKey().get().identifier();
         var mappedRelation = config.player_relations.get(id.toString());
         if (mappedRelation != null) {
             return mappedRelation;
         }
         for (var entry: getRelationTagsCache().entrySet()) {
-            if (targetTypeEntry.isIn(entry.getKey())) {
+            if (targetTypeEntry.is(entry.getKey())) {
                 return entry.getValue();
             }
         }
-        if (target instanceof PassiveEntity) {
+        if (target instanceof AgeableMob) {
             return EntityRelation.coalesce(config.player_relation_to_passives, EntityRelation.HOSTILE);
         }
-        if (target instanceof HostileEntity) {
+        if (target instanceof Monster) {
             return EntityRelation.coalesce(config.player_relation_to_hostiles, EntityRelation.HOSTILE);
         }
         return EntityRelation.coalesce(config.player_relation_to_other, EntityRelation.HOSTILE);
@@ -110,7 +110,7 @@ public class EntityRelations {
             for (var entrySet: SpellEngineMod.config.player_relation_tags.entrySet()) {
                 var tagString = entrySet.getKey();
                 var relation = entrySet.getValue();
-                var tag = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(tagString));
+                var tag = TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(tagString));
                 RELATION_TAG_CACHE.put(tag, relation);
             }
         }
@@ -125,13 +125,13 @@ public class EntityRelations {
     }
     static {
         registerTeamMatcher("vanilla", (entity1, entity2) -> {
-            var team1 = entity1.getScoreboardTeam();
-            var team2 = entity2.getScoreboardTeam();
+            var team1 = entity1.getTeam();
+            var team2 = entity2.getTeam();
             if (team1 == null || team2 == null) {
                 return null;
             }
-            var friendlyFire = team1.isFriendlyFireAllowed();
-            return new TeamRelation(entity1.isTeammate(entity2), friendlyFire);
+            var friendlyFire = team1.isAllowFriendlyFire();
+            return new TeamRelation(entity1.isAlliedTo(entity2), friendlyFire);
         });
     }
 
@@ -190,12 +190,12 @@ public class EntityRelations {
 
     // Generalized copy of shouldDamagePlayer
     public static boolean allowedToHurt(Entity e1, Entity e2) {
-        AbstractTeam abstractTeam = e1.getScoreboardTeam();
-        AbstractTeam abstractTeam2 = e2.getScoreboardTeam();
+        Team abstractTeam = e1.getTeam();
+        Team abstractTeam2 = e2.getTeam();
         if (abstractTeam == null) {
             return true;
         } else {
-            return !abstractTeam.isEqual(abstractTeam2) || abstractTeam.isFriendlyFireAllowed();
+            return !abstractTeam.isAlliedTo(abstractTeam2) || abstractTeam.isAllowFriendlyFire();
         }
     }
 }

@@ -1,8 +1,8 @@
 package net.spell_engine.neoforge.client;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.particle.ParticleEffect;
-import net.minecraft.particle.ParticleType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModLoadingContext;
@@ -50,9 +50,9 @@ public class NeoForgeClientMod {
                 SpellEngineClient.addTooltipLines(tooltip.getItemStack(), tooltip.getFlags(), tooltip.getToolTip()));
         // 21.11: stages are event subclasses; camera + tick progress are no longer carried by the event
         NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.AfterTranslucentBlocks.class, render -> {
-            var client = MinecraftClient.getInstance();
-            BeamRenderer.renderAfterTranslucent(render.getPoseStack(), client.gameRenderer.getCamera(),
-                    client.getRenderTickCounter().getTickProgress(true));
+            var client = Minecraft.getInstance();
+            BeamRenderer.renderAfterTranslucent(render.getPoseStack(), client.gameRenderer.getMainCamera(),
+                    client.getDeltaTracker().getGameTimeDeltaPartialTick(true));
         });
         event.enqueueWork(SpellEngineClient::onClientStarted);
 
@@ -64,7 +64,7 @@ public class NeoForgeClientMod {
         // Spell HUD right after the vanilla status-bar group (AIR_LEVEL is its last layer on NeoForge; Fabric
         // attaches after MOUNT_HEALTH, the same spot), i.e. above the status bars and below the info/xp bar and chat.
         event.registerAbove(VanillaGuiLayers.AIR_LEVEL, HudRenderHelper.HUD_ELEMENT_ID, (guiGraphics, deltaTracker) ->
-                HudRenderHelper.renderHudElement(guiGraphics, deltaTracker.getTickProgress(true)));
+                HudRenderHelper.renderHudElement(guiGraphics, deltaTracker.getGameTimeDeltaPartialTick(true)));
     }
 
     @SubscribeEvent
@@ -84,7 +84,7 @@ public class NeoForgeClientMod {
     public static void registerParticleProviders(RegisterParticleProvidersEvent event) {
         SpellEngineClient.registerParticleAppearances(new SpellEngineClient.ParticleAppearanceRegistrar() {
             @Override
-            public <T extends ParticleEffect> void register(ParticleType<T> type, SpellEngineClient.SpriteFactory<T> factory) {
+            public <T extends ParticleOptions> void register(ParticleType<T> type, SpellEngineClient.SpriteFactory<T> factory) {
                 event.registerSpriteSet(type, factory::create);
             }
         });

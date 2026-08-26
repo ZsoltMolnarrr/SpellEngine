@@ -1,9 +1,9 @@
 package net.spell_engine.mixin.entity;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.animation.AnimatablePlayer;
 import net.spell_engine.internals.SpellEngineAttachments;
@@ -22,13 +22,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 // Implements the DEPRECATED bridge type (extends SpellCaster.Player) on purpose: external
 // compat mods cast players to SpellCasterEntity — the cast only works if players implement it.
 public class PlayerEntityMixin implements SpellCaster.Player, SpellCasterEntity {
 
-    private PlayerEntity player() {
-        return (PlayerEntity) ((Object) this);
+    private Player player() {
+        return (Player) ((Object) this);
     }
 
     private final SpellCooldownManager spellCooldownManager = new SpellCooldownManager(player());
@@ -41,14 +41,14 @@ public class PlayerEntityMixin implements SpellCaster.Player, SpellCasterEntity 
             new Binding<>(
                     () -> SpellEngineAttachments.CAST_PROCESS.get(player()),
                     json -> {
-                        if (!player().getEntityWorld().isClient()) {
+                        if (!player().level().isClientSide()) {
                             SpellEngineAttachments.CAST_PROCESS.set(player(), json);
                         }
                     }),
             new Binding<>(
                     () -> SpellEngineAttachments.CAST_OPTIONS.get(player()),
                     json -> {
-                        if (!player().getEntityWorld().isClient()) {
+                        if (!player().level().isClientSide()) {
                             SpellEngineAttachments.CAST_OPTIONS.set(player(), json);
                         }
                     }));
@@ -76,14 +76,14 @@ public class PlayerEntityMixin implements SpellCaster.Player, SpellCasterEntity 
     @Inject(method = "tick", at = @At("TAIL"))
     public void tick_TAIL_SpellEngine(CallbackInfo ci) {
         var player = player();
-        if (player.getEntityWorld().isClient()) {
+        if (player.level().isClientSide()) {
             ((AnimatablePlayer)player()).updateSpellCastAnimationsOnTick();
         } else {
             // Server side
             interactor.tick();
             if (activeAttack_serverSide != null
                     // Offsetting time by 1 tick, to compensate sync delays
-                    && activeAttack_serverSide.isFinished(player.age + 1)) {
+                    && activeAttack_serverSide.isFinished(player.tickCount + 1)) {
                 setMeleeSkillAttack(null);
             }
         }
@@ -105,23 +105,23 @@ public class PlayerEntityMixin implements SpellCaster.Player, SpellCasterEntity 
         return SpellEngineAttachments.EXTRA_SLIPPERINESS.get(player());
     }
 
-    @Nullable private RegistryEntry<Spell> activeMeleeSpell = null;
-    public void setActiveMeleeSkill(RegistryEntry<Spell> spell) {
+    @Nullable private Holder<Spell> activeMeleeSpell = null;
+    public void setActiveMeleeSkill(Holder<Spell> spell) {
         activeMeleeSpell = spell;
     }
-    public RegistryEntry<Spell> getActiveMeleeSkill() {
+    public Holder<Spell> getActiveMeleeSkill() {
         return activeMeleeSpell;
     }
 
     // MARK: Persistence
 
-    @Inject(method = "writeCustomData", at = @At("TAIL"))
-    public void writeCustomData_TAIL_SpellEngine(WriteView view, CallbackInfo ci) {
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    public void writeCustomData_TAIL_SpellEngine(ValueOutput view, CallbackInfo ci) {
         spellCooldownManager.writeCustomData(view);
     }
 
-    @Inject(method = "readCustomData", at = @At("TAIL"))
-    public void readCustomData_TAIL_SpellEngine(ReadView view, CallbackInfo ci) {
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    public void readCustomData_TAIL_SpellEngine(ValueInput view, CallbackInfo ci) {
         spellCooldownManager.readCustomData(view);
     }
 }

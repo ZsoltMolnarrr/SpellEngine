@@ -1,15 +1,14 @@
 package net.spell_engine.client.render;
 
-import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.model.BakedQuad;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.spell_engine.api.render.CustomLayers;
 import net.spell_engine.client.compatibility.ShaderCompatibility;
 import net.spell_engine.client.util.Color;
 import net.spell_engine.client.util.ItemGlowVertexConsumer;
-
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
 
 /**
@@ -27,23 +26,23 @@ public final class ItemGlowRendering {
     /// Lit up from within, scaled by opacity, so a faint glow warms the item rather than flipping it
     /// to full bright all at once. Sky light is left alone, it is not ours to raise.
     public static int light(Color glow, int light) {
-        return LightmapTextureManager.pack(
-                Math.max(LightmapTextureManager.getBlockLightCoordinates(light), Math.round(15 * glow.alpha())),
-                LightmapTextureManager.getSkyLightCoordinates(light));
+        return LightTexture.pack(
+                Math.max(LightTexture.block(light), Math.round(15 * glow.alpha())),
+                LightTexture.sky(light));
     }
 
     /// Submits the glow passes for one item layer (already positioned by the layer's display transform).
-    public static void submitGlow(Color glow, List<BakedQuad> quads, MatrixStack matrices, OrderedRenderCommandQueue queue, int light, int overlay) {
+    public static void submitGlow(Color glow, List<BakedQuad> quads, PoseStack matrices, SubmitNodeCollector queue, int light, int overlay) {
         if (quads.isEmpty()) {
             return;
         }
         // The luminance pass: glint program, color x gain through the color modulator, UVs scrolled by the shader.
         // Its vertex format is POSITION_TEXTURE, so the color/overlay/light/normal of the item quads are dropped.
         var uvScale = CustomLayers.itemGlowUvScale(quads);
-        queue.submitCustom(matrices, CustomLayers.itemGlow(glow), (entry, vertexConsumer) -> {
+        queue.submitCustomGeometry(matrices, CustomLayers.itemGlow(glow), (entry, vertexConsumer) -> {
             VertexConsumer glint = new ItemGlowVertexConsumer(vertexConsumer, Color.WHITE, uvScale, false);
             for (var quad : quads) {
-                glint.quad(entry, quad, 1F, 1F, 1F, 1F, light, overlay);
+                glint.putBulkData(entry, quad, 1F, 1F, 1F, 1F, light, overlay);
             }
         });
 
@@ -52,10 +51,10 @@ public final class ItemGlowRendering {
         if (ShaderCompatibility.isShaderPackInUse()) {
             // Opacity folded into the color, as for the shimmer: the additive blend ignores alpha.
             var tint = new Color(glow.red() * glow.alpha(), glow.green() * glow.alpha(), glow.blue() * glow.alpha(), 1F);
-            queue.submitCustom(matrices, CustomLayers.itemGlowEmissive(), (entry, vertexConsumer) -> {
+            queue.submitCustomGeometry(matrices, CustomLayers.itemGlowEmissive(), (entry, vertexConsumer) -> {
                 VertexConsumer emissive = new ItemGlowVertexConsumer(vertexConsumer, tint, uvScale, true);
                 for (var quad : quads) {
-                    emissive.quad(entry, quad, 1F, 1F, 1F, 1F, light, overlay);
+                    emissive.putBulkData(entry, quad, 1F, 1F, 1F, 1F, light, overlay);
                 }
             });
         }

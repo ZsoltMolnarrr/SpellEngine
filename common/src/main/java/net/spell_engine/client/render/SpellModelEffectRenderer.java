@@ -1,11 +1,11 @@
 package net.spell_engine.client.render;
 
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.state.EntityRenderState;
-import net.minecraft.client.render.state.CameraRenderState;
-import net.minecraft.client.util.math.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.state.CameraRenderState;
 import net.spell_engine.entity.SpellModelEffect;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +15,7 @@ public class SpellModelEffectRenderer<T extends SpellModelEffect> extends Entity
         public float tickDelta;
     }
 
-    public SpellModelEffectRenderer(EntityRendererFactory.Context context) {
+    public SpellModelEffectRenderer(EntityRendererProvider.Context context) {
         super(context);
     }
 
@@ -25,15 +25,15 @@ public class SpellModelEffectRenderer<T extends SpellModelEffect> extends Entity
     }
 
     @Override
-    public void updateRenderState(T entity, State state, float tickDelta) {
-        super.updateRenderState(entity, state, tickDelta);
+    public void extractRenderState(T entity, State state, float tickDelta) {
+        super.extractRenderState(entity, state, tickDelta);
         state.entity = entity;
         state.tickDelta = tickDelta;
     }
 
     @Override
-    public void render(State state, MatrixStack matrixStack, OrderedRenderCommandQueue queue, CameraRenderState cameraState) {
-        super.render(state, matrixStack, queue, cameraState);
+    public void submit(State state, PoseStack matrixStack, SubmitNodeCollector queue, CameraRenderState cameraState) {
+        super.submit(state, matrixStack, queue, cameraState);
         var entity = state.entity;
         if (entity == null) {
             return;
@@ -42,7 +42,7 @@ public class SpellModelEffectRenderer<T extends SpellModelEffect> extends Entity
         if (effect == null || effect.model_id == null || effect.model_id.isEmpty()) {
             return;
         }
-        float age = entity.age + state.tickDelta;
-        ModelEffectOperations.renderEffect(effect, age, matrixStack, queue, state.light, entity.getId());
+        float age = entity.tickCount + state.tickDelta;
+        ModelEffectOperations.renderEffect(effect, age, matrixStack, queue, state.lightCoords, entity.getId());
     }
 }

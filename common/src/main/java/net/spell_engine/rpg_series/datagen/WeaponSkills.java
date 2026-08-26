@@ -1,6 +1,6 @@
 package net.spell_engine.rpg_series.datagen;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.api.datagen.SpellBuilder;
 import net.spell_engine.api.render.LightEmission;
 import net.spell_engine.api.spell.Spell;
@@ -30,7 +30,7 @@ public class WeaponSkills {
 
     public static final Entry WHIRLWIND = add(whirlwind());
     private static Entry whirlwind() {
-        var id = Identifier.of(NAMESPACE, "whirlwind");
+        var id = Identifier.fromNamespaceAndPath(NAMESPACE, "whirlwind");
         var title = "Whirlwind";
         var description = "Hold to spin around, dealing {damage} damage per second, to nearby enemies.";
         var spell = SpellBuilder.createMeleeSpell();
@@ -76,7 +76,7 @@ public class WeaponSkills {
 
     public static Entry CLEAVE = add(CLEAVE());
     private static Entry CLEAVE() {
-        var id = Identifier.of(NAMESPACE, "cleave");
+        var id = Identifier.fromNamespaceAndPath(NAMESPACE, "cleave");
         var title = "Cleave";
         var description = "Performs a spin attack, dealing {damage} damage to nearby enemies.";
         var spell = SpellBuilder.createMeleeSpell();
@@ -113,7 +113,7 @@ public class WeaponSkills {
 
     public static Entry GROUND_SLAM = add(GROUND_SLAM());
     private static Entry GROUND_SLAM() {
-        var id = Identifier.of(NAMESPACE, "ground_slam");
+        var id = Identifier.fromNamespaceAndPath(NAMESPACE, "ground_slam");
         var title = "Ground Slam";
         var description = "Leaps into the air and slams into the ground, dealing {damage} damage to nearby enemies.";
         var spell = SpellBuilder.createMeleeSpell();
@@ -153,7 +153,7 @@ public class WeaponSkills {
 
     public static Entry SMASH = add(SMASH());
     private static Entry SMASH() {
-        var id = Identifier.of(NAMESPACE, "smash");
+        var id = Identifier.fromNamespaceAndPath(NAMESPACE, "smash");
         var title = "Smash";
         var description = "Delivers a strike with powerful knockback, disabling shield and item usage of target.";
         var spell = SpellBuilder.createMeleeSpell();
@@ -190,7 +190,7 @@ public class WeaponSkills {
 
     public static Entry FLURRY = add(FLURRY());
     private static Entry FLURRY() {
-        var id = Identifier.of(NAMESPACE, "flurry");
+        var id = Identifier.fromNamespaceAndPath(NAMESPACE, "flurry");
         var title = "Flurry";
         var description = "Hold to unleash a rapid series of strikes, while also gaining momentum.";
         var spell = SpellBuilder.createMeleeSpell();
@@ -245,7 +245,7 @@ public class WeaponSkills {
 
     public static Entry SWIFT_STRIKES = add(SWIFT_STRIKES());
     private static Entry SWIFT_STRIKES() {
-        var id = Identifier.of(NAMESPACE, "swift_strikes");
+        var id = Identifier.fromNamespaceAndPath(NAMESPACE, "swift_strikes");
         var title = "Swift Strikes";
         var description = "Unleash a rapid series of strikes.";
         var spell = SpellBuilder.createMeleeSpell();
@@ -288,7 +288,7 @@ public class WeaponSkills {
 
     public static Entry IMPALE = add(IMPALE());
     private static Entry IMPALE() {
-        var id = Identifier.of(NAMESPACE, "impale");
+        var id = Identifier.fromNamespaceAndPath(NAMESPACE, "impale");
         var title = "Impale";
         var description = "Throws your weapon forwards, dealing {damage} damage and powerful knockback. The longer the throw is charged, the harder it hits and the further it flies.";
         var spell = SpellBuilder.createMeleeSpell();
@@ -325,7 +325,7 @@ public class WeaponSkills {
 
     public static Entry FAN_OF_KNIVES = add(FAN_OF_KNIVES());
     private static Entry FAN_OF_KNIVES() {
-        var id = Identifier.of(NAMESPACE, "fan_of_knives");
+        var id = Identifier.fromNamespaceAndPath(NAMESPACE, "fan_of_knives");
         var title = "Fan of Knives";
         var description = "Throws several of your blades in a cone, dealing {damage} damage, bouncing off terrain up to {bounce} times.";
         var spell = SpellBuilder.createMeleeSpell();
@@ -363,7 +363,7 @@ public class WeaponSkills {
 
     public static Entry THRUST = add(THRUST());
     private static Entry THRUST() {
-        var id = Identifier.of(NAMESPACE, "thrust");
+        var id = Identifier.fromNamespaceAndPath(NAMESPACE, "thrust");
         var title = "Thrust";
         var description = "Lunge forward with your weapon, striking all enemies along your path.";
         var spell = SpellBuilder.createMeleeSpell();
@@ -400,7 +400,7 @@ public class WeaponSkills {
 
     public static Entry SWIPE = add(SWIPE());
     private static Entry SWIPE() {
-        var id = Identifier.of(NAMESPACE, "swipe");
+        var id = Identifier.fromNamespaceAndPath(NAMESPACE, "swipe");
         var title = "Swipe";
         var description = "Slide forward with your weapon, striking all enemies along your path.";
         var spell = SpellBuilder.createMeleeSpell();

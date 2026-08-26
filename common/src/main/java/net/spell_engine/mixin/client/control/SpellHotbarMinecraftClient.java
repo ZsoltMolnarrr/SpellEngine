@@ -2,12 +2,12 @@ package net.spell_engine.mixin.client.control;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.option.GameOptions;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.entity.player.Inventory;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.*;
@@ -25,22 +25,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mixin(value = MinecraftClient.class, priority = 999)
+@Mixin(value = Minecraft.class, priority = 999)
 public abstract class SpellHotbarMinecraftClient implements MinecraftClientExtension {
-    @Shadow @Nullable public ClientPlayerEntity player;
-    @Shadow @Final public GameOptions options;
-    @Shadow private int itemUseCooldown;
-    @Shadow public int attackCooldown;
-    @Shadow @Nullable public Screen currentScreen;
+    @Shadow @Nullable public LocalPlayer player;
+    @Shadow @Final public Options options;
+    @Shadow private int rightClickDelay;
+    @Shadow public int missTime;
+    @Shadow @Nullable public Screen screen;
 
     // @Nullable private WrappedKeybinding.Category spellHotbarHandle = null;
 
     private boolean useKeySpellCastingLock = false;
 
     // Holds the list of keys that are currently being used for something else.
-    private final List<KeyBinding> concurrentKeys = new ArrayList<>();
+    private final List<KeyMapping> concurrentKeys = new ArrayList<>();
 
-    @Inject(method = "handleInputEvents", at = @At(value = "HEAD"))
+    @Inject(method = "handleKeybinds", at = @At(value = "HEAD"))
     private void handleInputEvents_HEAD_SpellHotbar(CallbackInfo ci) {
         // spellHotbarHandle = null;
         if (player == null || options == null) { return; }
@@ -49,16 +49,16 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
         // This needs to run every tick because the player's held caster item may change any time
         var hotbarUpdated = SpellHotbar.INSTANCE.update(player, options);
         if (hotbarUpdated) {
-            itemUseCooldown = 4;
+            rightClickDelay = 4;
         }
-        SpellHotbar.INSTANCE.prepare(itemUseCooldown);
+        SpellHotbar.INSTANCE.prepare(rightClickDelay);
         if (player.isUsingItem()) {
             return;
         }
         var caster = (SpellCaster.Client) player;
         if (caster.getCurrentSkillAttack() != null) {
-            itemUseCooldown = Math.max(itemUseCooldown, 1); // Blocking item use
-            attackCooldown = 1; // Blocking attacks
+            rightClickDelay = Math.max(rightClickDelay, 1); // Blocking item use
+            missTime = 1; // Blocking attacks
             // Prevent spell cast start until the attack is finished
             // but allow ongoing process to continue
             if (caster.getSpellCastProcess() == null) {
@@ -66,7 +66,7 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
             }
         }
 
-        concurrentKeys.removeIf(k -> !k.isPressed());
+        concurrentKeys.removeIf(k -> !k.isDown());
         SpellHotbar.Handle handled;
         if (useKeySpellCastingLock || SpellEngineClient.config.useKeyHighPriority) {
             handled = SpellHotbar.INSTANCE.handleAll(player, options, concurrentKeys);
@@ -80,46 +80,46 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
         if (handled != null) {
             // spellHotbarHandle = handled.category();
             if (player.isUsingItem()) {
-                player.stopUsingItem();
-                itemUseCooldown = 1;
+                player.releaseUsingItem();
+                rightClickDelay = 1;
             }
             if ( (handled.isSuccessfulAttempt() || ((SpellCaster.Client)player).isCastingSpell())
-                    && handled.keyBinding() == options.useKey) {
+                    && handled.keyBinding() == options.keyUse) {
                 useKeySpellCastingLock = true;
             }
         }
-        if (useKeySpellCastingLock && !options.useKey.isPressed()) {
+        if (useKeySpellCastingLock && !options.keyUse.isDown()) {
             useKeySpellCastingLock = false;
         }
         if (((SpellCaster.Client)player).isCastingSpell()) {
-            attackCooldown = 2;
+            missTime = 2;
         }
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void tick_HEAD_SpellHotbar(CallbackInfo ci) {
         if (player == null || options == null) { return; }
-        if (currentScreen != null || CombatRollCompat.isRolling.apply(player)) {
+        if (screen != null || CombatRollCompat.isRolling.apply(player)) {
             ((SpellCaster.Client)player).cancelSpellCast();
         }
     }
 
-    @Inject(method = "handleInputEvents", at = @At(value = "TAIL"))
+    @Inject(method = "handleKeybinds", at = @At(value = "TAIL"))
     private void handleInputEvents_TAIL_SpellHotbar(CallbackInfo ci) {
         if (player == null || options == null) { return; }
     }
 
     @WrapOperation(
-            method = "handleInputEvents",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerInventory;setSelectedSlot(I)V", ordinal = 0), // 1.21.11: hotbar keys call setSelectedSlot() instead of writing the field
+            method = "handleKeybinds",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;setSelectedSlot(I)V", ordinal = 0), // 1.21.11: hotbar keys call setSelectedSlot() instead of writing the field
             require = 0
     )
-    private void selectSlot_Wrap(PlayerInventory instance, int index, Operation<Void> original) {
+    private void selectSlot_Wrap(Inventory instance, int index, Operation<Void> original) {
         var shouldControlSpellHotbar = false;
-        if (!Keybindings.bypass_spell_hotbar.isPressed()) {
+        if (!Keybindings.bypass_spell_hotbar.isDown()) {
             for (var slot: SpellHotbar.INSTANCE.slots) {
                 var keyBinding = slot.getKeyBinding(options);
-                if (options.hotbarKeys[index] == keyBinding) {
+                if (options.keyHotbarSlots[index] == keyBinding) {
                     shouldControlSpellHotbar = true;
                     break;
                 }
@@ -129,13 +129,13 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
         if (shouldControlSpellHotbar) {
             // Do nothing
         } else {
-            var trigger = this.options.hotbarKeys[index];
+            var trigger = this.options.keyHotbarSlots[index];
             concurrentKeys.add(trigger);
             original.call(instance, index);
         }
     }
 
-    @Inject(method = "doItemUse", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "startUseItem", at = @At("HEAD"), cancellable = true)
     private void doItemUse_HEAD_autoSwap(CallbackInfo ci) {
         if (useKeySpellCastingLock
                 || ((SpellCaster.Client)player).isCastingSpell()) {

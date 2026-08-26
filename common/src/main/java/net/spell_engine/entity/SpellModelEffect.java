@@ -1,16 +1,16 @@
 package net.spell_engine.entity;
 
 import com.google.gson.Gson;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.storage.ReadView;
-import net.minecraft.storage.WriteView;
-import net.minecraft.world.World;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.spell_engine.api.spell.fx.ModelEffect;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,26 +18,26 @@ public class SpellModelEffect extends Entity {
     public static EntityType<SpellModelEffect> ENTITY_TYPE;
 
     private static final Gson gson = new Gson();
-    private static final TrackedData<String> MODEL_EFFECT_DATA = DataTracker.registerData(SpellModelEffect.class, TrackedDataHandlerRegistry.STRING);
+    private static final EntityDataAccessor<String> MODEL_EFFECT_DATA = SynchedEntityData.defineId(SpellModelEffect.class, EntityDataSerializers.STRING);
 
     @Nullable
     private ModelEffect modelEffect;
     private int timeToLive = 20;
 
-    public SpellModelEffect(EntityType<?> type, World world) {
+    public SpellModelEffect(EntityType<?> type, Level world) {
         super(type, world);
-        this.noClip = true;
+        this.noPhysics = true;
     }
 
-    public SpellModelEffect(World world) {
+    public SpellModelEffect(Level world) {
         super(ENTITY_TYPE, world);
-        this.noClip = true;
+        this.noPhysics = true;
     }
 
     public void setup(ModelEffect effect) {
         this.modelEffect = effect;
         this.timeToLive = effect.duration;
-        this.getDataTracker().set(MODEL_EFFECT_DATA, gson.toJson(effect));
+        this.getEntityData().set(MODEL_EFFECT_DATA, gson.toJson(effect));
     }
 
     @Nullable
@@ -48,15 +48,15 @@ public class SpellModelEffect extends Entity {
     // MARK: Sync
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        builder.add(MODEL_EFFECT_DATA, "");
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(MODEL_EFFECT_DATA, "");
     }
 
     @Override
-    public void onTrackedDataSet(TrackedData<?> data) {
-        super.onTrackedDataSet(data);
-        if (getEntityWorld().isClient()) {
-            var json = this.getDataTracker().get(MODEL_EFFECT_DATA);
+    public void onSyncedDataUpdated(EntityDataAccessor<?> data) {
+        super.onSyncedDataUpdated(data);
+        if (level().isClientSide()) {
+            var json = this.getEntityData().get(MODEL_EFFECT_DATA);
             if (json != null && !json.isEmpty()) {
                 this.modelEffect = gson.fromJson(json, ModelEffect.class);
                 if (this.modelEffect != null) {
@@ -69,18 +69,18 @@ public class SpellModelEffect extends Entity {
     // MARK: Persistence
 
     @Override
-    protected void readCustomData(ReadView view) {
-        this.age = view.getInt("Age", 0);
-        this.timeToLive = view.getInt("TTL", 0);
-        var json = view.getString("ModelEffect", "");
+    protected void readAdditionalSaveData(ValueInput view) {
+        this.tickCount = view.getIntOr("Age", 0);
+        this.timeToLive = view.getIntOr("TTL", 0);
+        var json = view.getStringOr("ModelEffect", "");
         if (!json.isEmpty()) {
             this.modelEffect = gson.fromJson(json, ModelEffect.class);
         }
     }
 
     @Override
-    protected void writeCustomData(WriteView view) {
-        view.putInt("Age", this.age);
+    protected void addAdditionalSaveData(ValueOutput view) {
+        view.putInt("Age", this.tickCount);
         view.putInt("TTL", this.timeToLive);
         if (this.modelEffect != null) {
             view.putString("ModelEffect", gson.toJson(this.modelEffect));
@@ -88,7 +88,7 @@ public class SpellModelEffect extends Entity {
     }
 
     @Override
-    public boolean damage(ServerWorld world, DamageSource source, float amount) {
+    public boolean hurtServer(ServerLevel world, DamageSource source, float amount) {
         return false;
     }
 
@@ -97,13 +97,13 @@ public class SpellModelEffect extends Entity {
     @Override
     public void tick() {
         super.tick();
-        if (!getEntityWorld().isClient() && this.age >= this.timeToLive) {
+        if (!level().isClientSide() && this.tickCount >= this.timeToLive) {
             this.discard();
         }
     }
 
     @Override
-    public boolean shouldRender(double distance) {
+    public boolean shouldRenderAtSqrDistance(double distance) {
 //        double d = this.getBoundingBox().getAverageSideLength() * 4.0;
 //        if (Double.isNaN(d)) {
 //            d = 4.0;

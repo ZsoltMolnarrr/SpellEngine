@@ -1,11 +1,11 @@
 package net.spell_engine.entity.goal;
 
-import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.spell_engine.entity.SummonedEntity;
 
 /// Vanilla wander, gated on target presence: the summon stops drifting the moment a target is
 /// acquired by any route, and won't restart wandering until the target is gone.
-public class WanderWhenIdleGoal extends WanderAroundFarGoal {
+public class WanderWhenIdleGoal extends WaterAvoidingRandomStrollGoal {
     private final SummonedEntity entity;
 
     public WanderWhenIdleGoal(SummonedEntity entity, double speed, float probability) {
@@ -14,14 +14,14 @@ public class WanderWhenIdleGoal extends WanderAroundFarGoal {
     }
 
     @Override
-    public boolean canStart() {
+    public boolean canUse() {
         if (entity.hasLiveTarget()) return false;
-        return super.canStart();
+        return super.canUse();
     }
 
     @Override
-    public boolean shouldContinue() {
+    public boolean canContinueToUse() {
         if (entity.hasLiveTarget()) return false;
-        return super.shouldContinue();
+        return super.canContinueToUse();
     }
 }

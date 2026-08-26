@@ -1,7 +1,7 @@
 package net.spell_engine.rpg_series.item;
 
-import net.minecraft.component.type.AttributeModifiersComponent;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 
 public interface ConfigurableAttributes {
-    void setAttributes(AttributeModifiersComponent attributeModifiers);
+    void setAttributes(ItemAttributeModifiers attributeModifiers);
 }

@@ -2,9 +2,9 @@ package net.spell_engine.mixin.client.render;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.spell_engine.client.SpellEngineClient;
 import net.spell_engine.client.input.SpellHotbar;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,12 +19,12 @@ import org.spongepowered.asm.mixin.injection.At;
  * off-hand inventory slot around the wrapped vanilla call, i.e. mutate game state during rendering.
  * Everything else about the spell HUD is registered natively, see {@code HudRenderHelper.renderHudElement}.
  */
-@Mixin(InGameHud.class)
+@Mixin(Gui.class)
 public class InGameHudMixin {
-    @WrapOperation(method = "renderHotbarVanilla", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getOffHandStack()Lnet/minecraft/item/ItemStack;"))
+    @WrapOperation(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getOffhandItem()Lnet/minecraft/world/item/ItemStack;"))
     private ItemStack renderHotbar_SpellEngine(
             // Mixin parameters
-            PlayerEntity player, Operation<ItemStack> original
+            Player player, Operation<ItemStack> original
     ) {
         if (SpellEngineClient.config.spellHotbarHidesOffhand && SpellHotbar.INSTANCE.isShowingItemUse()) {
             return ItemStack.EMPTY;

@@ -1,11 +1,11 @@
 package net.spell_engine.rpg_series.item;
 
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.rpg_foundation.ranged_weapon.api.CustomBow;
 import net.rpg_foundation.ranged_weapon.api.CustomCrossbow;
 import net.rpg_foundation.ranged_weapon.api.RangedConfig;
-import net.minecraft.item.Item;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
@@ -176,7 +176,7 @@ public class RangedWeapons {
         var config = new RangedConfig(damage, pullTime, velocity);
 
         // Create entry (RangedWeapon.Entry handles durability automatically via tier)
-        var id = Identifier.of(namespace, name);
+        var id = Identifier.fromNamespaceAndPath(namespace, name);
         var entry = new RangedWeapon.Entry(id, tier, factory, config, repairItems, weaponType);
         entry.weaponAttributesPreset = WEAPON_ATTRIBUTES.getOrDefault(weaponType, "");
 

@@ -1,12 +1,12 @@
 package net.spell_engine.misc;
 
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ResourceArgument;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
 import net.spell_engine.PlatformEvents;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.RegistryEntryReferenceArgumentType;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.casting.SpellCaster;
@@ -17,22 +17,22 @@ import java.util.Collection;
 public class SpellEngineCommands {
     public static void register() {
         PlatformEvents.onCommandRegistration((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(CommandManager.literal("spell_cooldown")
-                    .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
-                    .then(CommandManager.literal("reset").then(
-                            CommandManager.argument("players", EntityArgumentType.player())
-                                    .then(CommandManager.argument("spell", RegistryEntryReferenceArgumentType.registryEntry(registryAccess, SpellRegistry.KEY))
+            dispatcher.register(Commands.literal("spell_cooldown")
+                    .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
+                    .then(Commands.literal("reset").then(
+                            Commands.argument("players", EntityArgument.player())
+                                    .then(Commands.argument("spell", ResourceArgument.resource(registryAccess, SpellRegistry.KEY))
                                             .executes(context -> {
-                                                var players = EntityArgumentType.getPlayers(context, "players");
-                                                var spell = RegistryEntryReferenceArgumentType.getRegistryEntry(context, "spell", SpellRegistry.KEY);
+                                                var players = EntityArgument.getPlayers(context, "players");
+                                                var spell = ResourceArgument.getResource(context, "spell", SpellRegistry.KEY);
                                                 return executeResetCooldown(players, spell);
                                             })
                                     )
                     ))
-                    .then(CommandManager.literal("clear").then(
-                            CommandManager.argument("players", EntityArgumentType.players())
+                    .then(Commands.literal("clear").then(
+                            Commands.argument("players", EntityArgument.players())
                                     .executes(context -> {
-                                        var players = EntityArgumentType.getPlayers(context, "players");
+                                        var players = EntityArgument.getPlayers(context, "players");
                                         return executeResetCooldown(players, null);
                                     })
                     ))
@@ -40,11 +40,11 @@ public class SpellEngineCommands {
         });
     }
 
-    private static int executeResetCooldown(Collection<ServerPlayerEntity> players, @Nullable RegistryEntry<Spell> spell) {
+    private static int executeResetCooldown(Collection<ServerPlayer> players, @Nullable Holder<Spell> spell) {
         for (var player: players) {
             Identifier spellId = null;
             if (spell != null) {
-                spellId = spell.getKey().get().getValue();
+                spellId = spell.unwrapKey().get().identifier();
             }
             ((SpellCaster.Player) player).getCooldownManager().reset(spellId);
         }

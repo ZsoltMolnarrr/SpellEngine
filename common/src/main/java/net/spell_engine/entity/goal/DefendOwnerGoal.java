@@ -1,14 +1,14 @@
 package net.spell_engine.entity.goal;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.TargetPredicate;
-import net.minecraft.entity.ai.goal.TrackTargetGoal;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.goal.target.TargetGoal;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.spell_engine.entity.SummonedEntity;
 
 import java.util.EnumSet;
 
 /// Targets whoever attacked the owner (mirrors TrackOwnerAttackerGoal).
-public class DefendOwnerGoal extends TrackTargetGoal {
+public class DefendOwnerGoal extends TargetGoal {
     private final SummonedEntity entity;
     private LivingEntity attacker;
     private int lastAttackedTime;
@@ -16,17 +16,17 @@ public class DefendOwnerGoal extends TrackTargetGoal {
     public DefendOwnerGoal(SummonedEntity entity) {
         super(entity, false);
         this.entity = entity;
-        setControls(EnumSet.of(Control.TARGET));
+        setFlags(EnumSet.of(Flag.TARGET));
     }
 
     @Override
-    public boolean canStart() {
+    public boolean canUse() {
         LivingEntity owner = entity.getOwner();
         if (owner == null) return false;
-        attacker = owner.getAttacker();
-        int time = owner.getLastAttackedTime();
+        attacker = owner.getLastHurtByMob();
+        int time = owner.getLastHurtByMobTimestamp();
         return time != lastAttackedTime
-                && canTrack(attacker, TargetPredicate.DEFAULT)
+                && canAttack(attacker, TargetingConditions.DEFAULT)
                 && entity.canAttackTarget(attacker, owner);
     }
 
@@ -34,7 +34,7 @@ public class DefendOwnerGoal extends TrackTargetGoal {
     public void start() {
         entity.setTarget(attacker);
         LivingEntity owner = entity.getOwner();
-        if (owner != null) lastAttackedTime = owner.getLastAttackedTime();
+        if (owner != null) lastAttackedTime = owner.getLastHurtByMobTimestamp();
         super.start();
     }
 }

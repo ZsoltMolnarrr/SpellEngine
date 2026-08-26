@@ -1,13 +1,13 @@
 package net.spell_engine.spellbinding;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 // Copied from EnchantingTableBlockEntity
 public class SpellBindingBlockEntity extends BlockEntity {
@@ -24,21 +24,21 @@ public class SpellBindingBlockEntity extends BlockEntity {
     public float bookRotation;
     public float lastBookRotation;
     public float targetBookRotation;
-    private static final Random RANDOM = Random.create();
+    private static final RandomSource RANDOM = RandomSource.create();
 
     public SpellBindingBlockEntity(BlockPos pos, BlockState state) {
         super(ENTITY_TYPE, pos, state);
     }
 
-    public static void tick(World world, BlockPos pos, BlockState state, SpellBindingBlockEntity blockEntity) {
+    public static void tick(Level world, BlockPos pos, BlockState state, SpellBindingBlockEntity blockEntity) {
         float g;
         blockEntity.pageTurningSpeed = blockEntity.nextPageTurningSpeed;
         blockEntity.lastBookRotation = blockEntity.bookRotation;
-        PlayerEntity playerEntity = world.getClosestPlayer((double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, 3.0, false);
+        Player playerEntity = world.getNearestPlayer((double)pos.getX() + 0.5, (double)pos.getY() + 0.5, (double)pos.getZ() + 0.5, 3.0, false);
         if (playerEntity != null) {
             double d = playerEntity.getX() - ((double)pos.getX() + 0.5);
             double e = playerEntity.getZ() - ((double)pos.getZ() + 0.5);
-            blockEntity.targetBookRotation = (float) MathHelper.atan2(e, d);
+            blockEntity.targetBookRotation = (float) Mth.atan2(e, d);
             blockEntity.nextPageTurningSpeed += 0.1f;
             if (blockEntity.nextPageTurningSpeed < 0.5f || RANDOM.nextInt(40) == 0) {
                 float f = blockEntity.flipRandom;
@@ -68,12 +68,12 @@ public class SpellBindingBlockEntity extends BlockEntity {
             g += (float)Math.PI * 2;
         }
         blockEntity.bookRotation += g * 0.4f;
-        blockEntity.nextPageTurningSpeed = MathHelper.clamp(blockEntity.nextPageTurningSpeed, 0.0f, 1.0f);
+        blockEntity.nextPageTurningSpeed = Mth.clamp(blockEntity.nextPageTurningSpeed, 0.0f, 1.0f);
         ++blockEntity.ticks;
         blockEntity.pageAngle = blockEntity.nextPageAngle;
         float h = (blockEntity.flipRandom - blockEntity.nextPageAngle) * 0.4f;
         float i = 0.2f;
-        h = MathHelper.clamp(h, -0.2f, 0.2f);
+        h = Mth.clamp(h, -0.2f, 0.2f);
         blockEntity.flipTurn += (h - blockEntity.flipTurn) * 0.9f;
         blockEntity.nextPageAngle += blockEntity.flipTurn;
     }

@@ -1,34 +1,33 @@
 package net.spell_engine.api.effect;
 
+import net.minecraft.core.Holder;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.spell_engine.PlatformEvents;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.entry.RegistryEntry;
-
 import java.util.HashSet;
 import java.util.Set;
 
 public class StatusEffectClassification {
-    private static final Set<RegistryEntry<EntityAttribute>> movementImpairingAttributes = new HashSet<>();
-    private static final Set<RegistryKey<StatusEffect>> movementImpairingEffects = new HashSet<>();
+    private static final Set<Holder<Attribute>> movementImpairingAttributes = new HashSet<>();
+    private static final Set<ResourceKey<MobEffect>> movementImpairingEffects = new HashSet<>();
 
     public static void init() {
-        movementImpairingAttributes.add(EntityAttributes.MOVEMENT_SPEED);
-        movementImpairingAttributes.add(EntityAttributes.FLYING_SPEED);
-        movementImpairingAttributes.add(EntityAttributes.GRAVITY);
+        movementImpairingAttributes.add(Attributes.MOVEMENT_SPEED);
+        movementImpairingAttributes.add(Attributes.FLYING_SPEED);
+        movementImpairingAttributes.add(Attributes.GRAVITY);
         PlatformEvents.onServerStarted((server) -> {
-            parse(Registries.STATUS_EFFECT);
+            parse(BuiltInRegistries.MOB_EFFECT);
         });
     }
 
-    private static void parse(Registry<StatusEffect> registry) {
-        registry.streamEntries().forEach(entry -> {
+    private static void parse(Registry<MobEffect> registry) {
+        registry.listElements().forEach(entry -> {
             var effect = entry.value();
-            effect.forEachAttributeModifier(0, (attribute, modifier) -> {
+            effect.createModifiers(0, (attribute, modifier) -> {
                 if (movementImpairingAttributes.contains(attribute)) {
                     var isMovementImpairing = false;
                     double treshold = 0;
@@ -40,26 +39,26 @@ public class StatusEffectClassification {
                             treshold = 1;
                         }
                     }
-                    if (modifier.value() < treshold) {
+                    if (modifier.amount() < treshold) {
                         isMovementImpairing = true;
                     }
                     if (isMovementImpairing) {
-                        movementImpairingEffects.add(entry.getKey().get());
+                        movementImpairingEffects.add(entry.unwrapKey().get());
                     }
                 }
             });
         });
     }
 
-    public static boolean isMovementImpairing(RegistryEntry<StatusEffect> effect) {
-        var key = effect.getKey();
+    public static boolean isMovementImpairing(Holder<MobEffect> effect) {
+        var key = effect.unwrapKey();
         if (key.isEmpty()) { // Should never happen, added due to some incompatibility crash
             return false;
         }
         return movementImpairingEffects.contains(key.get());
     }
 
-    public static boolean disablesMobAI(RegistryEntry<StatusEffect> effectEntry) {
+    public static boolean disablesMobAI(Holder<MobEffect> effectEntry) {
         var effect = effectEntry.value();
         var actionsAllowed = ((ActionImpairing) effect).actionsAllowed();
         if (actionsAllowed == null) {

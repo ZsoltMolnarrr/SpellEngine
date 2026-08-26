@@ -2,9 +2,8 @@ package net.spell_engine.compat.container;
 
 import com.github.theredbrain.bundleapi.BundleAPI;
 import com.github.theredbrain.bundleapi.component.type.CustomBundleContentsComponent;
-import net.minecraft.item.ItemStack;
-
 import java.util.List;
+import net.minecraft.world.item.ItemStack;
 
 public class CustomBundleCompat {
     public static void init() {

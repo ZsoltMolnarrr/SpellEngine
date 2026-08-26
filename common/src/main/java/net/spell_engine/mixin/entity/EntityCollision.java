@@ -1,6 +1,6 @@
 package net.spell_engine.mixin.entity;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.spell_engine.api.entity.TwoWayCollisionChecker;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -24,7 +24,7 @@ public class EntityCollision implements TwoWayCollisionChecker {
         this.reverseCollisionChecker = reverseCollisionChecker;
     }
 
-    @Inject(method = "collidesWith", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "canCollideWith", at = @At("HEAD"), cancellable = true)
     private void onCollidesWith(Entity other, CallbackInfoReturnable<Boolean> cir) {
         var reverse = ((TwoWayCollisionChecker) other).getReverseCollisionChecker();
         if (reverse != null

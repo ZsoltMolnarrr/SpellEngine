@@ -5,9 +5,9 @@ import dev.lambdaurora.lambdynlights.api.DynamicLightsContext;
 import dev.lambdaurora.lambdynlights.api.DynamicLightsInitializer;
 import dev.lambdaurora.lambdynlights.api.entity.luminance.EntityLuminance;
 import dev.lambdaurora.lambdynlights.api.item.ItemLightSourceManager;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellProjectile;
@@ -42,7 +42,7 @@ public class DynamicLightsCompatibility implements DynamicLightsInitializer {
     public void onInitializeDynamicLights(DynamicLightsContext context) {
         SpellEngineMod.LOGGER.info("Initializing Dynamic Lights compatibility");
         // LambDynamicLights 4.x: entity light sources are (re)registered on every resource reload
-        context.entityLightSourceManager().onRegisterEvent().register(Identifier.of(SpellEngineMod.ID, "entity_light_sources"), registerContext -> {
+        context.entityLightSourceManager().onRegisterEvent().register(Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "entity_light_sources"), registerContext -> {
             for (var registration : registrations()) {
                 register(registerContext, registration);
             }
@@ -55,7 +55,7 @@ public class DynamicLightsCompatibility implements DynamicLightsInitializer {
 
     /// Code-defined luminance (no data pack codec needed; the type only exists to satisfy the API)
     private record DynamicLuminance<T extends Entity>(Registration<T> registration) implements EntityLuminance {
-        private static final Type TYPE = new Type(Identifier.of(SpellEngineMod.ID, "dynamic"), MapCodec.unit(new DynamicLuminance<>(null)));
+        private static final Type TYPE = new Type(Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "dynamic"), MapCodec.unit(new DynamicLuminance<>(null)));
 
         @Override
         public Type type() {

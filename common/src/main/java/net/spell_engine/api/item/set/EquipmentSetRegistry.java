@@ -1,14 +1,14 @@
 package net.spell_engine.api.item.set;
 
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 
 public class EquipmentSetRegistry {
-    public static final Identifier ID = Identifier.ofVanilla("equipment_set");
-    public static final RegistryKey<Registry<EquipmentSet.Definition>> KEY = RegistryKey.ofRegistry(ID);
-    public static Registry<EquipmentSet.Definition> from(World world) {
-        return world.getRegistryManager().getOrThrow(KEY);
+    public static final Identifier ID = Identifier.withDefaultNamespace("equipment_set");
+    public static final ResourceKey<Registry<EquipmentSet.Definition>> KEY = ResourceKey.createRegistryKey(ID);
+    public static Registry<EquipmentSet.Definition> from(Level world) {
+        return world.registryAccess().lookupOrThrow(KEY);
     }
 }

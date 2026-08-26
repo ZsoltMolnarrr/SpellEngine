@@ -1,11 +1,10 @@
 package net.spell_engine.rpg_series.config;
 
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.resources.Identifier;
 
 public class AttributeModifier {
     public AttributeModifier() {
@@ -17,12 +16,12 @@ public class AttributeModifier {
     public String id;
     public String attribute = "";
     public float value = 0;
-    public EntityAttributeModifier.Operation operation = EntityAttributeModifier.Operation.ADD_VALUE;
+    public net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation operation = net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE;
 
-    public AttributeModifier(Identifier attribute, float value, EntityAttributeModifier.Operation operation) {
+    public AttributeModifier(Identifier attribute, float value, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation operation) {
         this(attribute.toString(), value, operation);
     }
-    public AttributeModifier(String attribute, float value, EntityAttributeModifier.Operation operation) {
+    public AttributeModifier(String attribute, float value, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation operation) {
         this.attribute = attribute;
         this.value = value;
         this.operation = operation;
@@ -32,7 +31,7 @@ public class AttributeModifier {
         return new AttributeModifier(
                 attributeId.toString(),
                 value,
-                EntityAttributeModifier.Operation.ADD_VALUE
+                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE
         );
     }
 
@@ -40,7 +39,7 @@ public class AttributeModifier {
         return new AttributeModifier(
                 attributeId.toString(),
                 value,
-                EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
+                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_BASE
         );
     }
 
@@ -50,7 +49,7 @@ public class AttributeModifier {
             spellAttributes.add(new AttributeModifier(
                             attributeId.toString(),
                             value,
-                            EntityAttributeModifier.Operation.ADD_VALUE
+                            net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE
                     )
             );
         }

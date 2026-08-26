@@ -1,7 +1,7 @@
 package net.spell_engine.internals.target;
 
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.spell_engine.api.spell.Spell;
 
 import java.util.EnumSet;
@@ -105,8 +105,8 @@ public class SpellIntents {
     }
 
     private static SpellTarget.Intent intentForStatusEffect(String idString) {
-        var id = Identifier.of(idString);
-        var effect = Registries.STATUS_EFFECT.get(id);
+        var id = Identifier.parse(idString);
+        var effect = BuiltInRegistries.MOB_EFFECT.getValue(id);
         return effect.isBeneficial() ? SpellTarget.Intent.HELPFUL : SpellTarget.Intent.HARMFUL;
     }
 }

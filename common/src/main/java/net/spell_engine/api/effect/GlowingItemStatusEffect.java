@@ -1,13 +1,13 @@
 package net.spell_engine.api.effect;
 
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.spell_engine.client.util.Color;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,7 +43,7 @@ public final class GlowingItemStatusEffect {
         }
 
         public boolean applies(ItemStack stack) {
-            return items != null ? stack.isIn(items) : isHeldEquipment(stack);
+            return items != null ? stack.is(items) : isHeldEquipment(stack);
         }
     }
 
@@ -55,34 +55,34 @@ public final class GlowingItemStatusEffect {
      * nothing to say about any slot, spell books and the like, are not weapons and do not glow either.
      */
     public static boolean isHeldEquipment(ItemStack stack) {
-        var modifiers = stack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
+        var modifiers = stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
         for (var entry: modifiers.modifiers()) {
-            if (entry.slot().matches(EquipmentSlot.MAINHAND) || entry.slot().matches(EquipmentSlot.OFFHAND)) {
+            if (entry.slot().test(EquipmentSlot.MAINHAND) || entry.slot().test(EquipmentSlot.OFFHAND)) {
                 return true;
             }
         }
         return false;
     }
 
-    private static final Map<StatusEffect, Glow> glows = new HashMap<>();
+    private static final Map<MobEffect, Glow> glows = new HashMap<>();
 
-    public static void register(StatusEffect statusEffect, Glow glow) {
+    public static void register(MobEffect statusEffect, Glow glow) {
         glows.put(statusEffect, glow);
         // A glow is only ever as visible as the effect behind it. Effects are not synchronized to
         // clients by default, and an unsynchronized one would glow on nobody, not even its own holder.
         Synchronized.configure(statusEffect, true);
     }
 
-    public static void register(StatusEffect statusEffect, Color color, float opacityPerStack) {
+    public static void register(MobEffect statusEffect, Color color, float opacityPerStack) {
         register(statusEffect, new Glow(color, opacityPerStack));
     }
 
-    public static void register(StatusEffect statusEffect, Color color, float opacityPerStack, TagKey<Item> items) {
+    public static void register(MobEffect statusEffect, Color color, float opacityPerStack, TagKey<Item> items) {
         register(statusEffect, new Glow(color, opacityPerStack, items));
     }
 
     @Nullable
-    public static Glow glowOf(StatusEffect statusEffect) {
+    public static Glow glowOf(MobEffect statusEffect) {
         return glows.get(statusEffect);
     }
 

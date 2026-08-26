@@ -1,8 +1,8 @@
 package net.spell_engine.neoforge;
 
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 
 import java.util.LinkedHashMap;
@@ -17,11 +17,11 @@ import java.util.Map;
 public class SummonedEntityAttributeRegistrar {
 
     // Keyed by EntityType, so re-registering an id just overwrites.
-    private static final Map<EntityType<? extends LivingEntity>, DefaultAttributeContainer> PENDING = new LinkedHashMap<>();
+    private static final Map<EntityType<? extends LivingEntity>, AttributeSupplier> PENDING = new LinkedHashMap<>();
 
     /// Stashes a summon's attribute container until the attribute event fires. Called (via
     /// `Platform.Util`) by content mods during entity registration.
-    public static void buffer(EntityType<? extends LivingEntity> type, DefaultAttributeContainer.Builder builder) {
+    public static void buffer(EntityType<? extends LivingEntity> type, AttributeSupplier.Builder builder) {
         PENDING.put(type, builder.build());
     }
 

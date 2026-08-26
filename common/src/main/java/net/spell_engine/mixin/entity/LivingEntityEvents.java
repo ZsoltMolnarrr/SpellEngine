@@ -2,15 +2,15 @@ package net.spell_engine.mixin.entity;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.component.type.BlocksAttacksComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlocksAttacks;
+import net.minecraft.world.level.Level;
 import net.spell_engine.api.event.CombatEvents;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityEvents {
-    @Inject(method = "onAttacking", at = @At("HEAD"))
+    @Inject(method = "setLastHurtMob", at = @At("HEAD"))
     private void onAttacking_HEAD_Event(Entity target, CallbackInfo ci) {
         var entity = (LivingEntity) (Object) this;
         if (CombatEvents.ENTITY_ANY_ATTACK.isListened()) {
@@ -30,7 +30,7 @@ public abstract class LivingEntityEvents {
         }
         // Spell impact damage execution does call back here (`onAttacking`)
         // so we need to avoid infinite loop
-        if (entity instanceof PlayerEntity player) {
+        if (entity instanceof Player player) {
             if (CombatEvents.PLAYER_ANY_ATTACK.isListened()) {
                 var args = new CombatEvents.PlayerAttack.Args(player, target);
                 CombatEvents.PLAYER_ANY_ATTACK.invoke(listener -> listener.onPlayerAttack(args));
@@ -61,15 +61,15 @@ public abstract class LivingEntityEvents {
 //        original.call(instance, source, amount);
 //    }
 
-    @Inject(method = "damage", at = @At("RETURN"))
-    private void damage_RETURN_entity(ServerWorld world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "hurtServer", at = @At("RETURN"))
+    private void damage_RETURN_entity(ServerLevel world, DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         if (cir.getReturnValue()) {
             var entity = (LivingEntity) (Object) this;
             if (CombatEvents.ENTITY_DAMAGE_TAKEN.isListened()) {
                 var args = new CombatEvents.EntityDamageTaken.Args(entity, source, amount);
                 CombatEvents.ENTITY_DAMAGE_TAKEN.invoke(listener -> listener.onDamageTaken(args));
             }
-            if (entity instanceof PlayerEntity player) {
+            if (entity instanceof Player player) {
                 if (CombatEvents.PLAYER_DAMAGE_TAKEN.isListened()) {
                     var args = new CombatEvents.PlayerDamageTaken.Args(player, source, amount);
                     CombatEvents.PLAYER_DAMAGE_TAKEN.invoke(listener -> listener.onPlayerDamageTaken(args));
@@ -78,7 +78,7 @@ public abstract class LivingEntityEvents {
         }
     }
 
-    @Inject(method = "tickItemStackUsage", at = @At("HEAD"))
+    @Inject(method = "updateUsingItem", at = @At("HEAD"))
     private void tickItemStackUsage_HEAD_Event(ItemStack stack, CallbackInfo ci) {
         var entity = (LivingEntity) (Object) this;
         if (CombatEvents.ITEM_USE.isListened()) {
@@ -97,21 +97,21 @@ public abstract class LivingEntityEvents {
      * `LivingShieldBlockEvent` instead (see `PlatformEventsImpl`).
      */
     @WrapOperation(
-            method = "getDamageBlockedAmount",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/component/type/BlocksAttacksComponent;onShieldHit(Lnet/minecraft/world/World;Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/util/Hand;F)V"),
+            method = "applyItemBlocking",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/component/BlocksAttacks;hurtBlockingItem(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/InteractionHand;F)V"),
             require = 0
     )
     private void getDamageBlockedAmount_WRAP_onShieldHit(
             // Mixin parameters
-            BlocksAttacksComponent component, World world, ItemStack stack, LivingEntity instance, Hand hand, float blockedAmount, Operation<Void> original,
+            BlocksAttacks component, Level world, ItemStack stack, LivingEntity instance, InteractionHand hand, float blockedAmount, Operation<Void> original,
             // Context parameters
-            ServerWorld serverWorld, DamageSource source, float damageAmount
+            ServerLevel serverWorld, DamageSource source, float damageAmount
     ) {
         if (CombatEvents.ENTITY_SHIELD_BLOCK.isListened()) {
             var args = new CombatEvents.EntityShieldBlock.Args(instance, source, blockedAmount);
             CombatEvents.ENTITY_SHIELD_BLOCK.invoke(listener -> listener.onShieldBlock(args));
         }
-        if (instance instanceof PlayerEntity player) {
+        if (instance instanceof Player player) {
             if (CombatEvents.PLAYER_SHIELD_BLOCK.isListened()) {
                 var args = new CombatEvents.PlayerShieldBlock.Args(player, source, blockedAmount);
                 CombatEvents.PLAYER_SHIELD_BLOCK.invoke(listener -> listener.onShieldBlock(args));

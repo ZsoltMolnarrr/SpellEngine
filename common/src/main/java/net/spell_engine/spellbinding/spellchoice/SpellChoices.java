@@ -1,6 +1,6 @@
 package net.spell_engine.spellbinding.spellchoice;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import org.jetbrains.annotations.Nullable;

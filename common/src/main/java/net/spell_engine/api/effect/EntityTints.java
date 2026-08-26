@@ -1,8 +1,8 @@
 package net.spell_engine.api.effect;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.internals.SpellEngineAttachments;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,7 +21,7 @@ public final class EntityTints {
     @FunctionalInterface
     public interface Tint {
         /// ARGB this effect contributes, `NEUTRAL` for none.
-        int argb(LivingEntity entity, StatusEffectInstance instance);
+        int argb(LivingEntity entity, MobEffectInstance instance);
 
         /// Constant color: the full `argb` at any stack count.
         static Tint flat(int argb) {
@@ -52,22 +52,22 @@ public final class EntityTints {
         return Math.round(0xFF + (target - 0xFF) * strength);
     }
 
-    private static final Map<StatusEffect, Tint> tints = new HashMap<>();
+    private static final Map<MobEffect, Tint> tints = new HashMap<>();
 
-    public static void register(StatusEffect statusEffect, Tint tint) {
+    public static void register(MobEffect statusEffect, Tint tint) {
         tints.put(statusEffect, tint);
     }
 
-    public static void register(StatusEffect statusEffect, int argb) {
+    public static void register(MobEffect statusEffect, int argb) {
         register(statusEffect, Tint.flat(argb));
     }
 
-    public static void register(StatusEffect statusEffect, int argb, float strengthPerStack) {
+    public static void register(MobEffect statusEffect, int argb, float strengthPerStack) {
         register(statusEffect, Tint.scaling(argb, strengthPerStack));
     }
 
     @Nullable
-    public static Tint tintOf(StatusEffect statusEffect) {
+    public static Tint tintOf(MobEffect statusEffect) {
         return tints.get(statusEffect);
     }
 
@@ -82,8 +82,8 @@ public final class EntityTints {
             return NEUTRAL;
         }
         int result = NEUTRAL;
-        for (var instance : entity.getStatusEffects()) {
-            var tint = tints.get(instance.getEffectType().value());
+        for (var instance : entity.getActiveEffects()) {
+            var tint = tints.get(instance.getEffect().value());
             if (tint != null) {
                 result = multiply(result, tint.argb(entity, instance));
             }

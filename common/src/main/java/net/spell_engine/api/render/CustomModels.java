@@ -1,19 +1,18 @@
 package net.spell_engine.api.render;
 
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.model.BlockStateModel;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Set;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.RandomSource;
 
 /// Raw JSON models (`models/spell_projectile/*`, `models/spell_effect/*`, …) rendered by Spell Engine.
 ///
@@ -39,8 +38,8 @@ public class CustomModels {
     private static final Set<Identifier> warned = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /// Submits the model to the queue on the given layer; a no-op (logged once) when the model is unknown.
-    public static void render(RenderLayer renderLayer, Identifier modelId,
-                              MatrixStack matrices, OrderedRenderCommandQueue queue, int light, int seed) {
+    public static void render(RenderType renderLayer, Identifier modelId,
+                              PoseStack matrices, SubmitNodeCollector queue, int light, int seed) {
         var model = get(modelId);
         if (model == null) {
             if (warned.add(modelId)) {
@@ -51,22 +50,22 @@ public class CustomModels {
         render(renderLayer, model, matrices, queue, light, seed);
     }
 
-    public static void render(RenderLayer renderLayer, BlockStateModel model,
-                              MatrixStack matrices, OrderedRenderCommandQueue queue, int light, int seed) {
-        matrices.push();
+    public static void render(RenderType renderLayer, BlockStateModel model,
+                              PoseStack matrices, SubmitNodeCollector queue, int light, int seed) {
+        matrices.pushPose();
         matrices.translate(-0.5, -0.5, -0.5);
-        queue.submitCustom(matrices, renderLayer, (entry, vertexConsumer) -> renderQuads(entry, vertexConsumer, model, light, seed));
-        matrices.pop();
+        queue.submitCustomGeometry(matrices, renderLayer, (entry, vertexConsumer) -> renderQuads(entry, vertexConsumer, model, light, seed));
+        matrices.popPose();
     }
 
     private static final Direction[] SIDES = { null, Direction.DOWN, Direction.UP, Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST };
 
-    public static void renderQuads(MatrixStack.Entry entry, VertexConsumer vertexConsumer, BlockStateModel model, int light, long seed) {
-        var random = Random.create(seed);
-        for (var part : model.getParts(random)) {
+    public static void renderQuads(PoseStack.Pose entry, VertexConsumer vertexConsumer, BlockStateModel model, int light, long seed) {
+        var random = RandomSource.create(seed);
+        for (var part : model.collectParts(random)) {
             for (var side : SIDES) {
                 for (var quad : part.getQuads(side)) {
-                    vertexConsumer.quad(entry, quad, 1F, 1F, 1F, 1F, light, OverlayTexture.DEFAULT_UV);
+                    vertexConsumer.putBulkData(entry, quad, 1F, 1F, 1F, 1F, light, OverlayTexture.NO_OVERLAY);
                 }
             }
         }

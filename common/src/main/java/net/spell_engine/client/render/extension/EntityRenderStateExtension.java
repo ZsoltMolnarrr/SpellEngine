@@ -1,6 +1,6 @@
 package net.spell_engine.client.render.extension;
 
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 import net.spell_engine.api.effect.EntityTints;
 import org.jetbrains.annotations.Nullable;
 

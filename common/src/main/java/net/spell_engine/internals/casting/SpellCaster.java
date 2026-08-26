@@ -1,6 +1,6 @@
 package net.spell_engine.internals.casting;
 
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.client.casting.ClientCastController;
 import net.spell_engine.internals.delivery.arrow.ArrowShootContext;
@@ -75,8 +75,8 @@ public class SpellCaster {
 
         void setMeleeSkillAttack(Melee.ActiveAttack attack);
         float getExtraSlipperiness();
-        void setActiveMeleeSkill(RegistryEntry<Spell> spell);
-        RegistryEntry<Spell> getActiveMeleeSkill();
+        void setActiveMeleeSkill(Holder<Spell> spell);
+        Holder<Spell> getActiveMeleeSkill();
     }
 
     /// Read-mostly access surface of the local casting player. The client-side casting state
@@ -89,7 +89,7 @@ public class SpellCaster {
         /// One per player entity — state resets naturally when vanilla replaces the entity.
         ClientCastController getCastController();
 
-        default List<net.minecraft.entity.Entity> getCurrentTargets() {
+        default List<net.minecraft.world.entity.Entity> getCurrentTargets() {
             return getCastController().currentTargets();
         }
 

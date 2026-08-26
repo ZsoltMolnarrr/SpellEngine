@@ -1,16 +1,14 @@
 package net.spell_engine.utils;
 
-import net.minecraft.item.AxeItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.MaceItem;
-import net.minecraft.item.RangedWeaponItem;
-import net.minecraft.item.TridentItem;
-
-import net.minecraft.component.DataComponentTypes;
-
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.MaceItem;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.TridentItem;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.config.FallbackConfig;
@@ -24,13 +22,13 @@ public class WeaponCompatibility {
         }
 
         // Process all items in the registry
-        for (var itemId : Registries.ITEM.getIds()) {
-            var item = Registries.ITEM.get(itemId);
-            var itemEntry = item.getRegistryEntry();
+        for (var itemId : BuiltInRegistries.ITEM.keySet()) {
+            var item = BuiltInRegistries.ITEM.getValue(itemId);
+            var itemEntry = item.builtInRegistryHolder();
 
             // Try melee weapons group
             if (config.melee_weapons.enabled &&
-                    (item.getComponents().get(DataComponentTypes.WEAPON) != null /* not contains(): Yarn/NeoForge name mismatch */ || item instanceof TridentItem || item instanceof MaceItem || item instanceof AxeItem) ) {
+                    (item.components().get(DataComponents.WEAPON) != null /* not contains(): Yarn/NeoForge name mismatch */ || item instanceof TridentItem || item instanceof MaceItem || item instanceof AxeItem) ) {
                 SpellContainer container = processCompatGroup(
                         itemEntry,
                         config.melee_weapons
@@ -43,7 +41,7 @@ public class WeaponCompatibility {
 
             // Try ranged weapons group
             if (config.ranged_weapons.enabled &&
-                (item instanceof RangedWeaponItem) ) {
+                (item instanceof ProjectileWeaponItem) ) {
                 SpellContainer container = processCompatGroup(
                         itemEntry,
                         config.ranged_weapons
@@ -57,12 +55,12 @@ public class WeaponCompatibility {
     }
 
     private static SpellContainer processCompatGroup(
-            RegistryEntry<Item> itemEntry,
+            Holder<Item> itemEntry,
             FallbackConfig.CompatGroup group) {
 
         // Check blacklist
         if (group.blacklist != null && !group.blacklist.isEmpty()) {
-            if (PatternMatching.matches(itemEntry, RegistryKeys.ITEM, group.blacklist)) {
+            if (PatternMatching.matches(itemEntry, Registries.ITEM, group.blacklist)) {
                 return null; // Item is blacklisted
             }
         }
@@ -71,7 +69,7 @@ public class WeaponCompatibility {
         if (group.enable_specifiers) {
             for (var specifier : group.specifiers) {
                 if (specifier.item != null && !specifier.item.isEmpty()) {
-                    if (PatternMatching.matches(itemEntry, RegistryKeys.ITEM, specifier.item)) {
+                    if (PatternMatching.matches(itemEntry, Registries.ITEM, specifier.item)) {
                         return specifier.container; // First match wins
                     }
                 }

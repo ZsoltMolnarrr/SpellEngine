@@ -1,7 +1,7 @@
 package net.spell_engine.mixin.entity;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.player.Player;
 import net.spell_engine.internals.casting.SpellBatcher;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.HashMap;
 import java.util.Map;
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public class PlayerEntitySpellBatching implements SpellBatcher {
     @Unique
     private final Map<Identifier, Batch> spellBatches = new HashMap<>();

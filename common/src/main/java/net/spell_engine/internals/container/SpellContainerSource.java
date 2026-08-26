@@ -1,14 +1,13 @@
 package net.spell_engine.internals.container;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.spell_engine.Platform;
-
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.item.set.EquipmentSet;
 import net.spell_engine.api.spell.Spell;
@@ -24,9 +23,9 @@ import java.util.*;
 public class SpellContainerSource {
     public record Result(
             SpellContainer activeContainer,
-            List<RegistryEntry<Spell>> actives,
-            List<RegistryEntry<Spell>> passives,
-            List<RegistryEntry<Spell>> modifiers,
+            List<Holder<Spell>> actives,
+            List<Holder<Spell>> passives,
+            List<Holder<Spell>> modifiers,
             List<SpellContainerSource.SourcedContainer> sources) {
         public static final Result EMPTY = new Result(SpellContainer.EMPTY, List.of(), List.of(), List.of(), List.of());
     }
@@ -38,45 +37,45 @@ public class SpellContainerSource {
         void setSpellContainers(Result result);
         Result getSpellContainers();
     }
-    public static SpellContainer activeContainerOf(PlayerEntity player) {
+    public static SpellContainer activeContainerOf(Player player) {
         return ((Owner)player).getSpellContainers().activeContainer;
     }
-    public static List<RegistryEntry<Spell>> activeSpellsOf(PlayerEntity player) {
+    public static List<Holder<Spell>> activeSpellsOf(Player player) {
         return ((Owner)player).getSpellContainers().actives;
     }
-    public static List<RegistryEntry<Spell>> passiveSpellsOf(PlayerEntity player) {
+    public static List<Holder<Spell>> passiveSpellsOf(Player player) {
         return ((Owner)player).getSpellContainers().passives;
     }
-    public static Result getSpellsOf(PlayerEntity player) {
+    public static Result getSpellsOf(Player player) {
         return ((Owner)player).getSpellContainers();
     }
-    public static void setDirty(PlayerEntity player, Entry source) {
+    public static void setDirty(Player player, Entry source) {
         setDirty(player, source.name());
     }
-    public static void setDirty(PlayerEntity player, ItemEntry source) {
+    public static void setDirty(Player player, ItemEntry source) {
         setDirty(player, source.name());
     }
-    public static void setDirty(PlayerEntity player, String source) {
+    public static void setDirty(Player player, String source) {
         ((Owner)player).spellContainerCache().remove(source);
     }
-    public static void setDirtyServerSide(PlayerEntity player) {
+    public static void setDirtyServerSide(Player player) {
         ((Owner)player).markServerSideSpellContainersDirty();
     }
-    public static void syncServerSideContainers(PlayerEntity player) {
-        if (!player.getEntityWorld().isClient()) {
+    public static void syncServerSideContainers(Player player) {
+        if (!player.level().isClientSide()) {
             var containers = ((Owner)player).serverSideSpellContainers();
             var packet = new Packets.SpellContainerSync(containers);
-            Platform.util().networkS2C_Send((ServerPlayerEntity) player, packet);
+            Platform.util().networkS2C_Send((ServerPlayer) player, packet);
             setDirty(player, MAIN_HAND);
         }
     }
 
     public interface DirtyChecker {
-        Object current(PlayerEntity player);
+        Object current(Player player);
     }
     public record SourcedContainer(String name, @Nullable ItemStack itemStack, SpellContainer container) { }
     public interface Source {
-        List<SourcedContainer> getSpellContainers(PlayerEntity player, String name);
+        List<SourcedContainer> getSpellContainers(Player player, String name);
     }
     public record Entry(String name, Source source, @Nullable DirtyChecker checker) { }
     public static final List<Entry> sources = new ArrayList<>();
@@ -90,9 +89,9 @@ public class SpellContainerSource {
     }
 
     public interface ItemStackSource extends Source {
-        List<ItemStack> getSpellContainerItemStacks(PlayerEntity player, String name);
+        List<ItemStack> getSpellContainerItemStacks(Player player, String name);
         @Override
-        default List<SourcedContainer> getSpellContainers(PlayerEntity player, String name) {
+        default List<SourcedContainer> getSpellContainers(Player player, String name) {
             var itemStacks = getSpellContainerItemStacks(player, name);
             var sources = new ArrayList<SourcedContainer>();
             for (var itemStack : itemStacks) {
@@ -158,20 +157,20 @@ public class SpellContainerSource {
     }
 
     public static final ItemEntry MAIN_HAND = itemEntry("main_hand", (player, sourceName) -> {
-        return List.of(player.getMainHandStack());
+        return List.of(player.getMainHandItem());
     });
     public static final ItemEntry OFF_HAND = itemEntry("off_hand", (player, sourceName) -> {
-        return List.of(player.getOffHandStack());
+        return List.of(player.getOffhandItem());
     });
     public static final ItemEntry ARMOR = itemEntry("armor", (player, sourceName) -> {
-        return List.of(player.getEquippedStack(EquipmentSlot.FEET), player.getEquippedStack(EquipmentSlot.LEGS),
-                player.getEquippedStack(EquipmentSlot.CHEST), player.getEquippedStack(EquipmentSlot.HEAD));
+        return List.of(player.getItemBySlot(EquipmentSlot.FEET), player.getItemBySlot(EquipmentSlot.LEGS),
+                player.getItemBySlot(EquipmentSlot.CHEST), player.getItemBySlot(EquipmentSlot.HEAD));
     });
 
     public static void init() {
     }
 
-    public static void update(PlayerEntity player) {
+    public static void update(Player player) {
         var owner = (Owner)player;
         var allContainers = new ArrayList<SourcedContainer>();
         boolean updated = false;
@@ -207,24 +206,24 @@ public class SpellContainerSource {
             updateEquipmentSets(player, allContainers);
 
             // System.out.println("Updating spell containers for " + player.getName());
-            var heldItemStack = player.getMainHandStack();
+            var heldItemStack = player.getMainHandItem();
             var heldContainer = SpellContainerHelper.containerFromItemStack(heldItemStack);
             var activeContainer = SpellContainer.EMPTY;
-            List<RegistryEntry<Spell>> activeSpells = List.of();
+            List<Holder<Spell>> activeSpells = List.of();
             if (heldContainer != null && heldContainer.isResolver()) {
-                var merged = mergedContainerSources1(allContainers, heldContainer, Spell.Type.ACTIVE, player.getEntityWorld());
+                var merged = mergedContainerSources1(allContainers, heldContainer, Spell.Type.ACTIVE, player.level());
                 activeContainer = merged.container();
                 activeSpells = merged.spells();
             }
-            List<RegistryEntry<Spell>> passiveSpells = mergedContainerSources(allContainers, null, null, Spell.Type.PASSIVE, player.getEntityWorld());
+            List<Holder<Spell>> passiveSpells = mergedContainerSources(allContainers, null, null, Spell.Type.PASSIVE, player.level());
 
-            var registry = SpellRegistry.from(player.getEntityWorld());
-            LinkedHashSet<RegistryEntry<Spell>> modifiers = new LinkedHashSet<>();
+            var registry = SpellRegistry.from(player.level());
+            LinkedHashSet<Holder<Spell>> modifiers = new LinkedHashSet<>();
             for (var container : allContainers) {
                 var spellContainer = container.container();
                 for (var idString : spellContainer.spell_ids()) {
-                    var id = Identifier.of(idString);
-                    var spell = registry.getEntry(id).orElse(null);
+                    var id = Identifier.parse(idString);
+                    var spell = registry.get(id).orElse(null);
                     if (spell != null && spell.value().type == Spell.Type.MODIFIER) {
                         modifiers.add(spell);
                     }
@@ -236,17 +235,17 @@ public class SpellContainerSource {
             // Containers changed — the casting authority re-derives its options from them and
             // re-declares to the owner's client (tracked data). Server-side only: on the client
             // the interactor mirrors the declared options instead of computing its own.
-            if (!player.getEntityWorld().isClient()) {
+            if (!player.level().isClientSide()) {
                 ((SpellCaster.Player) player).getInteractor().invalidateOptions();
             }
         }
     }
 
-    public static List<RegistryEntry<Spell>> mergedContainerSources(List<SourcedContainer> sources, @Nullable SpellContainer.ContentType contentType, @Nullable String accessParams, Spell.Type type, World world) {
+    public static List<Holder<Spell>> mergedContainerSources(List<SourcedContainer> sources, @Nullable SpellContainer.ContentType contentType, @Nullable String accessParams, Spell.Type type, Level world) {
         if (sources.isEmpty()) {
             return List.of();
         }
-        var spells = new ArrayList<RegistryEntry<Spell>>();
+        var spells = new ArrayList<Holder<Spell>>();
         var registry = SpellRegistry.from(world);
 
         TagKey<Spell> spellTag = null;
@@ -254,7 +253,7 @@ public class SpellContainerSource {
             if (contentType == SpellContainer.ContentType.TAG) {
                 var id = Identifier.tryParse(accessParams);
                 if (id != null) {
-                    spellTag = TagKey.of(SpellRegistry.KEY, id);
+                    spellTag = TagKey.create(SpellRegistry.KEY, id);
                 }
             }
         }
@@ -263,14 +262,14 @@ public class SpellContainerSource {
             var container = source.container();
             if (type == Spell.Type.ACTIVE && source.name.equals("off_hand")) {
                 if (!SpellEngineMod.config.spell_container_from_offhand_any) {
-                    if (!container.slotMatches(EquipmentSlot.OFFHAND.asString())) {
+                    if (!container.slotMatches(EquipmentSlot.OFFHAND.getSerializedName())) {
                         continue;
                     }
                 }
             }
             for (var idString : container.spell_ids()) {
-                var id = Identifier.of(idString);
-                var spell = registry.getEntry(id).orElse(null);
+                var id = Identifier.parse(idString);
+                var spell = registry.get(id).orElse(null);
                 if (spell != null && spell.value().type == type
                         && ( spellMatchesContentType(spell, contentType, spellTag) )) {
                     spells.add(spell);
@@ -281,12 +280,12 @@ public class SpellContainerSource {
         return spells;
     }
 
-    private static boolean spellMatchesContentType(RegistryEntry<Spell> spellEntry, @Nullable SpellContainer.ContentType contentType, @Nullable TagKey<Spell> spellTag) {
+    private static boolean spellMatchesContentType(Holder<Spell> spellEntry, @Nullable SpellContainer.ContentType contentType, @Nullable TagKey<Spell> spellTag) {
         if (contentType == null || contentType == SpellContainer.ContentType.ANY) {
             return true;
         }
         if (contentType == SpellContainer.ContentType.TAG) {
-            return spellTag != null && spellEntry.isIn(spellTag);
+            return spellTag != null && spellEntry.is(spellTag);
         }
         var spell = spellEntry.value();
         var matches = switch (spell.school.archetype) {
@@ -305,19 +304,19 @@ public class SpellContainerSource {
         return matches;
     }
 
-    public record MergeResult(SpellContainer container, List<RegistryEntry<Spell>> spells) {
+    public record MergeResult(SpellContainer container, List<Holder<Spell>> spells) {
         public static final MergeResult EMPTY = new MergeResult(SpellContainer.EMPTY, List.of());
     }
-    public static MergeResult mergedContainerSources1(List<SourcedContainer> sources, SpellContainer heldContainer, Spell.Type type, World world) { // FIXME: NAME
+    public static MergeResult mergedContainerSources1(List<SourcedContainer> sources, SpellContainer heldContainer, Spell.Type type, Level world) { // FIXME: NAME
         if (sources.isEmpty() || heldContainer.access() == SpellContainer.ContentType.NONE) {
             return MergeResult.EMPTY;
         }
         if (heldContainer.access() == SpellContainer.ContentType.CONTAINED) {
-            var spells = new ArrayList<RegistryEntry<Spell>>();
+            var spells = new ArrayList<Holder<Spell>>();
             var registry = SpellRegistry.from(world);
             for (var idString : heldContainer.spell_ids()) {
-                var id = Identifier.of(idString);
-                var spell = registry.getEntry(id).orElse(null);
+                var id = Identifier.parse(idString);
+                var spell = registry.get(id).orElse(null);
                 if (spell != null && spell.value().type == type) {
                     spells.add(spell);
                 }
@@ -331,7 +330,7 @@ public class SpellContainerSource {
 
         var spellIds = new LinkedHashSet<String>(); // We need the IDs only, but remove duplicates
         for (var spell : spells) {
-            spellIds.add(spell.getKey().get().getValue().toString());
+            spellIds.add(spell.unwrapKey().get().identifier().toString());
         }
 
         // System.out.println("Updated for " + type + ", Spell IDs: " + spellIds);
@@ -341,7 +340,7 @@ public class SpellContainerSource {
         return new MergeResult(container, spells);
     }
 
-    @Nullable public static SourcedContainer getFirstSourceOfSpell(Identifier spellId, PlayerEntity player) {
+    @Nullable public static SourcedContainer getFirstSourceOfSpell(Identifier spellId, Player player) {
         var result = ((Owner)player).getSpellContainers();
         for (var source : result.sources()) {
             if (contains(source.container(), spellId)) {
@@ -354,7 +353,7 @@ public class SpellContainerSource {
         return container != null && container.spell_ids().contains(spellId.toString());
     }
 
-    private static void updateEquipmentSets(PlayerEntity player, ArrayList<SourcedContainer> allContainers) {
+    private static void updateEquipmentSets(Player player, ArrayList<SourcedContainer> allContainers) {
         ArrayList<EquipmentSet.SourcedItemStack> equipmentStacks = new ArrayList<>();
         for (var entry : itemSources) {
             final var sourceName = entry.name();
@@ -363,7 +362,7 @@ public class SpellContainerSource {
                     .map(stack -> new EquipmentSet.SourcedItemStack(stack, sourceName))
                     .forEach(equipmentStacks::add);
         }
-        var equipmentSets = EquipmentSet.collectFrom(equipmentStacks, player.getEntityWorld());
+        var equipmentSets = EquipmentSet.collectFrom(equipmentStacks, player.level());
         ((EquipmentSet.Owner) player).setActiveEquipmentSets(equipmentSets);
         allContainers.addAll(sourcedContainersFrom(equipmentSets));
     }

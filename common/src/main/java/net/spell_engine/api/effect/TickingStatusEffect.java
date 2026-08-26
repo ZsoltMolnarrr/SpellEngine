@@ -1,17 +1,17 @@
 package net.spell_engine.api.effect;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.Registries;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.spell_engine.internals.SpellTriggers;
 
-public class TickingStatusEffect extends StatusEffect {
+public class TickingStatusEffect extends MobEffect {
     private int interval = 10;
 
-    public TickingStatusEffect(StatusEffectCategory category, int color) {
+    public TickingStatusEffect(MobEffectCategory category, int color) {
         super(category, color);
     }
 
@@ -21,9 +21,9 @@ public class TickingStatusEffect extends StatusEffect {
     }
 
     @Override
-    public boolean applyUpdateEffect(ServerWorld world, LivingEntity entity, int amplifier) {
-        if (entity instanceof PlayerEntity player) {
-            var entry = Registries.STATUS_EFFECT.getEntry(this);
+    public boolean applyEffectTick(ServerLevel world, LivingEntity entity, int amplifier) {
+        if (entity instanceof Player player) {
+            var entry = BuiltInRegistries.MOB_EFFECT.wrapAsHolder(this);
             if (entry != null) {
                 SpellTriggers.onEffectTick(player, entry);
             }
@@ -32,7 +32,7 @@ public class TickingStatusEffect extends StatusEffect {
     }
 
     @Override
-    public boolean canApplyUpdateEffect(int duration, int amplifier) {
+    public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
         return duration % interval == 0;
     }
 }
