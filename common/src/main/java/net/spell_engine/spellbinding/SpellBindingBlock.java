@@ -1,9 +1,16 @@
 package net.spell_engine.spellbinding;
 
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockRenderType;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.BlockWithEntity;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.ShapeContext;
+
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryKey;
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;

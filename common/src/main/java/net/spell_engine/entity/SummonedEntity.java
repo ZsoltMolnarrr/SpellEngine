@@ -1,5 +1,10 @@
 package net.spell_engine.entity;
 
+import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.goal.LookAroundGoal;
+import net.minecraft.entity.ai.goal.LookAtEntityGoal;
+import net.minecraft.entity.ai.goal.SwimGoal;
+
 import net.spell_engine.rpg_series.config.ConfigUtil;
 import net.minecraft.server.world.ServerWorld;
 import com.google.common.base.Suppliers;
@@ -14,7 +19,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LazyEntityReference;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
-import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;

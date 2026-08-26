@@ -1,8 +1,13 @@
 package net.spell_engine.utils;
 
+import net.minecraft.item.AxeItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.MaceItem;
+import net.minecraft.item.RangedWeaponItem;
+import net.minecraft.item.TridentItem;
+
 import net.minecraft.component.DataComponentTypes;
 
-import net.minecraft.item.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
