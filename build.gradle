@@ -8,6 +8,23 @@ architectury {
     minecraft = project.minecraft_version
 }
 
+// RPG Series dev workspace flags (see fabric/workspace-runtime.gradle). Each flag loads one group of
+// content mods into the dev runtime. Sources, in priority order: `-P<flag>=<bool>` on the command
+// line, else the gitignored `workspace.properties` (template: workspace.properties.example).
+ext.rpgSeriesWorkspaceFlags = ["rpg_series_classes", "rpg_series_gear", "rpg_series_accessories", "rpg_series_skills"]
+ext.rpgSeriesWorkspace = {
+    def local = rootProject.file("workspace.properties")
+    def props = new Properties()
+    if (local.exists()) { local.withInputStream { props.load(it) } }
+    def flags = [:]
+    for (name in rpgSeriesWorkspaceFlags) {
+        def cli = providers.gradleProperty(name).orNull
+        flags[name] = (cli != null ? cli : props.getProperty(name, "false")).toBoolean()
+    }
+    return flags
+}()
+ext.rpgSeriesWorkspaceAny = rpgSeriesWorkspace.values().any { it }
+
 allprojects {
     group = rootProject.maven_group
     version = rootProject.mod_version

@@ -70,6 +70,16 @@ repositories {
     mavenLocal()
 }
 
+// Ecosystem workspace runtime (opt-in, dev only): puts the RPG Series content mods on the run classpath
+// so they can be tested against SpellEngine from source. Enabled per group by a gitignored
+// `workspace.properties` next to the root build.gradle (copy workspace.properties.example):
+// rpg_series_classes / rpg_series_gear / rpg_series_accessories / rpg_series_skills. `-P<flag>=false`
+// overrides it to reproduce CI. CI and fresh clones never resolve it.
+// Pins live in workspace-runtime.gradle (tracked).
+if (rootProject.ext.rpgSeriesWorkspaceAny) {
+    apply from: "workspace-runtime.gradle"
+}
+
 dependencies {
     neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
