@@ -1,6 +1,6 @@
 package net.spell_engine.rpg_series.item;
 
-import net.fabric_extras.ranged_weapon.api.RangedConfig;
+import net.rpg_foundation.ranged_weapon.api.RangedConfig;
 import net.spell_engine.PlatformEvents;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.item.Item;

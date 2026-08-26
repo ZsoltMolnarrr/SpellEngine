@@ -1,8 +1,8 @@
 package net.spell_engine.rpg_series.item;
 
-import net.fabric_extras.ranged_weapon.api.CustomBow;
-import net.fabric_extras.ranged_weapon.api.CustomCrossbow;
-import net.fabric_extras.ranged_weapon.api.RangedConfig;
+import net.rpg_foundation.ranged_weapon.api.CustomBow;
+import net.rpg_foundation.ranged_weapon.api.CustomCrossbow;
+import net.rpg_foundation.ranged_weapon.api.RangedConfig;
 import net.minecraft.item.Item;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
