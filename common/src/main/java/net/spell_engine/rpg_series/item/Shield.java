@@ -12,13 +12,13 @@ import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.DamageTypeTags;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Identifier;
@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 /// Shield entries + registration. Shields are built purely from vanilla data components (no library, no
 /// `Item` subclass) — see {@link #createVanilla} / {@link #DEFAULT_FACTORY}:
@@ -45,7 +44,7 @@ import java.util.function.Supplier;
 /// - **off-hand slot + equip sound** — `minecraft:equippable` (unswappable, like the vanilla shield)
 /// - **break sound** — `minecraft:break_sound`
 /// - **durability** — `minecraft:max_damage` (from {@link Entry#durability()})
-/// - **repair** — `minecraft:repairable` snapshot + the lazily resolved {@link LazyRepair} component
+/// - **repair** — `minecraft:repairable` (an item tag; see {@link Entry#repairItems()}), applied only when the entry declares one
 /// - **attributes** — `minecraft:attribute_modifiers` (`HAND` slot), baked at construction from the shield config
 ///   (configs are loaded before item registration, so no post-construction mutation is needed)
 /// - **blocking model** — consumer asset `assets/<ns>/items/<shield>.json`, a `minecraft:condition` on
@@ -54,12 +53,11 @@ public class Shield {
 
     /// Produces the shield `Item` from the assembled settings. The default is {@link #DEFAULT_FACTORY}
     /// ({@link #createVanilla}); override only for a custom `Item` subclass. `settings` already carries
-    /// durability, rarity, fireproof, spell components and the repair components when the factory is called;
-    /// `repairIngredient` is passed for information only.
+    /// durability, rarity, fireproof, spell components and the `minecraft:repairable` component when the
+    /// factory is called.
     public interface ShieldFactory {
         Item create(
                 @Nullable RegistryEntry<SoundEvent> equipSound,
-                Supplier<Ingredient> repairIngredient,
                 List<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> attributes,
                 Item.Settings settings
         );
@@ -81,10 +79,9 @@ public class Shield {
     public static final ShieldFactory DEFAULT_FACTORY = Shield::createVanilla;
 
     /// {@link ShieldFactory} implementation producing a plain `new Item(settings)` with the vanilla shield
-    /// components applied. Repair components are expected to be on `settings` already (see {@link Entry#create}).
+    /// components applied. Durability and repair are expected to be on `settings` already (see {@link Entry#create}).
     public static Item createVanilla(
             @Nullable RegistryEntry<SoundEvent> equipSound,
-            Supplier<Ingredient> repairIngredient,
             List<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> attributes,
             Item.Settings settings
     ) {
@@ -118,12 +115,12 @@ public class Shield {
         return builder.build();
     }
 
-    /// Shield entry: id, tier, default attributes, lazy repair ingredient, equip sound, loot/spell metadata.
+    /// Shield entry: id, tier, default attributes, repair item tag, equip sound, loot/spell metadata.
     public static final class Entry {
         private final Identifier id;
         private final Equipment.Tier tier;
         private final List<AttributeModifier> defaults;
-        private final Supplier<Ingredient> repairIngredientSupplier;
+        private final @Nullable TagKey<Item> repairItems;
         private final RegistryEntry<SoundEvent> equipSound;
 
         private String translatedName = "";
@@ -140,14 +137,14 @@ public class Shield {
                 Identifier id,
                 Equipment.Tier tier,
                 List<AttributeModifier> defaults,
-                Supplier<Ingredient> repairIngredientSupplier,
+                @Nullable TagKey<Item> repairItems,
                 RegistryEntry<SoundEvent> equipSound
         ) {
             this.id = id;
             this.tier = tier;
             this.lootProperties = Equipment.LootProperties.of(tier.getNumber());
             this.defaults = defaults;
-            this.repairIngredientSupplier = repairIngredientSupplier;
+            this.repairItems = repairItems;
             this.equipSound = equipSound;
         }
 
@@ -170,8 +167,9 @@ public class Shield {
             return defaults;
         }
 
-        public Supplier<Ingredient> repairIngredientSupplier() {
-            return repairIngredientSupplier;
+        /// Item tag accepted for anvil repair; `null` means the shield is not repairable.
+        public @Nullable TagKey<Item> repairItems() {
+            return repairItems;
         }
 
         public RegistryEntry<SoundEvent> equipSound() {
@@ -207,8 +205,9 @@ public class Shield {
             return create(settings, attributes, DEFAULT_FACTORY);
         }
 
-        /// Creates the shield item using `factory`. Durability and repair (`minecraft:repairable` snapshot +
-        /// {@link LazyRepair}) are applied to `settings` here, before the factory runs, so every factory gets them.
+        /// Creates the shield item using `factory`. Durability and repair (`minecraft:repairable`) are applied to
+        /// `settings` here, before the factory runs, so every factory gets them. `repairable(TagKey)` requires an
+        /// unfrozen ITEM registry — always true while items are registered at mod init.
         ///
         /// @param settings   Item settings with fireproof, rarity, spell components etc.
         /// @param attributes Attribute modifiers to apply (attribute ids as registry ids, e.g. `minecraft:armor_toughness`)
@@ -225,11 +224,12 @@ public class Shield {
             }
 
             settings.maxDamage(durability());
-            LazyRepair.apply(settings, repairIngredientSupplier);
+            if (repairItems != null) {
+                settings.repairable(repairItems);
+            }
 
             this.registeredItem = factory.create(
                     equipSound,
-                    repairIngredientSupplier,
                     shieldAttributes,
                     settings
             );

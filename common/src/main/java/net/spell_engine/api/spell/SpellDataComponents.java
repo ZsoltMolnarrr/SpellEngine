@@ -1,14 +1,12 @@
 package net.spell_engine.api.spell;
 
 import net.minecraft.component.ComponentType;
-import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
-import net.spell_engine.rpg_series.item.LazyRepair;
 
 import java.util.function.UnaryOperator;
 
@@ -21,11 +19,6 @@ public class SpellDataComponents {
     );
     public static final ComponentType<Identifier> EQUIPMENT_SET = register(Identifier.of(SpellEngineMod.ID, "equipment_set"),
             builder -> builder.codec(Identifier.CODEC)
-    );
-    /// Transient (no persistent codec, never saved/synced) item-default component carrying a lazily resolved
-    /// anvil repair ingredient — see {@link LazyRepair}. Consulted by `ItemStackRepairMixin`.
-    public static final ComponentType<LazyRepair> LAZY_REPAIR = register(Identifier.of(SpellEngineMod.ID, "lazy_repair"),
-            builder -> builder.packetCodec(PacketCodec.unit(LazyRepair.NONE))
     );
 
     private static <T> ComponentType<T> register(Identifier id, UnaryOperator<ComponentType.Builder<T>> builderOperator) {

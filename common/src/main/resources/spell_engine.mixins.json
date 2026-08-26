@@ -45,7 +45,6 @@
     "item.GrindstoneScreenHandlerMixin",
     "item.GrindstoneSlotInputMixin",
     "item.GrindstoneSlotOutputMixin",
-    "item.ItemStackRepairMixin",
     "item.RangedWeaponAccessor",
     "loot.CombinedEntryAccessor",
     "loot.EnchantWithLevelsLootFunctionAccessor",

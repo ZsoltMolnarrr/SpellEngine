@@ -6,11 +6,11 @@ import net.minecraft.component.ComponentChanges;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ToolMaterial;
-import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.Util;
@@ -21,19 +21,18 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class RangedWeapon {
 
     public interface RangedFactory {
-        Item create(Item.Settings settings, RangedConfig config, Supplier<Ingredient> repairIngredientSupplier);
+        Item create(Item.Settings settings, RangedConfig config);
     }
 
     public static final class Entry {
         private final Identifier id;
         private final RangedFactory factory;
         private final RangedConfig defaults;
-        private final Supplier<Ingredient> repairIngredientSupplier;
+        private final @Nullable TagKey<Item> repairItems;
         private Equipment.Tier tier;
 
         private String translatedName = "";
@@ -47,13 +46,13 @@ public class RangedWeapon {
         public Equipment.WeaponType category = Equipment.WeaponType.LONG_BOW;
         public Equipment.LootProperties lootProperties = Equipment.LootProperties.EMPTY;
 
-        public Entry(Identifier id, Equipment.Tier tier, RangedFactory factory, RangedConfig defaults, Supplier<Ingredient> repairIngredientSupplier, Equipment.WeaponType category) {
+        public Entry(Identifier id, Equipment.Tier tier, RangedFactory factory, RangedConfig defaults, @Nullable TagKey<Item> repairItems, Equipment.WeaponType category) {
             this.id = id;
             this.tier = tier;
             this.lootProperties = Equipment.LootProperties.of(tier.getNumber());
             this.factory = factory;
             this.defaults = defaults;
-            this.repairIngredientSupplier = repairIngredientSupplier;
+            this.repairItems = repairItems;
             this.category = category;
         }
 
@@ -73,8 +72,9 @@ public class RangedWeapon {
             return defaults;
         }
 
-        public Supplier<Ingredient> repairIngredientSupplier() {
-            return repairIngredientSupplier;
+        /// Item tag accepted for anvil repair; `null` means the weapon is not repairable.
+        public @Nullable TagKey<Item> repairItems() {
+            return repairItems;
         }
 
         public int durability() {
@@ -88,12 +88,14 @@ public class RangedWeapon {
             }
         }
 
+        /// Durability and repair (`minecraft:repairable`) are applied to `settings` here, before the factory runs.
+        /// `repairable(TagKey)` requires an unfrozen ITEM registry — always true while items are registered at mod init.
         public Item create(Item.Settings settings, RangedConfig config) {
-            this.registeredItem = factory.create(
-                    settings.maxDamage(durability()),
-                    config,
-                    repairIngredientSupplier
-            );
+            settings.maxDamage(durability());
+            if (repairItems != null) {
+                settings.repairable(repairItems);
+            }
+            this.registeredItem = factory.create(settings, config);
             return this.registeredItem;
         }
 

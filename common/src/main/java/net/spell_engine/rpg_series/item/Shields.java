@@ -2,14 +2,15 @@ package net.spell_engine.rpg_series.item;
 
 import net.minecraft.entity.attribute.EntityAttributeModifier.Operation;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.recipe.Ingredient;
+import net.minecraft.item.Item;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.spell_engine.rpg_series.config.AttributeModifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * Centralized shield factory for creating standardized shields across RPG Series mods.
@@ -24,7 +25,7 @@ import java.util.function.Supplier;
  *         "mymod",
  *         "iron_kite_shield",
  *         Equipment.Tier.TIER_1,
- *         () -> Ingredient.ofItems(Items.IRON_INGOT),
+ *         ItemTags.IRON_TOOL_MATERIALS,
  *         MyModSounds.shield_equip.entry()
  *     );
  * }</pre>
@@ -41,7 +42,7 @@ public class Shields {
      * @param namespace        The mod namespace (e.g., "paladins")
      * @param name             The shield name (e.g., "iron_kite_shield")
      * @param tier             The shield tier (WOODEN through TIER_5, or GOLDEN)
-     * @param repairIngredient Supplier for the repair ingredient
+     * @param repairItems      Item tag accepted for anvil repair (`null` = not repairable)
      * @param attributes       List of attribute modifiers
      * @param equipSound       Sound played when equipping shield
      * @return Shield.Entry for method chaining
@@ -50,7 +51,7 @@ public class Shields {
             String namespace,
             String name,
             Equipment.Tier tier,
-            Supplier<Ingredient> repairIngredient,
+            @Nullable TagKey<Item> repairItems,
             List<AttributeModifier> attributes,
             RegistryEntry<SoundEvent> equipSound
     ) {
@@ -59,7 +60,7 @@ public class Shields {
                 id,
                 tier,
                 attributes,
-                repairIngredient,
+                repairItems,
                 equipSound
         );
 
@@ -80,7 +81,7 @@ public class Shields {
      * @param namespace        The mod namespace
      * @param name             The shield name
      * @param tier             The shield tier
-     * @param repairIngredient Supplier for the repair ingredient
+     * @param repairItems      Item tag accepted for anvil repair (`null` = not repairable)
      * @param equipSound       Sound played when equipping shield
      * @return Shield.Entry for method chaining
      */
@@ -88,10 +89,10 @@ public class Shields {
             String namespace,
             String name,
             Equipment.Tier tier,
-            Supplier<Ingredient> repairIngredient,
+            @Nullable TagKey<Item> repairItems,
             RegistryEntry<SoundEvent> equipSound
     ) {
-        return create(namespace, name, tier, repairIngredient,
+        return create(namespace, name, tier, repairItems,
                 standardAttributes(tier), equipSound);
     }
 

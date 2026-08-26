@@ -13,7 +13,6 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ToolMaterial;
-import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -30,7 +29,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class Weapon {
 
@@ -173,20 +171,22 @@ public class Weapon {
 
     // MARK: Material
 
-    /// Wraps a vanilla {@link ToolMaterial} (a record since 1.21.2) with a repair ingredient supplier.
-    /// Repair is expressed as an {@link Ingredient} rather than a tag so consumers can keep using
-    /// item-based repair definitions; it is applied through the REPAIRABLE data component.
+    /// Wraps a vanilla {@link ToolMaterial} (a record since 1.21.2) with an optional repair item tag.
+    /// Repair goes through the vanilla `minecraft:repairable` component, which binds a *live* tag handle:
+    /// the tag contents are read at anvil time, so cross-mod items and datapack overrides just work.
     public static class CustomMaterial {
-        public static CustomMaterial matching(ToolMaterial vanillaMaterial, Supplier<Ingredient> repairIngredient) {
-            return new CustomMaterial(vanillaMaterial, repairIngredient);
+        /// @param repairItems `null` keeps the {@link ToolMaterial}'s own repair tag.
+        public static CustomMaterial matching(ToolMaterial vanillaMaterial, @Nullable TagKey<Item> repairItems) {
+            return new CustomMaterial(vanillaMaterial, repairItems);
         }
 
         private final ToolMaterial toolMaterial;
-        private final Supplier<Ingredient> repairIngredient;
+        /// `null` keeps the {@link ToolMaterial}'s own repair tag.
+        private final @Nullable TagKey<Item> repairItems;
 
-        public CustomMaterial(ToolMaterial toolMaterial, Supplier<Ingredient> repairIngredient) {
+        public CustomMaterial(ToolMaterial toolMaterial, @Nullable TagKey<Item> repairItems) {
             this.toolMaterial = toolMaterial;
-            this.repairIngredient = repairIngredient;
+            this.repairItems = repairItems;
         }
 
         public ToolMaterial toolMaterial() { return toolMaterial; }
@@ -194,13 +194,17 @@ public class Weapon {
         public float getMiningSpeedMultiplier() { return toolMaterial.speed(); }
         public int getEnchantability() { return toolMaterial.enchantmentValue(); }
         public TagKey<Block> getInverseTag() { return toolMaterial.incorrectBlocksForDrops(); }
-        public Ingredient getRepairIngredient() { return repairIngredient.get(); }
+        public @Nullable TagKey<Item> repairItems() { return repairItems; }
 
-        /// Durability, enchantability and repair (from the supplier) — no TOOL component.
-        /// Repair is a `minecraft:repairable` snapshot plus the lazily resolved {@link LazyRepair} component.
+        /// Durability, enchantability and repair — no TOOL component.
+        ///
+        /// `Item.Settings.repairable(TagKey)` looks the tag up through the ITEM registry, which must still be
+        /// **unfrozen** — always the case while items are registered at mod init. Never assemble `Item.Settings`
+        /// after registry freeze.
         public Item.Settings applyBaseSettings(Item.Settings settings) {
             settings = settings.maxDamage(toolMaterial.durability()).enchantable(toolMaterial.enchantmentValue());
-            return LazyRepair.apply(settings, repairIngredient);
+            settings.repairable(repairItems != null ? repairItems : toolMaterial.repairItems());
+            return settings;
         }
 
         /// Base settings plus the vanilla sword TOOL/WEAPON components. Attack attributes must be applied afterwards.

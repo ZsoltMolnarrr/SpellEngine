@@ -3,12 +3,13 @@ package net.spell_engine.rpg_series.item;
 import net.fabric_extras.ranged_weapon.api.CustomBow;
 import net.fabric_extras.ranged_weapon.api.CustomCrossbow;
 import net.fabric_extras.ranged_weapon.api.RangedConfig;
-import net.minecraft.recipe.Ingredient;
+import net.minecraft.item.Item;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * Centralized ranged weapon factory for creating standardized bows and crossbows across RPG Series mods.
@@ -21,7 +22,7 @@ import java.util.function.Supplier;
  *         "mymod",
  *         "netherite_longbow",
  *         Equipment.Tier.TIER_3,
- *         () -> Ingredient.ofItems(Items.NETHERITE_INGOT)
+ *         ItemTags.NETHERITE_TOOL_MATERIALS
  *     );
  * }</pre>
  */
@@ -145,7 +146,7 @@ public class RangedWeapons {
      * @param name             The weapon name (e.g., "netherite_longbow")
      * @param weaponType       The weapon type (SHORT_BOW, LONG_BOW, RAPID_CROSSBOW, HEAVY_CROSSBOW)
      * @param tier             The weapon tier (WOODEN through TIER_5, or GOLDEN)
-     * @param repairIngredient Supplier for the repair ingredient
+     * @param repairItems      Item tag accepted for anvil repair (`null` = not repairable)
      * @param pullTime         The pull/charge time for the weapon
      * @param velocity         The projectile velocity multiplier
      * @param factory          The ranged weapon factory (CustomBow::new or CustomCrossbow::new)
@@ -156,7 +157,7 @@ public class RangedWeapons {
             String name,
             Equipment.WeaponType weaponType,
             Equipment.Tier tier,
-            Supplier<Ingredient> repairIngredient,
+            @Nullable TagKey<Item> repairItems,
             float pullTime,
             float velocity,
             RangedWeapon.RangedFactory factory
@@ -176,7 +177,7 @@ public class RangedWeapons {
 
         // Create entry (RangedWeapon.Entry handles durability automatically via tier)
         var id = Identifier.of(namespace, name);
-        var entry = new RangedWeapon.Entry(id, tier, factory, config, repairIngredient, weaponType);
+        var entry = new RangedWeapon.Entry(id, tier, factory, config, repairItems, weaponType);
         entry.weaponAttributesPreset = WEAPON_ATTRIBUTES.getOrDefault(weaponType, "");
 
         return entry;
@@ -192,9 +193,9 @@ public class RangedWeapons {
             String namespace,
             String name,
             Equipment.Tier tier,
-            Supplier<Ingredient> repairIngredient
+            @Nullable TagKey<Item> repairItems
     ) {
-        return create(namespace, name, Equipment.WeaponType.SHORT_BOW, tier, repairIngredient,
+        return create(namespace, name, Equipment.WeaponType.SHORT_BOW, tier, repairItems,
                 PULL_TIME_SHORT_BOW, VELOCITY_SHORT_BOW, CustomBow::new);
     }
 
@@ -206,9 +207,9 @@ public class RangedWeapons {
             String namespace,
             String name,
             Equipment.Tier tier,
-            Supplier<Ingredient> repairIngredient
+            @Nullable TagKey<Item> repairItems
     ) {
-        return create(namespace, name, Equipment.WeaponType.LONG_BOW, tier, repairIngredient,
+        return create(namespace, name, Equipment.WeaponType.LONG_BOW, tier, repairItems,
                 PULL_TIME_LONG_BOW, VELOCITY_LONG_BOW, CustomBow::new);
     }
 
@@ -220,9 +221,9 @@ public class RangedWeapons {
             String namespace,
             String name,
             Equipment.Tier tier,
-            Supplier<Ingredient> repairIngredient
+            @Nullable TagKey<Item> repairItems
     ) {
-        return create(namespace, name, Equipment.WeaponType.RAPID_CROSSBOW, tier, repairIngredient,
+        return create(namespace, name, Equipment.WeaponType.RAPID_CROSSBOW, tier, repairItems,
                 PULL_TIME_RAPID_CROSSBOW, VELOCITY_RAPID_CROSSBOW, CustomCrossbow::new);
     }
 
@@ -234,9 +235,9 @@ public class RangedWeapons {
             String namespace,
             String name,
             Equipment.Tier tier,
-            Supplier<Ingredient> repairIngredient
+            @Nullable TagKey<Item> repairItems
     ) {
-        return create(namespace, name, Equipment.WeaponType.HEAVY_CROSSBOW, tier, repairIngredient,
+        return create(namespace, name, Equipment.WeaponType.HEAVY_CROSSBOW, tier, repairItems,
                 PULL_TIME_HEAVY_CROSSBOW, VELOCITY_HEAVY_CROSSBOW, CustomCrossbow::new);
     }
 }

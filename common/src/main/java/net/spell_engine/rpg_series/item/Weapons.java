@@ -1,6 +1,7 @@
 package net.spell_engine.rpg_series.item;
 
-import net.minecraft.recipe.Ingredient;
+import net.minecraft.item.Item;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.spell_engine.rpg_series.config.AttributeModifier;
 import net.spell_engine.rpg_series.config.WeaponConfig;
@@ -11,11 +12,11 @@ import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.container.SpellContainers;
 import net.spell_engine.rpg_series.datagen.WeaponSkills;
 import net.spell_power.api.SpellSchools;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * Centralized weapon factory for creating standardized weapons across RPG Series mods.
@@ -261,7 +262,7 @@ public class Weapons {
      * @param name             The weapon name (e.g., "iron_claymore")
      * @param weaponType       The weapon type from Equipment.WeaponType enum
      * @param tier             The weapon tier (TIER_0 through TIER_4, or GOLDEN)
-     * @param repairIngredient Supplier for the repair ingredient
+     * @param repairItems  Item tag accepted for anvil repair; `null` keeps the tier material's own tag
      * @return Weapon.Entry for method chaining
      */
     public static Weapon.Entry create(
@@ -269,7 +270,7 @@ public class Weapons {
             String name,
             Equipment.WeaponType weaponType,
             Equipment.Tier tier,
-            Supplier<Ingredient> repairIngredient
+            @Nullable TagKey<Item> repairItems
     ) {
         // Get damage from damage map
         var damageMap = DAMAGE_MAPS.get(weaponType);
@@ -288,7 +289,7 @@ public class Weapons {
         }
 
         // Create material
-        var material = Weapon.CustomMaterial.matching(tier.getVanillaMaterial(), repairIngredient);
+        var material = Weapon.CustomMaterial.matching(tier.getVanillaMaterial(), repairItems);
 
         // Create weapon config
         var config = new WeaponConfig(damage, attackSpeed);
@@ -317,44 +318,44 @@ public class Weapons {
 
     // Sword
 
-    public static Weapon.Entry sword(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.SWORD, tier, repairIngredient);
+    public static Weapon.Entry sword(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        return create(namespace, name, Equipment.WeaponType.SWORD, tier, repairItems);
     }
-    public static Weapon.Entry swordWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        var entry = sword(namespace, name, tier, repairIngredient);
+    public static Weapon.Entry swordWithSkill(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        var entry = sword(namespace, name, tier, repairItems);
         return entry.spellContainer(SWORD_CONTAINER);
     }
     public static final SpellContainer SWORD_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.SWIFT_STRIKES.id());
 
     // Claymore
 
-    public static Weapon.Entry claymore(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.CLAYMORE, tier, repairIngredient);
+    public static Weapon.Entry claymore(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        return create(namespace, name, Equipment.WeaponType.CLAYMORE, tier, repairItems);
     }
-    public static Weapon.Entry claymoreWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        var entry = claymore(namespace, name, tier, repairIngredient);
+    public static Weapon.Entry claymoreWithSkill(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        var entry = claymore(namespace, name, tier, repairItems);
         return entry.spellContainer(CLAYMORE_CONTAINER);
     }
     public static final SpellContainer CLAYMORE_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.FLURRY.id());
 
     // Mace
 
-    public static Weapon.Entry mace(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.MACE, tier, repairIngredient);
+    public static Weapon.Entry mace(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        return create(namespace, name, Equipment.WeaponType.MACE, tier, repairItems);
     }
-    public static Weapon.Entry maceWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        var entry = mace(namespace, name, tier, repairIngredient);
+    public static Weapon.Entry maceWithSkill(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        var entry = mace(namespace, name, tier, repairItems);
         return entry.spellContainer(MACE_CONTAINER);
     }
     public static final SpellContainer MACE_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.SMASH.id());
 
     // Hammer
 
-    public static Weapon.Entry hammer(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.HAMMER, tier, repairIngredient);
+    public static Weapon.Entry hammer(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        return create(namespace, name, Equipment.WeaponType.HAMMER, tier, repairItems);
     }
-    public static Weapon.Entry hammerWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        var entry = hammer(namespace, name, tier, repairIngredient);
+    public static Weapon.Entry hammerWithSkill(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        var entry = hammer(namespace, name, tier, repairItems);
         return entry.spellContainer(HAMMER_CONTAINER);
     }
     public static final SpellContainer HAMMER_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.GROUND_SLAM.id());
@@ -365,87 +366,87 @@ public class Weapons {
 
     // Double Axe
 
-    public static Weapon.Entry doubleAxe(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.DOUBLE_AXE, tier, repairIngredient);
+    public static Weapon.Entry doubleAxe(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        return create(namespace, name, Equipment.WeaponType.DOUBLE_AXE, tier, repairItems);
     }
-    public static Weapon.Entry doubleAxeWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        var entry = doubleAxe(namespace, name, tier, repairIngredient);
+    public static Weapon.Entry doubleAxeWithSkill(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        var entry = doubleAxe(namespace, name, tier, repairItems);
         return entry.spellContainer(DOUBLE_AXE_CONTAINER);
     }
     public static final SpellContainer DOUBLE_AXE_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.WHIRLWIND.id());
 
     // Spear
 
-    public static Weapon.Entry spear(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.SPEAR, tier, repairIngredient);
+    public static Weapon.Entry spear(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        return create(namespace, name, Equipment.WeaponType.SPEAR, tier, repairItems);
     }
-    public static Weapon.Entry spearWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        var entry = spear(namespace, name, tier, repairIngredient);
+    public static Weapon.Entry spearWithSkill(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        var entry = spear(namespace, name, tier, repairItems);
         return entry.spellContainer(SPEAR_CONTAINER);
     }
     public static final SpellContainer SPEAR_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.IMPALE.id());
 
     // Dagger
 
-    public static Weapon.Entry dagger(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.DAGGER, tier, repairIngredient);
+    public static Weapon.Entry dagger(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        return create(namespace, name, Equipment.WeaponType.DAGGER, tier, repairItems);
     }
-    public static Weapon.Entry daggerWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        var entry = dagger(namespace, name, tier, repairIngredient);
+    public static Weapon.Entry daggerWithSkill(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        var entry = dagger(namespace, name, tier, repairItems);
         return entry.spellContainer(DAGGER_CONTAINER);
     }
     public static final SpellContainer DAGGER_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.FAN_OF_KNIVES.id());
 
     // Sickle
 
-    public static Weapon.Entry sickle(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.SICKLE, tier, repairIngredient);
+    public static Weapon.Entry sickle(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        return create(namespace, name, Equipment.WeaponType.SICKLE, tier, repairItems);
     }
-    public static Weapon.Entry sickleWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        var entry = sickle(namespace, name, tier, repairIngredient);
+    public static Weapon.Entry sickleWithSkill(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        var entry = sickle(namespace, name, tier, repairItems);
         return entry.spellContainer(SICKLE_CONTAINER);
     }
     public static final SpellContainer SICKLE_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.SWIPE.id());
 
     // Glaive
 
-    public static Weapon.Entry glaive(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        return create(namespace, name, Equipment.WeaponType.GLAIVE, tier, repairIngredient);
+    public static Weapon.Entry glaive(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        return create(namespace, name, Equipment.WeaponType.GLAIVE, tier, repairItems);
     }
-    public static Weapon.Entry glaiveWithSkill(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        var entry = glaive(namespace, name, tier, repairIngredient);
+    public static Weapon.Entry glaiveWithSkill(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        var entry = glaive(namespace, name, tier, repairItems);
         return entry.spellContainer(GLAIVE_CONTAINER);
     }
     public static final SpellContainer GLAIVE_CONTAINER = SpellContainers.forMeleeWeapon().withSpellId(WeaponSkills.THRUST.id());
 
     // == MAGICAL WEAPONS ==
 
-    public static Weapon.Entry damageWand(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient, List<Identifier> spellSchools) {
-        var entry = create(namespace, name, Equipment.WeaponType.DAMAGE_WAND, tier, repairIngredient);
+    public static Weapon.Entry damageWand(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems, List<Identifier> spellSchools) {
+        var entry = create(namespace, name, Equipment.WeaponType.DAMAGE_WAND, tier, repairItems);
         applySpellPower(entry, Equipment.WeaponType.DAMAGE_WAND, tier, spellSchools);
         return entry;
     }
 
-    public static Weapon.Entry damageStaff(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient, List<Identifier> spellSchools) {
-        var entry = create(namespace, name, Equipment.WeaponType.DAMAGE_STAFF, tier, repairIngredient);
+    public static Weapon.Entry damageStaff(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems, List<Identifier> spellSchools) {
+        var entry = create(namespace, name, Equipment.WeaponType.DAMAGE_STAFF, tier, repairItems);
         applySpellPower(entry, Equipment.WeaponType.DAMAGE_STAFF, tier, spellSchools);
         return entry;
     }
 
-    public static Weapon.Entry healingWand(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        var entry = create(namespace, name, Equipment.WeaponType.HEALING_WAND, tier, repairIngredient);
+    public static Weapon.Entry healingWand(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        var entry = create(namespace, name, Equipment.WeaponType.HEALING_WAND, tier, repairItems);
         applySpellPower(entry, Equipment.WeaponType.HEALING_WAND, tier, List.of(SpellSchools.HEALING.id));
         return entry;
     }
 
-    public static Weapon.Entry healingStaff(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient) {
-        var entry = create(namespace, name, Equipment.WeaponType.HEALING_STAFF, tier, repairIngredient);
+    public static Weapon.Entry healingStaff(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems) {
+        var entry = create(namespace, name, Equipment.WeaponType.HEALING_STAFF, tier, repairItems);
         applySpellPower(entry, Equipment.WeaponType.HEALING_STAFF, tier, List.of(SpellSchools.HEALING.id));
         return entry;
     }
 
-    public static Weapon.Entry healingStaff(String namespace, String name, Equipment.Tier tier, Supplier<Ingredient> repairIngredient, List<Identifier> spellSchools) {
-        var entry = create(namespace, name, Equipment.WeaponType.HEALING_STAFF, tier, repairIngredient);
+    public static Weapon.Entry healingStaff(String namespace, String name, Equipment.Tier tier, @Nullable TagKey<Item> repairItems, List<Identifier> spellSchools) {
+        var entry = create(namespace, name, Equipment.WeaponType.HEALING_STAFF, tier, repairItems);
         applySpellPower(entry, Equipment.WeaponType.HEALING_STAFF, tier, spellSchools);
         return entry;
     }
