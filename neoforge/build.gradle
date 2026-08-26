@@ -117,12 +117,14 @@ dependencies {
 
 processResources {
     inputs.property 'version', project.version
+    inputs.property 'minecraft_min_version', rootProject.minecraft_min_version
 
     filesMatching('META-INF/neoforge.mods.toml') {
         def cleanedProps = project.properties.collectEntries { k, v ->
             def s = v?.toString()
             [(k.toString()): (s?.contains('+') ? s.substring(0, s.indexOf('+')) : s)]
         }
+        cleanedProps.minecraft_min_version = rootProject.minecraft_min_version
         expand(cleanedProps)
     }
 }
@@ -161,8 +163,7 @@ publishMods {
     curseforge {
         projectId = providers.environmentVariable("CURSEFORGE_PROJECT_ID")   // numeric id
         accessToken = providers.environmentVariable("CURSEFORGE_API_KEY")
-        minecraftVersions.add(project.minecraft_version)
-        if (project.minecraft_compat_version != project.minecraft_version) minecraftVersions.add(project.minecraft_compat_version)
+        minecraftVersions.addAll(rootProject.minecraftCompatVersions)
         client = true                    // >=1 of client/server REQUIRED by CurseForge (Error 1021)
         server = true
         changelogType = "markdown"
@@ -173,8 +174,7 @@ publishMods {
         environment = me.modmuss50.mpp.platforms.modrinth.ModrinthEnvironment.CLIENT_AND_SERVER
         projectId = providers.environmentVariable("MODRINTH_PROJECT_RAW_ID")
         accessToken = providers.environmentVariable("MODRINTH_API_KEY")
-        minecraftVersions.add(project.minecraft_version)
-        if (project.minecraft_compat_version != project.minecraft_version) minecraftVersions.add(project.minecraft_compat_version)
+        minecraftVersions.addAll(rootProject.minecraftCompatVersions)
         requires { slug = "cloth-config" }
         requires { slug = "player-animation-library" }
         requires { slug = "spell-power" }
