@@ -94,7 +94,10 @@ public class SpellEngineMod {
             SpellCastCriteria.INSTANCE.trigger((ServerPlayerEntity) args.caster(), args.spell());
         });
 
-        EntityTints.register(StatusEffects.POISON.value(), 0x8888FF88);
+        if (Platform.util().isDevelopmentEnvironment()) {
+            // Test configuration for some APIs
+            EntityTints.register(StatusEffects.POISON.value(), 0x8888FF88);
+        }
 
         ExternalSpellSchools.init();
         RPGSeriesCore.init();
