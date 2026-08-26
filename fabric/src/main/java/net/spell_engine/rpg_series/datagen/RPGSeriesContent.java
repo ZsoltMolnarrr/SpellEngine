@@ -178,6 +178,24 @@ public class RPGSeriesContent {
                 var tag = valueLookupBuilder(ItemTags.CROSSBOW_ENCHANTABLE);
                 tag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
+
+            /// Vanilla mob weapon preference (`MobEntity.getPreferredWeapons`, since 1.21.2).
+            /// Mobs keep / pick up only weapons in their preferred tag, so without these a skeleton
+            /// would drop an RPG Series longbow in favour of a plain vanilla bow.
+            /// Tag references (not item entries) are used on purpose: content mods fill the
+            /// `rpg_series:weapon_type/...` categories from their own datagen, and are covered automatically.
+            var skeletonPreferred = valueLookupBuilder(ItemTags.SKELETON_PREFERRED_WEAPONS);
+            for (var type: bowTypes) {
+                skeletonPreferred.addTag(RPGSeriesItemTags.WeaponType.get(type));
+            }
+            for (var preferredTag: List.of(ItemTags.PILLAGER_PREFERRED_WEAPONS, ItemTags.PIGLIN_PREFERRED_WEAPONS)) {
+                var tag = valueLookupBuilder(preferredTag);
+                for (var type: crossbowTypes) {
+                    tag.addTag(RPGSeriesItemTags.WeaponType.get(type));
+                }
+            }
+            // `minecraft:drowned_preferred_weapons` is intentionally left alone: drowned prefer tridents,
+            // and RPG Series has no throwable-trident weapon category to contribute.
         }
     }
 
