@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /// `SyncedEntityData` over NeoForge data attachments. Types are built immediately (common init
 /// runs before any registry event) and buffered until `RegisterEvent` reaches
@@ -62,6 +63,9 @@ public final class NeoForgeSyncedEntityData<T> implements SyncedEntityData<T> {
 
     @Override
     public void set(Entity entity, T value) {
+        // Skip no-op writes (see the Fabric counterpart): writing the default onto an entity that
+        // carries nothing would attach and sync it for no observable change.
+        if (Objects.equals(get(entity), value)) { return; }
         ((IAttachmentHolder) entity).setData(type, value);
     }
 }
