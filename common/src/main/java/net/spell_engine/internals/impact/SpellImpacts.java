@@ -284,7 +284,7 @@ public class SpellImpacts {
         var spell = spellEntry.value();
         try {
             // Guards
-            if (impact.chance < 1F && world.random.nextFloat() > impact.chance) {
+            if (impact.chance < 1F && world.getRandom().nextFloat() > impact.chance) {
                 return false; // Skip impact if chance is not met
             }
             var school = impact.school != null ? impact.school : spell.school;
@@ -440,7 +440,7 @@ public class SpellImpacts {
                                 return false;
                             }
                             removalSelection = switch (data.remove.selector) {
-                                case RANDOM -> List.of(effects.get(world.random.nextInt(effects.size())));
+                                case RANDOM -> List.of(effects.get(world.getRandom().nextInt(effects.size())));
                                 case FIRST -> List.of(effects.getFirst());
                                 case ALL -> effects;
                             };
@@ -469,7 +469,7 @@ public class SpellImpacts {
                         amplifier += extraAmplifier;
                         switch (data.apply_mode) {
                             case ADD, SET -> {
-                                if (target.getType().is(SpellEngineEntityTags.bosses)
+                                if (target.is(SpellEngineEntityTags.bosses)
                                         && (StatusEffectClassification.isMovementImpairing(effect) || StatusEffectClassification.disablesMobAI(effect) ) ) {
                                     return false;
                                 }

@@ -15,7 +15,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.neoforged.fml.loading.FMLLoader;
-import net.neoforged.fml.loading.LoadingModList;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.spell_engine.Platform;
@@ -31,7 +30,7 @@ public class PlatformImpl {
         public boolean isModLoaded(String modid) {
             // LoadingModList (not ModList): populated during mod discovery, before any constructor runs,
             // so early compat gates in static initializers / init match Fabric's "resolved up front" timing.
-            return LoadingModList.get().getModFileById(modid) != null;
+            return FMLLoader.getCurrent().getLoadingModList().getModFileById(modid) != null;
         }
 
         @Override

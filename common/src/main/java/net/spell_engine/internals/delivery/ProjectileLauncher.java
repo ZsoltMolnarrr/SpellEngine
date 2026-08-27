@@ -174,7 +174,7 @@ public class ProjectileLauncher {
             projectile.setFollowedTarget(null);
         }
         if (launchRadius > 0 && launchSequenceEligible(sequenceIndex, meteor.offset_requires_sequence)) {
-            var randomAngle = Math.toRadians(world.random.nextFloat() * 360);
+            var randomAngle = Math.toRadians(world.getRandom().nextFloat() * 360);
             var offset = (new Vec3(launchRadius, 0, 0)).yRot((float) randomAngle);
             projectile.setPos(projectile.position().add(offset));
         }

@@ -59,7 +59,7 @@ public class ContainerCompat {
 
         @Override
         public ItemStack get(int index) {
-            return component.getItemUnsafe(index);
+            return component.items().get(index).create();
         }
 
         @Override

@@ -1,34 +1,41 @@
 package net.spell_engine.mixin.registry;
 
 import com.google.gson.JsonElement;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.serialization.Decoder;
-import net.minecraft.core.RegistrationInfo;
-import net.minecraft.core.WritableRegistry;
-import net.minecraft.resources.RegistryDataLoader;
+import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-@Mixin(RegistryDataLoader.class)
+/// When a client receives a synced dynamic registry, vanilla only sends the entries the client cannot
+/// find in its own resources (`RegistrySynchronization.PackedRegistryEntry#data` is empty for those) and
+/// parses the local JSON with the *same* decoder it uses for the network payload
+/// (`NetworkRegistryLoadTask#load` → `RegistryLoadTask.PendingRegistration#findAndLoadFromResource(data.elementCodec(), …)`).
+/// Both Fabric API (`DynamicRegistries.registerSynced(key, local, network)`) and NeoForge
+/// (`DataPackRegistriesHooks#addRegistryCodec`) build that `RegistryData` with the **network** codec,
+/// so the local spell JSON would be parsed with `SpellRegistry.NETWORK_CODEC_V2`. Swap in the local codec.
+///
+/// 26.1.2: `RegistryDataLoader.loadContentsFromNetwork`/`loadElementFromResource` no longer exist; the
+/// only caller of `findAndLoadFromResource` is `NetworkRegistryLoadTask`.
+@Mixin(targets = "net.minecraft.resources.RegistryLoadTask$PendingRegistration")
 public class RegistryLoaderMixin {
-    @WrapOperation(
-            method = "loadContentsFromNetwork(Ljava/util/Map;Lnet/minecraft/server/packs/resources/ResourceProvider;Lnet/minecraft/resources/RegistryOps$RegistryInfoLookup;Lnet/minecraft/core/WritableRegistry;Lcom/mojang/serialization/Decoder;Ljava/util/Map;)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/resources/RegistryDataLoader;loadElementFromResource(Lnet/minecraft/core/WritableRegistry;Lcom/mojang/serialization/Decoder;Lnet/minecraft/resources/RegistryOps;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/server/packs/resources/Resource;Lnet/minecraft/core/RegistrationInfo;)V")
+    @ModifyVariable(
+            method = "findAndLoadFromResource(Lcom/mojang/serialization/Decoder;Lnet/minecraft/resources/RegistryOps;Lnet/minecraft/resources/ResourceKey;Lnet/minecraft/resources/FileToIdConverter;Lnet/minecraft/server/packs/resources/ResourceProvider;)Lcom/mojang/datafixers/util/Either;",
+            at = @At("HEAD"),
+            argsOnly = true
     )
-    private static <E> void loadFromNetwork_Wrapped_ParseAndAdd(
-            WritableRegistry<E> registry, Decoder<E> decoder, RegistryOps<JsonElement> ops, ResourceKey<E> registryKey, Resource resource, RegistrationInfo entryInfo, Operation<Void> original) {
-        // Parsing spell from local resource.
-        // This is a vanilla optimization, only sending what is needed.
-        // But Fabric API doesn't put the correct decoder here for some reason.
-        if (registry.key().equals(SpellRegistry.KEY)) {
-            original.call(registry, SpellRegistry.LOCAL_CODEC, ops, registryKey, resource, entryInfo);
-        } else {
-            original.call(registry, decoder, ops, registryKey, resource, entryInfo);
+    private static <T> Decoder<T> spell_engine$useLocalSpellCodec(
+            Decoder<T> decoder,
+            Decoder<T> elementDecoder, RegistryOps<JsonElement> ops, ResourceKey<T> elementKey, FileToIdConverter converter, ResourceProvider resourceProvider) {
+        if (elementKey.isFor(SpellRegistry.KEY)) {
+            @SuppressWarnings("unchecked")
+            var local = (Decoder<T>) SpellRegistry.LOCAL_CODEC;
+            return local;
         }
+        return decoder;
     }
 }

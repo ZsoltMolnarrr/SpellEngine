@@ -242,7 +242,7 @@ public class SpellBindingScreenHandler extends AbstractContainerMenu {
                             SpellContainerHelper.removeSpell(world, spellId, mainStack);
                             this.inventory.setChanged();
                             this.slotsChanged(this.inventory);
-                            world.playSound(null, pos, SpellEngineSounds.UNBIND_SPELL.soundEvent(), SoundSource.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
+                            world.playSound(null, pos, SpellEngineSounds.UNBIND_SPELL.soundEvent(), SoundSource.BLOCKS, 1.0f, world.getRandom().nextFloat() * 0.1f + 0.9f);
                         });
                         return true;
                     }
@@ -269,7 +269,7 @@ public class SpellBindingScreenHandler extends AbstractContainerMenu {
                         applyLevelCost(player, binding.requirements.levelCost());
                         this.inventory.setChanged();
                         this.slotsChanged(this.inventory);
-                        world.playSound(null, pos, SpellEngineSounds.BIND_SPELL.soundEvent(), SoundSource.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
+                        world.playSound(null, pos, SpellEngineSounds.BIND_SPELL.soundEvent(), SoundSource.BLOCKS, 1.0f, world.getRandom().nextFloat() * 0.1f + 0.9f);
                         if (player instanceof ServerPlayer serverPlayer) {
                             var container = SpellContainerHelper.containerFromItemStack(mainStack);
                             var poolId = SpellContainerHelper.getPoolId(container);
@@ -322,7 +322,7 @@ public class SpellBindingScreenHandler extends AbstractContainerMenu {
                         applyLevelCost(player, binding.requirements.levelCost());
                         this.inventory.setChanged();
                         this.slotsChanged(this.inventory);
-                        world.playSound(null, pos, SpellEngineSounds.BIND_SPELL.soundEvent(), SoundSource.BLOCKS, 1.0f, world.random.nextFloat() * 0.1f + 0.9f);
+                        world.playSound(null, pos, SpellEngineSounds.BIND_SPELL.soundEvent(), SoundSource.BLOCKS, 1.0f, world.getRandom().nextFloat() * 0.1f + 0.9f);
 
                         if (player instanceof ServerPlayer serverPlayer) {
                             SpellBookCreationCriteria.INSTANCE.trigger(serverPlayer, poolId);

@@ -36,7 +36,7 @@ public interface RemoveOnHit {
         if (args == null) {
             return false;
         }
-        if (args.chance < 1.0F && world.random.nextFloat() > args.chance) {
+        if (args.chance < 1.0F && world.getRandom().nextFloat() > args.chance) {
             return false;
         }
         var isInDirect = !damageSource.isDirect() || ((DamageSourceExtension)damageSource).isSpellIndirect();

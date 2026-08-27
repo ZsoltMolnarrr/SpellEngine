@@ -9,7 +9,6 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
@@ -43,7 +42,6 @@ public class SpellBindRandomlyLootFunction extends LootItemConditionalFunction {
                     )
                     .apply(instance, SpellBindRandomlyLootFunction::new)
     );
-    public static final LootItemFunctionType<SpellBindRandomlyLootFunction> TYPE = new LootItemFunctionType<SpellBindRandomlyLootFunction>(CODEC);
 
     private final NumberProvider tier;
     @Nullable private final String pool;
@@ -57,8 +55,8 @@ public class SpellBindRandomlyLootFunction extends LootItemConditionalFunction {
     }
 
     @Override
-    public LootItemFunctionType<SpellBindRandomlyLootFunction> getType() {
-        return TYPE;
+    public MapCodec<SpellBindRandomlyLootFunction> codec() {
+        return CODEC;
     }
 
 

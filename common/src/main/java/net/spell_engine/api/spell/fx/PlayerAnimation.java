@@ -65,7 +65,7 @@ public class PlayerAnimation {
                     continue;
                 }
                 var equippedItem = entity.getItemBySlot(slot);
-                if (PatternMatching.matches(equippedItem.getItemHolder(), Registries.ITEM, itemMatcher)) {
+                if (PatternMatching.matches(equippedItem.typeHolder(), Registries.ITEM, itemMatcher)) {
                     return override.id;
                 }
             }

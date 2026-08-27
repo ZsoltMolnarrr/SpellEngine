@@ -174,7 +174,7 @@ public class SpellChoiceScreenHandler extends AbstractContainerMenu {
                     SpellEngineSounds.BIND_SPELL.soundEvent(),
                     SoundSource.PLAYERS,
                     1.0f,
-                    world.random.nextFloat() * 0.1f + 0.9f);
+                    world.getRandom().nextFloat() * 0.1f + 0.9f);
             });
 
             return true;  // Success

@@ -140,7 +140,7 @@ public class SpellEngineMod {
         Registry.register(BuiltInRegistries.BLOCK, SpellBinding.ID, SpellBindingBlock.INSTANCE);
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, SpellBinding.ID, SpellBindingBlockEntity.ENTITY_TYPE);
         Registry.register(BuiltInRegistries.MENU, SpellBinding.ID, SpellBindingScreenHandler.HANDLER_TYPE);
-        Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, SpellBindRandomlyLootFunction.ID, SpellBindRandomlyLootFunction.TYPE);
+        Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, SpellBindRandomlyLootFunction.ID, SpellBindRandomlyLootFunction.CODEC);
         Registry.register(BuiltInRegistries.MENU, SpellChoiceFeature.ID, SpellChoiceScreenHandler.HANDLER_TYPE);
     }
 
