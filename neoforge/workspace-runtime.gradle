@@ -30,7 +30,7 @@ dependencies {
     localRuntime("net.critical_strike:critical_strike-neoforge:1.0.5.003+26.1.2") { transitive = false } // used by SkillTree/Jewelry configs (critical_strike:chance)
 
     if (flags.rpg_series_classes) {
-    localRuntime("net.rpg_series:archers-neoforge:3.1.2.006+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:archers-neoforge:3.1.2.007+26.1.2") { transitive = false }
     localRuntime("net.rpg_series:wizards-neoforge:3.1.2.006+26.1.2") { transitive = false }
     localRuntime("net.rpg_series:paladins-neoforge:3.1.2.006+26.1.2") { transitive = false }
     localRuntime("net.rpg_series:rogues-neoforge:3.1.2.006+26.1.2") { transitive = false }
