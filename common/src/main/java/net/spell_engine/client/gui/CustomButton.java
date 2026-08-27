@@ -1,6 +1,6 @@
 package net.spell_engine.client.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
@@ -67,7 +67,7 @@ public class CustomButton extends Button {
     }
 
     @Override
-    protected void renderContents(GuiGraphics context, int mouseX, int mouseY, float delta) {
+    protected void extractContents(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         context.blit(RenderPipelines.GUI_TEXTURED, BUTTONS_TEXTURE, this.getX(), this.getY(), this.u, this.getTextureY(), this.getWidth(), this.getHeight(), 256, 256, ARGB.colorFromFloat(this.alpha, 1F, 1F, 1F));
         // context.drawNineSlicedTexture(BUTTONS_TEXTURE, this.getX(), this.getY(), this.getWidth(), this.getHeight(), 20, 4, 200, 20, 0, this.getTextureY());
         int i = this.active ? 0xFFFFFF : 0xA0A0A0;

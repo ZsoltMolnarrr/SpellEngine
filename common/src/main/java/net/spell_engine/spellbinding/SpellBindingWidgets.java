@@ -1,8 +1,7 @@
 package net.spell_engine.spellbinding;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -89,7 +88,7 @@ public class SpellBindingWidgets {
         }
     }
 
-    public static void drawSpellIcon(GuiGraphics context, SpellIconViewModel icon, int mouseX, int mouseY) {
+    public static void drawSpellIcon(GuiGraphicsExtractor context, SpellIconViewModel icon, int mouseX, int mouseY) {
         boolean mouseOver = icon.mouseOver(mouseX, mouseY);
         boolean alreadyApplied = icon.binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
         float alpha = (icon.isEnabled || alreadyApplied) ? 1.0f : 0.5f;
@@ -110,7 +109,7 @@ public class SpellBindingWidgets {
         }
     }
 
-    public static void drawSpellIconIndicator(GuiGraphics context, SpellIconViewModel icon) {
+    public static void drawSpellIconIndicator(GuiGraphicsExtractor context, SpellIconViewModel icon) {
         boolean alreadyApplied = icon.binding.state == SpellBinding.State.ApplyState.ALREADY_APPLIED;
         if (alreadyApplied) {
             int indicatorOffset = (SpellBindingWidgets.SELECTION_INDICATOR_SIZE - SpellBindingWidgets.SPELL_ICON_SIZE) / 2;
@@ -124,7 +123,7 @@ public class SpellBindingWidgets {
         }
     }
 
-    public static void drawSpellBook(GuiGraphics context, Font textRenderer, SpellBookViewModel book, int mouseX, int mouseY) {
+    public static void drawSpellBook(GuiGraphicsExtractor context, Font textRenderer, SpellBookViewModel book, int mouseX, int mouseY) {
         if (!book.shown) { return; }  // Skip if not shown
         boolean mouseOver = book.mouseOver(mouseX, mouseY);
         boolean isUnlocked = book.isEnabled;
@@ -150,7 +149,7 @@ public class SpellBindingWidgets {
         int iconX = book.x + SpellBindingWidgets.SPELL_ICON_INDENT;
         int iconY = book.y + SpellBindingWidgets.TIER_ROW_ICON_Y_OFFSET;
 
-        context.renderItem(book.itemStack, iconX, iconY);
+        context.item(book.itemStack, iconX, iconY);
         if (!isUnlocked) {
             context.fill(iconX, iconY, iconX + 16, iconY + 16, 0x80000000); // dim locked books (shader tinting is gone)
         }
@@ -164,15 +163,15 @@ public class SpellBindingWidgets {
                     isUnlocked ? 0xFFFFFFFF : 0xFF808080);
         } else {
             int textY = book.y + (SpellBindingWidgets.TIER_ROW_HEIGHT - textRenderer.lineHeight) / 2;  // Vertically centered
-            context.drawString(textRenderer, bookName, textX, textY,
+            context.text(textRenderer, bookName, textX, textY,
                     isUnlocked ? 0xFFFFFFFF : 0xFF808080);
         }
     }
 
 
-    public static void drawTextWrapped(GuiGraphics context, Font textRenderer, FormattedText text, int x, int y, int width, int color) {
+    public static void drawTextWrapped(GuiGraphicsExtractor context, Font textRenderer, FormattedText text, int x, int y, int width, int color) {
         for(FormattedCharSequence orderedText : textRenderer.split(text, width)) {
-            context.drawString(textRenderer, orderedText, x, y, color, true);
+            context.text(textRenderer, orderedText, x, y, color, true);
             Objects.requireNonNull(textRenderer);
             y += 9;
         }

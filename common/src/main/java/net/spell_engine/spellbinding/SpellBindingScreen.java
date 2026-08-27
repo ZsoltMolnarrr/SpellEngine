@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -41,6 +41,7 @@ public class SpellBindingScreen extends AbstractContainerScreen<SpellBindingScre
     private final CyclingSlotBackground mainSlotIcon = new CyclingSlotBackground(0);
     private final CyclingSlotBackground consumableSlotIcon = new CyclingSlotBackground(1);
 
+    private static final int BACKGROUND_WIDTH = 176;
     private static final int BACKGROUND_STANDARD_HEIGHT = 166;
     private static final int BACKGROUND_EXTRA_HEIGHT = 18;
     private static final int BACKGROUND_HEIGHT = BACKGROUND_STANDARD_HEIGHT + BACKGROUND_EXTRA_HEIGHT;
@@ -48,7 +49,7 @@ public class SpellBindingScreen extends AbstractContainerScreen<SpellBindingScre
     private ItemStack stack;
 
     public SpellBindingScreen(SpellBindingScreenHandler handler, Inventory inventory, Component title) {
-        super(handler, inventory, title);
+        super(handler, inventory, title, BACKGROUND_WIDTH, BACKGROUND_HEIGHT); // 26.1: imageWidth/imageHeight are final ctor params
         this.stack = ItemStack.EMPTY;
     }
 
@@ -57,10 +58,7 @@ public class SpellBindingScreen extends AbstractContainerScreen<SpellBindingScre
     private Button downButton;
 
     protected void init() {
-        super.init();
-        this.imageHeight = BACKGROUND_HEIGHT;
-        this.leftPos = (this.width - this.imageWidth) / 2;
-        this.topPos = (this.height - this.imageHeight) / 2;
+        super.init(); // leftPos/topPos are derived from the ctor-supplied imageWidth/imageHeight
         this.titleLabelY = 6 - (BACKGROUND_EXTRA_HEIGHT - 2);
 
         int originX = (this.width - this.imageWidth) / 2;
@@ -161,10 +159,10 @@ public class SpellBindingScreen extends AbstractContainerScreen<SpellBindingScre
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        // delta = this.client.getTickDelta();
-        super.render(context, mouseX, mouseY, delta); // renders the background itself since 1.21.11 (blurring twice per frame crashes)
-        this.renderTooltip(context, mouseX, mouseY);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        // 26.1: the background goes through extractBackground; AbstractContainerScreen#extractRenderState already
+        // extracts the hovered-slot item tooltip (the former explicit renderTooltip call)
+        super.extractRenderState(context, mouseX, mouseY, delta);
         var player = Minecraft.getInstance().player;
         var lapisCount = menu.getLapisCount();
         var itemStack = menu.getItems().get(0);
@@ -294,17 +292,15 @@ public class SpellBindingScreen extends AbstractContainerScreen<SpellBindingScre
     private static final SubTexture PLACEHOLDER_BOOK = new SubTexture(240, 0, 16, 16);
 
     @Override
-    protected void renderBg(GuiGraphics context, float delta, int mouseX, int mouseY) {
-//        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-//        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-//        RenderSystem.setShaderTexture(0, TEXTURE);
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        super.extractBackground(context, mouseX, mouseY, delta);
         int originX = (this.width - this.imageWidth) / 2;
         int originY = (this.height - this.imageHeight) / 2;
 
         context.blit(RenderPipelines.GUI_TEXTURED, Pl, originX, originY - BACKGROUND_EXTRA_HEIGHT, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
 
-        this.mainSlotIcon.render(this.menu, context, delta, this.leftPos, this.topPos);
-        this.consumableSlotIcon.render(this.menu, context, delta, this.leftPos, this.topPos);
+        this.mainSlotIcon.extractRenderState(this.menu, context, delta, this.leftPos, this.topPos);
+        this.consumableSlotIcon.extractRenderState(this.menu, context, delta, this.leftPos, this.topPos);
         this.updatePageControls();
         this.updateButtons(originX, originY);
         this.drawTierRows(context, mouseX, mouseY);
@@ -554,7 +550,7 @@ public class SpellBindingScreen extends AbstractContainerScreen<SpellBindingScre
         }
     }
 
-    private void drawTierRows(GuiGraphics context, int mouseX, int mouseY) {
+    private void drawTierRows(GuiGraphicsExtractor context, int mouseX, int mouseY) {
         var mode = menu.getMode();
 
         if (mode == SpellBinding.Mode.BOOK) {
