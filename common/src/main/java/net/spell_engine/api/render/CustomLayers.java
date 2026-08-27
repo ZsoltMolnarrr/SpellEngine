@@ -54,8 +54,8 @@ public class CustomLayers {
         var map = new java.util.LinkedHashMap<RenderPipeline, PipelineKind>();
         map.put(ENTITY_TRANSLUCENT_DEPTH_WRITE, PipelineKind.ENTITY_TRANSLUCENT);
         map.put(ENTITY_EMISSIVE_DEPTH_WRITE, PipelineKind.ENTITY_EMISSIVE);
-        map.put(BEACON_BEAM_OPAQUE_CULL, PipelineKind.BEACON_BEAM);
-        map.put(BEACON_BEAM_TRANSLUCENT_CULL, PipelineKind.BEACON_BEAM);
+        map.put(BEACON_BEAM_OPAQUE_NO_CULL, PipelineKind.BEACON_BEAM);
+        map.put(BEACON_BEAM_TRANSLUCENT_NO_CULL, PipelineKind.BEACON_BEAM);
         map.put(BEACON_BEAM_ADDITIVE, PipelineKind.BEACON_BEAM);
         map.put(ARMOR_CUTOUT_NO_CULL_TRANSLUCENT, PipelineKind.ENTITY_TRANSLUCENT);
         map.put(itemGlowEmissivePipeline(), PipelineKind.ENTITY_EMISSIVE);
@@ -86,14 +86,24 @@ public class CustomLayers {
             .withDepthStencilState(DepthStencilState.DEFAULT)
             .build();
 
-    /// Beacon beam shader, backface culled variants (vanilla's are never culled)
-    private static final RenderPipeline BEACON_BEAM_OPAQUE_CULL = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
-            .withLocation(pipelineId("beacon_beam_opaque_cull"))
-            .withCull(true)
+    /// Beacon beam shader, **backface culling off** — vanilla's `BEACON_BEAM_OPAQUE` / `BEACON_BEAM_TRANSLUCENT`
+    /// (`RenderPipelines`, 26.1.2 lines 428-437) set no cull state at all, and `RenderPipeline.Builder#build`
+    /// defaults it to `cull.orElse(true)`, so both are *culled*. Vanilla gets away with that because
+    /// `BeaconRenderer#renderBeam` draws a closed 4-sided box, where the two back faces are hidden anyway.
+    ///
+    /// Spell Engine's beams are not opaque boxes: the shells are translucent and additively stacked, and in
+    /// first person the caster sits inside the outer shells, where only their back faces face the camera.
+    /// Dropping those halves the beam. Every Spell Engine beam layer up to 1.9.x was built with Yarn's
+    /// `DISABLE_CULLING`; the 1.21.11 pipeline port mapped the no-cull branch onto the vanilla pipelines above
+    /// and silently lost it. These restore it.
+    private static final RenderPipeline BEACON_BEAM_OPAQUE_NO_CULL = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
+            .withLocation(pipelineId("beacon_beam_opaque_no_cull"))
+            .withCull(false)
             .build();
-    private static final RenderPipeline BEACON_BEAM_TRANSLUCENT_CULL = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
-            .withLocation(pipelineId("beacon_beam_translucent_cull"))
-            .withCull(true)
+    private static final RenderPipeline BEACON_BEAM_TRANSLUCENT_NO_CULL = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
+            .withLocation(pipelineId("beacon_beam_translucent_no_cull"))
+            .withCull(false)
+            // Same blend and depth state as vanilla `RenderPipelines.BEACON_BEAM_TRANSLUCENT`
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
             .build();
@@ -101,14 +111,16 @@ public class CustomLayers {
 
     // MARK: Beams
 
+    /// The culled variant is vanilla's own beacon-beam pipeline (culled by builder default), so it needs no
+    /// custom pipeline and stays known to shader packs without an Iris assignment.
     private static final BiFunction<Identifier, Boolean, RenderType> BEAM_CULL = Util.memoize((texture, transparent) ->
-            RenderType.create("spell_beam", RenderSetup.builder(transparent ? BEACON_BEAM_TRANSLUCENT_CULL : BEACON_BEAM_OPAQUE_CULL)
+            RenderType.create("spell_beam", RenderSetup.builder(transparent ? RenderPipelines.BEACON_BEAM_TRANSLUCENT : RenderPipelines.BEACON_BEAM_OPAQUE)
                     .withTexture("Sampler0", texture)
                     .sortOnUpload()
                     .bufferSize(256)
                     .createRenderSetup()));
     private static final BiFunction<Identifier, Boolean, RenderType> BEAM_NO_CULL = Util.memoize((texture, transparent) ->
-            RenderType.create("spell_beam", RenderSetup.builder(transparent ? RenderPipelines.BEACON_BEAM_TRANSLUCENT : RenderPipelines.BEACON_BEAM_OPAQUE)
+            RenderType.create("spell_beam", RenderSetup.builder(transparent ? BEACON_BEAM_TRANSLUCENT_NO_CULL : BEACON_BEAM_OPAQUE_NO_CULL)
                     .withTexture("Sampler0", texture)
                     .sortOnUpload()
                     .bufferSize(256)
@@ -166,7 +178,9 @@ public class CustomLayers {
     private static final Function<SpellObjectKey, RenderType> SPELL_OBJECT = Util.memoize(key -> {
         RenderPipeline pipeline = switch (key.lightEmission) {
             case RADIATE, GLOW_TRANSLUCENT -> key.translucent ? RenderPipelines.ENTITY_TRANSLUCENT_EMISSIVE : ENTITY_EMISSIVE_DEPTH_WRITE;
-            case GLOW -> key.translucent ? RenderPipelines.BEACON_BEAM_TRANSLUCENT : RenderPipelines.BEACON_BEAM_OPAQUE;
+            // No cull, like every other emission mode (and like the pre-port `DISABLE_CULLING` layer):
+            // the vanilla beacon-beam pipelines are culled, see BEACON_BEAM_*_NO_CULL above.
+            case GLOW -> key.translucent ? BEACON_BEAM_TRANSLUCENT_NO_CULL : BEACON_BEAM_OPAQUE_NO_CULL;
             case NONE -> key.translucent ? RenderPipelines.ENTITY_TRANSLUCENT : ENTITY_TRANSLUCENT_DEPTH_WRITE;
         };
         var setup = RenderSetup.builder(pipeline)
