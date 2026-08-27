@@ -45,10 +45,13 @@ public final class FabricClientMod implements ClientModInitializer {
             }
         });
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> SpellEngineClient.onClientStarted());
-        // Spell HUD (hotbar, cast bar, error messages) as its own HUD element, right after the vanilla status-bar
-        // group (mount health is its last element on Fabric; NeoForge registers above AIR_LEVEL, the same spot).
-        // Elements get their own GUI layer, so it is composited above the status bars instead of underneath them.
-        HudElementRegistry.attachElementAfter(VanillaHudElements.MOUNT_HEALTH, HudRenderHelper.HUD_ELEMENT_ID, (context, tickCounter) ->
+        // Spell HUD (hotbar, cast bar, error messages) as its own HUD element, attached after the boss bar:
+        // the last element of the main in-game HUD group (`Gui#extractRenderState` draws the sleep overlay next).
+        // Anything earlier is overdrawn — within a stratum `GuiRenderState#findAppropriateNode` layers by
+        // submission order, and the default cast bar sits on exactly the experience bar's rectangle, which
+        // `extractHotbarAndDecorations` emits *after* the mount health / air level elements. NeoForge registers
+        // above BOSS_OVERLAY, the same spot. Inherits the boss bar's `hideGui` render condition.
+        HudElementRegistry.attachElementAfter(VanillaHudElements.BOSS_BAR, HudRenderHelper.HUD_ELEMENT_ID, (context, tickCounter) ->
                 HudRenderHelper.renderHudElement(context, tickCounter.getGameTimeDeltaPartialTick(true)));
         ItemTooltipCallback.EVENT.register((stack, tooltipContext, tooltipType, lines) ->
                 SpellEngineClient.addTooltipLines(stack, tooltipType, lines));

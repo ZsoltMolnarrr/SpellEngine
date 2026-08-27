@@ -90,6 +90,7 @@
   "hud.cooldown_cleared.single": "%1$s ready!",
   "hud.cooldown_cleared.multiple": "Spells ready!",
 
+  "key.category.spell_engine.spell_engine" : "Spell Engine",
   "keybindings.spell_engine.tooltip_details" : "Tooltip spell details",
   "keybindings.spell_engine.bypass_spell_hotbar" : "Bypass Spell Hotbar",
   "keybindings.spell_engine.spell_hotbar_1" : "Spell Hotbar Slot 1",

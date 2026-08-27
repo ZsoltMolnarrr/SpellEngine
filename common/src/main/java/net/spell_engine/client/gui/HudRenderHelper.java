@@ -37,8 +37,9 @@ public class HudRenderHelper {
 
     /**
      * Body of the HUD element registered natively per loader (Fabric {@code HudElementRegistry},
-     * NeoForge {@code RegisterGuiLayersEvent}). Both register it right after the vanilla status-bar
-     * group (below chat) so it composites above the status bars on its own GUI layer.
+     * NeoForge {@code RegisterGuiLayersEvent}). Both register it after the boss bar — the last element of the
+     * main in-game HUD group — so it composites above every status bar, including the experience/info bar the
+     * default cast bar overlaps. Registering it earlier leaves the cast bar hidden under the experience bar.
      */
     public static void renderHudElement(GuiGraphicsExtractor context, float tickDelta) {
         if (Minecraft.getInstance().options.hideGui) { return; }
