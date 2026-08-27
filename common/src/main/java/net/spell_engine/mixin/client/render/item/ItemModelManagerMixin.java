@@ -16,9 +16,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /// Resolves the glow the holder casts onto the item at the only point that sees both the item and who
-/// holds it. `clearAndUpdate` is the common entry of every held-item path: third person goes through
-/// `updateForLivingEntity`, first person (`HeldItemRenderer`) calls it directly with the player as the
-/// `HeldItemContext`. Items without a holder (GUI, ground, item frames) pass no context and never glow.
+/// holds it. `updateForTopItem` is the common entry of every held-item path: third person goes through
+/// `updateForLiving`, first person (`ItemInHandRenderer`) calls it directly with the player as the
+/// `ItemOwner`. Items without a holder (GUI, ground, item frames) pass no context and never glow.
 @Mixin(ItemModelResolver.class)
 public class ItemModelManagerMixin {
     @Inject(method = "updateForTopItem", at = @At("TAIL"))
