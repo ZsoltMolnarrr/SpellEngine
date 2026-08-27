@@ -30,10 +30,10 @@ dependencies {
     // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.critical_strike:critical_strike-neoforge:<x.y.z.NNN>+26.1.2") { transitive = false } // used by SkillTree/Jewelry configs (critical_strike:chance)
 
     if (flags.rpg_series_classes) {
-    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:archers-neoforge:<x.y.z.NNN>+26.1.2") { transitive = false }
-    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:wizards-neoforge:<x.y.z.NNN>+26.1.2") { transitive = false }
-    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:paladins-neoforge:<x.y.z.NNN>+26.1.2") { transitive = false }
-    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:rogues-neoforge:<x.y.z.NNN>+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:archers-neoforge:3.1.2.006+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:wizards-neoforge:3.1.2.006+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:paladins-neoforge:3.1.2.006+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:rogues-neoforge:3.1.2.006+26.1.2") { transitive = false }
     }
     if (flags.rpg_series_gear) {
     // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.arsenal:arsenal-neoforge:<x.y.z.NNN>+26.1.2") { transitive = false }
