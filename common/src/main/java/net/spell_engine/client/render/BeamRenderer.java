@@ -6,11 +6,11 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
@@ -83,7 +83,7 @@ public class BeamRenderer {
     /// `RenderLevelStageEvent` (AFTER_TRANSLUCENT_BLOCKS).
     public static void renderAfterTranslucent(PoseStack matrices, Camera camera, float tickDelta) {
         MultiBufferSource.BufferSource vcProvider = Minecraft.getInstance().renderBuffers().bufferSource();
-        renderAllInWorld(matrices, vcProvider, camera, LightTexture.FULL_BRIGHT, tickDelta);
+        renderAllInWorld(matrices, vcProvider, camera, LightCoordsUtil.FULL_BRIGHT, tickDelta);
     }
 
     public static void renderAllInWorld(PoseStack matrices, MultiBufferSource.BufferSource vertexConsumers, Camera camera, int light, float delta) {
@@ -254,7 +254,7 @@ public class BeamRenderer {
                 .setColor(red, green, blue, alpha)
                 .setUv(u, v)
                 .setOverlay(OverlayTexture.NO_OVERLAY)
-                .setLight(LightTexture.FULL_BRIGHT)
+                .setLight(LightCoordsUtil.FULL_BRIGHT)
                 .setNormal(matrix, 0.0F, 1.0F, 0.0F);
     }
 }

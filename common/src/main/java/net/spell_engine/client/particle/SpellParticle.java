@@ -7,7 +7,7 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.SingleQuadParticle;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.renderer.state.QuadParticleRenderState;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -281,8 +281,8 @@ public class SpellParticle extends SingleQuadParticle {
     }
 
     @Override
-    public int getLightColor(float tint) {
-        return glow ? 255 : super.getLightColor(tint);
+    protected int getLightCoords(float tint) {
+        return glow ? 255 : super.getLightCoords(tint);
     }
 
     /// -90 and not +90: particle sheets render with backface culling, and vanilla's
