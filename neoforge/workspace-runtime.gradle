@@ -27,7 +27,7 @@ dependencies {
     localRuntime("net.rpg_series:runes-neoforge:1.3.3.001+26.1.2") { transitive = false }
     localRuntime("net.rpg_foundation:structure_pool_api-neoforge:1.3.1.001+26.1.2") { transitive = false }
     localRuntime("com.github.TheRedBrain:bundle-api-neoforge:1.1.2.001+26.1.2") { transitive = false }
-    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.critical_strike:critical_strike-neoforge:<x.y.z.NNN>+26.1.2") { transitive = false } // used by SkillTree/Jewelry configs (critical_strike:chance)
+    localRuntime("net.critical_strike:critical_strike-neoforge:1.0.5.003+26.1.2") { transitive = false } // used by SkillTree/Jewelry configs (critical_strike:chance)
 
     if (flags.rpg_series_classes) {
     localRuntime("net.rpg_series:archers-neoforge:3.1.2.006+26.1.2") { transitive = false }
@@ -36,15 +36,15 @@ dependencies {
     localRuntime("net.rpg_series:rogues-neoforge:3.1.2.006+26.1.2") { transitive = false }
     }
     if (flags.rpg_series_gear) {
-    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.arsenal:arsenal-neoforge:<x.y.z.NNN>+26.1.2") { transitive = false }
-    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:armory-neoforge:<x.y.z.NNN>+26.1.2") { transitive = false }
+    localRuntime("net.arsenal:arsenal-neoforge:1.5.1.005+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:armory-neoforge:1.5.2.007+26.1.2") { transitive = false }
     }
     if (flags.rpg_series_accessories) {
-    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:jewelry-neoforge:<x.y.z.NNN>+26.1.2") { transitive = false }
-    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:relics-neoforge:<x.y.z.NNN>+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:jewelry-neoforge:2.4.1.007+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:relics-neoforge:1.4.1.006+26.1.2") { transitive = false }
     }
     if (flags.rpg_series_skills) {
-    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:skill_tree-neoforge:<x.y.z.NNN>+26.1.2") { transitive = false }
-        // TODO 26.1: Pufferfish Skills has no 26.1 pin verified yet -- localRuntime("net.puffish:skillsmod:<ver>+26.1.2:neoforge")
+    localRuntime("net.rpg_series:skill_tree-neoforge:1.6.1.005+26.1.2") { transitive = false }
+        localRuntime("net.puffish:skillsmod:0.18.3+26.1:neoforge")
     }
 }
