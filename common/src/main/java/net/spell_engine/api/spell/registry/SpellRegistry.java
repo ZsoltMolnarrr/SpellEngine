@@ -33,12 +33,19 @@ public class SpellRegistry {
     }
     
     private static final Gson gson = new GsonBuilder().create();
+    /**
+     * Resolved eagerly on the class-init thread. `Spell` is a recursive type, and Gson builds such adapters lazily
+     * through a `FutureTypeAdapter`; when several registry-loading worker threads (NeoForge 26.1 loads registry
+     * elements in parallel) call `gson.fromJson(json, Spell.class)` for the first time concurrently, one of them
+     * fails with "Adapter for type with cyclic dependency has been used before dependency has been resolved".
+     */
+    private static final TypeAdapter<Spell> SPELL_ADAPTER = gson.getAdapter(Spell.class);
     public static final Codec<Spell> LOCAL_CODEC = ExtraCodecs.JSON.xmap(
             json -> {
-                return gson.fromJson(json, Spell.class);
+                return SPELL_ADAPTER.fromJsonTree(json);
             },
             spell -> {
-                JsonElement jsonElement = gson.toJsonTree(spell);
+                JsonElement jsonElement = SPELL_ADAPTER.toJsonTree(spell);
                 return jsonElement;
             }
     );
