@@ -2,6 +2,8 @@ package net.spell_engine.rpg_series.item;
 
 import net.spell_engine.PlatformEvents;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentInitializers;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
@@ -44,8 +46,11 @@ import java.util.Optional;
 /// - **break sound** — `minecraft:break_sound`
 /// - **durability** — `minecraft:max_damage` (from {@link Entry#durability()})
 /// - **repair** — `minecraft:repairable` (an item tag; see {@link Entry#repairItems()}), applied only when the entry declares one
-/// - **attributes** — `minecraft:attribute_modifiers` (`HAND` slot), baked at construction from the shield config
+/// - **attributes** — `minecraft:attribute_modifiers` (`HAND` slot), from the shield config
 ///   (configs are loaded before item registration, so no post-construction mutation is needed)
+///
+/// All of these are `Item.Properties` component steps: since 26.1 they are bound to the item at resource
+/// reload (`DataComponentInitializers`), so `item.components()` is empty until the first reload.
 /// - **blocking model** — consumer asset `assets/<ns>/items/<shield>.json`, a `minecraft:condition` on
 ///   `minecraft:using_item` (the 1.21.4 replacement for the removed `blocking` model predicate)
 public class Shield {
@@ -64,15 +69,24 @@ public class Shield {
 
     /// Vanilla shield blocking: 0.25 s delay, 90 degree cone, full reduction,
     /// 3+ damage consumes durability, axes disable it, vanilla block/break sounds.
-    public static final BlocksAttacks VANILLA_SHIELD_BLOCKING = new BlocksAttacks(
+    ///
+    /// Since 26.1 `BlocksAttacks#bypassedBy` is a `HolderSet<DamageType>` resolved from the reload context
+    /// (`#minecraft:bypasses_shield`), so this is a delayed component initializer rather than a constant —
+    /// exactly how `Items.SHIELD` is built. Use {@link #vanillaShieldBlocking} for a resolved value.
+    public static final DataComponentInitializers.SingleComponentInitializer<BlocksAttacks> VANILLA_SHIELD_BLOCKING = context -> new BlocksAttacks(
             0.25F,
             1.0F,
             List.of(new BlocksAttacks.DamageReduction(90.0F, Optional.empty(), 0.0F, 1.0F)),
             new BlocksAttacks.ItemDamageFunction(3.0F, 1.0F, 1.0F),
-            Optional.of(DamageTypeTags.BYPASSES_SHIELD),
+            Optional.of(context.getOrThrow(DamageTypeTags.BYPASSES_SHIELD)),
             Optional.of(SoundEvents.SHIELD_BLOCK),
             Optional.of(SoundEvents.SHIELD_BREAK)
     );
+
+    /// {@link #VANILLA_SHIELD_BLOCKING} resolved against `registries` (e.g. `level.registryAccess()`).
+    public static BlocksAttacks vanillaShieldBlocking(HolderLookup.Provider registries) {
+        return VANILLA_SHIELD_BLOCKING.create(registries);
+    }
 
     /// The built-in {@link ShieldFactory}: a plain `Item` assembled from vanilla components.
     public static final ShieldFactory DEFAULT_FACTORY = Shield::createVanilla;
@@ -99,7 +113,7 @@ public class Shield {
         if (equipSound != null) {
             equippable.setEquipSound(equipSound);
         }
-        return settings.component(DataComponents.BLOCKS_ATTACKS, VANILLA_SHIELD_BLOCKING)
+        return settings.delayedComponent(DataComponents.BLOCKS_ATTACKS, VANILLA_SHIELD_BLOCKING)
                 .component(DataComponents.EQUIPPABLE, equippable.build())
                 .component(DataComponents.BREAK_SOUND, SoundEvents.SHIELD_BREAK)
                 .attributes(handAttributes(attributes));
