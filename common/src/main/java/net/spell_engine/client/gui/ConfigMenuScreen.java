@@ -1,7 +1,6 @@
 package net.spell_engine.client.gui;
 
 import me.shedaniel.autoconfig.AutoConfigClient;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -50,7 +49,4 @@ public class ConfigMenuScreen extends Screen {
         this.minecraft.setScreen(previous);
     }
 
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta); // renders the background itself since 1.21.11 (blurring twice per frame crashes)
-    }
 }

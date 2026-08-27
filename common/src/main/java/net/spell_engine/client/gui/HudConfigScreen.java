@@ -1,6 +1,6 @@
 package net.spell_engine.client.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
@@ -236,8 +236,9 @@ public class HudConfigScreen extends Screen {
         this.minecraft.setScreen(previous);
     }
 
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta); // renders the background itself since 1.21.11 (blurring twice per frame crashes)
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(context, mouseX, mouseY, delta); // 26.1: background is extracted separately by Screen#extractBackground
         HudRenderHelper.render(context, delta, true);
         if (partsVisible()) {
             var bigButtonWidth = 60;
@@ -257,10 +258,10 @@ public class HudConfigScreen extends Screen {
         }
     }
 
-    private void rightAlignedText(GuiGraphics context, int x, int y, String text) {
+    private void rightAlignedText(GuiGraphicsExtractor context, int x, int y, String text) {
         var translated = I18n.get(text);
         var width = font.width(translated);
-        context.drawString(font, translated, x - width, y, 0xFFFFFFFF, false);
+        context.text(font, translated, x - width, y, 0xFFFFFFFF, false);
     }
 
     private Dragged dragged;

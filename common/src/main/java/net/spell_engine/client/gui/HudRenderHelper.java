@@ -1,12 +1,11 @@
 package net.spell_engine.client.gui;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
@@ -41,17 +40,17 @@ public class HudRenderHelper {
      * NeoForge {@code RegisterGuiLayersEvent}). Both register it right after the vanilla status-bar
      * group (below chat) so it composites above the status bars on its own GUI layer.
      */
-    public static void renderHudElement(GuiGraphics context, float tickDelta) {
+    public static void renderHudElement(GuiGraphicsExtractor context, float tickDelta) {
         if (Minecraft.getInstance().options.hideGui) { return; }
         render(context, tickDelta);
     }
 
 
-    public static void render(GuiGraphics context, float tickDelta) {
+    public static void render(GuiGraphicsExtractor context, float tickDelta) {
         render(context, tickDelta, false);
     }
 
-    public static void render(GuiGraphics context, float tickDelta, boolean config) {
+    public static void render(GuiGraphicsExtractor context, float tickDelta, boolean config) {
         var hudConfig = SpellEngineClient.hudConfig.value;
         Minecraft client = Minecraft.getInstance();
         LocalPlayer player = client.player;
@@ -152,7 +151,7 @@ public class HudRenderHelper {
     }
 
     public static class TargetWidget {
-        public static void render(GuiGraphics context, float tickDelta, Vec2 starting, ViewModel viewModel) {
+        public static void render(GuiGraphicsExtractor context, float tickDelta, Vec2 starting, ViewModel viewModel) {
             Minecraft client = Minecraft.getInstance();
             var textRenderer = client.gui.getFont();
 
@@ -162,7 +161,7 @@ public class HudRenderHelper {
             int y = (int) starting.y;
             int opacity = 255;
             context.fill(x - 2, y - 2, x + textWidth + 2, y + textRenderer.lineHeight + 2, client.options.getBackgroundColor(0));
-            context.drawString(textRenderer, viewModel.text, x, y, 0xFFFFFFFF); // ARGB: alpha required since 1.21.11
+            context.text(textRenderer, viewModel.text, x, y, 0xFFFFFFFF); // ARGB: alpha required since 1.21.11
         }
 
         public record ViewModel(String text) {
@@ -197,7 +196,7 @@ public class HudRenderHelper {
             }
         }
 
-        public static void render(GuiGraphics context, float tickDelta, HudConfig hudConfig, Vec2 starting, ViewModel viewModel) {
+        public static void render(GuiGraphicsExtractor context, float tickDelta, HudConfig hudConfig, Vec2 starting, ViewModel viewModel) {
             var barWidth = hudConfig.castbar.width;
             var totalWidth = barWidth + minWidth;
             var totalHeight = barHeight;
@@ -222,7 +221,7 @@ public class HudRenderHelper {
             }
         }
 
-        private static void renderBar(GuiGraphics context, int barWidth, boolean isBackground, float progress, int x, int y, int color) {
+        private static void renderBar(GuiGraphicsExtractor context, int barWidth, boolean isBackground, float progress, int x, int y, int color) {
             var totalWidth = barWidth + minWidth;
             var centerWidth = totalWidth - minWidth;
             float leftRenderBegin = 0;
@@ -235,7 +234,7 @@ public class HudRenderHelper {
         }
 
         enum PART { LEFT, CENTER, RIGHT }
-        private static void renderBarPart(GuiGraphics context, boolean isBackground, PART part, float progress, float renderBegin, float renderEnd, int x, int y, float totalWidth, int color) {
+        private static void renderBarPart(GuiGraphicsExtractor context, boolean isBackground, PART part, float progress, float renderBegin, float renderEnd, int x, int y, float totalWidth, int color) {
             var u = 0;
             var partMaxWidth = renderEnd - renderBegin; //5
             var progressRange = (renderEnd - renderBegin) / totalWidth; //0.05
@@ -340,7 +339,7 @@ public class HudRenderHelper {
             }
         }
 
-        public static void render(GuiGraphics context, int screenWidth, int screenHeight, ViewModel viewModel) {
+        public static void render(GuiGraphicsExtractor context, int screenWidth, int screenHeight, ViewModel viewModel) {
             var config = SpellEngineClient.hudConfig.value.hotbar;
             Minecraft client = Minecraft.getInstance();
             var textRenderer = client.gui.getFont();
@@ -376,7 +375,7 @@ public class HudRenderHelper {
                 if (spell.iconId != null) {
                     context.blit(RenderPipelines.GUI_TEXTURED, spell.iconId, x, y, 0, 0, iconSize, iconSize, iconSize, iconSize);
                 } else if (spell.itemStack != null) {
-                    context.renderItem(spell.itemStack, x, y);
+                    context.item(spell.itemStack, x, y);
                 }
 
                 // Cooldown
@@ -406,7 +405,7 @@ public class HudRenderHelper {
             }
         }
 
-        private static void drawKeybinding(GuiGraphics context, Font textRenderer, KeyBindingViewModel keybinding, int x, int y,
+        private static void drawKeybinding(GuiGraphicsExtractor context, Font textRenderer, KeyBindingViewModel keybinding, int x, int y,
                                            Drawable.Anchor horizontalAnchor, Drawable.Anchor verticalAnchor) {
             if (keybinding.drawable != null) {
                 keybinding.drawable.draw(context, x, y, horizontalAnchor, verticalAnchor);
@@ -422,11 +421,11 @@ public class HudRenderHelper {
                 HudKeyVisuals.buttonLeading.draw(context, x - (textLength / 2), y, Drawable.Anchor.TRAILING, verticalAnchor);
                 HudKeyVisuals.buttonCenter.drawFlexibleWidth(context, x - (textLength / 2), y, textLength, verticalAnchor);
                 HudKeyVisuals.buttonTrailing.draw(context, x + (textLength / 2), y, Drawable.Anchor.LEADING, verticalAnchor);
-                context.drawCenteredString(textRenderer, keybinding.label, x, y - 10, 0xFFFFFFFF); // ARGB: alpha required since 1.21.11
+                context.centeredText(textRenderer, keybinding.label, x, y - 10, 0xFFFFFFFF); // ARGB: alpha required since 1.21.11
             }
         }
 
-        private static void renderCooldown(GuiGraphics context, float progress, int x, int y) {
+        private static void renderCooldown(GuiGraphicsExtractor context, float progress, int x, int y) {
             // Copied from DrawContext.drawItemInSlot
             var k = y + Mth.floor(16.0F * (1.0F - progress));
             var l = k + Mth.ceil(16.0F * progress);
@@ -449,7 +448,7 @@ public class HudRenderHelper {
             }
         }
 
-        public static void render(GuiGraphics context, HudConfig hudConfig, int screenWidth, int screenHeight, ViewModel viewModel) {
+        public static void render(GuiGraphicsExtractor context, HudConfig hudConfig, int screenWidth, int screenHeight, ViewModel viewModel) {
             int alpha = (int) (viewModel.opacity * 255);
             if (alpha < 10) { return; }
             // System.out.println("Rendering opacity: " + viewModel.opacity + " alpha: " + alpha);
@@ -466,7 +465,7 @@ public class HudRenderHelper {
             int y = (int) origin.y;
             lastRendered = new Rect(new Vec2(x ,y), new Vec2(x + textWidth,y + textHeight));
             context.fill(x - 2, y - 2, x + textWidth + 2, y + textRenderer.lineHeight + 2, client.options.getBackgroundColor(0));
-            context.drawString(textRenderer, viewModel.message(), x, y, 0xFFFFFF + (alpha << 24)); // color is ARGB
+            context.text(textRenderer, viewModel.message(), x, y, 0xFFFFFF + (alpha << 24)); // color is ARGB
         }
     }
 }

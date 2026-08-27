@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.At;
  */
 @Mixin(Gui.class)
 public class InGameHudMixin {
-    @WrapOperation(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getOffhandItem()Lnet/minecraft/world/item/ItemStack;"))
+    @WrapOperation(method = "extractItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getOffhandItem()Lnet/minecraft/world/item/ItemStack;"))
     private ItemStack renderHotbar_SpellEngine(
             // Mixin parameters
             Player player, Operation<ItemStack> original

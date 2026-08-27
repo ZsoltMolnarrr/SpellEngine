@@ -1,13 +1,13 @@
 package net.spell_engine.client.gui;
 
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 
 public class Drawable {
     public enum Anchor { LEADING, TRAILING, CENTER }
     public record Component(DrawRect draw, Texture texture) {
-        public void draw(GuiGraphics context, int x, int y, Anchor hAnchor, Anchor vAnchor) {
+        public void draw(GuiGraphicsExtractor context, int x, int y, Anchor hAnchor, Anchor vAnchor) {
             switch (hAnchor) {
                 case LEADING -> {
                     x = x;
@@ -33,7 +33,7 @@ public class Drawable {
             context.blit(RenderPipelines.GUI_TEXTURED, texture().id, x, y, draw().u, draw().v, draw().width, draw().height, texture().width, texture().height);
         }
 
-        public void drawFlexibleWidth(GuiGraphics context, int x, int y, int width, Anchor vAnchor) {
+        public void drawFlexibleWidth(GuiGraphicsExtractor context, int x, int y, int width, Anchor vAnchor) {
             switch (vAnchor) {
                 case LEADING -> {
                     y = y;

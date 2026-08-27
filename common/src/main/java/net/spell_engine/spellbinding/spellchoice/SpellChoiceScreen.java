@@ -1,14 +1,13 @@
 package net.spell_engine.spellbinding.spellchoice;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.Slot;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.gui.SpellTooltip;
@@ -84,7 +83,7 @@ public class SpellChoiceScreen extends AbstractContainerScreen<SpellChoiceScreen
 
     // Disable Slot clicks to protect the read-only slot
     @Override
-    protected void slotClicked(Slot slot, int slotId, int button, ClickType actionType) {
+    protected void slotClicked(Slot slot, int slotId, int button, ContainerInput actionType) {
         // Do nothing
     }
 
@@ -94,7 +93,7 @@ public class SpellChoiceScreen extends AbstractContainerScreen<SpellChoiceScreen
         this.spellIcons = createSpellIcons();
     }
 
-    private void drawSpellIcon(GuiGraphics context, SpellIconViewModel icon, int mouseX, int mouseY) {
+    private void drawSpellIcon(GuiGraphicsExtractor context, SpellIconViewModel icon, int mouseX, int mouseY) {
         boolean mouseOver = icon.mouseOver(mouseX, mouseY);
 
         // Draw hover highlight (white overlay)
@@ -112,11 +111,11 @@ public class SpellChoiceScreen extends AbstractContainerScreen<SpellChoiceScreen
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(context, mouseX, mouseY, delta);
 
         // Draw text
-        context.drawCenteredString(
+        context.centeredText(
                 font,
                 Component.translatable("gui.spell_engine.choose_for_item", menu.getChoiceItemStack().getHoverName()),
                 this.width / 2, this.height / 2, 0xFFFFFFFF);
@@ -155,7 +154,8 @@ public class SpellChoiceScreen extends AbstractContainerScreen<SpellChoiceScreen
     }
 
     @Override
-    protected void renderBg(GuiGraphics context, float delta, int mouseX, int mouseY) {
+    public void extractBackground(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        super.extractBackground(context, mouseX, mouseY, delta);
         // Draw spell icons (following SpellBindingScreen pattern)
         for (var icon : spellIcons) {
             drawSpellIcon(context, icon, mouseX, mouseY);
@@ -163,9 +163,9 @@ public class SpellChoiceScreen extends AbstractContainerScreen<SpellChoiceScreen
     }
 
     @Override
-    protected void renderLabels(GuiGraphics context, int mouseX, int mouseY) {
+    protected void extractLabels(GuiGraphicsExtractor context, int mouseX, int mouseY) {
         // Draw title
-        context.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 0xFF404040, false);
+        context.text(this.font, this.title, this.titleLabelX, this.titleLabelY, 0xFF404040, false);
     }
 
     @Override
