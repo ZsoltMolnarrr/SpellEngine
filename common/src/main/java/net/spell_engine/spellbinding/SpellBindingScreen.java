@@ -60,6 +60,10 @@ public class SpellBindingScreen extends AbstractContainerScreen<SpellBindingScre
     protected void init() {
         super.init(); // leftPos/topPos are derived from the ctor-supplied imageWidth/imageHeight
         this.titleLabelY = 6 - (BACKGROUND_EXTRA_HEIGHT - 2);
+        // The panel is BACKGROUND_EXTRA_HEIGHT taller than a standard container, but the extra height is drawn
+        // *above* the standard body (see extractBackground), so the player inventory keeps its standard position.
+        // AbstractContainerScreen's ctor derives inventoryLabelY from the (enlarged) imageHeight, so restate it.
+        this.inventoryLabelY = BACKGROUND_STANDARD_HEIGHT - 94;
 
         int originX = (this.width - this.imageWidth) / 2;
         int originY = (this.height - this.imageHeight) / 2;

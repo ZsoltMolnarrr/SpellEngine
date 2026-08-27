@@ -1,0 +1,5 @@
+Trinkets slot icons.
+Trinkets Updated 4.0 hands the slot JSON `icon` to vanilla `Slot#getNoItemIcon()`, which
+`AbstractContainerScreen` draws with `GuiGraphicsExtractor#blitSprite` — i.e. a GUI-atlas sprite id.
+So `"icon": "spell_engine:container/slots/<name>"` resolves to `textures/gui/sprites/container/slots/<name>.png`.
+Mirrors Trinkets Updated's own icons (`trinkets:container/slots/ring`, ...).
