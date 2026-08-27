@@ -73,7 +73,7 @@
     "client.render.InGameHudMixin",
     "client.render.LivingEntityModelFxRendererMixin",
     "client.render.item.ItemRenderStateMixin",
-    "client.render.item.LayerRenderStateAccessor",
+    "client.render.item.LayerRenderStateMixin",
     "client.render.item.ItemModelManagerMixin",
     "client.render.item.UsingItemPropertyMixin",
     "client.render.item.UseDurationPropertyMixin",
