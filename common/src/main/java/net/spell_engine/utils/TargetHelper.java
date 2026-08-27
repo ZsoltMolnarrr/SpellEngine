@@ -209,7 +209,12 @@ public class TargetHelper {
     }
 
     public static Beam.Position castBeam(LivingEntity caster, Vec3 direction, float max) {
-        var start = LaunchGeometry.launchPoint(caster);
+        return castBeam(caster, LaunchGeometry.launchPoint(caster), direction, max);
+    }
+
+    /// Same, with an explicit origin — so a renderer can cast the beam from the very point it draws it
+    /// from (the caster's interpolated render-frame launch point) instead of the tick-time one.
+    public static Beam.Position castBeam(LivingEntity caster, Vec3 start, Vec3 direction, float max) {
         var end = start.add(direction.scale(max));
         var length = max;
         boolean hitBlock = false;

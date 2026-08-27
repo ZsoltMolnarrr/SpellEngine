@@ -120,23 +120,20 @@ public class BeamRenderer {
             var offset = new Vec3(0.0, launchHeight, LaunchGeometry.launchPointOffsetDefault);
             SpellCaster.Entity caster = (SpellCaster.Entity) livingEntity;
             matrices.pushPose();
-            var pos = new Vec3(livingEntity.xo, livingEntity.yo, livingEntity.zo)
-                    .lerp(livingEntity.position(), delta);
+            // Everything below lives in one render frame: `Entity#getPosition(partialTick)` and
+            // `Entity#getViewVector(partialTick)` are the same lerps vanilla's `GuardianRenderer#getPosition`
+            // and `Entity#pick(range, partialTick, …)` use to place and aim a beam between ticks.
+            var pos = livingEntity.getPosition(delta);
             matrices.translate(pos.x, pos.y, pos.z);
 
-            Vec3 from = livingEntity.position().add(0, launchHeight, 0);
-            var lookVector = Vec3.ZERO;
-            if (livingEntity == Minecraft.getInstance().player) {
-                // No lerp for local player
-                lookVector = Vec3.directionFromRotation(livingEntity.getXRot(), livingEntity.getYRot());
-            } else {
-                lookVector = Vec3.directionFromRotation(livingEntity.xRotO, livingEntity.yRotO);
-                lookVector = lookVector.lerp(Vec3.directionFromRotation(livingEntity.getXRot(), livingEntity.getYRot()), delta);
-            }
-            lookVector = lookVector.normalize();
-            var beamPosition = TargetHelper.castBeam(livingEntity, lookVector, 32);
-            lookVector = lookVector.scale(beamPosition.length());
-            Vec3 to = from.add(lookVector);
+            Vec3 from = pos.add(0, launchHeight, 0);
+            var lookVector = livingEntity.getViewVector(delta).normalize();
+            // Cast from the point we are about to draw from, not from the tick-time launch point:
+            // a raycast started a fraction of a block behind the drawn origin returns a hit distance
+            // that belongs to a different frame, and the beam's far end swims against the surface.
+            var launchPoint = LaunchGeometry.launchPoint(livingEntity, LaunchGeometry.launchPointOffsetDefault, delta);
+            var beamPosition = TargetHelper.castBeam(livingEntity, launchPoint, lookVector, 32);
+            Vec3 to = from.add(lookVector.scale(beamPosition.length()));
 
             var beamAppearance = caster.getBeam();
             renderBeamFromPlayer(matrices, vertexConsumers, beamAppearance,

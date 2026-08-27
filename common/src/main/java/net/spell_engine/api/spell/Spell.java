@@ -327,7 +327,10 @@ public class Spell {
             }
             public enum Luminance { LOW, MEDIUM, HIGH }
             public Beam.Luminance luminance = Beam.Luminance.HIGH;
-            public String texture_id = "textures/entity/beacon_beam.png";
+            /// Mirrors vanilla's own beam texture (`BeaconRenderer.BEAM_LOCATION`). 26.1 moved it into the
+            /// `entity/beacon/` folder — the pre-26.1 `textures/entity/beacon_beam.png` no longer exists and
+            /// resolves to the missing-texture sprite.
+            public String texture_id = "textures/entity/beacon/beacon_beam.png";
             public long color_rgba = 0xFFFFFFFFL;
             public long inner_color_rgba = 0xFFFFFFFFL;
             public float width = 0.1F;

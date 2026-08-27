@@ -459,7 +459,7 @@ For `BEAM` targeting, visual properties are configured on `target.beam`:
   "inner_color_rgba": 4294967295,
   "width": 0.15,
   "luminance": "HIGH",
-  "texture_id": "textures/entity/beacon_beam.png",
+  "texture_id": "textures/entity/beacon/beacon_beam.png",
   "flow": 1.0
 }
 ```

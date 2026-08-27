@@ -20,7 +20,15 @@ public class LaunchGeometry {
     }
 
     public static Vec3 launchPoint(LivingEntity caster, float forward) {
-        Vec3 look = caster.getLookAngle().scale(forward * caster.getAgeScale());
-        return caster.position().add(0, launchHeight(caster), 0).add(look);
+        return launchPoint(caster, forward, 1F);
+    }
+
+    /// The launch point in a single render frame: position and facing are both taken at `partialTick`,
+    /// the way vanilla's own frame raycast does it (`Entity#pick` = `getEyePosition(partialTick)` +
+    /// `getViewVector(partialTick)`). Server-side callers pass `1F`, which is `position()` / `getLookAngle()`
+    /// exactly, so the tick-time geometry is unchanged.
+    public static Vec3 launchPoint(LivingEntity caster, float forward, float partialTick) {
+        Vec3 look = caster.getViewVector(partialTick).scale(forward * caster.getAgeScale());
+        return caster.getPosition(partialTick).add(0, launchHeight(caster), 0).add(look);
     }
 }
