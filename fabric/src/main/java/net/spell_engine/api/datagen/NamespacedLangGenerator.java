@@ -1,7 +1,7 @@
 package net.spell_engine.api.datagen;
 
 import com.google.gson.JsonObject;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
@@ -18,7 +18,7 @@ public abstract class NamespacedLangGenerator extends FabricLanguageProvider {
     private final CompletableFuture<HolderLookup.Provider> registryLookup;
     private final String languageCode;
     private final String namespace;
-    protected NamespacedLangGenerator(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup, String namespace) {
+    protected NamespacedLangGenerator(FabricPackOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup, String namespace) {
         super(dataOutput, "en_us", registryLookup);
         this.languageCode = "en_us";
         this.registryLookup = registryLookup;
@@ -55,7 +55,7 @@ public abstract class NamespacedLangGenerator extends FabricLanguageProvider {
 
     @Override
     protected Path getLangFilePath(String code) {
-        return dataOutput
+        return packOutput
                 .createPathProvider(PackOutput.Target.RESOURCE_PACK, "lang")
                 .json(Identifier.fromNamespaceAndPath(namespace, code));
     }

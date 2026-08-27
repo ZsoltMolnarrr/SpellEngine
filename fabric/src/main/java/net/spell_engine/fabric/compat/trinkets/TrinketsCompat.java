@@ -1,16 +1,24 @@
 package net.spell_engine.fabric.compat.trinkets;
 
-import dev.emi.trinkets.api.TrinketsApi;
-import dev.emi.trinkets.api.event.TrinketEquipCallback;
+import eu.pb4.trinkets.api.TrinketAttachment;
+import eu.pb4.trinkets.api.TrinketsApi;
+import eu.pb4.trinkets.api.event.TrinketEquipCallback;
+import eu.pb4.trinkets.api.event.TrinketUnequipCallback;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.spell_engine.SpellEngineMod;
 import net.spell_engine.compat.container.ContainerCompat;
 import net.spell_engine.internals.container.SpellContainerSource;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/// Trinkets Updated 4.0 (`eu.pb4.trinkets.api`) integration: exposes the worn trinkets as a spell
+/// container source (`"trinkets"`) and to the generic container view, and marks the source dirty on
+/// equip / unequip so the spell container cache is rebuilt.
 public class TrinketsCompat {
     private static final String MOD_ID = TrinketsCompatHeader.MOD_ID;
     private static boolean intialized = false;
@@ -21,7 +29,8 @@ public class TrinketsCompat {
             return enabled;
         }
         intialized = true;
-        enabled = FabricLoader.getInstance().isModLoaded(MOD_ID);
+        var loader = FabricLoader.getInstance();
+        enabled = loader.isModLoaded(MOD_ID) || loader.isModLoaded(TrinketsCompatHeader.MOD_ID_UPDATED);
         if (!enabled) {
             return enabled;
         }
@@ -36,7 +45,15 @@ public class TrinketsCompat {
                 ),
                 SpellContainerSource.MAIN_HAND.name()
         );
-        TrinketEquipCallback.EVENT.register((stack, slot, entity) -> {
+        // Yumi events take a listener id. Unequip is a separate event now (old Trinkets fired
+        // TrinketEquipCallback for any slot change); listen to both so removals invalidate too.
+        var listenerId = Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "spell_container_dirty");
+        TrinketEquipCallback.EVENT.register(listenerId, (stack, slot, entity) -> {
+            if (entity instanceof Player player) {
+                SpellContainerSource.setDirty(player, spellSourceName);
+            }
+        });
+        TrinketUnequipCallback.EVENT.register(listenerId, (stack, slot, entity) -> {
             if (entity instanceof Player player) {
                 SpellContainerSource.setDirty(player, spellSourceName);
             }
@@ -47,13 +64,17 @@ public class TrinketsCompat {
         return enabled;
     }
 
+    @Nullable
+    private static TrinketAttachment attachment(Player player) {
+        return TrinketsApi.getAttachment(player);
+    }
+
     private static List<ItemStack> getAll(Player player) {
-        var component = TrinketsApi.getTrinketComponent(player);
-        if (component.isEmpty()) {
+        var attachment = attachment(player);
+        if (attachment == null) {
             return List.of();
         }
-        var trinketComponent = component.get();
-        return trinketComponent.getAllEquipped().stream().map(reference -> reference.getB()).toList();
+        return attachment.getAllEquipped().stream().map(pair -> pair.getB()).toList();
     }
 
     public static boolean isEnabled() {
@@ -61,18 +82,18 @@ public class TrinketsCompat {
     }
 
     public static List<ItemStack> getEquippedStacks(Player player) {
-        var component = TrinketsApi.getTrinketComponent(player);
-        if (component.isEmpty()) {
+        var attachment = attachment(player);
+        if (attachment == null) {
             return List.of();
         }
         var equipped = new ArrayList<ItemStack>();
-        var trinketComponent = component.get();
-        trinketComponent.getAllEquipped().forEach(pair -> {
+        attachment.getAllEquipped().forEach(pair -> {
             var stack = pair.getB();
             if (stack.isEmpty()) {
                 return;
             }
-            if (pair.getA().getId().contains("spell/book")) {
+            // Slot type id is `<group>/<slot>`, e.g. `spell/book`
+            if (pair.getA().slotType().getId().contains("spell/book")) {
                 equipped.addFirst(stack);
             } else {
                 equipped.add(stack);

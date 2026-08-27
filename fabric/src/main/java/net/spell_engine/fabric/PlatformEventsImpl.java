@@ -1,11 +1,11 @@
 package net.spell_engine.fabric;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.item.v1.EnchantmentEvents;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.util.TriState;
@@ -39,7 +39,7 @@ public class PlatformEventsImpl {
     }
 
     public static void onPlayerChangedWorld(Consumer<net.minecraft.server.level.ServerPlayer> callback) {
-        ServerEntityWorldChangeEvents.AFTER_PLAYER_CHANGE_WORLD.register((player, origin, target) -> callback.accept(player));
+        ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, origin, target) -> callback.accept(player));
     }
 
     public static void onIncomingDamage(PlatformEvents.IncomingDamage callback) {
@@ -61,7 +61,7 @@ public class PlatformEventsImpl {
     }
 
     public static void onItemGroupModify(ResourceKey<CreativeModeTab> group, PlatformEvents.ItemGroupModifier callback) {
-        ItemGroupEvents.modifyEntriesEvent(group).register(content -> callback.modify(content, content.getContext()));
+        CreativeModeTabEvents.modifyOutputEvent(group).register(output -> callback.modify(output, output.getContext()));
     }
 
     public static void onAllowEnchanting(PlatformEvents.AllowEnchanting callback) {

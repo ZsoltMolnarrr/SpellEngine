@@ -1,6 +1,6 @@
 package net.spell_engine.api.datagen;
 
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -14,9 +14,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class EquipmentSetGenerator implements DataProvider {
     private final CompletableFuture<HolderLookup.Provider> registryLookup;
-    protected final FabricDataOutput dataOutput;
+    protected final FabricPackOutput dataOutput;
 
-    public EquipmentSetGenerator(CompletableFuture<HolderLookup.Provider> registryLookup, FabricDataOutput dataOutput) {
+    public EquipmentSetGenerator(CompletableFuture<HolderLookup.Provider> registryLookup, FabricPackOutput dataOutput) {
         this.registryLookup = registryLookup;
         this.dataOutput = dataOutput;
     }

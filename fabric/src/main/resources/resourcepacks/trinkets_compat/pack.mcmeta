@@ -1,6 +1,7 @@
 {
 	"pack": {
-		"pack_format": 48,
+		"min_format": 101,
+		"max_format": [101, 1],
 		"description": "Enables Trinkets slots for Spell Engine content."
 	}
 }

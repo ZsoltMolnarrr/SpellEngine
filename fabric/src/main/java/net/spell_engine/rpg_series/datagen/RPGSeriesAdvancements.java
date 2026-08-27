@@ -1,6 +1,6 @@
 package net.spell_engine.rpg_series.datagen;
 
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricAdvancementProvider;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
@@ -11,7 +11,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.spell_engine.misc.criteria.EnchantmentSpecificCriteria;
 import net.spell_engine.spellbinding.SpellBinding;
@@ -51,7 +51,7 @@ public class RPGSeriesAdvancements extends FabricAdvancementProvider {
      */
     public static final Identifier TAB_BACKGROUND = Identifier.fromNamespaceAndPath("minecraft", "block/chiseled_quartz_block");
 
-    public RPGSeriesAdvancements(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registryLookup) {
+    public RPGSeriesAdvancements(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registryLookup) {
         super(output, registryLookup);
     }
 
@@ -71,17 +71,17 @@ public class RPGSeriesAdvancements extends FabricAdvancementProvider {
         list.add(root);
 
         // Hub: class progression. Parent of every class mod's `path_choose_*` advancement.
-        list.add(advancement("classes", root, new ItemStack(Items.BOOK), AdvancementType.GOAL,
+        list.add(advancement("classes", root, new ItemStackTemplate(Items.BOOK), AdvancementType.GOAL,
                 true, true, false,
                 "book", spellBinding(SpellBinding.ADVANCEMENT_VISIT_ID.toString(), true)));
 
         // Hub: miscellaneous items. Parent of the villager-trade and item advancements.
-        var miscItems = advancement("misc_items", root, new ItemStack(Items.CHEST), AdvancementType.TASK,
+        var miscItems = advancement("misc_items", root, new ItemStackTemplate(Items.CHEST), AdvancementType.TASK,
                 false, false, false,
                 "always", PlayerTrigger.TriggerInstance.tick());
         list.add(miscItems);
 
-        list.add(advancement("enchant_spell_infinity", miscItems, new ItemStack(Items.ENCHANTED_BOOK),
+        list.add(advancement("enchant_spell_infinity", miscItems, new ItemStackTemplate(Items.ENCHANTED_BOOK),
                 AdvancementType.CHALLENGE, true, true, false,
                 "enchant", enchantment("spell_engine:spell_infinity")));
 
@@ -90,7 +90,7 @@ public class RPGSeriesAdvancements extends FabricAdvancementProvider {
 
     // MARK: Builder shorthands
 
-    private static AdvancementHolder root(String idPath, ItemStack icon,
+    private static AdvancementHolder root(String idPath, ItemStackTemplate icon,
                                          String criterionName, Criterion<?> criterion) {
         var id = Identifier.fromNamespaceAndPath(NAMESPACE, idPath);
         return builder(id, icon, TAB_BACKGROUND, AdvancementType.TASK, false, false, false)
@@ -98,7 +98,7 @@ public class RPGSeriesAdvancements extends FabricAdvancementProvider {
                 .build(id);
     }
 
-    private static AdvancementHolder advancement(String idPath, AdvancementHolder parent, ItemStack icon, AdvancementType frame,
+    private static AdvancementHolder advancement(String idPath, AdvancementHolder parent, ItemStackTemplate icon, AdvancementType frame,
                                                 boolean showToast, boolean announceToChat, boolean hidden,
                                                 String criterionName, Criterion<?> criterion) {
         var id = Identifier.fromNamespaceAndPath(NAMESPACE, idPath);
@@ -108,7 +108,7 @@ public class RPGSeriesAdvancements extends FabricAdvancementProvider {
                 .build(id);
     }
 
-    private static Advancement.Builder builder(Identifier id, ItemStack icon, Identifier background, AdvancementType frame,
+    private static Advancement.Builder builder(Identifier id, ItemStackTemplate icon, Identifier background, AdvancementType frame,
                                                boolean showToast, boolean announceToChat, boolean hidden) {
         // The original data-pack advancements did not send telemetry events (vanilla default is off),
         // so keep them untelemetered rather than using the telemetered Advancement.Builder.create().
@@ -130,8 +130,8 @@ public class RPGSeriesAdvancements extends FabricAdvancementProvider {
 
     // MARK: Icon helpers
 
-    private static ItemStack item(String itemId) {
-        return new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.parse(itemId)));
+    private static ItemStackTemplate item(String itemId) {
+        return new ItemStackTemplate(BuiltInRegistries.ITEM.getValue(Identifier.parse(itemId)));
     }
 
     // MARK: Criterion helpers

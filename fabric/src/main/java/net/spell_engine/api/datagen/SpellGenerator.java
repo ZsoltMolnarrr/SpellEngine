@@ -6,7 +6,7 @@ import com.google.gson.*;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonWriter;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -36,12 +36,12 @@ import java.util.concurrent.CompletableFuture;
 
 public abstract class SpellGenerator implements DataProvider {
     private final CompletableFuture<HolderLookup.Provider> registryLookup;
-    protected final FabricDataOutput dataOutput;
+    protected final FabricPackOutput dataOutput;
 
     public enum OutputFormat { COMPACT, VERBOSE }
     public OutputFormat outputFormat = OutputFormat.COMPACT;
 
-    public SpellGenerator(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
+    public SpellGenerator(FabricPackOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
         this.dataOutput = dataOutput;
         this.registryLookup = registryLookup;
     }

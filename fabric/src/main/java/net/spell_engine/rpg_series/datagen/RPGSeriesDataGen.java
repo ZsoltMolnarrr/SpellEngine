@@ -1,7 +1,7 @@
 package net.spell_engine.rpg_series.datagen;
 
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -26,8 +26,8 @@ public class RPGSeriesDataGen {
     public record ShieldEntry(Identifier id, Equipment.LootProperties lootProperties) {}
     public record BowEntry(Identifier id, Equipment.WeaponType weaponType, Equipment.LootProperties lootProperties) {}
 
-    public static abstract class ItemTagGenerator extends FabricTagProvider<Item> {
-        public ItemTagGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+    public static abstract class ItemTagGenerator extends FabricTagsProvider<Item> {
+        public ItemTagGenerator(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, Registries.ITEM, registriesFuture);
         }
 
@@ -166,8 +166,8 @@ public class RPGSeriesDataGen {
         }
     }
 
-    public static abstract class SpellTagGenerator extends FabricTagProvider<Spell> {
-        public SpellTagGenerator(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+    public static abstract class SpellTagGenerator extends FabricTagsProvider<Spell> {
+        public SpellTagGenerator(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, SpellRegistry.KEY, registriesFuture);
         }
 
