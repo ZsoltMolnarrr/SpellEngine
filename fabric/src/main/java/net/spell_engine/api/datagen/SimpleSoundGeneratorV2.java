@@ -78,6 +78,7 @@ public abstract class SimpleSoundGeneratorV2 implements DataProvider {
     }
 
     private Path getFilePath(String namespace) {
-        return this.dataOutput.createPathProvider(PackOutput.Target.RESOURCE_PACK, "").json(Identifier.fromNamespaceAndPath(namespace, "sounds"));
+        // 26.1.2: PathProvider.file() builds "<kind>/<path>", so an empty kind would yield the absolute "/sounds.json" — resolve directly.
+        return this.dataOutput.getOutputFolder(PackOutput.Target.RESOURCE_PACK).resolve(namespace).resolve("sounds.json");
     }
 }
