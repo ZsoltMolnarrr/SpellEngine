@@ -82,37 +82,37 @@ if (rootProject.ext.rpgSeriesWorkspaceAny) {
 
 dependencies {
     neoForge "net.neoforged:neoforge:$rootProject.neoforge_version"
-    common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
+    common(project(path: ':common')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionNeoForge')
 
-    modImplementation("com.zigythebird.playeranim:PlayerAnimationLibNeo:${project.player_anim_version}")
-    modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${project.cloth_config_version}")
+    implementation("com.zigythebird.playeranim:PlayerAnimationLibNeo:${project.player_anim_version}")
+    implementation("me.shedaniel.cloth:cloth-config-${platform}:${project.cloth_config_version}")
 
-    include(modImplementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}"))
-//    modImplementation("net.tiny_config:tiny_config-${platform}:${project.tiny_config_version}")
-//    modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
-    modImplementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
-//    modImplementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
-    modImplementation("net.rpg_foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
-//    modCompileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
-    modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}")
+    include(implementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}"))
+//    implementation("net.tiny_config:tiny_config-${platform}:${project.tiny_config_version}")
+//    implementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
+    implementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
+//    implementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
+    implementation("net.rpg_foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
+//    compileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
+    compileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}")
     if (rootProject.enable_critical_strike.toBoolean()) {
-        modCompileOnly("maven.modrinth:critical-strike:${project.critical_strike_version}-${platform}")
+        compileOnly("maven.modrinth:critical-strike:${project.critical_strike_version}-${platform}")
     }
 
     // Compatibility
 
-    modCompileOnly("maven.modrinth:shoulder-surfing-reloaded:${project.shoulder_surfing_version}+${platform}")
-    modCompileOnly("maven.modrinth:better-combat:${project.better_combat_version}-${platform}")
-//    modCompileOnly("net.bettercombat:bettercombat-${platform}:${project.better_combat_version}") { transitive = false }
-    modCompileOnly("maven.modrinth:combat-roll:${project.combat_roll_version}-${platform}")
-    modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${project.ftb_teams_version}")
-    modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
-    modCompileOnly("maven.modrinth:iris:${project.iris_version}-${platform}")
+    compileOnly("maven.modrinth:shoulder-surfing-reloaded:${project.shoulder_surfing_version}+${platform}")
+    compileOnly("maven.modrinth:better-combat:${project.better_combat_version}-${platform}")
+//    compileOnly("net.bettercombat:bettercombat-${platform}:${project.better_combat_version}") { transitive = false }
+    compileOnly("maven.modrinth:combat-roll:${project.combat_roll_version}-${platform}")
+    compileOnly("dev.ftb.mods:ftb-teams-${platform}:${project.ftb_teams_version}")
+    compileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
+    compileOnly("maven.modrinth:iris:${project.iris_version}-${platform}")
 
     // NeoForge specific
     // - Curios - https://docs.illusivesoulworks.com/category/curios
-    modImplementation("top.theillusivec4.curios:curios-neoforge:${project.curios_version}")
+    implementation("top.theillusivec4.curios:curios-neoforge:${project.curios_version}")
 }
 
 processResources {
@@ -129,14 +129,43 @@ processResources {
     }
 }
 
-shadowJar {
-    configurations = [project.configurations.shadowBundle]
-    archiveClassifier = 'dev-shadow'
+// Minecraft is not obfuscated on this version, so there is no remapJar task.
+// The shaded jar is the mod jar that ships.
+jar {
+    archiveClassifier = 'dev'
 }
 
-remapJar {
-    inputFile.set shadowJar.archiveFile
-    atAccessWideners.add("spell_engine.accesswidener")
+shadowJar {
+    // Build on top of the `jar` task output instead of raw source-set outputs:
+    // in no-remap Loom the jar-in-jar nesting (`include`, TinyConfig) is applied by `jar`
+    // (it was applied by `remapJar` after shadowing, before 26.1).
+    dependsOn jar
+    mainSpec.sourcePaths.clear()
+    from(zipTree(jar.archiveFile))
+    configurations = [project.configurations.shadowBundle]
+    archiveClassifier = null
+}
+
+assemble.dependsOn shadowJar
+
+// AW -> AT conversion for the shipped jar (was `remapJar { atAccessWideners.add(...) }`). The path is relative to
+// the jar root; the AW comes in through the shaded common resources, gets converted to META-INF/accesstransformer.cfg
+// and removed from the jar (doLast action on shadowJar).
+// NB: in Groovy `loom.neoForge` resolves to the boolean `isNeoForge()` -- use the `neoForge { }` action form.
+loom.neoForge {
+    convertAccessWideners(tasks.named('shadowJar'), 'spell_engine.accesswidener')
+}
+
+// Publish the shaded jar (common + platform classes) as the main artifact.
+configurations {
+    apiElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(shadowJar)
+    }
+    runtimeElements {
+        outgoing.artifacts.clear()
+        outgoing.artifact(shadowJar)
+    }
 }
 
 // Publishing is configured unconditionally: tasks only *run* when explicitly invoked
@@ -151,7 +180,7 @@ tasks.register("publishMod") {
 }
 
 publishMods {
-    file = remapJar.archiveFile          // Loom production jar (NOT the dev-shadow jar)
+    file = shadowJar.archiveFile         // the shaded jar is the shipped jar on 26.1+ (no remapJar)
     changelog = providers.provider { changelog_last_section() }   // lazy: read only at publish
     type = releaseTypeName == "release" ? me.modmuss50.mpp.ReleaseType.STABLE
             : releaseTypeName == "alpha" ? me.modmuss50.mpp.ReleaseType.ALPHA

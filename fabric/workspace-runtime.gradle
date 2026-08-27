@@ -7,10 +7,8 @@
 // Shared libraries the groups depend on (ArmorModelAPI, Runes, StructurePoolAPI, BundleAPI) load with any group.
 // CI and other developers never evaluate this file.
 //
-// The named `dev-shadow` jars go on the runtime classpath: production jars dropped into run/mods are
-// runtime-remapped by the loader, which cannot resolve overrides inherited through *named* SpellEngine
-// classes (e.g. `LevitateStatusEffect extends CustomStatusEffect`), so those overrides silently stop
-// overriding. See memory `run-content-mod-in-se-workspace` / LESSONS §4.39.
+// 26.1+: the game is unobfuscated, the published platform jar is the shaded main artifact (no `dev-shadow`
+// classifier any more) and goes straight on the runtime classpath. See LESSONS_1.21.11_TO_26.1 §1.
 //
 // After publishing a content mod to mavenLocal, bump its pin here (and in the other loader's copy).
 
@@ -25,28 +23,28 @@ repositories {
 
 dependencies {
     // Shared libraries
-    localRuntime("net.rpg_foundation:armor_model_api-fabric:1.0.2.002+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:runes-fabric:1.3.2.003+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_foundation:structure_pool_api-fabric:1.3.0.004+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("com.github.TheRedBrain:bundle-api-fabric:1.1.1.004+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.critical_strike:critical_strike-fabric:1.0.5.002+1.21.11:dev-shadow") { transitive = false } // used by SkillTree/Jewelry configs (critical_strike:chance)
+    localRuntime("net.rpg_foundation:armor_model_api-fabric:1.0.3.001+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:runes-fabric:1.3.3.001+26.1.2") { transitive = false }
+    localRuntime("net.rpg_foundation:structure_pool_api-fabric:1.3.1.001+26.1.2") { transitive = false }
+    localRuntime("com.github.TheRedBrain:bundle-api-fabric:1.1.2.001+26.1.2") { transitive = false }
+    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.critical_strike:critical_strike-fabric:<x.y.z.NNN>+26.1.2") { transitive = false } // used by SkillTree/Jewelry configs (critical_strike:chance)
 
     if (flags.rpg_series_classes) {
-    localRuntime("net.rpg_series:archers-fabric:3.1.2.005+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:wizards-fabric:3.1.2.005+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:paladins-fabric:3.1.2.005+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:rogues-fabric:3.1.2.005+1.21.11:dev-shadow") { transitive = false }
+    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:archers-fabric:<x.y.z.NNN>+26.1.2") { transitive = false }
+    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:wizards-fabric:<x.y.z.NNN>+26.1.2") { transitive = false }
+    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:paladins-fabric:<x.y.z.NNN>+26.1.2") { transitive = false }
+    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:rogues-fabric:<x.y.z.NNN>+26.1.2") { transitive = false }
     }
     if (flags.rpg_series_gear) {
-    localRuntime("net.arsenal:arsenal-fabric:1.5.1.004+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:armory-fabric:1.5.2.006+1.21.11:dev-shadow") { transitive = false }
+    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.arsenal:arsenal-fabric:<x.y.z.NNN>+26.1.2") { transitive = false }
+    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:armory-fabric:<x.y.z.NNN>+26.1.2") { transitive = false }
     }
     if (flags.rpg_series_accessories) {
-    localRuntime("net.rpg_series:jewelry-fabric:2.4.1.006+1.21.11:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:relics-fabric:1.4.1.005+1.21.11:dev-shadow") { transitive = false }
+    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:jewelry-fabric:<x.y.z.NNN>+26.1.2") { transitive = false }
+    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:relics-fabric:<x.y.z.NNN>+26.1.2") { transitive = false }
     }
     if (flags.rpg_series_skills) {
-    localRuntime("net.rpg_series:skill_tree-fabric:1.6.1.004+1.21.11:dev-shadow") { transitive = false }
-        modLocalRuntime("net.puffish:skillsmod:0.18.3+1.21.11:fabric") // real mod jar, remapped by Loom
+    // TODO 26.1: not yet published for 26.1.2 -- localRuntime("net.rpg_series:skill_tree-fabric:<x.y.z.NNN>+26.1.2") { transitive = false }
+        // TODO 26.1: Pufferfish Skills has no 26.1 pin verified yet -- localRuntime("net.puffish:skillsmod:<ver>+26.1.2:fabric")
     }
 }

@@ -16,7 +16,7 @@ logoFile = "icon.png"
 [[dependencies.spell_engine]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.11,)"
+versionRange = "[26.1,)"
 ordering = "NONE"
 side = "BOTH"
 
@@ -37,7 +37,7 @@ side = "BOTH"
 [[dependencies.spell_engine]]
 modId = "player_animation_library"
 type = "required"
-versionRange = "[1.1.10,)"
+versionRange = "[1.2.6,)"
 ordering = "NONE"
 side = "BOTH"
 

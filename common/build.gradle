@@ -50,37 +50,36 @@ dependencies {
     // We depend on Fabric Loader here to use the Fabric @Environment annotations,
     // which get remapped to the correct annotations on each platform.
     // Do NOT use other classes from Fabric Loader.
-    modImplementation "net.fabricmc:fabric-loader:$project.fabric_loader_version"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:$project.fabric_api_version"
+    implementation "net.fabricmc:fabric-loader:$project.fabric_loader_version"
+    implementation "net.fabricmc.fabric-api:fabric-api:$project.fabric_api_version"
 
-    modApi("com.zigythebird.playeranim:PlayerAnimationLibCommon:${project.player_anim_version}")
-    // Core has no Minecraft references: plain implementation (remapping it would poison the loom cache)
+    api("com.zigythebird.playeranim:PlayerAnimationLibCommon:${project.player_anim_version}")
     implementation("com.zigythebird.playeranim:PlayerAnimationLibCore:${project.player_anim_version}")
-    modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${project.cloth_config_version}")
+    implementation("me.shedaniel.cloth:cloth-config-${platform}:${project.cloth_config_version}")
 
-    modImplementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}")
-//    modImplementation("net.tiny_config:tiny_config-${platform}:${project.tiny_config_version}")
-//    modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
-    modImplementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
-//    modImplementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
-    modImplementation("net.rpg_foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
-//    modCompileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
-    modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}")
+    implementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}")
+//    implementation("net.tiny_config:tiny_config-${platform}:${project.tiny_config_version}")
+//    implementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
+    implementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
+//    implementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
+    implementation("net.rpg_foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
+//    compileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
+    compileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}")
     if (rootProject.enable_critical_strike.toBoolean()) {
-        modCompileOnly("maven.modrinth:critical-strike:${project.critical_strike_version}-${platform}")
+        compileOnly("maven.modrinth:critical-strike:${project.critical_strike_version}-${platform}")
     }
 
     // Compatibility
 
-    modCompileOnly("maven.modrinth:shoulder-surfing-reloaded:${project.shoulder_surfing_version}+${platform}")
-    modCompileOnly("maven.modrinth:better-combat:${project.better_combat_version}-${platform}")
+    compileOnly("maven.modrinth:shoulder-surfing-reloaded:${project.shoulder_surfing_version}+${platform}")
+    compileOnly("maven.modrinth:better-combat:${project.better_combat_version}-${platform}")
     // From mavenLocal. Needs `transitive = false`: unlike the Modrinth jar, this one carries a POM, whose
     // dependencies (Mod Menu and friends) resolve from repositories we do not declare. Compiling against
     // its API needs the classes, not the graph behind them.
-//    modCompileOnly("net.bettercombat:bettercombat-${platform}:${project.better_combat_version}") { transitive = false }
-    modCompileOnly("maven.modrinth:combat-roll:${project.combat_roll_version}-${platform}")
-    modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${project.ftb_teams_version}")
-    modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
-    modCompileOnly("maven.modrinth:iris:${project.iris_version}-${platform}")
+//    compileOnly("net.bettercombat:bettercombat-${platform}:${project.better_combat_version}") { transitive = false }
+    compileOnly("maven.modrinth:combat-roll:${project.combat_roll_version}-${platform}")
+    compileOnly("dev.ftb.mods:ftb-teams-${platform}:${project.ftb_teams_version}")
+    compileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
+    compileOnly("maven.modrinth:iris:${project.iris_version}-${platform}")
 
 }
