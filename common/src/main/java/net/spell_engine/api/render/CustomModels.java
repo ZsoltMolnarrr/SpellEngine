@@ -4,10 +4,14 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.QuadInstance;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import net.minecraft.client.renderer.SubmitNodeCollector;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
@@ -62,10 +66,16 @@ public class CustomModels {
 
     public static void renderQuads(PoseStack.Pose entry, VertexConsumer vertexConsumer, BlockStateModel model, int light, long seed) {
         var random = RandomSource.create(seed);
-        for (var part : model.collectParts(random)) {
+        // 26.1: quads are emitted through a `QuadInstance` (per-vertex color/light + overlay), white and flat lit
+        var instance = new QuadInstance();
+        instance.setLightCoords(light);
+        instance.setOverlayCoords(OverlayTexture.NO_OVERLAY);
+        List<BlockStateModelPart> parts = new ArrayList<>();
+        model.collectParts(random, parts);
+        for (var part : parts) {
             for (var side : SIDES) {
                 for (var quad : part.getQuads(side)) {
-                    vertexConsumer.putBulkData(entry, quad, 1F, 1F, 1F, 1F, light, OverlayTexture.NO_OVERLAY);
+                    vertexConsumer.putBakedQuad(entry, quad, instance);
                 }
             }
         }

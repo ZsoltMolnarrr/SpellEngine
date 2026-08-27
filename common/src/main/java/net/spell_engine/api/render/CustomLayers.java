@@ -9,7 +9,9 @@ import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
+import com.mojang.blaze3d.pipeline.DepthStencilState;
+import com.mojang.blaze3d.platform.CompareOp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
@@ -31,7 +33,8 @@ import java.util.function.Supplier;
 /// Spell Engine render layers.
 ///
 /// Since 1.21.11 a render layer is a {@link RenderSetup} (textures, lightmap/overlay usage, sorting hints)
-/// over a {@link RenderPipeline} (shaders, blend, depth, cull, color/depth write). Blend and depth state are
+/// over a {@link RenderPipeline} (shaders, blend, depth, cull, color/depth write). Since 26.1 blend and color
+/// writes are a {@link ColorTargetState} and depth test/write a {@link DepthStencilState}. Blend and depth state are
 /// therefore expressed as pipeline variants below (compiled lazily on first use, like vanilla's), and the
 /// old `RenderPhase`/`MultiPhaseParameters` based factories are gone.
 public class CustomLayers {
@@ -66,9 +69,9 @@ public class CustomLayers {
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
             .withShaderDefine("PER_FACE_LIGHTING")
             .withSampler("Sampler1")
-            .withoutBlend()
+            .withColorTargetState(ColorTargetState.DEFAULT)
             .withCull(false)
-            .withDepthWrite(true)
+            .withDepthStencilState(DepthStencilState.DEFAULT)
             .build();
 
     /// `ENTITY_TRANSLUCENT_EMISSIVE` (emissive entity shader, translucent blend, no cull, no depth write)
@@ -78,9 +81,9 @@ public class CustomLayers {
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
             .withShaderDefine("PER_FACE_LIGHTING")
             .withSampler("Sampler1")
-            .withoutBlend()
+            .withColorTargetState(ColorTargetState.DEFAULT)
             .withCull(false)
-            .withDepthWrite(true)
+            .withDepthStencilState(DepthStencilState.DEFAULT)
             .build();
 
     /// Beacon beam shader, backface culled variants (vanilla's are never culled)
@@ -91,8 +94,8 @@ public class CustomLayers {
     private static final RenderPipeline BEACON_BEAM_TRANSLUCENT_CULL = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
             .withLocation(pipelineId("beacon_beam_translucent_cull"))
             .withCull(true)
-            .withBlend(BlendFunction.TRANSLUCENT)
-            .withDepthWrite(false)
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
+            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
             .build();
 
 
@@ -143,10 +146,12 @@ public class CustomLayers {
         return SPELL_OBJECT_CULL.apply(TextureAtlas.LOCATION_BLOCKS);
     }
 
-    /// The [LightEmission#NONE] layer: vanilla `itemEntityTranslucentCull` semantics, but never part of the
-    /// entity outline (a spell model riding on a glowing entity is a decorative overlay, not its body).
+    /// The [LightEmission#NONE] layer: vanilla `entityTranslucentCullItemTarget` semantics (26.1 folded the former
+    /// `item_entity_translucent_cull` shader into `ENTITY_TRANSLUCENT_CULL` + the item-entity output target), but
+    /// never part of the entity outline (a spell model riding on a glowing entity is a decorative overlay, not
+    /// its body) and not crumbling-affected.
     private static final Function<Identifier, RenderType> SPELL_OBJECT_CULL = Util.memoize(texture ->
-            RenderType.create("spell_object_cull", RenderSetup.builder(RenderPipelines.ITEM_ENTITY_TRANSLUCENT_CULL)
+            RenderType.create("spell_object_cull", RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT_CULL)
                     .withTexture("Sampler0", texture)
                     .setOutputTarget(net.minecraft.client.renderer.rendertype.OutputTarget.ITEM_ENTITY_TARGET)
                     .useLightmap()
@@ -185,8 +190,8 @@ public class CustomLayers {
     private static final RenderPipeline BEACON_BEAM_ADDITIVE = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
             .withLocation(pipelineId("beacon_beam_additive"))
             .withCull(false)
-            .withBlend(BlendFunction.LIGHTNING)
-            .withDepthWrite(false)
+            .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
+            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
             .build();
 
     private static final Function<Identifier, RenderType> SPELL_OBJECT_ADDITIVE = Util.memoize(texture ->
@@ -206,7 +211,7 @@ public class CustomLayers {
             .withShaderDefine("NO_OVERLAY")
             .withShaderDefine("PER_FACE_LIGHTING")
             .withCull(false)
-            .withBlend(BlendFunction.TRANSLUCENT)
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
             .build();
 
     private static final Function<Identifier, RenderType> ARMOR_TRANSLUCENT = Util.memoize(texture ->
@@ -318,9 +323,9 @@ public class CustomLayers {
     /// Per axis matters: the `items` atlas is frequently non-square, which gives a square sprite a
     /// non-square UV footprint; a uniform factor would keep that distortion and skew the streak angle on
     /// the item (the 1.21.1 block atlas was square).
-    public static org.joml.Vector2f itemGlowUvScale(java.util.List<net.minecraft.client.renderer.block.model.BakedQuad> quads) {
+    public static org.joml.Vector2f itemGlowUvScale(java.util.List<net.minecraft.client.resources.model.geometry.BakedQuad> quads) {
         for (var quad : quads) {
-            var sprite = quad.sprite();
+            var sprite = quad.materialInfo().sprite();
             if (sprite == null) continue;
             float spanU = sprite.getU1() - sprite.getU0();
             float spanV = sprite.getV1() - sprite.getV0();
@@ -346,10 +351,9 @@ public class CustomLayers {
             .withVertexShader("core/glint")
             .withFragmentShader("core/glint")
             .withSampler("Sampler0")
-            .withDepthWrite(false)
             .withCull(false)
-            .withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST)
-            .withBlend(BlendFunction.ADDITIVE)
+            .withDepthStencilState(new DepthStencilState(CompareOp.EQUAL, false))
+            .withColorTargetState(new ColorTargetState(BlendFunction.ADDITIVE))
             .withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS)
             .build();
 
@@ -401,10 +405,9 @@ public class CustomLayers {
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
             .withShaderDefine("NO_CARDINAL_LIGHTING")
             .withSampler("Sampler1")
-            .withBlend(BlendFunction.ADDITIVE)
+            .withColorTargetState(new ColorTargetState(BlendFunction.ADDITIVE))
             .withCull(true)
-            .withDepthWrite(false)
-            .withDepthTestFunction(DepthTestFunction.EQUAL_DEPTH_TEST)
+            .withDepthStencilState(new DepthStencilState(CompareOp.EQUAL, false))
             .build();
 
     private static final Function<Boolean, RenderType> ITEM_GLOW_EMISSIVE = Util.memoize(smooth -> itemGlowLayer(
