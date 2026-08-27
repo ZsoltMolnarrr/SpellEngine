@@ -2,6 +2,7 @@ package net.spell_engine.rpg_series.item;
 import net.spell_engine.rpg_series.config.ConfigUtil;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentPatch;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -196,9 +197,10 @@ public class Weapon {
 
         /// Durability, enchantability and repair — no TOOL component.
         ///
-        /// `Item.Settings.repairable(TagKey)` looks the tag up through the ITEM registry, which must still be
-        /// **unfrozen** — always the case while items are registered at mod init. Never assemble `Item.Settings`
-        /// after registry freeze.
+        /// `Item.Properties.repairable(TagKey)` looks the tag up through the ITEM registry, which must still be
+        /// **unfrozen** — always the case while items are registered at mod init. Never assemble `Item.Properties`
+        /// after registry freeze. (The resulting `minecraft:repairable` component, like every other component,
+        /// is bound to the item at resource reload — see `DataComponentInitializers`.)
         public Item.Properties applyBaseSettings(Item.Properties settings) {
             settings = settings.durability(toolMaterial.durability()).enchantable(toolMaterial.enchantmentValue());
             settings.repairable(repairItems != null ? repairItems : toolMaterial.repairItems());
@@ -228,8 +230,11 @@ public class Weapon {
                 case DAMAGE_STAFF, HEALING_STAFF, DAMAGE_WAND, HEALING_WAND -> entry.material.applyBaseSettings(settings);
                 default -> entry.material.applySwordSettings(settings);
             }
-            // Attack attributes come from config, overriding whatever the vanilla material set
-            settings.attributes(attributesFrom(config));
+            // Attack attributes come from config, overriding whatever the vanilla material set.
+            // Components bind at resource reload (26.1): a delayed step appended after the material's own
+            // `attributes(...)` step wins, and the attribute ids in the config are resolved at reload time.
+            final var appliedConfig = config;
+            settings.delayedComponent(DataComponents.ATTRIBUTE_MODIFIERS, context -> attributesFrom(appliedConfig));
             if (entry.rarity != Rarity.COMMON) {
                 settings = settings.rarity(entry.rarity);
             }

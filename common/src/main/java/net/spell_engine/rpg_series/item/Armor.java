@@ -2,7 +2,6 @@ package net.spell_engine.rpg_series.item;
 
 import net.spell_engine.rpg_series.config.ConfigUtil;
 import net.minecraft.core.Registry;
-import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -30,35 +29,46 @@ import java.util.stream.Stream;
 public class Armor {
 
     /// Armor items are plain items since 1.21.2 (armor behaviour = EQUIPPABLE + attribute components).
-    /// Attributes are configurable at registration time, after the item was constructed, so the
-    /// component map is rebuilt when {@link #setAttributes} is called.
+    ///
+    /// Since 26.1 item components are bound to the registry holder during resource reload
+    /// (`DataComponentInitializers`), not at construction. The attributes are therefore attached through a
+    /// *delayed* component step that reads {@link #attributes} when the initializer chain runs, so
+    /// {@link #setAttributes} (called from {@link Armor#register} with the config values, before the first
+    /// reload) simply replaces the value the step will publish. The step is appended after
+    /// `Item.Properties#humanoidArmor`, so it overrides the material's own `attribute_modifiers`.
+    /// Calling {@link #setAttributes} after a reload only takes effect on the next reload.
     public static class CustomItem extends Item implements ConfigurableAttributes {
         public final ArmorMaterial customMaterial;
         public final ArmorType type;
-        private DataComponentMap components;
+        /// Mutable box read by the delayed `attribute_modifiers` step at reload time.
+        private final MutableAttributes attributes;
+
+        private static final class MutableAttributes {
+            volatile ItemAttributeModifiers value;
+            MutableAttributes(ItemAttributeModifiers value) { this.value = value; }
+        }
 
         public CustomItem(ArmorMaterial material, ArmorType type, Properties settings) {
-            super(settings.humanoidArmor(material, type));
+            this(material, type, settings, new MutableAttributes(material.createAttributes(type)));
+        }
+
+        private CustomItem(ArmorMaterial material, ArmorType type, Properties settings, MutableAttributes attributes) {
+            super(settings.humanoidArmor(material, type)
+                    .delayedComponent(DataComponents.ATTRIBUTE_MODIFIERS, context -> attributes.value));
             this.customMaterial = material;
             this.type = type;
-            this.components = super.components();
+            this.attributes = attributes;
         }
 
         @Override
         public void setAttributes(ItemAttributeModifiers attributeModifiers) {
-            this.components = DataComponentMap.builder()
-                    .addAll(super.components())
-                    .set(DataComponents.ATTRIBUTE_MODIFIERS, attributeModifiers)
-                    .build();
+            this.attributes.value = attributeModifiers;
         }
 
-        @Override
-        public DataComponentMap components() {
-            return components == null ? super.components() : components;
-        }
-
+        /// The configured attribute modifiers (what the delayed step publishes on reload).
+        /// Unlike `components().get(ATTRIBUTE_MODIFIERS)` this is valid before the first reload.
         public ItemAttributeModifiers getAttributeModifiers() {
-            return components().getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY);
+            return attributes.value == null ? ItemAttributeModifiers.EMPTY : attributes.value;
         }
 
         public ArmorType getType() { return type; }

@@ -90,6 +90,8 @@ public class RangedWeapon {
 
         /// Durability and repair (`minecraft:repairable`) are applied to `settings` here, before the factory runs.
         /// `repairable(TagKey)` requires an unfrozen ITEM registry — always true while items are registered at mod init.
+        /// The factory typically appends RangedWeaponAPI's config step (`AttributeUtils.configure`) — since 26.1 all
+        /// of these are component initializer steps run at resource reload, in the order they were added.
         public Item create(Item.Properties settings, RangedConfig config) {
             settings.durability(durability());
             if (repairItems != null) {
