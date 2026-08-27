@@ -61,9 +61,11 @@ public class NeoForgeClientMod {
 
     @SubscribeEvent
     public static void registerGuiLayers(RegisterGuiLayersEvent event) {
-        // Spell HUD right after the vanilla status-bar group (AIR_LEVEL is its last layer on NeoForge; Fabric
-        // attaches after MOUNT_HEALTH, the same spot), i.e. above the status bars and below the info/xp bar and chat.
-        event.registerAbove(VanillaGuiLayers.AIR_LEVEL, HudRenderHelper.HUD_ELEMENT_ID, (guiGraphics, deltaTracker) ->
+        // Spell HUD above the boss overlay: the last layer of the main in-game HUD group (SLEEP_OVERLAY is next).
+        // AIR_LEVEL is too early — CONTEXTUAL_INFO_BAR_BACKGROUND (the experience bar) comes after it and covers
+        // the default cast bar, which sits on exactly the same rectangle. Fabric attaches after BOSS_BAR, the same
+        // spot. Modded layers carry no vanilla render condition, so HudRenderHelper checks `hideGui` itself.
+        event.registerAbove(VanillaGuiLayers.BOSS_OVERLAY, HudRenderHelper.HUD_ELEMENT_ID, (guiGraphics, deltaTracker) ->
                 HudRenderHelper.renderHudElement(guiGraphics, deltaTracker.getGameTimeDeltaPartialTick(true)));
     }
 

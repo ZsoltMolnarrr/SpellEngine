@@ -19,7 +19,9 @@ public class Keybindings {
         return keyBinding;
     }
 
-    /// 1.21.9+ keybinding categories are registered objects (translation key: key.categories.<namespace>.<path>)
+    /// 1.21.9+ keybinding categories are registered objects. `KeyMapping.Category#label()` is
+    /// `Component.translatable(id.toLanguageKey("key.category"))`, so the id below needs the lang key
+    /// `key.category.spell_engine.spell_engine` (see `assets/spell_engine/lang/en_us.json`).
     public static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(Identifier.fromNamespaceAndPath(SpellEngineMod.ID, "spell_engine"));
 
     private static KeyMapping hotbarKey(int number) {
