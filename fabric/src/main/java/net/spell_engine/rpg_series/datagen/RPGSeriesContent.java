@@ -1,7 +1,7 @@
 package net.spell_engine.rpg_series.datagen;
 
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class RPGSeriesContent {
-    public static class EquipmentTagGen extends FabricTagProvider.ItemTagProvider {
-        public EquipmentTagGen(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+    public static class EquipmentTagGen extends FabricTagsProvider.ItemTagsProvider {
+        public EquipmentTagGen(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, registriesFuture);
         }
 
@@ -198,7 +198,7 @@ public class RPGSeriesContent {
     }
 
     public static class WeaponSkillGen extends SpellGenerator {
-        public WeaponSkillGen(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
+        public WeaponSkillGen(FabricPackOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, registryLookup);
         }
 
@@ -211,7 +211,7 @@ public class RPGSeriesContent {
     }
 
     public static class LangGenerator extends NamespacedLangGenerator {
-        public LangGenerator(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
+        public LangGenerator(FabricPackOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, registryLookup, "rpg_series");
         }
 

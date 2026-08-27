@@ -21,9 +21,9 @@ import java.util.function.Consumer;
 public class FabricServerNetwork {
     public static void init() {
         // Config stage
-        PayloadTypeRegistry.configurationS2C().register(Packets.ConfigSync.PACKET_ID, Packets.ConfigSync.CODEC);
-        PayloadTypeRegistry.configurationS2C().register(Packets.SpellRegistrySync.PACKET_ID, Packets.SpellRegistrySync.CODEC);
-        PayloadTypeRegistry.configurationC2S().register(Packets.Ack.PACKET_ID, Packets.Ack.CODEC);
+        PayloadTypeRegistry.clientboundConfiguration().register(Packets.ConfigSync.PACKET_ID, Packets.ConfigSync.CODEC);
+        PayloadTypeRegistry.clientboundConfiguration().register(Packets.SpellRegistrySync.PACKET_ID, Packets.SpellRegistrySync.CODEC);
+        PayloadTypeRegistry.serverboundConfiguration().register(Packets.Ack.PACKET_ID, Packets.Ack.CODEC);
 
         ServerConfigurationConnectionEvents.CONFIGURE.register((handler, server) -> {
             // This if block is required! Otherwise the client gets stuck in connection screen
@@ -47,26 +47,26 @@ public class FabricServerNetwork {
         ServerConfigurationNetworking.registerGlobalReceiver(Packets.Ack.PACKET_ID, (packet, context) -> {
             // Warning: if you do not call completeTask, the client gets stuck!
             if (packet.code().equals(ServerNetwork.CONFIG_TASK_NAME)) {
-                context.networkHandler().completeTask(ConfigurationTask.KEY);
+                context.packetListener().completeTask(ConfigurationTask.KEY);
             }
             if (packet.code().equals(ServerNetwork.SPELL_REGISTRY_TASK_NAME)) {
-                context.networkHandler().completeTask(SpellRegistrySyncTask.KEY);
+                context.packetListener().completeTask(SpellRegistrySyncTask.KEY);
             }
         });
 
         // Play stage
-        PayloadTypeRegistry.playC2S().register(Packets.CastRequest.PACKET_ID, Packets.CastRequest.CODEC);
-        PayloadTypeRegistry.playC2S().register(Packets.TargetStream.PACKET_ID, Packets.TargetStream.CODEC);
-        PayloadTypeRegistry.playC2S().register(Packets.CastInput.PACKET_ID, Packets.CastInput.CODEC);
-        PayloadTypeRegistry.playC2S().register(Packets.AttackPerform.PACKET_ID, Packets.AttackPerform.CODEC);
-        PayloadTypeRegistry.playC2S().register(Packets.AttackFxBroadcast.PACKET_ID, Packets.AttackFxBroadcast.CODEC);
-        PayloadTypeRegistry.playS2C().register(Packets.SpellCooldown.PACKET_ID, Packets.SpellCooldown.CODEC);
-        PayloadTypeRegistry.playS2C().register(Packets.SpellCooldownSync.PACKET_ID, Packets.SpellCooldownSync.CODEC);
-        PayloadTypeRegistry.playS2C().register(Packets.SpellMessage.PACKET_ID, Packets.SpellMessage.CODEC);
-        PayloadTypeRegistry.playS2C().register(Packets.ParticleEffects.PACKET_ID, Packets.ParticleEffects.CODEC);
-        PayloadTypeRegistry.playS2C().register(Packets.SpellAnimation.PACKET_ID, Packets.SpellAnimation.CODEC);
-        PayloadTypeRegistry.playS2C().register(Packets.SpellContainerSync.PACKET_ID, Packets.SpellContainerSync.CODEC);
-        PayloadTypeRegistry.playS2C().register(Packets.AttackAvailable.PACKET_ID, Packets.AttackAvailable.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(Packets.CastRequest.PACKET_ID, Packets.CastRequest.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(Packets.TargetStream.PACKET_ID, Packets.TargetStream.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(Packets.CastInput.PACKET_ID, Packets.CastInput.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(Packets.AttackPerform.PACKET_ID, Packets.AttackPerform.CODEC);
+        PayloadTypeRegistry.serverboundPlay().register(Packets.AttackFxBroadcast.PACKET_ID, Packets.AttackFxBroadcast.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(Packets.SpellCooldown.PACKET_ID, Packets.SpellCooldown.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(Packets.SpellCooldownSync.PACKET_ID, Packets.SpellCooldownSync.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(Packets.SpellMessage.PACKET_ID, Packets.SpellMessage.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(Packets.ParticleEffects.PACKET_ID, Packets.ParticleEffects.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(Packets.SpellAnimation.PACKET_ID, Packets.SpellAnimation.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(Packets.SpellContainerSync.PACKET_ID, Packets.SpellContainerSync.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(Packets.AttackAvailable.PACKET_ID, Packets.AttackAvailable.CODEC);
 
         ServerPlayNetworking.registerGlobalReceiver(Packets.CastRequest.PACKET_ID, (packet, context) ->
                 ServerNetwork.handleCastRequest(packet, context.server(), context.player()));
@@ -91,7 +91,7 @@ public class FabricServerNetwork {
         @Override
         public void start(Consumer<Packet<?>> sender) {
             var packet = new Packets.ConfigSync(this.config);
-            sender.accept(ServerConfigurationNetworking.createS2CPacket(packet));
+            sender.accept(ServerConfigurationNetworking.createClientboundPacket(packet));
         }
     }
 
@@ -106,7 +106,7 @@ public class FabricServerNetwork {
         @Override
         public void start(Consumer<Packet<?>> sender) {
             var packet = new Packets.SpellRegistrySync(encodedChunks);
-            sender.accept(ServerConfigurationNetworking.createS2CPacket(packet));
+            sender.accept(ServerConfigurationNetworking.createClientboundPacket(packet));
         }
     }
 }

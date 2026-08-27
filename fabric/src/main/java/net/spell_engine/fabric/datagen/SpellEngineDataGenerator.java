@@ -2,8 +2,8 @@ package net.spell_engine.fabric.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
-import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
+import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.DamageTypeTags;
@@ -38,7 +38,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class ParticlesGen extends SimpleParticleGenerator {
-        public ParticlesGen(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
+        public ParticlesGen(FabricPackOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, registryLookup);
         }
 
@@ -61,7 +61,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
     }
 
     public static class SoundGen extends SimpleSoundGeneratorV2 {
-        public SoundGen(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
+        public SoundGen(FabricPackOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
             super(dataOutput, registryLookup);
         }
 
@@ -76,8 +76,8 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         }
     }
 
-    public static class DamageTypeTagGen extends FabricTagProvider<DamageType> {
-        public DamageTypeTagGen(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+    public static class DamageTypeTagGen extends FabricTagsProvider<DamageType> {
+        public DamageTypeTagGen(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, Registries.DAMAGE_TYPE, registriesFuture);
         }
 
@@ -93,8 +93,8 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         }
     }
 
-    public static class EntityTypeTagGen extends FabricTagProvider.EntityTypeTagProvider {
-        public EntityTypeTagGen(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
+    public static class EntityTypeTagGen extends FabricTagsProvider.EntityTypeTagsProvider {
+        public EntityTypeTagGen(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
             super(output, registriesFuture);
         }
 

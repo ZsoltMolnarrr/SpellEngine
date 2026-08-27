@@ -1,11 +1,11 @@
 package net.spell_engine.fabric.client;
 
 import net.fabricmc.fabric.api.client.model.loading.v1.ExtraModelKey;
-import net.fabricmc.fabric.api.client.model.loading.v1.FabricBakedModelManager;
+import net.fabricmc.fabric.api.client.model.loading.v1.FabricModelManager;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.model.loading.v1.SimpleUnbakedExtraModel;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
 import net.minecraft.resources.Identifier;
 import net.spell_engine.api.render.CustomModels;
 import net.spell_engine.client.render.CustomModelDiscovery;
@@ -28,7 +28,7 @@ public class FabricModelDiscovery implements ModelLoadingPlugin {
             if (key == null) {
                 return null;
             }
-            return ((FabricBakedModelManager) Minecraft.getInstance().getModelManager()).getModel(key);
+            return ((FabricModelManager) Minecraft.getInstance().getModelManager()).getModel(key);
         };
     }
 

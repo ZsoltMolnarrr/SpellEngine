@@ -6,10 +6,10 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.spell_engine.client.gui.HudRenderHelper;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.spell_engine.client.SpellEngineClient;
@@ -41,7 +41,7 @@ public final class FabricClientMod implements ClientModInitializer {
         SpellEngineClient.registerParticleAppearances(new SpellEngineClient.ParticleAppearanceRegistrar() {
             @Override
             public <T extends net.minecraft.core.particles.ParticleOptions> void register(net.minecraft.core.particles.ParticleType<T> type, SpellEngineClient.SpriteFactory<T> factory) {
-                ParticleFactoryRegistry.getInstance().register(type, factory::create);
+                ParticleProviderRegistry.getInstance().register(type, factory::create);
             }
         });
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> SpellEngineClient.onClientStarted());
@@ -52,9 +52,9 @@ public final class FabricClientMod implements ClientModInitializer {
                 HudRenderHelper.renderHudElement(context, tickCounter.getGameTimeDeltaPartialTick(true)));
         ItemTooltipCallback.EVENT.register((stack, tooltipContext, tooltipType, lines) ->
                 SpellEngineClient.addTooltipLines(stack, tooltipType, lines));
-        // 1.21.9+ world render events are extraction/main split; AFTER_TRANSLUCENT is gone. Beams draw in END_MAIN.
-        WorldRenderEvents.END_MAIN.register(context ->
-                BeamRenderer.renderAfterTranslucent(context.matrices(), context.gameRenderer().getMainCamera(),
+        // 26.1: `WorldRenderEvents` → `LevelRenderEvents` (extraction/main split); beams draw in END_MAIN.
+        LevelRenderEvents.END_MAIN.register(context ->
+                BeamRenderer.renderAfterTranslucent(context.poseStack(), context.gameRenderer().getMainCamera(),
                         Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true)));
 
         registerKeyBindings();
@@ -63,7 +63,7 @@ public final class FabricClientMod implements ClientModInitializer {
 
     private static void registerKeyBindings() {
         for (var keybinding: Keybindings.all()) {
-            KeyBindingHelper.registerKeyBinding(keybinding);
+            KeyMappingHelper.registerKeyMapping(keybinding);
         }
     }
 
