@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     // Shared libraries
-    localRuntime("net.rpg_foundation:armor_model_api-fabric:1.0.3.001+26.1.2") { transitive = false }
+    localRuntime("net.rpg_foundation:armor_model_api-fabric:1.0.3.002+26.1.2") { transitive = false }
     localRuntime("net.rpg_series:runes-fabric:1.3.3.001+26.1.2") { transitive = false }
     localRuntime("net.rpg_foundation:structure_pool_api-fabric:1.3.1.001+26.1.2") { transitive = false }
     localRuntime("com.github.TheRedBrain:bundle-api-fabric:1.1.2.001+26.1.2") { transitive = false }
