@@ -27,7 +27,7 @@ dependencies {
     localRuntime("net.rpg_series:runes-neoforge:1.3.2+26.1.2") { transitive = false }
     localRuntime("net.rpg_foundation:structure_pool_api-neoforge:1.3.0+26.1.2") { transitive = false }
     localRuntime("com.github.TheRedBrain:bundle-api-neoforge:1.1.1+26.1.2") { transitive = false }
-    localRuntime("net.critical_strike:critical_strike-neoforge:1.0.5.003+26.1.2") { transitive = false } // used by SkillTree/Jewelry configs (critical_strike:chance)
+    localRuntime("net.critical_strike:critical_strike-neoforge:1.0.5.004+26.1.2") { transitive = false } // used by SkillTree/Jewelry configs (critical_strike:chance)
 
     if (flags.rpg_series_classes) {
     localRuntime("net.rpg_series:archers-neoforge:3.1.2.008+26.1.2") { transitive = false }
