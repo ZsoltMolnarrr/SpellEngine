@@ -30,21 +30,21 @@ dependencies {
     localRuntime("net.critical_strike:critical_strike-fabric:1.0.5.003+26.1.2") { transitive = false } // used by SkillTree/Jewelry configs (critical_strike:chance)
 
     if (flags.rpg_series_classes) {
-    localRuntime("net.rpg_series:archers-fabric:3.1.2.007+26.1.2") { transitive = false }
-    localRuntime("net.rpg_series:wizards-fabric:3.1.2.006+26.1.2") { transitive = false }
-    localRuntime("net.rpg_series:paladins-fabric:3.1.2.006+26.1.2") { transitive = false }
-    localRuntime("net.rpg_series:rogues-fabric:3.1.2.006+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:archers-fabric:3.1.2.008+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:wizards-fabric:3.1.2.007+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:paladins-fabric:3.1.2.007+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:rogues-fabric:3.1.2.007+26.1.2") { transitive = false }
     }
     if (flags.rpg_series_gear) {
-    localRuntime("net.arsenal:arsenal-fabric:1.5.1.005+26.1.2") { transitive = false }
-    localRuntime("net.rpg_series:armory-fabric:1.5.2.007+26.1.2") { transitive = false }
+    localRuntime("net.arsenal:arsenal-fabric:1.5.1.006+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:armory-fabric:1.5.2.008+26.1.2") { transitive = false }
     }
     if (flags.rpg_series_accessories) {
-    localRuntime("net.rpg_series:jewelry-fabric:2.4.1.007+26.1.2") { transitive = false }
-    localRuntime("net.rpg_series:relics-fabric:1.4.1.006+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:jewelry-fabric:2.4.1.008+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:relics-fabric:1.4.1.007+26.1.2") { transitive = false }
     }
     if (flags.rpg_series_skills) {
-    localRuntime("net.rpg_series:skill_tree-fabric:1.6.1.005+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:skill_tree-fabric:1.6.1.006+26.1.2") { transitive = false }
         localRuntime("net.puffish:skillsmod:0.18.3+26.1:fabric")
     }
 }
