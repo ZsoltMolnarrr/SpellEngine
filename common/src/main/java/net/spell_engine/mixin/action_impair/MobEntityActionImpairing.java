@@ -13,7 +13,7 @@ public class MobEntityActionImpairing {
     private void isAiDisabled_HEAD_SpellEngine(CallbackInfoReturnable<Boolean> cir) {
         if (EntityActionsAllowed.isImpaired((Mob) ((Object) this),
                 EntityActionsAllowed.Mob.USE_AI)) {
-            cir.setReturnValue(false);
+            cir.setReturnValue(true);
             cir.cancel();
         }
     }

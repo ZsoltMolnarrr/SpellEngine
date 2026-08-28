@@ -24,6 +24,7 @@ public class ServerPlayerInteractionManagerMixin {
         if (EntityActionsAllowed.isImpaired(player, EntityActionsAllowed.Player.ITEM_USE)) {
             cir.setReturnValue(InteractionResult.FAIL);
             cir.cancel();
+            return;
         }
         if (SpellChoices.from(stack) != null) {
             player.openMenu(new SimpleMenuProvider(
