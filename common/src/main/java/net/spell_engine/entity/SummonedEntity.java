@@ -202,7 +202,13 @@ public abstract class SummonedEntity extends AbstractGolem implements SpellSummo
 
     @Override
     public boolean isInvulnerableTo(ServerLevel world, DamageSource damageSource) {
-        return !isAttackableSummon() && super.isInvulnerableTo(world, damageSource);
+        // A non-attackable summon is invulnerable to everything; an attackable one falls through to
+        // the normal chain (vanilla base checks, enchantment immunity, and SpellEngine's own
+        // immunity/protection hooks on LivingEntity#isInvulnerableTo). Note the `||`: with `&&` an
+        // attackable summon short-circuited to `false` without ever calling `super`, which silently
+        // disabled every one of those checks for it, and a non-attackable one reported itself
+        // vulnerable despite hurtServer() refusing all damage.
+        return !isAttackableSummon() || super.isInvulnerableTo(world, damageSource);
     }
 
     @Override
