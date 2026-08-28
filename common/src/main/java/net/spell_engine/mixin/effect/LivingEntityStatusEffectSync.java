@@ -3,6 +3,7 @@ package net.spell_engine.mixin.effect;
 import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.api.effect.EntityTints;
 import net.spell_engine.api.effect.Synchronized;
+import net.spell_engine.api.spell.fx.ModelEffectAttachment;
 import net.spell_engine.internals.SpellEngineAttachments;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -14,6 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.ArrayList;
 import java.util.List;
 
+/// Per-entity visual state published to tracking clients: synced effects, tint, model FX expiry.
+///
 /// Server-side publisher of the per-living-entity synced state kept in `SpellEngineAttachments`:
 /// the `Synchronized` status effects and the blended `EntityTints` tint, both re-resolved whenever
 /// the entity's effect set changes. Readers go through the attachments directly
@@ -58,5 +61,15 @@ public abstract class LivingEntityStatusEffectSync {
             effects.add(new Synchronized.Effect(effect, entry.getValue().getAmplifier(), appliedAtWorldTime));
         }
         return List.copyOf(effects);
+    }
+
+    /// Server-side expiry of the model FX attached to a living entity
+    /// (`SpellEngineAttachments.MODEL_FX`). Nothing vanilla expires them, so they need their own tick;
+    /// `ModelEffectAttachment.expire` early-returns on an empty list.
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void tick_TAIL_SpellEngine_ModelFx(CallbackInfo ci) {
+        var entity = (LivingEntity) (Object) this;
+        if (entity.level().isClientSide()) { return; }
+        ModelEffectAttachment.expire(entity, entity.level().getGameTime());
     }
 }

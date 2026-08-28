@@ -33,7 +33,6 @@
     "entity.LivingEntityEvents",
     "entity.LivingEntityImmunityMixin",
     "entity.LivingEntityKnockback",
-    "entity.LivingEntityModelFxExpiry",
     "entity.LivingEntityMovementMixin",
     "entity.LivingEntityProtectionEffectMixin",
     "entity.PlayerEntityEvents",
