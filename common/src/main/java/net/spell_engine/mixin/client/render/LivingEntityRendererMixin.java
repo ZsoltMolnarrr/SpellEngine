@@ -29,8 +29,14 @@ public abstract class LivingEntityRendererMixin {
     private static final String RENDER = "submit(Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V";
     private static final String UPDATE_RENDER_STATE = "extractRenderState(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/client/renderer/entity/state/LivingEntityRenderState;F)V";
 
-    @Inject(method = RENDER, at = @At("HEAD"))
-    private void render_HEAD_SpellEngine(LivingEntityRenderState state, PoseStack matrixStack, SubmitNodeCollector queue, CameraRenderState cameraState, CallbackInfo ci) {
+    /// Cast spin: applied just after the renderer's own `pushPose()` (the single one in `submit`, both in vanilla
+    /// and in the NeoForge-patched copy), so the rotation lives inside the pose entry vanilla pops at the end of
+    /// `submit`. At HEAD it would land in the *caller's* entry (`EntityRenderDispatcher#submit`) and stay there for
+    /// the rest of that entity's frame, spinning the drop shadow and displacing the fire overlay along with the model.
+    /// The model transform is unchanged: `pushPose` copies the current entry, so the spin still premultiplies
+    /// everything vanilla applies below (bed offset, scale, body rotations).
+    @Inject(method = RENDER, at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;pushPose()V", shift = At.Shift.AFTER))
+    private void render_CAST_SPIN_SpellEngine(LivingEntityRenderState state, PoseStack matrixStack, SubmitNodeCollector queue, CameraRenderState cameraState, CallbackInfo ci) {
         if (!(((EntityRenderStateExtension) state).spellEngine_getEntity() instanceof LivingEntity livingEntity)) {
             return;
         }
