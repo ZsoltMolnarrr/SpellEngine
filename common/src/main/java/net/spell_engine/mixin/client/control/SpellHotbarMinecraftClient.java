@@ -104,11 +104,6 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
         }
     }
 
-    @Inject(method = "handleKeybinds", at = @At(value = "TAIL"))
-    private void handleInputEvents_TAIL_SpellHotbar(CallbackInfo ci) {
-        if (player == null || options == null) { return; }
-    }
-
     @WrapOperation(
             method = "handleKeybinds",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Inventory;setSelectedSlot(I)V", ordinal = 0), // 1.21.11: hotbar keys call setSelectedSlot() instead of writing the field

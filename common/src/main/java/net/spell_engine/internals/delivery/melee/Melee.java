@@ -322,7 +322,7 @@ public class Melee {
         // Arrived from the client, so it is never trusted as-is.
         var curvedRatio = Mth.clamp(context.charge(), 0F, 1F);
         try {
-            var lastAttackTime = ((LivingEntityAccessor)player).spellEngine_getLastAttackedTicks();
+            var lastAttackTime = player.getLastHurtMobTimestamp();
             var targets = new ArrayList<Entity>();
             var resolvedContext = resolveAttackData(player, world, context.spellId, context.attackId);
             var spellEntry = resolvedContext.spell();

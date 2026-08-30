@@ -144,7 +144,7 @@ public class SpellTriggers {
     public static void onMeleeImpact(Player player, Entity target) {
         var event = new Event(Spell.Trigger.Type.MELEE_IMPACT, player, target, target);
         if (target instanceof LivingEntity livingTarget) {
-            event.damageSource = ((LivingEntityAccessor)livingTarget).spellEngine_getLastDamageSource();
+            event.damageSource = livingTarget.getLastDamageSource();
             event.damageAmount = ((LivingEntityAccessor)livingTarget).spellEngine_getLastDamageTaken();
             event.criticalImpact = CriticalStrikeCompat.isCriticalStrike(event.damageSource);
         }
