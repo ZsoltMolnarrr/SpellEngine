@@ -15,10 +15,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.spell_engine.api.effect.CustomModelStatusEffect;
 import net.spell_engine.api.effect.EntityTints;
 import net.spell_engine.api.effect.Synchronized;
+import net.spell_engine.api.spell.fx.ModelEffectAttachment;
+import net.spell_engine.client.render.ModelEffectOperations;
 import net.spell_engine.client.render.tint.EntityTintPass;
 import net.spell_engine.internals.casting.SpellCaster;
 import net.spell_engine.client.render.extension.EntityRenderStateExtension;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -63,6 +66,9 @@ public abstract class LivingEntityRendererMixin {
                 return;
             }
             var delta = ((EntityRenderStateExtension) state).spellEngine_getTickDelta();
+            // Model FX first, then the custom effect models — the submission order the two separate TAIL
+            // injectors happened to have before they were merged (see the comment on the method below).
+            spellEngine_submitModelFx(state, matrixStack, queue, livingEntity, delta);
             var client = Minecraft.getInstance();
             var isRenderingClientPlayerInFirstPerson = (livingEntity == client.player && !client.gameRenderer.getMainCamera().isDetached());
             if (!isRenderingClientPlayerInFirstPerson) {
@@ -84,6 +90,33 @@ public abstract class LivingEntityRendererMixin {
         } finally {
             // Closes the feature pass opened by render_FEATURES_SpellEngine_Tint (the custom effect models above are part of it)
             EntityTintPass.end();
+        }
+    }
+
+    /// Model FX attached to the entity (`ModelEffectAttachment`). Merged in from the former
+    /// `LivingEntityModelFxRendererMixin`, which injected at the very same `submit` TAIL: with two TAIL
+    /// injectors the relative order was decided by the order of the two entries in `spell_engine.mixins.json`
+    /// (`client.render.LivingEntityModelFxRendererMixin` was listed first, so it ran first — i.e. *before*
+    /// `EntityTintPass.end()`, inside the open tint scope). Calling it here, at the top of the `try` block,
+    /// reproduces exactly that: same position relative to the effect-model loop, still inside the tint scope.
+    @Unique
+    private void spellEngine_submitModelFx(LivingEntityRenderState state, PoseStack matrices, SubmitNodeCollector queue, LivingEntity entity, float delta) {
+        var client = Minecraft.getInstance();
+        var camera = client.gameRenderer.getMainCamera();
+        if (camera == null) return;
+        if (entity == camera.entity() && !camera.isDetached()) return;
+
+        var attached = ModelEffectAttachment.of(entity);
+        if (attached.isEmpty()) return;
+
+        for (var entry : attached) {
+            var effect = entry.effect();
+            if (effect == null || effect.model_id == null || effect.model_id.isEmpty()) continue;
+            float time = (float) ((entity.level().getGameTime() + delta) - entry.appliedAtWorldTime()) % effect.duration;
+            matrices.pushPose();
+            matrices.translate(0, effect.positioning.vertical * entity.getBbHeight(), 0);
+            ModelEffectOperations.renderEffect(effect, time, matrices, queue, state.lightCoords, entity.getId());
+            matrices.popPose();
         }
     }
 

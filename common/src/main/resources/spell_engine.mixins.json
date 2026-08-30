@@ -71,7 +71,6 @@
     "client.control.SpellHotbarMinecraftClient",
     "client.render.EntityMixin",
     "client.render.InGameHudMixin",
-    "client.render.LivingEntityModelFxRendererMixin",
     "client.render.item.ItemRenderStateMixin",
     "client.render.item.LayerRenderStateMixin",
     "client.render.item.ItemModelManagerMixin",
