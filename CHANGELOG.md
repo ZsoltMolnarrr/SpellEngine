@@ -12,6 +12,7 @@ API changes:
 - `Shield.VANILLA_SHIELD_BLOCKING` is a delayed component initializer; use `Shield.vanillaShieldBlocking(registries)` for the value
 - Item components (attributes, blocks_attacks, ...) are bound at resource reload, `item.components()` is empty until the first reload
 - `SpellBindRandomlyLootFunction.TYPE` removed, use `CODEC`
+- `api/entity/TwoWayCollisionChecker` removed (with its `EntityCollision` mixin): 26.1.2's `Entity#canBeCollidedWith(@Nullable Entity other)` receives the other entity, so override that instead of installing a reverse collision checker
 - `SpellHostTrinketItem` implements `TrinketCallback` (no `TrinketItem` base class any more)
 - Vanilla package moves: `BakedQuad`, `BlockStateModel`, `CameraRenderState` (re-import in consumers)
 

@@ -27,7 +27,6 @@
     "effect.StatusEffectSpellStash",
     "effect.StatusEffectSynchronized",
     "entity.DamageSourceMixin",
-    "entity.EntityCollision",
     "entity.ItemCooldownManagerMixin",
     "entity.LivingEntityAccessor",
     "entity.LivingEntityEvents",

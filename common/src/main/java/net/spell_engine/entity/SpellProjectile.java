@@ -28,7 +28,6 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.entity.TwoWayCollisionChecker;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.client.render.FlyingSpellEntity;
@@ -335,12 +334,10 @@ public class SpellProjectile extends Projectile implements FlyingSpellEntity {
                 case FALL -> {
                     if (hitResult.getType() == HitResult.Type.ENTITY) {
                         var target = ((EntityHitResult) hitResult).getEntity();
-                        var reverse = ((TwoWayCollisionChecker) target).getReverseCollisionChecker();
-                        if (reverse != null) {
-                            var result = reverse.apply(this);
-                            if (result == TwoWayCollisionChecker.CollisionResult.COLLIDE) {
-                                this.finishFalling();
-                            }
+                        // Falling projectiles land on entities that are solid to them
+                        // (spell barriers, boats, shulkers, ...), and keep falling through the rest.
+                        if (target.canBeCollidedWith(this)) {
+                            this.finishFalling();
                         }
                     }
                 }

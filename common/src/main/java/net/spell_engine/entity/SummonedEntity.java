@@ -4,7 +4,6 @@ import net.spell_engine.rpg_series.config.ConfigUtil;
 import com.google.common.base.Suppliers;
 import com.google.gson.Gson;
 import com.mojang.logging.LogUtils;
-import net.spell_engine.api.entity.TwoWayCollisionChecker;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.api.spell.fx.Sound;
 import net.spell_engine.api.spell.registry.SpellRegistry;
@@ -372,6 +371,10 @@ public abstract class SummonedEntity extends AbstractGolem implements SpellSummo
         return SummonBehaviour.Movement.CollisionMode.values()[getEntityData().get(COLLISION_MODE)];
     }
 
+    /// Decides whether `entity` (or, for a `null` probe from `EntitySelector.CAN_BE_COLLIDED_WITH`,
+    /// anything at all) is stopped by this summon. Vanilla asks the *target* via
+    /// `Entity#canCollideWith` -> `target.canBeCollidedWith(mover)`, so a `NONE` summon is passed
+    /// through by every mover without any mixin help.
     @Override
     public boolean canBeCollidedWith(@Nullable Entity entity) {
         if (collisionMode() == SummonBehaviour.Movement.CollisionMode.NONE) return false;
@@ -404,23 +407,11 @@ public abstract class SummonedEntity extends AbstractGolem implements SpellSummo
         }
     }
 
-    // Mirrors BarrierEntity's constructor pattern: install a TwoWayCollisionChecker reverseCollisionChecker
-    // so SpellEngine's EntityCollision mixin also lets everything pass through this entity.
-    // Runs on both sides: server when setBehaviour sets the value, client when the DataTracker update arrives.
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> data) {
         super.onSyncedDataUpdated(data);
         if (data.equals(BOUNDING_BOX_WIDTH) || data.equals(BOUNDING_BOX_HEIGHT)) {
             refreshDimensions();
-        }
-        if (data.equals(COLLISION_MODE)) {
-            if (collisionMode() == SummonBehaviour.Movement.CollisionMode.NONE) {
-                ((TwoWayCollisionChecker) this).setReverseCollisionChecker(
-                        entity -> TwoWayCollisionChecker.CollisionResult.PASS
-                );
-            } else {
-                ((TwoWayCollisionChecker) this).setReverseCollisionChecker(null);
-            }
         }
         if (data.equals(ATTACK_ANIMATION)) {
             syncActionAnimationState(attackAnimationState, ATTACK_ANIMATION);
