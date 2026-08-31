@@ -10,11 +10,7 @@ accessible    field    net/minecraft/server/world/ServerChunkLoadingManager    e
 accessible    class    net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker
 accessible    field    net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker    listeners    Ljava/util/Set;
 # NeoForge has no LootTable.Builder in its LootTableLoadEvent (it exposes a built LootTable), so the
-# NeoForge loot-modify path reconstructs the table with extra pools. Needs the vanilla fields + ctor.
-accessible    field    net/minecraft/loot/LootTable    type    Lnet/minecraft/loot/context/LootContextType;
-accessible    field    net/minecraft/loot/LootTable    randomSequenceId    Ljava/util/Optional;
+# NeoForge loot-modify path reads the loaded pools to report them as `existingPools()`.
 accessible    field    net/minecraft/loot/LootTable    pools    Ljava/util/List;
-accessible    field    net/minecraft/loot/LootTable    functions    Ljava/util/List;
 # LootHelper.inspect reads pool entries (Fabric API widens this on Fabric; NeoForge needs our own AT)
 accessible    field    net/minecraft/loot/LootPool    entries    Ljava/util/List;
-accessible    method    net/minecraft/loot/LootTable    <init>    (Lnet/minecraft/loot/context/LootContextType;Ljava/util/Optional;Ljava/util/List;Ljava/util/List;)V

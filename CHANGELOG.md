@@ -1,3 +1,8 @@
+# 1.10.5
+
+Functional changes:
+- Fix NeoForge loot table injection #209
+
 # 1.10.4
 
 Functional changes:
