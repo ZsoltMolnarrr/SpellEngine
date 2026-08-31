@@ -25,7 +25,6 @@ import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.utils.SoundHelper;
-import net.spell_engine.utils.SoundPlayerWorld;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -431,7 +430,7 @@ public class SpellCloud extends Entity implements TraceableEntity {
             if (!presenceSoundFired && presence_sound != null) {
                 var soundEvent = BuiltInRegistries.SOUND_EVENT.getValue(Identifier.parse(presence_sound.id()));
                 if (soundEvent != null) {
-                    ((SoundPlayerWorld) world).playSoundFromEntity(this, soundEvent, SoundSource.PLAYERS,
+                    world.playLocalSound(this, soundEvent, SoundSource.PLAYERS,
                             presence_sound.volume(),
                             presence_sound.randomizedPitch());
                     presenceSoundFired = true;

@@ -58,7 +58,6 @@
   "client": [
     "client.AbstractClientPlayerEntityMixin",
     "client.ClientPlayerEntityMixin",
-    "client.ClientWorldMixin",
     "client.LivingEntityVisualMixin",
     "client.action_impair.ClientPlayerActionImpairing",
     "client.action_impair.MinecraftClientActionImpairing",
