@@ -8,8 +8,5 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(ClientInput.class)
 public interface InputAccessor {
     @Accessor("moveVector")
-    Vec2 spellEngine_getMovementVector();
-
-    @Accessor("moveVector")
     void spellEngine_setMovementVector(Vec2 vector);
 }

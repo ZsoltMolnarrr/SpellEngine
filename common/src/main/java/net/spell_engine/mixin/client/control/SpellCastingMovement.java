@@ -37,8 +37,7 @@ public class SpellCastingMovement {
 
     @Unique
     private static void scaleMovement(ClientInput input, float multiplier) {
-        var accessor = (InputAccessor) input;
-        var vector = accessor.spellEngine_getMovementVector();
-        accessor.spellEngine_setMovementVector(new Vec2(vector.x * multiplier, vector.y * multiplier));
+        var vector = input.getMoveVector();
+        ((InputAccessor) input).spellEngine_setMovementVector(new Vec2(vector.x * multiplier, vector.y * multiplier));
     }
 }
