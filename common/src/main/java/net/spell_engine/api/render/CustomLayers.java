@@ -170,6 +170,69 @@ public class CustomLayers extends RenderLayer {
         return RenderLayer.of(name, vertexFormat, drawMode, expectedBufferSize, hasCrumbling, translucent, phases);
     }
 
+    // MARK: Entity tint
+
+    /// Vanilla's armor layers cannot alpha blend - `RenderLayer.createArmorCutoutNoCull` builds them with
+    /// `NO_TRANSPARENCY` - so a tinted entity would wear fully opaque armor over a faded body. These are
+    /// the same layers with blending enabled, returned in place of the vanilla ones by `ArmorLayerTintMixin`
+    /// and `ArmorTrimsLayerTintMixin` for as long as a translucent tint is on the entity being rendered.
+    ///
+    /// Separate layers, handed out per lookup rather than patching the vanilla ones once at startup, and
+    /// that distinction is the whole point. Iris buckets entity geometry by the identity of a layer's
+    /// transparency phase and draws the buckets in a fixed order (see
+    /// [net.spell_engine.client.compatibility.IrisCompatibility]), and it pins the vanilla armor trims
+    /// sheet to `OPAQUE_DECAL`, the bucket *before* general transparents. Blending the vanilla armor layer
+    /// moves the armor into a later bucket than its own trim, so the armor is drawn over the trim and
+    /// paints it out - on every entity in the world, tinted or not. That was issue #210.
+    ///
+    /// Substituting per lookup keeps untinted entities on untouched vanilla layers, so that ordering is
+    /// never disturbed. On the tinted entity, armor *and* trim both move here, into one bucket, where Iris
+    /// orders by the request order recorded within the entity's group - armor first, then trim.
+    private static RenderLayer.MultiPhaseParameters armorTranslucentPhases(Identifier texture, boolean decal) {
+        return MultiPhaseParameters.builder()
+                .program(ARMOR_CUTOUT_NO_CULL_PROGRAM)
+                .texture(new RenderPhase.Texture(texture, false, false))
+                .transparency(TRANSLUCENT_TRANSPARENCY) // The only departure from vanilla's parameters
+                .cull(DISABLE_CULLING)
+                .lightmap(ENABLE_LIGHTMAP)
+                .overlay(ENABLE_OVERLAY_COLOR)
+                .layering(VIEW_OFFSET_Z_LAYERING)
+                .depthTest(decal ? EQUAL_DEPTH_TEST : LEQUAL_DEPTH_TEST)
+                .build(true);
+    }
+
+    private static RenderLayer armorTranslucentLayer(String name, Identifier texture, boolean decal) {
+        return RenderLayer.of(name,
+                VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
+                VertexFormat.DrawMode.QUADS,
+                1536,
+                true,
+                false,
+                armorTranslucentPhases(texture, decal));
+    }
+
+    /// Memoized per texture, mirroring vanilla's layer factory: one layer per armor texture, so armor
+    /// pieces sharing a texture still batch into a single draw.
+    private static final Function<Identifier, RenderLayer> ARMOR_TRANSLUCENT = Util.memoize(texture ->
+            armorTranslucentLayer("spell_engine_armor_translucent", texture, false));
+
+    private static final Supplier<RenderLayer> ARMOR_TRIMS_TRANSLUCENT = Suppliers.memoize(() ->
+            armorTranslucentLayer("spell_engine_armor_trims_translucent", TexturedRenderLayers.ARMOR_TRIMS_ATLAS_TEXTURE, false));
+
+    private static final Supplier<RenderLayer> ARMOR_TRIMS_DECAL_TRANSLUCENT = Suppliers.memoize(() ->
+            armorTranslucentLayer("spell_engine_armor_trims_decal_translucent", TexturedRenderLayers.ARMOR_TRIMS_ATLAS_TEXTURE, true));
+
+    /// Blending counterpart of `RenderLayer.getArmorCutoutNoCull`.
+    public static RenderLayer armorTranslucent(Identifier texture) {
+        return ARMOR_TRANSLUCENT.apply(texture);
+    }
+
+    /// Blending counterpart of `TexturedRenderLayers.getArmorTrims`. Must move together with
+    /// [#armorTranslucent] - leaving the trim on the vanilla sheet is what breaks its ordering.
+    public static RenderLayer armorTrimsTranslucent(boolean decal) {
+        return decal ? ARMOR_TRIMS_DECAL_TRANSLUCENT.get() : ARMOR_TRIMS_TRANSLUCENT.get();
+    }
+
     // MARK: Item glow
 
     /// Grayscale streaks, so `ColorModulator` can tint them to any color.

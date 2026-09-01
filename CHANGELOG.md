@@ -1,7 +1,8 @@
 # 1.10.5
 
 Functional changes:
-- Fix NeoForge loot table injection #209
+- Fixed NeoForge loot table injection #209
+- Fixed entity ting feature breaking armor trim rendering #210
 
 # 1.10.4
 

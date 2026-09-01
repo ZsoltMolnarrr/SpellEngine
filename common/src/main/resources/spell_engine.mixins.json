@@ -80,8 +80,9 @@
     "client.render.MinecraftClientMixin",
     "client.render.ModelPredicateProviderRegistryAccessor",
     "client.render.ProjectileEntityRendererMixin",
-    "client.render.tint.ModelPartMixin",
-    "client.render.tint.RenderLayerMixin"
+    "client.render.tint.ArmorLayerTintMixin",
+    "client.render.tint.ArmorTrimsLayerTintMixin",
+    "client.render.tint.ModelPartMixin"
   ],
   "injectors": {
     "defaultRequire": 1
