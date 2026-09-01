@@ -1,18 +1,23 @@
 package net.spell_engine.utils;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.internals.delivery.Beam;
 import net.spell_engine.internals.casting.SpellCaster;
@@ -227,25 +232,79 @@ public class TargetHelper {
         return new Beam.Position(start, end, length, hitBlock);
     }
 
-    @Nullable public static Vec3 findSolidBelow(Entity entity, Vec3 position, Level world, float height) {
-        var hit = world.clip(new ClipContext(position, position.add(0, height, 0),
-                ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity));
-        if (hit.getType() == HitResult.Type.BLOCK) {
-            return hit.getLocation();
+    /// The exact point where a downward ray from `position` meets the ground, or `null` when nothing
+    /// is hit within `height` (negative = downward). The Y is the top of the actual collision shape,
+    /// so partial blocks (carpet, snow layer, slab, path) resolve to their real surface instead of a
+    /// full block top. Decoration is not ground — see {@link GroundRaycastContext}.
+    /// How far above the queried position the downward ground ray starts. A ray beginning exactly on a
+    /// block boundary cannot see a shape whose bottom *is* that boundary — `Box.raycast` requires a
+    /// strictly positive travel distance — so a thin surface at the query's own level (a carpet or snow
+    /// layer on the floor beside the caster) would be missed and the placement would resolve to the
+    /// floor *underneath* it. Starting a block higher makes those visible without reaching into the
+    /// level above: a full block there is entered at that same rejected zero distance, so it stays unhit.
+    private static final double GROUND_SEARCH_PRE_LIFT = 1.0;
+
+    @Nullable public static Vec3 findSolidBelow(@Nullable Entity entity, Vec3 position, Level world, float height) {
+        var shapeContext = entity != null ? CollisionContext.of(entity) : CollisionContext.empty();
+        // The pre-lift and the surface-top logic below are downward-search semantics; an upward search
+        // (positive height, e.g. a positive `aim.reposition_vertically`) keeps the plain ray — lifting
+        // its start would flip a short upward ray into a downward one.
+        if (height >= 0) {
+            var upHit = world.clip(new GroundRaycastContext(position, position.add(0, height, 0), shapeContext));
+            return upHit.getType() == HitResult.Type.BLOCK ? upHit.getLocation() : null;
         }
-        return null;
+        var start = position.add(0, GROUND_SEARCH_PRE_LIFT, 0);
+        var hit = world.clip(new GroundRaycastContext(start, position.add(0, height, 0), shapeContext));
+        if (hit.getType() != HitResult.Type.BLOCK) {
+            return null;
+        }
+        if (hit.isInside()) {
+            // The ray began inside the shape it hit — the common case, since a placement anchored at
+            // the caster's feet starts exactly on the surface and `VoxelShape.raycast` advances the
+            // start by 0.1% of the ray before testing. Such a hit reports that advanced point, which
+            // is *below* the surface; take the shape's top instead. Getting this wrong buries the
+            // placement by a hair, which `EntityPlacements` then reads as embedded terrain and lifts
+            // by a whole block.
+            var blockPos = hit.getBlockPos();
+            var shape = world.getBlockState(blockPos).getCollisionShape(world, blockPos);
+            var top = shape.isEmpty() ? 1.0 : shape.max(Direction.Axis.Y);
+            return new Vec3(hit.getLocation().x(), blockPos.getY() + top, hit.getLocation().z());
+        }
+        return hit.getLocation();
     }
 
+    /// Same search as {@link #findSolidBelow}, but kept in the query's own column: the hit's X/Z are
+    /// replaced by `position`'s, so a placement lands straight below where it was asked for even when
+    /// the ray grazes a shape's side face.
     @Nullable public static Vec3 findSolidBlockBelow(@Nullable Entity entity, Vec3 position, Level world, float height) {
-        var raycast = entity != null
-                ? new ClipContext(position, position.add(0, height, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity)
-                : new ClipContext(position, position.add(0, height, 0), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, CollisionContext.empty());
-        var hit =  world.clip(raycast);
-        if (hit.getType() == HitResult.Type.BLOCK) {
-            var blockHit = (BlockHitResult)hit;
-            return new Vec3(position.x(), blockHit.getBlockPos().getY() + 1F, position.z());
+        var ground = findSolidBelow(entity, position, world, height);
+        if (ground == null) {
+            return null;
         }
-        return null;
+        return new Vec3(position.x(), ground.y(), position.z());
+    }
+
+    /// A `COLLIDER` raycast that treats zero-hardness, non-solid blocks — grass, flowers, fire, lily
+    /// pads, berry bushes — as air, so a placement lands on the ground *under* the decoration rather
+    /// than on top of it. Zero-hardness blocks that are genuinely standable (TNT, slime block: full
+    /// cube collision, hence solid) stay ground.
+    ///
+    /// Filtering by shape rather than by re-casting from under each rejected block: `BlockView.raycast`
+    /// asks the context for every visited block's shape, and an empty shape makes the traversal walk
+    /// straight through — one pass, and a rejected block never reaches voxel math (both checks below
+    /// read cached block state fields).
+    private static class GroundRaycastContext extends ClipContext {
+        GroundRaycastContext(Vec3 start, Vec3 end, CollisionContext shapeContext) {
+            super(start, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, shapeContext);
+        }
+
+        @Override
+        public VoxelShape getBlockShape(BlockState state, BlockGetter world, BlockPos pos) {
+            if (state.getDestroySpeed(world, pos) == 0F && !state.isSolid()) {
+                return Shapes.empty();
+            }
+            return super.getBlockShape(state, world, pos);
+        }
     }
 
     @Nullable public static Vec3 findTeleportDestination(LivingEntity entity, Vec3 look, float distance, int clearanceY) {

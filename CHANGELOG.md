@@ -20,6 +20,19 @@ Fixes:
 - Spell registry parsing is safe under parallel registry loading (NeoForge 26.1)
 - `sounds.json` datagen path on 26.1.2
 
+Functional changes:
+- Fixed NeoForge loot table injection #209
+- Fixed entity ting feature breaking armor trim rendering #210
+- Fixed entity placements (Bear Trap and Battle Banner should no longer levitate above carpets)
+
+# 1.10.4
+
+Functional changes:
+- Fix NeoForge launch crash (loot injection entry access) #208
+ 
+API changes:
+- Make CriticalStrike compat externally configurable
+
 # 1.10.3
 
 Functional changes:

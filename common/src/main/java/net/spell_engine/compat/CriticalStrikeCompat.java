@@ -18,8 +18,8 @@ public class CriticalStrikeCompat {
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final String MOD_ID = "critical_strike";
     private static final String IMPL = "net.spell_engine.compat.CriticalStrikeCompatImpl";
-    private static Predicate<DamageSource> isCriticalStrike = ds -> false;
-    private static BiConsumer<DamageSource, Float> setCriticalStrike = (ds, crit) -> { };
+    public static Predicate<DamageSource> isCriticalStrike = ds -> false;
+    public static BiConsumer<DamageSource, Float> setCriticalStrike = (ds, crit) -> { };
 
     @SuppressWarnings("unchecked")
     public static void init() {
