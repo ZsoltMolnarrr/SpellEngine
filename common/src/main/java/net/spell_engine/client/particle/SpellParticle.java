@@ -228,7 +228,9 @@ public class SpellParticle extends BillboardParticle {
     /// Probe distances for [ParticleGroup.Attachment#POSITION_HORIZONTAL], relative to
     /// the entity's feet. The upward slack catches ground up to a step higher than the
     /// entity; the downward reach finds the floor while the entity is airborne.
-    private static final float GROUND_PROBE_UP = 1F;
+    /// (The probe's ray itself starts a block above its `from` — see TargetHelper's ground
+    /// search pre-lift — which already provides the one-step upward slack, so no extra offset here.)
+    private static final float GROUND_PROBE_UP = 0F;
     private static final float GROUND_PROBE_DOWN = 6F;
     /// Lift off the surface, matching the `GROUND` anchor's own `+0.1` in ParticleHelper.
     private static final double GROUND_LIFT = 0.1;

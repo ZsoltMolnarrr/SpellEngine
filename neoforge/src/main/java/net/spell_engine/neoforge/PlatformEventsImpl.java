@@ -4,7 +4,6 @@ import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootPool;
-import net.minecraft.loot.LootTable;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -98,14 +97,15 @@ public class PlatformEventsImpl {
 
     public static void onLootTableModify(Consumer<PlatformEvents.LootTableModifyContext> callback) {
         NeoForge.EVENT_BUS.addListener(LootTableLoadEvent.class, event -> {
-            var context = new NeoForgeLootContext(event.getRegistries(), event.getName(), event.getTable().pools);
+            var table = event.getTable();
+            var context = new NeoForgeLootContext(event.getRegistries(), event.getName(), table.pools);
             callback.accept(context);
-            if (!context.pools.isEmpty()) {
-                // NeoForge exposes a built LootTable — rebuild it with the extra pools appended.
-                var table = event.getTable();
-                var pools = new ArrayList<>(table.pools);
-                pools.addAll(context.pools);
-                event.setTable(new LootTable(table.type, table.randomSequenceId, pools, table.functions));
+            // Mutate the loaded table in place. Replacing it via `event.setTable(new LootTable(...))`
+            // would drop NeoForge's `lootTableId` field (set before this event, one-shot, not a codec
+            // field), which is what `CommonHooks.modifyLoot` keys global loot modifiers on — every GLM
+            // conditioned on `neoforge:loot_table_id` would then silently stop applying to this table.
+            for (var pool: context.pools) {
+                table.addPool(pool);
             }
         });
     }
