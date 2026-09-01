@@ -55,6 +55,12 @@ public class SpellCloud extends Entity implements Ownable {
 
     public SpellCloud(EntityType<? extends SpellCloud> entityType, World world) {
         super(entityType, world);
+        // Parity with the plain-cloud constructor below: a cloud is a volume, not a body. Without this
+        // a custom cloud entity stays block-collidable, so `EntityPlacements` treats any terrain its
+        // box overlaps as a bad placement and lifts it a whole block — and nothing brings it back down,
+        // since `Entity.tick()` applies no gravity. Wide clouds (a 6-block banner) overlap something
+        // almost everywhere.
+        this.noClip = true;
         // Eagerly start the spawn animation so the first render frame already has its t=0 keyframes
         // (e.g. scale 0), avoiding a one-frame flash at full size before setupAnimationStates() runs.
         // Harmless when there's no spawning phase: the first client tick stops it via setRunning(false).
