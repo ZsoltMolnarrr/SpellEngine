@@ -30,11 +30,10 @@ dependencies {
     localRuntime("net.critical_strike:critical_strike-fabric:1.0.5.007+26.2") { transitive = false } // used by SkillTree/Jewelry configs (critical_strike:chance)
 
     if (flags.rpg_series_classes) {
-    // TODO 26.2: not yet ported
-    // localRuntime("net.rpg_series:archers-fabric:3.1.2.008+26.1.2") { transitive = false }
-    // localRuntime("net.rpg_series:wizards-fabric:3.1.2.007+26.1.2") { transitive = false }
-    // localRuntime("net.rpg_series:paladins-fabric:3.1.2.009+26.1.2") { transitive = false }
-    // localRuntime("net.rpg_series:rogues-fabric:3.1.2.007+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:archers-fabric:3.1.2.009+26.2") { transitive = false }
+    localRuntime("net.rpg_series:wizards-fabric:3.1.2.008+26.2") { transitive = false }
+    localRuntime("net.rpg_series:paladins-fabric:3.1.2.010+26.2") { transitive = false }
+    localRuntime("net.rpg_series:rogues-fabric:3.1.2.008+26.2") { transitive = false }
     }
     if (flags.rpg_series_gear) {
     // TODO 26.2: not yet ported
