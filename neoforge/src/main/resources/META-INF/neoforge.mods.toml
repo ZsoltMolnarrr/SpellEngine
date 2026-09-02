@@ -11,12 +11,12 @@ authors = "Daedelus"
 description = '''
 Data driven magic library.
 '''
-logoFile = "icon.png"
+iconFile = "icon.png"
 
 [[dependencies.spell_engine]]
 modId = "neoforge"
 type = "required"
-versionRange = "[26.1,)"
+versionRange = "[26.2,)"
 ordering = "NONE"
 side = "BOTH"
 
