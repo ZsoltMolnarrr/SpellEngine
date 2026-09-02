@@ -15,7 +15,6 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.Tuple;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -55,6 +54,10 @@ import java.util.Optional;
 ///   `minecraft:using_item` (the 1.21.4 replacement for the removed `blocking` model predicate)
 public class Shield {
 
+    /// One attribute modifier of a shield (`minecraft:attribute_modifiers`, `HAND` slot). 26.2 removed
+    /// `net.minecraft.util.Tuple`, which used to carry these pairs through {@link ShieldFactory}.
+    public record AttributeEntry(Holder<Attribute> attribute, net.minecraft.world.entity.ai.attributes.AttributeModifier modifier) { }
+
     /// Produces the shield `Item` from the assembled settings. The default is {@link #DEFAULT_FACTORY}
     /// ({@link #createVanilla}); override only for a custom `Item` subclass. `settings` already carries
     /// durability, rarity, fireproof, spell components and the `minecraft:repairable` component when the
@@ -62,7 +65,7 @@ public class Shield {
     public interface ShieldFactory {
         Item create(
                 @Nullable Holder<SoundEvent> equipSound,
-                List<Tuple<Holder<Attribute>, net.minecraft.world.entity.ai.attributes.AttributeModifier>> attributes,
+                List<AttributeEntry> attributes,
                 Item.Properties settings
         );
     }
@@ -95,7 +98,7 @@ public class Shield {
     /// components applied. Durability and repair are expected to be on `settings` already (see {@link Entry#create}).
     public static Item createVanilla(
             @Nullable Holder<SoundEvent> equipSound,
-            List<Tuple<Holder<Attribute>, net.minecraft.world.entity.ai.attributes.AttributeModifier>> attributes,
+            List<AttributeEntry> attributes,
             Item.Properties settings
     ) {
         return new Item(applyVanillaComponents(settings, equipSound, attributes));
@@ -107,7 +110,7 @@ public class Shield {
     public static Item.Properties applyVanillaComponents(
             Item.Properties settings,
             @Nullable Holder<SoundEvent> equipSound,
-            List<Tuple<Holder<Attribute>, net.minecraft.world.entity.ai.attributes.AttributeModifier>> attributes
+            List<AttributeEntry> attributes
     ) {
         var equippable = Equippable.builder(EquipmentSlot.OFFHAND).setSwappable(false);
         if (equipSound != null) {
@@ -120,10 +123,10 @@ public class Shield {
     }
 
     public static ItemAttributeModifiers handAttributes(
-            List<Tuple<Holder<Attribute>, net.minecraft.world.entity.ai.attributes.AttributeModifier>> attributes) {
+            List<AttributeEntry> attributes) {
         var builder = ItemAttributeModifiers.builder();
         for (var pair : attributes) {
-            builder.add(pair.getA(), pair.getB(), EquipmentSlotGroup.HAND);
+            builder.add(pair.attribute(), pair.modifier(), EquipmentSlotGroup.HAND);
         }
         return builder.build();
     }
@@ -231,9 +234,9 @@ public class Shield {
                 ShieldFactory factory
         ) {
             // Convert AttributeModifier list to format expected by shield factory
-            ArrayList<Tuple<Holder<Attribute>, net.minecraft.world.entity.ai.attributes.AttributeModifier>> shieldAttributes = new ArrayList<>();
+            ArrayList<AttributeEntry> shieldAttributes = new ArrayList<>();
             for (var modifier : Weapon.attributesFrom(attributes).modifiers()) {
-                shieldAttributes.add(new Tuple<>(modifier.attribute(), modifier.modifier()));
+                shieldAttributes.add(new AttributeEntry(modifier.attribute(), modifier.modifier()));
             }
 
             settings.durability(durability());

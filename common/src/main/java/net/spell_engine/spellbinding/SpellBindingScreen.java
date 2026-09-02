@@ -137,11 +137,11 @@ public class SpellBindingScreen extends AbstractContainerScreen<SpellBindingScre
     private void unbindDialog(SpellBindingWidgets.SpellIconViewModel icon) {
         var title = Component.translatable("gui.spell_engine.spell_binding.unbind_dialog.title", icon.spell().name().getString());
         // DialogScreen was removed in 1.21.6; ConfirmScreen offers the same two-choice flow
-        minecraft.setScreen(new ConfirmScreen(confirmed -> {
+        minecraft.gui.setScreen(new ConfirmScreen(confirmed -> {
             if (confirmed) {
                 minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, icon.originalIndex());
             }
-            this.minecraft.setScreen(this);
+            this.minecraft.gui.setScreen(this);
         }, title, Component.translatable("gui.spell_engine.spell_binding.unbind_dialog.subtitle"),
                 Component.translatable("gui.spell_engine.spell_binding.unbind_dialog.confirm").withStyle(ChatFormatting.RED),
                 Component.translatable("gui.spell_engine.spell_binding.unbind_dialog.cancel")));

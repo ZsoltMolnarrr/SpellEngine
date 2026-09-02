@@ -3,7 +3,6 @@ package net.spell_engine;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.PartitioningSerializer;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -181,10 +180,11 @@ public class SpellEngineMod {
     }
 
     public static void registerCriteria() {
-        CriteriaTriggers.register(EnchantmentSpecificCriteria.ID.toString(), EnchantmentSpecificCriteria.INSTANCE);
-        CriteriaTriggers.register(SpellCastCriteria.ID.toString(), SpellCastCriteria.INSTANCE);
+        // 26.2: `CriteriaTriggers.register` is private; triggers are plain `BuiltInRegistries.TRIGGER_TYPES` entries
+        Registry.register(BuiltInRegistries.TRIGGER_TYPES, EnchantmentSpecificCriteria.ID, EnchantmentSpecificCriteria.INSTANCE);
+        Registry.register(BuiltInRegistries.TRIGGER_TYPES, SpellCastCriteria.ID, SpellCastCriteria.INSTANCE);
 
-        CriteriaTriggers.register(SpellBindingCriteria.ID.toString(), SpellBindingCriteria.INSTANCE);
-        CriteriaTriggers.register(SpellBookCreationCriteria.ID.toString(), SpellBookCreationCriteria.INSTANCE);
+        Registry.register(BuiltInRegistries.TRIGGER_TYPES, SpellBindingCriteria.ID, SpellBindingCriteria.INSTANCE);
+        Registry.register(BuiltInRegistries.TRIGGER_TYPES, SpellBookCreationCriteria.ID, SpellBookCreationCriteria.INSTANCE);
     }
 }

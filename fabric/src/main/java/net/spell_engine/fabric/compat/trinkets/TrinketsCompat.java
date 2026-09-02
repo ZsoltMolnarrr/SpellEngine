@@ -1,6 +1,7 @@
 package net.spell_engine.fabric.compat.trinkets;
 
 import eu.pb4.trinkets.api.TrinketAttachment;
+import eu.pb4.trinkets.api.TrinketSlotAccess;
 import eu.pb4.trinkets.api.TrinketsApi;
 import eu.pb4.trinkets.api.event.TrinketEquipCallback;
 import eu.pb4.trinkets.api.event.TrinketUnequipCallback;
@@ -74,7 +75,8 @@ public class TrinketsCompat {
         if (attachment == null) {
             return List.of();
         }
-        return attachment.getAllEquipped().stream().map(pair -> pair.getB()).toList();
+        // Trinkets Updated 4.1: the `Tuple`-based `getAllEquipped()` is gone (vanilla 26.2 removed `Tuple`); slots carry their stack
+        return attachment.allEquipped(false).stream().map(TrinketSlotAccess::get).toList();
     }
 
     public static boolean isEnabled() {
@@ -87,13 +89,13 @@ public class TrinketsCompat {
             return List.of();
         }
         var equipped = new ArrayList<ItemStack>();
-        attachment.getAllEquipped().forEach(pair -> {
-            var stack = pair.getB();
+        attachment.allEquipped(false).forEach(slot -> {
+            var stack = slot.get();
             if (stack.isEmpty()) {
                 return;
             }
             // Slot type id is `<group>/<slot>`, e.g. `spell/book`
-            if (pair.getA().slotType().getId().contains("spell/book")) {
+            if (slot.slotType().getId().contains("spell/book")) {
                 equipped.addFirst(stack);
             } else {
                 equipped.add(stack);

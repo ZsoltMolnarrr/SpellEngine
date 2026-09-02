@@ -31,7 +31,6 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
     @Shadow @Final public Options options;
     @Shadow private int rightClickDelay;
     @Shadow public int missTime;
-    @Shadow @Nullable public Screen screen;
 
     // @Nullable private WrappedKeybinding.Category spellHotbarHandle = null;
 
@@ -99,7 +98,7 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
     @Inject(method = "tick", at = @At("HEAD"))
     private void tick_HEAD_SpellHotbar(CallbackInfo ci) {
         if (player == null || options == null) { return; }
-        if (screen != null || CombatRollCompat.isRolling.apply(player)) {
+        if (((Minecraft) (Object) this).gui.screen() != null || CombatRollCompat.isRolling.apply(player)) { // 26.2: `Minecraft.screen` → `Gui#screen()`
             ((SpellCaster.Client)player).cancelSpellCast();
         }
     }

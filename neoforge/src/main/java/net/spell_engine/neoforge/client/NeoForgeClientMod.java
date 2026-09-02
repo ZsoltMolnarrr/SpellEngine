@@ -14,7 +14,7 @@ import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.common.NeoForge;
@@ -48,10 +48,11 @@ public class NeoForgeClientMod {
         // class is on the mod bus; the callbacks live in loader-neutral common code.
         NeoForge.EVENT_BUS.addListener(ItemTooltipEvent.class, tooltip ->
                 SpellEngineClient.addTooltipLines(tooltip.getItemStack(), tooltip.getFlags(), tooltip.getToolTip()));
-        // 21.11: stages are event subclasses; camera + tick progress are no longer carried by the event
-        NeoForge.EVENT_BUS.addListener(RenderLevelStageEvent.AfterTranslucentBlocks.class, render -> {
+        // 26.2: no immediate-mode drawing any more (`MultiBufferSource` is gone); beams are submitted as custom
+        // geometry into the level's submit node collector (`SubmitCustomGeometryEvent`, inside `LevelRenderer#submitFeatures`).
+        NeoForge.EVENT_BUS.addListener(SubmitCustomGeometryEvent.class, submit -> {
             var client = Minecraft.getInstance();
-            BeamRenderer.renderAfterTranslucent(render.getPoseStack(), client.gameRenderer.getMainCamera(),
+            BeamRenderer.submit(submit.getPoseStack(), submit.getSubmitNodeCollector(), client.gameRenderer.mainCamera(),
                     client.getDeltaTracker().getGameTimeDeltaPartialTick(true));
         });
         event.enqueueWork(SpellEngineClient::onClientStarted);

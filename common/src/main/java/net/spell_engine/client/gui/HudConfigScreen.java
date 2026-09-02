@@ -233,7 +233,7 @@ public class HudConfigScreen extends Screen {
 
     public void onClose() {
         this.save();
-        this.minecraft.setScreen(previous);
+        this.minecraft.gui.setScreen(previous);
     }
 
     @Override

@@ -17,10 +17,12 @@ import java.util.List;
  * state is updated for its holder (`ItemModelResolver.updateForTopItem`, see `ItemModelManagerMixin`)
  * and parked on the render state (`ItemRenderStateMixin`); when a layer of the state is submitted, its
  * quads are submitted a second time on the glow layer, right after the item's own `submitItem`
- * (`LayerRenderStateMixin`), so the `EQUAL` depth test of the glow finds the item's depth. Submission
- * order alone is not enough: the `BufferSource` flushes its shared buffer before the fixed layer buffers,
- * so the glow layer still needs its own buffer (`ImmediateItemGlowMixin`); under Iris the pipeline is
- * declared as an emissive-entity program instead.
+ * (`LayerRenderStateMixin`), so the `EQUAL` depth test of the glow finds the item's depth. Since 26.2 the
+ * feature-render phases guarantee that order: a solid item goes to the `solid` phase, and the blending glow
+ * layers submitted through `submitCustomGeometry` land in `translucentCustomGeometry`, which every
+ * `FeatureRenderDispatcher` executes after `solid` (the 26.1 `ImmediateItemGlowMixin` buffer trick is gone).
+ * Translucent item layers (`translucentBlocksAndItems`, executed later) do not get the glow. Under Iris the
+ * pipeline is declared as an emissive-entity program instead.
  */
 public final class ItemGlowRendering {
     private ItemGlowRendering() { }

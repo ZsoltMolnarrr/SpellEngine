@@ -55,9 +55,10 @@ public final class FabricClientMod implements ClientModInitializer {
                 HudRenderHelper.renderHudElement(context, tickCounter.getGameTimeDeltaPartialTick(true)));
         ItemTooltipCallback.EVENT.register((stack, tooltipContext, tooltipType, lines) ->
                 SpellEngineClient.addTooltipLines(stack, tooltipType, lines));
-        // 26.1: `WorldRenderEvents` → `LevelRenderEvents` (extraction/main split); beams draw in END_MAIN.
-        LevelRenderEvents.END_MAIN.register(context ->
-                BeamRenderer.renderAfterTranslucent(context.poseStack(), context.gameRenderer().getMainCamera(),
+        // 26.2: no immediate-mode drawing any more (`MultiBufferSource` is gone); beams are submitted as custom
+        // geometry into the level's submit node collector in COLLECT_SUBMITS (inside `LevelRenderer#submitFeatures`).
+        LevelRenderEvents.COLLECT_SUBMITS.register(context ->
+                BeamRenderer.submit(context.poseStack(), context.submitNodeCollector(), context.gameRenderer().mainCamera(),
                         Minecraft.getInstance().getDeltaTracker().getGameTimeDeltaPartialTick(true)));
 
         registerKeyBindings();

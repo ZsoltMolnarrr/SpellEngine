@@ -2,7 +2,7 @@ package net.spell_engine.mixin.client.render;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.spell_engine.client.SpellEngineClient;
@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.At;
  * off-hand inventory slot around the wrapped vanilla call, i.e. mutate game state during rendering.
  * Everything else about the spell HUD is registered natively, see {@code HudRenderHelper.renderHudElement}.
  */
-@Mixin(Gui.class)
+@Mixin(Hud.class) // 26.2: the in-game HUD (hotbar included) split out of `Gui` into `Hud`
 public class InGameHudMixin {
     @WrapOperation(method = "extractItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/player/Player;getOffhandItem()Lnet/minecraft/world/item/ItemStack;"))
     private ItemStack renderHotbar_SpellEngine(

@@ -230,11 +230,13 @@ public abstract class SummonedEntity extends AbstractGolem implements SpellSummo
         return !isAttackableSummon() && super.ignoreExplosion(explosion);
     }
 
-    public void knockback(double strength, double x, double z) {
+    /// 26.2: `knockback(double, double, double)` became the 6-arg terminal overload (source, damage, comesFromEffect)
+    @Override
+    public void knockback(double strength, double x, double z, net.minecraft.world.damagesource.DamageSource source, float damage, boolean comesFromEffect) {
         if (!isAttackableSummon()) {
             return;
         }
-        super.knockback(strength, x, z);
+        super.knockback(strength, x, z, source, damage, comesFromEffect);
     }
 
     /// Gates vanilla suffocation on the behaviour's `movement.suffocates` (default false = immune).

@@ -15,8 +15,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /// the same tick the effect was applied.
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityKnockbackImmunity {
-    @Inject(method = "knockback", at = @At("HEAD"), cancellable = true)
-    private void knockback_HEAD_KnockbackImmunity_SpellEngine(double strength, double x, double z, CallbackInfo ci) {
+    // 26.2: `knockback` split into a 5-arg and the terminal 6-arg overload; cancel the terminal one (the other delegates)
+    @Inject(method = "knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V", at = @At("HEAD"), cancellable = true)
+    private void knockback_HEAD_KnockbackImmunity_SpellEngine(double strength, double x, double z, net.minecraft.world.damagesource.DamageSource source, float damage, boolean comesFromEffect, CallbackInfo ci) {
         var entity = (LivingEntity) (Object) this;
         if (KnockbackImmunity.anyImmune(entity.getActiveEffectsMap().keySet())) {
             ci.cancel();

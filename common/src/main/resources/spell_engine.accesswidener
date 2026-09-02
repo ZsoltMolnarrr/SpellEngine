@@ -20,7 +20,6 @@ accessible	class	net/minecraft/world/level/block/entity/BlockEntityType$BlockEnt
 accessible	field	net/minecraft/client/renderer/RenderPipelines	ENTITY_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 accessible	field	net/minecraft/client/renderer/RenderPipelines	ENTITY_EMISSIVE_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
 accessible	field	net/minecraft/client/renderer/RenderPipelines	BEACON_BEAM_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
-# Item glow: the glint program pipeline (core/glint) is rebuilt with additive blending
-accessible	field	net/minecraft/client/renderer/RenderPipelines	MATRICES_PROJECTION_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
-accessible	field	net/minecraft/client/renderer/RenderPipelines	FOG_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+# Item glow: the glint program pipeline (core/glint) is rebuilt with additive blending (26.2: the matrices/fog
+# snippets became public `BindGroupLayouts` constants; only GLOBALS_SNIPPET is still private)
 accessible	field	net/minecraft/client/renderer/RenderPipelines	GLOBALS_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;

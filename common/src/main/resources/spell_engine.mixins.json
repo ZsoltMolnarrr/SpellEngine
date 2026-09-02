@@ -80,7 +80,6 @@
     "client.render.MinecraftClientMixin",
     "client.render.ProjectileEntityRendererMixin",
     "client.render.tint.RenderLayersMixin",
-    "client.render.ImmediateItemGlowMixin",
     "client.render.RenderLayerItemGlowMixin",
     "client.render.tint.BatchingRenderCommandQueueTintMixin"
   ],

@@ -21,9 +21,6 @@ public class BatchingRenderCommandQueueTintMixin {
         return EntityTintPass.apply(tintedColor);
     }
 
-    // submitModelPart(part, matrices, renderLayer, int light, int overlay, sprite, sheeted, hasGlint, int tintedColor, crumbling, int)
-    @ModifyVariable(method = "submitModelPart", at = @At("HEAD"), argsOnly = true, ordinal = 2)
-    private int spellEngine_tintSubmittedModelPart(int tintedColor) {
-        return EntityTintPass.apply(tintedColor);
-    }
+    // 26.2: `submitModelPart` is a default method of `OrderedSubmitNodeCollector` that wraps the part in a
+    // `Model.Simple` and calls `submitModel` above, so model parts are tinted through the same hook.
 }

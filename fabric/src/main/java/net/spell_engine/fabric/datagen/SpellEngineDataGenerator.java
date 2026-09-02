@@ -101,7 +101,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         @Override
         protected void addTags(HolderLookup.Provider wrapperLookup) {
             SpellEngineEntityTags.Vulnerability.ALL.forEach(entry -> {
-                var builder = valueLookupBuilder(entry.tag());
+                var builder = builder(entry.tag()); // 26.2: `valueLookupBuilder` removed
                 entry.included().forEach(tag -> {
                     builder.addOptionalTag(tag);
                 });

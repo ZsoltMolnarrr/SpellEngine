@@ -3,7 +3,7 @@ package net.spell_engine.api.render;
 import com.google.common.base.Suppliers;
 import org.jetbrains.annotations.Nullable;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.PrimitiveTopology;
 import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -13,6 +13,7 @@ import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.platform.CompareOp;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -37,6 +38,11 @@ import java.util.function.Supplier;
 /// writes are a {@link ColorTargetState} and depth test/write a {@link DepthStencilState}. Blend and depth state are
 /// therefore expressed as pipeline variants below (compiled lazily on first use, like vanilla's), and the
 /// old `RenderPhase`/`MultiPhaseParameters` based factories are gone.
+///
+/// 26.2: samplers/uniforms are declared through {@link BindGroupLayouts} (`withSampler` is gone), the vertex format
+/// is `withVertexBinding` + `withPrimitiveTopology`, per-layer `bufferSize` is gone, and the depth buffer is
+/// **reverse-Z**: every depth compare copied from a vanilla pipeline must be re-read from the 26.2 constant
+/// (`LESS_THAN_OR_EQUAL` became `GREATER_THAN_OR_EQUAL`; `DepthStencilState.DEFAULT` flipped with it).
 public class CustomLayers {
 
     private static Identifier pipelineId(String name) {
@@ -68,7 +74,7 @@ public class CustomLayers {
             .withLocation(pipelineId("entity_translucent_depth_write"))
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
             .withShaderDefine("PER_FACE_LIGHTING")
-            .withSampler("Sampler1")
+            .withBindGroupLayout(BindGroupLayouts.SAMPLER1)
             .withColorTargetState(ColorTargetState.DEFAULT)
             .withCull(false)
             .withDepthStencilState(DepthStencilState.DEFAULT)
@@ -80,7 +86,7 @@ public class CustomLayers {
             .withLocation(pipelineId("entity_emissive_depth_write"))
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
             .withShaderDefine("PER_FACE_LIGHTING")
-            .withSampler("Sampler1")
+            .withBindGroupLayout(BindGroupLayouts.SAMPLER1)
             .withColorTargetState(ColorTargetState.DEFAULT)
             .withCull(false)
             .withDepthStencilState(DepthStencilState.DEFAULT)
@@ -103,9 +109,9 @@ public class CustomLayers {
     private static final RenderPipeline BEACON_BEAM_TRANSLUCENT_NO_CULL = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
             .withLocation(pipelineId("beacon_beam_translucent_no_cull"))
             .withCull(false)
-            // Same blend and depth state as vanilla `RenderPipelines.BEACON_BEAM_TRANSLUCENT`
+            // Same blend and depth state as vanilla `RenderPipelines.BEACON_BEAM_TRANSLUCENT` (26.2: reverse-Z, GEQUAL)
             .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT))
-            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
+            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
             .build();
 
 
@@ -117,13 +123,11 @@ public class CustomLayers {
             RenderType.create("spell_beam", RenderSetup.builder(transparent ? RenderPipelines.BEACON_BEAM_TRANSLUCENT : RenderPipelines.BEACON_BEAM_OPAQUE)
                     .withTexture("Sampler0", texture)
                     .sortOnUpload()
-                    .bufferSize(256)
                     .createRenderSetup()));
     private static final BiFunction<Identifier, Boolean, RenderType> BEAM_NO_CULL = Util.memoize((texture, transparent) ->
             RenderType.create("spell_beam", RenderSetup.builder(transparent ? BEACON_BEAM_TRANSLUCENT_NO_CULL : BEACON_BEAM_OPAQUE_NO_CULL)
                     .withTexture("Sampler0", texture)
                     .sortOnUpload()
-                    .bufferSize(256)
                     .createRenderSetup()));
 
     public static RenderType beam(Identifier texture, boolean cull, boolean transparent) {
@@ -169,7 +173,6 @@ public class CustomLayers {
                     .useLightmap()
                     .useOverlay()
                     .sortOnUpload()
-                    .bufferSize(1536)
                     .setOutline(RenderSetup.OutlineProperty.NONE)
                     .createRenderSetup()));
 
@@ -186,7 +189,6 @@ public class CustomLayers {
         var setup = RenderSetup.builder(pipeline)
                 .withTexture("Sampler0", key.texture)
                 .sortOnUpload()
-                .bufferSize(256)
                 .setOutline(RenderSetup.OutlineProperty.NONE);
         if (key.lightEmission != LightEmission.GLOW) {
             // The beacon beam vertex format carries no overlay
@@ -205,14 +207,14 @@ public class CustomLayers {
             .withLocation(pipelineId("beacon_beam_additive"))
             .withCull(false)
             .withColorTargetState(new ColorTargetState(BlendFunction.LIGHTNING))
-            .withDepthStencilState(new DepthStencilState(CompareOp.LESS_THAN_OR_EQUAL, false))
+            // 26.2 reverse-Z: the no-write translucent test is GEQUAL (vanilla `BEACON_BEAM_TRANSLUCENT`)
+            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
             .build();
 
     private static final Function<Identifier, RenderType> SPELL_OBJECT_ADDITIVE = Util.memoize(texture ->
             RenderType.create("spell_object_additive", RenderSetup.builder(BEACON_BEAM_ADDITIVE)
                     .withTexture("Sampler0", texture)
                     .sortOnUpload()
-                    .bufferSize(256)
                     .setOutline(RenderSetup.OutlineProperty.NONE)
                     .createRenderSetup()));
 
@@ -250,7 +252,6 @@ public class CustomLayers {
     private static final Supplier<RenderType> SPELL_OBJECT_LIGHTNING = Suppliers.memoize(() ->
             RenderType.create("spell_object_lightning", RenderSetup.builder(RenderPipelines.LIGHTNING)
                     .sortOnUpload()
-                    .bufferSize(256)
                     .setOutline(RenderSetup.OutlineProperty.NONE)
                     .createRenderSetup()));
 
@@ -288,12 +289,12 @@ public class CustomLayers {
     public static float itemGlowGain = 3F;
 
     private static final Set<RenderType> itemGlowLayers = ConcurrentHashMap.newKeySet();
-    /// Color modulator per glint glow layer, applied by `RenderLayerItemGlowMixin` when the layer draws
-    /// (the 1.21.1 `RenderSystem.setShaderColor` is gone; `RenderLayer.draw` hard-codes white).
+    /// Color modulator per glint glow layer, applied by `RenderLayerItemGlowMixin` when the layer is prepared
+    /// (the 1.21.1 `RenderSystem.setShaderColor` is gone; `RenderType.prepare` hard-codes white).
     private static final java.util.Map<RenderType, org.joml.Vector4f> itemGlowColors = new ConcurrentHashMap<>();
 
-    /// Layers returned by [#itemGlow] / [#itemGlowEmissive], which need a dedicated buffer to draw in the
-    /// correct order (after the item they sit on). See `ImmediateItemGlowMixin`.
+    /// Layers returned by [#itemGlow] / [#itemGlowEmissive]. (Up to 26.1 these needed a dedicated `BufferSource`
+    /// buffer to draw after the item; since 26.2 the feature-render phases order them, see `ItemGlowRendering`.)
     public static boolean isItemGlowLayer(RenderType layer) {
         return itemGlowLayers.contains(layer);
     }
@@ -358,17 +359,21 @@ public class CustomLayers {
     /// but blended plain additive. The vanilla glint blends `SRC_COLOR, ONE`, squaring the source and
     /// dimming it into the faint shimmer it is; adding it outright is what makes this glow burn.
     /// `EQUAL` depth test is the mask: it confines the streaks to the pixels the item wrote, so the pass
-    /// must be drawn after the item (see `ImmediateItemGlowMixin`). Do not relax it to `LEQUAL`.
-    private static final RenderPipeline ITEM_GLOW_GLINT_PIPELINE = RenderPipeline.builder(
-                    RenderPipelines.MATRICES_PROJECTION_SNIPPET, RenderPipelines.FOG_SNIPPET, RenderPipelines.GLOBALS_SNIPPET)
+    /// must be drawn after the item (see `ItemGlowRendering`: since 26.2 the feature-render phases order it,
+    /// blending custom geometry runs after the solid item pass). Do not relax it to `GEQUAL`. Direction-neutral
+    /// under reverse-Z. Layout mirrors vanilla 26.2 `RenderPipelines.GLINT`.
+    private static final RenderPipeline ITEM_GLOW_GLINT_PIPELINE = RenderPipeline.builder(RenderPipelines.GLOBALS_SNIPPET)
+            .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION)
+            .withBindGroupLayout(BindGroupLayouts.FOG)
             .withLocation(pipelineId("item_glow_glint"))
             .withVertexShader("core/glint")
             .withFragmentShader("core/glint")
-            .withSampler("Sampler0")
+            .withBindGroupLayout(BindGroupLayouts.SAMPLER0)
             .withCull(false)
             .withDepthStencilState(new DepthStencilState(CompareOp.EQUAL, false))
             .withColorTargetState(new ColorTargetState(BlendFunction.ADDITIVE))
-            .withVertexFormat(DefaultVertexFormat.POSITION_TEX, VertexFormat.Mode.QUADS)
+            .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX)
+            .withPrimitiveTopology(PrimitiveTopology.QUADS)
             .build();
 
     private static Supplier<com.mojang.blaze3d.textures.GpuSampler> itemGlowSampler(boolean smooth) {
@@ -395,7 +400,6 @@ public class CustomLayers {
                 .withTexture("Sampler0", ITEM_GLOW_TEXTURE, itemGlowSampler(key.smooth))
                 .setTextureTransform(ITEM_GLOW_TEXTURING)
                 .sortOnUpload()
-                .bufferSize(1536)
                 .setOutline(RenderSetup.OutlineProperty.NONE)
                 .createRenderSetup());
         // Opacity is folded into the color instead of the alpha, because the additive blend scales by
@@ -418,7 +422,7 @@ public class CustomLayers {
             .withLocation(pipelineId("item_glow"))
             .withShaderDefine("ALPHA_CUTOUT", 0.1F)
             .withShaderDefine("NO_CARDINAL_LIGHTING")
-            .withSampler("Sampler1")
+            .withBindGroupLayout(BindGroupLayouts.SAMPLER1)
             .withColorTargetState(new ColorTargetState(BlendFunction.ADDITIVE))
             .withCull(true)
             .withDepthStencilState(new DepthStencilState(CompareOp.EQUAL, false))
@@ -430,7 +434,6 @@ public class CustomLayers {
                     .useOverlay()
                     .useLightmap()
                     .sortOnUpload()
-                    .bufferSize(1536)
                     .setOutline(RenderSetup.OutlineProperty.NONE)
                     .createRenderSetup())));
 

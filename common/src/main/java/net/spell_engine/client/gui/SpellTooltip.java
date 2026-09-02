@@ -382,7 +382,7 @@ public class SpellTooltip {
         var tooltipData = spell.tooltip != null ? spell.tooltip : Spell.Tooltip.DEFAULT;
 
         if (shouldShow(tooltipData.name, details)) {
-            var color = ChatFormatting.getByName(tooltipData.name.color);
+            var color = formattingByName(tooltipData.name.color);
             var name = Component.empty().withStyle(ChatFormatting.BOLD);
             name.append(Component.translatable(spellTranslationKey(spellId))
                     .withStyle(ChatFormatting.BOLD));
@@ -419,7 +419,7 @@ public class SpellTooltip {
         var tooltipData = spell.tooltip != null ? spell.tooltip : Spell.Tooltip.DEFAULT;
         if (shouldShow(tooltipData.description, details)) {
             var primaryPower = SpellPower.getSpellPower(spell.school, player);
-            var color = ChatFormatting.getByName(tooltipData.description.color);
+            var color = formattingByName(tooltipData.description.color);
             var description = createDescription(spellEntry, player, itemStack, spell, primaryPower);
             lines.add(indentation(indentLevel)
                     .append(Component.translatable(description))
@@ -1074,9 +1074,21 @@ public class SpellTooltip {
         return "spell." + spellId.getNamespace() + "." + spellId.getPath();
     }
 
+    /// 26.2 removed `ChatFormatting.getByName`; same lookup (case-insensitive, non-letters ignored: "dark_gray" == "DARK_GRAY")
+    private static @Nullable ChatFormatting formattingByName(@Nullable String name) {
+        if (name == null) return null;
+        var wanted = name.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z]", "");
+        for (var formatting : ChatFormatting.values()) {
+            if (formatting.name().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z]", "").equals(wanted)) {
+                return formatting;
+            }
+        }
+        return null;
+    }
+
     public static String spellGroup(String group) {
         var key = "spell.group." + group;
-        if (I18n.exists(key)) {
+        if (net.minecraft.locale.Language.getInstance().has(key)) { // 26.2: `I18n.exists` removed
             return I18n.get(key);
         } else {
             return "";

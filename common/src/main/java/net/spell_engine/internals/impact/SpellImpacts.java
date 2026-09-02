@@ -392,7 +392,8 @@ public class SpellImpacts {
                         target.invulnerableTime = timeUntilRegen;
                         if (context.hasOffset()) {
                             var direction = context.knockbackDirection(livingEntity.position()).reverse(); // Negate for smart Vanilla API :)
-                            livingEntity.knockback(knockbackDefaultStrength * knockbackMultiplier, direction.x, direction.z);
+                            // 26.2: knockback carries the damage source and amount (used by overrides such as the Creaking)
+                            livingEntity.knockback(knockbackDefaultStrength * knockbackMultiplier, direction.x, direction.z, damageSource, (float) amount);
                         }
                     }
                     success = true;

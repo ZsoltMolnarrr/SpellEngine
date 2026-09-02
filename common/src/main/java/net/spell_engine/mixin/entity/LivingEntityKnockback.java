@@ -37,7 +37,8 @@ public abstract class LivingEntityKnockback implements ConfigurableKnockback {
         customKnockbackMultipliers.pop();
     }
 
-    @ModifyVariable(method = "knockback", at = @At("HEAD"), ordinal = 0, argsOnly = true)
+    // 26.2: `knockback` split into a 5-arg and the terminal 6-arg overload; hook only the terminal one (the other delegates)
+    @ModifyVariable(method = "knockback(DDDLnet/minecraft/world/damagesource/DamageSource;FZ)V", at = @At("HEAD"), ordinal = 0, argsOnly = true)
     public double takeKnockback_HEAD_changeStrength(double knockbackStrength) {
         return knockbackStrength * getKnockbackMultiplier_SpellEngine();
     }

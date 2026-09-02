@@ -1,6 +1,6 @@
 package net.spell_engine.mixin.criteria;
 
-import net.minecraft.advancements.criterion.EnchantedItemTrigger;
+import net.minecraft.advancements.triggers.EnchantedItemTrigger;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;

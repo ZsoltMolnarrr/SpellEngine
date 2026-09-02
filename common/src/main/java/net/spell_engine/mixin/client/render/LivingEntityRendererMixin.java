@@ -70,7 +70,7 @@ public abstract class LivingEntityRendererMixin {
             // injectors happened to have before they were merged (see the comment on the method below).
             spellEngine_submitModelFx(state, matrixStack, queue, livingEntity, delta);
             var client = Minecraft.getInstance();
-            var isRenderingClientPlayerInFirstPerson = (livingEntity == client.player && !client.gameRenderer.getMainCamera().isDetached());
+            var isRenderingClientPlayerInFirstPerson = (livingEntity == client.player && !client.gameRenderer.mainCamera().isDetached());
             if (!isRenderingClientPlayerInFirstPerson) {
                 for (var entry: Synchronized.effectsOf(livingEntity)) {
                     var effect = entry.effect();
@@ -102,7 +102,7 @@ public abstract class LivingEntityRendererMixin {
     @Unique
     private void spellEngine_submitModelFx(LivingEntityRenderState state, PoseStack matrices, SubmitNodeCollector queue, LivingEntity entity, float delta) {
         var client = Minecraft.getInstance();
-        var camera = client.gameRenderer.getMainCamera();
+        var camera = client.gameRenderer.mainCamera();
         if (camera == null) return;
         if (entity == camera.entity() && !camera.isDetached()) return;
 

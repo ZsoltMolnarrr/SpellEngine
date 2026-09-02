@@ -42,7 +42,7 @@ public class HudRenderHelper {
      * default cast bar overlaps. Registering it earlier leaves the cast bar hidden under the experience bar.
      */
     public static void renderHudElement(GuiGraphicsExtractor context, float tickDelta) {
-        if (Minecraft.getInstance().options.hideGui) { return; }
+        if (Minecraft.getInstance().gui.hud.isHidden()) { return; } // 26.2: `Options#hideGui` → `Hud#isHidden`
         render(context, tickDelta);
     }
 
@@ -154,7 +154,7 @@ public class HudRenderHelper {
     public static class TargetWidget {
         public static void render(GuiGraphicsExtractor context, float tickDelta, Vec2 starting, ViewModel viewModel) {
             Minecraft client = Minecraft.getInstance();
-            var textRenderer = client.gui.getFont();
+            var textRenderer = client.font;
 
             int textWidth = textRenderer.width(viewModel.text);
 
@@ -343,7 +343,7 @@ public class HudRenderHelper {
         public static void render(GuiGraphicsExtractor context, int screenWidth, int screenHeight, ViewModel viewModel) {
             var config = SpellEngineClient.hudConfig.value.hotbar;
             Minecraft client = Minecraft.getInstance();
-            var textRenderer = client.gui.getFont();
+            var textRenderer = client.font;
             if (viewModel.spells.isEmpty()) {
                 return;
             }
@@ -454,7 +454,7 @@ public class HudRenderHelper {
             if (alpha < 10) { return; }
             // System.out.println("Rendering opacity: " + viewModel.opacity + " alpha: " + alpha);
             Minecraft client = Minecraft.getInstance();
-            var textRenderer = client.gui.getFont();
+            var textRenderer = client.font;
             int textWidth = textRenderer.width(viewModel.message);
             int textHeight = textRenderer.lineHeight;
             var config = hudConfig.error_message;

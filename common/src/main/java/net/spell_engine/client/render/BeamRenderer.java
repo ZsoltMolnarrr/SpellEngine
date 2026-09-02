@@ -2,11 +2,10 @@ package net.spell_engine.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Axis;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.Identifier;
@@ -78,15 +77,18 @@ public class BeamRenderer {
         );
     }
 
-    /// Beam world-render pass. Loader-neutral: takes the pose stack, camera and partial tick from
-    /// whatever event the loader fires. Fabric: `WorldRenderEvents.END_MAIN` (AFTER_TRANSLUCENT was removed in 1.21.9); NeoForge:
-    /// `RenderLevelStageEvent` (AFTER_TRANSLUCENT_BLOCKS).
-    public static void renderAfterTranslucent(PoseStack matrices, Camera camera, float tickDelta) {
-        MultiBufferSource.BufferSource vcProvider = Minecraft.getInstance().renderBuffers().bufferSource();
-        renderAllInWorld(matrices, vcProvider, camera, LightCoordsUtil.FULL_BRIGHT, tickDelta);
+    /// Beam submission pass. Loader-neutral: takes the pose stack (camera-relative, as handed to entity submits),
+    /// the level's submit node collector, the camera and the partial tick from whatever hook the loader fires.
+    /// Fabric: `LevelRenderEvents.COLLECT_SUBMITS`; NeoForge: `SubmitCustomGeometryEvent`. Both run inside
+    /// `LevelRenderer#submitFeatures`, i.e. the beam geometry is submitted like vanilla's beacon beam
+    /// (`BeaconRenderer#submitBeaconBeam`) and drawn by the feature-render phases: the blending layers in
+    /// `translucentCustomGeometry` (before translucent terrain), the opaque low-luminance core in `solid`.
+    /// (26.2 removed `MultiBufferSource`; up to 26.1 this drew immediately in the after-translucent event.)
+    public static void submit(PoseStack matrices, SubmitNodeCollector collector, Camera camera, float tickDelta) {
+        renderAllInWorld(matrices, collector, camera, LightCoordsUtil.FULL_BRIGHT, tickDelta);
     }
 
-    public static void renderAllInWorld(PoseStack matrices, MultiBufferSource.BufferSource vertexConsumers, Camera camera, int light, float delta) {
+    public static void renderAllInWorld(PoseStack matrices, SubmitNodeCollector vertexConsumers, Camera camera, int light, float delta) {
         var focusedEntity = camera.entity();
         if (focusedEntity == null) {
             return;
@@ -141,11 +143,10 @@ public class BeamRenderer {
             ((BeamEmitterEntity)livingEntity).setLastRenderedBeam(new Beam.Rendered(beamPosition, beamAppearance));
             matrices.popPose();
         }
-        vertexConsumers.endBatch();
         matrices.popPose();
     }
 
-    private static void renderBeamFromPlayer(PoseStack matrixStack, MultiBufferSource vertexConsumerProvider,
+    private static void renderBeamFromPlayer(PoseStack matrixStack, SubmitNodeCollector vertexConsumerProvider,
                                              Spell.Target.Beam beam,
                                              Vec3 from, Vec3 to, Vec3 offset, long time, float tickDelta) {
         var absoluteTime = (float)Math.floorMod(time, 40) + tickDelta;
@@ -188,7 +189,7 @@ public class BeamRenderer {
     }
 
 
-    public static void renderBeam(PoseStack matrices, MultiBufferSource vertexConsumers,
+    public static void renderBeam(PoseStack matrices, SubmitNodeCollector vertexConsumers,
                                   long time, float tickDelta, float direction, boolean center,
                                   Color.IntFormat innerColor, Color.IntFormat outerColor, LayerSet renderLayers,
                                   float yOffset, float height, float width) {
@@ -198,36 +199,41 @@ public class BeamRenderer {
         float offset = Mth.frac(shift * 0.2f - (float)Mth.floor(shift * 0.1f)) * (- direction);
 
         var originalWidth = width;
+        // Each shell is one custom-geometry submit on its layer; the collector copies the pose, and the lambda
+        // writes the vertices when the feature renderer builds the frame (same idiom as `BeaconRenderer`).
         if (center) {
-            renderBeamLayer(matrices, vertexConsumers.getBuffer(renderLayers.inner()),
-                    innerColor.red(), innerColor.green(), innerColor.blue(), innerColor.alpha(),
-                    yOffset, height,
-                    0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
-                    0.0f, 1f, height, offset);
+            var w = width;
+            vertexConsumers.submitCustomGeometry(matrices, renderLayers.inner(), (pose, vertices) ->
+                    renderBeamLayer(pose, vertices,
+                            innerColor.red(), innerColor.green(), innerColor.blue(), innerColor.alpha(),
+                            yOffset, height,
+                            0.0f, w, w, 0.0f, -w, 0.0f, 0.0f, -w,
+                            0.0f, 1f, height, offset));
         }
 
-        width = originalWidth * 1.5F;
-        renderBeamLayer(matrices, vertexConsumers.getBuffer(renderLayers.outer()),
-                outerColor.red(), outerColor.green(), outerColor.blue(), (int) (outerColor.alpha() * 0.75F),
-                yOffset, height,
-                0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
-                0.0f, 1.0f, height, offset * 0.9F);
+        var w1 = originalWidth * 1.5F;
+        vertexConsumers.submitCustomGeometry(matrices, renderLayers.outer(), (pose, vertices) ->
+                renderBeamLayer(pose, vertices,
+                        outerColor.red(), outerColor.green(), outerColor.blue(), (int) (outerColor.alpha() * 0.75F),
+                        yOffset, height,
+                        0.0f, w1, w1, 0.0f, -w1, 0.0f, 0.0f, -w1,
+                        0.0f, 1.0f, height, offset * 0.9F));
 
-        width = originalWidth * 2F;
-        renderBeamLayer(matrices, vertexConsumers.getBuffer(renderLayers.outer()),
-                outerColor.red(), outerColor.green(), outerColor.blue(), outerColor.alpha() / 3,
-                yOffset, height,
-                0.0f, width, width, 0.0f, -width, 0.0f, 0.0f, -width,
-                0.0f, 1.0f, height, offset * 0.8F);
+        var w2 = originalWidth * 2F;
+        vertexConsumers.submitCustomGeometry(matrices, renderLayers.outer(), (pose, vertices) ->
+                renderBeamLayer(pose, vertices,
+                        outerColor.red(), outerColor.green(), outerColor.blue(), outerColor.alpha() / 3,
+                        yOffset, height,
+                        0.0f, w2, w2, 0.0f, -w2, 0.0f, 0.0f, -w2,
+                        0.0f, 1.0f, height, offset * 0.8F));
         matrices.popPose();
     }
 
-    private static void renderBeamLayer(PoseStack matrices, VertexConsumer vertices,
+    private static void renderBeamLayer(PoseStack.Pose matrix, VertexConsumer vertices,
                                         int red, int green, int blue, int alpha,
                                         float yOffset, float height,
                                         float x1, float z1, float x2, float z2, float x3, float z3, float x4,
                                         float z4, float u1, float u2, float v1, float v2) {
-        PoseStack.Pose matrix = matrices.last();
         renderBeamFace(matrix, vertices, red, green, blue, alpha, yOffset, height, x1, z1, x2, z2, u1, u2, v1, v2);
         renderBeamFace(matrix, vertices, red, green, blue, alpha, yOffset, height, x4, z4, x3, z3, u1, u2, v1, v2);
         renderBeamFace(matrix, vertices, red, green, blue, alpha, yOffset, height, x2, z2, x4, z4, u1, u2, v1, v2);
