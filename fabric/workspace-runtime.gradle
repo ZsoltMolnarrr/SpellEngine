@@ -36,18 +36,15 @@ dependencies {
     localRuntime("net.rpg_series:rogues-fabric:3.1.2.008+26.2") { transitive = false }
     }
     if (flags.rpg_series_gear) {
-    // TODO 26.2: not yet ported
-    // localRuntime("net.arsenal:arsenal-fabric:1.5.1.006+26.1.2") { transitive = false }
-    // localRuntime("net.rpg_series:armory-fabric:1.5.2.008+26.1.2") { transitive = false }
+    localRuntime("net.arsenal:arsenal-fabric:1.5.1.007+26.2") { transitive = false }
+    localRuntime("net.rpg_series:armory-fabric:1.5.2.009+26.2") { transitive = false }
     }
     if (flags.rpg_series_accessories) {
-    // TODO 26.2: not yet ported
-    // localRuntime("net.rpg_series:jewelry-fabric:2.4.1.008+26.1.2") { transitive = false }
-    // localRuntime("net.rpg_series:relics-fabric:1.4.1.007+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:jewelry-fabric:2.4.1.009+26.2") { transitive = false }
+    localRuntime("net.rpg_series:relics-fabric:1.4.1.008+26.2") { transitive = false }
     }
     if (flags.rpg_series_skills) {
-    // TODO 26.2: not yet ported
-    // localRuntime("net.rpg_series:skill_tree-fabric:1.6.1.006+26.1.2") { transitive = false }
+    localRuntime("net.rpg_series:skill_tree-fabric:1.6.1.007+26.2") { transitive = false }
         localRuntime("net.puffish:skillsmod:0.18.3+26.2:fabric")
     }
 }
