@@ -25,6 +25,8 @@ import net.spell_engine.utils.TargetHelper;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.client.renderer.SubmitNodeCollection;
+import net.minecraft.client.renderer.feature.CustomFeatureRenderer;
 import net.spell_engine.internals.delivery.LaunchGeometry;
 
 public class BeamRenderer {
@@ -52,13 +54,34 @@ public class BeamRenderer {
             return layerSet;
         }
     }
+    /// Layer sets are 1.21.1 verbatim. `CustomLayers.beam(…, transparent = true)` writes depth (as it did on
+    /// 1.21.1 through `ALL_MASK`); `spellObject(…, GLOW, true)` does not (1.21.1 `COLOR_MASK`). See the
+    /// `CustomLayers` beam notes for why the depth footprint matters on every render path.
+    ///
+    /// Without a shader pack (vanilla render system, or Iris with no pack) the outer shells are **additive**
+    /// (`SRC_ALPHA, ONE`, no depth write): additive light never darkens what it covers, so the bright core keeps its
+    /// full intensity and the shells only add glow. Alpha-blended shells (the 1.21.1 `BEAM_TRANSPARENCY` layer)
+    /// composite *over* the core and dim it — reviewed in-game on 26.2 (2026-09-04), additive is the one that reads
+    /// right. The shader-pack sets keep their depth-writing alpha-blended shells: a pack's composite needs the
+    /// shell's depth footprint to keep it over water, and additive shells were not what packs were tuned against.
+    ///
+    /// No Iris: translucent core with depth, additive outer shells.
     public static LayerSet vanilla(Identifier texture) {
         return new LayerSet(
                 CustomLayers.beam(texture, false, true),
-                CustomLayers.spellObject(texture, LightEmission.GLOW, true)
+                CustomLayers.spellObjectAdditive(texture)
         );
     }
+    /// Iris, no pack: opaque core, additive outer shells. (Also the set a pack falls back to when
+    /// `renderBeamsHighLuminance` is off — see `renderBeamFromPlayer`, where the pack path swaps the shells back.)
     public static LayerSet low(Identifier texture) {
+        return new LayerSet(
+                CustomLayers.beam(texture, false, false),
+                CustomLayers.spellObjectAdditive(texture)
+        );
+    }
+    /// Shader pack, `renderBeamsHighLuminance` off: opaque core, depth-writing alpha-blended shells (1.21.1 `low`).
+    public static LayerSet lowShaderPack(Identifier texture) {
         return new LayerSet(
                 CustomLayers.beam(texture, false, false),
                 CustomLayers.beam(texture, false, true)
@@ -80,9 +103,8 @@ public class BeamRenderer {
     /// Beam submission pass. Loader-neutral: takes the pose stack (camera-relative, as handed to entity submits),
     /// the level's submit node collector, the camera and the partial tick from whatever hook the loader fires.
     /// Fabric: `LevelRenderEvents.COLLECT_SUBMITS`; NeoForge: `SubmitCustomGeometryEvent`. Both run inside
-    /// `LevelRenderer#submitFeatures`, i.e. the beam geometry is submitted like vanilla's beacon beam
-    /// (`BeaconRenderer#submitBeaconBeam`) and drawn by the feature-render phases: the blending layers in
-    /// `translucentCustomGeometry` (before translucent terrain), the opaque low-luminance core in `solid`.
+    /// `LevelRenderer#submitFeatures`. Every shell goes to the `afterTerrain` phase (see `submitShell`), which
+    /// executes right after translucent terrain — the slot the pre-26.2 after-translucent hook occupied.
     /// (26.2 removed `MultiBufferSource`; up to 26.1 this drew immediately in the after-translucent event.)
     public static void submit(PoseStack matrices, SubmitNodeCollector collector, Camera camera, float tickDelta) {
         renderAllInWorld(matrices, collector, camera, LightCoordsUtil.FULL_BRIGHT, tickDelta);
@@ -174,11 +196,11 @@ public class BeamRenderer {
         LayerSet renderLayers;
         if (ShaderCompatibility.isVanillaRenderSystem()) {
             renderLayers = vanilla(texture);
+        } else if (ShaderCompatibility.isShaderPackInUse()) {
+            var luminance = SpellEngineClient.config.renderBeamsHighLuminance ? beam.luminance : Spell.Target.Beam.Luminance.MEDIUM;
+            renderLayers = luminance == Spell.Target.Beam.Luminance.LOW ? lowShaderPack(texture) : layerSetFor(texture, luminance);
         } else {
-            var luminance = ShaderCompatibility.isShaderPackInUse()
-                    ? (SpellEngineClient.config.renderBeamsHighLuminance ? beam.luminance : Spell.Target.Beam.Luminance.MEDIUM)
-                    : Spell.Target.Beam.Luminance.LOW;
-            renderLayers = layerSetFor(texture, luminance);
+            renderLayers = layerSetFor(texture, Spell.Target.Beam.Luminance.LOW);
         }
         BeamRenderer.renderBeam(matrixStack, vertexConsumerProvider,
                 time, tickDelta, beam.flow, true,
@@ -188,6 +210,37 @@ public class BeamRenderer {
         matrixStack.popPose();
     }
 
+
+    /// Draw order for the beam's shells. Two different `RenderType`s inside one feature-render phase are bucketed
+    /// in a plain `HashMap` (`SimpleFeatureRenderPhase.FeatureSubmits#batches`) and drawn in hash order, so the
+    /// shells cannot be ordered against each other within a single order bucket. `SubmitNodeStorage#getSubmitsPerOrder`
+    /// is an `Int2ObjectAVLTreeMap`, and every phase execution iterates it ascending — so distinct order values are
+    /// the one deterministic lever. Both sit above 0 so the whole beam draws after the default bucket.
+    private static final int ORDER_INNER = 1;
+    private static final int ORDER_OUTER = 2;
+
+    /// Submits one beam shell into the `afterTerrain` phase.
+    ///
+    /// Up to 1.9.x the whole beam was drawn from the world's after-translucent hook (Fabric
+    /// `WorldRenderEvents.AFTER_TRANSLUCENT`, NeoForge `RenderLevelStageEvent`), i.e. **after** translucent terrain,
+    /// as one immediate `Immediate.draw()` with the shells in submission order. The 26.2 port replaced that with
+    /// `SubmitNodeCollector#submitCustomGeometry`, which routes purely on `RenderType#hasBlending()` — every blended
+    /// shell lands in `translucentCustomGeometry`, and `FeatureRenderDispatcher#executeTranslucent` runs that phase
+    /// *before* `chunkSectionsToRender.renderGroup(TRANSLUCENT)`. So the beam silently moved from after water to
+    /// before it, and water (drawn later, writing depth) paints over the shells — the outer ones have no depth of
+    /// their own, so over water they disappear almost entirely, in both render modes.
+    ///
+    /// `afterTerrain` is 26.2's equivalent slot: `executeTranslucentAfterTerrain()` runs immediately after
+    /// translucent terrain, which is where the 1.21.1 hook sat.
+    private static void submitShell(SubmitNodeCollector collector, PoseStack matrices, RenderType layer, int order,
+                                    SubmitNodeCollector.CustomGeometryRenderer geometry) {
+        if (collector.order(order) instanceof SubmitNodeCollection collection) {
+            collection.afterTerrain.submit(new CustomFeatureRenderer.Submit(matrices.last().copy(), layer, geometry));
+        } else {
+            // Unknown collector implementation: fall back to the routed path rather than dropping the beam.
+            collector.submitCustomGeometry(matrices, layer, geometry);
+        }
+    }
 
     public static void renderBeam(PoseStack matrices, SubmitNodeCollector vertexConsumers,
                                   long time, float tickDelta, float direction, boolean center,
@@ -203,7 +256,7 @@ public class BeamRenderer {
         // writes the vertices when the feature renderer builds the frame (same idiom as `BeaconRenderer`).
         if (center) {
             var w = width;
-            vertexConsumers.submitCustomGeometry(matrices, renderLayers.inner(), (pose, vertices) ->
+            submitShell(vertexConsumers, matrices, renderLayers.inner(), ORDER_INNER, (pose, vertices) ->
                     renderBeamLayer(pose, vertices,
                             innerColor.red(), innerColor.green(), innerColor.blue(), innerColor.alpha(),
                             yOffset, height,
@@ -212,7 +265,7 @@ public class BeamRenderer {
         }
 
         var w1 = originalWidth * 1.5F;
-        vertexConsumers.submitCustomGeometry(matrices, renderLayers.outer(), (pose, vertices) ->
+        submitShell(vertexConsumers, matrices, renderLayers.outer(), ORDER_OUTER, (pose, vertices) ->
                 renderBeamLayer(pose, vertices,
                         outerColor.red(), outerColor.green(), outerColor.blue(), (int) (outerColor.alpha() * 0.75F),
                         yOffset, height,
@@ -220,7 +273,7 @@ public class BeamRenderer {
                         0.0f, 1.0f, height, offset * 0.9F));
 
         var w2 = originalWidth * 2F;
-        vertexConsumers.submitCustomGeometry(matrices, renderLayers.outer(), (pose, vertices) ->
+        submitShell(vertexConsumers, matrices, renderLayers.outer(), ORDER_OUTER, (pose, vertices) ->
                 renderBeamLayer(pose, vertices,
                         outerColor.red(), outerColor.green(), outerColor.blue(), outerColor.alpha() / 3,
                         yOffset, height,

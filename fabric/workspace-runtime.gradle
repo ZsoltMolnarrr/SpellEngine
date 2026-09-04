@@ -31,7 +31,7 @@ dependencies {
 
     if (flags.rpg_series_classes) {
     localRuntime("net.rpg_series:archers-fabric:3.1.2.009+26.2") { transitive = false }
-    localRuntime("net.rpg_series:wizards-fabric:3.1.2.008+26.2") { transitive = false }
+    localRuntime("net.rpg_series:wizards-fabric:3.1.2.010+26.2") { transitive = false }
     localRuntime("net.rpg_series:paladins-fabric:3.1.2.010+26.2") { transitive = false }
     localRuntime("net.rpg_series:rogues-fabric:3.1.2.008+26.2") { transitive = false }
     }

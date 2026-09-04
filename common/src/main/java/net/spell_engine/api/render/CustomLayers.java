@@ -8,6 +8,7 @@ import com.mojang.blaze3d.textures.AddressMode;
 import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.platform.BlendFactor;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
@@ -62,6 +63,8 @@ public class CustomLayers {
         map.put(ENTITY_EMISSIVE_DEPTH_WRITE, PipelineKind.ENTITY_EMISSIVE);
         map.put(BEACON_BEAM_OPAQUE_NO_CULL, PipelineKind.BEACON_BEAM);
         map.put(BEACON_BEAM_TRANSLUCENT_NO_CULL, PipelineKind.BEACON_BEAM);
+        map.put(BEACON_BEAM_TRANSLUCENT_NO_CULL_DEPTH_WRITE, PipelineKind.BEACON_BEAM);
+        map.put(BEACON_BEAM_TRANSLUCENT_DEPTH_WRITE, PipelineKind.BEACON_BEAM);
         map.put(BEACON_BEAM_ADDITIVE, PipelineKind.BEACON_BEAM);
         map.put(ARMOR_CUTOUT_NO_CULL_TRANSLUCENT, PipelineKind.ENTITY_TRANSLUCENT);
         map.put(itemGlowEmissivePipeline(), PipelineKind.ENTITY_EMISSIVE);
@@ -106,6 +109,8 @@ public class CustomLayers {
             .withLocation(pipelineId("beacon_beam_opaque_no_cull"))
             .withCull(false)
             .build();
+    /// No depth write — this is the *spell object* variant, matching 1.21.1 `spellObject(..., translucent=true)`,
+    /// which was built with `COLOR_MASK`. Used by translucent GLOW spell models (e.g. the Fire Hydra body).
     private static final RenderPipeline BEACON_BEAM_TRANSLUCENT_NO_CULL = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
             .withLocation(pipelineId("beacon_beam_translucent_no_cull"))
             .withCull(false)
@@ -114,22 +119,77 @@ public class CustomLayers {
             .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, false))
             .build();
 
+    /// Same, but **writing depth** — the *beam* variant.
+    ///
+    /// Up to 1.9.x every beam layer was built with Yarn's `ALL_MASK` (colour **and** depth): `CustomLayers.beam`
+    /// on 1.21.1 read `.writeMaskState(transparent ? ALL_MASK : ALL_MASK)`, a dead ternary that made both the
+    /// opaque and the translucent beam write depth. The 1.21.11/26.x pipeline port mapped the translucent beam
+    /// onto the *spell object* pipeline above — whose depth state was copied from vanilla's beacon beam, which
+    /// does not write depth — and the beam silently lost its depth footprint. Without it the beam stamps no
+    /// depth, so translucent terrain, clouds and particles (all drawn later) paint straight over the whole beam
+    /// instead of being occluded by its core.
+    ///
+    /// Keep these two pipelines separate: they differed on 1.21.1 and collapsing them regresses one or the other.
+    private static final RenderPipeline BEACON_BEAM_TRANSLUCENT_NO_CULL_DEPTH_WRITE = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
+            .withLocation(pipelineId("beacon_beam_translucent_no_cull_depth_write"))
+            .withCull(false)
+            // 1.21.1 `BEAM_TRANSPARENCY` was SE's own, non-separate `blendFunc(SRC_ALPHA, ONE_MINUS_SRC_ALPHA)` —
+            // one equation for colour AND alpha. Vanilla's `BlendFunction.TRANSLUCENT` is separate (alpha `ONE`),
+            // which writes a different destination alpha; shader packs read that. The two-arg constructor
+            // reproduces the 1.21.1 behaviour exactly. (Spell objects keep vanilla `TRANSLUCENT`, matching
+            // 1.21.1 `TRANSLUCENT_TRANSPARENCY` — the two layers differed there too.)
+            .withColorTargetState(new ColorTargetState(new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE_MINUS_SRC_ALPHA)))
+            // 1.21.1 `ALL_MASK`: depth test as vanilla (26.2 reverse-Z GEQUAL), depth write ON
+            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
+            .build();
+    /// Culled twin of the above — `beam(texture, cull = true, transparent = true)` on 1.21.1 was `ENABLE_CULLING` +
+    /// `BEAM_TRANSPARENCY` + `ALL_MASK`. Unused by Spell Engine's own beams (they draw both faces) but kept so the
+    /// public `beam(...)` API keeps its 1.21.1 meaning for every argument combination.
+    private static final RenderPipeline BEACON_BEAM_TRANSLUCENT_DEPTH_WRITE = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
+            .withLocation(pipelineId("beacon_beam_translucent_depth_write"))
+            .withColorTargetState(new ColorTargetState(new BlendFunction(BlendFactor.SRC_ALPHA, BlendFactor.ONE_MINUS_SRC_ALPHA)))
+            .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
+            .build();
+
 
     // MARK: Beams
 
-    /// The culled variant is vanilla's own beacon-beam pipeline (culled by builder default), so it needs no
-    /// custom pipeline and stays known to shader packs without an Iris assignment.
+    /// Spell Engine beam layers — **1.21.1 parity on every render path** (vanilla render system, Iris without a
+    /// pack, Iris with a pack).
+    ///
+    /// 1.21.1 `CustomLayers.beam` was `BEACON_BEAM_PROGRAM` + `transparent ? BEAM_TRANSPARENCY : NO_TRANSPARENCY`
+    /// + `writeMaskState(transparent ? ALL_MASK : ALL_MASK)` — the dead ternary made the *translucent* beam write
+    /// depth too, so every beam shell stamped its depth. The 1.21.11/26.x port mapped the translucent shell onto
+    /// vanilla's `BEACON_BEAM_TRANSLUCENT` (no depth write) and the footprint silently disappeared.
+    ///
+    /// Why the footprint matters, per path:
+    /// - Vanilla render system: without depth, translucent terrain / clouds / particles drawn later paint straight
+    ///   over the whole beam instead of being occluded by it.
+    /// - Iris with a shader pack: the shells are drawn after Iris's translucent terrain pass (`afterTerrain` phase),
+    ///   but a pack's composite identifies translucent surfaces by comparing the translucent depth buffer with the
+    ///   opaque one. A shell that writes no depth leaves the water's depth in place at its pixels, so the pack
+    ///   re-shades those pixels as water (fog, reflections) and the shell colour is discarded — "outer layers
+    ///   missing over water". With the 1.21.1 depth write the pack sees the shell as the nearest translucent
+    ///   surface and keeps it.
+    ///
+    /// Blend is SE's 1.21.1 `BEAM_TRANSPARENCY` (non-separate `SRC_ALPHA, ONE_MINUS_SRC_ALPHA`), not vanilla's
+    /// separate `TRANSLUCENT`; the two write a different destination alpha, which shader packs read.
     private static final BiFunction<Identifier, Boolean, RenderType> BEAM_CULL = Util.memoize((texture, transparent) ->
-            RenderType.create("spell_beam", RenderSetup.builder(transparent ? RenderPipelines.BEACON_BEAM_TRANSLUCENT : RenderPipelines.BEACON_BEAM_OPAQUE)
+            RenderType.create("spell_beam", RenderSetup.builder(transparent ? BEACON_BEAM_TRANSLUCENT_DEPTH_WRITE : RenderPipelines.BEACON_BEAM_OPAQUE)
                     .withTexture("Sampler0", texture)
                     .sortOnUpload()
                     .createRenderSetup()));
     private static final BiFunction<Identifier, Boolean, RenderType> BEAM_NO_CULL = Util.memoize((texture, transparent) ->
-            RenderType.create("spell_beam", RenderSetup.builder(transparent ? BEACON_BEAM_TRANSLUCENT_NO_CULL : BEACON_BEAM_OPAQUE_NO_CULL)
+            RenderType.create("spell_beam", RenderSetup.builder(transparent ? BEACON_BEAM_TRANSLUCENT_NO_CULL_DEPTH_WRITE : BEACON_BEAM_OPAQUE_NO_CULL)
                     .withTexture("Sampler0", texture)
                     .sortOnUpload()
                     .createRenderSetup()));
 
+    /// `transparent = false`: opaque beacon-beam program, depth write (the beam core).
+    /// `transparent = true`: `BEAM_TRANSPARENCY` blend **and** depth write (the beam shells), see above.
+    /// The no-depth-write translucent beacon-beam layer is {@link #spellObject(Identifier, LightEmission, boolean)}
+    /// with `GLOW, true` — the 1.21.1 `COLOR_MASK` spell-object layer, which the vanilla-render-system beam set
+    /// uses for its outer shells and translucent GLOW spell models (e.g. the Fire Hydra body) use for their body.
     public static RenderType beam(Identifier texture, boolean cull, boolean transparent) {
         return (cull ? BEAM_CULL : BEAM_NO_CULL).apply(texture, transparent);
     }
