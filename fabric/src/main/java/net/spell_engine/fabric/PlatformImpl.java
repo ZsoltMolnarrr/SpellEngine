@@ -9,7 +9,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -17,6 +16,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.spell_engine.Platform;
 import net.spell_engine.fabric.compat.FabricCompatFeatures;
+import net.spell_engine.network.Packets;
 
 public class PlatformImpl {
     public static Platform.Type getPlatformType() {
@@ -56,18 +56,25 @@ public class PlatformImpl {
         }
 
         @Override
-        public void networkS2C_Send(ServerPlayerEntity player, CustomPayload payload) {
-            ServerPlayNetworking.send(player, payload);
+        public void networkS2C_Send(ServerPlayerEntity player, Packets.Payload payload) {
+            ServerPlayNetworking.send(player, payload.id(), payload.toBuffer());
         }
 
         @Override
-        public void networkC2S_Send(CustomPayload payload) {
-            ClientPlayNetworking.send(payload);
+        public void networkC2S_Send(Packets.Payload payload) {
+            ClientPlayNetworking.send(payload.id(), payload.toBuffer());
         }
 
         @Override
         public <T> void registerSyncedDataRegistry(RegistryKey<Registry<T>> key, Codec<T> localCodec, Codec<T> networkCodec) {
-            DynamicRegistries.registerSynced(key, localCodec, networkCodec);
+            // fabric-registry-sync-v0 2.4.x (Fabric API 0.92): imperative, must run during mod init
+            // (before the server's DynamicRegistryManager is built). Synced through the vanilla
+            // GameJoin registry payload with `networkCodec`.
+            if (networkCodec != null) {
+                DynamicRegistries.registerSynced(key, localCodec, networkCodec);
+            } else {
+                DynamicRegistries.register(key, localCodec);
+            }
         }
     }
     private static final Platform.Util UTIL = new FabricUtil();

@@ -23,7 +23,8 @@ public abstract class LivingEntityAttributesMixin extends Entity {
     )
     private static void addAttributes(final CallbackInfoReturnable<DefaultAttributeContainer.Builder> info) {
         for (var entry : SpellEngineAttributes.all) {
-            info.getReturnValue().add(entry.entry);
+            // 1.20.1: DefaultAttributeContainer.Builder#add takes the plain EntityAttribute.
+            info.getReturnValue().add(entry.attribute);
         }
     }
 }

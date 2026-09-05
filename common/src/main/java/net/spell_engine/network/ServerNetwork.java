@@ -6,19 +6,30 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.internals.casting.SpellCaster;
+import net.spell_engine.internals.container.SpellAssignments;
 import net.spell_engine.internals.container.SpellContainerSource;
 import net.spell_engine.internals.delivery.melee.Melee;
 
+import java.util.List;
+
 
 /// Server-side packet handling. This class is loader-agnostic: it holds only the handler
-/// bodies. Payload registration, configuration tasks and the lifecycle event wiring live in
-/// each loader's own network entrypoint (`FabricServerNetwork` / NeoForge `NetworkEvents`),
-/// which forwards decoded packets here.
+/// bodies. Payload registration and the lifecycle event wiring live in each loader's own
+/// network entrypoint (`FabricServerNetwork` / Forge `ForgeNetwork`), which forwards decoded
+/// packets here.
 public class ServerNetwork {
-    // Configuration-task identifiers. Shared so the client-side Ack and both loaders' task
-    // implementations agree on the same names.
-    public static final String CONFIG_TASK_NAME = SpellEngineMod.ID + ":" + "config";
-    public static final String SPELL_REGISTRY_TASK_NAME = SpellEngineMod.ID + ":" + "spell_registry";
+    // MARK: Join sync (1.20.1 has no configuration phase)
+
+    /// The payloads pushed to a player right after they join, in send order: the spell
+    /// assignment table first, then the server config — exactly the legacy 1.20.1 handshake.
+    /// No client "ready" acknowledgement exists; the client handlers write straight into statics.
+    /// Config is serialized per join (cheap) instead of once at init.
+    public static List<Packets.Payload> joinSyncPayloads() {
+        return List.of(
+                new Packets.SpellRegistrySync(SpellAssignments.encoded),
+                new Packets.ConfigSync(SpellEngineMod.config)
+        );
+    }
 
     // MARK: Casting protocol — signals into the caster's SpellCastInteractor
 

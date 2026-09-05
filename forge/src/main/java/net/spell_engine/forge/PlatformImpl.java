@@ -4,7 +4,6 @@ import com.mojang.serialization.Codec;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -12,9 +11,10 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraftforge.fml.loading.FMLLoader;
 import net.minecraftforge.fml.loading.LoadingModList;
-import net.minecraftforge.network.PacketDistributor;
 import net.spell_engine.Platform;
 import net.spell_engine.forge.compat.ForgeCompatFeatures;
+import net.spell_engine.forge.network.ForgeNetwork;
+import net.spell_engine.network.Packets;
 
 public class PlatformImpl {
     public static Platform.Type getPlatformType() {
@@ -41,7 +41,7 @@ public class PlatformImpl {
 
         @Override
         public void sendVanillaPacket_S2C(ServerPlayerEntity player, Packet<?> packet) {
-            player.networkHandler.send(packet);
+            player.networkHandler.sendPacket(packet);
         }
 
         @Override
@@ -52,19 +52,18 @@ public class PlatformImpl {
 
         @Override
         public boolean networkS2C_CanSend(ServerPlayerEntity player, Identifier packetId) {
-            // NeoForge negotiates channels during configuration; a connected client that reached the
-            // play phase always supports our registered payloads, and PacketDistributor drops the rest.
-            return true;
+            // All SE payloads ride one SimpleChannel negotiated at login; present ⇒ every id is supported.
+            return ForgeNetwork.canSendToPlayer(player);
         }
 
         @Override
-        public void networkS2C_Send(ServerPlayerEntity player, CustomPayload payload) {
-            PacketDistributor.sendToPlayer(player, payload);
+        public void networkS2C_Send(ServerPlayerEntity player, Packets.Payload payload) {
+            ForgeNetwork.sendToPlayer(player, payload);
         }
 
         @Override
-        public void networkC2S_Send(CustomPayload payload) {
-            PacketDistributor.sendToServer(payload);
+        public void networkC2S_Send(Packets.Payload payload) {
+            ForgeNetwork.sendToServer(payload);
         }
 
         @Override

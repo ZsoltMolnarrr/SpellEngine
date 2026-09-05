@@ -4,19 +4,23 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.item.v1.EnchantmentEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
+import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.util.TriState;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootPool;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.spell_engine.PlatformEvents;
+import net.spell_engine.api.util.TriState;
 import net.spell_engine.mixin.loot.LootTableBuilderAccessor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 /// Fabric wiring for {@link PlatformEvents}. Each method forwards a Fabric API event to the
@@ -56,24 +60,39 @@ public class PlatformEventsImpl {
     }
 
     public static void onLootTableModify(Consumer<PlatformEvents.LootTableModifyContext> callback) {
-        LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) ->
-                callback.accept(new FabricLootContext(registries, key.getValue(), tableBuilder)));
+        // fabric-loot-api-v2 (Fabric API 0.92): no registry lookup is handed to the event on 1.20.1
+        // (loot functions don't need one there), so `registries()` is null — see FabricLootContext.
+        LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) ->
+                callback.accept(new FabricLootContext(null, id, tableBuilder)));
     }
 
     public static void onItemGroupModify(RegistryKey<ItemGroup> group, PlatformEvents.ItemGroupModifier callback) {
         ItemGroupEvents.modifyEntriesEvent(group).register(content -> callback.modify(content, content.getContext()));
     }
 
+    // Fabric API 0.92 has no `EnchantmentEvents.ALLOW_ENCHANTING`. Callbacks are buffered here and
+    // must be consulted from a Spell Engine mixin on `Enchantment.isAcceptableItem` (the legacy
+    // SpellPower `EnchantmentMixin` pattern) via `evaluateAllowEnchanting` — same shape as the Forge impl.
+    private static final List<PlatformEvents.AllowEnchanting> enchantCallbacks = new ArrayList<>();
+
     public static void onAllowEnchanting(PlatformEvents.AllowEnchanting callback) {
-        EnchantmentEvents.ALLOW_ENCHANTING.register((enchantment, target, enchantingContext) ->
-                // Convert Spell Engine's TriState to Fabric's TriState.
-                switch (callback.allow(enchantment, target)) {
-                    case ALLOW -> TriState.TRUE;
-                    case DENY -> TriState.FALSE;
-                    case PASS -> TriState.DEFAULT;
-                });
+        enchantCallbacks.add(callback);
     }
 
+    /// Combined enchant decision for the mixin. DENY wins over ALLOW; both win over PASS.
+    public static TriState evaluateAllowEnchanting(RegistryEntry<Enchantment> enchantment, ItemStack stack) {
+        var result = TriState.PASS;
+        for (var callback : enchantCallbacks) {
+            switch (callback.allow(enchantment, stack)) {
+                case DENY -> { return TriState.DENY; }
+                case ALLOW -> result = TriState.ALLOW;
+                case PASS -> { }
+            }
+        }
+        return result;
+    }
+
+    /// `registries` is null on 1.20.1 (see onLootTableModify); LootHelper must not depend on it.
     private record FabricLootContext(RegistryWrapper.WrapperLookup registries, Identifier tableId,
                                      net.minecraft.loot.LootTable.Builder builder)
             implements PlatformEvents.LootTableModifyContext {

@@ -26,7 +26,7 @@ public class SpellRegistry {
      * instead of this:
      * `data/MOD/spell_engine/spell/SPELL.json`
      */
-    public static final Identifier ID = Identifier.ofVanilla("spell");
+    public static final Identifier ID = new Identifier("minecraft", "spell");
     public static final RegistryKey<Registry<Spell>> KEY = RegistryKey.ofRegistry(ID);
     public static Registry<Spell> from(World world) {
         return world.getRegistryManager().get(KEY);
@@ -72,10 +72,11 @@ public class SpellRegistry {
     );
 
     public static RegistryEntryList.Named<Spell> find(World world, Identifier tagId) {
-        var manager = world.getRegistryManager();
-        var lookup = manager.createRegistryLookup().getOrThrow(KEY); // RegistryEntryLookup<Spell>
+        var registry = from(world);
         var tag = TagKey.of(KEY, tagId);
-        return lookup.getOrThrow(tag);
+        // 1.20.1: no `DynamicRegistryManager.createRegistryLookup()`; the registry itself resolves tags.
+        return registry.getEntryList(tag)
+                .orElseThrow(() -> new IllegalStateException("Missing tag " + tagId + " in " + KEY));
     }
 
     public static List<RegistryEntry<Spell>> entries(World world, @Nullable Identifier id) {
@@ -90,7 +91,7 @@ public class SpellRegistry {
         if (pool == null || pool.isEmpty()) {
             return List.of();
         }
-        var id = Identifier.of(pool);
+        var id = new Identifier(pool);
         return entries(world, id);
     }
 

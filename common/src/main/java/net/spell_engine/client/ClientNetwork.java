@@ -2,6 +2,7 @@ package net.spell_engine.client;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Language;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.registry.SpellRegistry;
@@ -14,11 +15,10 @@ import net.spell_engine.network.Packets;
 import net.spell_engine.fx.ParticleHelper;
 
 /// Client-side packet handling. Loader-agnostic: holds only the handler bodies. Payload
-/// registration and the configuration-phase Ack reply live in each loader's own client
-/// network entrypoint (`FabricClientNetwork` / NeoForge `NetworkEvents`), which forwards
-/// decoded packets here.
+/// registration lives in each loader's own client network entrypoint (`FabricClientNetwork` /
+/// Forge `ForgeNetwork`), which forwards decoded packets here.
 public class ClientNetwork {
-    // MARK: Configuration stage
+    // MARK: Join sync (pushed by the server right after JOIN; no acknowledgement)
 
     public static void handleConfigSync(Packets.ConfigSync packet) {
         SpellEngineMod.config = packet.config();
@@ -55,7 +55,7 @@ public class ClientNetwork {
         client.execute(() -> {
             if (client.world == null) return;
             var registry = SpellRegistry.from(client.world);
-            var spell = registry.getEntry(packet.spellId());
+            var spell = registry.getEntry(RegistryKey.of(SpellRegistry.KEY, packet.spellId()));
             if (spell.isEmpty()) return;
             ((SpellCaster.Player) client.player).getCooldownManager().set(spell.get(), packet.duration());
         });
