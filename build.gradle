@@ -1,7 +1,7 @@
 plugins {
-    id 'dev.architectury.loom' version '1.11-SNAPSHOT' apply false
-    id 'architectury-plugin' version '3.4-SNAPSHOT'
-    id 'com.gradleup.shadow' version '8.3.6' apply false
+    id 'dev.architectury.loom' version '1.17-SNAPSHOT' apply false
+    id 'architectury-plugin' version '3.5-SNAPSHOT'
+    id 'com.gradleup.shadow' version '9.4.3' apply false
 }
 
 architectury {
@@ -51,29 +51,26 @@ subprojects {
 
     dependencies {
         minecraft "net.minecraft:minecraft:$rootProject.minecraft_version"
-        mappings loom.layered {
-            it.mappings("net.fabricmc:yarn:$rootProject.yarn_mappings:v2")
-            it.mappings("dev.architectury:yarn-mappings-patch-neoforge:$rootProject.yarn_mappings_patch_neoforge_version")
-        }
+        // Plain Yarn on the 1.20.1 line (no NeoForge mappings patch layer).
+        mappings "net.fabricmc:yarn:$rootProject.yarn_mappings:v2"
     }
 
     java {
-        // The JDK this compiles on. Without it, javac runs on whatever JVM launched Gradle.
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
-        }
-
         // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
         // if it is present.
         // If you remove this line, sources will not be generated.
         withSourcesJar()
 
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        // Java 17 is the bytecode target for 1.20.1; Gradle itself must run on JDK 21+ (Loom 1.17 requirement).
+        // No toolchain block on purpose (see docs/version-adoption-1.20.1/briefs/toolchain-1.20.1-recipe.md §0).
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     tasks.withType(JavaCompile).configureEach {
-        it.options.release = 21
+        it.options.release = 17
+        // TODO 1.20.1: remove — temporary, so javac reports the complete error list during the port.
+        it.options.compilerArgs << "-Xmaxerrs" << "5000"
     }
 
     // Configure Maven publishing.

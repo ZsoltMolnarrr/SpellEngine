@@ -19,25 +19,8 @@ repositories {
             includeGroup 'maven.modrinth'
         }
     }
-    exclusiveContent {
-        forRepository {
-            maven {
-                url = "https://maven.ftb.dev/releases"
-            }
-        }
-        filter {
-            includeGroup"dev.latvian.mods"
-            includeGroup"dev.ftb.mods"
-        }
-    }
-    // JEI Maven currently required by FTB
-    maven {
-        name "ModMaven (JEI)"
-        url "https://modmaven.dev/"
-        content {
-            includeGroup "mezz.jei"
-        }
-    }
+    // TODO 1.20.1: FTB Teams / FTB Library dropped (no 1.20.1 pin on the legacy branch); the FTB maven and
+    // the `dev.ftb.mods:*` compile-only deps go back in here once a 1.20.1 pin is chosen (2001.x line).
 
     mavenLocal()
 }
@@ -46,33 +29,34 @@ dependencies {
     // We depend on Fabric Loader here to use the Fabric @Environment annotations,
     // which get remapped to the correct annotations on each platform.
     // Do NOT use other classes from Fabric Loader.
-    modImplementation "net.fabricmc:fabric-loader:$project.fabric_loader_version"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:$project.fabric_api_version"
+    modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
+    // No Fabric API in common: the common code is loader-neutral (zero `net.fabricmc.fabric` imports), and
+    // there is no Forgified Fabric API on the 1.20.1 line — loader API goes through Platform*/PlatformEvents.
 
-    modImplementation("dev.kosmx.player-anim:player-animation-lib-${platform}:${project.player_anim_version}")
-    modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${project.cloth_config_version}")
+    // MixinExtras annotation processor: lets the Mixin AP refmap the @WrapOperation targets, which the
+    // Forge production jar needs (SRG names at runtime). Fabric Loader bundles the runtime.
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:${rootProject.mixin_extras_version}"))
 
-    modImplementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}")
-//    modImplementation("net.tiny_config:tiny_config-${platform}:${project.tiny_config_version}")
-    modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
-//    modImplementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
-    modImplementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
-//    modImplementation("net.foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
-    modCompileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
-//    modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}")
-    modCompileOnly("maven.modrinth:critical-strike:${project.critical_strike_version}-${platform}")
+    modImplementation("dev.kosmx.player-anim:player-animation-lib-${platform}:${rootProject.player_anim_version}")
+    modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${rootProject.cloth_config_version}")
+
+    // Ecosystem libraries from mavenLocal (published by their 1.20.1-modern ports).
+    modImplementation("net.tiny_config:tiny_config-${platform}:${rootProject.tiny_config_version}")
+    modImplementation("net.spell_power:spell_power-${platform}:${rootProject.spell_power_version}")
+    modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${rootProject.bundle_api_version}")
+    modCompileOnly("net.critical_strike:critical_strike-${platform}:${rootProject.critical_strike_version}")
+    // RangedWeaponAPI: legacy published Fabric-only artifact (no Forge port on 1.20.1). Compile-only here;
+    // the fabric module carries the runtime dependency, the forge build ships without RWA.
+    modCompileOnly("maven.modrinth:ranged-weapon-api:${rootProject.ranged_weapon_api_version}")
 
     // Compatibility
 
-    modCompileOnly("maven.modrinth:shoulder-surfing-reloaded:${project.shoulder_surfing_version}+${platform}")
-    modCompileOnly("maven.modrinth:better-combat:${project.better_combat_version}-${platform}")
-    // From mavenLocal. Needs `transitive = false`: unlike the Modrinth jar, this one carries a POM, whose
-    // dependencies (Mod Menu and friends) resolve from repositories we do not declare. Compiling against
-    // its API needs the classes, not the graph behind them.
-//    modCompileOnly("net.bettercombat:bettercombat-${platform}:${project.better_combat_version}") { transitive = false }
-    modCompileOnly("maven.modrinth:combat-roll:${project.combat_roll_version}-${platform}")
-    modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${project.ftb_teams_version}")
-    modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
-    modCompileOnly("maven.modrinth:iris:${project.iris_version}")
+    modCompileOnly("maven.modrinth:shoulder-surfing-reloaded:${rootProject.shoulder_surfing_version}+${platform}")
+    modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-${platform}")
+    modCompileOnly("maven.modrinth:combat-roll:${rootProject.combat_roll_version}-${platform}")
+    // TODO 1.20.1: FTB Teams / FTB Library dropped — `compat/FTBTeamsCompat.java` surfaces as compile errors.
+//    modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${rootProject.ftb_teams_version}")
+//    modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${rootProject.ftb_library_version}")
+    modCompileOnly("maven.modrinth:iris:${rootProject.iris_version}")
 
 }

@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.spell_engine.forge.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "IItemExtensionMixin",
+    "LivingEntityForgeMovementMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

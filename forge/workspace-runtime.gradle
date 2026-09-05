@@ -14,6 +14,7 @@
 //
 // Every pinned version must exist in ~/.m2 as a `dev-shadow` artifact: `./gradlew publishToMavenLocal`
 // from that mod's 1.20.1-modern branch. After publishing, bump the pin here (and in the other loader's copy).
+// NOTE: Forge variant mirrors the Fabric list; not runtime-verified on this branch.
 
 // TODO 1.20.1: every `+1.21.1` pin below still points at the 1.21.1 line — replace with the 1.20.1-modern
 // versions of each content mod once they are ported and published to mavenLocal. Only the shared
@@ -30,29 +31,29 @@ repositories {
 
 dependencies {
     // Shared libraries
-    localRuntime("net.rpg_foundation:armor_model_api-fabric:1.0.0.001+1.20.1:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:runes-fabric:1.3.1+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("net.foundation:structure_pool_api-fabric:1.2.0+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("com.github.TheRedBrain:bundle-api-fabric:1.1.0.001:dev-shadow") { transitive = false }
-    localRuntime("net.critical_strike:critical_strike-fabric:1.0.4.001:dev-shadow") { transitive = false }
-    modLocalRuntime("maven.modrinth:shield-api:2.1.0-fabric") // JiJ'd by Paladins/Arsenal on 1.21.1, absent with transitive = false
+    localRuntime("net.rpg_foundation:armor_model_api-forge:1.0.0.001+1.20.1:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:runes-forge:1.3.1+1.21.1:dev-shadow") { transitive = false }
+    localRuntime("net.foundation:structure_pool_api-forge:1.2.0+1.21.1:dev-shadow") { transitive = false }
+    localRuntime("com.github.TheRedBrain:bundle-api-forge:1.1.0.001:dev-shadow") { transitive = false }
+    localRuntime("net.critical_strike:critical_strike-forge:1.0.4.001:dev-shadow") { transitive = false }
+    modLocalRuntime("maven.modrinth:shield-api:2.1.0-forge") // JiJ'd by Paladins/Arsenal on 1.21.1, absent with transitive = false
 
     if (flags.rpg_series_classes) {
-    localRuntime("net.rpg_series:archers-fabric:3.1.1+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:wizards-fabric:3.1.1+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:paladins-fabric:3.1.1+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:rogues-fabric:3.1.1+1.21.1:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:archers-forge:3.1.1+1.21.1:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:wizards-forge:3.1.1+1.21.1:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:paladins-forge:3.1.1+1.21.1:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:rogues-forge:3.1.1+1.21.1:dev-shadow") { transitive = false }
     }
     if (flags.rpg_series_gear) {
-    localRuntime("net.arsenal:arsenal-fabric:1.5.0+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:armory-fabric:1.5.1+1.21.1:dev-shadow") { transitive = false }
+    localRuntime("net.arsenal:arsenal-forge:1.5.0+1.21.1:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:armory-forge:1.5.1+1.21.1:dev-shadow") { transitive = false }
     }
     if (flags.rpg_series_accessories) {
-    localRuntime("net.rpg_series:jewelry-fabric:2.4.0+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:relics-fabric:1.4.0+1.21.1:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:jewelry-forge:2.4.0+1.21.1:dev-shadow") { transitive = false }
+    localRuntime("net.rpg_series:relics-forge:1.4.0+1.21.1:dev-shadow") { transitive = false }
     }
     if (flags.rpg_series_skills) {
-    localRuntime("net.rpg_series:skill_tree-fabric:1.6.0+1.21.1:dev-shadow") { transitive = false }
-        modLocalRuntime("net.puffish:skillsmod:0.16.7+1.21:fabric") // real mod jar, remapped by Loom
+    localRuntime("net.rpg_series:skill_tree-forge:1.6.0+1.21.1:dev-shadow") { transitive = false }
+        modLocalRuntime("net.puffish:skillsmod:0.16.7+1.21:forge") // real mod jar, remapped by Loom
     }
 }

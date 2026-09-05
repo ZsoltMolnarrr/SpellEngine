@@ -1,0 +1,59 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+issueTrackerURL = "https://github.com/ZsoltMolnarrr/SpellEngine/issues"
+license = "GPL-3.0"
+
+[[mods]]
+modId = "spell_engine"
+version = "${version}"
+displayName = "Spell Engine"
+authors = "Daedelus"
+description = '''
+Data driven magic library.
+'''
+logoFile = "icon.png"
+
+[[dependencies.spell_engine]]
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.spell_engine]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.20.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.spell_engine]]
+modId = "cloth_config"
+mandatory = true
+versionRange = "[11.1.106,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.spell_engine]]
+modId = "playeranimator"
+mandatory = true
+versionRange = "[1.0.2,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.spell_engine]]
+modId = "spell_power"
+mandatory = true
+versionRange = "[1.6.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.spell_engine]]
+modId = "curios"
+mandatory = false
+versionRange = "[5,)"
+ordering = "AFTER"
+side = "BOTH"
+
+# Mixin configs are declared in the jar MANIFEST (`MixinConfigs:`) by Loom (`loom.forge.mixinConfig`),
+# not in this file — the `[[mixins]]` table is NeoForge-only.

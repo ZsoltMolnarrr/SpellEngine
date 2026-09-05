@@ -42,12 +42,13 @@
     "spell_engine-fabric.mixins.json"
   ],
   "depends": {
-    "minecraft": ">=${minecraft_compat_version}",
-    "fabricloader": ">=${fabric_loader_version}",
-    "fabric": ">=${fabric_api_version}",
-    "cloth-config": ">=${cloth_config_version}",
-    "playeranimator": ">=1.9.0",
-    "spell_power": ">=${spell_power_version}"
+    "minecraft": "~1.20.1",
+    "java": ">=17",
+    "fabricloader": ">=0.15.0",
+    "fabric-api": ">=0.92.0",
+    "cloth-config": ">=11.1.106",
+    "player-animator": ">=1.0.2",
+    "spell_power": ">=1.6.0"
   },
   "recommends": {
     "trinkets": "*"
