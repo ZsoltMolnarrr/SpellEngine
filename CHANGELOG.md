@@ -1,6 +1,6 @@
 # 1.10.5
 
-Ported to Minecraft 26.1.2 (Fabric + NeoForge, Java 25).
+Ported to Minecraft 26.1.2 and 26.2 (Fabric + NeoForge, Java 25).
 
 Setup changes:
 - Trinkets support now targets Trinkets Updated (mod id `trinkets_updated`, replaces `trinkets`); no Cardinal Components dependency
