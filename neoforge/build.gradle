@@ -90,10 +90,10 @@ dependencies {
 
     include(implementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}"))
 //    implementation("net.tiny_config:tiny_config-${platform}:${project.tiny_config_version}")
-//    implementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
-    implementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
-//    implementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
-    implementation("net.rpg_foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
+    implementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
+//    implementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
+    implementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
+//    implementation("net.rpg_foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
     compileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
 //    compileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}")
     if (rootProject.enable_critical_strike.toBoolean()) {
