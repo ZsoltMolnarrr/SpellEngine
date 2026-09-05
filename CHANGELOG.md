@@ -22,7 +22,7 @@ Fixes:
 
 Functional changes:
 - Fixed NeoForge loot table injection #209
-- Fixed entity ting feature breaking armor trim rendering #210
+- Fixed entity tint feature breaking armor trim rendering #210
 - Fixed entity placements (Bear Trap and Battle Banner should no longer levitate above carpets)
 
 # 1.10.4
