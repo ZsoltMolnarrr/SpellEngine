@@ -5,7 +5,6 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.spell_engine.rpg_series.item.Equipment;
@@ -78,16 +77,8 @@ public class RPGSeriesDataGen {
 
         public void generateArmorTags(List<Armor.Entry> armors, EnumSet<RPGSeriesItemTags.ArmorMetaType> metaTypes, ArmorOptions options) {
             for (var armor: armors) {
-
-                var set = armor.armorSet();
-                var headTag = getOrCreateTagBuilder(ItemTags.HEAD_ARMOR);
-                headTag.add(set.head);
-                var chestTag = getOrCreateTagBuilder(ItemTags.CHEST_ARMOR);
-                chestTag.add(set.chest);
-                var legsTag = getOrCreateTagBuilder(ItemTags.LEG_ARMOR);
-                legsTag.add(set.legs);
-                var feetTag = getOrCreateTagBuilder(ItemTags.FOOT_ARMOR);
-                feetTag.add(set.feet);
+                // 1.20.1: no `minecraft:head_armor` / `chest_armor` / `leg_armor` / `foot_armor` item tags;
+                // armor enchantability comes from `ArmorItem` (`EnchantmentTarget.ARMOR_*`) instead.
 
                 var tier = armor.lootProperties().tier();
                 if (options.allowLootTierTags && tier >= 0) {

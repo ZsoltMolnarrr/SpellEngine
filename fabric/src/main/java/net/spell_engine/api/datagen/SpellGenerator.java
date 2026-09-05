@@ -174,6 +174,13 @@ public abstract class SpellGenerator implements DataProvider {
         return "Spell Generator";
     }
 
+    /// Datapack folder of the `spell_engine:spell` dynamic registry.
+    ///
+    /// 1.20.1: vanilla `RegistryLoader.getPath(Identifier)` returns the registry key's *path only*
+    /// (`RegistryLoader.java:135`, no namespace prefix for non-vanilla keys, unlike 1.21's
+    /// `RegistryKeys.getPath`), so spells load from `data/<ns>/spell/<id>.json` — the same singular
+    /// folder as on 1.21.1, without needing a `RegistryLoader` mixin. Tags follow
+    /// `TagManagerLoader.getPath` → `tags/spell/` (only block/item/fluid/entity_type/game_event are pluralized).
     private Path getFilePath(Identifier spellId) {
         return this.dataOutput.getResolver(DataOutput.OutputType.DATA_PACK, "spell").resolveJson(spellId);
     }

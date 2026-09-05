@@ -3,9 +3,6 @@ package net.spell_engine.fabric.datagen;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKey;
@@ -21,7 +18,6 @@ import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.container.SpellContainers;
-import net.spell_power.api.SpellSchools;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -47,49 +43,40 @@ public class TestDataGen {
 
             var equipmentSetLookup = registries.createRegistryLookup().getOrThrow(EquipmentSetRegistry.KEY);
 
-            var setId = RegistryKey.of(EquipmentSetRegistry.KEY, Identifier.of(NAMESPACE, "fire_power"));
+            var setId = RegistryKey.of(EquipmentSetRegistry.KEY, new Identifier(NAMESPACE, "fire_power"));
 
+            // TODO 1.20.1 (c3): re-add the attribute bonus (+1 fire spell power, ARMOR slot) once the
+            // `EquipmentSet.Bonus` attribute shape is settled on the NBT/Multimap model
+            // (`AttributeModifiersComponent` does not exist on 1.20.1).
             var firePowerBonus = new EquipmentSet.Bonus(
                     1,
-                    new AttributeModifiersComponent(
-                            List.of(
-                                    new AttributeModifiersComponent.Entry(
-                                            SpellSchools.FIRE.attributeEntry,
-                                            new EntityAttributeModifier(
-                                                    Identifier.of("fire_power_bonus"),
-                                                    1,
-                                                    EntityAttributeModifier.Operation.ADD_VALUE
-                                            ),
-                                            AttributeModifierSlot.ARMOR)
-                            ),
-                            true
-                    ),
+                    null,
                     null);
             var fireball = new EquipmentSet.Bonus(
                     2,
                     null,
                     SpellContainers.forMagicWeapon()
-                            .withSpellId(Identifier.of("wizards", "fireball"))
+                            .withSpellId(new Identifier("wizards", "fireball"))
             );
             var fireProc = new EquipmentSet.Bonus(
                     3,
                     null,
                     SpellContainers.forMagicWeapon()
-                            .withSpellId(Identifier.of("relics_rpgs", "lesser_proc_arcane_fire"))
+                            .withSpellId(new Identifier("relics_rpgs", "lesser_proc_arcane_fire"))
             );
             var explodingProc = new EquipmentSet.Bonus(
                     4,
                     null,
                     SpellContainers.forMagicWeapon()
-                            .withSpellId(Identifier.of("arsenal", "exploding_melee"))
+                            .withSpellId(new Identifier("arsenal", "exploding_melee"))
             );
 
             var items = RegistryEntryList.of(
                     // Iron armor
-                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("iron_helmet"))),
-                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("iron_chestplate"))),
-                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("iron_leggings"))),
-                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, Identifier.ofVanilla("iron_boots")))
+                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, new Identifier("minecraft", "iron_helmet"))),
+                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, new Identifier("minecraft", "iron_chestplate"))),
+                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, new Identifier("minecraft", "iron_leggings"))),
+                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, new Identifier("minecraft", "iron_boots")))
             );
             entries.add(setId,
                     new EquipmentSet.Definition(
@@ -126,7 +113,7 @@ public class TestDataGen {
 
         @Override
         public void generateSpells(Builder builder) {
-            builder.add(Identifier.of(NAMESPACE, "shout_taunt"), shoutTaunt());
+            builder.add(new Identifier(NAMESPACE, "shout_taunt"), shoutTaunt());
         }
     }
 }

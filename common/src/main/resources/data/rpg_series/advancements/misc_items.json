@@ -1,15 +1,15 @@
 {
+  "parent": "rpg_series:root",
   "display": {
     "icon": {
-      "id": "spell_engine:spell_binding"
+      "item": "minecraft:chest"
     },
     "title": {
-      "translate": "advancements.rpg_series.root.title"
+      "translate": "advancements.rpg_series.misc_items.title"
     },
     "description": {
-      "translate": "advancements.rpg_series.root.description"
+      "translate": "advancements.rpg_series.misc_items.description"
     },
-    "background": "minecraft:textures/block/chiseled_quartz_block.png",
     "frame": "task",
     "show_toast": false,
     "announce_to_chat": false,

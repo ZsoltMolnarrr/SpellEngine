@@ -1,7 +1,6 @@
 package net.spell_engine.api.datagen;
 
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.api.entity.SpellEntityPredicates;
@@ -814,7 +813,9 @@ public class SpellBuilder {
             cleanse.action.status_effect = new Spell.Impact.Action.StatusEffect();
             cleanse.action.status_effect.apply_mode = Spell.Impact.Action.StatusEffect.ApplyMode.REMOVE;
             cleanse.action.status_effect.remove = new Spell.Impact.Action.StatusEffect.Remove();
-            cleanse.action.status_effect.remove.id = "!" + StatusEffects.TRIAL_OMEN.getIdAsString();
+            // 1.20.1: `StatusEffects.TRIAL_OMEN` does not exist yet; the exclusion pattern is kept as a
+            // literal so the generated spell JSON stays identical (it simply matches nothing here).
+            cleanse.action.status_effect.remove.id = "!minecraft:trial_omen";
             cleanse.action.status_effect.remove.selector = Spell.Impact.Action.StatusEffect.Remove.Selector.RANDOM;
             cleanse.action.status_effect.remove.select_beneficial = false;
             cleanse.sound = new Sound(SpellEngineSounds.GENERIC_DISPEL_1.id());

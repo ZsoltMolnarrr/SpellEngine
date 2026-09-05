@@ -37,7 +37,7 @@ public abstract class SimpleSoundGenerator implements DataProvider {
     private static LinkedHashMap<String, Sound> createFileContent(String namespace, List<String> sounds) {
         var map = new LinkedHashMap<String, Sound>();
         for (var sound: sounds) {
-            map.put(sound, new Sound(List.of(Identifier.of(namespace, sound).toString())));
+            map.put(sound, new Sound(List.of(new Identifier(namespace, sound).toString())));
         }
         return map;
     }
@@ -65,6 +65,6 @@ public abstract class SimpleSoundGenerator implements DataProvider {
     }
 
     private Path getFilePath(String namespace) {
-        return this.dataOutput.getResolver(DataOutput.OutputType.RESOURCE_PACK, "").resolveJson(Identifier.of(namespace, "sounds"));
+        return this.dataOutput.getResolver(DataOutput.OutputType.RESOURCE_PACK, "").resolveJson(new Identifier(namespace, "sounds"));
     }
 }
