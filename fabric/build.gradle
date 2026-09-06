@@ -63,6 +63,14 @@ repositories {
         }
     }
     // Trinkets 3.7.x (1.20.1) is no longer served by maven.ladysnake.org; resolved from the Modrinth maven.
+    // Cardinal Components (Trinkets' nested dependency) still is.
+    maven {
+        name = 'Ladysnake'
+        url = 'https://maven.ladysnake.org/releases'
+        content {
+            includeGroup 'dev.onyxstudios.cardinal-components-api'
+        }
+    }
     // TODO 1.20.1: FTB maven dropped together with the FTB Teams/Library deps (no 1.20.1 pin yet).
 
     mavenLocal()
@@ -111,6 +119,11 @@ dependencies {
     // Fabric specific
     modImplementation("maven.modrinth:modmenu:${rootProject.mod_menu_version}")
     modImplementation("maven.modrinth:trinkets:${rootProject.trinkets_version}")
+    // Trinkets 3.7.2 nests (JiJ) Cardinal Components 5.2.0, which Loom does not put on the compile classpath;
+    // `TrinketComponent extends ComponentV3`, so javac needs it to resolve any call on the component.
+    // Runtime is covered by the nested jars (Fabric Loader unpacks JiJ from classpath mods in dev too).
+    modCompileOnly("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${rootProject.cardinal_components_version}")
+    modCompileOnly("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${rootProject.cardinal_components_version}")
 
     modCompileOnly("maven.modrinth:lambdynamiclights:${rootProject.lamb_dynamic_lights_version}")
 }

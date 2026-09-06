@@ -1,10 +1,12 @@
 package net.spell_engine.forge.compat.curios;
 
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
+import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.util.Formatting;
 import net.spell_engine.client.SpellEngineClient;
 
@@ -15,7 +17,8 @@ public class SpellScrollCurioItem extends SpellHostCurioItem {
         super(settings, equipSound);
     }
 
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType type) {
+    @Override
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         if (SpellEngineClient.config.showSpellBindingTooltip) {
             tooltip.add(Text
                     .translatable("item.spell_engine.scroll.table_hint")

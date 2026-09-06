@@ -8,7 +8,7 @@ public class PlatformClientImpl {
     public static class ForgeClientUtil implements PlatformClient.Util {
         @Override
         public void sendVanillaPacket_C2S(ClientPlayerEntity player, Packet<?> packet) {
-            player.networkHandler.send(packet);
+            player.networkHandler.sendPacket(packet);
         }
     }
 

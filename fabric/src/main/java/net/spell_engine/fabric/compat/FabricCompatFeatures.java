@@ -31,7 +31,7 @@ public class FabricCompatFeatures {
             selectedSlotMod = TrinketsCompatHeader.MOD_ID;
             var container = FabricLoader.getInstance().getModContainer(SpellEngineMod.ID);
             ResourceManagerHelper.registerBuiltinResourcePack(
-                    Identifier.of(SpellEngineMod.ID, TrinketsCompatHeader.MOD_ID + "_compat"),
+                    new Identifier(SpellEngineMod.ID, TrinketsCompatHeader.MOD_ID + "_compat"),
                     container.get(), ResourcePackActivationType.ALWAYS_ENABLED);
         }
         return selectedSlotMod;

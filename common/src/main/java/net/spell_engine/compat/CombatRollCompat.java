@@ -1,21 +1,25 @@
 package net.spell_engine.compat;
 import net.spell_engine.Platform;
 
-import net.combat_roll.api.event.ServerSideRollEvents;
-import net.combat_roll.internals.RollingEntity;
+import net.combatroll.api.event.ServerSideRollEvents;
+import net.combatroll.internals.RollingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.spell_engine.internals.SpellTriggers;
 
 import java.util.function.Function;
 
+/// Combat Roll 1.3.3+1.20.1: mod id `combatroll` and package `net.combatroll` (the 1.21 line renamed both
+/// to `combat_roll`). `ServerSideRollEvents.PLAYER_START_ROLLING` hands `(ServerPlayerEntity, Vec3d)`.
 public class CombatRollCompat {
+    public static final String MOD_ID = "combatroll";
+
     public static Function<PlayerEntity, Boolean> isRolling = player -> {
         return false;
     };
 
     public static void init() {
-        if (Platform.util().isModLoaded("combat_roll")) {
-            ServerSideRollEvents.PLAYER_START_ROLLING.register((player, roll) -> {
+        if (Platform.util().isModLoaded(MOD_ID)) {
+            ServerSideRollEvents.PLAYER_START_ROLLING.register((player, direction) -> {
                 SpellTriggers.onRoll(player);
             });
 
