@@ -6,7 +6,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
 public class EquipmentSetRegistry {
-    public static final Identifier ID = Identifier.ofVanilla("equipment_set");
+    public static final Identifier ID = new Identifier("equipment_set");
     public static final RegistryKey<Registry<EquipmentSet.Definition>> KEY = RegistryKey.ofRegistry(ID);
     public static Registry<EquipmentSet.Definition> from(World world) {
         return world.getRegistryManager().get(KEY);

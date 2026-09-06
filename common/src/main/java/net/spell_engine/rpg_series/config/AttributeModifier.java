@@ -17,7 +17,7 @@ public class AttributeModifier {
     public String id;
     public String attribute = "";
     public float value = 0;
-    public EntityAttributeModifier.Operation operation = EntityAttributeModifier.Operation.ADD_VALUE;
+    public EntityAttributeModifier.Operation operation = EntityAttributeModifier.Operation.ADDITION;
 
     public AttributeModifier(Identifier attribute, float value, EntityAttributeModifier.Operation operation) {
         this(attribute.toString(), value, operation);
@@ -32,7 +32,7 @@ public class AttributeModifier {
         return new AttributeModifier(
                 attributeId.toString(),
                 value,
-                EntityAttributeModifier.Operation.ADD_VALUE
+                EntityAttributeModifier.Operation.ADDITION
         );
     }
 
@@ -40,7 +40,7 @@ public class AttributeModifier {
         return new AttributeModifier(
                 attributeId.toString(),
                 value,
-                EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE
+                EntityAttributeModifier.Operation.MULTIPLY_BASE
         );
     }
 
@@ -50,7 +50,7 @@ public class AttributeModifier {
             spellAttributes.add(new AttributeModifier(
                             attributeId.toString(),
                             value,
-                            EntityAttributeModifier.Operation.ADD_VALUE
+                            EntityAttributeModifier.Operation.ADDITION
                     )
             );
         }
