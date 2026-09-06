@@ -28,6 +28,7 @@
     "effect.StatusEffectSynchronized",
     "entity.DamageSourceMixin",
     "entity.EntityCollision",
+    "entity.EntityImmunityMixin",
     "entity.ItemCooldownManagerMixin",
     "entity.LivingEntityAccessor",
     "entity.LivingEntityEvents",

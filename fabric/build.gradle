@@ -105,11 +105,14 @@ dependencies {
     // Fabric specific
     modImplementation("maven.modrinth:modmenu:${rootProject.mod_menu_version}")
     modImplementation("maven.modrinth:trinkets:${rootProject.trinkets_version}")
-    // Trinkets 3.7.2 nests (JiJ) Cardinal Components 5.2.0, which Loom does not put on the compile classpath;
-    // `TrinketComponent extends ComponentV3`, so javac needs it to resolve any call on the component.
-    // Runtime is covered by the nested jars (Fabric Loader unpacks JiJ from classpath mods in dev too).
+    // Trinkets 3.7.2 nests (JiJ) Cardinal Components 5.2.0, which Loom neither puts on the compile classpath nor
+    // unpacks for dev runs (nested jars of classpath mods are not loaded in dev). `TrinketComponent extends
+    // ComponentV3`, so javac needs it; runDatagen/runServer need it loaded. `modLocalRuntime` keeps it out of the
+    // published POM (production gets it from Trinkets' own nested jars).
     modCompileOnly("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${rootProject.cardinal_components_version}")
     modCompileOnly("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${rootProject.cardinal_components_version}")
+    modLocalRuntime("dev.onyxstudios.cardinal-components-api:cardinal-components-base:${rootProject.cardinal_components_version}")
+    modLocalRuntime("dev.onyxstudios.cardinal-components-api:cardinal-components-entity:${rootProject.cardinal_components_version}")
 
     modCompileOnly("maven.modrinth:lambdynamiclights:${rootProject.lamb_dynamic_lights_version}")
 }

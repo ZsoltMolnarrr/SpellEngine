@@ -1,4 +1,5 @@
 {
+  "replace": false,
   "values": [
     "minecraft:diamond",
     "minecraft:heart_of_the_sea",

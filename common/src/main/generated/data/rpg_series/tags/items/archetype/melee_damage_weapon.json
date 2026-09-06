@@ -1,4 +1,5 @@
 {
+  "replace": false,
   "values": [
     "#rpg_series:weapon_type/claymore",
     "#rpg_series:weapon_type/mace",

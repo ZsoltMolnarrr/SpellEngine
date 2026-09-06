@@ -1,4 +1,5 @@
 {
+  "replace": false,
   "values": [
     "minecraft:diamond_sword",
     "minecraft:diamond_axe",

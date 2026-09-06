@@ -1,9 +1,7 @@
 package net.spell_engine.mixin.entity;
 
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.spell_engine.api.entity.LivingEntityImmunity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -40,10 +38,8 @@ public class LivingEntityImmunityMixin implements LivingEntityImmunity.Owner {
         immunities.removeIf(entry -> age > entry.validUntil());
     }
 
-    @ModifyReturnValue(method = "isInvulnerableTo", at = @At("RETURN"))
-    private boolean isInvulnerableTo_RETURN_SpellEngine_Immunity(boolean original, DamageSource damageSource) {
-        return original || LivingEntityImmunity.isDamageProtected(immunities, damageSource);
-    }
+    // 1.20.1: `isInvulnerableTo` is declared on `Entity` only (LivingEntity does not override it), so the
+    // damage-immunity return-value hook lives in `EntityImmunityMixin`, guarded by `instanceof Owner`.
 
     @Inject(method = "addStatusEffect(Lnet/minecraft/entity/effect/StatusEffectInstance;Lnet/minecraft/entity/Entity;)Z", at = @At("HEAD"), cancellable = true)
     private void addStatusEffect_HEAD_SpellEngine_Immunity(StatusEffectInstance effect, Entity source, CallbackInfoReturnable<Boolean> cir) {

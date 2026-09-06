@@ -1,4 +1,5 @@
 {
+  "replace": false,
   "values": [
     "minecraft:netherite_helmet",
     "minecraft:netherite_chestplate",
