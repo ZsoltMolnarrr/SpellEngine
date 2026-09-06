@@ -1,5 +1,6 @@
 package net.spell_engine.mixin.arrow;
 
+import net.spell_engine.utils.RegistryHelper;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
@@ -12,6 +13,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
@@ -28,6 +30,7 @@ import net.spell_engine.fx.ParticleHelper;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -70,7 +73,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
         if (cachedSpellEntry == null || cachedSpellEntry.size() != spellIds.size()) {
             var entries = spellIds.stream()
                     .map(id -> {
-                        var reference = SpellRegistry.from(arrow().getWorld()).getEntry(id).orElse(null);
+                        var reference = RegistryHelper.getEntry(SpellRegistry.from(arrow().getWorld()), id).orElse(null);
                         return (RegistryEntry<Spell>)reference;
                     })
                     .toList();
@@ -107,7 +110,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
                 for (var idString : stringList) {
                     var id = Identifier.tryParse(idString);
                     if (id != null) {
-                        addSpellId(Identifier.of(idString));
+                        addSpellId(new Identifier(idString));
                     }
                 }
             }
@@ -118,8 +121,8 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
 
     private static final TrackedData<String> SPELL_ID_TRACKER = DataTracker.registerData(PersistentProjectileEntity.class, TrackedDataHandlerRegistry.STRING);
     @Inject(method = "initDataTracker", at = @At("TAIL"))
-    private void initDataTracker_TAIL_SpellEngine(DataTracker.Builder builder, CallbackInfo ci) {
-        builder.add(SPELL_ID_TRACKER, "");
+    private void initDataTracker_TAIL_SpellEngine(CallbackInfo ci) {
+        arrow().getDataTracker().startTracking(SPELL_ID_TRACKER, "");
     }
 
     // MARK: Tick
@@ -136,7 +139,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
             try {
                 List<String> stringList = new Gson().fromJson(json, stringListType);
                 this.spellIds.clear();
-                this.spellIds.addAll(stringList.stream().map(Identifier::of).toList());
+                this.spellIds.addAll(stringList.stream().map(Identifier::new).toList());
                 this.spellEntries();
             } catch (Exception e) {
                 System.err.println("Spell Engine: Failed to parse spell id from arrow data tracker: " + json);
@@ -169,6 +172,19 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
     @Override
     public boolean isInGround_SpellEngine() {
         return inGround;
+    }
+
+    @Unique
+    @Nullable private ItemStack weaponStack_SpellEngine = null;
+
+    @Override
+    @Nullable public ItemStack getWeaponStack_SpellEngine() {
+        return weaponStack_SpellEngine;
+    }
+
+    @Override
+    public void setWeaponStack_SpellEngine(@Nullable ItemStack weaponStack) {
+        weaponStack_SpellEngine = weaponStack;
     }
 
     @Nullable public List<RegistryEntry<Spell>> getCarriedSpells() {

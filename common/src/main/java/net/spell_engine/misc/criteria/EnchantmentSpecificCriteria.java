@@ -1,53 +1,58 @@
 package net.spell_engine.misc.criteria;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import net.minecraft.advancement.criterion.AbstractCriterion;
-import net.minecraft.predicate.entity.EntityPredicate;
+import net.minecraft.advancement.criterion.AbstractCriterionConditions;
+import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
+import net.minecraft.predicate.entity.AdvancementEntityPredicateSerializer;
 import net.minecraft.predicate.entity.LootContextPredicate;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-
+/// JSON-based criterion (1.20.1 shape); the `enchant_id` condition is optional.
 public class EnchantmentSpecificCriteria extends AbstractCriterion<EnchantmentSpecificCriteria.Condition> {
-    public static final Identifier ID = Identifier.of(SpellEngineMod.ID, "enchant_specific");
+    public static final Identifier ID = new Identifier(SpellEngineMod.ID, "enchant_specific");
     public static final EnchantmentSpecificCriteria INSTANCE = new EnchantmentSpecificCriteria();
+    private static final String ENCHANT_ID_KEY = "enchant_id";
 
     @Override
-    public Codec<EnchantmentSpecificCriteria.Condition> getConditionsCodec() {
-        return EnchantmentSpecificCriteria.Condition.CODEC;
+    public Identifier getId() {
+        return ID;
     }
 
-    public void trigger(ServerPlayerEntity player, Identifier spellPoolId) {
-        trigger(player, condition -> {
-            return condition.matches(spellPoolId);
-        });
+    @Override
+    protected Condition conditionsFromJson(JsonObject obj, LootContextPredicate playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
+        var element = obj.get(ENCHANT_ID_KEY);
+        var enchantId = (element != null && !element.isJsonNull()) ? element.getAsString() : null;
+        return new Condition(playerPredicate, enchantId);
     }
 
-    public record Condition(Optional<LootContextPredicate> player, Optional<String> enchant_id) implements AbstractCriterion.Conditions {
-        public static final Codec<EnchantmentSpecificCriteria.Condition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                                EntityPredicate.LOOT_CONTEXT_PREDICATE_CODEC.optionalFieldOf("player").forGetter(EnchantmentSpecificCriteria.Condition::player),
-                                Codec.optionalField("enchant_id", Codec.STRING, true).forGetter(EnchantmentSpecificCriteria.Condition::enchant_id)
-                        )
-                        .apply(instance, EnchantmentSpecificCriteria.Condition::new)
-        );
+    public void trigger(ServerPlayerEntity player, Identifier enchantmentId) {
+        trigger(player, condition -> condition.matches(enchantmentId));
+    }
+
+    public static class Condition extends AbstractCriterionConditions {
+        @Nullable private final String enchant_id;
+
+        public Condition(LootContextPredicate player, @Nullable String enchant_id) {
+            super(ID, player);
+            this.enchant_id = enchant_id;
+        }
 
         public boolean matches(Identifier id) {
-            var poolMatches = true;
-            if (enchant_id.isPresent()) {
-                poolMatches = enchant_id.get().equals(id.toString());
+            return enchant_id == null || enchant_id.equals(id.toString());
+        }
+
+        @Override
+        public JsonObject toJson(AdvancementEntityPredicateSerializer predicateSerializer) {
+            var json = super.toJson(predicateSerializer);
+            if (enchant_id != null) {
+                json.add(ENCHANT_ID_KEY, new JsonPrimitive(enchant_id));
             }
-            return poolMatches;
-        }
-
-        public Optional<LootContextPredicate> player() {
-            return this.player;
-        }
-
-        public  Optional<String> enchant_id() {
-            return this.enchant_id;
+            return json;
         }
     }
 }

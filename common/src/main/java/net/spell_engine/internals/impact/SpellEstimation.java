@@ -1,5 +1,6 @@
 package net.spell_engine.internals.impact;
 
+import net.spell_engine.utils.RegistryHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
@@ -41,7 +42,7 @@ public class SpellEstimation {
             var school = impact.school != null ? impact.school : spellSchool;
             var attribute = school.attributeEntry;
             if (impact.attribute != null && !impact.attribute.isEmpty()) {
-                var optionalAttribute = Registries.ATTRIBUTE.getEntry(Identifier.of(impact.attribute));
+                var optionalAttribute = RegistryHelper.getEntry(Registries.ATTRIBUTE, new Identifier(impact.attribute));
                 if (optionalAttribute.isPresent()) {
                     attribute = optionalAttribute.get();
                 }

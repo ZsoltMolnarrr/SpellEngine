@@ -6,6 +6,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -310,12 +311,12 @@ public class SpellCloud extends Entity implements Ownable {
     private static final TrackedData<Integer> END_OF_PHASE_AGE = DataTracker.registerData(SpellCloud.class, TrackedDataHandlerRegistry.INTEGER);
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        builder.add(SPELL_ID_TRACKER, "");
-        builder.add(DATA_INDEX_TRACKER, this.dataIndex);
-        builder.add(RADIUS_TRACKER, 0F);
-        builder.add(PHASE_TRACKER, PHASE_SPAWNING);
-        builder.add(END_OF_PHASE_AGE, 0);
+    protected void initDataTracker() {
+        this.dataTracker.startTracking(SPELL_ID_TRACKER, "");
+        this.dataTracker.startTracking(DATA_INDEX_TRACKER, this.dataIndex);
+        this.dataTracker.startTracking(RADIUS_TRACKER, 0F);
+        this.dataTracker.startTracking(PHASE_TRACKER, PHASE_SPAWNING);
+        this.dataTracker.startTracking(END_OF_PHASE_AGE, 0);
     }
 
     public void onTrackedDataSet(TrackedData<?> data) {
@@ -323,7 +324,7 @@ public class SpellCloud extends Entity implements Ownable {
         if (getWorld().isClient) {
             var rawSpellId = this.getDataTracker().get(SPELL_ID_TRACKER);
             if (rawSpellId != null && !rawSpellId.isEmpty()) {
-                this.spellId = Identifier.of(rawSpellId);
+                this.spellId = new Identifier(rawSpellId);
             }
             this.dataIndex = this.getDataTracker().get(DATA_INDEX_TRACKER);
             this.calculateDimensions();
@@ -354,7 +355,7 @@ public class SpellCloud extends Entity implements Ownable {
         this.timeToLive = nbt.getInt(NBTKey.TIME_TO_LIVE.key);
         this.spawnDuration = nbt.getInt(NBTKey.SPAWN_DURATION.key);
         this.despawnDuration = nbt.getInt(NBTKey.DESPAWN_DURATION.key);
-        this.spellId = Identifier.of(nbt.getString(NBTKey.SPELL_ID.key));
+        this.spellId = new Identifier(nbt.getString(NBTKey.SPELL_ID.key));
         this.dataIndex = nbt.getInt(NBTKey.DATA_INDEX.key);
         if (nbt.contains(NBTKey.CLOUD_MODIFIER.key)) {
             var cm = nbt.getCompound(NBTKey.CLOUD_MODIFIER.key);
@@ -424,7 +425,7 @@ public class SpellCloud extends Entity implements Ownable {
 
             var presence_sound = cloudData.presence_sound;
             if (!presenceSoundFired && presence_sound != null) {
-                var soundEvent = Registries.SOUND_EVENT.get(Identifier.of(presence_sound.id()));
+                var soundEvent = Registries.SOUND_EVENT.get(new Identifier(presence_sound.id()));
                 if (soundEvent != null) {
                     ((SoundPlayerWorld) world).playSoundFromEntity(this, soundEvent, SoundCategory.PLAYERS,
                             presence_sound.volume(),
@@ -513,6 +514,7 @@ public class SpellCloud extends Entity implements Ownable {
     }
 
     @Nullable public RegistryEntry<Spell> getSpellEntry() {
-        return SpellRegistry.from(this.getWorld()).getEntry(this.spellId).orElse(null);
+        if (this.spellId == null) { return null; }
+        return SpellRegistry.from(this.getWorld()).getEntry(RegistryKey.of(SpellRegistry.KEY, this.spellId)).orElse(null);
     }
 }

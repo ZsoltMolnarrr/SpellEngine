@@ -19,9 +19,12 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.spell_engine.mixin.loot.CombinedEntryAccessor;
+import net.spell_engine.mixin.loot.ConstantLootNumberProviderAccessor;
+import net.spell_engine.mixin.loot.UniformLootNumberProviderAccessor;
 import net.spell_engine.mixin.loot.EnchantWithLevelsLootFunctionAccessor;
 import net.spell_engine.mixin.loot.ItemEntryAccessor;
 import net.spell_engine.mixin.loot.LeafEntryAccessor;
+import net.spell_engine.mixin.loot.LootPoolAccessor;
 import net.spell_engine.rpg_series.RPGSeriesCore;
 import net.spell_engine.rpg_series.tags.RPGSeriesItemTags;
 import net.spell_engine.spellbinding.SpellBindRandomlyLootFunction;
@@ -84,7 +87,7 @@ public class LootHelper {
             if (updatedTags.contains(tagString)) {
                 continue;
             }
-            var tagId = Identifier.of(tagString);
+            var tagId = new Identifier(tagString);
             TagKey<Item> tag = TagKey.of(RegistryKeys.ITEM, tagId);
             var itemList = new ArrayList<String>();
             Registries.ITEM.iterateEntries(tag).forEach((itemEntry) -> {
@@ -138,7 +141,9 @@ public class LootHelper {
 
     // MARK: Injection
 
-    public static void configure(RegistryWrapper.WrapperLookup registries, Identifier lootTableId,
+    /// `registries` is unused on 1.20.1 (loot functions need no registry lookup); the Fabric `loot-api-v2`
+    /// `LootTableEvents.MODIFY` callback may pass `null`.
+    public static void configure(@Nullable RegistryWrapper.WrapperLookup registries, Identifier lootTableId,
                                  Supplier<List<LootPool>> existingPools, Consumer<LootPool> poolSink,
                                  LootConfig config, String configName) {
         boolean isEntityLootTable = lootTableId.getPath().startsWith("entities");
@@ -165,7 +170,7 @@ public class LootHelper {
         configureFallback(registries, tableId, existingPools, poolSink, config, configName, isEntityLootTable);
     }
 
-    private static void configureFallback(RegistryWrapper.WrapperLookup registries, String tableId,
+    private static void configureFallback(@Nullable RegistryWrapper.WrapperLookup registries, String tableId,
                                           Supplier<List<LootPool>> existingPools, Consumer<LootPool> poolSink,
                                           LootConfig config, String configName, boolean isEntityLootTable) {
         var fallback = config.fallback;
@@ -261,7 +266,7 @@ public class LootHelper {
         for (var pool: pools) {
             var items = new LinkedHashMap<String, ItemOccurrence>();
             int[] total = { 0 };
-            for (var entry: pool.entries) {
+            for (var entry: ((LootPoolAccessor) pool).spellEngine_getEntries()) {
                 collect(entry, items, total);
             }
             if (!items.isEmpty()) {
@@ -283,7 +288,7 @@ public class LootHelper {
         var weight = leaf.spellEngine_getWeight();
         total[0] += weight;
         if (entry instanceof ItemEntry) {
-            var item = ((ItemEntryAccessor) entry).spellEngine_getItem().value();
+            var item = ((ItemEntryAccessor) entry).spellEngine_getItem();
             var itemId = Registries.ITEM.getId(item).toString();
             var occurrence = items.computeIfAbsent(itemId, k -> new ItemOccurrence());
             boolean enchanted = false;
@@ -293,11 +298,13 @@ public class LootHelper {
                     var levels = ((EnchantWithLevelsLootFunctionAccessor) function).spellEngine_getLevels();
                     Float min = null, max = null;
                     if (levels instanceof ConstantLootNumberProvider constant) {
-                        min = constant.value(); max = constant.value();
+                        var value = ((ConstantLootNumberProviderAccessor) (Object) constant).spellEngine_getValue();
+                        min = value; max = value;
                     } else if (levels instanceof UniformLootNumberProvider uniform
-                            && uniform.min() instanceof ConstantLootNumberProvider lo
-                            && uniform.max() instanceof ConstantLootNumberProvider hi) {
-                        min = lo.value(); max = hi.value();
+                            && ((UniformLootNumberProviderAccessor) uniform).spellEngine_getMin() instanceof ConstantLootNumberProvider lo
+                            && ((UniformLootNumberProviderAccessor) uniform).spellEngine_getMax() instanceof ConstantLootNumberProvider hi) {
+                        min = ((ConstantLootNumberProviderAccessor) (Object) lo).spellEngine_getValue();
+                        max = ((ConstantLootNumberProviderAccessor) (Object) hi).spellEngine_getValue();
                     }
                     if (min != null) {
                         occurrence.minLevel = occurrence.minLevel == null ? min : Math.min(occurrence.minLevel, min);
@@ -333,7 +340,7 @@ public class LootHelper {
 
     // MARK: Pool building
 
-    private static LootPool buildPool(RegistryWrapper.WrapperLookup registries, List<LootConfig.Pool.Entry> entries,
+    private static LootPool buildPool(@Nullable RegistryWrapper.WrapperLookup registries, List<LootConfig.Pool.Entry> entries,
                                       float rolls, float bonusRolls, boolean killedByPlayerOnly, @Nullable EnchantMix mix) {
         LootPool.Builder lootPoolBuilder = LootPool.builder();
         if (killedByPlayerOnly) {
@@ -365,7 +372,7 @@ public class LootHelper {
             }
 
             for (var itemId: itemList) {
-                var item = Registries.ITEM.get(Identifier.of(itemId));
+                var item = Registries.ITEM.get(new Identifier(itemId));
                 if (item == null) { continue; }
                 var lootEntry = ItemEntry.builder(item)
                         .weight(weight);
@@ -392,13 +399,13 @@ public class LootHelper {
                     if (mix.enchantedWeight() > 0) {
                         var levels = mix.levels(enchant);
                         lootPoolBuilder.with(ItemEntry.builder(item).weight(weight * mix.enchantedWeight())
-                                .apply(EnchantWithLevelsLootFunction.builder(registries, numberProvider(levels.min_power, levels.max_power))));
+                                .apply(EnchantWithLevelsLootFunction.builder(numberProvider(levels.min_power, levels.max_power)).allowTreasureEnchantments()));
                     }
                     continue;
                 }
 
                 if (enchant != null && enchant.isValid()) {
-                    var enchantFunction = EnchantWithLevelsLootFunction.builder(registries, numberProvider(enchant.min_power, enchant.max_power));
+                    var enchantFunction = EnchantWithLevelsLootFunction.builder(numberProvider(enchant.min_power, enchant.max_power)).allowTreasureEnchantments();
                     lootEntry.apply(enchantFunction);
                 }
                 if (spellBind != null && spellBind.isValid()) {

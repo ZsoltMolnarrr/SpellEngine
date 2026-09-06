@@ -293,7 +293,7 @@ public class SummonBehaviour {
             /// Radius around the primary target in which additional entities are also struck.
             /// 0 = single-target.
             public float radius = 0;
-            /// Sound played at swing start (e.g. `Sound.of(Identifier.of("minecraft:entity.player.attack.sweep"))`).
+            /// Sound played at swing start (e.g. `Sound.of(new Identifier("minecraft:entity.player.attack.sweep"))`).
             /// Null disables it. Its volume / pitch / randomness are honored on playback.
             @Nullable public Sound swing_sound = null;
             /// Sound played once on a successful impact (when the swing reaches its windup

@@ -82,7 +82,7 @@ public final class EntityTints {
         }
         int result = NEUTRAL;
         for (var instance : entity.getStatusEffects()) {
-            var tint = tints.get(instance.getEffectType().value());
+            var tint = tints.get(instance.getEffectType());
             if (tint != null) {
                 result = multiply(result, tint.argb(entity, instance));
             }
@@ -125,6 +125,12 @@ public final class EntityTints {
 
         public static boolean isActive() {
             return argb != NEUTRAL;
+        }
+
+        /// The active tint (`NEUTRAL` when none) — for render code that needs the raw color
+        /// (1.20.1 `ModelPart#render` takes separate r/g/b/a floats instead of a packed color).
+        public static int argb() {
+            return argb;
         }
 
         /// True when the active tint has alpha below 1, so the entity needs a blending-capable render layer.

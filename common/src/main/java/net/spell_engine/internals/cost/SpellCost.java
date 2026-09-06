@@ -1,6 +1,7 @@
 package net.spell_engine.internals.cost;
 
-import net.minecraft.entity.EquipmentSlot;
+import net.spell_engine.utils.RegistryHelper;
+import net.minecraft.util.Hand;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
@@ -38,15 +39,15 @@ public class SpellCost {
         // Durability
         if (SpellEngineMod.config.spell_cost_durability_allowed && spell.cost.durability > 0) {
             var stackToDamage = (spellSource.itemStack() != null && spellSource.itemStack().isDamageable()) ? spellSource.itemStack() : heldItemStack;
-            stackToDamage.damage(spell.cost.durability, player, EquipmentSlot.MAINHAND);
+            stackToDamage.damage(spell.cost.durability, player, p -> p.sendToolBreakStatus(Hand.MAIN_HAND));
         }
         // Item
         Ammo.consume(ammoResult, player);
         // Status effect
         if (spell.cost.effect_id != null) {
-            var effect = Registries.STATUS_EFFECT.getEntry(Identifier.of(spell.cost.effect_id));
+            var effect = RegistryHelper.getEntry(Registries.STATUS_EFFECT, new Identifier(spell.cost.effect_id));
             if (effect.isPresent()) {
-                player.removeStatusEffect(effect.get());
+                player.removeStatusEffect(effect.get().value());
             }
         }
         if (SpellEvents.COST_CONSUME.isListened()) {

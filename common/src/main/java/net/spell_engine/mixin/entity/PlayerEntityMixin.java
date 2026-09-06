@@ -63,10 +63,10 @@ public class PlayerEntityMixin implements SpellCaster.Player, SpellCasterEntity 
     private static final TrackedData<Float> SPELL_ENGINE_EXTRA_SLIPPERINESS = DataTracker.registerData(PlayerEntity.class, TrackedDataHandlerRegistry.FLOAT);
 
     @Inject(method = "initDataTracker", at = @At("TAIL"))
-    private void initDataTracker_TAIL_SpellEngine_SyncEffects(DataTracker.Builder builder, CallbackInfo ci) {
-        builder.add(SPELL_ENGINE_SPELL_PROGRESS, "");
-        builder.add(SPELL_ENGINE_OPTIONS, "");
-        builder.add(SPELL_ENGINE_EXTRA_SLIPPERINESS, 0F);
+    private void initDataTracker_TAIL_SpellEngine_SyncEffects(CallbackInfo ci) {
+        player().getDataTracker().startTracking(SPELL_ENGINE_SPELL_PROGRESS, "");
+        player().getDataTracker().startTracking(SPELL_ENGINE_OPTIONS, "");
+        player().getDataTracker().startTracking(SPELL_ENGINE_EXTRA_SLIPPERINESS, 0F);
     }
 
     private ArrowShootContext arrowShotContext = ArrowShootContext.empty();

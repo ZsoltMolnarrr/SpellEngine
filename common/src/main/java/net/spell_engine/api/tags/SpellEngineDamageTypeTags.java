@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class SpellEngineDamageTypeTags {
     public static final ArrayList<TagKey<DamageType>> ALL = new ArrayList<>();
     private static TagKey<DamageType> create(String id) {
-        var tag = TagKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(SpellEngineMod.ID, id));
+        var tag = TagKey.of(RegistryKeys.DAMAGE_TYPE, new Identifier(SpellEngineMod.ID, id));
         ALL.add(tag);
         return tag;
     }

@@ -46,7 +46,7 @@ public class AttributeScaling {
 
         public static class OwnerModifier {
             public String attribute_id = "";
-            public EntityAttributeModifier.Operation operation = EntityAttributeModifier.Operation.ADD_VALUE;
+            public EntityAttributeModifier.Operation operation = EntityAttributeModifier.Operation.ADDITION;
             /// Flat amount added before the owner-scaled term. Final contribution is
             /// `base + ownerValue * coefficient`.
             public double base = 0.0;

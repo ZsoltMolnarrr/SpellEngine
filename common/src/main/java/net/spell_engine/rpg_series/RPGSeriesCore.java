@@ -4,10 +4,10 @@ import com.google.common.base.Suppliers;
 import net.minecraft.enchantment.Enchantments;
 import net.spell_engine.PlatformEvents;
 import net.spell_engine.api.item.weapon.StaffItem;
-import net.spell_engine.api.util.TriState;
 import net.spell_engine.rpg_series.loot.LootConfig;
 import net.spell_engine.rpg_series.loot.LootHelper;
 import net.spell_engine.rpg_series.config.LootDefaults;
+import net.spell_power.api.enchantment.EnchantmentRestriction;
 import net.tiny_config.ConfigManager;
 
 import java.util.Set;
@@ -52,12 +52,11 @@ public class RPGSeriesCore {
             LootHelper.saveFallbackReport();
         });
 
+        // 1.20.1: no `EnchantmentEvents.ALLOW_ENCHANTING`; the permit goes through Spell Power's restored
+        // `EnchantmentRestriction` (consulted by its `Enchantment#isAcceptableItem` HEAD mixin on both loaders).
         var staffEnchantments = Set.of(Enchantments.KNOCKBACK, Enchantments.FIRE_ASPECT, Enchantments.LOOTING);
-        PlatformEvents.onAllowEnchanting((enchantment, target) -> {
-            if (target.getItem() instanceof StaffItem && staffEnchantments.contains(enchantment.getKey().get())) {
-                return TriState.ALLOW;
-            }
-            return TriState.PASS;
-        });
+        for (var enchantment : staffEnchantments) {
+            EnchantmentRestriction.permit(enchantment, stack -> stack.getItem() instanceof StaffItem);
+        }
     }
 }

@@ -6,65 +6,68 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 
 import java.util.HashSet;
 import java.util.Set;
 
 public class StatusEffectClassification {
-    private static final Set<RegistryEntry<EntityAttribute>> movementImpairingAttributes = new HashSet<>();
-    private static final Set<RegistryKey<StatusEffect>> movementImpairingEffects = new HashSet<>();
+    private static final Set<EntityAttribute> movementImpairingAttributes = new HashSet<>();
+    private static final Set<StatusEffect> movementImpairingEffects = new HashSet<>();
 
     public static void init() {
         movementImpairingAttributes.add(EntityAttributes.GENERIC_MOVEMENT_SPEED);
         movementImpairingAttributes.add(EntityAttributes.GENERIC_FLYING_SPEED);
-        movementImpairingAttributes.add(EntityAttributes.GENERIC_GRAVITY);
+        // 1.20.1 has no generic gravity attribute
         PlatformEvents.onServerStarted((server) -> {
             parse(Registries.STATUS_EFFECT);
         });
     }
 
     private static void parse(Registry<StatusEffect> registry) {
-        registry.streamEntries().forEach(entry -> {
-            var effect = entry.value();
-            effect.forEachAttributeModifier(0, (attribute, modifier) -> {
+        for (var effect : registry) {
+            for (var modifierEntry : effect.getAttributeModifiers().entrySet()) {
+                var attribute = modifierEntry.getKey();
+                var modifier = modifierEntry.getValue();
                 if (movementImpairingAttributes.contains(attribute)) {
                     var isMovementImpairing = false;
                     double treshold = 0;
-                    switch (modifier.operation()) {
-                        case ADD_VALUE, ADD_MULTIPLIED_BASE -> {
+                    switch (modifier.getOperation()) {
+                        case ADDITION, MULTIPLY_BASE -> {
                             treshold = 0;
                         }
-                        case ADD_MULTIPLIED_TOTAL -> {
+                        case MULTIPLY_TOTAL -> {
                             treshold = 1;
                         }
                     }
-                    if (modifier.value() < treshold) {
+                    if (modifier.getValue() < treshold) {
                         isMovementImpairing = true;
                     }
                     if (isMovementImpairing) {
-                        movementImpairingEffects.add(entry.getKey().get());
+                        movementImpairingEffects.add(effect);
                     }
                 }
-            });
-        });
+            }
+        }
+    }
+
+    public static boolean isMovementImpairing(StatusEffect effect) {
+        return movementImpairingEffects.contains(effect);
     }
 
     public static boolean isMovementImpairing(RegistryEntry<StatusEffect> effect) {
-        var key = effect.getKey();
-        if (key.isEmpty()) { // Should never happen, added due to some incompatibility crash
-            return false;
-        }
-        return movementImpairingEffects.contains(key.get());
+        return isMovementImpairing(effect.value());
     }
 
-    public static boolean disablesMobAI(RegistryEntry<StatusEffect> effectEntry) {
-        var effect = effectEntry.value();
+    public static boolean disablesMobAI(StatusEffect effect) {
         var actionsAllowed = ((ActionImpairing) effect).actionsAllowed();
         if (actionsAllowed == null) {
             return false;
         }
         return !actionsAllowed.mobs().canUseAI();
+    }
+
+    public static boolean disablesMobAI(RegistryEntry<StatusEffect> effectEntry) {
+        return disablesMobAI(effectEntry.value());
     }
 }

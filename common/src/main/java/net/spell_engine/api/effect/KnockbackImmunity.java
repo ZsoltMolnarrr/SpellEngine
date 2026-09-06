@@ -2,7 +2,6 @@ package net.spell_engine.api.effect;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.registry.entry.RegistryEntry;
 
 import java.util.Collection;
 
@@ -28,9 +27,9 @@ public interface KnockbackImmunity {
 
     /// True if any of the given effects grants knockback immunity. Called only when an entity's
     /// active effects change, to refresh the cached {@link Bearer} state — never on the hot path.
-    static boolean anyImmune(Collection<RegistryEntry<StatusEffect>> effects) {
+    static boolean anyImmune(Collection<StatusEffect> effects) {
         for (var effect : effects) {
-            if (((KnockbackImmunity) effect.value()).immuneToKnockback()) {
+            if (((KnockbackImmunity) effect).immuneToKnockback()) {
                 return true;
             }
         }

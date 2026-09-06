@@ -189,13 +189,13 @@ public final class TooltipTokens {
     /// operations (`ADD_MULTIPLIED_TOTAL` is offset by 1 so a total-multiplier of 1.1 reads "10%").
     public static String bonus(float amount, EntityAttributeModifier.Operation operation) {
         switch (operation) {
-            case ADD_VALUE -> {
+            case ADDITION -> {
                 return formattedNumber(amount);
             }
-            case ADD_MULTIPLIED_BASE -> {
+            case MULTIPLY_BASE -> {
                 return percent(amount);
             }
-            case ADD_MULTIPLIED_TOTAL -> {
+            case MULTIPLY_TOTAL -> {
                 return percent(amount - 1F);
             }
         }

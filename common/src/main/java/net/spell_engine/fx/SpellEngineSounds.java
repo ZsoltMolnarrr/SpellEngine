@@ -23,7 +23,7 @@ public class SpellEngineSounds {
         }
 
         public Entry(String name) {
-            this(Identifier.of(SpellEngineMod.ID, name));
+            this(new Identifier(SpellEngineMod.ID, name));
         }
 
         public Entry(Identifier id) {
@@ -150,9 +150,10 @@ public class SpellEngineSounds {
     public static final Entry SPELLBOOK_EQUIP = add(new Entry("spellbook_equip"));
     public static final Entry NEGATIVE_FEEDBACK = add(new Entry("negative_feedback"));
 
+    /// Idempotent. Fabric: call from mod init; Forge: call from the `SOUND_EVENT` `RegisterEvent`.
     public static void register() {
         for (var entry: entries) {
-            entry.entry = Registry.registerReference(Registries.SOUND_EVENT, entry.id(), entry.soundEvent());
+            entry.register();
         }
     }
 }

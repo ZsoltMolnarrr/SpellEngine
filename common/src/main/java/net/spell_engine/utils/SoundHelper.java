@@ -15,7 +15,7 @@ public class SoundHelper {
             return;
         }
         try {
-            var soundEvent = Registries.SOUND_EVENT.get(Identifier.of(sound.id()));
+            var soundEvent = Registries.SOUND_EVENT.get(new Identifier(sound.id()));
             playSoundEvent(world, entity, soundEvent, sound.volume(), sound.randomizedPitch());
         } catch (Exception e) {
             System.err.println("Failed to play sound: " + sound.id());

@@ -11,7 +11,6 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.world.World;
 import net.spell_engine.api.effect.EntityTints;
 import net.spell_engine.api.effect.Synchronized;
@@ -33,7 +32,7 @@ import java.util.Map;
 // priority < 1000: applied early so SE's TrackedData fields get stable ids (cf. PlayerEntityMixin 555).
 @Mixin(value = LivingEntity.class, priority = 556)
 public abstract class LivingEntityStatusEffectSync extends Entity implements Synchronized.Provider, ModelEffectAttachment.Provider, EntityTints.Provider {
-    @Shadow @Final private Map<RegistryEntry<StatusEffect>, StatusEffectInstance> activeStatusEffects;
+    @Shadow @Final private Map<StatusEffect, StatusEffectInstance> activeStatusEffects;
 
     // MARK: Status effect sync
 
@@ -62,10 +61,10 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
     // MARK: DataTracker init
 
     @Inject(method = "initDataTracker", at = @At("TAIL"))
-    private void initDataTracker_TAIL_SpellEngine_SyncEffects(DataTracker.Builder builder, CallbackInfo ci) {
-        builder.add(SPELL_ENGINE_SYNCED_EFFECTS, "");
-        builder.add(SPELL_ENGINE_MODEL_FX, "");
-        builder.add(SPELL_ENGINE_TINT_ARGB, EntityTints.NEUTRAL);
+    private void initDataTracker_TAIL_SpellEngine_SyncEffects(CallbackInfo ci) {
+        dataTracker.startTracking(SPELL_ENGINE_SYNCED_EFFECTS, "");
+        dataTracker.startTracking(SPELL_ENGINE_MODEL_FX, "");
+        dataTracker.startTracking(SPELL_ENGINE_TINT_ARGB, EntityTints.NEUTRAL);
     }
 
     // MARK: Status effect sync — write
@@ -136,7 +135,7 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
         StringBuilder builder = new StringBuilder();
         int i = 0;
         for (var entry : activeStatusEffects.entrySet()) {
-            var effect = entry.getKey().value();
+            var effect = entry.getKey();
             if (((Synchronized)effect).shouldSynchronize()) {
                 int id = Registries.STATUS_EFFECT.getRawId(effect);
                 int amplifier = entry.getValue().getAmplifier();

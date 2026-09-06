@@ -1,5 +1,7 @@
 package net.spell_engine.internals.casting;
 
+import net.spell_engine.utils.EntityScale;
+import net.spell_engine.utils.RegistryHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -210,7 +212,7 @@ public class SpellCastInteractor {
         if (snapshot == null || !(player.getWorld() instanceof ServerWorld serverWorld)) {
             return SpellTarget.SearchResult.empty();
         }
-        var scaledRange = range * player.getScale();
+        var scaledRange = range * EntityScale.of(player);
         var allowed = scaledRange + SpellEngineMod.config.spell_target_range_tolerance;
         var squaredAllowed = allowed * allowed;
         var origin = player.getEyePos(); // client raycasts originate at the eye
@@ -291,7 +293,7 @@ public class SpellCastInteractor {
     /// Instants carry their targeting snapshot and fire immediately; timed casts start the
     /// server-owned process (server-computed timing) and are fed by the target stream.
     public void requestCast(Identifier spellId, SpellCast.TargetSnapshot snapshot) {
-        var spellEntry = SpellRegistry.from(player.getWorld()).getEntry(spellId).orElse(null);
+        var spellEntry = RegistryHelper.getEntry(SpellRegistry.from(player.getWorld()), spellId).orElse(null);
         if (spellEntry == null) {
             return;
         }
@@ -368,7 +370,7 @@ public class SpellCastInteractor {
     /// wire contract and stored; arrival order is delivery order (ordered channel), so a plain
     /// overwrite keeps the slot newest.
     public void submitTargets(Identifier spellId, SpellCast.TargetSnapshot snapshot) {
-        var spellEntry = SpellRegistry.from(player.getWorld()).getEntry(spellId).orElse(null);
+        var spellEntry = RegistryHelper.getEntry(SpellRegistry.from(player.getWorld()), spellId).orElse(null);
         if (spellEntry == null) {
             return;
         }

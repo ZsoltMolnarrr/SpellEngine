@@ -45,8 +45,8 @@ public class SpellModelEffect extends Entity {
     // MARK: Sync
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        builder.add(MODEL_EFFECT_DATA, "");
+    protected void initDataTracker() {
+        this.dataTracker.startTracking(MODEL_EFFECT_DATA, "");
     }
 
     @Override

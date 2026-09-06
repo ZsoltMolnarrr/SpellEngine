@@ -1,7 +1,5 @@
 package net.spell_engine.api.effect;
 
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.AttributeModifiersComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
@@ -55,13 +53,8 @@ public final class GlowingItemStatusEffect {
      * nothing to say about any slot, spell books and the like, are not weapons and do not glow either.
      */
     public static boolean isHeldEquipment(ItemStack stack) {
-        var modifiers = stack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
-        for (var entry: modifiers.modifiers()) {
-            if (entry.slot().matches(EquipmentSlot.MAINHAND) || entry.slot().matches(EquipmentSlot.OFFHAND)) {
-                return true;
-            }
-        }
-        return false;
+        return !stack.getAttributeModifiers(EquipmentSlot.MAINHAND).isEmpty()
+                || !stack.getAttributeModifiers(EquipmentSlot.OFFHAND).isEmpty();
     }
 
     private static final Map<StatusEffect, Glow> glows = new HashMap<>();

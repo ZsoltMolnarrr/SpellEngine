@@ -1,10 +1,13 @@
 package net.spell_engine.internals.delivery.melee;
 import net.spell_engine.Platform;
+import net.spell_power.api.ModifierDefinitions;
+import net.spell_engine.utils.RegistryHelper;
 
 import com.google.common.base.Suppliers;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.registry.Registries;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -78,7 +81,7 @@ public class Melee {
         /// output multiplier and the charge bonus are both rebuilt from it by `resolveCharge`.
         float charge
     ) {
-        public static final AttackContext EMPTY = new AttackContext(Identifier.of("spell_engine", "empty"), "empty", 1F);
+        public static final AttackContext EMPTY = new AttackContext(new Identifier("spell_engine", "empty"), "empty", 1F);
         /**
          * Create context for a specific attack
          */
@@ -108,7 +111,7 @@ public class Melee {
         }
 
         public boolean isFinished(int currentTick) {
-            return currentTick >= (createdAt + attack.duration) && currentTick >= hitTicks.getLast();
+            return currentTick >= (createdAt + attack.duration) && currentTick >= hitTicks.get(hitTicks.size() - 1);
         }
 
         public boolean isDue(int currentTick) {
@@ -154,7 +157,7 @@ public class Melee {
                                                   RegistryEntry<Spell> spellEntry, float curvedRatio,
                                                   @Nullable Spell.Modifier chargeModifier) {
         var attacks = new ArrayList<Attack>();
-        var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, caster);
+        var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(Registries.ATTRIBUTE.getEntry(EntityAttributes.GENERIC_ATTACK_SPEED), caster);
         var spellId = spellEntry.getKey().get().getValue();
         var allAttacks = allAttacksOf(caster, meleeDataAttacks, spellEntry, chargeModifier);
         for (var attack : allAttacks.attacks()) {
@@ -165,6 +168,9 @@ public class Melee {
         return attacks;
     }
 
+    /// 1.20.1 has no `entity_interaction_range` attribute; vanilla melee reach is a fixed 3 blocks.
+    private static final float VANILLA_ENTITY_REACH = 3F;
+
     private static Attack convert(ServerPlayerEntity caster, Identifier spellId, Spell.Delivery.Melee.Attack attack, double attackSpeedMultiplier, List<Spell.Modifier> spellModifiers, float curvedRatio) {
         var speed = (float) (attack.attack_speed_multiplier * attackSpeedMultiplier);
         float duration = attack.duration > 0
@@ -172,11 +178,11 @@ public class Melee {
                 ? attack.duration
                 : Math.max(caster.getAttackCooldownProgressPerTick() * (1F / speed), 1);
         float delay = duration * attack.delay;
-        var spell = SpellRegistry.from(caster.getWorld()).getEntry(spellId);
+        var spell = RegistryHelper.getEntry(SpellRegistry.from(caster.getWorld()), spellId);
         // Must stay in step with the server side distance guard in `performAttackAgainstTargets`,
         // which resolves the same range: a hitbox grown by `range_add` here but not there would
         // find targets the server then rejects.
-        var range = spell.isPresent() ? SpellParameters.getRangeCurved(caster, spell.get(), curvedRatio) : (float)caster.getEntityInteractionRange();
+        var range = spell.isPresent() ? SpellParameters.getRangeCurved(caster, spell.get(), curvedRatio) : VANILLA_ENTITY_REACH;
 
         var momentumBonus = 0F;
         var slipBonus = 0F;
@@ -231,7 +237,7 @@ public class Melee {
             Spell.Delivery.Melee.Attack attack
     ) {}
     @Nullable public static ResolutionResult resolveAttackData(PlayerEntity attacker, World world, Identifier spellId, String attackId) {
-        var spellEntry = SpellRegistry.from(world).getEntry(spellId).orElse(null);
+        var spellEntry = RegistryHelper.getEntry(SpellRegistry.from(world), spellId).orElse(null);
         if (spellEntry == null) {
             return null;
         }
@@ -266,7 +272,7 @@ public class Melee {
         var attackData = resolved != null ? resolved.attack() : null;
         if (attackData != null) {
             // Saving the attack on server side - mainly for the slipperiness
-            var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player);
+            var attackSpeedMultiplier = AttributeModifierUtil.multipliersOf(Registries.ATTRIBUTE.getEntry(EntityAttributes.GENERIC_ATTACK_SPEED), player);
             var curvedRatio = MathHelper.clamp(attackContext.charge(), 0F, 1F); // Client supplied
             var charge = resolveCharge(resolved.spell(), curvedRatio);
             // The full modifier list (not `List.of()`): the slipperiness stored here drives server
@@ -276,7 +282,7 @@ public class Melee {
             ((SpellCaster.Player) player).setMeleeSkillAttack(new ActiveAttack(attack, player.age, player.getMainHandStack().getItem()));
             // Sending fx to clients - animation, sound, particles
             var trackers = Platform.tracking(player);
-            float speed = (float) (attackData.attack_speed_multiplier * AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, player));
+            float speed = (float) (attackData.attack_speed_multiplier * AttributeModifierUtil.multipliersOf(Registries.ATTRIBUTE.getEntry(EntityAttributes.GENERIC_ATTACK_SPEED), player));
             if (REPLAY.get()) {
                 AnimationHelper.sendAnimation(player, trackers, SpellCast.Animation.RELEASE, attackData.animation, speed);
             } else {
@@ -309,9 +315,15 @@ public class Melee {
         return (float) (dualWielded / singleHanded) - 1F;
     }
 
-    private static final Identifier DAMAGE_MODIFIER_ID = Identifier.of(SpellEngineMod.ID, "melee_attack");
-    private static final Identifier DUAL_WIELD_MODIFIER_ID = Identifier.of(SpellEngineMod.ID, "melee_attack_dual_wield");
-    private static final Identifier CHARGE_MODIFIER_ID = Identifier.of(SpellEngineMod.ID, "melee_attack_charge");
+    private static final Identifier DAMAGE_MODIFIER_ID = new Identifier(SpellEngineMod.ID, "melee_attack");
+    private static final Identifier DUAL_WIELD_MODIFIER_ID = new Identifier(SpellEngineMod.ID, "melee_attack_dual_wield");
+    private static final Identifier CHARGE_MODIFIER_ID = new Identifier(SpellEngineMod.ID, "melee_attack_charge");
+
+    /// 1.20.1 attribute modifiers are UUID keyed; derived deterministically from the ids above.
+    private static EntityAttributeModifier temporaryModifier(Identifier id, double amount) {
+        return new EntityAttributeModifier(ModifierDefinitions.uuid(id), ModifierDefinitions.name(id), amount,
+                EntityAttributeModifier.Operation.MULTIPLY_TOTAL);
+    }
     public static void performAttackAgainstTargets(ServerPlayerEntity player, AttackContext context, int[] targetIds) {
         var world = player.getWorld();
         var focusMode = focusMode();
@@ -343,7 +355,7 @@ public class Melee {
             // wielded swing instead of the main hand one.
             var dualWieldBonus = dualWieldDamageBonus(player, spellEntry != null ? spellEntry.value() : null);
             if (dualWieldBonus != 0 && attributeInstance != null) {
-                appliedDualWieldModifier = new EntityAttributeModifier(DUAL_WIELD_MODIFIER_ID, dualWieldBonus, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+                appliedDualWieldModifier = temporaryModifier(DUAL_WIELD_MODIFIER_ID, dualWieldBonus);
                 attributeInstance.addTemporaryModifier(appliedDualWieldModifier);
             }
             // Melee skills land their damage through vanilla `player.attack(...)`, which the
@@ -352,19 +364,19 @@ public class Melee {
             // modifiers compose multiplicatively, so the charge scales the whole swing rather
             // than being diluted by the flat bonuses below.
             if (charge != 1F && attributeInstance != null) {
-                appliedChargeModifier = new EntityAttributeModifier(CHARGE_MODIFIER_ID, charge - 1F, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+                appliedChargeModifier = temporaryModifier(CHARGE_MODIFIER_ID, charge - 1F);
                 attributeInstance.addTemporaryModifier(appliedChargeModifier);
             }
             if (attack != null && attributeInstance != null) {
                 var damageModifierAmount = attack.damage_bonus + damageMultiplierBase;
                 if (damageModifierAmount != 0) {
-                    appliedDamageModifier = new EntityAttributeModifier(DAMAGE_MODIFIER_ID, damageModifierAmount, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+                    appliedDamageModifier = temporaryModifier(DAMAGE_MODIFIER_ID, damageModifierAmount);
                     attributeInstance.addTemporaryModifier(appliedDamageModifier);
                 }
                 impactSound = attack.impact_sound;
                 impactSoundLimit = attack.impact_sound_cap > 0 ? attack.impact_sound_cap : 999;
             }
-            var attackRange = spellEntry != null ? SpellParameters.getRangeCurved(player, spellEntry, curvedRatio) : (float)player.getEntityInteractionRange();
+            var attackRange = spellEntry != null ? SpellParameters.getRangeCurved(player, spellEntry, curvedRatio) : VANILLA_ENTITY_REACH;
 
             for (int targetId : targetIds) {
                 var target = world.getEntityById(targetId);
@@ -421,9 +433,9 @@ public class Melee {
     }
 
     private static float largesSideLength(Box boundingBox) {
-        double x = boundingBox.getLengthX();
-        double y = boundingBox.getLengthY();
-        double z = boundingBox.getLengthZ();
+        double x = boundingBox.getXLength();
+        double y = boundingBox.getYLength();
+        double z = boundingBox.getZLength();
         return Math.max((float)x, Math.max((float)y, (float)z));
     }
 }

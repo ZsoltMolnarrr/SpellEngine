@@ -3,7 +3,6 @@ package net.spell_engine.mixin.action_impair;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -50,10 +49,7 @@ public abstract class LivingEntityActionImpairing implements EntityActionsAllowe
     private EntityActionsAllowed entityActionsAllowed_SpellEngine = EntityActionsAllowed.ANY;
 
     @Shadow private boolean effectsChanged;
-//    @Shadow @Final
-//    private Map<StatusEffect, StatusEffectInstance> activeStatusEffects;
-
-    @Shadow @Final private Map<RegistryEntry<StatusEffect>, StatusEffectInstance> activeStatusEffects;
+    @Shadow @Final private Map<StatusEffect, StatusEffectInstance> activeStatusEffects;
 
     //    @Inject(method = "tickStatusEffects", at = @At("HEAD")) // This way, we don't get notified about removals on server side
     @Inject(method = "tickStatusEffects", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/LivingEntity;effectsChanged:Z", shift = At.Shift.BEFORE, ordinal = 0))

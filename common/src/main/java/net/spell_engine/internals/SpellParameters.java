@@ -75,7 +75,7 @@ public class SpellParameters {
                 case MELEE -> {
                     double meleeRange = 3;
                     if (caster instanceof PlayerEntity player) {
-                        meleeRange = player.getEntityInteractionRange();
+                        meleeRange = 3.0; // 1.20.1: fixed vanilla entity reach (no `entity_interaction_range` attribute)
                     }
                     range = (float) (meleeRange + spell.range);
                 }

@@ -1,5 +1,6 @@
 package net.spell_engine.internals.casting;
 
+import net.spell_engine.utils.RegistryHelper;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -61,8 +62,8 @@ public class MobCastController {
     private RegistryEntry<Spell> resolveSpell() {
         if (spellLookupAttempted) return spellEntry;
         spellLookupAttempted = true;
-        var id = Identifier.of(config.spell_id);
-        spellEntry = SpellRegistry.from(entity.getWorld()).getEntry(id).orElse(null);
+        var id = new Identifier(config.spell_id);
+        spellEntry = RegistryHelper.getEntry(SpellRegistry.from(entity.getWorld()), id).orElse(null);
         return spellEntry;
     }
 

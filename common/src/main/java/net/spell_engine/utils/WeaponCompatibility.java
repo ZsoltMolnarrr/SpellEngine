@@ -23,7 +23,7 @@ public class WeaponCompatibility {
 
             // Try melee weapons group
             if (config.melee_weapons.enabled &&
-                    (item instanceof SwordItem || item instanceof TridentItem || item instanceof MaceItem || item instanceof AxeItem) ) {
+                    (item instanceof SwordItem || item instanceof TridentItem || item instanceof AxeItem) ) {
                 SpellContainer container = processCompatGroup(
                         itemEntry,
                         config.melee_weapons

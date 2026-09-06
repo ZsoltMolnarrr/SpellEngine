@@ -35,9 +35,9 @@ public class BleedStatusEffect extends StatusEffect {
     }
 
     @Override
-    public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
+    public void applyUpdateEffect(LivingEntity entity, int amplifier) {
         if (entity.getWorld().isClient()) {
-            return true; // Damage is server-authoritative
+            return; // Damage is server-authoritative
         }
         // `getVelocity()` is server-authoritative for AI-driven mobs, the usual bleed victims.
         // `* 20` converts blocks/tick to blocks/second, the unit of MOVEMENT_SPEED_CAP.
@@ -48,6 +48,5 @@ public class BleedStatusEffect extends StatusEffect {
         var damage = (float) (POISON_DAMAGE_PER_STACK * stacks * multiplier);
         // Lethal by design: no `health > 1` floor and no non-lethal cap, unlike poison.
         entity.damage(entity.getDamageSources().magic(), damage);
-        return true;
     }
 }

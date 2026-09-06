@@ -33,7 +33,7 @@ public class PatternMatching {
 
     public static <T> boolean entryMatches(RegistryEntry<T> entry, RegistryKey<Registry<T>> registryKey, String pattern) {
         if (pattern.startsWith(TAG_PREFIX)) {
-            var tag = TagKey.of(registryKey, Identifier.of(pattern.substring(1)));
+            var tag = TagKey.of(registryKey, new Identifier(pattern.substring(1)));
             return entry.isIn(tag);
         }
         var id = entry.getKey().get().getValue().toString();

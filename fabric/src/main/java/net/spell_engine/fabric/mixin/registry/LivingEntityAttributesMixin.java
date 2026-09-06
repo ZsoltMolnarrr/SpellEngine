@@ -1,4 +1,4 @@
-package net.spell_engine.mixin.registry;
+package net.spell_engine.fabric.mixin.registry;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;

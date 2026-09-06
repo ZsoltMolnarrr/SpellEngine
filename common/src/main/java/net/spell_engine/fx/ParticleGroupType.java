@@ -1,9 +1,9 @@
 package net.spell_engine.fx;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.brigadier.StringReader;
+import com.mojang.serialization.Codec;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
 import net.spell_engine.api.spell.fx.ParticleGroup;
@@ -18,12 +18,24 @@ import org.jetbrains.annotations.Nullable;
 /// attachment) — the copy reports the root as its [#getType], so vanilla's
 /// particle manager still resolves the factory registered for the root.
 ///
-/// The codecs are placeholders (payload-less), matching the V1 behaviour:
+/// The codec / factory are placeholders (payload-less), matching the V1 behaviour:
 /// customized spawns only travel through Spell Engine's own packet, not
 /// through vanilla particle serialization.
 public class ParticleGroupType extends ParticleType<ParticleGroupType> implements ParticleEffect {
-    private final MapCodec<ParticleGroupType> codec = MapCodec.unit(this::getType);
-    private final PacketCodec<RegistryByteBuf, ParticleGroupType> packetCodec = PacketCodec.unit(this);
+    /// Payload-less factory: both reads yield the (root) type itself.
+    private static final ParticleEffect.Factory<ParticleGroupType> FACTORY = new ParticleEffect.Factory<>() {
+        @Override
+        public ParticleGroupType read(ParticleType<ParticleGroupType> type, StringReader reader) {
+            return (ParticleGroupType) type;
+        }
+
+        @Override
+        public ParticleGroupType read(ParticleType<ParticleGroupType> type, PacketByteBuf buf) {
+            return (ParticleGroupType) type;
+        }
+    };
+
+    private final Codec<ParticleGroupType> codec = Codec.unit(this::getType);
 
     private ParticleGroupType root = this;
     private SpellEngineParticles.Entry entry;
@@ -31,7 +43,7 @@ public class ParticleGroupType extends ParticleType<ParticleGroupType> implement
     @Nullable private Entity sourceEntity;
 
     public ParticleGroupType() {
-        super(true);
+        super(true, FACTORY);
     }
 
     /// The entry this type was registered for — texture, lifetime, pivot, defaults.
@@ -72,12 +84,16 @@ public class ParticleGroupType extends ParticleType<ParticleGroupType> implement
     }
 
     @Override
-    public MapCodec<ParticleGroupType> getCodec() {
+    public Codec<ParticleGroupType> getCodec() {
         return codec;
     }
 
     @Override
-    public PacketCodec<? super RegistryByteBuf, ParticleGroupType> getPacketCodec() {
-        return packetCodec;
+    public void write(PacketByteBuf buf) {
+    }
+
+    @Override
+    public String asString() {
+        return entry != null ? entry.id().toString() : "spell_engine:particle_group";
     }
 }

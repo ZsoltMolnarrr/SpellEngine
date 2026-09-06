@@ -80,7 +80,7 @@ public class CloudPlacer {
 
                 SpellCloud entity;
                 if (cloud.entity_type_id != null) {
-                    var id = Identifier.of(cloud.entity_type_id);
+                    var id = new Identifier(cloud.entity_type_id);
                     var type = Registries.ENTITY_TYPE.get(id);
                     entity = (SpellCloud) type.create(world);
                 } else {

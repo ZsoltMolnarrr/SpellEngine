@@ -1,5 +1,6 @@
 package net.spell_engine.entity;
 
+import net.spell_engine.utils.RegistryHelper;
 import com.google.gson.Gson;
 import net.minecraft.entity.*;
 import net.minecraft.entity.data.DataTracker;
@@ -859,7 +860,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     }
     private void updateItemModel(String idString) {
         if (idString != null && !idString.isEmpty()) {
-            var id = Identifier.of(this.getDataTracker().get(TRACKER_ITEM_MODEL_ID));
+            var id = new Identifier(this.getDataTracker().get(TRACKER_ITEM_MODEL_ID));
             itemStackModel = Registries.ITEM.get(id).getDefaultStack();
         }
     }
@@ -899,8 +900,8 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
                 var behaviour = Behaviour.valueOf(nbt.getString(NBT_BEHAVIOUR));
                 this.setBehaviour(behaviour);
 
-                var spellId = Identifier.of(nbt.getString(NBT_SPELL_ID));
-                this.setSpell(SpellRegistry.from(this.getWorld()).getEntry(spellId).orElse(null));
+                var spellId = new Identifier(nbt.getString(NBT_SPELL_ID));
+                this.setSpell(RegistryHelper.getEntry(SpellRegistry.from(this.getWorld()), spellId).orElse(null));
 
                 this.context = gson.fromJson(nbt.getString(NBT_IMPACT_CONTEXT), SpellExecution.ImpactContext.class);
                 this.perks = gson.fromJson(nbt.getString(NBT_PERKS), Spell.ProjectileData.Perks.class);
@@ -920,12 +921,12 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
     // MARK: DataTracker (client-server sync)
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        builder.add(TRACKER_SPELL_ID, "");
-        builder.add(TRACKER_BEHAVIOUR, Behaviour.FLY.toString());
-        builder.add(TRACKER_TARGET_ID, 0);
-        builder.add(TRACKER_ITEM_MODEL_ID, "");
-        builder.add(TRACKER_SCALE, 1F);
+    protected void initDataTracker() {
+        this.dataTracker.startTracking(TRACKER_SPELL_ID, "");
+        this.dataTracker.startTracking(TRACKER_BEHAVIOUR, Behaviour.FLY.toString());
+        this.dataTracker.startTracking(TRACKER_TARGET_ID, 0);
+        this.dataTracker.startTracking(TRACKER_ITEM_MODEL_ID, "");
+        this.dataTracker.startTracking(TRACKER_SCALE, 1F);
     }
 
     private static final TrackedData<String> TRACKER_SPELL_ID;
@@ -947,7 +948,7 @@ public class SpellProjectile extends ProjectileEntity implements FlyingSpellEnti
         if (this.getWorld().isClient) {
             if (data.equals(TRACKER_SPELL_ID)) {
                 var spellId = this.getDataTracker().get(TRACKER_SPELL_ID);
-                var spellEntry = SpellRegistry.from(this.getWorld()).getEntry(Identifier.of(spellId)).orElse(null);
+                var spellEntry = RegistryHelper.getEntry(SpellRegistry.from(this.getWorld()), new Identifier(spellId)).orElse(null);
                 this.setSpell(spellEntry);
             }
             if (data.equals(TRACKER_ITEM_MODEL_ID)) {
