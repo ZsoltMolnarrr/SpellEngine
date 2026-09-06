@@ -1,6 +1,22 @@
-# Copy to `workspace.properties` (gitignored) to load RPG Series content mods into this dev runtime
-# from mavenLocal — see fabric/workspace-runtime.gradle. Enable per group:
+# Copy to `workspace.properties` (gitignored, next to this file) to load the RPG Series content mods into
+# this dev runtime from mavenLocal. Pins live in fabric/workspace-runtime.gradle and
+# forge/workspace-runtime.gradle; the tested version table is in
+# docs/version-adoption-1.20.1/TESTING.md.
+#
+# Any single flag set to `true` activates the shared libraries + third-party runtime set as well
+# (ArmorModelAPI, BundleAPI, Critical Strike, RangedWeaponAPI, ShieldAPI, and — Fabric only —
+# StructurePoolAPI). Every flag defaults to `false`, so CI and fresh clones are unaffected.
+#
+# `-Prpg_series_classes=false` on the command line overrides the value here for one invocation.
+
+# Wizards, Paladins, Rogues, Archers
 rpg_series_classes=true
+# Arsenal, Armory, Jewelry, Relics, Runes
 rpg_series_gear=true
+# Jewelry + Relics only — a subset of rpg_series_gear, kept under the 1.21.1 flag name.
+# Leave it out entirely if rpg_series_gear is already true.
 rpg_series_accessories=true
+# SkillTree + Pufferfish's Skills
 rpg_series_skills=true
+# Gazebo, Village Taverns
+rpg_series_structures=true

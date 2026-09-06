@@ -1,58 +1,90 @@
-// Dev-only ecosystem runtime for the SpellEngine workspace — applied by build.gradle ONLY when at least
-// one group flag is enabled in the gitignored `workspace.properties` (template: workspace.properties.example):
-//   rpg_series_classes      Archers, Wizards, Paladins, Rogues
-//   rpg_series_gear         Arsenal, Armory
-//   rpg_series_accessories  Jewelry, Relics
-//   rpg_series_skills       SkillTree (+ Pufferfish Skills)
-// Shared libraries the groups depend on (ArmorModelAPI, Runes, StructurePoolAPI, BundleAPI, Critical Strike)
-// load with any group. CI and other developers never evaluate this file.
+// Dev-only ecosystem runtime for the SpellEngine workspace (1.20.1 line) — applied by build.gradle ONLY
+// when at least one group flag is enabled in the gitignored `workspace.properties`
+// (template: workspace.properties.example at the repo root):
 //
-// The named `dev-shadow` jars go on the runtime classpath: production jars dropped into run/mods are
-// runtime-remapped by the loader, which cannot resolve overrides inherited through *named* SpellEngine
-// classes (e.g. `LevitateStatusEffect extends CustomStatusEffect`), so those overrides silently stop
-// overriding. See memory `run-content-mod-in-se-workspace`.
+//   rpg_series_classes      Wizards, Paladins, Rogues, Archers
+//   rpg_series_gear         Arsenal, Armory, Jewelry, Relics, Runes
+//   rpg_series_accessories  Jewelry, Relics only — the 1.21.1 flag name, kept so an existing
+//                           workspace.properties still means something. It is a *subset* of
+//                           rpg_series_gear; enabling gear already enables it.
+//   rpg_series_skills       SkillTree + Pufferfish's Skills
+//   rpg_series_structures   Gazebo, Village Taverns
 //
-// Every pinned version must exist in ~/.m2 as a `dev-shadow` artifact: `./gradlew publishToMavenLocal`
-// from that mod's 1.20.1-modern branch. After publishing, bump the pin here (and in the other loader's copy).
-
-// TODO 1.20.1: every `+1.21.1` pin below still points at the 1.21.1 line — replace with the 1.20.1-modern
-// versions of each content mod once they are ported and published to mavenLocal. Only the shared
-// libraries already ported (ArmorModelAPI, BundleAPI, Critical Strike) carry their 1.20.1 pins.
+// The shared libraries and the third-party runtime set below load with *any* group, because every group
+// needs some of them and a half-loaded library set only produces noise. CI and other developers never
+// evaluate this file (`rpgSeriesWorkspaceAny` is false without workspace.properties / -P flags).
+//
+// ── Why `modLocalRuntime` and NOT `localRuntime(... :dev-shadow)` ──────────────────────────────────────
+// The 1.21.1 script pins named `dev-shadow` jars with `localRuntime`. That does not work on this line:
+// a `dev-shadow` jar is Yarn-named, and on Forge FML's `EventSubclassTransformer` walks the class
+// hierarchy of every mod class through the *runtime* (SRG-ish dev) naming, so a Yarn-named jar dropped
+// straight on the classpath makes it throw `NoClassDefFoundError: net/minecraft/world/item/Item` and
+// takes down item registration for every mod in the run. `modLocalRuntime` hands the *production* jar
+// (intermediary on Fabric, SRG on Forge) to Loom, which remaps it — including its mixin refmaps — into
+// the dev namespace, which is what both loaders expect. `dev-shadow` remains correct only for jars
+// dropped unremapped into `run/mods`.
+//
+// `transitive = false` everywhere: every content-mod POM lists `net.spell_engine:spell_engine-fabric` as
+// a runtime dependency, and pulling it would put a second `spell_engine` mod jar next to the one built
+// from source in this workspace. Everything those POMs would have contributed is pinned explicitly below.
+//
+// Bumping a pin: `./gradlew publishToMavenLocal` from that mod's `1.20.1-modern` worktree, then edit the
+// version here AND in forge/workspace-runtime.gradle. Versions are deliberately hardcoded (not read from
+// gradle.properties) so the whole tested set is visible in one place — see
+// docs/version-adoption-1.20.1/TESTING.md for the table this file must stay in sync with.
 
 def flags = rootProject.ext.rpgSeriesWorkspace
+def accessories = flags.rpg_series_gear || flags.rpg_series_accessories
 
 repositories {
     if (flags.rpg_series_skills) {
-        maven { url = 'https://maven.puffish.net' } // Pufferfish Skills (SkillTree's hard dependency)
+        maven { url = 'https://maven.puffish.net' } // Pufferfish's Skills (SkillTree's hard dependency)
     }
     mavenLocal()
 }
 
 dependencies {
-    // Shared libraries
-    localRuntime("net.rpg_foundation:armor_model_api-fabric:1.0.0.001+1.20.1:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:runes-fabric:1.3.1+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("net.foundation:structure_pool_api-fabric:1.2.0+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("com.github.TheRedBrain:bundle-api-fabric:1.1.0.001:dev-shadow") { transitive = false }
-    localRuntime("net.critical_strike:critical_strike-fabric:1.0.4.001:dev-shadow") { transitive = false }
-    modLocalRuntime("maven.modrinth:shield-api:2.1.0-fabric") // JiJ'd by Paladins/Arsenal on 1.21.1, absent with transitive = false
+    // ── Shared RPG Series libraries (all groups) ───────────────────────────────────────────────────────
+    // ArmorModelAPI renders the class-mod / Armory armor sets; without it those sets fall back to the
+    // vanilla layer and the port's armor rendering is untested.
+    modLocalRuntime("net.rpg_foundation:armor_model_api-fabric:1.0.0.001+1.20.1") { transitive = false }
+    // BundleAPI, Critical Strike and RangedWeaponAPI are `modCompileOnly` in SpellEngine's own
+    // build.gradle (optional at runtime), so they are absent from the run classpath unless pinned here.
+    modLocalRuntime("com.github.TheRedBrain:bundle-api-fabric:1.1.0.001") { transitive = false }
+    modLocalRuntime("net.critical_strike:critical_strike-fabric:1.0.4.002") { transitive = false }
+    modLocalRuntime("net.foundation:ranged_weapon_api-fabric:2.3.4.001+1.20.1") { transitive = false }
+    // ShieldAPI is JiJ'd by Paladins/Arsenal in production; Loom does not unpack nested jars of
+    // classpath mods, so the dev runtime needs it explicitly.
+    modLocalRuntime("net.fabric_extras:shield_api-fabric:2.2.0.001") { transitive = false }
+    // StructurePoolAPI is a *hard* dependency of the four class mods, Jewelry, Gazebo and Taverns on
+    // Fabric (village piece injection). Legacy Fabric-only Modrinth artifact; there is no Forge build,
+    // which is why forge/workspace-runtime.gradle has no counterpart line.
+    modLocalRuntime("maven.modrinth:structure-pool-api:1.0+1.20.1") { transitive = false }
 
+    // ── Groups ────────────────────────────────────────────────────────────────────────────────────────
     if (flags.rpg_series_classes) {
-    localRuntime("net.rpg_series:archers-fabric:3.1.1+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:wizards-fabric:3.1.1+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:paladins-fabric:3.1.1+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:rogues-fabric:3.1.1+1.21.1:dev-shadow") { transitive = false }
+        modLocalRuntime("net.rpg_series:wizards-fabric:3.1.2.005+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:paladins-fabric:3.1.1.004+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:rogues-fabric:3.1.1.003+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:archers-fabric:3.1.1.002+1.20.1") { transitive = false }
     }
     if (flags.rpg_series_gear) {
-    localRuntime("net.arsenal:arsenal-fabric:1.5.0+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:armory-fabric:1.5.1+1.21.1:dev-shadow") { transitive = false }
+        modLocalRuntime("net.arsenal:arsenal-fabric:1.5.0.001+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:armory-fabric:1.5.2.002+1.20.1") { transitive = false }
+        // Runes is also a soft runtime dependency of the class mods (their gear carries rune slots).
+        modLocalRuntime("net.rpg_series:runes-fabric:1.3.2.001+1.20.1") { transitive = false }
     }
-    if (flags.rpg_series_accessories) {
-    localRuntime("net.rpg_series:jewelry-fabric:2.4.0+1.21.1:dev-shadow") { transitive = false }
-    localRuntime("net.rpg_series:relics-fabric:1.4.0+1.21.1:dev-shadow") { transitive = false }
+    if (accessories) {
+        modLocalRuntime("net.rpg_series:jewelry-fabric:2.4.0.002+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:relics-fabric:1.4.0.002+1.20.1") { transitive = false }
     }
     if (flags.rpg_series_skills) {
-    localRuntime("net.rpg_series:skill_tree-fabric:1.6.0+1.21.1:dev-shadow") { transitive = false }
-        modLocalRuntime("net.puffish:skillsmod:0.16.7+1.21:fabric") // real mod jar, remapped by Loom
+        modLocalRuntime("net.rpg_series:skill_tree-fabric:1.6.1.003+1.20.1") { transitive = false }
+        // No `+1.20.1` line exists: the 1.20/1.20.1 artifact is tagged `+1.20`.
+        modLocalRuntime("net.puffish:skillsmod:0.16.7+1.20:fabric")
+    }
+    if (flags.rpg_series_structures) {
+        modLocalRuntime("net.rpg_series:gazebo-fabric:2.2.0.002+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:village_taverns-fabric:1.3.0.001+1.20.1") { transitive = false }
     }
 }
