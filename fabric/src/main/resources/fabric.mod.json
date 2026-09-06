@@ -32,9 +32,6 @@
     ],
     "dynamiclights": [
       "net.spell_engine.fabric.client.compat.DynamicLightsCompatibility"
-    ],
-    "from 1.21.4: lambdynlights:initializer": [
-      "net.spell_engine.fabric.client.compat.DynamicLightsCompatibility"
     ]
   },
   "mixins": [

@@ -38,8 +38,8 @@ public class RPGSeriesCore {
         PlatformEvents.onLootTableModify(context -> {
             // Snapshot the table's existing pools lazily, only if a fallback needs to inspect them
             var existingPools = Suppliers.memoize(context::existingPools);
-            LootHelper.configure(context.registries(), context.tableId(), existingPools, context::addPool, lootEquipmentConfig.value, "equipment");
-            LootHelper.configure(context.registries(), context.tableId(), existingPools, context::addPool, lootScrollsConfig.value, "scrolls");
+            LootHelper.configure(context.tableId(), existingPools, context::addPool, lootEquipmentConfig.value, "equipment");
+            LootHelper.configure(context.tableId(), existingPools, context::addPool, lootScrollsConfig.value, "scrolls");
         });
         PlatformEvents.onServerStarted((server) -> {
             LootHelper.updateTagCache(lootEquipmentConfig.value);

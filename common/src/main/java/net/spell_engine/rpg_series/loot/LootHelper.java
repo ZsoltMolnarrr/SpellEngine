@@ -15,7 +15,6 @@ import net.minecraft.loot.provider.number.LootNumberProvider;
 import net.minecraft.loot.provider.number.UniformLootNumberProvider;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.spell_engine.mixin.loot.CombinedEntryAccessor;
@@ -141,9 +140,9 @@ public class LootHelper {
 
     // MARK: Injection
 
-    /// `registries` is unused on 1.20.1 (loot functions need no registry lookup); the Fabric `loot-api-v2`
-    /// `LootTableEvents.MODIFY` callback may pass `null`.
-    public static void configure(@Nullable RegistryWrapper.WrapperLookup registries, Identifier lootTableId,
+    /// 1.20.1: no `RegistryWrapper.WrapperLookup` parameter — loot functions need no registry lookup on this
+    /// version, and neither loader's loot-modify event provides one.
+    public static void configure(Identifier lootTableId,
                                  Supplier<List<LootPool>> existingPools, Consumer<LootPool> poolSink,
                                  LootConfig config, String configName) {
         boolean isEntityLootTable = lootTableId.getPath().startsWith("entities");
@@ -162,15 +161,15 @@ public class LootHelper {
         }
         if (pool != null) {
             boolean skipConditions = pool.skip_conditions != null && pool.skip_conditions;
-            poolSink.accept(buildPool(registries, pool.entries, pool.rolls, pool.bonus_rolls,
+            poolSink.accept(buildPool(pool.entries, pool.rolls, pool.bonus_rolls,
                     isEntityLootTable && !skipConditions, null));
             return;
         }
         // 3. Fallback, based on what the table already drops
-        configureFallback(registries, tableId, existingPools, poolSink, config, configName, isEntityLootTable);
+        configureFallback(tableId, existingPools, poolSink, config, configName, isEntityLootTable);
     }
 
-    private static void configureFallback(@Nullable RegistryWrapper.WrapperLookup registries, String tableId,
+    private static void configureFallback(String tableId,
                                           Supplier<List<LootPool>> existingPools, Consumer<LootPool> poolSink,
                                           LootConfig config, String configName, boolean isEntityLootTable) {
         var fallback = config.fallback;
@@ -232,7 +231,7 @@ public class LootHelper {
             var bonusRolls = entry.bonus_rolls * scale;
             if (rolls <= 0) { continue; }
             var mix = new EnchantMix(plainWeight, enchantedWeight, minLevel, maxLevel);
-            poolSink.accept(buildPool(registries, entry.items, rolls, bonusRolls, isEntityLootTable, mix));
+            poolSink.accept(buildPool(entry.items, rolls, bonusRolls, isEntityLootTable, mix));
 
             var enchantInfo = enchantedWeight == 0 ? "plain" : plainWeight == 0 ? "enchanted" :
                     String.format(Locale.ROOT, "%.0f%% enchanted", 100F * enchantedWeight / (plainWeight + enchantedWeight));
@@ -340,7 +339,7 @@ public class LootHelper {
 
     // MARK: Pool building
 
-    private static LootPool buildPool(@Nullable RegistryWrapper.WrapperLookup registries, List<LootConfig.Pool.Entry> entries,
+    private static LootPool buildPool(List<LootConfig.Pool.Entry> entries,
                                       float rolls, float bonusRolls, boolean killedByPlayerOnly, @Nullable EnchantMix mix) {
         LootPool.Builder lootPoolBuilder = LootPool.builder();
         if (killedByPlayerOnly) {

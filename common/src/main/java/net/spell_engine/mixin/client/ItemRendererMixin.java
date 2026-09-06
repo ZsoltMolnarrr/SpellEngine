@@ -13,8 +13,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.world.World;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.Identifier;
+import net.spell_engine.api.item.SpellItemData;
 import net.spell_engine.mixin.client.render.BakedModelManagerAccessor;
 import org.jetbrains.annotations.Nullable;
 import net.spell_engine.client.render.ItemGlowRendering;
@@ -107,23 +107,11 @@ public class ItemRendererMixin {
         return ItemGlowRendering.glowing(vertexConsumers, original);
     }
 
-    private static final String CUSTOM_DATA_NBT_KEY = "spell_engine";
-    private static final String ITEM_MODEL_NBT_KEY = "item_model";
-
-    @Unique
-    private static @Nullable Identifier customItemModelId(ItemStack stack) {
-        var nbt = stack.getSubNbt(CUSTOM_DATA_NBT_KEY);
-        if (nbt == null || !nbt.contains(ITEM_MODEL_NBT_KEY, NbtElement.STRING_TYPE)) {
-            return null;
-        }
-        return Identifier.tryParse(nbt.getString(ITEM_MODEL_NBT_KEY));
-    }
-
     @Inject(method = "getModel", at = @At("HEAD"), cancellable = true)
     private void getModel_HEAD(ItemStack stack, World world, LivingEntity entity, int seed, CallbackInfoReturnable<BakedModel> cir){
-        // 1.20.1: the custom item model id lives in NBT instead of a data component —
-        // `stack.getSubNbt("spell_engine")` → string key `"item_model"` (contract with the data layer).
-        var modelId = customItemModelId(stack);
+        // 1.20.1: the custom item model id lives in NBT (`spell_engine.item_model`) instead of a data component;
+        // `SpellItemData.getItemModel` also honours the item-level default registered by the data layer.
+        var modelId = SpellItemData.getItemModel(stack);
         if (modelId != null) {
             // Additional models are keyed by plain Identifier on both loaders (see BakedModelManagerAccessor)
             BakedModel model = ((BakedModelManagerAccessor) models.getModelManager()).SpellEngine_getModels().get(modelId);

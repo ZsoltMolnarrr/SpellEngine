@@ -10,7 +10,6 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootPool;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
@@ -114,7 +113,6 @@ public class PlatformEvents {
     /// Handed to a loot-table-modify callback: exposes the table being loaded and lets the
     /// callback append pools without any loader-specific builder type.
     public interface LootTableModifyContext {
-        RegistryWrapper.WrapperLookup registries();
         Identifier tableId();
         /// Snapshot of the pools the table already has (as parsed from the datapack, plus anything
         /// other mods added before us). Read-only; used to inspect what the table drops.

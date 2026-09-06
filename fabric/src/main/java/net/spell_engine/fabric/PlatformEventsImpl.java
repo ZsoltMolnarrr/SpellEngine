@@ -12,7 +12,6 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.loot.LootPool;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.spell_engine.PlatformEvents;
 import net.spell_engine.compat.EnchantmentAllowBridge;
@@ -59,9 +58,9 @@ public class PlatformEventsImpl {
 
     public static void onLootTableModify(Consumer<PlatformEvents.LootTableModifyContext> callback) {
         // fabric-loot-api-v2 (Fabric API 0.92): no registry lookup is handed to the event on 1.20.1
-        // (loot functions don't need one there), so `registries()` is null — see FabricLootContext.
+        // (loot functions don't need one there).
         LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) ->
-                callback.accept(new FabricLootContext(null, id, tableBuilder)));
+                callback.accept(new FabricLootContext(id, tableBuilder)));
     }
 
     public static void onItemGroupModify(RegistryKey<ItemGroup> group, PlatformEvents.ItemGroupModifier callback) {
@@ -82,8 +81,7 @@ public class PlatformEventsImpl {
     }
     private static boolean enchantmentListenerInstalled = false;
 
-    /// `registries` is null on 1.20.1 (see onLootTableModify); LootHelper must not depend on it.
-    private record FabricLootContext(RegistryWrapper.WrapperLookup registries, Identifier tableId,
+    private record FabricLootContext(Identifier tableId,
                                      net.minecraft.loot.LootTable.Builder builder)
             implements PlatformEvents.LootTableModifyContext {
         @Override

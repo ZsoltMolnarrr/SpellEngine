@@ -140,7 +140,8 @@ public class SpellEngineMod {
     // Forge 47 (`ForgeMod`): one mod-bus `RegisterEvent` listener switching on `event.getRegistryKey()`:
     //   ATTRIBUTE → registerAttributes(); ENTITY_TYPE → registerEntityTypes(); SOUND_EVENT → registerSounds();
     //   PARTICLE_TYPE → registerParticles(); STATUS_EFFECT → registerStatusEffects(); ENCHANTMENT → registerEnchantments();
-    //   BLOCK / BLOCK_ENTITY_TYPE / SCREEN_HANDLER / LOOT_FUNCTION_TYPE → registerSpellBinding() (guarded, any of them);
+    //   BLOCK → registerSpellBindingBlock(); BLOCK_ENTITY_TYPE → registerSpellBindingBlockEntity();
+    //   SCREEN_HANDLER → registerScreenHandlers(); LOOT_FUNCTION_TYPE → registerLootFunctionTypes(); ITEM → SpellEngineItems.register();
     //   plus `EntityAttributeModificationEvent` → `attributesToAttach()` on every living type; `registerCriteria()` from the
     //   mod constructor (vanilla `Criteria` is a plain static map on 1.20.1, not a Forge registry).
 
@@ -172,13 +173,38 @@ public class SpellEngineMod {
         SpellEngineEnchantments.register();
     }
 
+    /// Fabric convenience: the spell-binding block, its block entity, the screen handlers and the loot function
+    /// type in one go. Forge must call the per-registry functions below from their own `RegisterEvent` windows
+    /// (registering into any other registry from a window throws "Can not register to a locked registry").
     public static void registerSpellBinding() {
+        registerSpellBindingBlock();
+        registerSpellBindingBlockEntity();
+        registerScreenHandlers();
+        registerLootFunctionTypes();
+    }
+
+    public static void registerSpellBindingBlock() {
         if (Registries.BLOCK.containsId(SpellBinding.ID)) { return; }
         Registry.register(Registries.BLOCK, SpellBinding.ID, SpellBindingBlock.INSTANCE);
+    }
+
+    public static void registerSpellBindingBlockEntity() {
+        if (Registries.BLOCK_ENTITY_TYPE.containsId(SpellBinding.ID)) { return; }
         Registry.register(Registries.BLOCK_ENTITY_TYPE, SpellBinding.ID, SpellBindingBlockEntity.ENTITY_TYPE);
-        Registry.register(Registries.SCREEN_HANDLER, SpellBinding.ID, SpellBindingScreenHandler.HANDLER_TYPE);
+    }
+
+    public static void registerScreenHandlers() {
+        if (!Registries.SCREEN_HANDLER.containsId(SpellBinding.ID)) {
+            Registry.register(Registries.SCREEN_HANDLER, SpellBinding.ID, SpellBindingScreenHandler.HANDLER_TYPE);
+        }
+        if (!Registries.SCREEN_HANDLER.containsId(SpellChoiceFeature.ID)) {
+            Registry.register(Registries.SCREEN_HANDLER, SpellChoiceFeature.ID, SpellChoiceScreenHandler.HANDLER_TYPE);
+        }
+    }
+
+    public static void registerLootFunctionTypes() {
+        if (Registries.LOOT_FUNCTION_TYPE.containsId(SpellBindRandomlyLootFunction.ID)) { return; }
         Registry.register(Registries.LOOT_FUNCTION_TYPE, SpellBindRandomlyLootFunction.ID, SpellBindRandomlyLootFunction.TYPE);
-        Registry.register(Registries.SCREEN_HANDLER, SpellChoiceFeature.ID, SpellChoiceScreenHandler.HANDLER_TYPE);
     }
 
     public static void registerEntityTypes() {

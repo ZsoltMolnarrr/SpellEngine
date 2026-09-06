@@ -4,7 +4,6 @@ import net.minecraft.item.ItemGroup;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.LootTable;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -91,10 +90,9 @@ public class PlatformEventsImpl {
     public static void onLootTableModify(Consumer<PlatformEvents.LootTableModifyContext> callback) {
         MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, LootTableLoadEvent.class, event -> {
             var table = event.getTable();
-            // `registries` is null on 1.20.1: LootTableLoadEvent fires while the datapack contents are still
-            // being built (no server / registry manager reachable), and 1.20.1 loot functions do not need a
-            // RegistryWrapper.WrapperLookup anyway. Same contract as the Fabric impl; LootHelper must not use it.
-            var context = new ForgeLootContext(null, event.getName(), List.copyOf(((LootTableAccessor) table).spellEngine_getPools()));
+            // LootTableLoadEvent fires while the datapack contents are still being built (no server / registry
+            // manager reachable); 1.20.1 loot functions need no RegistryWrapper.WrapperLookup anyway.
+            var context = new ForgeLootContext(event.getName(), List.copyOf(((LootTableAccessor) table).spellEngine_getPools()));
             callback.accept(context);
             // Mutate the loaded table in place through Forge's patched `LootTable#addPool` (the table is not
             // frozen yet at this point). Replacing it via `event.setTable(...)` would drop Forge's
@@ -131,18 +129,15 @@ public class PlatformEventsImpl {
     }
 
     private static final class ForgeLootContext implements PlatformEvents.LootTableModifyContext {
-        private final RegistryWrapper.WrapperLookup registries;
         private final Identifier tableId;
         private final List<LootPool> existingPools;
         private final List<LootPool> pools = new ArrayList<>();
 
-        private ForgeLootContext(RegistryWrapper.WrapperLookup registries, Identifier tableId, List<LootPool> existingPools) {
-            this.registries = registries;
+        private ForgeLootContext(Identifier tableId, List<LootPool> existingPools) {
             this.tableId = tableId;
             this.existingPools = existingPools;
         }
 
-        @Override public RegistryWrapper.WrapperLookup registries() { return registries; }
         @Override public Identifier tableId() { return tableId; }
         @Override public List<LootPool> existingPools() { return existingPools; }
         @Override public void addPool(LootPool pool) { pools.add(pool); }

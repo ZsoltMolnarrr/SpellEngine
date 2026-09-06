@@ -3,6 +3,7 @@ package net.spell_engine.fabric.datagen;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryEntryLookup;
 import net.minecraft.registry.RegistryKey;
@@ -12,12 +13,15 @@ import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.datagen.SpellBuilder;
 import net.spell_engine.api.datagen.SpellGenerator;
+import net.spell_engine.api.item.ItemAttributeModifiers;
 import net.spell_engine.api.item.set.EquipmentSet;
 import net.spell_engine.api.item.set.EquipmentSetRegistry;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.container.SpellContainers;
+import net.spell_engine.utils.AttributeModifierUtil;
+import net.spell_power.api.SpellSchools;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -45,12 +49,13 @@ public class TestDataGen {
 
             var setId = RegistryKey.of(EquipmentSetRegistry.KEY, new Identifier(NAMESPACE, "fire_power"));
 
-            // TODO 1.20.1 (c3): re-add the attribute bonus (+1 fire spell power, ARMOR slot) once the
-            // `EquipmentSet.Bonus` attribute shape is settled on the NBT/Multimap model
-            // (`AttributeModifiersComponent` does not exist on 1.20.1).
             var firePowerBonus = new EquipmentSet.Bonus(
                     1,
-                    null,
+                    ItemAttributeModifiers.builder()
+                            .add(SpellSchools.FIRE.attributeEntry,
+                                    AttributeModifierUtil.modifier(new Identifier("fire_power_bonus"), 1, EntityAttributeModifier.Operation.ADDITION),
+                                    ItemAttributeModifiers.Slot.ARMOR)
+                            .build(),
                     null);
             var fireball = new EquipmentSet.Bonus(
                     2,

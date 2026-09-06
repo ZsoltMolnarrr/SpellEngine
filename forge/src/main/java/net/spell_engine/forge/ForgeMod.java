@@ -1,7 +1,5 @@
 package net.spell_engine.forge;
 
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
@@ -15,22 +13,12 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.DataPackRegistryEvent;
 import net.minecraftforge.registries.RegisterEvent;
 import net.spell_engine.SpellEngineMod;
-import net.spell_engine.api.effect.SpellEngineEffects;
 import net.spell_engine.api.entity.SpellEngineAttributes;
 import net.spell_engine.compat.EnchantmentAllowBridge;
 import net.spell_engine.forge.client.ForgeClientMod;
 import net.spell_engine.forge.compat.ForgeCompatFeatures;
 import net.spell_engine.forge.network.ForgeNetwork;
-import net.spell_engine.fx.SpellEngineParticles;
-import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.item.SpellEngineItems;
-import net.spell_engine.spellbinding.SpellBindRandomlyLootFunction;
-import net.spell_engine.spellbinding.SpellBinding;
-import net.spell_engine.spellbinding.SpellBindingBlock;
-import net.spell_engine.spellbinding.SpellBindingBlockEntity;
-import net.spell_engine.spellbinding.SpellBindingScreenHandler;
-import net.spell_engine.spellbinding.spellchoice.SpellChoiceFeature;
-import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
 
 /// Forge 47 entrypoint (1.20.1 port). Target is Forge 47 only — NeoForge 1.20.1 loads this jar unchanged, so
 /// only APIs present at 47.1 (the NeoForge fork point) are used.
@@ -94,47 +82,25 @@ public final class ForgeMod {
     /// The called functions are the same idempotent `registerX()` entry points Fabric invokes from
     /// `FabricMod.onInitialize` / its `<clinit>`-TAIL mixins.
     public static void register(RegisterEvent event) {
-        // INTEGRATOR: c5 — the attribute/effect/item/sound/particle/entity function names below are the
-        // skeleton's; adjust here if c5 renames them.
         event.register(RegistryKeys.ATTRIBUTE, reg -> {
             // Replaces the Fabric-only EntityAttributesMixin (<clinit> TAIL on EntityAttributes).
-            SpellEngineAttributes.register();
+            SpellEngineMod.registerAttributes();
         });
-        event.register(RegistryKeys.SOUND_EVENT, reg -> {
-            SpellEngineSounds.register();
-        });
-        event.register(RegistryKeys.STATUS_EFFECT, reg -> {
-            SpellEngineEffects.register();
-        });
-        event.register(RegistryKeys.BLOCK, reg -> {
-            Registry.register(Registries.BLOCK, SpellBinding.ID, SpellBindingBlock.INSTANCE);
-        });
-        event.register(RegistryKeys.ENTITY_TYPE, reg -> {
-            SpellEngineMod.registerEntityTypes();
-        });
+        event.register(RegistryKeys.SOUND_EVENT, reg -> SpellEngineMod.registerSounds());
+        event.register(RegistryKeys.STATUS_EFFECT, reg -> SpellEngineMod.registerStatusEffects());
+        event.register(RegistryKeys.BLOCK, reg -> SpellEngineMod.registerSpellBindingBlock());
+        event.register(RegistryKeys.ENTITY_TYPE, reg -> SpellEngineMod.registerEntityTypes());
         event.register(RegistryKeys.ITEM, reg -> {
             // Also registers the `spell_engine:generic` item group: ITEM_GROUP is a vanilla-only registry
             // (not Forge-wrapped), unfrozen for the whole RegisterEvent phase, so registering it from the
             // ITEM window is fine. Triggers the slot-mod item factories (Curios) via awakeSlotModCompat().
             SpellEngineItems.register();
         });
-        event.register(RegistryKeys.PARTICLE_TYPE, reg -> {
-            SpellEngineParticles.register();
-        });
-        event.register(RegistryKeys.BLOCK_ENTITY_TYPE, reg -> {
-            Registry.register(Registries.BLOCK_ENTITY_TYPE, SpellBinding.ID, SpellBindingBlockEntity.ENTITY_TYPE);
-        });
-        event.register(RegistryKeys.SCREEN_HANDLER, reg -> {
-            Registry.register(Registries.SCREEN_HANDLER, SpellBinding.ID, SpellBindingScreenHandler.HANDLER_TYPE);
-            Registry.register(Registries.SCREEN_HANDLER, SpellChoiceFeature.ID, SpellChoiceScreenHandler.HANDLER_TYPE);
-        });
-        event.register(RegistryKeys.LOOT_FUNCTION_TYPE, reg -> {
-            Registry.register(Registries.LOOT_FUNCTION_TYPE, SpellBindRandomlyLootFunction.ID, SpellBindRandomlyLootFunction.TYPE);
-        });
-        // The five Registry.register calls above are `SpellEngineMod.registerSpellBinding()` split per registry:
-        // that function registers block + block entity + screen handlers + loot function type in one go, which
-        // Forge rejects ("Can not register to a locked registry") since only one registry is unlocked per event.
-        // INTEGRATOR: c5 — if registerSpellBinding() gets split into per-registry functions, call those instead.
+        event.register(RegistryKeys.PARTICLE_TYPE, reg -> SpellEngineMod.registerParticles());
+        event.register(RegistryKeys.BLOCK_ENTITY_TYPE, reg -> SpellEngineMod.registerSpellBindingBlockEntity());
+        event.register(RegistryKeys.SCREEN_HANDLER, reg -> SpellEngineMod.registerScreenHandlers());
+        event.register(RegistryKeys.LOOT_FUNCTION_TYPE, reg -> SpellEngineMod.registerLootFunctionTypes());
+        event.register(RegistryKeys.ENCHANTMENT, reg -> SpellEngineMod.registerEnchantments());
     }
 
     /// Replaces the Fabric-only `LivingEntityAttributesMixin` (`createLivingAttributes` RETURN): fired after
