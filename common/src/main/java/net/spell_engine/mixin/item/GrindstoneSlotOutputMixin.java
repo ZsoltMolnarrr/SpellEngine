@@ -1,6 +1,7 @@
 package net.spell_engine.mixin.item;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
@@ -35,8 +36,8 @@ public class GrindstoneSlotOutputMixin {
             if (container != null) {
                 var registry = SpellRegistry.from(world);
                 for (var idString: container.spell_ids()) {
-                    var id = Identifier.of(idString);
-                    var spellEntry = registry.getEntry(id);
+                    var id = new Identifier(idString);
+                    var spellEntry = registry.getEntry(RegistryKey.of(SpellRegistry.KEY, id));
                     if (spellEntry.isPresent()) {
                         var spell = spellEntry.get().value();
                         if (spell.learn != null) {

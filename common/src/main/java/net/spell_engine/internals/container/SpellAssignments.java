@@ -48,7 +48,7 @@ public class SpellAssignments {
                 var id = identifier
                         .toString().replace(directory + "/", "");
                 id = id.substring(0, id.lastIndexOf('.'));
-                parsed.put(Identifier.of(id), container);
+                parsed.put(new Identifier(id), container);
                 // System.out.println("loaded assignment - id: " + id +  " assignment: " + contaisner);
             } catch (Exception e) {
                 System.err.println("Spell Engine: Failed to parse spell_assignment: " + identifier + " | Reason: " + e.getMessage());
@@ -101,7 +101,7 @@ public class SpellAssignments {
         var gson = new Gson();
         SyncFormat sync = gson.fromJson(json, SyncFormat.class);
         sync.containers.forEach((key, value) -> {
-            containers.put(Identifier.of(key), value);
+            containers.put(new Identifier(key), value);
         });
     }
 }

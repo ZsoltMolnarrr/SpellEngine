@@ -4,6 +4,7 @@ import net.spell_engine.Platform;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -223,8 +224,8 @@ public class SpellContainerSource {
             for (var container : allContainers) {
                 var spellContainer = container.container();
                 for (var idString : spellContainer.spell_ids()) {
-                    var id = Identifier.of(idString);
-                    var spell = registry.getEntry(id).orElse(null);
+                    var id = new Identifier(idString);
+                    var spell = registry.getEntry(RegistryKey.of(SpellRegistry.KEY, id)).orElse(null);
                     if (spell != null && spell.value().type == Spell.Type.MODIFIER) {
                         modifiers.add(spell);
                     }
@@ -263,14 +264,14 @@ public class SpellContainerSource {
             var container = source.container();
             if (type == Spell.Type.ACTIVE && source.name.equals("off_hand")) {
                 if (!SpellEngineMod.config.spell_container_from_offhand_any) {
-                    if (!container.slotMatches(EquipmentSlot.OFFHAND.asString())) {
+                    if (!container.slotMatches(EquipmentSlot.OFFHAND.getName())) {
                         continue;
                     }
                 }
             }
             for (var idString : container.spell_ids()) {
-                var id = Identifier.of(idString);
-                var spell = registry.getEntry(id).orElse(null);
+                var id = new Identifier(idString);
+                var spell = registry.getEntry(RegistryKey.of(SpellRegistry.KEY, id)).orElse(null);
                 if (spell != null && spell.value().type == type
                         && ( spellMatchesContentType(spell, contentType, spellTag) )) {
                     spells.add(spell);
@@ -316,8 +317,8 @@ public class SpellContainerSource {
             var spells = new ArrayList<RegistryEntry<Spell>>();
             var registry = SpellRegistry.from(world);
             for (var idString : heldContainer.spell_ids()) {
-                var id = Identifier.of(idString);
-                var spell = registry.getEntry(id).orElse(null);
+                var id = new Identifier(idString);
+                var spell = registry.getEntry(RegistryKey.of(SpellRegistry.KEY, id)).orElse(null);
                 if (spell != null && spell.value().type == type) {
                     spells.add(spell);
                 }
@@ -375,7 +376,7 @@ public class SpellContainerSource {
             for (var bonus: set.bonuses()) {
                 if (result.items().size() >= bonus.requiredPieceCount()
                         && bonus.spells() != null) {
-                    spellContainers.add(new SourcedContainer(set.name(), result.items().getFirst(), bonus.spells()));
+                    spellContainers.add(new SourcedContainer(set.name(), result.items().get(0), bonus.spells()));
                 }
             }
         }
