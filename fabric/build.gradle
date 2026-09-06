@@ -23,18 +23,6 @@ fabricApi {
 }
 
 
-// TODO 1.20.1: remove once :common compiles — port-time helper. With `-PportCombinedSources=true` this loader
-// module compiles common's sources directly (instead of depending on the failing `:common:jar`), so javac
-// reports this module's own errors while common is still broken. Off by default: normal builds are unchanged.
-def portCombinedSources = providers.gradleProperty("portCombinedSources").map { it.toBoolean() }.getOrElse(false)
-if (portCombinedSources) {
-    sourceSets.main.java.srcDir project(':common').file('src/main/java')
-    dependencies {
-        // @ExpectPlatform lives in common's classpath only; needed when common's sources compile in here.
-        compileOnly "dev.architectury:architectury-injectables:1.0.10"
-    }
-}
-
 configurations {
     common {
         canBeResolved = true
@@ -89,10 +77,8 @@ if (rootProject.ext.rpgSeriesWorkspaceAny) {
 dependencies {
     modImplementation "net.fabricmc:fabric-loader:$rootProject.fabric_loader_version"
     modImplementation "net.fabricmc.fabric-api:fabric-api:$rootProject.fabric_api_version"
-    if (!portCombinedSources) { // TODO 1.20.1: drop the guard (keep the two lines) once :common compiles
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionFabric')
-    }
 
     modImplementation("dev.kosmx.player-anim:player-animation-lib-${platform}:${rootProject.player_anim_version}")
     modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${rootProject.cloth_config_version}")

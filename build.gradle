@@ -69,8 +69,6 @@ subprojects {
 
     tasks.withType(JavaCompile).configureEach {
         it.options.release = 17
-        // TODO 1.20.1: remove — temporary, so javac reports the complete error list during the port.
-        it.options.compilerArgs << "-Xmaxerrs" << "5000"
     }
 
     // Configure Maven publishing.
