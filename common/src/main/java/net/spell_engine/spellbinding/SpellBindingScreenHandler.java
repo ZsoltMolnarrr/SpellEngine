@@ -302,7 +302,7 @@ public class SpellBindingScreenHandler extends ScreenHandler {
                     if (container == null || !container.isValid() || container.pool() == null) {
                         return false;
                     }
-                    var poolId = Identifier.of(container.pool());
+                    var poolId = new Identifier(container.pool());
                     var binding = SpellBinding.State.forBook(levelCost, requiredLevel);
                     if (binding.state == SpellBinding.State.ApplyState.INVALID) {
                         return false;

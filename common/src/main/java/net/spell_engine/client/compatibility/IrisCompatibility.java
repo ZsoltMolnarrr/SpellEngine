@@ -1,7 +1,7 @@
 package net.spell_engine.client.compatibility;
 
-import net.irisshaders.batchedentityrendering.impl.BlendingStateHolder;
-import net.irisshaders.batchedentityrendering.impl.TransparencyType;
+import net.coderbot.batchedentityrendering.impl.BlendingStateHolder;
+import net.coderbot.batchedentityrendering.impl.TransparencyType;
 import net.minecraft.client.render.RenderLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 public class IrisCompatibility {
     private static final Logger LOGGER = LoggerFactory.getLogger("SpellEngine/IrisCompat");
 
+    // Iris 1.6.x (1.20.1) still ships these under `net.coderbot.batchedentityrendering.impl` (same names, same shape
+    // as the later `net.irisshaders` package); Oculus 1.6.x on Forge uses the identical package.
     public static void markAsDecal(RenderLayer layer) {
         try {
             if (layer instanceof BlendingStateHolder holder) {

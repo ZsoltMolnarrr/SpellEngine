@@ -19,14 +19,14 @@ public class ModelPredicateHelper {
             return;
         }
 
-        injectModelPredicate(itemSpecificPredicates, item, Identifier.of("pull"), (stack, world, entity, seed) -> {
+        injectModelPredicate(itemSpecificPredicates, item, new Identifier("pull"), (stack, world, entity, seed) -> {
             var progress = getItemStackRangedSkillProgress(stack, entity);
             if (progress != null) {
                 return progress.ratio();
             }
             return -1F; // Negative value to fall back to vanilla
         });
-        injectModelPredicate(itemSpecificPredicates, item, Identifier.of("pulling"), (stack, world, entity, seed) -> {
+        injectModelPredicate(itemSpecificPredicates, item, new Identifier("pulling"), (stack, world, entity, seed) -> {
             if (isItemStackUsedForRangedSkill(stack, entity)) {
                 return 1F;
             }
@@ -41,20 +41,20 @@ public class ModelPredicateHelper {
             return;
         }
 
-        injectModelPredicate(itemSpecificPredicates, item, Identifier.of("pull"), (stack, world, entity, seed) -> {
+        injectModelPredicate(itemSpecificPredicates, item, new Identifier("pull"), (stack, world, entity, seed) -> {
             var progress = getItemStackRangedSkillProgress(stack, entity);
             if (progress != null) {
                 return progress.ratio();
             }
             return -1F; // Negative value to fall back to vanilla
         });
-        injectModelPredicate(itemSpecificPredicates, item, Identifier.of("pulling"), (stack, world, entity, seed) -> {
+        injectModelPredicate(itemSpecificPredicates, item, new Identifier("pulling"), (stack, world, entity, seed) -> {
             if (isItemStackUsedForRangedSkill(stack, entity)) {
                 return 1F;
             }
             return -1F; // Negative value to fall back to vanilla
         });
-        injectModelPredicate(itemSpecificPredicates, item, Identifier.of("charged"), (stack, world, entity, seed) -> {
+        injectModelPredicate(itemSpecificPredicates, item, new Identifier("charged"), (stack, world, entity, seed) -> {
             var progress = getItemStackRangedSkillProgress(stack, entity);
             if (progress != null && progress.ratio() > 0.94F) {
                 return 1F;

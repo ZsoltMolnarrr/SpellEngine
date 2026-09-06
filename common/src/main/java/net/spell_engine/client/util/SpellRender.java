@@ -5,6 +5,6 @@ import net.minecraft.util.Identifier;
 public class SpellRender {
     // Example: `spell_engine:fireball` -> `spell_engine:textures/spell/fireball.png`
     public static Identifier iconTexture(Identifier spellId) {
-        return Identifier.of(spellId.getNamespace(), "textures/spell/" + spellId.getPath() + ".png");
+        return new Identifier(spellId.getNamespace(), "textures/spell/" + spellId.getPath() + ".png");
     }
 }

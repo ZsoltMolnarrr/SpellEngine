@@ -238,7 +238,7 @@ public class CustomLayers extends RenderLayer {
     /// Grayscale streaks, so `ColorModulator` can tint them to any color.
     /// The vanilla glint texture is deeply purple, and the glint shader multiplies by it,
     /// which would poison every color it is tinted with.
-    public static final Identifier ITEM_GLOW_TEXTURE = Identifier.of("spell_engine", "textures/misc/item_glow.png");
+    public static final Identifier ITEM_GLOW_TEXTURE = new Identifier("spell_engine", "textures/misc/item_glow.png");
     private static final float ITEM_GLOW_SCALE = 8F;
 
     /// How hard the glow is driven into the frame buffer.

@@ -1,8 +1,8 @@
 package net.spell_engine.fabric.client.compat;
 
+import dev.lambdaurora.lambdynlights.api.DynamicLightHandler;
 import dev.lambdaurora.lambdynlights.api.DynamicLightHandlers;
 import dev.lambdaurora.lambdynlights.api.DynamicLightsInitializer;
-import dev.lambdaurora.lambdynlights.api.item.ItemLightSourceManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.spell_engine.entity.SpellCloud;
@@ -39,8 +39,10 @@ public class DynamicLightsCompatibility implements DynamicLightsInitializer {
         return list;
     }
 
+    /// LambDynamicLights 2.3.x (1.20.1) entrypoint `dynamiclights` — no-arg (the `ItemLightSourceManager`
+    /// argument is a 2.5+/1.21.4 shape).
     @Override
-    public void onInitializeDynamicLights(ItemLightSourceManager itemLightSourceManager) {
+    public void onInitializeDynamicLights() {
         System.out.println("Spell Engine: Initializing Dynamic Lights compatibility...");
         for (var registration : registrations()) {
             register(registration);
@@ -53,6 +55,6 @@ public class DynamicLightsCompatibility implements DynamicLightsInitializer {
     private static <T extends Entity> void register(Registration<T> registration) {
         DynamicLightHandlers.registerDynamicLightHandler(
                 registration.type(),
-                registration.luminance()::applyAsInt);
+                (DynamicLightHandler<T>) registration.luminance()::applyAsInt);
     }
 }

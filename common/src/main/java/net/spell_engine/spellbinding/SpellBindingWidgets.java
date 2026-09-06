@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class SpellBindingWidgets {
-    private static final Identifier Pl = Identifier.of(SpellEngineMod.ID, "textures/gui/" + SpellBinding.name + ".png");
+    private static final Identifier Pl = new Identifier(SpellEngineMod.ID, "textures/gui/" + SpellBinding.name + ".png");
 
     private static final int BUTTON_TEXTURE_U = 0;
     private static final int BUTTON_TEXTURE_V = 184;

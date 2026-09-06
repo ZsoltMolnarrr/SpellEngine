@@ -100,6 +100,6 @@ public class CustomModelDiscovery {
         }
         path = path.substring(0, path.length() - ".json".length());
 
-        return Identifier.of(resourceId.getNamespace(), path);
+        return new Identifier(resourceId.getNamespace(), path);
     }
 }

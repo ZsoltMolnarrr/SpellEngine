@@ -1,7 +1,6 @@
 package net.spell_engine.forge.client;
 
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.util.Identifier;
@@ -43,9 +42,14 @@ import net.minecraft.client.gui.screen.ingame.HandledScreens;
 /// Client-only wiring for Forge 47; only touched from {@link net.spell_engine.forge.ForgeMod} behind a
 /// `Dist.CLIENT` check. Mod-bus listeners are registered explicitly (no `@EventBusSubscriber` scanning).
 ///
-/// Skeleton for the 1.20.1 port: the NeoForge `RegisterGuiLayersEvent` / `RegisterMenuScreensEvent` /
-/// `IConfigScreenFactory` usages are mapped to their Forge 47 equivalents (`RegisterGuiOverlaysEvent`,
-/// `HandledScreens.register` in client setup, `ConfigScreenHandler.ConfigScreenFactory`).
+/// 1.20.1 port: the NeoForge `RegisterGuiLayersEvent` / `RegisterMenuScreensEvent` / `IConfigScreenFactory`
+/// usages are mapped to their Forge 47 equivalents (`RegisterGuiOverlaysEvent`, `HandledScreens.register` in
+/// client setup, `ConfigScreenHandler.ConfigScreenFactory`).
+///
+/// Integrator wiring (in `ForgeMod`'s constructor, behind `FMLEnvironment.dist == Dist.CLIENT`):
+/// `ForgeClientMod.register(FMLJavaModLoadingContext.get().getModEventBus());` — that single call installs the
+/// client-setup, HUD overlay (`registerGuiOverlays` → `RegisterGuiOverlaysEvent.registerAbove(HOTBAR)`),
+/// key mapping, particle provider, entity renderer and additional-model listeners.
 public final class ForgeClientMod {
     public static void register(IEventBus modBus) {
         modBus.addListener(EventPriority.NORMAL, false, FMLClientSetupEvent.class, ForgeClientMod::onClientSetup);
@@ -115,13 +119,13 @@ public final class ForgeClientMod {
     }
 
     private static void registerAdditionalModels(ModelEvent.RegisterAdditional event) {
-        // WARNING! Models registered like this, need to be retrieved with `new ModelIdentifier(id, "inventory")` !!
-        // TODO 1.20.1: `ModelIdentifier.standalone(id)` does not exist on 1.20.1 — cluster c4 decides the variant.
+        // 1.20.1: additional models are registered — and later looked up — by their plain Identifier
+        // (Forge 47 `ModelEvent.RegisterAdditional.register(Identifier)`, stored in `BakedModelManager.models`,
+        // read back through `BakedModelManagerAccessor`), exactly like Fabric's `ModelLoadingPlugin.addModels`.
 
         // Register custom models from registry
         for (var id: CustomModelRegistry.getModelIds()) {
-            var modelId = new ModelIdentifier(id, "inventory");
-            event.register(modelId);
+            event.register(id);
         }
 
         // Register dynamically discovered spell models (scrolls, books, projectiles, effects)

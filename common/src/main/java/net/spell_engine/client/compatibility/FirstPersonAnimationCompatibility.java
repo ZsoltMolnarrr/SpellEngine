@@ -22,9 +22,9 @@ public class FirstPersonAnimationCompatibility {
 
     public static FirstPersonMode firstPersonMode() {
         switch (SpellEngineClient.config.firstPersonAnimations) {
-            case TriStateAuto.YES:
+            case YES:
                 return FirstPersonMode.THIRD_PERSON_MODEL;
-            case TriStateAuto.NO:
+            case NO:
                 return FirstPersonMode.NONE;
             default:
                 return isCameraModPresent ? FirstPersonMode.NONE : FirstPersonMode.THIRD_PERSON_MODEL;

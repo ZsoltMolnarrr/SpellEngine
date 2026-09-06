@@ -5,6 +5,7 @@ import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.effect.EntityActionsAllowed;
 import net.spell_engine.api.spell.registry.SpellRegistry;
@@ -82,8 +83,8 @@ public class HudMessages {
             return;
         }
         if (cooldownsRemoved.size() == 1) {
-            var spellId = cooldownsRemoved.getFirst();
-            var spellEntry = SpellRegistry.from(world).getEntry(spellId).orElse(null);
+            var spellId = cooldownsRemoved.get(0);
+            var spellEntry = SpellRegistry.from(world).getEntry(RegistryKey.of(SpellRegistry.KEY, spellId)).orElse(null);
             if (spellEntry == null) {
                 return; // Spell not found, cannot display message
             }

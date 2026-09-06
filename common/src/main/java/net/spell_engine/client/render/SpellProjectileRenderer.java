@@ -106,7 +106,7 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
                 // empty/placeholder model is drawn. heldItemModelId is null for non-held projectiles (e.g.
                 // arrows via ProjectileEntityRendererMixin), which then correctly skip these models.
                 if (heldItemModelId != null && !heldItemModelId.isEmpty()) {
-                    var stack = Registries.ITEM.get(Identifier.of(heldItemModelId)).getDefaultStack();
+                    var stack = Registries.ITEM.get(new Identifier(heldItemModelId)).getDefaultStack();
                     if (!stack.isEmpty()) {
                         var itemModel = itemRenderer.getModel(stack, entity.getWorld(), null, entity.getId());
                         // Item models are authored in item-display space; FIXED (item-frame) gives them the
@@ -117,7 +117,7 @@ public class SpellProjectileRenderer<T extends Entity & FlyingItemEntity> extend
                 }
             } else if (fx.model_id != null && !fx.model_id.isEmpty()) {
                 // Custom (non-item) fx models render raw, with no display transform.
-                CustomModels.render(layer, itemRenderer, Identifier.of(fx.model_id), null, matrices, vertexConsumers, light, entity.getId());
+                CustomModels.render(layer, itemRenderer, new Identifier(fx.model_id), null, matrices, vertexConsumers, light, entity.getId());
             }
 
             matrices.pop();

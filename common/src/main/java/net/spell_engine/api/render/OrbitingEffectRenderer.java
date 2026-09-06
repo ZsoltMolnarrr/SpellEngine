@@ -33,9 +33,9 @@ public class OrbitingEffectRenderer implements CustomModelStatusEffect.Renderer 
         var time = livingEntity.age + delta;
 
         var initialAngle = time * orbitingSpeed - 45.0F;
-        var entityScale = livingEntity.getScale();
-        var horizontalOffset = this.horizontalOffset * livingEntity.getScaleFactor();
-        var verticalOffset = livingEntity.getHeight() / (2F * entityScale);
+        // 1.20.1 has no `LivingEntity.getScale()`/`getScaleFactor()` (no scale attribute); entities render at 1x.
+        var horizontalOffset = this.horizontalOffset;
+        var verticalOffset = livingEntity.getHeight() / 2F;
         var itemRenderer = MinecraftClient.getInstance().getItemRenderer();
 
         var stacks = amplifier + 1;

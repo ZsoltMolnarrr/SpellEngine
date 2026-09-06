@@ -12,10 +12,11 @@ import org.spongepowered.asm.mixin.injection.At;
 /// blends is precisely the arrangement that hides trims under Iris - see [CustomLayers#armorTranslucent].
 @Mixin(TexturedRenderLayers.class)
 public class ArmorTrimsLayerTintMixin {
+    /// 1.20.1: `getArmorTrims()` takes no `decal` flag (decal trim patterns are a 1.21 feature).
     @ModifyReturnValue(method = "getArmorTrims", at = @At("RETURN"), require = 1)
-    private static RenderLayer getArmorTrims_RETURN_SpellEngine_Tint(RenderLayer original, boolean decal) {
+    private static RenderLayer getArmorTrims_RETURN_SpellEngine_Tint(RenderLayer original) {
         return EntityTints.Current.isTranslucent()
-                ? CustomLayers.armorTrimsTranslucent(decal)
+                ? CustomLayers.armorTrimsTranslucent(false)
                 : original;
     }
 }

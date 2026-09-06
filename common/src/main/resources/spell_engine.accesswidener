@@ -1,16 +1,24 @@
 accessWidener	v2	named
-accessible    class    net/minecraft/entity/effect/PoisonStatusEffect
+# 1.20.1 descriptors (Yarn 1.20.1+build.1). Loom silently skips lines whose descriptor does not match,
+# and on Forge only SE's own AW (converted to an AT) applies — so every line here must be exact.
+
+# Custom render layer construction (CustomLayers): in the real 1.20.1 jar the 7-arg `RenderLayer.of` is
+# private static and `RenderLayer$MultiPhase` is package-private (the decompiled tree is misleading).
+# Same widening the legacy SpellEngine 1.20.1 branch and ArmorModelAPI use; no mixin alternative works
+# (an @Invoker cannot name the MultiPhase return type, and a hand-rolled subclass breaks Iris bucketing).
 accessible    class    net/minecraft/client/render/RenderLayer$MultiPhase
 accessible    method    net/minecraft/client/render/RenderLayer    of    (Ljava/lang/String;Lnet/minecraft/client/render/VertexFormat;Lnet/minecraft/client/render/VertexFormat$DrawMode;IZZLnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;)Lnet/minecraft/client/render/RenderLayer$MultiPhase;
+# The 5-arg overload (item glow layers) is package-private too; on Fabric another mod's AW happens to widen it,
+# on Forge only this file does.
+accessible    method    net/minecraft/client/render/RenderLayer    of    (Ljava/lang/String;Lnet/minecraft/client/render/VertexFormat;Lnet/minecraft/client/render/VertexFormat$DrawMode;ILnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;)Lnet/minecraft/client/render/RenderLayer$MultiPhase;
 accessible    method    net/minecraft/client/render/block/entity/BlockEntityRendererFactories    register    (Lnet/minecraft/block/entity/BlockEntityType;Lnet/minecraft/client/render/block/entity/BlockEntityRendererFactory;)V
-# Loader-neutral replacement for Fabric API's PlayerLookup.tracking(Entity):
-# reach the vanilla entity-tracker listener set so common code can enumerate the
-# server players tracking an entity without depending on any loader networking API.
-accessible    field    net/minecraft/server/world/ServerChunkLoadingManager    entityTrackers    Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
-accessible    class    net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker
-accessible    field    net/minecraft/server/world/ServerChunkLoadingManager$EntityTracker    listeners    Ljava/util/Set;
-# NeoForge has no LootTable.Builder in its LootTableLoadEvent (it exposes a built LootTable), so the
-# NeoForge loot-modify path reads the loaded pools to report them as `existingPools()`.
+# Forge has no LootTable.Builder in its LootTableLoadEvent (it exposes a built LootTable), so the
+# Forge loot-modify path reads the loaded pools to report them as `existingPools()`.
+# 1.20.1: `LootTable.pools` is a `LootPool[]` and `LootPool.entries` a `LootPoolEntry[]` (both private in the
+# real jar; the decompiled tree shows them public because Fabric API's loot AW was applied to it).
+accessible    field    net/minecraft/loot/LootTable    pools    [Lnet/minecraft/loot/LootPool;
+# Forge 47 patches `LootTable.pools` into a `List<LootPool>`; Loom matches AW lines by descriptor when it
+# widens the dev jar, so both shapes are listed (the unmatched one is skipped; the production AT drops descriptors).
 accessible    field    net/minecraft/loot/LootTable    pools    Ljava/util/List;
-# LootHelper.inspect reads pool entries (Fabric API widens this on Fabric; NeoForge needs our own AT)
-accessible    field    net/minecraft/loot/LootPool    entries    Ljava/util/List;
+# LootHelper.inspect reads pool entries (Fabric API widens this on Fabric; Forge needs our own AT)
+accessible    field    net/minecraft/loot/LootPool    entries    [Lnet/minecraft/loot/entry/LootPoolEntry;

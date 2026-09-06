@@ -9,7 +9,7 @@ import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.registry.Registries;
@@ -84,8 +84,8 @@ public class SpellEngineClient {
         injectRangedWeaponModelPredicates();
     }
 
-    /// Append Spell Engine tooltip lines. Fabric: `ItemTooltipCallback`; NeoForge: `ItemTooltipEvent`.
-    public static void addTooltipLines(ItemStack itemStack, TooltipType tooltipType, List<Text> lines) {
+    /// Append Spell Engine tooltip lines. Fabric: `ItemTooltipCallback` (3-arg on 0.92); Forge: `ItemTooltipEvent`.
+    public static void addTooltipLines(ItemStack itemStack, TooltipContext tooltipType, List<Text> lines) {
         SpellTooltip.addSpellLines(itemStack, tooltipType, lines);
         EquipmentSetTooltip.appendLines(itemStack, lines);
     }
