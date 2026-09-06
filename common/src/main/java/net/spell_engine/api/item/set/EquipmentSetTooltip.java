@@ -5,9 +5,10 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.spell_engine.api.spell.SpellDataComponents;
+import net.minecraft.registry.RegistryKey;
+import net.spell_engine.api.item.SpellItemData;
+import net.spell_engine.client.gui.AttributeModifierTooltip;
 import net.spell_engine.client.gui.SpellTooltip;
-import net.spell_engine.mixin.client.ItemStackTooltipAccessor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ import java.util.List;
 
 public class EquipmentSetTooltip {
     public static void appendLines(ItemStack stack, List<Text> tooltip) {
-        if (stack.get(SpellDataComponents.EQUIPMENT_SET) != null) {
+        if (SpellItemData.hasEquipmentSet(stack)) {
             var text = textFor(stack, MinecraftClient.getInstance().player);
             if (!text.isEmpty()) {
                 tooltip.addAll(text);
@@ -25,12 +26,12 @@ public class EquipmentSetTooltip {
 
     public static List<Text> textFor(ItemStack stack, @Nullable PlayerEntity player) {
         var text = new ArrayList<Text>();
-        var component = stack.get(SpellDataComponents.EQUIPMENT_SET);
-        if (component == null) {
+        var setId = SpellItemData.getEquipmentSet(stack);
+        if (setId == null || player == null || player.getWorld() == null) {
             return text;
         }
-        var optionalEntry = EquipmentSetRegistry.from(player.getWorld()).getEntry(component);
-        if (optionalEntry.isPresent() && player != null && player.getWorld() != null) {
+        var optionalEntry = EquipmentSetRegistry.from(player.getWorld()).getEntry(RegistryKey.of(EquipmentSetRegistry.KEY, setId));
+        if (optionalEntry.isPresent()) {
             var equipmentSetEntry = optionalEntry.get();
             var equipmentSet = equipmentSetEntry.value();
             var setSize = equipmentSet.items().size();
@@ -83,15 +84,8 @@ public class EquipmentSetTooltip {
         var bonusTitle = Text.translatable("equipment_set.logic.bonus.count", bonus.requiredPieceCount());
         var bonusLines = new ArrayList<Text>();
         if (bonus.attributes() != null) {
-            var tooltipUtil = (ItemStackTooltipAccessor) (Object) ItemStack.EMPTY;
             for (var modifier: bonus.attributes().modifiers()) {
-                tooltipUtil
-                        .spellEngine_appendAttributeModifierTooltip(
-                                bonusLines::add,
-                                player,
-                                modifier.attribute(),
-                                modifier.modifier()
-                        );
+                AttributeModifierTooltip.append(bonusLines::add, player, modifier.attribute().value(), modifier.modifier());
             }
         }
         if (bonus.spells() != null) {

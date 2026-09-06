@@ -2,7 +2,6 @@ package net.spell_engine.rpg_series.item;
 
 import net.fabric_extras.ranged_weapon.api.RangedConfig;
 import net.spell_engine.PlatformEvents;
-import net.minecraft.component.ComponentChanges;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ToolMaterials;
@@ -13,7 +12,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.Util;
-import net.spell_engine.api.spell.SpellDataComponents;
+import net.spell_engine.api.item.SpellItemData;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
 import org.jetbrains.annotations.Nullable;
@@ -120,18 +119,8 @@ public class RangedWeapon {
         }
 
         public Entry withSpellChoices(String pool) {
-            this.spellContainer = this.spellContainer.withBindingPool(Identifier.of(pool));
+            this.spellContainer = this.spellContainer.withBindingPool(new Identifier(pool));
             this.spellChoice = SpellChoice.of(pool);
-            return this;
-        }
-
-        /// Registers component changes to apply to this item when `spellId` is chosen from the pool.
-        /// Lets the chosen spell drive the item's appearance (`custom_model_data`, `custom_name`, ...).
-        public Entry applyOnChoice(String spellId, ComponentChanges changes) {
-            if (this.spellChoice == null) {
-                this.spellChoice = SpellChoice.EMPTY;
-            }
-            this.spellChoice = this.spellChoice.withApplyOnChoice(Identifier.of(spellId), changes);
             return this;
         }
 
@@ -160,13 +149,13 @@ public class RangedWeapon {
             if (entry.rarity != Rarity.COMMON) {
                 settings.rarity(entry.rarity);
             }
-            if (entry.spellChoice != null) {
-                settings.component(SpellDataComponents.SPELL_CHOICE, entry.spellChoice);
-            }
-            if (entry.spellContainer != null) {
-                settings.component(SpellDataComponents.SPELL_CONTAINER, entry.spellContainer);
-            }
             var item = entry.create(settings, config);
+            // Item-level defaults (1.20.1 stand-in for `Item.Settings#component`)
+            if (entry.spellChoice != null || entry.spellContainer != null) {
+                SpellItemData.defaults(item)
+                        .spellChoice(entry.spellChoice)
+                        .spellContainer(entry.spellContainer);
+            }
             Registry.register(Registries.ITEM, entry.id, item);
         }
         PlatformEvents.onItemGroupModify(itemGroupKey, (content, context) -> {

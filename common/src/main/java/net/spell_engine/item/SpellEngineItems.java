@@ -23,7 +23,7 @@ import java.util.Comparator;
 
 public class SpellEngineItems {
     public static class Group {
-        public static Identifier ID = Identifier.of(SpellEngineMod.ID, "generic");
+        public static Identifier ID = new Identifier(SpellEngineMod.ID, "generic");
         public static RegistryKey<ItemGroup> KEY = RegistryKey.of(Registries.ITEM_GROUP.getKey(), ID);
         // Vanilla ItemGroup.Builder (loader-neutral) replaces FabricItemGroup.builder(); row/column
         // are irrelevant for a separately registered group.

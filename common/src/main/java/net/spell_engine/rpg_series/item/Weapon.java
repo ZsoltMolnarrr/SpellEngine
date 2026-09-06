@@ -2,11 +2,6 @@ package net.spell_engine.rpg_series.item;
 import net.spell_engine.Platform;
 
 import net.spell_engine.PlatformEvents;
-import net.minecraft.block.Block;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.type.AttributeModifierSlot;
-import net.minecraft.component.type.AttributeModifiersComponent;
-import net.minecraft.component.type.ToolComponent;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.Item;
@@ -17,19 +12,21 @@ import net.minecraft.recipe.Ingredient;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
 import net.minecraft.util.Rarity;
+import net.spell_engine.api.item.ItemAttributeModifiers;
+import net.spell_engine.api.item.SpellItemData;
 import net.spell_engine.rpg_series.config.AttributeModifier;
 import net.spell_engine.rpg_series.config.WeaponConfig;
-import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
+import net.spell_engine.utils.AttributeModifierUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 public class Weapon {
@@ -67,7 +64,7 @@ public class Weapon {
         }
 
         public Identifier id() {
-            return Identifier.of(namespace, name);
+            return new Identifier(namespace, name);
         }
 
         public Entry attribute(AttributeModifier attribute) {
@@ -120,18 +117,8 @@ public class Weapon {
         }
 
         public Entry withSpellChoices(String pool) {
-            this.spellContainer = this.spellContainer.withBindingPool(Identifier.of(pool));
+            this.spellContainer = this.spellContainer.withBindingPool(new Identifier(pool));
             this.spellChoice = SpellChoice.of(pool);
-            return this;
-        }
-
-        /// Registers component changes to apply to this item when `spellId` is chosen from the pool.
-        /// Lets the chosen spell drive the item's appearance (`custom_model_data`, `custom_name`, ...).
-        public Entry applyOnChoice(String spellId, ComponentChanges changes) {
-            if (this.spellChoice == null) {
-                this.spellChoice = SpellChoice.EMPTY;
-            }
-            this.spellChoice = this.spellChoice.withApplyOnChoice(Identifier.of(spellId), changes);
             return this;
         }
 
@@ -180,11 +167,11 @@ public class Weapon {
             material.miningSpeed = vanillaMaterial.getMiningSpeedMultiplier();
             material.enchantability = vanillaMaterial.getEnchantability();
             material.ingredient = new Lazy(repairIngredient);
-            material.inverseTag = vanillaMaterial.getInverseTag();
+            material.miningLevel = vanillaMaterial.getMiningLevel();
             return material;
         }
 
-        private TagKey<Block> inverseTag;
+        private int miningLevel = 0;
         private int durability = 0;
         private float miningSpeed = 0;
         private int enchantability = 0;
@@ -206,8 +193,8 @@ public class Weapon {
         }
 
         @Override
-        public TagKey<Block> getInverseTag() {
-            return inverseTag;
+        public int getMiningLevel() {
+            return miningLevel;
         }
 
         @Override
@@ -218,11 +205,6 @@ public class Weapon {
         @Override
         public Ingredient getRepairIngredient() {
             return (Ingredient)this.ingredient.get();
-        }
-
-        @Override
-        public ToolComponent createComponent(TagKey<Block> tag) {
-            return ToolMaterial.super.createComponent(tag);
         }
     }
 
@@ -237,17 +219,9 @@ public class Weapon {
             }
             if (!entry.isRequiredModInstalled()) { continue; }
 
-            var settings = new Item.Settings()
-                    .attributeModifiers(attributesFrom(config));
+            var settings = new Item.Settings();
             if (entry.rarity != Rarity.COMMON) {
                 settings = settings.rarity(entry.rarity);
-            }
-
-            if (entry.spellChoice != null) {
-                settings.component(SpellDataComponents.SPELL_CHOICE, entry.spellChoice);
-            }
-            if (entry.spellContainer != null) {
-                settings.component(SpellDataComponents.SPELL_CONTAINER, entry.spellContainer);
             }
 
             var tier = entry.lootProperties().tier();
@@ -255,6 +229,13 @@ public class Weapon {
                 settings.fireproof();
             }
             var item = entry.create(entry.material, settings);
+            // Item-level defaults (1.20.1 stand-in for `Item.Settings#component` / `#attributeModifiers`)
+            AttributeModifierUtil.setItemModifiers(item, attributesFrom(config));
+            if (entry.spellChoice != null || entry.spellContainer != null) {
+                SpellItemData.defaults(item)
+                        .spellChoice(entry.spellChoice)
+                        .spellContainer(entry.spellContainer);
+            }
             Registry.register(Registries.ITEM, entry.id(), item);
         }
         PlatformEvents.onItemGroupModify(itemGroupKey, (content, context) -> {
@@ -264,49 +245,36 @@ public class Weapon {
         });
     }
 
-    public static AttributeModifiersComponent attributesFrom(WeaponConfig config) {
-        AttributeModifiersComponent.Builder builder = AttributeModifiersComponent.builder();
+    public static ItemAttributeModifiers attributesFrom(WeaponConfig config) {
+        var builder = ItemAttributeModifiers.builder();
         builder.add(EntityAttributes.GENERIC_ATTACK_DAMAGE,
                 new EntityAttributeModifier(
-                        Item.BASE_ATTACK_DAMAGE_MODIFIER_ID,
+                        ItemAccessor.ATTACK_DAMAGE_MODIFIER_ID(),
+                        "Weapon modifier",
                         config.attack_damage,
-                        EntityAttributeModifier.Operation.ADD_VALUE),
-                AttributeModifierSlot.MAINHAND);
+                        EntityAttributeModifier.Operation.ADDITION),
+                ItemAttributeModifiers.Slot.MAINHAND);
         builder.add(EntityAttributes.GENERIC_ATTACK_SPEED,
                 new EntityAttributeModifier(
-                        Item.BASE_ATTACK_SPEED_MODIFIER_ID,
+                        ItemAccessor.ATTACK_SPEED_MODIFIER_ID(),
+                        "Weapon modifier",
                         config.attack_speed,
-                        EntityAttributeModifier.Operation.ADD_VALUE),
-                AttributeModifierSlot.MAINHAND);
-        for(var attribute: config.selectedAttributes()) {
-            try {
-                var attributeId = Identifier.of(attribute.attribute);
-                var entityAttribute = Registries.ATTRIBUTE.getEntry(attributeId).get();
-                builder.add(entityAttribute,
-                        new EntityAttributeModifier(
-                                equipmentBonusId,
-                                attribute.value,
-                                attribute.operation),
-                        AttributeModifierSlot.MAINHAND);
-            } catch (Exception e) {
-                System.err.println("Failed to add item attribute modifier: " + e.getMessage());
-            }
-        }
+                        EntityAttributeModifier.Operation.ADDITION),
+                ItemAttributeModifiers.Slot.MAINHAND);
+        builder.addAll(attributesFrom(config.selectedAttributes()));
         return builder.build();
     }
 
-    public static AttributeModifiersComponent attributesFrom(List<AttributeModifier> attributes) {
-        AttributeModifiersComponent.Builder builder = AttributeModifiersComponent.builder();
+    public static ItemAttributeModifiers attributesFrom(List<AttributeModifier> attributes) {
+        var builder = ItemAttributeModifiers.builder();
         for(var attribute: attributes) {
             try {
-                var attributeId = Identifier.of(attribute.attribute);
-                var entityAttribute = Registries.ATTRIBUTE.getEntry(attributeId).get();
+                var attributeId = new Identifier(attribute.attribute);
+                var entityAttribute = AttributeModifierUtil.attributeEntry(attributeId)
+                        .orElseThrow(() -> new IllegalArgumentException("Unknown attribute: " + attributeId));
                 builder.add(entityAttribute,
-                        new EntityAttributeModifier(
-                                equipmentBonusId,
-                                attribute.value,
-                                attribute.operation),
-                        AttributeModifierSlot.MAINHAND);
+                        modifierFor(attributeId, attribute.value, attribute.operation),
+                        ItemAttributeModifiers.Slot.MAINHAND);
             } catch (Exception e) {
                 System.err.println("Failed to add item attribute modifier: " + e.getMessage());
             }
@@ -314,7 +282,26 @@ public class Weapon {
         return builder.build();
     }
 
-    private static final Identifier equipmentBonusId = Identifier.of("equipment_bonus");
-    private static final Identifier attackDamageId = Identifier.of("generic.attack_damage");
-    private static final Identifier projectileDamageId = Identifier.of("projectile_damage", "generic");
+    /// Extra (non-base) weapon modifiers share the `equipment_bonus` id (UUID derived from it).
+    /// Projectile damage is keyed like vanilla attack damage, so ranged-weapon tooltips show it as the base value.
+    private static EntityAttributeModifier modifierFor(Identifier attributeId, double value, EntityAttributeModifier.Operation operation) {
+        if (attributeId.equals(projectileDamageId) && operation == EntityAttributeModifier.Operation.ADDITION) {
+            return new EntityAttributeModifier(ItemAccessor.ATTACK_DAMAGE_MODIFIER_ID(), "Weapon modifier", value, operation);
+        }
+        return AttributeModifierUtil.modifier(equipmentBonusId, value, operation);
+    }
+
+    /// Vanilla's base attack damage / speed modifier UUIDs are `protected` on `Item` in 1.20.1
+    private static abstract class ItemAccessor extends Item {
+        public ItemAccessor(Settings settings) { super(settings); }
+        public static UUID ATTACK_DAMAGE_MODIFIER_ID() { return ATTACK_DAMAGE_MODIFIER_ID; }
+        public static UUID ATTACK_SPEED_MODIFIER_ID() { return ATTACK_SPEED_MODIFIER_ID; }
+    }
+
+    public static UUID baseAttackDamageModifierId() { return ItemAccessor.ATTACK_DAMAGE_MODIFIER_ID(); }
+    public static UUID baseAttackSpeedModifierId() { return ItemAccessor.ATTACK_SPEED_MODIFIER_ID(); }
+
+    public static final Identifier equipmentBonusId = new Identifier("equipment_bonus");
+    private static final Identifier attackDamageId = new Identifier("generic.attack_damage");
+    private static final Identifier projectileDamageId = new Identifier("projectile_damage", "generic");
 }

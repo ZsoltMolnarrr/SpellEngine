@@ -3,6 +3,7 @@ package net.spell_engine.spellbinding;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
@@ -19,9 +20,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class SpellBinding {
-    public static final Identifier ADVANCEMENT_VISIT_ID = Identifier.of(SpellEngineMod.ID, "visit_spell_binding_table");
+    public static final Identifier ADVANCEMENT_VISIT_ID = new Identifier(SpellEngineMod.ID, "visit_spell_binding_table");
     public static final String name = "spell_binding";
-    public static final Identifier ID = Identifier.of(SpellEngineMod.ID, name);
+    public static final Identifier ID = new Identifier(SpellEngineMod.ID, name);
     private static final float LIBRARY_POWER_BASE = 10;
     private static final float LIBRARY_POWER_MULTIPLIER = 1.5F;
     private static final int LIBRARY_POWER_CAP = 18;
@@ -81,8 +82,8 @@ public class SpellBinding {
             scrollMode = true;
             var spellRegistry = SpellRegistry.from(world);
             var consumableSpells = consumableContainer.spell_ids().stream()
-                    .map(Identifier::of)
-                    .map(spellRegistry::getEntry)
+                    .map(Identifier::new)
+                    .map(id -> spellRegistry.getEntry(RegistryKey.of(SpellRegistry.KEY, id)))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .toList();
@@ -151,7 +152,7 @@ public class SpellBinding {
 
     private static int rawSpellId(World world, Identifier spellId) {
         var registry = SpellRegistry.from(world);
-        var entry = registry.getEntry(spellId).get();
+        var entry = registry.getEntry(RegistryKey.of(SpellRegistry.KEY, spellId)).get();
         return registry.getRawId(entry.value());
     }
 
@@ -212,14 +213,14 @@ public class SpellBinding {
 
             // Check for tier conflicts
             var registry = SpellRegistry.from(world);
-            var spellEntry = registry.getEntry(spellId);
+            var spellEntry = registry.getEntry(RegistryKey.of(SpellRegistry.KEY, spellId));
             if (spellEntry.isPresent()) {
                 var newSpellTier = spellEntry.get().value().tier;
                 var otherSpellsInTier = 0;
                 // Check existing spell with the same tier
                 for (var existingSpellIdString : container.spell_ids()) {
-                    var existingSpellId = Identifier.of(existingSpellIdString);
-                    var existingSpellEntry = registry.getEntry(existingSpellId);
+                    var existingSpellId = new Identifier(existingSpellIdString);
+                    var existingSpellEntry = registry.getEntry(RegistryKey.of(SpellRegistry.KEY, existingSpellId));
                     if (existingSpellEntry.isPresent() && existingSpellEntry.get().value().tier == newSpellTier) {
                         otherSpellsInTier += 1;
                     }

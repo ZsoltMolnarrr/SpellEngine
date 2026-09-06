@@ -1,9 +1,12 @@
 package net.spell_engine.spellbinding;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import net.minecraft.advancement.criterion.AbstractCriterion;
-import net.minecraft.predicate.entity.EntityPredicate;
+import net.minecraft.advancement.criterion.AbstractCriterionConditions;
+import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
+import net.minecraft.predicate.entity.AdvancementEntityPredicateSerializer;
 import net.minecraft.predicate.entity.LootContextPredicate;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -11,13 +14,24 @@ import net.spell_engine.SpellEngineMod;
 
 import java.util.Optional;
 
+/// Triggered when a spell book is created at the binding table. JSON: `{"spell_pool": "<pool id>"}` (optional)
 public class SpellBookCreationCriteria extends AbstractCriterion<SpellBookCreationCriteria.Condition> {
-    public static final Identifier ID = Identifier.of(SpellEngineMod.ID, "spell_book_creation");
+    public static final Identifier ID = new Identifier(SpellEngineMod.ID, "spell_book_creation");
     public static final SpellBookCreationCriteria INSTANCE = new SpellBookCreationCriteria();
 
     @Override
-    public Codec<SpellBookCreationCriteria.Condition> getConditionsCodec() {
-        return SpellBookCreationCriteria.Condition.CODEC;
+    protected Condition conditionsFromJson(JsonObject obj, LootContextPredicate playerPredicate, AdvancementEntityPredicateDeserializer predicateDeserializer) {
+        Optional<String> spellPool = Optional.empty();
+        JsonElement element = obj.get("spell_pool");
+        if (element != null && !element.isJsonNull()) {
+            spellPool = Optional.of(element.getAsString());
+        }
+        return new Condition(playerPredicate, spellPool);
+    }
+
+    @Override
+    public Identifier getId() {
+        return ID;
     }
 
     public void trigger(ServerPlayerEntity player, Identifier spellPoolId) {
@@ -26,28 +40,35 @@ public class SpellBookCreationCriteria extends AbstractCriterion<SpellBookCreati
         });
     }
 
-    public record Condition(Optional<LootContextPredicate> player, Optional<String> spell_pool) implements AbstractCriterion.Conditions {
-        public static final Codec<SpellBookCreationCriteria.Condition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                                EntityPredicate.LOOT_CONTEXT_PREDICATE_CODEC.optionalFieldOf("player").forGetter(SpellBookCreationCriteria.Condition::player),
-                                Codec.optionalField("spell_pool", Codec.STRING, true).forGetter(SpellBookCreationCriteria.Condition::spell_pool)
-                        )
-                        .apply(instance, SpellBookCreationCriteria.Condition::new)
-        );
+    public static class Condition extends AbstractCriterionConditions {
+        private final Optional<String> spell_pool;
+
+        public Condition(LootContextPredicate player, Optional<String> spell_pool) {
+            super(ID, player);
+            this.spell_pool = spell_pool;
+        }
+
+        public Condition(Optional<String> spell_pool) {
+            this(LootContextPredicate.EMPTY, spell_pool);
+        }
 
         public boolean matches(Identifier id) {
             var poolMatches = true;
             if (spell_pool.isPresent()) {
-                poolMatches = spell_pool.get().equals(id.toString());
+                poolMatches = id != null && spell_pool.get().equals(id.toString());
             }
             return poolMatches;
         }
 
-        public Optional<LootContextPredicate> player() {
-            return this.player;
+        public Optional<String> spell_pool() {
+            return this.spell_pool;
         }
 
-        public  Optional<String> spell_pool() {
-            return this.spell_pool;
+        @Override
+        public JsonObject toJson(AdvancementEntityPredicateSerializer predicateSerializer) {
+            JsonObject jsonObject = super.toJson(predicateSerializer);
+            spell_pool.ifPresent(pool -> jsonObject.add("spell_pool", new JsonPrimitive(pool)));
+            return jsonObject;
         }
     }
 }

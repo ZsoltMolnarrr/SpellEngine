@@ -51,7 +51,7 @@ public class Shields {
             List<AttributeModifier> attributes,
             RegistryEntry<SoundEvent> equipSound
     ) {
-        var id = Identifier.of(namespace, name);
+        var id = new Identifier(namespace, name);
         var entry = new Shield.Entry(
                 id,
                 tier,
@@ -111,16 +111,16 @@ public class Shields {
         return switch (tier) {
             case WOODEN, TIER_0, GOLDEN -> List.of(); // No attributes
             case TIER_1, TIER_2 -> List.of(
-                    new AttributeModifier(GENERIC_ARMOR_TOUGHNESS, 1, Operation.ADD_VALUE),
-                    new AttributeModifier(GENERIC_MAX_HEALTH, 2.0f, Operation.ADD_VALUE)
+                    new AttributeModifier(GENERIC_ARMOR_TOUGHNESS, 1, Operation.ADDITION),
+                    new AttributeModifier(GENERIC_MAX_HEALTH, 2.0f, Operation.ADDITION)
             );
             case TIER_3 -> List.of(
-                    new AttributeModifier(GENERIC_ARMOR_TOUGHNESS, 1, Operation.ADD_VALUE),
-                    new AttributeModifier(GENERIC_MAX_HEALTH, 4.0f, Operation.ADD_VALUE)
+                    new AttributeModifier(GENERIC_ARMOR_TOUGHNESS, 1, Operation.ADDITION),
+                    new AttributeModifier(GENERIC_MAX_HEALTH, 4.0f, Operation.ADDITION)
             );
             case TIER_4, TIER_5 -> List.of(
-                    new AttributeModifier(GENERIC_ARMOR_TOUGHNESS, 1, Operation.ADD_VALUE),
-                    new AttributeModifier(GENERIC_MAX_HEALTH, 6.0f, Operation.ADD_VALUE)
+                    new AttributeModifier(GENERIC_ARMOR_TOUGHNESS, 1, Operation.ADDITION),
+                    new AttributeModifier(GENERIC_MAX_HEALTH, 6.0f, Operation.ADDITION)
             );
         };
     }
@@ -132,7 +132,7 @@ public class Shields {
      * @return AttributeModifier for armor toughness
      */
     public static AttributeModifier toughness(float value) {
-        return new AttributeModifier(GENERIC_ARMOR_TOUGHNESS, value, Operation.ADD_VALUE);
+        return new AttributeModifier(GENERIC_ARMOR_TOUGHNESS, value, Operation.ADDITION);
     }
 
     /**
@@ -142,6 +142,6 @@ public class Shields {
      * @return AttributeModifier for max health
      */
     public static AttributeModifier health(float value) {
-        return new AttributeModifier(GENERIC_MAX_HEALTH, value, Operation.ADD_VALUE);
+        return new AttributeModifier(GENERIC_MAX_HEALTH, value, Operation.ADDITION);
     }
 }

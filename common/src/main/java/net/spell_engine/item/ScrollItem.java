@@ -1,9 +1,8 @@
 package net.spell_engine.item;
 
-import net.minecraft.component.DataComponentTypes;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
@@ -14,6 +13,7 @@ import net.minecraft.util.Language;
 import net.minecraft.util.Rarity;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.item.SpellItemData;
 import net.spell_engine.api.spell.*;
 import net.spell_engine.api.spell.container.SpellContainers;
 import net.spell_engine.api.spell.registry.SpellRegistry;
@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class ScrollItem extends Item {
-    public static final Identifier ID = Identifier.of(SpellEngineMod.ID, "spell_scroll");
+    public static final Identifier ID = new Identifier(SpellEngineMod.ID, "spell_scroll");
 
     public ScrollItem(Settings settings) {
         super(settings);
@@ -35,8 +35,20 @@ public class ScrollItem extends Item {
         return false;
     }
 
+    @Override
+    public Text getName(ItemStack stack) {
+        var nameKey = SpellItemData.getItemNameKey(stack);
+        return nameKey != null ? Text.translatable(nameKey) : super.getName(stack);
+    }
+
+    @Override
+    public Rarity getRarity(ItemStack stack) {
+        var rarity = SpellItemData.getRarity(stack);
+        return rarity != null ? rarity : super.getRarity(stack);
+    }
+
     public static void applySpell(ItemStack itemStack, RegistryEntry<Spell> spellEntry, @Nullable TagKey<Spell> pool) {
-        itemStack.set(SpellDataComponents.SPELL_CONTAINER, SpellContainers.forScroll(spellEntry));
+        SpellItemData.setSpellContainer(itemStack, SpellContainers.forScroll(spellEntry));
         onSpellAdded(itemStack, spellEntry, pool);
     }
 
@@ -45,7 +57,7 @@ public class ScrollItem extends Item {
     }
 
     public static Identifier modelIdForPool(Identifier poolId) {
-        return Identifier.of(poolId.getNamespace(), "item/" + poolId.getPath());
+        return new Identifier(poolId.getNamespace(), "item/" + poolId.getPath());
     }
 
     public static void onSpellAdded(ItemStack itemStack, RegistryEntry<Spell> spellEntry, @Nullable TagKey<Spell> pool) {
@@ -53,18 +65,18 @@ public class ScrollItem extends Item {
         var spell = spellEntry.value();
         var ordinal = Math.max(spell.tier - 1, 0); // minimum 0
         var rarity = Rarity.values().length > ordinal ? Rarity.values()[ordinal] : Rarity.EPIC;
-        itemStack.set(DataComponentTypes.RARITY, rarity);
+        SpellItemData.setRarity(itemStack, rarity);
 
         if (pool != null) {
             // Set custom model override
             var modelId = modelIdForPool(pool.id());
-            itemStack.set(SpellDataComponents.ITEM_MODEL, modelId);
+            SpellItemData.setItemModel(itemStack, modelId);
 
             // Set custom name
             // - Example: "paladins:spell_scroll/paladin" -> "item.paladins.paladin_spell_scroll"
             var key = translationKeyForPool(pool.id());
             if (Language.getInstance().hasTranslation(key)) {
-                itemStack.set(DataComponentTypes.ITEM_NAME, Text.translatable(key));
+                SpellItemData.setItemNameKey(itemStack, key);
             }
         }
     }
@@ -93,7 +105,8 @@ public class ScrollItem extends Item {
         }
     }
 
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType type) {
+    @Override
+    public void appendTooltip(ItemStack stack, @Nullable World world, List<Text> tooltip, TooltipContext context) {
         if (SpellEngineClient.config.showSpellBindingTooltip) {
             tooltip.add(Text
                     .translatable("item.spell_engine.scroll.table_hint")

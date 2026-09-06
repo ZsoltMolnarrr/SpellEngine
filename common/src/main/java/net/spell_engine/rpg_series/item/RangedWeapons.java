@@ -99,6 +99,12 @@ public class RangedWeapons {
 
     // ===== PULL TIME AND VELOCITY CONSTANTS =====
 
+    // RangedWeaponAPI 1.1 (1.20.1) baselines: `RangedConfig.pull_time` is in ticks (20 = vanilla bow),
+    // `velocity` is absolute (0 = weapon-type default, bow 3.0 / crossbow 3.15)
+    private static final int PULL_TIME_BASE_TICKS = 20;
+    private static final float VELOCITY_BASE_BOW = 3.0F;
+    private static final float VELOCITY_BASE_CROSSBOW = 3.15F;
+
     // Pull time in seconds, with 1 sec offset
     private static final float PULL_TIME_SHORT_BOW = -0.2F;
     private static final float PULL_TIME_LONG_BOW = 0.5F;
@@ -148,7 +154,7 @@ public class RangedWeapons {
      * @param repairIngredient Supplier for the repair ingredient
      * @param pullTime         The pull/charge time for the weapon
      * @param velocity         The projectile velocity multiplier
-     * @param factory          The ranged weapon factory (CustomBow::new or CustomCrossbow::new)
+     * @param factory          The ranged weapon factory (BOW_FACTORY or CROSSBOW_FACTORY)
      * @return RangedWeapon.Entry for method chaining
      */
     public static RangedWeapon.Entry create(
@@ -171,16 +177,43 @@ public class RangedWeapons {
             throw new IllegalArgumentException("Tier " + tier + " not available for weapon type: " + weaponType);
         }
 
-        // Create RangedConfig
-        var config = new RangedConfig(damage, pullTime, velocity);
+        // Create RangedConfig (RWA 1.1 shape: pull time in ticks, absolute velocity)
+        var config = rangedConfig(weaponType, damage, pullTime, velocity);
 
         // Create entry (RangedWeapon.Entry handles durability automatically via tier)
-        var id = Identifier.of(namespace, name);
+        var id = new Identifier(namespace, name);
         var entry = new RangedWeapon.Entry(id, tier, factory, config, repairIngredient, weaponType);
         entry.weaponAttributesPreset = WEAPON_ATTRIBUTES.getOrDefault(weaponType, "");
 
         return entry;
     }
+
+    /**
+     * Converts the RPG Series ranged tuning (pull time as seconds offset from 1s, velocity as bonus over the
+     * weapon-type default) to the RangedWeaponAPI 1.1 {@code RangedConfig(int pullTimeTicks, float damage, float velocity)}.
+     */
+    public static RangedConfig rangedConfig(Equipment.WeaponType weaponType, float damage, float pullTimeOffsetSeconds, float velocityBonus) {
+        var pullTimeTicks = Math.round((1F + pullTimeOffsetSeconds) * PULL_TIME_BASE_TICKS);
+        var isCrossbow = weaponType == Equipment.WeaponType.RAPID_CROSSBOW || weaponType == Equipment.WeaponType.HEAVY_CROSSBOW;
+        var velocity = velocityBonus == 0
+                ? 0F
+                : (isCrossbow ? VELOCITY_BASE_CROSSBOW : VELOCITY_BASE_BOW) + velocityBonus;
+        return new RangedConfig(pullTimeTicks, damage, velocity);
+    }
+
+    /** {@link RangedWeapon.RangedFactory} producing a RangedWeaponAPI {@link CustomBow} */
+    public static final RangedWeapon.RangedFactory BOW_FACTORY = (settings, config, repairIngredient) -> {
+        var bow = new CustomBow(settings, repairIngredient);
+        bow.configure(config);
+        return bow;
+    };
+
+    /** {@link RangedWeapon.RangedFactory} producing a RangedWeaponAPI {@link CustomCrossbow} */
+    public static final RangedWeapon.RangedFactory CROSSBOW_FACTORY = (settings, config, repairIngredient) -> {
+        var crossbow = new CustomCrossbow(settings, repairIngredient);
+        crossbow.configure(config);
+        return crossbow;
+    };
 
     // ===== WEAPON-TYPE-SPECIFIC HELPER METHODS =====
 
@@ -195,7 +228,7 @@ public class RangedWeapons {
             Supplier<Ingredient> repairIngredient
     ) {
         return create(namespace, name, Equipment.WeaponType.SHORT_BOW, tier, repairIngredient,
-                PULL_TIME_SHORT_BOW, VELOCITY_SHORT_BOW, CustomBow::new);
+                PULL_TIME_SHORT_BOW, VELOCITY_SHORT_BOW, BOW_FACTORY);
     }
 
     /**
@@ -209,7 +242,7 @@ public class RangedWeapons {
             Supplier<Ingredient> repairIngredient
     ) {
         return create(namespace, name, Equipment.WeaponType.LONG_BOW, tier, repairIngredient,
-                PULL_TIME_LONG_BOW, VELOCITY_LONG_BOW, CustomBow::new);
+                PULL_TIME_LONG_BOW, VELOCITY_LONG_BOW, BOW_FACTORY);
     }
 
     /**
@@ -223,7 +256,7 @@ public class RangedWeapons {
             Supplier<Ingredient> repairIngredient
     ) {
         return create(namespace, name, Equipment.WeaponType.RAPID_CROSSBOW, tier, repairIngredient,
-                PULL_TIME_RAPID_CROSSBOW, VELOCITY_RAPID_CROSSBOW, CustomCrossbow::new);
+                PULL_TIME_RAPID_CROSSBOW, VELOCITY_RAPID_CROSSBOW, CROSSBOW_FACTORY);
     }
 
     /**
@@ -237,6 +270,6 @@ public class RangedWeapons {
             Supplier<Ingredient> repairIngredient
     ) {
         return create(namespace, name, Equipment.WeaponType.HEAVY_CROSSBOW, tier, repairIngredient,
-                PULL_TIME_HEAVY_CROSSBOW, VELOCITY_HEAVY_CROSSBOW, CustomCrossbow::new);
+                PULL_TIME_HEAVY_CROSSBOW, VELOCITY_HEAVY_CROSSBOW, CROSSBOW_FACTORY);
     }
 }

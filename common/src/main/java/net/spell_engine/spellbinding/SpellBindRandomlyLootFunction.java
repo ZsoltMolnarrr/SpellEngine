@@ -1,8 +1,8 @@
 package net.spell_engine.spellbinding;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.condition.LootCondition;
 import net.minecraft.loot.context.LootContext;
@@ -10,13 +10,14 @@ import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.loot.function.ConditionalLootFunction;
 import net.minecraft.loot.function.LootFunctionType;
 import net.minecraft.loot.provider.number.LootNumberProvider;
-import net.minecraft.loot.provider.number.LootNumberProviderTypes;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.item.SpellItemData;
 import net.spell_engine.api.spell.Spell;
-import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
@@ -26,31 +27,20 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
+/// Loot function binding random spells (of a pool / tier) to the item's spell container.
+/// JSON: `{"function": "spell_engine:spell_bind_randomly", "pool": "#<tag id>", "tier": <number provider>, "count": <number provider>}`
 public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
     public static final String NAME = "spell_bind_randomly";
-    public static final Identifier ID = Identifier.of(SpellEngineMod.ID, NAME);
+    public static final Identifier ID = new Identifier(SpellEngineMod.ID, NAME);
+    public static final LootFunctionType TYPE = new LootFunctionType(new Serializer());
 
-    public static final MapCodec<SpellBindRandomlyLootFunction> CODEC = RecordCodecBuilder.mapCodec(
-            instance -> addConditionsField(instance)
-                    .<String, LootNumberProvider, LootNumberProvider>and(
-                            instance.group(
-                                    Codec.STRING.fieldOf("pool").orElse(null).forGetter(function -> function.pool),
-                                    LootNumberProviderTypes.CODEC.fieldOf("tier").forGetter(function -> function.tier),
-                                    LootNumberProviderTypes.CODEC.fieldOf("count").forGetter(function -> function.count)
-                            )
-                    )
-                    .apply(instance, SpellBindRandomlyLootFunction::new)
-    );
-    public static final LootFunctionType<SpellBindRandomlyLootFunction> TYPE = new LootFunctionType<SpellBindRandomlyLootFunction>(CODEC);
-
-    private final LootNumberProvider tier;
+    @Nullable private final LootNumberProvider tier;
     @Nullable private final String pool;
     @Nullable private final LootNumberProvider count;
 
-    private SpellBindRandomlyLootFunction(List<LootCondition> conditions, String pool, LootNumberProvider tier, LootNumberProvider count) {
+    private SpellBindRandomlyLootFunction(LootCondition[] conditions, @Nullable String pool, @Nullable LootNumberProvider tier, @Nullable LootNumberProvider count) {
         super(conditions);
         this.pool = pool;
         this.tier = tier;
@@ -58,7 +48,7 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
     }
 
     @Override
-    public LootFunctionType<SpellBindRandomlyLootFunction> getType() {
+    public LootFunctionType getType() {
         return TYPE;
     }
 
@@ -74,9 +64,9 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
         }
         Identifier id;
         if (this.pool.startsWith("#")) {
-            id = Identifier.of(this.pool.substring(1));
+            id = new Identifier(this.pool.substring(1));
         } else {
-            id = Identifier.of(this.pool);
+            id = new Identifier(this.pool);
         }
         return TagKey.of(SpellRegistry.KEY, id);
     }
@@ -87,7 +77,7 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
         final var selectedTier = this.tier != null ? this.tier.nextInt(context) : -1;
         @Nullable var existingContainer = SpellContainerHelper.containerFromItemStack(stack);
         final List<Identifier> alreadyPresentSpells = existingContainer != null
-                ? existingContainer.spell_ids().stream().map(Identifier::of).toList()
+                ? existingContainer.spell_ids().stream().map(Identifier::new).toList()
                 : List.of();
         var spells = SpellRegistry.stream(context.getWorld())
                 .filter(entry -> {
@@ -129,10 +119,11 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
             var sortedSpellIds = SpellContainerHelper.sortedSpells(context.getWorld(), newContainer.spell_ids());
             newContainer = newContainer.copyWith(sortedSpellIds);
 
-            stack.set(SpellDataComponents.SPELL_CONTAINER, newContainer);
+            SpellItemData.setSpellContainer(stack, newContainer);
 
             if (stack.getItem() == SpellEngineItems.SCROLL.get()) {
-                ScrollItem.onSpellAdded(stack, selectedSpells.getFirst(), ScrollItem.resolveSpellPool(context.getWorld(), selectedSpells.getFirst()));
+                var firstSpell = selectedSpells.get(0);
+                ScrollItem.onSpellAdded(stack, firstSpell, ScrollItem.resolveSpellPool(context.getWorld(), firstSpell));
             }
         } else {
             if (stack.getItem() == SpellEngineItems.SCROLL.get()) {
@@ -143,12 +134,31 @@ public class SpellBindRandomlyLootFunction extends ConditionalLootFunction {
         return stack;
     }
 
-//    public static ConditionalLootFunction.Builder<?> builder(String pool, LootNumberProvider tier) {
-//        return builder(conditions -> new SpellBindRandomlyLootFunction(conditions, tier, null));
-//    }
-
     public static ConditionalLootFunction.Builder<?> builder(String pool, LootNumberProvider tier, LootNumberProvider count) {
         return builder(conditions -> new SpellBindRandomlyLootFunction(conditions, pool, tier, count));
     }
-}
 
+    public static class Serializer extends ConditionalLootFunction.Serializer<SpellBindRandomlyLootFunction> {
+        @Override
+        public void toJson(JsonObject json, SpellBindRandomlyLootFunction function, JsonSerializationContext context) {
+            super.toJson(json, function, context);
+            if (function.pool != null) {
+                json.addProperty("pool", function.pool);
+            }
+            if (function.tier != null) {
+                json.add("tier", context.serialize(function.tier));
+            }
+            if (function.count != null) {
+                json.add("count", context.serialize(function.count));
+            }
+        }
+
+        @Override
+        public SpellBindRandomlyLootFunction fromJson(JsonObject json, JsonDeserializationContext context, LootCondition[] conditions) {
+            var pool = JsonHelper.getString(json, "pool", null);
+            var tier = json.has("tier") ? JsonHelper.deserialize(json, "tier", context, LootNumberProvider.class) : null;
+            var count = json.has("count") ? JsonHelper.deserialize(json, "count", context, LootNumberProvider.class) : null;
+            return new SpellBindRandomlyLootFunction(conditions, pool, tier, count);
+        }
+    }
+}

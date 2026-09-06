@@ -43,7 +43,8 @@
     "entity.PlayerSpellContainerMixin",
     "evasion.LivingEntityEvasionMixin",
     "evasion.ProjectileEvasionMixin",
-    "item.ArmorMaterialLayerAccessor",
+    "item.ItemDefaultsMixin",
+    "item.ItemStackAttributeModifiersMixin",
     "item.GrindstoneScreenHandlerMixin",
     "item.GrindstoneSlotInputMixin",
     "item.GrindstoneSlotOutputMixin",
@@ -53,7 +54,6 @@
     "loot.ItemEntryAccessor",
     "loot.LeafEntryAccessor",
     "loot.LootTableBuilderAccessor",
-    "registry.DataComponentTypesMixin",
     "registry.EntityAttributesMixin",
     "registry.LivingEntityAttributesMixin",
     "registry.RegistryLoaderMixin"

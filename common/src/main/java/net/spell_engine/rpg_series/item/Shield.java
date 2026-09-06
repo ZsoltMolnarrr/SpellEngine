@@ -1,7 +1,6 @@
 package net.spell_engine.rpg_series.item;
 
 import net.spell_engine.PlatformEvents;
-import net.minecraft.component.ComponentChanges;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.item.Item;
@@ -16,9 +15,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.Pair;
 import net.minecraft.util.Rarity;
 import net.minecraft.util.Util;
+import net.spell_engine.api.item.SpellItemData;
 import net.spell_engine.rpg_series.config.AttributeModifier;
 import net.spell_engine.rpg_series.config.ShieldConfig;
-import net.spell_engine.api.spell.SpellDataComponents;
 import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainer;
 import org.jetbrains.annotations.Nullable;
@@ -37,12 +36,13 @@ public class Shield {
     /**
      * Generic shield factory interface that doesn't depend on fabric-extras.
      * Implementations will provide the actual shield item creation logic (e.g., CustomShieldItem::new).
+     * Matches the 1.20.1 ShieldAPI `CustomShieldItem(SoundEvent, Supplier<Ingredient>, List<Pair<EntityAttribute, EntityAttributeModifier>>, Settings)` constructor.
      */
     public interface ShieldFactory {
         Item create(
-                RegistryEntry<SoundEvent> equipSound,
+                @Nullable SoundEvent equipSound,
                 Supplier<Ingredient> repairIngredient,
-                List<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> attributes,
+                List<Pair<EntityAttribute, EntityAttributeModifier>> attributes,
                 Item.Settings settings
         );
     }
@@ -149,13 +149,13 @@ public class Shield {
                 ShieldFactory factory
         ) {
             // Convert AttributeModifier list to format expected by shield factory
-            ArrayList<Pair<RegistryEntry<EntityAttribute>, EntityAttributeModifier>> shieldAttributes = new ArrayList<>();
+            ArrayList<Pair<EntityAttribute, EntityAttributeModifier>> shieldAttributes = new ArrayList<>();
             for (var modifier : Weapon.attributesFrom(attributes).modifiers()) {
-                shieldAttributes.add(new Pair<>(modifier.attribute(), modifier.modifier()));
+                shieldAttributes.add(new Pair<>(modifier.attribute().value(), modifier.modifier()));
             }
 
             this.registeredItem = factory.create(
-                    equipSound,
+                    equipSound != null ? equipSound.value() : null,
                     repairIngredientSupplier,
                     shieldAttributes,
                     settings.maxDamage(durability())
@@ -194,18 +194,8 @@ public class Shield {
         }
 
         public Entry withSpellChoices(String pool) {
-            this.spellContainer = this.spellContainer.withBindingPool(Identifier.of(pool));
+            this.spellContainer = this.spellContainer.withBindingPool(new Identifier(pool));
             this.spellChoice = SpellChoice.of(pool);
-            return this;
-        }
-
-        /// Registers component changes to apply to this item when `spellId` is chosen from the pool.
-        /// Lets the chosen spell drive the item's appearance (`custom_model_data`, `custom_name`, ...).
-        public Entry applyOnChoice(String spellId, ComponentChanges changes) {
-            if (this.spellChoice == null) {
-                this.spellChoice = SpellChoice.EMPTY;
-            }
-            this.spellChoice = this.spellChoice.withApplyOnChoice(Identifier.of(spellId), changes);
             return this;
         }
 
@@ -256,16 +246,14 @@ public class Shield {
                 settings.rarity(entry.rarity);
             }
 
-            // Add spell support
-            if (entry.spellChoice != null) {
-                settings.component(SpellDataComponents.SPELL_CHOICE, entry.spellChoice);
-            }
-            if (entry.spellContainer != null) {
-                settings.component(SpellDataComponents.SPELL_CONTAINER, entry.spellContainer);
-            }
-
             // Create and register item - factory passed here
             var shield = entry.create(settings, config.attributes, factory);
+            // Add spell support (item-level defaults, the 1.20.1 stand-in for `Item.Settings#component`)
+            if (entry.spellChoice != null || entry.spellContainer != null) {
+                SpellItemData.defaults(shield)
+                        .spellChoice(entry.spellChoice)
+                        .spellContainer(entry.spellContainer);
+            }
             Registry.register(Registries.ITEM, entry.id, shield);
             entry.registeredItem = shield;
             shields.add(shield);

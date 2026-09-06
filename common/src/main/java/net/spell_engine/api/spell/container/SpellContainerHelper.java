@@ -1,9 +1,12 @@
 package net.spell_engine.api.spell.container;
 
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import net.spell_engine.api.item.SpellItemData;
 import net.spell_engine.api.spell.*;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.container.SpellAssignments;
@@ -19,17 +22,17 @@ public class SpellContainerHelper {
         if (itemStack.isEmpty()) {
             return null;
         }
-        var component = itemStack.get(SpellDataComponents.SPELL_CONTAINER);
-        if (component != null) {
-            return component;
+        var stored = SpellItemData.getSpellContainer(itemStack);
+        if (stored != null) {
+            return stored;
         }
-        var id = itemStack.getItem().getRegistryEntry().getKey().get().getValue();
+        var id = Registries.ITEM.getId(itemStack.getItem());
         return SpellAssignments.containerForItem(id);
     }
 
     public static Identifier getPoolId(SpellContainer container) {
         if (container != null && container.pool() != null) {
-            return Identifier.of(container.pool());
+            return new Identifier(container.pool());
         }
         return null;
     }
@@ -43,8 +46,8 @@ public class SpellContainerHelper {
     public static List<String> sortedSpells(World world, List<String> spellIds) {
         HashMap<Identifier, Spell> spells = new HashMap<>();
         for (var idString : spellIds) {
-            var id = Identifier.of(idString);
-            var spellEntry = SpellRegistry.from(world).getEntry(id).orElse(null);
+            var id = new Identifier(idString);
+            var spellEntry = SpellRegistry.from(world).getEntry(RegistryKey.of(SpellRegistry.KEY, id)).orElse(null);
             if (spellEntry != null) {
                 spells.put(id, spellEntry.value());
             }
@@ -68,7 +71,7 @@ public class SpellContainerHelper {
             return;
         }
         var modifiedContainer = addSpell(world, spellId, container);
-        itemStack.set(SpellDataComponents.SPELL_CONTAINER, modifiedContainer);
+        SpellItemData.setSpellContainer(itemStack, modifiedContainer);
     }
 
     public static SpellContainer removeSpell(World world, Identifier spellId, SpellContainer container) {
@@ -84,7 +87,7 @@ public class SpellContainerHelper {
             return;
         }
         var modifiedContainer = removeSpell(world, spellId, container);
-        itemStack.set(SpellDataComponents.SPELL_CONTAINER, modifiedContainer);
+        SpellItemData.setSpellContainer(itemStack, modifiedContainer);
     }
 
     // Sorting
