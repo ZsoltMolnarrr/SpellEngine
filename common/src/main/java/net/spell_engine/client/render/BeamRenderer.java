@@ -164,7 +164,7 @@ public class BeamRenderer extends RenderLayer {
 
         matrixStack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(absoluteTime * 2.25F - 45.0F));
 
-        var texture = Identifier.of(beam.texture_id);
+        var texture = new Identifier(beam.texture_id);
         var outerColor = Color.IntFormat.fromLongRGBA(beam.color_rgba);
         var innerColor = Color.IntFormat.fromLongRGBA(beam.inner_color_rgba);
 
@@ -248,11 +248,11 @@ public class BeamRenderer extends RenderLayer {
      * @param u the left-most coordinate of the texture region
      */
     private static void renderBeamVertex(MatrixStack.Entry matrix, VertexConsumer vertices, int red, int green, int blue, int alpha, float y, float x, float z, float u, float v) {
-        vertices.vertex(matrix, x, y, z)
+        vertices.vertex(matrix.getPositionMatrix(), x, y, z)
                 .color(red, green, blue, alpha)
                 .texture(u, v)
                 .overlay(OverlayTexture.DEFAULT_UV)
                 .light(LightmapTextureManager.MAX_LIGHT_COORDINATE)
-                .normal(matrix, 0.0F, 1.0F, 0.0F);
+                .normal(matrix.getNormalMatrix(), 0.0F, 1.0F, 0.0F);
     }
 }

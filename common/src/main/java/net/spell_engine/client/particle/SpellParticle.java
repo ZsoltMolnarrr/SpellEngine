@@ -96,7 +96,7 @@ public class SpellParticle extends SpriteBillboardParticle {
             case ASCEND -> {
                 this.velocityMultiplier = 0.96F;
                 this.gravityStrength = -0.1F;
-                this.ascending = true;
+                this.field_28787 = true; // Yarn 1.20.1+build.1 name of `Particle.ascending` (same semantics)
                 this.velocityX = velocityX * (velocityX == 0 && velocityZ == 0 ? 0.1F : 1F)
                         + (this.random.nextFloat() - this.random.nextFloat()) * 0.005F;
                 this.velocityY = velocityY * 0.2F + 0.02F;
@@ -192,9 +192,8 @@ public class SpellParticle extends SpriteBillboardParticle {
         float eased = scaleEasing != null
                 ? MathHelper.lerp(Easing.apply(scaleEasing, progress), 1F, scaleMultiplier)
                 : 1F;
-        float entityScale = attachment == ParticleGroup.Attachment.POSITION_SCALED
-                && followEntity instanceof LivingEntity livingEntity
-                ? livingEntity.getScale() : 1F;
+        // 1.20.1 has no `LivingEntity.getScale()` (no scale attribute); entities render at 1x.
+        float entityScale = 1F;
         this.scale = spawnScale * eased * entityScale;
         updateSkipRender();
     }
@@ -283,49 +282,42 @@ public class SpellParticle extends SpriteBillboardParticle {
     }
 
     @Override
-    public int getBrightness(float tint) {
+    protected int getBrightness(float tint) {
         return glow ? 255 : super.getBrightness(tint);
     }
 
+    /// Orientation for non-camera-facing quads (1.20.1 has no `BillboardParticle.Rotator`, so the
+    /// quaternion is built here and the quad is emitted by hand in [#buildGeometry]).
+    ///
     /// -90 and not +90: particle sheets render with backface culling, and vanilla's
     /// corner winding rotated by +90 would leave the quad facing down — invisible
     /// from above. (V1 `SpellAreaParticle` used +90 with mirrored corner winding,
     /// which is the same visible face.)
-    private static final Rotator GROUND_ROTATOR = (quaternion, camera, tickDelta) ->
-            quaternion.rotationX((float) Math.toRadians(-90));
-
-    private final Rotator velocityRotator = (quaternion, camera, tickDelta) -> {
-        var direction = new Vector3f((float) this.velocityX, (float) this.velocityY, (float) this.velocityZ);
-        if (direction.lengthSquared() < 1.0E-6F) {
-            quaternion.set(camera.getRotation());
-        } else {
-            direction.normalize();
-            quaternion.rotationTo(0F, 1F, 0F, direction.x, direction.y, direction.z);
+    private void setRotation(Quaternionf quaternion, Camera camera) {
+        switch (facing) {
+            case CAMERA -> quaternion.set(camera.getRotation());
+            case UPRIGHT -> {
+                // Yaw only (vanilla's "Y_AND_W_ONLY" rotator): keep the quad standing, turn it to the camera.
+                var rotation = camera.getRotation();
+                quaternion.set(0F, rotation.y, 0F, rotation.w).normalize();
+            }
+            case GROUND -> quaternion.rotationX((float) Math.toRadians(-90));
+            case VELOCITY -> {
+                var direction = new Vector3f((float) this.velocityX, (float) this.velocityY, (float) this.velocityZ);
+                if (direction.lengthSquared() < 1.0E-6F) {
+                    quaternion.set(camera.getRotation());
+                } else {
+                    direction.normalize();
+                    quaternion.rotationTo(0F, 1F, 0F, direction.x, direction.y, direction.z);
+                }
+            }
         }
-    };
-
-    @Override
-    public Rotator getRotator() {
-        return switch (facing) {
-            case CAMERA -> Rotator.ALL_AXIS;
-            case UPRIGHT -> Rotator.Y_AND_W_ONLY;
-            case GROUND -> GROUND_ROTATOR;
-            case VELOCITY -> velocityRotator;
-        };
     }
 
     /// Camera-facing particles take vanilla's [SpriteBillboardParticle#buildGeometry], which
-    /// Sodium's `SingleQuadParticleMixin` accelerates. Every other orientation MUST be driven
-    /// through here instead: Sodium cancels vanilla `buildGeometry` at its head and rebuilds a
-    /// pure camera billboard from the camera's left/up vectors, ignoring [#getRotator] entirely —
-    /// so an area decal that relies on the rotator silently reverts to facing the camera.
-    ///
-    /// The fix is to resolve the rotator ourselves and hand the finished quaternion to the
-    /// `Camera`-taking quad method. Sodium *does* intercept that one and honours the passed
-    /// rotation (it derives left/up from the quaternion), and vanilla routes it straight into
-    /// [#method_60374] — so the orientation survives on both paths. Mirrors vanilla
-    /// `buildGeometry` exactly, only with the [#getRotator] call moved out of the method Sodium
-    /// overwrites and into one it does not.
+    /// Sodium accelerates. Every other orientation is emitted here: 1.20.1 vanilla `buildGeometry`
+    /// always uses the camera rotation, so the oriented quad is built by hand — a copy of the
+    /// vanilla routine with the quaternion resolved by [#setRotation] instead of the camera.
     @Override
     public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
         if (skipRender) {
@@ -336,11 +328,15 @@ public class SpellParticle extends SpriteBillboardParticle {
             return;
         }
         var quaternion = new Quaternionf();
-        getRotator().setRotation(quaternion, camera, tickDelta);
+        setRotation(quaternion, camera);
         if (this.angle != 0F) {
             quaternion.rotateZ(MathHelper.lerp(tickDelta, this.prevAngle, this.angle));
         }
-        method_60373(vertexConsumer, camera, quaternion, tickDelta);
+        var cameraPos = camera.getPos();
+        float x = (float) (MathHelper.lerp(tickDelta, this.prevPosX, this.x) - cameraPos.getX());
+        float y = (float) (MathHelper.lerp(tickDelta, this.prevPosY, this.y) - cameraPos.getY());
+        float z = (float) (MathHelper.lerp(tickDelta, this.prevPosZ, this.z) - cameraPos.getZ());
+        renderQuad(vertexConsumer, quaternion, x, y, z, tickDelta);
     }
 
     /// Applies the entry's pivot: shifts the quad vertically in units of its size
@@ -352,14 +348,36 @@ public class SpellParticle extends SpriteBillboardParticle {
     /// flipped 180° about an in-plane axis, presents the opposite face. The two are
     /// coplanar but never both drawn from one side (whichever faces away is culled), so
     /// there is no z-fighting; the underside simply shows the texture mirrored.
-    @Override
-    protected void method_60374(VertexConsumer vertexConsumer, Quaternionf quaternionf, float x, float y, float z, float tickDelta) {
+    private void renderQuad(VertexConsumer vertexConsumer, Quaternionf quaternion, float x, float y, float z, float tickDelta) {
         float shiftedY = y + pivot * this.getSize(tickDelta);
-        super.method_60374(vertexConsumer, quaternionf, x, shiftedY, z, tickDelta);
+        emitQuad(vertexConsumer, quaternion, x, shiftedY, z, tickDelta);
         if (facing == ParticleGroup.Facing.GROUND) {
-            var backFace = new Quaternionf(quaternionf).rotateX((float) Math.PI);
-            super.method_60374(vertexConsumer, backFace, x, shiftedY, z, tickDelta);
+            var backFace = new Quaternionf(quaternion).rotateX((float) Math.PI);
+            emitQuad(vertexConsumer, backFace, x, shiftedY, z, tickDelta);
         }
+    }
+
+    /// Vanilla 1.20.1 `BillboardParticle.buildGeometry` corner emission, parameterized by rotation and center.
+    private void emitQuad(VertexConsumer vertexConsumer, Quaternionf quaternion, float x, float y, float z, float tickDelta) {
+        Vector3f[] corners = new Vector3f[]{
+                new Vector3f(-1.0F, -1.0F, 0.0F), new Vector3f(-1.0F, 1.0F, 0.0F),
+                new Vector3f(1.0F, 1.0F, 0.0F), new Vector3f(1.0F, -1.0F, 0.0F)
+        };
+        float size = this.getSize(tickDelta);
+        for (Vector3f corner : corners) {
+            corner.rotate(quaternion);
+            corner.mul(size);
+            corner.add(x, y, z);
+        }
+        float minU = this.getMinU();
+        float maxU = this.getMaxU();
+        float minV = this.getMinV();
+        float maxV = this.getMaxV();
+        int light = this.getBrightness(tickDelta);
+        vertexConsumer.vertex(corners[0].x(), corners[0].y(), corners[0].z()).texture(maxU, maxV).color(this.red, this.green, this.blue, this.alpha).light(light).next();
+        vertexConsumer.vertex(corners[1].x(), corners[1].y(), corners[1].z()).texture(maxU, minV).color(this.red, this.green, this.blue, this.alpha).light(light).next();
+        vertexConsumer.vertex(corners[2].x(), corners[2].y(), corners[2].z()).texture(minU, minV).color(this.red, this.green, this.blue, this.alpha).light(light).next();
+        vertexConsumer.vertex(corners[3].x(), corners[3].y(), corners[3].z()).texture(minU, maxV).color(this.red, this.green, this.blue, this.alpha).light(light).next();
     }
 
     // MARK: Factory

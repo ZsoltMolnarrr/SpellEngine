@@ -7,9 +7,11 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.gui.screen.ingame.HandledScreens;
 import net.spell_engine.client.SpellEngineClient;
+import net.spell_engine.client.gui.HudRenderHelper;
 import net.spell_engine.client.input.Keybindings;
 import net.spell_engine.client.render.BeamRenderer;
 import net.spell_engine.client.render.CustomModelRegistry;
@@ -43,10 +45,14 @@ public final class FabricClientMod implements ClientModInitializer {
             }
         });
         ClientLifecycleEvents.CLIENT_STARTED.register(client -> SpellEngineClient.onClientStarted());
-        ItemTooltipCallback.EVENT.register((stack, tooltipContext, tooltipType, lines) ->
-                SpellEngineClient.addTooltipLines(stack, tooltipType, lines));
+        // 1.20.1 / Fabric API 0.92: 3-arg tooltip callback (TooltipContext carries `isAdvanced`)
+        ItemTooltipCallback.EVENT.register((stack, tooltipContext, lines) ->
+                SpellEngineClient.addTooltipLines(stack, tooltipContext, lines));
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context ->
-                BeamRenderer.renderAfterTranslucent(context.matrixStack(), context.camera(), context.tickCounter().getTickDelta(true)));
+                BeamRenderer.renderAfterTranslucent(context.matrixStack(), context.camera(), context.tickDelta()));
+        // 1.20.1: the HUD is drawn from the Fabric HUD event (fires after `InGameHud.render`), as on the
+        // legacy 1.20.1 branch — there is no `renderMainHud` to mix into.
+        HudRenderCallback.EVENT.register((context, tickDelta) -> HudRenderHelper.render(context, tickDelta));
 
         registerKeyBindings();
         registerModels();

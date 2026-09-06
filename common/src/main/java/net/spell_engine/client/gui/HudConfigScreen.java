@@ -104,10 +104,8 @@ public class HudConfigScreen extends Screen {
         var spacing = 8;
 
         var checked = partData(part).visible;
-        var checkBox = CheckboxWidget.builder(Text.of(""), textRenderer)
-                .pos(x, y)
-                .checked(checked)
-                .build();
+        // 1.20.1: no CheckboxWidget.Builder; the vanilla checkbox is buttonSize x buttonSize.
+        var checkBox = new CheckboxWidget(x, y, buttonSize, buttonSize, Text.of(""), checked);
         buttons.add(checkBox);
         checkBoxes.put(part, checkBox);
 
@@ -237,7 +235,7 @@ public class HudConfigScreen extends Screen {
     }
 
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
+        renderBackground(context);
         super.render(context, mouseX, mouseY, delta);
         HudRenderHelper.render(context, delta, true);
         if (partsVisible()) {

@@ -11,7 +11,7 @@ import net.spell_engine.SpellEngineMod;
 
 public class CustomButton extends ButtonWidget {
 
-    private static final Identifier BUTTONS_TEXTURE = Identifier.of(SpellEngineMod.ID, "textures/gui/buttons.png");
+    private static final Identifier BUTTONS_TEXTURE = new Identifier(SpellEngineMod.ID, "textures/gui/buttons.png");
     private int u;
     private int v;
     private int stateOffsetY;
@@ -69,7 +69,7 @@ public class CustomButton extends ButtonWidget {
     }
 
     @Override
-    protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+    protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
         MinecraftClient minecraftClient = MinecraftClient.getInstance();
         context.setShaderColor(1.0f, 1.0f, 1.0f, this.alpha);
         RenderSystem.enableBlend();

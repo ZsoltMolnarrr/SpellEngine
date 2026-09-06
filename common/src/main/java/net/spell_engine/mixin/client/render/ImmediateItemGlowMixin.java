@@ -3,7 +3,7 @@ package net.spell_engine.mixin.client.render;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.BufferAllocator;
+import net.minecraft.client.render.BufferBuilder;
 import net.spell_engine.api.render.CustomLayers;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.SequencedMap;
+import java.util.Map;
 
 /**
  * Item glow layers depth test for `EQUAL`, so they may only be drawn once the item itself has written
@@ -20,8 +20,9 @@ import java.util.SequencedMap;
  * flushes *before* the ones in `layerBuffers` - the glow would be drawn against a depth buffer the item
  * has not touched yet, and `EQUAL` would reject every fragment of it.
  * <p>
- * Giving them a buffer here appends them to `layerBuffers`, which is ordered, so they are drawn last:
- * after the item, and after the vanilla glint.
+ * Giving them a buffer here appends them to `layerBuffers`, which is ordered (the entity provider's map is an
+ * insertion-ordered `Object2ObjectLinkedOpenHashMap` on 1.20.1), so they are drawn last: after the item, and
+ * after the vanilla glint.
  * <p>
  * This is the vanilla path only. Iris substitutes a buffer source that overrides `getBuffer` outright,
  * so none of this runs under a shader pack, and the ordering has to be spelled out for it in its own
@@ -31,7 +32,7 @@ import java.util.SequencedMap;
 public class ImmediateItemGlowMixin {
     @Shadow
     @Final
-    protected SequencedMap<RenderLayer, BufferAllocator> layerBuffers;
+    protected Map<RenderLayer, BufferBuilder> layerBuffers;
 
     @Inject(method = "getBuffer", at = @At("HEAD"))
     private void getBuffer_HEAD_SpellEngine_bufferItemGlowLayer(RenderLayer renderLayer, CallbackInfoReturnable<VertexConsumer> cir) {
@@ -43,6 +44,6 @@ public class ImmediateItemGlowMixin {
                 || !CustomLayers.isItemGlowLayer(renderLayer)) {
             return;
         }
-        layerBuffers.put(renderLayer, new BufferAllocator(renderLayer.getExpectedBufferSize()));
+        layerBuffers.put(renderLayer, new BufferBuilder(renderLayer.getExpectedBufferSize()));
     }
 }

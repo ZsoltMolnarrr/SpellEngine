@@ -32,10 +32,10 @@ import java.util.List;
 import java.util.Map;
 
 public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler> {
-    private static final Identifier Pl = Identifier.of(SpellEngineMod.ID, "textures/gui/" + SpellBinding.name + ".png");
-    private static final Identifier PLACEHOLDER_SPELL_BOOK = Identifier.of(SpellEngineMod.ID, "item/placeholder/spell_book");
-    private static final Identifier PLACEHOLDER_LAPIS = Identifier.of(SpellEngineMod.ID, "item/placeholder/lapis");
-    private static final Identifier PLACEHOLDER_SCROLL = Identifier.of(SpellEngineMod.ID, "item/placeholder/scroll");
+    private static final Identifier Pl = new Identifier(SpellEngineMod.ID, "textures/gui/" + SpellBinding.name + ".png");
+    private static final Identifier PLACEHOLDER_SPELL_BOOK = new Identifier(SpellEngineMod.ID, "item/placeholder/spell_book");
+    private static final Identifier PLACEHOLDER_LAPIS = new Identifier(SpellEngineMod.ID, "item/placeholder/lapis");
+    private static final Identifier PLACEHOLDER_SCROLL = new Identifier(SpellEngineMod.ID, "item/placeholder/scroll");
     private final CyclingSlotIcon mainSlotIcon = new CyclingSlotIcon(0);
     private final CyclingSlotIcon consumableSlotIcon = new CyclingSlotIcon(1);
 
@@ -145,7 +145,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
         }
     }
 
-    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double verticalAmount) {
         if (!isPagingEnabled()) {
            return false;
         } else {
@@ -163,7 +163,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         // delta = this.client.getTickDelta();
-        this.renderBackground(context, mouseX, mouseY, delta);
+        this.renderBackground(context);
         super.render(context, mouseX, mouseY, delta);
         this.drawMouseoverTooltip(context, mouseX, mouseY);
         var player = MinecraftClient.getInstance().player;
@@ -370,7 +370,7 @@ public class SpellBindingScreen extends HandledScreen<SpellBindingScreenHandler>
     }
 
 
-    private static final Identifier RUNES_FONT_ID = Identifier.of("minecraft", "alt");
+    private static final Identifier RUNES_FONT_ID = new Identifier("minecraft", "alt");
     private static final Style RUNE_STYLE = Style.EMPTY.withFont(RUNES_FONT_ID);
 
     // Helper record for grouping spells

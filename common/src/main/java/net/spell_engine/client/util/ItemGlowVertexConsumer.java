@@ -14,8 +14,8 @@ import org.joml.Vector3f;
  * a still sliver of the streaks. The scroll is affine though, and interpolating transformed UVs is the
  * same as transforming interpolated ones, so applying it per vertex here lands the identical shimmer.
  * <p>
- * Deliberately does not override the packed `vertex` overload: its default implementation fans out into
- * the calls below, which is what gives the overrides a chance to run at all.
+ * Deliberately does not override the packed `vertex` overload (nor the `quad` helpers): their default
+ * implementations fan out into the calls below, which is what gives the overrides a chance to run at all.
  */
 public class ItemGlowVertexConsumer implements VertexConsumer {
     private final VertexConsumer delegate;
@@ -47,9 +47,26 @@ public class ItemGlowVertexConsumer implements VertexConsumer {
     }
 
     @Override
-    public VertexConsumer vertex(float x, float y, float z) {
+    public VertexConsumer vertex(double x, double y, double z) {
         delegate.vertex(x, y, z);
         return this;
+    }
+
+    @Override
+    public void next() {
+        delegate.next();
+    }
+
+    /// Vanilla never fixes the color on the consumers `getItemGlintConsumer` hands out, but the contract
+    /// has to be honoured: a fixed color is the caller's tint, and the glow overrides tints anyway.
+    @Override
+    public void fixedColor(int red, int green, int blue, int alpha) {
+        delegate.fixedColor(this.red, this.green, this.blue, this.alpha);
+    }
+
+    @Override
+    public void unfixColor() {
+        delegate.unfixColor();
     }
 
     @Override

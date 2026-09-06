@@ -10,8 +10,6 @@ import net.minecraft.screen.*;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Identifier;
-import net.spell_engine.api.spell.SpellDataComponents;
-import net.spell_engine.api.spell.container.SpellChoice;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.fx.SpellEngineSounds;
@@ -85,11 +83,11 @@ public class SpellChoiceScreenHandler extends ScreenHandler {
 
         var itemStack = this.getChoiceItemStack();
 
-        if (itemStack.isEmpty() || !itemStack.contains(SpellDataComponents.SPELL_CHOICE)) {
+        if (itemStack.isEmpty()) {
             return;
         }
 
-        // Get spell choice data
+        // Get spell choice data (1.20.1: read through the NBT-backed `SpellChoices` funnel, no component check)
         var spellChoice = SpellChoices.from(itemStack);
         if (spellChoice == null || spellChoice.pool() == null || spellChoice.pool().isEmpty()) {
             return;
@@ -97,7 +95,7 @@ public class SpellChoiceScreenHandler extends ScreenHandler {
 
         // Resolve spells from pool on server
         this.context.run((world, pos) -> {
-            var poolId = Identifier.of(spellChoice.pool());
+            var poolId = new Identifier(spellChoice.pool());
             var spells = SpellRegistry.entries(world, poolId);
             var registry = SpellRegistry.from(world);
 
@@ -149,18 +147,11 @@ public class SpellChoiceScreenHandler extends ScreenHandler {
                 // Bind spell to the item's spell container
                 SpellContainerHelper.addSpell(world, selectedSpellId, itemStack);
 
-                // Apply the chosen spell's component changes (appearance, name, ...) to the item.
-                // Read before clearing the component below.
-                var spellChoice = SpellChoices.from(itemStack);
-                if (spellChoice != null) {
-                    var changes = spellChoice.applyOnChoiceFor(selectedSpellId);
-                    if (!changes.isEmpty()) {
-                        itemStack.applyChanges(changes);
-                    }
-                }
+                // 1.20.1: `apply_on_choice` component patches are dropped from this version entirely
+                // (no data components); nothing to apply here.
 
-                // Remove the spell choice component
-                itemStack.set(SpellDataComponents.SPELL_CHOICE, SpellChoice.EMPTY);
+                // Remove the spell choice data (1.20.1: NBT-backed, cleared through the `SpellChoices` funnel)
+                SpellChoices.clear(itemStack);
 
                 // Mark inventory dirty to trigger updates
                 this.input.markDirty();

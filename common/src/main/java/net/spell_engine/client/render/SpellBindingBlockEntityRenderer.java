@@ -19,8 +19,8 @@ import net.spell_engine.spellbinding.SpellBindingBlockEntity;
 // Copied from EnchantingTableBlockEntityRenderer
 public class SpellBindingBlockEntityRenderer implements BlockEntityRenderer<SpellBindingBlockEntity> {
 
-    public static final SpriteIdentifier BOOK_TEXTURE = new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, Identifier.of(SpellEngineMod.ID, "entity/spell_binding_book"));
-//    public static final SpriteIdentifier BOOK_TEXTURE = new SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, Identifier.of("entity/enchanting_table_book"));
+    public static final SpriteIdentifier BOOK_TEXTURE = new SpriteIdentifier(PlayerScreenHandler.BLOCK_ATLAS_TEXTURE, new Identifier(SpellEngineMod.ID, "entity/spell_binding_book"));
+//    public static final SpriteIdentifier BOOK_TEXTURE = new SpriteIdentifier(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE, new Identifier("entity/enchanting_table_book"));
 
     private final BookModel book;
 
@@ -51,7 +51,7 @@ public class SpellBindingBlockEntityRenderer implements BlockEntityRenderer<Spel
         float o = MathHelper.lerp(f, blockEntity.pageTurningSpeed, blockEntity.nextPageTurningSpeed);
         this.book.setPageAngles(g, MathHelper.clamp(m, 0.0F, 1.0F), MathHelper.clamp(n, 0.0F, 1.0F), o);
         VertexConsumer vertexConsumer = BOOK_TEXTURE.getVertexConsumer(vertexConsumerProvider, RenderLayer::getEntitySolid);
-        this.book.renderBook(matrixStack, vertexConsumer, i, j, -1);
+        this.book.renderBook(matrixStack, vertexConsumer, i, j, 1F, 1F, 1F, 1F);
         matrixStack.pop();
     }
 }

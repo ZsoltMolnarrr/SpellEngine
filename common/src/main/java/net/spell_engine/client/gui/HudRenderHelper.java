@@ -166,7 +166,7 @@ public class HudRenderHelper {
                 var caster = (SpellCaster.Client)player;
                 var targets = caster.getCurrentTargets();
                 var text = targets.size() == 1
-                        ? targets.getFirst().getName().getString()
+                        ? targets.get(0).getName().getString()
                         : "";
                 return new ViewModel(text);
             }
@@ -180,12 +180,12 @@ public class HudRenderHelper {
         private static final int textureWidth = 182;
         private static final int textureHeight = 10;
         private static final int barHeight = textureHeight / 2;
-        private static final Identifier CAST_BAR = Identifier.of(SpellEngineMod.ID, "textures/hud/castbar.png");
+        private static final Identifier CAST_BAR = new Identifier(SpellEngineMod.ID, "textures/hud/castbar.png");
         private static final int spellIconSize = 16;
 
         public record ViewModel(int color, float progress, float castDuration, Identifier iconTexture, boolean allowTickDelta, boolean reverse) {
             public static ViewModel mock() {
-                return new ViewModel(0xFF3300, 0.5F, 1, SpellRender.iconTexture(Identifier.of("spell_engine", "dummy_spell")), false, false);
+                return new ViewModel(0xFF3300, 0.5F, 1, SpellRender.iconTexture(new Identifier("spell_engine", "dummy_spell")), false, false);
             }
         }
 
@@ -268,7 +268,8 @@ public class HudRenderHelper {
 
     public class SpellHotBarWidget {
         public static Rect lastRendered;
-        private static final TextureFile HOTBAR = new TextureFile(Identifier.of("textures/gui/sprites/hud/hotbar.png"), 182, 22);
+        // 1.20.1: the hotbar lives at (0,0)-(182,22) of the monolithic widgets atlas (same u/v as the legacy 1.20.1 HUD).
+        private static final TextureFile HOTBAR = new TextureFile(new Identifier("textures/gui/widgets.png"), 256, 256);
         private static final int slotHeight = 22;
         private static final int slotWidth = 20;
 
@@ -329,9 +330,9 @@ public class HudRenderHelper {
             public static ViewModel mock() {
                 return new ViewModel(
                         List.of(
-                                new SpellViewModel(SpellRender.iconTexture(Identifier.of(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("1", null), null),
-                                new SpellViewModel(SpellRender.iconTexture(Identifier.of(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("2", null), null),
-                                new SpellViewModel(SpellRender.iconTexture(Identifier.of(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("3", null), null)
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("1", null), null),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("2", null), null),
+                                new SpellViewModel(SpellRender.iconTexture(new Identifier(SpellEngineMod.ID, "dummy_spell")), null, 0, new KeyBindingViewModel("3", null), null)
                         )
                 );
             }

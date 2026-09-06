@@ -8,18 +8,20 @@ import net.minecraft.client.render.item.ItemModels;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.client.util.ModelIdentifier;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.world.World;
-import net.spell_engine.Platform;
-import net.spell_engine.api.spell.SpellDataComponents;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.util.Identifier;
+import net.spell_engine.mixin.client.render.BakedModelManagerAccessor;
+import org.jetbrains.annotations.Nullable;
 import net.spell_engine.client.render.ItemGlowRendering;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
@@ -36,7 +38,7 @@ public class ItemRendererMixin {
 //    private BakedModel wrap_getModel(ItemModels instance, ItemStack stack, Operation<BakedModel> original) {
 //        if (stack.getItem() == SpellEngineItems.SCROLL.get()) {
 //            // var oriModel = original.call(instance, stack);
-//            var model = models.getModelManager().getModel(ModelIdentifier.ofInventoryVariant(Identifier.of("wizards:item/spell_scroll/fire")));
+//            var model = models.getModelManager().getModel(ModelIdentifier.ofInventoryVariant(new Identifier("wizards:item/spell_scroll/fire")));
 //            return model;
 //        } else {
 //            return original.call(instance, stack);
@@ -105,20 +107,30 @@ public class ItemRendererMixin {
         return ItemGlowRendering.glowing(vertexConsumers, original);
     }
 
+    private static final String CUSTOM_DATA_NBT_KEY = "spell_engine";
+    private static final String ITEM_MODEL_NBT_KEY = "item_model";
+
+    @Unique
+    private static @Nullable Identifier customItemModelId(ItemStack stack) {
+        var nbt = stack.getSubNbt(CUSTOM_DATA_NBT_KEY);
+        if (nbt == null || !nbt.contains(ITEM_MODEL_NBT_KEY, NbtElement.STRING_TYPE)) {
+            return null;
+        }
+        return Identifier.tryParse(nbt.getString(ITEM_MODEL_NBT_KEY));
+    }
+
     @Inject(method = "getModel", at = @At("HEAD"), cancellable = true)
     private void getModel_HEAD(ItemStack stack, World world, LivingEntity entity, int seed, CallbackInfoReturnable<BakedModel> cir){
-        var modelId = stack.get(SpellDataComponents.ITEM_MODEL);
+        // 1.20.1: the custom item model id lives in NBT instead of a data component —
+        // `stack.getSubNbt("spell_engine")` → string key `"item_model"` (contract with the data layer).
+        var modelId = customItemModelId(stack);
         if (modelId != null) {
-            BakedModel model;
-            if (Platform.Fabric) { // Not outsourcing to Platform, to avoid dedicated server issues
-                model = models.getModelManager().getModel(modelId);
-            } else {
-                model = models.getModelManager().getModel(new ModelIdentifier(modelId, "standalone"));
-            }
+            // Additional models are keyed by plain Identifier on both loaders (see BakedModelManagerAccessor)
+            BakedModel model = ((BakedModelManagerAccessor) models.getModelManager()).SpellEngine_getModels().get(modelId);
             if (model == null) {
-                var item = Registries.ITEM.getEntry(modelId);
+                var item = Registries.ITEM.getOrEmpty(modelId);
                 if (item.isPresent()) {
-                    model = models.getModel(item.get().value());
+                    model = models.getModel(item.get());
                 }
             }
             if (model != null && model != models.getModelManager().getMissingModel()) {

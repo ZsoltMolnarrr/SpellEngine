@@ -50,10 +50,7 @@ public class LivingEntityRendererMixin {
                 var rendererEntry = CustomModelStatusEffect.entryOf(effect);
                 if (rendererEntry != null) {
                     matrixStack.push();
-                    if (rendererEntry.args().scaleWithEntity()) {
-                        var scale = livingEntity.getScale();
-                        matrixStack.scale(scale, scale, scale);
-                    }
+                    // 1.20.1 has no `LivingEntity.getScale()` (no scale attribute): `scaleWithEntity` is a no-op here.
                     rendererEntry.renderer().renderEffect(entry.appliedAtWorldTime(), amplifier, livingEntity, delta, matrixStack, vertexConsumerProvider, light);
                     matrixStack.pop();
                 }

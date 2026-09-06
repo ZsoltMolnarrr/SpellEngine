@@ -109,9 +109,9 @@ public class SpellHotbar {
 
             if (itemUseExpectation != null) {
                 if (itemUseExpectation.isMainHand()) {
-                    slots.addFirst(onUseKey);
+                    slots.add(0, onUseKey);
                 } else {
-                    slots.addLast(onUseKey);
+                    slots.add(onUseKey);
                 }
             }
         }

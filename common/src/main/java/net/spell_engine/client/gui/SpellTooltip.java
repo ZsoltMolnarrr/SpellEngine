@@ -8,9 +8,10 @@ import net.minecraft.client.util.InputUtil;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -60,7 +61,7 @@ public class SpellTooltip {
     private static final Pattern EFFECT_TOKEN_PATTERN =
             Pattern.compile(Pattern.quote(EFFECT_TOKEN_PREFIX) + "([^}]*)}");
 
-    public static void addSpellLines(ItemStack itemStack, TooltipType tooltipType, List<Text> lines) {
+    public static void addSpellLines(ItemStack itemStack, TooltipContext tooltipType, List<Text> lines) {
         var player = MinecraftClient.getInstance().player;
         if (player == null) {
             return;
@@ -122,7 +123,8 @@ public class SpellTooltip {
                     .formatted(Formatting.DARK_GRAY)
                     .getStyle(); // From: ItemStack.java, advanced tooltip section
             var reverseIndex = lines.size();
-            for (var line : lines.reversed()) {
+            for (var lineIterator = lines.listIterator(lines.size()); lineIterator.hasPrevious(); ) {
+                var line = lineIterator.previous();
                 --reverseIndex;
                 var style = line.getStyle();
                 if (style != null) {
@@ -137,7 +139,7 @@ public class SpellTooltip {
         }
         if (found <= 0) {
             if (addSectionDivider > 0) {
-                spellTextLines.addFirst(Text.literal(""));
+                spellTextLines.add(0, Text.literal(""));
             }
             lines.addAll(spellTextLines);
         } else {
@@ -148,7 +150,7 @@ public class SpellTooltip {
                     hasPreceedignEmptyLine = previousLine.isBlank();
                 }
                 if (!hasPreceedignEmptyLine) {
-                    spellTextLines.addFirst(Text.literal(""));
+                    spellTextLines.add(0, Text.literal(""));
                 }
             }
             lines.addAll(found, spellTextLines);
@@ -203,7 +205,7 @@ public class SpellTooltip {
         if (spells.isEmpty()) {
             return new SpellInfo(List.of(), 0);
         }
-        var archetype = spells.getFirst().value().school.archetype;
+        var archetype = spells.get(0).value().school.archetype;
 
         // Sort spells by tier then alphabetically
         HashMap<Identifier, Spell> spellMap = new HashMap<>();
@@ -1013,10 +1015,18 @@ public class SpellTooltip {
         var attributeId = (parts.length > 2 && !parts[2].isBlank()) ? parts[2] : null;
         var format = TooltipTokens.Format.parse(parts.length > 3 ? parts[3] : null);
 
-        // LinkedHashMap so "first" is the first modifier `forEachAttributeModifier` yields.
+        // LinkedHashMap so "first" is the first modifier the effect's modifier map yields.
+        // 1.20.1: `StatusEffect.getAttributeModifiers()` holds the base (amplifier 0) modifiers;
+        // `adjustModifierAmount` applies the amplifier scaling `forEachAttributeModifier` did on 1.21.
         var modifiers = new LinkedHashMap<String, EntityAttributeModifier>();
-        effect.forEachAttributeModifier(amplifier, (attribute, modifier) ->
-                attribute.getKey().ifPresent(key -> modifiers.put(key.getValue().toString(), modifier)));
+        for (var entry : effect.getAttributeModifiers().entrySet()) {
+            var modifierAttributeId = Registries.ATTRIBUTE.getId(entry.getKey());
+            if (modifierAttributeId == null) { continue; }
+            var base = entry.getValue();
+            var scaled = new EntityAttributeModifier(base.getId(), base.getName(),
+                    effect.adjustModifierAmount(amplifier, base), base.getOperation());
+            modifiers.put(modifierAttributeId.toString(), scaled);
+        }
 
         EntityAttributeModifier chosen;
         if (attributeId != null) {
@@ -1028,7 +1038,7 @@ public class SpellTooltip {
         if (chosen == null) {
             return null;
         }
-        return format.render((float) chosen.value(), chosen.operation());
+        return format.render((float) chosen.getValue(), chosen.getOperation());
     }
 
     // Value-formatting primitives live in the dependency-free `TooltipTokens` (so the effect-token
@@ -1126,7 +1136,7 @@ public class SpellTooltip {
             if (id == null) {
                 return Optional.empty();
             }
-            return registry.getEntry(id).map(entry -> (RegistryEntry<Spell>) entry);
+            return registry.getEntry(RegistryKey.of(registry.getKey(), id)).map(entry -> (RegistryEntry<Spell>) entry);
         }).orElse(null);
     }
 

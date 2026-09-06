@@ -1,5 +1,6 @@
 package net.spell_engine.client.render;
 
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -64,7 +65,7 @@ public class ModelEffectOperations {
         for (var anim : effect.animations) {
             if (age < anim.start) continue;
             float t = (anim.end <= anim.start) ? 1F
-                    : Math.clamp((age - anim.start) / (float)(anim.end - anim.start), 0F, 1F);
+                    : MathHelper.clamp((age - anim.start) / (float)(anim.end - anim.start), 0F, 1F);
             float progress = Easing.apply(anim.easing, t);
             if ("scale".equals(anim.operation)) {
                 sx += progress * anim.x; sy += progress * anim.y; sz += progress * anim.z;
@@ -86,7 +87,7 @@ public class ModelEffectOperations {
         applyTransforms(matrixStack, effect, age);
 
         // Render model
-        var modelId = Identifier.of(effect.model_id);
+        var modelId = new Identifier(effect.model_id);
         var layer = SpellModelHelper.LAYERS.get(effect.light_emission);
         CustomModels.render(layer, itemRenderer, modelId, matrixStack, vertexConsumers, light, entityId);
 

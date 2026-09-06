@@ -1,5 +1,6 @@
 package net.spell_engine.api.render;
 
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
@@ -49,7 +50,7 @@ public class ModelFxEffectRenderer implements CustomModelStatusEffect.Renderer {
         /// Computes the scale factor for the given entity: {@code clamp(pow(size / baseline, exponent), min, max)}.
         public float scaleFor(LivingEntity entity) {
             float size = (axis == SizeAxis.WIDTH) ? entity.getWidth() : entity.getHeight();
-            return Math.clamp((float) Math.pow(size / baseline, exponent), min, max);
+            return MathHelper.clamp((float) Math.pow(size / baseline, exponent), min, max);
         }
     }
 

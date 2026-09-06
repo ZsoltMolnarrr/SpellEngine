@@ -102,7 +102,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
                 lastCastSound = null;
             }
             if (castSound != null && soundId != null && !soundId.isEmpty()) {
-                var id = Identifier.of(soundId);
+                var id = new Identifier(soundId);
                 var sound = new SpellCastingSound(this, id, castSound.volume(), castSound.randomizedPitch());
                 sound.listener = this;
                 MinecraftClient.getInstance().getSoundManager().play(sound);
@@ -179,7 +179,7 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             var stack = spellAnimationStackFor(type);
             // System.out.println("Player animation, type: " + type + ", name: " + name + ", speed: " + speed);
             if (name != null && !name.isEmpty()) {
-                var id = Identifier.of(name);
+                var id = new Identifier(name);
                 var animation = (KeyframeAnimation) PlayerAnimationRegistry.getAnimation(id);
                 var copy = animation.mutableCopy();
                 updateAnimationByCurrentActivity_SpellEngine(copy);
