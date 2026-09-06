@@ -9,6 +9,7 @@ import net.spell_engine.utils.AttributeModifierUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class ConfigUtil {
     public record Entry(RegistryEntry<EntityAttribute> attribute, EntityAttributeModifier modifier) { }
@@ -25,8 +26,12 @@ public class ConfigUtil {
     public static List<Entry> modifiersFrom(Identifier modifierId, List<AttributeModifier> attributesConfig) {
         var modifiers = new ArrayList<Entry>();
         for (var modifier : attributesConfig) {
-            var attributeId = new Identifier(modifier.attribute);
-            var attribute = AttributeModifierUtil.attributeEntry(attributeId);
+            // A blank attribute id is the "no modifier" shape, not a lookup failure — skip it quietly.
+            if (!modifier.hasAttribute()) { continue; }
+            var attributeId = Identifier.tryParse(modifier.attribute);
+            var attribute = attributeId != null
+                    ? AttributeModifierUtil.attributeEntry(attributeId)
+                    : Optional.<RegistryEntry<EntityAttribute>>empty();
             if (attribute.isPresent()) {
                 var id = (modifier.id != null && !modifier.id.isEmpty())
                         ? new Identifier(modifier.id)
@@ -36,7 +41,8 @@ public class ConfigUtil {
                         AttributeModifierUtil.modifier(id, modifier.value, modifier.operation)
                 ));
             } else {
-                System.err.println("Failed to resolve EntityAttribute with id: " + modifier.attribute);
+                System.err.println("Failed to resolve EntityAttribute with id: `" + modifier.attribute
+                        + "` requested by: " + modifierId);
             }
         }
         return modifiers;

@@ -28,6 +28,14 @@ public class AttributeModifier {
         this.operation = operation;
     }
 
+    /// Whether this modifier names an attribute at all.
+    ///
+    /// A blank `attribute` is the "no modifier" shape (see {@link #EMPTY}, and any default-constructed
+    /// instance) — resolution skips such entries silently instead of reporting an unresolvable id.
+    public boolean hasAttribute() {
+        return attribute != null && !attribute.isBlank();
+    }
+
     public static AttributeModifier bonus(Identifier attributeId, float value) {
         return new AttributeModifier(
                 attributeId.toString(),

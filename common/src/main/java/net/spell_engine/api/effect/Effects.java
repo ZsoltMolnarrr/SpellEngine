@@ -55,10 +55,13 @@ public class Effects {
             if (!entry.modifiersApplied) {
                 entry.modifiersApplied = true;
                 for (var modifier : entry.config.selectedAttributes()) {
-                    var attributeId = new Identifier(modifier.attribute);
-                    var attribute = Registries.ATTRIBUTE.get(attributeId);
+                    // A blank attribute id is the "no modifier" shape, not a lookup failure — skip it quietly.
+                    if (!modifier.hasAttribute()) { continue; }
+                    var attributeId = Identifier.tryParse(modifier.attribute);
+                    var attribute = attributeId != null ? Registries.ATTRIBUTE.get(attributeId) : null;
                     if (attribute == null) {
-                        System.err.println("Failed to resolve EntityAttribute with id: " + modifier.attribute);
+                        System.err.println("Failed to resolve EntityAttribute with id: `" + modifier.attribute
+                                + "` requested by status effect: " + entry.id);
                         continue;
                     }
                     var modifierId = (modifier.id != null && !modifier.id.isEmpty())

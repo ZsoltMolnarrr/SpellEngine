@@ -79,7 +79,7 @@ dependencies {
         modLocalRuntime("net.rpg_series:relics-fabric:1.4.0.002+1.20.1") { transitive = false }
     }
     if (flags.rpg_series_skills) {
-        modLocalRuntime("net.rpg_series:skill_tree-fabric:1.6.1.003+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:skill_tree-fabric:1.6.1.004+1.20.1") { transitive = false }
         // No `+1.20.1` line exists: the 1.20/1.20.1 artifact is tagged `+1.20`.
         modLocalRuntime("net.puffish:skillsmod:0.16.7+1.20:fabric")
     }
