@@ -4,7 +4,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.Registries;
 import net.spell_engine.internals.SpellTriggers;
 
 public class TickingStatusEffect extends StatusEffect {
@@ -20,14 +19,10 @@ public class TickingStatusEffect extends StatusEffect {
     }
 
     @Override
-    public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
+    public void applyUpdateEffect(LivingEntity entity, int amplifier) {
         if (entity instanceof PlayerEntity player) {
-            var entry = Registries.STATUS_EFFECT.getEntry(this);
-            if (entry != null) {
-                SpellTriggers.onEffectTick(player, entry);
-            }
+            SpellTriggers.onEffectTick(player, this);
         }
-        return true;
     }
 
     @Override

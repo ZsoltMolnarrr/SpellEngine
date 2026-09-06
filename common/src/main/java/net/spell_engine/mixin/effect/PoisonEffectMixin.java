@@ -4,13 +4,16 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.effect.PoisonStatusEffect;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffects;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(PoisonStatusEffect.class)
+/// 1.20.1 has no `PoisonStatusEffect` class: poison's tick logic lives inline in `StatusEffect`
+/// (`this == StatusEffects.POISON` branches), so the wraps target `StatusEffect` and gate on identity.
+@Mixin(StatusEffect.class)
 public class PoisonEffectMixin {
     @WrapOperation(
             method = "applyUpdateEffect",
@@ -19,6 +22,9 @@ public class PoisonEffectMixin {
     public boolean applyUpdateEffect_SpellEngine(
             LivingEntity instance, DamageSource source, float amount, Operation<Boolean> original,
             LivingEntity entity, int amplifier) {
+        if ((Object) this != StatusEffects.POISON) {
+            return original.call(instance, source, amount);
+        }
         var amplifiedAmount = amount * (amplifier + 1);
         var cappedAmount = Math.min(amplifiedAmount, entity.getHealth() - 1.0F);
         return original.call(instance, source, cappedAmount);
@@ -26,6 +32,9 @@ public class PoisonEffectMixin {
 
     @Inject(method = "canApplyUpdateEffect", at = @At("HEAD"), cancellable = true, require = 0)
     private void canApplyUpdateEffect_SpellEngine(int duration, int amplifier, CallbackInfoReturnable<Boolean> cir) {
+        if ((Object) this != StatusEffects.POISON) {
+            return;
+        }
         cir.setReturnValue(duration % 25 == 0);
         cir.cancel();
     }

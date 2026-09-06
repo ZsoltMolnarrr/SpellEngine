@@ -3,6 +3,7 @@ package net.spell_engine.internals.delivery;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.spell_engine.api.spell.Spell;
@@ -83,7 +84,7 @@ public class ProjectileLauncher {
                 directionYaw += offset.yaw;
             }
             // var look = caster.getRotationVector().normalize();
-            var look = caster.getRotationVector(directionPitch, directionYaw).normalize();
+            var look = rotationVector(directionPitch, directionYaw).normalize();
             projectile.setVelocity(look.x, look.y, look.z, velocity, divergence);
         }
         // Charge `bonus.range_add` extends the projectile's flight distance (already ratio-scaled).
@@ -209,5 +210,16 @@ public class ProjectileLauncher {
         } else {
             return index < (-1 * rule);
         }
+    }
+
+    /// `Entity#getRotationVector(float pitch, float yaw)` is protected on 1.20.1; same math.
+    private static Vec3d rotationVector(float pitch, float yaw) {
+        float f = pitch * ((float) Math.PI / 180F);
+        float g = -yaw * ((float) Math.PI / 180F);
+        float h = MathHelper.cos(g);
+        float i = MathHelper.sin(g);
+        float j = MathHelper.cos(f);
+        float k = MathHelper.sin(f);
+        return new Vec3d(i * j, -k, h * j);
     }
 }

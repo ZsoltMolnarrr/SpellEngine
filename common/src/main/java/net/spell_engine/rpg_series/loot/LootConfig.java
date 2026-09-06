@@ -175,7 +175,7 @@ public class LootConfig {
         }
 
         public Pool enchant() {
-            var entry = this.entries.getLast();
+            var entry = this.entries.get(this.entries.size() - 1);
             if (entry != null) {
                 entry.enchant();
             }
@@ -197,7 +197,7 @@ public class LootConfig {
         }
 
         public Pool bind(String pool, int count_min, int count_max) {
-            var entry = this.entries.getLast();
+            var entry = this.entries.get(this.entries.size() - 1);
             if (entry != null) {
                 var spell_bind = new Entry.SpellBind();
                 spell_bind.pool = pool;
@@ -209,20 +209,20 @@ public class LootConfig {
         }
 
         public Pool filter(String... filters) {
-            var entry = this.entries.getLast();
+            var entry = this.entries.get(this.entries.size() - 1);
             entry.filters = List.of(filters);
             return this;
         }
 
         public Pool filtersAND() {
-            var entry = this.entries.getLast();
+            var entry = this.entries.get(this.entries.size() - 1);
             entry.filters_lenient = false;
             return this;
         }
 
         /// Adjust weight of the last entry
         public Pool weight(int weight) {
-            var entry = this.entries.getLast();
+            var entry = this.entries.get(this.entries.size() - 1);
             entry.weight = weight;
             return this;
         }

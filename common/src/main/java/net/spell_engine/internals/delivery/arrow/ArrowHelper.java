@@ -1,24 +1,29 @@
 package net.spell_engine.internals.delivery.arrow;
 
+import com.google.common.base.Suppliers;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.*;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Hand;
 import net.minecraft.world.World;
+import net.spell_engine.Platform;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.fx.Fx;
 import net.spell_engine.fx.ModelEffectHelper;
 import net.spell_engine.fx.ParticleHelper;
 import net.spell_engine.internals.SpellModifiers;
+import net.spell_engine.internals.SpellTriggers;
+import net.spell_engine.internals.cost.Ammo;
 import net.spell_engine.utils.SoundHelper;
 import net.spell_engine.utils.WorldScheduler;
 import net.spell_engine.internals.casting.SpellCaster;
-import net.spell_engine.mixin.item.RangedWeaponAccessor;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -35,13 +40,9 @@ public class ArrowHelper {
         var shoot_arrow = spell.deliver.shoot_arrow;
         var weaponStack = shooter.getMainHandStack();
 
-        // var weapon = weaponStack.getItem();
-        // Using CROSSBOW statically, so arrows fired behave consistently
-        // When using any bow, divergence is applied in an unhelpful manner
-        var weapon = Items.CROSSBOW;
-        if (shoot_arrow != null
-                && (world instanceof ServerWorld serverWorld)
-                && (weapon instanceof RangedWeaponItem rangedWeapon)) {
+        // 1.20.1 has no `RangedWeaponItem.shootAll(...)` pipeline (bow shooting is inline in `BowItem.onStoppedUsing`,
+        // crossbow shooting is private static in `CrossbowItem`), so the crossbow-style launch is reproduced here.
+        if (shoot_arrow != null && (world instanceof ServerWorld serverWorld)) {
             var mutableLaunchProperties = shoot_arrow.launch_properties.copy();
             if (shooter instanceof PlayerEntity player) {
                 var spellModifiers = SpellModifiers.of(player, spellEntry);
@@ -58,7 +59,7 @@ public class ArrowHelper {
             } else {
                 ammo = new ItemStack(Items.ARROW);
             }
-            var loadedAmmo = RangedWeaponAccessor.load_SpellEngine(weaponStack, ammo, shooter);
+            var loadedAmmo = load(weaponStack, ammo, shooter);
             if (loadedAmmo.isEmpty()) {
                 return;
             }
@@ -71,31 +72,18 @@ public class ArrowHelper {
             }
             var divergence = (sequenceIndex == 0) ? 0F : shoot_arrow.divergence;
             // Perform shoot
-            ((RangedWeaponAccessor) rangedWeapon).shootAll_SpellEngine(
-                    serverWorld,
-                    shooter,
-                    Hand.MAIN_HAND,
-                    weaponStack,
-                    loadedAmmo,
-                    shoot_arrow.launch_properties.velocity,
-                    divergence,
-                    shoot_arrow.arrow_critical_strike,
-                    null);
-            // Arrow perks applied by `RangedWeaponItemMixin`
-
-            // Fixing inconsistent Vanille code, shoot sound is played by `BOW` outside of `shootAll`
-            if (weapon instanceof BowItem) {
-                world.playSound(
-                        null,
-                        shooter.getX(),
-                        shooter.getY(),
-                        shooter.getZ(),
-                        SoundEvents.ENTITY_ARROW_SHOOT,
-                        SoundCategory.PLAYERS,
-                        1.0F,
-                        1.0F / (world.getRandom().nextFloat() * 0.4F + 1.2F) + 1 * 0.5F
-                );
+            var projectile = createArrow(serverWorld, shooter, weaponStack, loadedAmmo, shoot_arrow.arrow_critical_strike);
+            if (projectile == null) {
+                if (shooter instanceof SpellCaster.Player caster) {
+                    caster.setArrowShootContext(ArrowShootContext.empty());
+                }
+                return;
             }
+            var look = shooter.getRotationVec(1.0F);
+            projectile.setVelocity(look.x, look.y, look.z, shoot_arrow.launch_properties.velocity, divergence);
+            serverWorld.spawnEntity(projectile);
+            // Arrow perks applied via the shoot context (same path as the bow/crossbow mixins)
+            onArrowSpawned(projectile, shooter, null);
 
             if (shooter instanceof SpellCaster.Player caster) {
                 caster.setArrowShootContext(ArrowShootContext.empty());
@@ -114,6 +102,89 @@ public class ArrowHelper {
                     });
                 }
             }
+        }
+    }
+
+    /// Takes one projectile for a spell-fired arrow, mirroring vanilla's creative / Infinity rules:
+    /// creative players and Infinity bows (plain arrows only) shoot a free arrow; otherwise one item is
+    /// taken — from a quiver-like container first, then from the stack itself.
+    private static ItemStack load(ItemStack weaponStack, ItemStack ammo, LivingEntity shooter) {
+        var player = shooter instanceof PlayerEntity p ? p : null;
+        var creative = player != null && player.getAbilities().creativeMode;
+        if (ammo.isEmpty()) {
+            return creative ? new ItemStack(Items.ARROW) : ItemStack.EMPTY;
+        }
+        var infinity = EnchantmentHelper.getLevel(Enchantments.INFINITY, weaponStack) > 0 && ammo.isOf(Items.ARROW);
+        if (creative || infinity || player == null) {
+            return ammo.copyWithCount(1);
+        }
+        var loaded = takeOne(player, ammo);
+        if (loaded == null) {
+            loaded = ammo.split(1);
+            if (ammo.isEmpty()) {
+                player.getInventory().removeOne(ammo);
+            }
+        }
+        return loaded;
+    }
+
+    /// Takes one item matching `ammo` out of a quiver-like container, or `null` if no container holds one.
+    @Nullable
+    public static ItemStack takeOne(PlayerEntity player, ItemStack ammo) {
+        var item = ammo.getItem();
+        var predicate = new Ammo.Searched(null, item).asPredicate();
+        var source = Ammo.findContainer(player, predicate, 1);
+        if (source != null && Ammo.takeFromContainer(source.itemStack(), predicate, 1) == 1) {
+            return ammo.copyWithCount(1);
+        }
+        return null;
+    }
+
+    /// Copy of `CrossbowItem.createArrow` (private static on 1.20.1) with the spell's own crit flag.
+    @Nullable
+    private static PersistentProjectileEntity createArrow(World world, LivingEntity shooter, ItemStack weaponStack, ItemStack ammo, boolean critical) {
+        if (ammo.isOf(Items.FIREWORK_ROCKET)) {
+            return null; // Spell-fired arrows are arrows only
+        }
+        var arrowItem = (ArrowItem)(ammo.getItem() instanceof ArrowItem ? ammo.getItem() : Items.ARROW);
+        var projectile = arrowItem.createArrow(world, ammo, shooter);
+        projectile.setCritical(critical);
+        projectile.setSound(SoundEvents.ITEM_CROSSBOW_HIT);
+        projectile.setShotFromCrossbow(true);
+        var pierce = EnchantmentHelper.getLevel(Enchantments.PIERCING, weaponStack);
+        if (pierce > 0) {
+            projectile.setPierceLevel((byte) pierce);
+        }
+        var player = shooter instanceof PlayerEntity p ? p : null;
+        var creative = player != null && player.getAbilities().creativeMode;
+        var infinity = EnchantmentHelper.getLevel(Enchantments.INFINITY, weaponStack) > 0 && ammo.isOf(Items.ARROW);
+        if (creative || infinity) {
+            projectile.pickupType = PersistentProjectileEntity.PickupPermission.CREATIVE_ONLY;
+        }
+        return projectile;
+    }
+
+    /// Hook shared by the bow/crossbow shoot mixins and {@link #shootArrow}: fires the ARROW_SHOT triggers,
+    /// then stamps the shooter's pending {@link ArrowShootContext} (spell-fired arrows, passive arrow perks)
+    /// onto the freshly spawned projectile. Does not clear the context — multi-shot callers clear it once
+    /// after all projectiles left.
+    public static void onArrowSpawned(ProjectileEntity projectile, LivingEntity shooter, @Nullable ItemStack weaponStack) {
+        if (!(shooter instanceof PlayerEntity player) || !(projectile instanceof ArrowExtension arrow)) {
+            return;
+        }
+        arrow.setWeaponStack_SpellEngine(weaponStack);
+        var caster = (SpellCaster.Player) player;
+        var shotContext = caster.getArrowShootContext();
+
+        // First run triggers to enable modifying the arrow by passive spells
+        // (by appending the arrow shot context)
+        final var firedBySpell = shotContext.firedBySpell;
+        SpellTriggers.onArrowShot(arrow, player, firedBySpell);
+
+        // Apply arrow modification
+        var trackers = Suppliers.memoize(() -> Platform.tracking(shooter));
+        for (var spellEntry: shotContext.activeSpells) {
+            onArrowShot(arrow, shooter, spellEntry, trackers);
         }
     }
 

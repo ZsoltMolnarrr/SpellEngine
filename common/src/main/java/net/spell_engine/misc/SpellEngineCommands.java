@@ -2,7 +2,7 @@ package net.spell_engine.misc;
 
 import net.spell_engine.PlatformEvents;
 import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.RegistryEntryReferenceArgumentType;
+import net.minecraft.command.argument.RegistryEntryArgumentType;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -21,10 +21,10 @@ public class SpellEngineCommands {
                     .requires(source -> source.hasPermissionLevel(2))
                     .then(CommandManager.literal("reset").then(
                             CommandManager.argument("players", EntityArgumentType.player())
-                                    .then(CommandManager.argument("spell", RegistryEntryReferenceArgumentType.registryEntry(registryAccess, SpellRegistry.KEY))
+                                    .then(CommandManager.argument("spell", RegistryEntryArgumentType.registryEntry(registryAccess, SpellRegistry.KEY))
                                             .executes(context -> {
                                                 var players = EntityArgumentType.getPlayers(context, "players");
-                                                var spell = RegistryEntryReferenceArgumentType.getRegistryEntry(context, "spell", SpellRegistry.KEY);
+                                                var spell = RegistryEntryArgumentType.getRegistryEntry(context, "spell", SpellRegistry.KEY);
                                                 return executeResetCooldown(players, spell);
                                             })
                                     )

@@ -38,22 +38,22 @@ public class SpellEngineParticles {
             this(id, 1, false);
         }
         public static Texture vanilla(String name) {
-            return new Texture(Identifier.ofVanilla(name));
+            return new Texture(new Identifier("minecraft", name));
         }
         public static Texture vanilla(String name, int frames) {
-            return new Texture(Identifier.ofVanilla(name), frames);
+            return new Texture(new Identifier("minecraft", name), frames);
         }
         public static Texture vanilla(String name, int frames, boolean reverseOrder) {
-            return new Texture(Identifier.ofVanilla(name), frames, reverseOrder);
+            return new Texture(new Identifier("minecraft", name), frames, reverseOrder);
         }
         public static Texture of(String name) {
-            return new Texture(Identifier.of(SpellEngineMod.ID, name));
+            return new Texture(new Identifier(SpellEngineMod.ID, name));
         }
         public static Texture of(String name, int frames) {
-            return new Texture(Identifier.of(SpellEngineMod.ID, name), frames);
+            return new Texture(new Identifier(SpellEngineMod.ID, name), frames);
         }
         public static Texture of(String name, int frames, boolean reverseOrder) {
-            return new Texture(Identifier.of(SpellEngineMod.ID, name), frames, reverseOrder);
+            return new Texture(new Identifier(SpellEngineMod.ID, name), frames, reverseOrder);
         }
     }
 
@@ -74,7 +74,7 @@ public class SpellEngineParticles {
         private final ParticleGroupType type = new ParticleGroupType();
 
         Entry(String name, Texture texture) {
-            this(Identifier.of(SpellEngineMod.ID, name), texture);
+            this(new Identifier(SpellEngineMod.ID, name), texture);
         }
         /// Creates an entry for `id`, rendered from `texture`.
         ///
@@ -82,8 +82,8 @@ public class SpellEngineParticles {
         /// generic factory — mirroring [SpellEngineSounds.Entry]. A third-party entry
         /// is registered by its owner, not by [#register]:
         /// ```java
-        /// var entry = new SpellEngineParticles.Entry(Identifier.of(MOD_ID, "blood_drop"),
-        ///         new Texture(Identifier.of(MOD_ID, "blood_drop"))).lifetime(12)
+        /// var entry = new SpellEngineParticles.Entry(new Identifier(MOD_ID, "blood_drop"),
+        ///         new Texture(new Identifier(MOD_ID, "blood_drop"))).lifetime(12)
         ///         .defaults(p -> p.scale(0.15F).glow(false));
         /// Registry.register(Registries.PARTICLE_TYPE, entry.id(), entry.type());
         /// // client side, per platform:
@@ -260,8 +260,10 @@ public class SpellEngineParticles {
     public static final Entry magic_skull = magic("skull", Texture.of("magic/skull"), 0.75F, 1F);
     public static final Entry magic_rage = magic("rage", Texture.of("magic/rage"), 0.75F, 1F);
 
+    /// Idempotent. Fabric: call from mod init; Forge: call from the `PARTICLE_TYPE` `RegisterEvent`.
     public static void register() {
         for (var entry: entries) {
+            if (Registries.PARTICLE_TYPE.containsId(entry.id())) { continue; }
             Registry.register(Registries.PARTICLE_TYPE, entry.id(), entry.type());
         }
     }

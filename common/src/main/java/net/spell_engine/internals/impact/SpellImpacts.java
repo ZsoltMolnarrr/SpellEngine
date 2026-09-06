@@ -1,5 +1,7 @@
 package net.spell_engine.internals.impact;
 
+import net.spell_engine.utils.EntityScale;
+import net.spell_engine.utils.RegistryHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -306,7 +308,7 @@ public class SpellImpacts {
             if (!schoolWeaknesses.isEmpty()) {
                 for (var schoolWeakness: schoolWeaknesses) {
                     if (schoolWeakness.impact_type() == null || schoolWeakness.impact_type() == impact.action.type) {
-                        mergedTargetModifiers.addFirst(schoolWeakness.weakness()); // Prepend school weaknesses
+                        mergedTargetModifiers.add(0, schoolWeakness.weakness()); // Prepend school weaknesses
                     }
                 }
             }
@@ -424,13 +426,13 @@ public class SpellImpacts {
                 case STATUS_EFFECT -> {
                     var data = impact.action.status_effect;
                     if (target instanceof LivingEntity livingTarget) {
-                        Optional<RegistryEntry<StatusEffect>> optionalEffect = Optional.empty();
+                        Optional<StatusEffect> optionalEffect = Optional.empty();
                         List<StatusEffectInstance> removalSelection = List.of();
                         if (data.remove != null) {
                             var effects = livingTarget.getStatusEffects()
                                     .stream().filter(instance ->
-                                            instance.getEffectType().value().isBeneficial() == data.remove.select_beneficial
-                                            && PatternMatching.matches(instance.getEffectType(), RegistryKeys.STATUS_EFFECT, data.remove.id)
+                                            instance.getEffectType().isBeneficial() == data.remove.select_beneficial
+                                            && PatternMatching.matches(Registries.STATUS_EFFECT.getEntry(instance.getEffectType()), RegistryKeys.STATUS_EFFECT, data.remove.id)
                                             && (data.remove.movement_impairing == null
                                                 || StatusEffectClassification.isMovementImpairing(instance.getEffectType()) == data.remove.movement_impairing)
                                     )
@@ -440,13 +442,13 @@ public class SpellImpacts {
                             }
                             removalSelection = switch (data.remove.selector) {
                                 case RANDOM -> List.of(effects.get(world.random.nextInt(effects.size())));
-                                case FIRST -> List.of(effects.getFirst());
+                                case FIRST -> List.of(effects.get(0));
                                 case ALL -> effects;
                             };
-                            optionalEffect = Optional.of(removalSelection.getFirst()).map(StatusEffectInstance::getEffectType);
+                            optionalEffect = Optional.of(removalSelection.get(0)).map(StatusEffectInstance::getEffectType);
                         } else {
-                            var id = Identifier.of(data.effect_id);
-                            optionalEffect = Optional.of(Registries.STATUS_EFFECT.getEntry(id).get());
+                            var id = new Identifier(data.effect_id);
+                            optionalEffect = Optional.ofNullable(Registries.STATUS_EFFECT.get(id));
                         }
                         if (optionalEffect.isEmpty()) {
                             return false;
@@ -543,7 +545,7 @@ public class SpellImpacts {
                     }
                     ///
                     var data = impact.action.fire;
-                    target.setOnFireFor(data.duration);
+                    target.setOnFireFor((int) data.duration);
                     if (target.getFireTicks() > 0) {
                         target.setFireTicks(target.getFireTicks() + data.tick_offset);
                     }
@@ -563,7 +565,7 @@ public class SpellImpacts {
                     for(var data: spawns) {
                         var mutableData = data.copy();
                         mutableData.time_to_live_seconds += extraTimeToLive;
-                        var id = Identifier.of(mutableData.entity_type_id);
+                        var id = new Identifier(mutableData.entity_type_id);
                         var type = Registries.ENTITY_TYPE.get(id);
 
                         var entity = (Entity)type.create(world);
@@ -736,7 +738,7 @@ public class SpellImpacts {
                         var disrupt = impact.action.disrupt;
                         if (target instanceof PlayerEntity playerTarget) {
                              if (disrupt.shield_blocking && playerTarget.isBlocking()) {
-                                 playerTarget.disableShield();
+                                 playerTarget.disableShield(true);
                                  success = true;
                              } else if (disrupt.item_usage_seconds > 0 && playerTarget.isUsingItem()) {
                                  var activeStack = playerTarget.getActiveItem();
@@ -762,10 +764,10 @@ public class SpellImpacts {
                         TagKey<DamageType> typeTagKey = null;
                         if (data.damage_type != null) {
                             if (data.damage_type.startsWith(PatternMatching.TAG_PREFIX)) {
-                                var id = Identifier.of(data.damage_type.substring(PatternMatching.TAG_PREFIX.length()));
+                                var id = new Identifier(data.damage_type.substring(PatternMatching.TAG_PREFIX.length()));
                                 typeTagKey = TagKey.of(RegistryKeys.DAMAGE_TYPE, id);
                             } else {
-                                var id = Identifier.of(data.damage_type);
+                                var id = new Identifier(data.damage_type);
                                 var registry = world.getRegistryManager().get(RegistryKeys.DAMAGE_TYPE);
                                 type = registry.get(id);
                             }
@@ -861,7 +863,7 @@ public class SpellImpacts {
                 var impactVisuals = impact.visuals.resolved(Fx.Context.NONE);
                 if (!impactVisuals.particles.isEmpty()) {
                     float countMultiplier = critical ? (float) particleMultiplier : 1F;
-                    ParticleHelper.sendBatches(target, impactVisuals.particles, countMultiplier * caster.getScale(), trackers);
+                    ParticleHelper.sendBatches(target, impactVisuals.particles, countMultiplier * EntityScale.of(caster), trackers);
                 }
                 if (impact.sound != null) {
                     SoundHelper.playSound(world, target, impact.sound);
@@ -997,7 +999,7 @@ public class SpellImpacts {
                 ? def.behaviour
                 : def.behaviour.withModifiers(extraActions, spawnTicksAdd, activeSecondsAdd, despawnTicksAdd);
 
-        var type = Registries.ENTITY_TYPE.get(Identifier.of(def.entity_type_id));
+        var type = Registries.ENTITY_TYPE.get(new Identifier(def.entity_type_id));
         for (int g = 0; g < groupCount; g++) {
             // Next group slot, wrapping around the list (null when no group offset is configured).
             var groupPlacement = def.group_placements.isEmpty() ? null : def.group_placements.get(g % def.group_placements.size());
@@ -1067,7 +1069,7 @@ public class SpellImpacts {
     }
 
     private static void playSummonSound(ServerWorld world, Vec3d pos, Sound sound) {
-        var soundEvent = Registries.SOUND_EVENT.get(Identifier.of(sound.id()));
+        var soundEvent = Registries.SOUND_EVENT.get(new Identifier(sound.id()));
         if (soundEvent != null) {
             world.playSound(null, pos.x, pos.y, pos.z, soundEvent,
                     SoundCategory.PLAYERS, sound.volume(), sound.randomizedPitch());

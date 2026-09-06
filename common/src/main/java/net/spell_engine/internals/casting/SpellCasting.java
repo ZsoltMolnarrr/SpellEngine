@@ -1,5 +1,6 @@
 package net.spell_engine.internals.casting;
 
+import net.spell_engine.utils.RegistryHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
@@ -25,7 +26,7 @@ public class SpellCasting {
     /// the PRE/POST attempt events mods can inject a verdict through.
     public static SpellCast.Attempt attempt(PlayerEntity player, ItemStack itemStack, Identifier spellId, boolean checkAmmo) {
         var caster = (SpellCaster.Player)player;
-        var spellEntry = SpellRegistry.from(player.getWorld()).getEntry(spellId).orElse(null);
+        var spellEntry = RegistryHelper.getEntry(SpellRegistry.from(player.getWorld()), spellId).orElse(null);
         if (spellEntry == null) {
             return SpellCast.Attempt.none();
         }

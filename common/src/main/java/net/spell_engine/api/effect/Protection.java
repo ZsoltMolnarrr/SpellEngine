@@ -4,7 +4,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageType;
 import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.sound.SoundEvent;
@@ -23,30 +22,34 @@ import java.util.Map;
  */
 public class Protection {
     public record Pop(List<ParticleGroup> particles, @Nullable SoundEvent sound) { }
-    public record Entry(RegistryEntry<StatusEffect> effectEntry, TagKey<DamageType> protects,
+    /// 1.20.1: status effects are plain registry objects, so `effect` is the raw `StatusEffect`.
+    public record Entry(StatusEffect effect, TagKey<DamageType> protects,
                         int decrement, Pop onDecrement, Pop onRemove) { }
-    public static final Map<RegistryKey<StatusEffect>, Entry> PROTECTIONS = new HashMap<>();
+    public static final Map<StatusEffect, Entry> PROTECTIONS = new HashMap<>();
+
+    public static void register(StatusEffect effect, Pop pop) {
+        register(effect, new Entry(effect, null, 1, pop, pop));
+    }
+
+    public static void register(StatusEffect effect, TagKey<DamageType> protects, Pop pop) {
+        register(effect, new Entry(effect, protects, 1, pop, pop));
+    }
 
     public static void register(RegistryEntry<StatusEffect> effectEntry, Pop pop) {
-        register(effectEntry.getKey().get(), new Entry(effectEntry, null, 1, pop, pop));
+        register(effectEntry.value(), pop);
     }
 
     public static void register(RegistryEntry<StatusEffect> effectEntry, TagKey<DamageType> protects, Pop pop) {
-        register(effectEntry.getKey().get(), new Entry(effectEntry, protects, 1, pop, pop));
+        register(effectEntry.value(), protects, pop);
     }
 
-    public static void register(RegistryKey<StatusEffect> key, Entry entry) {
-        PROTECTIONS.put(key, entry);
+    public static void register(StatusEffect effect, Entry entry) {
+        PROTECTIONS.put(effect, entry);
     }
 
     public static boolean tryProtect(LivingEntity entity, DamageSource damageSource) {
         for (var entry: entity.getActiveStatusEffects().entrySet()) {
-            var optionalKey = entry.getKey().getKey();
-            if (optionalKey.isEmpty()) { // Should never happen, added due to some incompatibility crash
-                continue;
-            }
-            var key = optionalKey.get();
-            var protection = PROTECTIONS.get(key);
+            var protection = PROTECTIONS.get(entry.getKey());
             if (protection != null) {
                 if (protection.protects != null && !damageSource.isIn(protection.protects)) {
                     continue; // This protection does not apply to this damage type

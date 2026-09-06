@@ -1,5 +1,6 @@
 package net.spell_engine.internals.casting;
 
+import net.spell_engine.utils.RegistryHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -111,8 +112,8 @@ public class SpellCast {
             if (spellId.isEmpty()) {
                 return null;
             }
-            var id = Identifier.of(spellId);
-            var spellEntry = SpellRegistry.from(world).getEntry(id).orElse(null);
+            var id = new Identifier(spellId);
+            var spellEntry = RegistryHelper.getEntry(SpellRegistry.from(world), id).orElse(null);
             return new Process(caster, spellEntry, item, sync.s(), sync.l(), startedAt);
         }
 
@@ -138,12 +139,12 @@ public class SpellCast {
             if (tickHolder.ticks.isEmpty()) {
                 return false;
             } else {
-                return castTicks >= tickHolder.ticks.getFirst();
+                return castTicks >= tickHolder.ticks.get(0);
             }
         }
         public void markDue() {
             if (!tickHolder.ticks.isEmpty()) {
-                tickHolder.ticks.removeFirst();
+                tickHolder.ticks.remove(0);
             }
         }
     }
@@ -228,7 +229,7 @@ public class SpellCast {
         }
 
         @Nullable public static Option fromSync(World world, SyncFormat sync) {
-            var entry = SpellRegistry.from(world).getEntry(Identifier.of(sync.i())).orElse(null);
+            var entry = RegistryHelper.getEntry(SpellRegistry.from(world), new Identifier(sync.i())).orElse(null);
             if (entry == null) {
                 return null;
             }

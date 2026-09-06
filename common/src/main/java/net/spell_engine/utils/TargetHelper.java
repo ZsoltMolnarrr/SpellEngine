@@ -186,7 +186,7 @@ public class TargetHelper {
         if (entity != null) {
             return world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity));
         } else {
-            return world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, ShapeContext.absent()));
+            return world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, (Entity) null));
         }
     }
 
@@ -240,16 +240,15 @@ public class TargetHelper {
     private static final double GROUND_SEARCH_PRE_LIFT = 1.0;
 
     @Nullable public static Vec3d findSolidBelow(@Nullable Entity entity, Vec3d position, World world, float height) {
-        var shapeContext = entity != null ? ShapeContext.of(entity) : ShapeContext.absent();
         // The pre-lift and the surface-top logic below are downward-search semantics; an upward search
         // (positive height, e.g. a positive `aim.reposition_vertically`) keeps the plain ray — lifting
         // its start would flip a short upward ray into a downward one.
         if (height >= 0) {
-            var upHit = world.raycast(new GroundRaycastContext(position, position.add(0, height, 0), shapeContext));
+            var upHit = world.raycast(new GroundRaycastContext(position, position.add(0, height, 0), entity));
             return upHit.getType() == HitResult.Type.BLOCK ? upHit.getPos() : null;
         }
         var start = position.add(0, GROUND_SEARCH_PRE_LIFT, 0);
-        var hit = world.raycast(new GroundRaycastContext(start, position.add(0, height, 0), shapeContext));
+        var hit = world.raycast(new GroundRaycastContext(start, position.add(0, height, 0), entity));
         if (hit.getType() != HitResult.Type.BLOCK) {
             return null;
         }
@@ -289,8 +288,8 @@ public class TargetHelper {
     /// straight through — one pass, and a rejected block never reaches voxel math (both checks below
     /// read cached block state fields).
     private static class GroundRaycastContext extends RaycastContext {
-        GroundRaycastContext(Vec3d start, Vec3d end, ShapeContext shapeContext) {
-            super(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, shapeContext);
+        GroundRaycastContext(Vec3d start, Vec3d end, @Nullable Entity entity) {
+            super(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, entity);
         }
 
         @Override

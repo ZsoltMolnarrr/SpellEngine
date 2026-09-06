@@ -46,7 +46,7 @@ public class SpellStashHelper {
                     System.err.println("Spell Engine: Stash spell linking error! Spell:" + id + " is missing `stash_effect.trigger`!");
                     return;
                 }
-                var effectId = Identifier.of(stashEffect.id);
+                var effectId = new Identifier(stashEffect.id);
                 var statusEffect = Registries.STATUS_EFFECT.get(effectId);
                 if (statusEffect == null) {
                     System.err.println("Spell Engine: Stash spell linking error! Spell:" + id + " found no status effect for `stash_effect.id`: " + stashEffect.id);
@@ -72,7 +72,7 @@ public class SpellStashHelper {
         Map<StatusEffectInstance, StatusEffectUtil.Diff> effectChanges = new HashMap<>();
         var activeEffects = Map.copyOf(caster.getActiveStatusEffects()); // Create copy to avoid concurrent modification
         for(var entry: activeEffects.entrySet()) {
-            var effect = entry.getKey().value();
+            var effect = entry.getKey();
             var stack = entry.getValue();
 
             for (var stash: ((SpellStash) effect).getStashedSpells()) {

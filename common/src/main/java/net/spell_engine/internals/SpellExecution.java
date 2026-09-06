@@ -1,5 +1,6 @@
 package net.spell_engine.internals;
 
+import net.spell_engine.utils.RegistryHelper;
 import com.google.common.base.Suppliers;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -364,7 +365,7 @@ public class SpellExecution {
                 power = SpellPower.getSpellPower(school, caster);
             }
             if (impact.attribute != null && !impact.attribute.isEmpty()) {
-                var attributeEntry = Registries.ATTRIBUTE.getEntry(Identifier.of(impact.attribute));
+                var attributeEntry = RegistryHelper.getEntry(Registries.ATTRIBUTE, new Identifier(impact.attribute));
                 if (attributeEntry.isPresent()) {
                     var attribute = attributeEntry.get();
                     double value;

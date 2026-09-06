@@ -64,7 +64,7 @@ public class SpellIntents {
             case SPAWN -> {
                 var intent = SpellTarget.Intent.HELPFUL;
                 if (!action.spawns.isEmpty()) {
-                    intent = action.spawns.getFirst().intent;
+                    intent = action.spawns.get(0).intent;
                 }
                 return intent;
             }
@@ -105,7 +105,7 @@ public class SpellIntents {
     }
 
     private static SpellTarget.Intent intentForStatusEffect(String idString) {
-        var id = Identifier.of(idString);
+        var id = new Identifier(idString);
         var effect = Registries.STATUS_EFFECT.get(id);
         return effect.isBeneficial() ? SpellTarget.Intent.HELPFUL : SpellTarget.Intent.HARMFUL;
     }

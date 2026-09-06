@@ -47,7 +47,7 @@ public class LivingEntityImmunityMixin implements LivingEntityImmunity.Owner {
 
     @Inject(method = "addStatusEffect(Lnet/minecraft/entity/effect/StatusEffectInstance;Lnet/minecraft/entity/Entity;)Z", at = @At("HEAD"), cancellable = true)
     private void addStatusEffect_HEAD_SpellEngine_Immunity(StatusEffectInstance effect, Entity source, CallbackInfoReturnable<Boolean> cir) {
-        var harmful = !effect.getEffectType().value().isBeneficial();
+        var harmful = !effect.getEffectType().isBeneficial();
         for (var entry: immunities) {
             if (harmful && entry.effectAnyHarmful()) {
                 cir.setReturnValue(false);

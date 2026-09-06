@@ -40,7 +40,7 @@ public class SpellCooldownManager {
         if (spell.cost.cooldown != null) {
             var group = spell.cost.cooldown.group;
             if (group != null) {
-                return Identifier.of("group", group);
+                return new Identifier("group", group);
             }
         }
         return null;
@@ -193,7 +193,7 @@ public class SpellCooldownManager {
     public void readCustomDataFromNbt(NbtCompound nbt) {
         NbtCompound cooldowns = nbt.getCompound(NBT_KEY);
         for (var key: cooldowns.getKeys()) {
-            var spell = Identifier.of(key);
+            var spell = new Identifier(key);
             var cooldownData = cooldowns.getCompound(key);
             var start = cooldownData.getInt("start");
             var end = cooldownData.getInt("end");

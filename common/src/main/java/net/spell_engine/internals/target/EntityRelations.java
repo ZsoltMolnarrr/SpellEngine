@@ -103,7 +103,7 @@ public class EntityRelations {
             for (var entrySet: SpellEngineMod.config.player_relation_tags.entrySet()) {
                 var tagString = entrySet.getKey();
                 var relation = entrySet.getValue();
-                var tag = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.of(tagString));
+                var tag = TagKey.of(RegistryKeys.ENTITY_TYPE, new Identifier(tagString));
                 RELATION_TAG_CACHE.put(tag, relation);
             }
         }

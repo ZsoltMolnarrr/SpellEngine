@@ -1,5 +1,7 @@
 package net.spell_engine.internals.delivery;
 
+import net.spell_engine.utils.EntityScale;
+import net.spell_engine.utils.RegistryHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffectInstance;
@@ -89,7 +91,7 @@ public class SpellDelivery {
             case AREA -> {
                 var center = caster.getPos().add(0, caster.getHeight() / 2F, 0);
                 var area = spell.target.area;
-                var range = SpellParameters.getRangeCurved(caster, spellEntry, context.charge()) * caster.getScale();
+                var range = SpellParameters.getRangeCurved(caster, spellEntry, context.charge()) * EntityScale.of(caster);
                 final var centeredContext = context; // .position(center);
                 double squaredRange = range * range;
                 var targetsWithContext = targets.stream().map(target -> {
@@ -251,8 +253,8 @@ public class SpellDelivery {
             case STASH_EFFECT -> {
                 var anyAdded = false;
                 var stash = spell.deliver.stash_effect;
-                var id = Identifier.of(stash.id);
-                var effect = Registries.STATUS_EFFECT.getEntry(id).get();
+                var id = new Identifier(stash.id);
+                var effect = RegistryHelper.getEntry(Registries.STATUS_EFFECT, id).get().value();
 
                 var amplifier = stash.amplifier;
                 if (stash.amplifier_power_multiplier != 0) {

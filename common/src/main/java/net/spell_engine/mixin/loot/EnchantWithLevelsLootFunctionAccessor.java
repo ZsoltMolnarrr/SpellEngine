@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(EnchantWithLevelsLootFunction.class)
 public interface EnchantWithLevelsLootFunctionAccessor {
-    @Accessor("levels")
+    @Accessor("range")
     LootNumberProvider spellEngine_getLevels();
 }

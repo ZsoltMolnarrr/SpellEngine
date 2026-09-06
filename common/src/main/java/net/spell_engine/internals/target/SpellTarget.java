@@ -1,5 +1,6 @@
 package net.spell_engine.internals.target;
 
+import net.spell_engine.utils.EntityScale;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.registry.RegistryKeys;
@@ -57,7 +58,7 @@ public class SpellTarget {
         boolean fallbackToPreviousTargets = false;
         var focusMode = SpellIntents.focusMode(currentSpell);
         var targetType = currentSpell.target.type;
-        var range = resolvedRange * caster.getScale();
+        var range = resolvedRange * EntityScale.of(caster);
 
         Predicate<Entity> selectionPredicate = (target) -> {
             var deliveryIntent = SpellIntents.deliveryIntent(currentSpell);

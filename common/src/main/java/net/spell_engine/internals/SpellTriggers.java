@@ -7,6 +7,7 @@ import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.Vec3d;
@@ -61,7 +62,7 @@ public class SpellTriggers {
 
         @Nullable public MeleeCompat.Attack melee;
 
-        @Nullable public RegistryEntry<StatusEffect> statusEffect;
+        @Nullable public StatusEffect statusEffect;
 
         public boolean arrowFiredBySpell = false;
 
@@ -173,7 +174,7 @@ public class SpellTriggers {
     }
 
     public static void onSpellCast(PlayerEntity player, RegistryEntry<Spell> spell, List<Entity> targets) {
-        var firstTarget = targets.isEmpty() ? null : targets.getFirst();
+        var firstTarget = targets.isEmpty() ? null : targets.get(0);
         var target = ObjectHelper.coalesce(firstTarget, player);
         var event = new Event(Spell.Trigger.Type.SPELL_CAST, player, player, target);
         event.spell = spell;
@@ -187,7 +188,7 @@ public class SpellTriggers {
         fireTriggers(event);
     }
 
-    public static void onEffectTick(PlayerEntity player, RegistryEntry<StatusEffect> effect) {
+    public static void onEffectTick(PlayerEntity player, StatusEffect effect) {
         var event = new Event(Spell.Trigger.Type.EFFECT_TICK, player, player, null);
         event.statusEffect = effect;
         fireTriggers(event);
@@ -409,8 +410,8 @@ public class SpellTriggers {
     private static ItemStack triggeringWeapon(Event event) {
         switch (event.type) {
             case ARROW_SHOT, ARROW_IMPACT -> {
-                if (event.arrow instanceof PersistentProjectileEntity projectile) {
-                    return projectile.getWeaponStack();
+                if (event.arrow != null) {
+                    return event.arrow.getWeaponStack_SpellEngine();
                 }
                 return null;
             }
@@ -524,11 +525,9 @@ public class SpellTriggers {
         if (event.statusEffect == null) {
             return false;
         }
-        // PatternMatching.matches(event.statusEffect, Registries.STATUS_EFFECT.getKey(), condition.effect_id)
-        // doesn't work due to the legacy type of Registries.STATUS_EFFECT
-        var key = event.statusEffect.getKey();
-        if (condition.id != null && key.isPresent()
-                && !Objects.equals(key.get().getValue().toString(), condition.id)) {
+        var id = Registries.STATUS_EFFECT.getId(event.statusEffect);
+        if (condition.id != null && id != null
+                && !Objects.equals(id.toString(), condition.id)) {
             return false;
         }
         return true;

@@ -219,7 +219,7 @@ public class ParticleHelper {
     private static void emit(long time, Vec3d origin, float width, float yaw, float pitch,
                              ParticleGroup effect, float countMultiplier, boolean continuous,
                              @Nullable Entity sourceEntity, List<SpawnInstruction> output) {
-        var registryEntry = Registries.PARTICLE_TYPE.get(Identifier.of(effect.id));
+        var registryEntry = Registries.PARTICLE_TYPE.get(new Identifier(effect.id));
         if (registryEntry == null) {
             return;
         }

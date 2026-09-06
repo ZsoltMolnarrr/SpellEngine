@@ -11,23 +11,23 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
+import net.spell_engine.api.enchantment.SpellEngineEnchantments;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.compat.container.ContainerCompat;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
 public class Ammo {
-    private static final Identifier SPELL_INFINITY = Identifier.of(SpellEngineMod.ID, "spell_infinity");
-
     public record Searched(@Nullable TagKey<Item> tag, @Nullable Item item) {
         public static Searched from(String stringId) {
             if (stringId.startsWith("#")) {
-                return new Searched(TagKey.of(RegistryKeys.ITEM, Identifier.of(stringId.substring(1))), null);
+                return new Searched(TagKey.of(RegistryKeys.ITEM, new Identifier(stringId.substring(1))), null);
             } else {
-                return new Searched(null, Registries.ITEM.get(Identifier.of(stringId)));
+                return new Searched(null, Registries.ITEM.get(new Identifier(stringId)));
             }
         }
         public boolean isValid() {
@@ -46,7 +46,7 @@ public class Ammo {
         }
         public String getTranslationKey() {
             if (tag != null) {
-                return tag.getTranslationKey();
+                return "tag.item." + tag.id().getNamespace() + "." + tag.id().getPath(); // same key shape as 1.21 `TagKey#getTranslationKey`
             } else if (item != null) {
                 return item.getTranslationKey();
             }
@@ -67,14 +67,14 @@ public class Ammo {
                     || !SpellEngineMod.config.spell_cost_item_allowed) {
                 return new Result(satisfied, ammo, consume, sources);
             }
-            var id = Identifier.of(spell.cost.item.id);
+            var id = new Identifier(spell.cost.item.id);
             var needsArrow = id.getPath().contains("arrow");
 
-            var enchantmentQuery = needsArrow
-                    ? player.getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntry(Enchantments.INFINITY)
-                    : player.getWorld().getRegistryManager().get(RegistryKeys.ENCHANTMENT).getEntry(SPELL_INFINITY);
-            if (enchantmentQuery.isPresent() &&
-                    EnchantmentHelper.getLevel(enchantmentQuery.get(), casterStack) > 0) { // Has infinity
+            // Vanilla Infinity covers arrow costs, Spell Infinity everything else (legacy 1.20.1 behaviour)
+            var hasInfinity = needsArrow
+                    ? EnchantmentHelper.getLevel(Enchantments.INFINITY, casterStack) > 0
+                    : EnchantmentHelper.getLevel(SpellEngineEnchantments.SPELL_INFINITY, casterStack) > 0;
+            if (hasInfinity) {
                 return new Result(satisfied, ammo, consume, sources);
             }
 
@@ -196,7 +196,8 @@ public class Ammo {
                     putBack.add(storedStack);
                 }
             }
-            var newBundle = bundle.createNewWithContents(putBack.reversed());
+            Collections.reverse(putBack);
+            var newBundle = bundle.createNewWithContents(putBack);
             newBundle.attachTo(containerStack);
         }
         return taken;

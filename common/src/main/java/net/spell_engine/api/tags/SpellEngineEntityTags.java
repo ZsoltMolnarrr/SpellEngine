@@ -18,12 +18,18 @@ public class SpellEngineEntityTags {
      * Entities that are considered bosses.
      * Movement impairing and stun effects are disabled against these.
      */
-    public static final TagKey<EntityType<?>> bosses = TagKey.of(Registries.ENTITY_TYPE.getKey(), Identifier.of(SpellEngineMod.ID, "bosses"));
+    public static final TagKey<EntityType<?>> bosses = TagKey.of(Registries.ENTITY_TYPE.getKey(), new Identifier(SpellEngineMod.ID, "bosses"));
 
     /**
      * Categories of entities that are considered mechanical.
      */
-    public static final TagKey<EntityType<?>> mechanical = TagKey.of(Registries.ENTITY_TYPE.getKey(), Identifier.of(SpellEngineMod.ID, "mechanical"));
+    public static final TagKey<EntityType<?>> mechanical = TagKey.of(Registries.ENTITY_TYPE.getKey(), new Identifier(SpellEngineMod.ID, "mechanical"));
+
+    /**
+     * Undead entity types. 1.20.1 has no `#minecraft:undead` tag (added in 1.20.5), so Spell Engine ships
+     * its own (`data/spell_engine/tags/entity_types/undead.json`).
+     */
+    public static final TagKey<EntityType<?>> undead = TagKey.of(Registries.ENTITY_TYPE.getKey(), new Identifier(SpellEngineMod.ID, "undead"));
 
     public static class Vulnerability {
         enum Category {
@@ -32,7 +38,7 @@ public class SpellEngineEntityTags {
         }
         public record Entry(SpellSchool school, Category category, List<TagKey<EntityType<?>>> included) {
             public Identifier id() {
-                return Identifier.of(SpellEngineMod.ID, "vulnerability/" + category.name().toLowerCase(Locale.ROOT) + "_" + school.id.getPath());
+                return new Identifier(SpellEngineMod.ID, "vulnerability/" + category.name().toLowerCase(Locale.ROOT) + "_" + school.id.getPath());
             }
             public TagKey<EntityType<?>> tag() {
                 return TagKey.of(Registries.ENTITY_TYPE.getKey(), id());
@@ -54,7 +60,7 @@ public class SpellEngineEntityTags {
                 EntityTypeTags.FREEZE_IMMUNE_ENTITY_TYPES
         )));
         public static final Entry WEAK_TO_HOLY = add(new Entry(SpellSchools.HEALING, Category.WEAK_TO, List.of(
-                EntityTypeTags.UNDEAD
+                undead
         )));
     }
 }

@@ -24,6 +24,7 @@ import net.minecraft.entity.passive.GolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -48,6 +49,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.internals.target.EntityRelation;
 import net.spell_engine.internals.target.EntityRelations;
 import org.jetbrains.annotations.Nullable;
+import net.spell_power.api.ModifierDefinitions;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -152,16 +154,21 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     }
 
     @Override
-    public EntityDimensions getBaseDimensions(EntityPose pose) {
+    public EntityDimensions getDimensions(EntityPose pose) {
         float w = getDataTracker().get(BOUNDING_BOX_WIDTH);
         float h = getDataTracker().get(BOUNDING_BOX_HEIGHT);
         // 0 (or anything <= 0) = "no override is configured" — defer to vanilla, which
         // returns type.getDimensions().scaled(getScaleFactor()) (handles baby scale etc.).
-        if (w <= 0 || h <= 0) return super.getBaseDimensions(pose);
+        if (w <= 0 || h <= 0) return super.getDimensions(pose);
         // `changing` (fixed=false) is required: `EntityDimensions.scaled()` short-circuits
-        // and returns `this` unchanged when `fixed=true`, which would silently swallow the
-        // GENERIC_SCALE attribute multiplier vanilla applies in LivingEntity.getDimensions.
-        return EntityDimensions.changing(w, h);
+        // and returns `this` unchanged when `fixed=true`.
+        return EntityDimensions.changing(w, h).scaled(getScaleFactor());
+    }
+
+    /// 1.20.1 has no `GENERIC_SCALE` attribute (1.20.5+); the only vanilla size multiplier is the
+    /// baby factor. Summon behaviours cannot scale entities on this game version.
+    public float getScale() {
+        return getScaleFactor();
     }
 
     @Override
@@ -214,8 +221,8 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     }
 
     @Override
-    public boolean isImmuneToExplosion(Explosion explosion) {
-        return !isAttackableSummon() && super.isImmuneToExplosion(explosion);
+    public boolean isImmuneToExplosion() {
+        return !isAttackableSummon() && super.isImmuneToExplosion();
     }
 
     public void takeKnockback(double strength, double x, double z) {
@@ -305,14 +312,14 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     // `playHurtSound` and inline in `damage()`), which plays at `getSoundVolume()` — ignoring the
     // fx.Sound's own volume/pitch. Intercept here: when the event is the one our configured hurt/death
     // Sound resolves to, re-emit it honoring that Sound's volume/pitch/randomness. All other vanilla
-    // single-arg playSound calls pass straight through.
+    // playSound calls pass straight through. (1.20.1: vanilla plays these via the 3-arg overload.)
     @Override
-    public void playSound(@Nullable SoundEvent sound) {
+    public void playSound(@Nullable SoundEvent sound, float volume, float pitch) {
         if (sound != null && behaviour != null) {
             if (sound == hurtEvent.get())  { playConfiguredSound(behaviour.sounds.hurt);  return; }
             if (sound == deathEvent.get()) { playConfiguredSound(behaviour.sounds.death); return; }
         }
-        super.playSound(sound);
+        super.playSound(sound, volume, pitch);
     }
 
     // Vanilla MobEntity.playAmbientSound() is `this.playSound(this.getAmbientSound())` with NO null
@@ -549,7 +556,13 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
             this.setNoGravity(true);
         }
         if (!behaviour.movement.is_pushable) {
-            this.getAttributeInstance(EntityAttributes.GENERIC_EXPLOSION_KNOCKBACK_RESISTANCE).addTemporaryModifier(new EntityAttributeModifier(Identifier.of("unpushable"), 9999, EntityAttributeModifier.Operation.ADD_VALUE));
+            // 1.20.1 has no explosion-specific knockback resistance attribute; plain knockback resistance is the closest.
+            var unpushable = new Identifier(SpellEngineMod.ID, "unpushable");
+            var instance = this.getAttributeInstance(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE);
+            if (instance != null && instance.getModifier(ModifierDefinitions.uuid(unpushable)) == null) {
+                instance.addTemporaryModifier(new EntityAttributeModifier(ModifierDefinitions.uuid(unpushable),
+                        ModifierDefinitions.name(unpushable), 9999, EntityAttributeModifier.Operation.ADDITION));
+            }
         }
     }
 
@@ -563,7 +576,10 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
                 .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, entry.common.movement_speed)
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE, entry.common.attack_damage);
         for (var custom : entry.custom) {
-            Registries.ATTRIBUTE.getEntry(Identifier.of(custom.id)).ifPresent(e -> builder.add(e, custom.value));
+            var attribute = Registries.ATTRIBUTE.get(new Identifier(custom.id));
+            if (attribute != null) {
+                builder.add(attribute, custom.value);
+            }
         }
         return builder;
     }
@@ -572,23 +588,25 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         if (attributeScaling == null) return;
         var healthRatio = this.getHealth() / this.getMaxHealth();
         for (var entry : attributeScaling.entries) {
-            var targetAttrOpt = Registries.ATTRIBUTE.getEntry(Identifier.of(entry.attribute_id));
-            if (targetAttrOpt.isEmpty()) continue;
-            var instance = this.getAttributeInstance(targetAttrOpt.get());
+            var targetAttr = Registries.ATTRIBUTE.get(new Identifier(entry.attribute_id));
+            if (targetAttr == null) continue;
+            var instance = this.getAttributeInstance(targetAttr);
             if (instance == null) continue;
 
             double bonus = 0;
             for (var modifier : entry.modifiers) {
-                var ownerAttrOpt = Registries.ATTRIBUTE.getEntry(Identifier.of(modifier.attribute_id));
-                if (ownerAttrOpt.isEmpty()) continue;
-                var ownerInstance = owner.getAttributeInstance(ownerAttrOpt.get());
+                var ownerAttr = Registries.ATTRIBUTE.get(new Identifier(modifier.attribute_id));
+                if (ownerAttr == null) continue;
+                var ownerInstance = owner.getAttributeInstance(ownerAttr);
                 if (ownerInstance == null) continue;
                 bonus += modifier.base + ownerInstance.getValue() * modifier.coefficient;
             }
 
-            var modifierId = Identifier.of(SpellEngineMod.ID, "summon_scaling/" + entry.attribute_id.replace(":", "/"));
-            instance.removeModifier(modifierId);
-            instance.addTemporaryModifier(new EntityAttributeModifier(modifierId, bonus, EntityAttributeModifier.Operation.ADD_VALUE));
+            var modifierId = new Identifier(SpellEngineMod.ID, "summon_scaling/" + entry.attribute_id.replace(":", "/"));
+            var modifierUuid = ModifierDefinitions.uuid(modifierId);
+            instance.removeModifier(modifierUuid);
+            instance.addTemporaryModifier(new EntityAttributeModifier(modifierUuid, ModifierDefinitions.name(modifierId),
+                    bonus, EntityAttributeModifier.Operation.ADDITION));
         }
         this.setHealth(this.getMaxHealth() * healthRatio);
     }
@@ -724,7 +742,7 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
 
     private double spellActionRange(SummonBehaviour.Action.SpellCast spell) {
         if (spell == null) return 0;
-        var entry = SpellRegistry.from(getWorld()).getEntry(Identifier.of(spell.spell_id)).orElse(null);
+        var entry = SpellRegistry.from(getWorld()).getEntry(RegistryKey.of(SpellRegistry.KEY, new Identifier(spell.spell_id))).orElse(null);
         if (entry == null) return 0;
         // Effective range folds in caster modifiers; range.max is the action's engagement edge.
         return SpellParameters.getRange(this, entry) * spell.range.max;
@@ -866,26 +884,27 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
-        super.initDataTracker(builder);
-        builder.add(OWNER_UUID, Optional.empty());
-        builder.add(PHASE, PHASE_SPAWNING);
-        builder.add(COLLISION_MODE, (byte) SummonBehaviour.Movement.CollisionMode.ALL.ordinal());
-        builder.add(IS_ATTACKABLE, true);
+    protected void initDataTracker() {
+        super.initDataTracker();
+        var builder = this.dataTracker;
+        builder.startTracking(OWNER_UUID, Optional.empty());
+        builder.startTracking(PHASE, PHASE_SPAWNING);
+        builder.startTracking(COLLISION_MODE, (byte) SummonBehaviour.Movement.CollisionMode.ALL.ordinal());
+        builder.startTracking(IS_ATTACKABLE, true);
         // 0 = sentinel for "no override". When the behaviour later sets a non-null
         // Dimensions, setBehaviour replaces these with the override values and
         // getBaseDimensions starts returning them; otherwise it falls through to
         // super.getBaseDimensions (the EntityType-declared size).
-        builder.add(BOUNDING_BOX_WIDTH,  0F);
-        builder.add(BOUNDING_BOX_HEIGHT, 0F);
-        builder.add(END_OF_PHASE_AGE, 0);
-        builder.add(CAST_PROCESS, "");
+        builder.startTracking(BOUNDING_BOX_WIDTH,  0F);
+        builder.startTracking(BOUNDING_BOX_HEIGHT, 0F);
+        builder.startTracking(END_OF_PHASE_AGE, 0);
+        builder.startTracking(CAST_PROCESS, "");
         // duration = 0 → all action animations start inactive.
         long inactive = packAnim(0, 0, 0);
-        builder.add(ATTACK_ANIMATION, inactive);
-        builder.add(SPELL_CAST_ANIMATION, inactive);
-        builder.add(SPELL_RELEASE_ANIMATION, inactive);
-        builder.add(EXISTENCE_PARTICLES, "");
+        builder.startTracking(ATTACK_ANIMATION, inactive);
+        builder.startTracking(SPELL_CAST_ANIMATION, inactive);
+        builder.startTracking(SPELL_RELEASE_ANIMATION, inactive);
+        builder.startTracking(EXISTENCE_PARTICLES, "");
     }
 
     public void setOwnerUuid(@Nullable UUID uuid) {

@@ -39,7 +39,9 @@ public interface RemoveOnHit {
         if (args.chance < 1.0F && world.random.nextFloat() > args.chance) {
             return false;
         }
-        var isInDirect = !damageSource.isDirect() || ((DamageSourceExtension)damageSource).isSpellIndirect();
+        // 1.20.1 has no `DamageSource#isDirect`: direct means the damaging entity is the attacker itself.
+        var isDirect = damageSource.getSource() == damageSource.getAttacker();
+        var isInDirect = !isDirect || ((DamageSourceExtension)damageSource).isSpellIndirect();
         return switch (args.trigger) {
             case ANY_HIT -> true;
             case DIRECT_HIT -> !isInDirect;

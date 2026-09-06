@@ -20,27 +20,32 @@ public class InstantCast {
             return new Args(Selection.TAG, null, tag);
         }
     }
-    private static Map<RegistryKey<StatusEffect>, Args> instantCastEffects = new HashMap<>();
+    /// 1.20.1: status effects are plain registry objects, so they key the map directly.
+    private static Map<StatusEffect, Args> instantCastEffects = new HashMap<>();
+
+    public static void register(StatusEffect effect, RegistryKey<Spell> spell) {
+        register(effect, Args.spell(spell));
+    }
+
+    public static void register(StatusEffect effect, TagKey<Spell> tag) {
+        register(effect, Args.tag(tag));
+    }
 
     public static void register(RegistryEntry<StatusEffect> effect, RegistryKey<Spell> spell) {
-        register(effect.getKey().get(), Args.spell(spell));
+        register(effect.value(), Args.spell(spell));
     }
 
     public static void register(RegistryEntry<StatusEffect> effect, TagKey<Spell> tag) {
-        register(effect.getKey().get(), Args.tag(tag));
+        register(effect.value(), Args.tag(tag));
     }
 
-    public static void register(RegistryKey<StatusEffect> effect, Args args) {
+    public static void register(StatusEffect effect, Args args) {
         instantCastEffects.put(effect, args);
     }
 
     public static boolean instantify(RegistryEntry<Spell> spellEntry, LivingEntity caster) {
         for (var entry : caster.getActiveStatusEffects().entrySet()) {
-            var effectKey = entry.getValue().getEffectType().getKey();
-            if (effectKey.isEmpty()) { // Should never happen, added due to some incompatibility
-                continue;
-            }
-            var args = instantCastEffects.get(effectKey.get());
+            var args = instantCastEffects.get(entry.getValue().getEffectType());
             if (args != null) {
                 switch (args.selection) {
                     case NONE -> {

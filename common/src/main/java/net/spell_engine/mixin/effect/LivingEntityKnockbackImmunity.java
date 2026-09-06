@@ -3,7 +3,6 @@ package net.spell_engine.mixin.effect;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.spell_engine.api.effect.KnockbackImmunity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +20,7 @@ public abstract class LivingEntityKnockbackImmunity implements KnockbackImmunity
     private boolean knockbackImmune_SpellEngine = false;
 
     @Shadow private boolean effectsChanged;
-    @Shadow @Final private Map<RegistryEntry<StatusEffect>, StatusEffectInstance> activeStatusEffects;
+    @Shadow @Final private Map<StatusEffect, StatusEffectInstance> activeStatusEffects;
 
     @Inject(method = "tickStatusEffects", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/LivingEntity;effectsChanged:Z", shift = At.Shift.BEFORE, ordinal = 0))
     private void tickStatusEffects_HEAD_KnockbackImmunity_SpellEngine(CallbackInfo ci) {
