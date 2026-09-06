@@ -29,6 +29,7 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.EntityView;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import net.spell_engine.api.entity.TwoWayCollisionChecker;
@@ -921,6 +922,12 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
         UUID uuid = getOwnerUuid();
         if (uuid == null) return null;
         return this.getWorld().getPlayerByUuid(uuid);
+    }
+
+    /** Yarn-unmapped {@code Tameable#getWorld} on 1.20.1+build.1 (vanilla's {@code TameableEntity} implements it the same way). */
+    @Override
+    public EntityView method_48926() {
+        return this.getWorld();
     }
 
     // --- Animation states ---

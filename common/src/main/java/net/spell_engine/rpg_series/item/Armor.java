@@ -120,7 +120,9 @@ public class Armor {
     public static CustomMaterial material(Identifier id, Map<ArmorItem.Type, Integer> protection, int enchantability,
                                           RegistryEntry<SoundEvent> equipSound, Supplier<Ingredient> repairIngredient,
                                           float toughness, float knockbackResistance) {
-        return new CustomMaterial(id, protection, enchantability, equipSound::value, repairIngredient, toughness, knockbackResistance, 1);
+        // `equipSound::value` would bind (and dereference) the entry eagerly, which NPEs when the material is
+        // created before the sound entry is populated. Resolve lazily instead, matching 1.21.1 (which just stores the entry).
+        return new CustomMaterial(id, protection, enchantability, () -> equipSound.value(), repairIngredient, toughness, knockbackResistance, 1);
     }
 
     public static CustomMaterial material(Identifier id, Map<ArmorItem.Type, Integer> protection, int enchantability,

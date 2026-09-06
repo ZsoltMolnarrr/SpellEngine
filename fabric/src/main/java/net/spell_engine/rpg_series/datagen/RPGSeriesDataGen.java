@@ -3,6 +3,7 @@ package net.spell_engine.rpg_series.datagen;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.item.Item;
+import net.minecraft.registry.RegistryBuilder;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.TagKey;
@@ -155,6 +156,29 @@ public class RPGSeriesDataGen {
         }
     }
 
+    /// Registers the `spell_engine:spell` registry on the datagen `RegistryBuilder`.
+    ///
+    /// Any [SpellTagGenerator] fails with `Registry spell_engine:spell not found` unless the owning
+    /// `DataGeneratorEntrypoint` contributes the registry: Fabric's `DynamicRegistries.registerSynced`
+    /// only feeds the *runtime* `RegistryLoader`, while the datagen `WrapperLookup` is assembled from
+    /// `BuiltinRegistries.REGISTRY_BUILDER` plus whatever each entrypoint adds here.
+    ///
+    /// Consumer usage — one line in the mod's `DataGeneratorEntrypoint`:
+    /// ```java
+    /// @Override
+    /// public void buildRegistry(RegistryBuilder registryBuilder) { RPGSeriesDataGen.buildRegistry(registryBuilder); }
+    /// ```
+    /// The bootstrap is intentionally empty: spell tags are written with `addOptional`/`addOptionalTag`,
+    /// so no spell entries have to exist at datagen time.
+    public static void buildRegistry(RegistryBuilder registryBuilder) {
+        registryBuilder.addRegistry(SpellRegistry.KEY, context -> { });
+    }
+
+    /// Base class for spell tag providers (spell book / scroll / weapon tags).
+    ///
+    /// **The owning `DataGeneratorEntrypoint` must also override `buildRegistry` and call
+    /// [RPGSeriesDataGen#buildRegistry(RegistryBuilder)]**, otherwise datagen throws
+    /// `Registry spell_engine:spell not found`.
     public static abstract class SpellTagGenerator extends FabricTagProvider<Spell> {
         public SpellTagGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
             super(output, SpellRegistry.KEY, registriesFuture);
