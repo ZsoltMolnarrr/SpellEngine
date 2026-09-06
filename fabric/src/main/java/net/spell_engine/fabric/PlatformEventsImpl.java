@@ -4,22 +4,20 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerEntityWorldChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootPool;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.spell_engine.PlatformEvents;
-import net.spell_engine.api.util.TriState;
-import net.spell_engine.mixin.loot.LootTableBuilderAccessor;
+import net.spell_engine.compat.EnchantmentAllowBridge;
+import net.spell_engine.fabric.mixin.LootTableBuilderAccessor;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -70,27 +68,19 @@ public class PlatformEventsImpl {
         ItemGroupEvents.modifyEntriesEvent(group).register(content -> callback.modify(content, content.getContext()));
     }
 
-    // Fabric API 0.92 has no `EnchantmentEvents.ALLOW_ENCHANTING`. Callbacks are buffered here and
-    // must be consulted from a Spell Engine mixin on `Enchantment.isAcceptableItem` (the legacy
-    // SpellPower `EnchantmentMixin` pattern) via `evaluateAllowEnchanting` — same shape as the Forge impl.
-    private static final List<PlatformEvents.AllowEnchanting> enchantCallbacks = new ArrayList<>();
-
+    /// Fabric API 0.92 has no `EnchantmentEvents.ALLOW_ENCHANTING`. The callbacks are bridged into Spell Power's
+    /// `EnchantmentRestriction`, whose `Enchantment#isAcceptableItem` + `EnchantmentHelper#getPossibleEntries`
+    /// mixins gate the anvil, enchanted books and the enchanting table on both loaders (same bridge as Forge).
+    /// Enchantments registered later (other mods' initializers) are picked up through the registry-add callback.
     public static void onAllowEnchanting(PlatformEvents.AllowEnchanting callback) {
-        enchantCallbacks.add(callback);
-    }
-
-    /// Combined enchant decision for the mixin. DENY wins over ALLOW; both win over PASS.
-    public static TriState evaluateAllowEnchanting(RegistryEntry<Enchantment> enchantment, ItemStack stack) {
-        var result = TriState.PASS;
-        for (var callback : enchantCallbacks) {
-            switch (callback.allow(enchantment, stack)) {
-                case DENY -> { return TriState.DENY; }
-                case ALLOW -> result = TriState.ALLOW;
-                case PASS -> { }
-            }
+        if (!enchantmentListenerInstalled) {
+            enchantmentListenerInstalled = true;
+            RegistryEntryAddedCallback.event(Registries.ENCHANTMENT).register((rawId, id, enchantment) ->
+                    EnchantmentAllowBridge.install(enchantment));
         }
-        return result;
+        EnchantmentAllowBridge.register(callback);
     }
+    private static boolean enchantmentListenerInstalled = false;
 
     /// `registries` is null on 1.20.1 (see onLootTableModify); LootHelper must not depend on it.
     private record FabricLootContext(RegistryWrapper.WrapperLookup registries, Identifier tableId,
@@ -98,7 +88,8 @@ public class PlatformEventsImpl {
             implements PlatformEvents.LootTableModifyContext {
         @Override
         public java.util.List<LootPool> existingPools() {
-            return ((LootTableBuilderAccessor) builder).spellEngine_getPools().build();
+            // Snapshot: the builder's pool list is mutable (`List<LootPool>` on 1.20.1) and we append to it below.
+            return List.copyOf(((LootTableBuilderAccessor) builder).spellEngine_getPools());
         }
 
         @Override

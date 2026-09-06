@@ -1,25 +1,25 @@
 package net.spell_engine.forge;
 
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
 import net.minecraft.loot.LootPool;
+import net.minecraft.loot.LootTable;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.LootTableLoadEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.OnDatapackSyncEvent;
-import net.minecraftforge.event.entity.living.LivingIncomingDamageEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.server.ServerStartedEvent;
 import net.minecraftforge.event.server.ServerStartingEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.spell_engine.PlatformEvents;
-import net.spell_engine.api.util.TriState;
+import net.spell_engine.compat.EnchantmentAllowBridge;
+import net.spell_engine.forge.mixin.LootTableAccessor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,26 +27,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-/// NeoForge wiring for {@link PlatformEvents}. Game-bus events are attached to
-/// `MinecraftForge.EVENT_BUS`; the item-group callbacks are buffered by tab key and dispatched from the
-/// mod-bus `BuildCreativeModeTabContentsEvent` handler registered in {@link ForgeMod}.
-/// No game logic lives here.
+/// Forge 47 wiring for {@link PlatformEvents}. Game-bus events are attached to `MinecraftForge.EVENT_BUS`
+/// with the explicit 4-arg `addListener(priority, receiveCancelled, Class, Consumer)` overload (Forge 47's
+/// `addListener(Consumer)` infers the event type from the lambda via TypeTools, which is fragile). The
+/// item-group callbacks are buffered by tab key and dispatched from the mod-bus
+/// `BuildCreativeModeTabContentsEvent` handler registered in {@link ForgeMod}. No game logic lives here.
 public class PlatformEventsImpl {
     public static void onServerStarting(Consumer<MinecraftServer> callback) {
-        MinecraftForge.EVENT_BUS.addListener(ServerStartingEvent.class, event -> callback.accept(event.getServer()));
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ServerStartingEvent.class,
+                event -> callback.accept(event.getServer()));
     }
 
     public static void onServerStarted(Consumer<MinecraftServer> callback) {
-        MinecraftForge.EVENT_BUS.addListener(ServerStartedEvent.class, event -> callback.accept(event.getServer()));
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, ServerStartedEvent.class,
+                event -> callback.accept(event.getServer()));
     }
 
     public static void onDataPackReloadComplete(Runnable callback) {
-        // Fires after datapacks (re)load; the callback is idempotent so per-player firing is harmless.
-        MinecraftForge.EVENT_BUS.addListener(OnDatapackSyncEvent.class, event -> callback.run());
+        // Forge 47 fires OnDatapackSyncEvent both after a datapack (re)load (player == null, "sync everyone")
+        // and once per joining player (player != null). Only the former matches Fabric's END_DATA_PACK_RELOAD;
+        // the callback is idempotent, so filtering is an optimisation, not a correctness requirement.
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, OnDatapackSyncEvent.class, event -> {
+            if (event.getPlayer() == null) {
+                callback.run();
+            }
+        });
     }
 
     public static void onPlayerJoin(Consumer<ServerPlayerEntity> callback) {
-        MinecraftForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, PlayerEvent.PlayerLoggedInEvent.class, event -> {
             if (event.getEntity() instanceof ServerPlayerEntity player) {
                 callback.accept(player);
             }
@@ -54,7 +63,7 @@ public class PlatformEventsImpl {
     }
 
     public static void onPlayerChangedWorld(Consumer<ServerPlayerEntity> callback) {
-        MinecraftForge.EVENT_BUS.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, event -> {
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, PlayerEvent.PlayerChangedDimensionEvent.class, event -> {
             if (event.getEntity() instanceof ServerPlayerEntity player) {
                 callback.accept(player);
             }
@@ -62,26 +71,35 @@ public class PlatformEventsImpl {
     }
 
     public static void onIncomingDamage(PlatformEvents.IncomingDamage callback) {
-        // Side-effect hook only; never cancels.
-        MinecraftForge.EVENT_BUS.addListener(LivingIncomingDamageEvent.class, event ->
-                callback.accept(event.getEntity(), event.getSource(), event.getAmount()));
+        // Side-effect hook only; never cancels. LivingAttackEvent fires at `LivingEntity#damage` HEAD, the
+        // closest Forge match for Fabric's ALLOW_DAMAGE (which fires after the invulnerability checks but before
+        // shield blocking/armor); `LivingHurtEvent` would fire only after shield blocking and i-frames. The
+        // client-side and invulnerable-target invocations (which Fabric's hook never sees) are filtered out.
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, LivingAttackEvent.class, event -> {
+            var entity = event.getEntity();
+            if (!entity.getWorld().isClient() && !entity.isInvulnerableTo(event.getSource())) {
+                callback.accept(entity, event.getSource(), event.getAmount());
+            }
+        });
     }
 
     public static void onCommandRegistration(PlatformEvents.CommandRegistration callback) {
-        MinecraftForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, event ->
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, RegisterCommandsEvent.class, event ->
                 callback.register(event.getDispatcher(), event.getBuildContext(), event.getCommandSelection()));
     }
 
     public static void onLootTableModify(Consumer<PlatformEvents.LootTableModifyContext> callback) {
-        MinecraftForge.EVENT_BUS.addListener(LootTableLoadEvent.class, event -> {
+        MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, LootTableLoadEvent.class, event -> {
             var table = event.getTable();
-            var context = new ForgeLootContext(event.getRegistries(), event.getName(), table.pools);
+            // `registries` is null on 1.20.1: LootTableLoadEvent fires while the datapack contents are still
+            // being built (no server / registry manager reachable), and 1.20.1 loot functions do not need a
+            // RegistryWrapper.WrapperLookup anyway. Same contract as the Fabric impl; LootHelper must not use it.
+            var context = new ForgeLootContext(null, event.getName(), List.copyOf(((LootTableAccessor) table).spellEngine_getPools()));
             callback.accept(context);
-            // Mutate the loaded table in place. Replacing it via `event.setTable(new LootTable(...))`
-            // would drop NeoForge's `lootTableId` field (set before this event, one-shot, not a codec
-            // field), which is what `CommonHooks.modifyLoot` keys global loot modifiers on — every GLM
-            // conditioned on `neoforge:loot_table_id` would then silently stop applying to this table.
-            for (var pool: context.pools) {
+            // Mutate the loaded table in place through Forge's patched `LootTable#addPool` (the table is not
+            // frozen yet at this point). Replacing it via `event.setTable(...)` would drop Forge's
+            // `lootTableId`, which global loot modifiers key on.
+            for (var pool : context.pools) {
                 table.addPool(pool);
             }
         });
@@ -103,25 +121,13 @@ public class PlatformEventsImpl {
         }
     }
 
-    // Enchant-applicability callbacks are buffered and consulted from IItemExtensionMixin, which
-    // hooks the single `supportsEnchantment` chokepoint the anvil and enchanting table both funnel through.
-    private static final List<PlatformEvents.AllowEnchanting> enchantCallbacks = new ArrayList<>();
-
+    /// Forge 47 has no global enchant-applicability event (only the per-item `IForgeItem#canApplyAtEnchantingTable`).
+    /// The callbacks are bridged into Spell Power's `EnchantmentRestriction`, whose `Enchantment#isAcceptableItem`
+    /// + `EnchantmentHelper#getPossibleEntries` mixins gate the anvil, enchanted books and the enchanting table on
+    /// both loaders. Enchantments registered after this call are covered by {@link ForgeMod}'s
+    /// `FMLCommonSetupEvent` listener (`EnchantmentAllowBridge.installAll()`).
     public static void onAllowEnchanting(PlatformEvents.AllowEnchanting callback) {
-        enchantCallbacks.add(callback);
-    }
-
-    /// Combined enchant decision for the mixin. DENY wins over ALLOW; both win over PASS.
-    public static TriState evaluateAllowEnchanting(RegistryEntry<Enchantment> enchantment, ItemStack stack) {
-        var result = TriState.PASS;
-        for (var callback : enchantCallbacks) {
-            switch (callback.allow(enchantment, stack)) {
-                case DENY -> { return TriState.DENY; }
-                case ALLOW -> result = TriState.ALLOW;
-                case PASS -> { }
-            }
-        }
-        return result;
+        EnchantmentAllowBridge.register(callback);
     }
 
     private static final class ForgeLootContext implements PlatformEvents.LootTableModifyContext {

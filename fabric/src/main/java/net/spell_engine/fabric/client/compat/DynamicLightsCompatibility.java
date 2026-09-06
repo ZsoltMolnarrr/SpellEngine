@@ -2,7 +2,6 @@ package net.spell_engine.fabric.client.compat;
 
 import dev.lambdaurora.lambdynlights.api.DynamicLightHandlers;
 import dev.lambdaurora.lambdynlights.api.DynamicLightsInitializer;
-import dev.lambdaurora.lambdynlights.api.item.ItemLightSourceManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.spell_engine.entity.SpellCloud;
@@ -12,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.ToIntFunction;
 
+/// LambDynamicLights 2.3.2+1.20.1 integration, wired through the `dynamiclights` entrypoint in
+/// `fabric.mod.json`. The 2.3 API is the no-arg `onInitializeDynamicLights()` (the 1.21.4+ line hands over an
+/// `ItemLightSourceManager`; there is no item-light API on 2.3 and Spell Engine registers none).
 public class DynamicLightsCompatibility implements DynamicLightsInitializer {
 
     /// One entity type paired with the light level it emits, read from the entity's client-visible state.
@@ -40,8 +42,7 @@ public class DynamicLightsCompatibility implements DynamicLightsInitializer {
     }
 
     @Override
-    public void onInitializeDynamicLights(ItemLightSourceManager itemLightSourceManager) {
-        System.out.println("Spell Engine: Initializing Dynamic Lights compatibility...");
+    public void onInitializeDynamicLights() {
         for (var registration : registrations()) {
             register(registration);
         }
