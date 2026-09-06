@@ -88,8 +88,9 @@ dependencies {
     modImplementation("net.spell_power:spell_power-${platform}:${rootProject.spell_power_version}")
     modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${rootProject.bundle_api_version}")
     modCompileOnly("net.critical_strike:critical_strike-${platform}:${rootProject.critical_strike_version}")
-    // RangedWeaponAPI: legacy published Fabric-only artifact (Modrinth maven); runtime dependency on Fabric only.
-    modImplementation("maven.modrinth:ranged-weapon-api:${rootProject.ranged_weapon_api_version}")
+    // RangedWeaponAPI 2.3.4.001+1.20.1 (mavenLocal). Compile-only: optional at runtime, not in the published POM;
+    // Spell Engine boots without it (ranged content mods declare their own RWA dependency).
+    modCompileOnly("net.foundation:ranged_weapon_api-${platform}:${rootProject.ranged_weapon_api_version}")
 
     // Compatibility
 

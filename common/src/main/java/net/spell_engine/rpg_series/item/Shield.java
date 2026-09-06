@@ -151,7 +151,9 @@ public class Shield {
             // Convert AttributeModifier list to format expected by shield factory
             ArrayList<Pair<EntityAttribute, EntityAttributeModifier>> shieldAttributes = new ArrayList<>();
             for (var modifier : Weapon.attributesFrom(attributes).modifiers()) {
-                shieldAttributes.add(new Pair<>(modifier.attribute().value(), modifier.modifier()));
+                var attribute = modifier.attributeValue();
+                if (attribute == null) { continue; } // Attribute not registered on this runtime (optional mod)
+                shieldAttributes.add(new Pair<>(attribute, modifier.modifier()));
             }
 
             this.registeredItem = factory.create(

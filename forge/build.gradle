@@ -93,7 +93,11 @@ dependencies {
     modImplementation("net.spell_power:spell_power-${platform}:${rootProject.spell_power_version}")
     modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${rootProject.bundle_api_version}")
     modCompileOnly("net.critical_strike:critical_strike-${platform}:${rootProject.critical_strike_version}")
-    // RangedWeaponAPI: no Forge artifact exists on 1.20.1 — the forge build ships without RWA.
+    // RangedWeaponAPI 2.3.4.001+1.20.1 (mavenLocal; first RWA build with a Forge artifact). Compile-only: optional at
+    // runtime, not in the published POM; Spell Engine boots without it. To exercise the RWA path in the dev runtime
+    // use the Yarn-named dev-shadow jar (the production jar's SRG mixin targets are skipped in the dev env):
+    //   localRuntime("net.foundation:ranged_weapon_api-forge:${rootProject.ranged_weapon_api_version}:dev-shadow")
+    modCompileOnly("net.foundation:ranged_weapon_api-${platform}:${rootProject.ranged_weapon_api_version}")
 
     // Compatibility
 

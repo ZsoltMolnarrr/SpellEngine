@@ -35,7 +35,7 @@ public class SpellEngineDataGenerator implements DataGeneratorEntrypoint {
         pack.addProvider(RPGSeriesContent.EquipmentTagGen::new);
         pack.addProvider(RPGSeriesContent.WeaponSkillGen::new);
         pack.addProvider(RPGSeriesContent.LangGenerator::new);
-        // TestDataGen.addTo(pack);
+        // TestDataGen.addTo(pack); // Verified working (1.10.5.004); off by default so `test:` content does not ship
     }
 
     @Override

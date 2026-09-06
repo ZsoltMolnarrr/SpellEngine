@@ -2,23 +2,16 @@ package net.spell_engine.fabric.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricDynamicRegistryProvider;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.item.Item;
-import net.minecraft.registry.RegistryEntryLookup;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.util.Identifier;
+import net.spell_engine.api.datagen.EquipmentSetGenerator;
 import net.spell_engine.api.datagen.SpellBuilder;
 import net.spell_engine.api.datagen.SpellGenerator;
 import net.spell_engine.api.item.ItemAttributeModifiers;
 import net.spell_engine.api.item.set.EquipmentSet;
-import net.spell_engine.api.item.set.EquipmentSetRegistry;
 import net.spell_engine.api.spell.ExternalSpellSchools;
 import net.spell_engine.api.spell.Spell;
-import net.spell_engine.api.spell.container.SpellContainerHelper;
 import net.spell_engine.api.spell.container.SpellContainers;
 import net.spell_engine.utils.AttributeModifierUtil;
 import net.spell_power.api.SpellSchools;
@@ -35,25 +28,26 @@ public class TestDataGen {
         pack.addProvider(TestDataGen.TestSpellGen::new);
     }
 
-    public static class TestEquipmentSetGenerator extends FabricDynamicRegistryProvider {
+    /// Exercises {@link EquipmentSetGenerator} (SE's own datagen path for `data/<ns>/equipment_set/`) and the
+    /// id-only attribute escape hatch of {@link ItemAttributeModifiers} (`ranged_weapon:damage` is written whether
+    /// or not RangedWeaponAPI is on the datagen runtime).
+    public static class TestEquipmentSetGenerator extends EquipmentSetGenerator {
 
         public TestEquipmentSetGenerator(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
             super(output, registriesFuture);
         }
 
         @Override
-        protected void configure(RegistryWrapper.WrapperLookup registries, Entries entries) {
-            RegistryEntryLookup<Item> itemLookup = registries.createRegistryLookup().getOrThrow(RegistryKeys.ITEM);
-
-            var equipmentSetLookup = registries.createRegistryLookup().getOrThrow(EquipmentSetRegistry.KEY);
-
-            var setId = RegistryKey.of(EquipmentSetRegistry.KEY, new Identifier(NAMESPACE, "fire_power"));
-
+        public void generateEquipmentSets(Builder builder) {
             var firePowerBonus = new EquipmentSet.Bonus(
                     1,
                     ItemAttributeModifiers.builder()
                             .add(SpellSchools.FIRE.attributeEntry,
                                     AttributeModifierUtil.modifier(new Identifier("fire_power_bonus"), 1, EntityAttributeModifier.Operation.ADDITION),
+                                    ItemAttributeModifiers.Slot.ARMOR)
+                            // Optional-mod attribute by id: serializes without RWA present
+                            .add(new Identifier("ranged_weapon", "damage"),
+                                    AttributeModifierUtil.modifier(new Identifier("ranged_damage_bonus"), 0.05, EntityAttributeModifier.Operation.MULTIPLY_BASE),
                                     ItemAttributeModifiers.Slot.ARMOR)
                             .build(),
                     null);
@@ -76,20 +70,14 @@ public class TestDataGen {
                             .withSpellId(new Identifier("arsenal", "exploding_melee"))
             );
 
-            var items = RegistryEntryList.of(
-                    // Iron armor
-                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, new Identifier("minecraft", "iron_helmet"))),
-                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, new Identifier("minecraft", "iron_chestplate"))),
-                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, new Identifier("minecraft", "iron_leggings"))),
-                    itemLookup.getOrThrow(RegistryKey.of(RegistryKeys.ITEM, new Identifier("minecraft", "iron_boots")))
-            );
-            entries.add(setId,
-                    new EquipmentSet.Definition(
-                            "fire_power",
-                            items,
-                            List.of(firePowerBonus, fireball, fireProc, explodingProc)
-                    )
-            );
+            builder.add(new Identifier(NAMESPACE, "fire_power"), "fire_power",
+                    List.of(
+                            new Identifier("minecraft", "iron_helmet"),
+                            new Identifier("minecraft", "iron_chestplate"),
+                            new Identifier("minecraft", "iron_leggings"),
+                            new Identifier("minecraft", "iron_boots")
+                    ),
+                    List.of(firePowerBonus, fireball, fireProc, explodingProc));
         }
 
         @Override
@@ -119,6 +107,12 @@ public class TestDataGen {
         @Override
         public void generateSpells(Builder builder) {
             builder.add(new Identifier(NAMESPACE, "shout_taunt"), shoutTaunt());
+        }
+
+        /// Distinct from `RPGSeriesContent.WeaponSkillGen`'s "Spell Generator" (Fabric rejects duplicate provider names)
+        @Override
+        public String getName() {
+            return "Test Spell Generator";
         }
     }
 }

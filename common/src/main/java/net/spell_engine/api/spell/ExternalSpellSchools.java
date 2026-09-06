@@ -8,11 +8,11 @@ import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
+import net.fabric_extras.ranged_weapon.api.EntityAttributes_RangedWeapon;
 import net.spell_engine.utils.AttributeModifierUtil;
 import net.spell_power.SpellPowerMod;
 import net.spell_power.api.SpellSchool;
 import net.spell_power.api.SpellSchools;
-import org.jetbrains.annotations.Nullable;
 
 public class ExternalSpellSchools {
     private static final RegistryEntry<EntityAttribute> ATTACK_DAMAGE_ENTRY = Registries.ATTRIBUTE.getEntry(EntityAttributes.GENERIC_ATTACK_DAMAGE);
@@ -34,31 +34,37 @@ public class ExternalSpellSchools {
 
     // MARK: Ranged Weapon API bridge
     //
-    // RWA only exists as a Fabric artifact on 1.20.1 and is compile-only in `common`, so it is never referenced
-    // by class here: its attributes (`ranged_weapon:damage`, `ranged_weapon:haste`, registered by RWA's own
-    // `EntityAttributes` <clinit> mixin, base 100 for haste) are resolved through the attribute registry by id.
-    // Without RWA (e.g. any Forge runtime) vanilla attack damage is the fallback.
+    // RangedWeaponAPI (2.3.4.001+1.20.1, Fabric + Forge) is compile-only and optional at runtime. Its classes are
+    // only touched behind `isModLoaded("ranged_weapon_api")`, inside the nested holder below, so a runtime without
+    // RWA never resolves them. The bridge reads the *attribute objects* off `EntityAttributes_RangedWeapon`
+    // rather than looking the ids up in the registry: on Forge this runs from the mod constructor, before any
+    // `RegisterEvent`, when RWA's attributes are not registered yet — the objects already exist and are the
+    // same instances RWA registers later in its ATTRIBUTE window. Without RWA vanilla attack damage is the fallback.
 
     private static final String RANGED_WEAPON_API_MOD_ID = "ranged_weapon_api";
-    private static final Identifier RWA_DAMAGE_ID = new Identifier("ranged_weapon", "damage");
-    private static final Identifier RWA_HASTE_ID = new Identifier("ranged_weapon", "haste");
-    private static final double RWA_HASTE_BASE = 100.0;
 
     private static boolean rangedWeaponApiLoaded() {
         return Platform.util().isModLoaded(RANGED_WEAPON_API_MOD_ID);
     }
 
-    @Nullable
-    private static EntityAttribute rangedWeaponApiAttribute(Identifier id) {
-        if (!rangedWeaponApiLoaded()) { return null; }
-        return Registries.ATTRIBUTE.get(id);
+    /// The only place RWA types are named. Never load this class unless {@link #rangedWeaponApiLoaded()}.
+    private static final class RangedWeaponApiBridge {
+        static EntityAttribute damage() {
+            return EntityAttributes_RangedWeapon.DAMAGE.attribute;
+        }
+        static EntityAttribute haste() {
+            return EntityAttributes_RangedWeapon.HASTE.attribute;
+        }
+        static double hasteMultiplier(double hasteValue) {
+            return EntityAttributes_RangedWeapon.HASTE.asMultiplier(hasteValue); // For example: 110/100 = 1.1
+        }
     }
 
     private static RegistryEntry<EntityAttribute> rangedDamageAttribute() {
-        var rwaDamage = rangedWeaponApiAttribute(RWA_DAMAGE_ID);
-        var attribute = rwaDamage != null
-                ? rwaDamage
+        var attribute = rangedWeaponApiLoaded()
+                ? RangedWeaponApiBridge.damage()
                 : EntityAttributes.GENERIC_ATTACK_DAMAGE; // Vanilla attack damage used as fallback
+        // Forge: a direct entry until RWA's ATTRIBUTE window runs; every consumer only dereferences `value()`.
         return Registries.ATTRIBUTE.getEntry(attribute);
     }
 
@@ -121,15 +127,15 @@ public class ExternalSpellSchools {
         SpellSchools.configureSpellHaste(PHYSICAL_MELEE_DUAL);
         SpellSchools.register(PHYSICAL_MELEE_DUAL);
 
-        var rwaDamage = rangedWeaponApiAttribute(RWA_DAMAGE_ID);
-        var rwaHaste = rangedWeaponApiAttribute(RWA_HASTE_ID);
-        if (rwaDamage != null && rwaHaste != null) {
+        if (rangedWeaponApiLoaded()) {
+            var rwaDamage = RangedWeaponApiBridge.damage();
+            var rwaHaste = RangedWeaponApiBridge.haste();
             PHYSICAL_RANGED.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {
                 return query.entity().getAttributeValue(rwaDamage);
             });
             PHYSICAL_RANGED.addSource(SpellSchool.Trait.HASTE, SpellSchool.Apply.ADD, query -> {
                 var haste = query.entity().getAttributeValue(rwaHaste); // 110
-                var rate = haste / RWA_HASTE_BASE;    // For example: 110/100 = 1.1
+                var rate = RangedWeaponApiBridge.hasteMultiplier(haste);    // For example: 110/100 = 1.1
                 return rate - 1;  // 0.1
             });
         }

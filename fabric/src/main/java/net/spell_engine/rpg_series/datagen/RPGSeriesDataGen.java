@@ -8,6 +8,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
+import net.spell_engine.api.item.set.EquipmentSetRegistry;
 import net.spell_engine.rpg_series.item.Equipment;
 import net.spell_engine.rpg_series.item.Armor;
 import net.spell_engine.rpg_series.item.Weapon;
@@ -156,22 +157,28 @@ public class RPGSeriesDataGen {
         }
     }
 
-    /// Registers the `spell_engine:spell` registry on the datagen `RegistryBuilder`.
+    /// Registers Spell Engine's dynamic registries on the datagen `RegistryBuilder`:
+    /// `spell_engine:spell` ([SpellRegistry#KEY]) and `equipment_set` ([EquipmentSetRegistry#KEY]).
     ///
-    /// Any [SpellTagGenerator] fails with `Registry spell_engine:spell not found` unless the owning
-    /// `DataGeneratorEntrypoint` contributes the registry: Fabric's `DynamicRegistries.registerSynced`
-    /// only feeds the *runtime* `RegistryLoader`, while the datagen `WrapperLookup` is assembled from
-    /// `BuiltinRegistries.REGISTRY_BUILDER` plus whatever each entrypoint adds here.
+    /// Fabric's `DynamicRegistries.registerSynced` only feeds the *runtime* `RegistryLoader`, while the datagen
+    /// `WrapperLookup` is assembled from `BuiltinRegistries.REGISTRY_BUILDER` plus whatever each
+    /// `DataGeneratorEntrypoint` adds here. Without the spell registry any [SpellTagGenerator] fails with
+    /// `Registry spell_engine:spell not found`; without the equipment-set registry
+    /// [net.spell_engine.api.datagen.EquipmentSetGenerator] (or any `FabricDynamicRegistryProvider` adding sets)
+    /// fails with `Registry equipment_set is not loaded from datapacks`.
     ///
     /// Consumer usage — one line in the mod's `DataGeneratorEntrypoint`:
     /// ```java
     /// @Override
     /// public void buildRegistry(RegistryBuilder registryBuilder) { RPGSeriesDataGen.buildRegistry(registryBuilder); }
     /// ```
-    /// The bootstrap is intentionally empty: spell tags are written with `addOptional`/`addOptionalTag`,
-    /// so no spell entries have to exist at datagen time.
+    /// Both bootstraps are intentionally empty: spell tags are written with `addOptional`/`addOptionalTag` and
+    /// equipment sets are *added* by the provider, so no entries have to exist at datagen time. Mods that
+    /// registered `EquipmentSetRegistry.KEY` themselves next to this call must drop that line (`RegistryBuilder`
+    /// rejects a duplicate key).
     public static void buildRegistry(RegistryBuilder registryBuilder) {
         registryBuilder.addRegistry(SpellRegistry.KEY, context -> { });
+        registryBuilder.addRegistry(EquipmentSetRegistry.KEY, context -> { });
     }
 
     /// Base class for spell tag providers (spell book / scroll / weapon tags).

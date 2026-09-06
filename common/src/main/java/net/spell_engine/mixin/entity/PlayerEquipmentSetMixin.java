@@ -25,7 +25,9 @@ public class PlayerEquipmentSetMixin implements EquipmentSet.Owner {
         AttributeContainer attributeContainer = player.getAttributes();
         for(var bonus: EquipmentSet.attributesFrom(activeEquipmentSets)) {
             for (var modifier: bonus.modifiers()) {
-                EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(modifier.attribute().value());
+                var attribute = modifier.attributeValue();
+                if (attribute == null) { continue; } // Attribute not registered on this runtime (optional mod)
+                EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(attribute);
                 if (entityAttributeInstance != null) {
                     entityAttributeInstance.tryRemoveModifier(modifier.modifier().getId());
                 }
@@ -35,7 +37,9 @@ public class PlayerEquipmentSetMixin implements EquipmentSet.Owner {
         /// Add attribute bonuses of new sets to player
         for(var bonus: EquipmentSet.attributesFrom(activeEquipmentSets)) {
             for (var modifier: bonus.modifiers()) {
-                EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(modifier.attribute().value());
+                var attribute = modifier.attributeValue();
+                if (attribute == null) { continue; } // Attribute not registered on this runtime (optional mod)
+                EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(attribute);
                 if (entityAttributeInstance != null) {
                     entityAttributeInstance.tryRemoveModifier(modifier.modifier().getId());
                     entityAttributeInstance.addTemporaryModifier(modifier.modifier());

@@ -99,12 +99,6 @@ public class RangedWeapons {
 
     // ===== PULL TIME AND VELOCITY CONSTANTS =====
 
-    // RangedWeaponAPI 1.1 (1.20.1) baselines: `RangedConfig.pull_time` is in ticks (20 = vanilla bow),
-    // `velocity` is absolute (0 = weapon-type default, bow 3.0 / crossbow 3.15)
-    private static final int PULL_TIME_BASE_TICKS = 20;
-    private static final float VELOCITY_BASE_BOW = 3.0F;
-    private static final float VELOCITY_BASE_CROSSBOW = 3.15F;
-
     // Pull time in seconds, with 1 sec offset
     private static final float PULL_TIME_SHORT_BOW = -0.2F;
     private static final float PULL_TIME_LONG_BOW = 0.5F;
@@ -177,7 +171,7 @@ public class RangedWeapons {
             throw new IllegalArgumentException("Tier " + tier + " not available for weapon type: " + weaponType);
         }
 
-        // Create RangedConfig (RWA 1.1 shape: pull time in ticks, absolute velocity)
+        // Create RangedConfig
         var config = rangedConfig(weaponType, damage, pullTime, velocity);
 
         // Create entry (RangedWeapon.Entry handles durability automatically via tier)
@@ -189,31 +183,27 @@ public class RangedWeapons {
     }
 
     /**
-     * Converts the RPG Series ranged tuning (pull time as seconds offset from 1s, velocity as bonus over the
-     * weapon-type default) to the RangedWeaponAPI 1.1 {@code RangedConfig(int pullTimeTicks, float damage, float velocity)}.
+     * Builds the RangedWeaponAPI 2.x {@link RangedConfig} from the RPG Series ranged tuning. The units are
+     * RWA's own: {@code damage} measured against the 6.0 bow / 9.0 crossbow baseline, {@code pullTimeOffsetSeconds}
+     * as a seconds *bonus* over the 1 s baseline, {@code velocityBonus} as a bonus over the weapon-type default
+     * (bow 3.0 / crossbow 3.15) — no conversion takes place.
+     *
+     * @param weaponType kept as part of the seam's signature; the 2.x config does not depend on it
      */
     public static RangedConfig rangedConfig(Equipment.WeaponType weaponType, float damage, float pullTimeOffsetSeconds, float velocityBonus) {
-        var pullTimeTicks = Math.round((1F + pullTimeOffsetSeconds) * PULL_TIME_BASE_TICKS);
-        var isCrossbow = weaponType == Equipment.WeaponType.RAPID_CROSSBOW || weaponType == Equipment.WeaponType.HEAVY_CROSSBOW;
-        var velocity = velocityBonus == 0
-                ? 0F
-                : (isCrossbow ? VELOCITY_BASE_CROSSBOW : VELOCITY_BASE_BOW) + velocityBonus;
-        return new RangedConfig(pullTimeTicks, damage, velocity);
+        return new RangedConfig(damage, pullTimeOffsetSeconds, velocityBonus);
     }
 
+    // Lambdas rather than constructor references: the RWA classes are then only resolved when a factory is
+    // actually invoked (a content mod registering ranged weapons), keeping RWA optional at runtime.
+
     /** {@link RangedWeapon.RangedFactory} producing a RangedWeaponAPI {@link CustomBow} */
-    public static final RangedWeapon.RangedFactory BOW_FACTORY = (settings, config, repairIngredient) -> {
-        var bow = new CustomBow(settings, repairIngredient);
-        bow.configure(config);
-        return bow;
-    };
+    public static final RangedWeapon.RangedFactory BOW_FACTORY = (settings, config, repairIngredient) ->
+            new CustomBow(settings, config, repairIngredient);
 
     /** {@link RangedWeapon.RangedFactory} producing a RangedWeaponAPI {@link CustomCrossbow} */
-    public static final RangedWeapon.RangedFactory CROSSBOW_FACTORY = (settings, config, repairIngredient) -> {
-        var crossbow = new CustomCrossbow(settings, repairIngredient);
-        crossbow.configure(config);
-        return crossbow;
-    };
+    public static final RangedWeapon.RangedFactory CROSSBOW_FACTORY = (settings, config, repairIngredient) ->
+            new CustomCrossbow(settings, config, repairIngredient);
 
     // ===== WEAPON-TYPE-SPECIFIC HELPER METHODS =====
 
@@ -233,7 +223,7 @@ public class RangedWeapons {
 
     /**
      * Create a long bow with automatic tier-based configuration.
-     * Pull time: -0.5F, Velocity: 0.75F
+     * Pull time: +0.5F, Velocity: 0.75F
      */
     public static RangedWeapon.Entry longBow(
             String namespace,
@@ -261,7 +251,7 @@ public class RangedWeapons {
 
     /**
      * Create a heavy crossbow with automatic tier-based configuration.
-     * Pull time: -0.75F, Velocity: 0.5F
+     * Pull time: +0.75F, Velocity: 0.5F
      */
     public static RangedWeapon.Entry heavyCrossbow(
             String namespace,

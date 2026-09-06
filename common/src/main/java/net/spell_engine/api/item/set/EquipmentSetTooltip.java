@@ -85,7 +85,9 @@ public class EquipmentSetTooltip {
         var bonusLines = new ArrayList<Text>();
         if (bonus.attributes() != null) {
             for (var modifier: bonus.attributes().modifiers()) {
-                AttributeModifierTooltip.append(bonusLines::add, player, modifier.attribute().value(), modifier.modifier());
+                var attribute = modifier.attributeValue();
+                if (attribute == null) { continue; } // Attribute not registered on this runtime (optional mod)
+                AttributeModifierTooltip.append(bonusLines::add, player, attribute, modifier.modifier());
             }
         }
         if (bonus.spells() != null) {
