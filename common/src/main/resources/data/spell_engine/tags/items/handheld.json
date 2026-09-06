@@ -1,0 +1,21 @@
+{
+  "values": [
+    "#minecraft:swords",
+    "#minecraft:axes",
+    { "id": "#c:swords", "required": false },
+    { "id": "#c:axes", "required": false },
+    { "id": "#c:spears", "required": false },
+    { "id": "#c:bows", "required": false },
+    { "id": "#c:shields", "required": false },
+    { "id": "#forge:tools/swords", "required": false },
+    { "id": "#forge:tools/axes", "required": false },
+    { "id": "#forge:tools/bows", "required": false },
+    { "id": "#forge:tools/crossbows", "required": false },
+    { "id": "#forge:tools/tridents", "required": false },
+    { "id": "#forge:tools/shields", "required": false },
+    "minecraft:bow",
+    "minecraft:crossbow",
+    "minecraft:trident",
+    "minecraft:shield"
+  ]
+}

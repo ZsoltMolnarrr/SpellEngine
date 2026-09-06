@@ -62,7 +62,7 @@ public class RPGSeriesContent {
             getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(2, ARMORS))
                     .add(Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS);
             getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(3, WEAPONS))
-                    .add(Items.NETHERITE_SWORD, Items.NETHERITE_AXE, Items.MACE);
+                    .add(Items.NETHERITE_SWORD, Items.NETHERITE_AXE); // 1.20.1: no Items.MACE
             getOrCreateTagBuilder(RPGSeriesItemTags.LootReference.get(3, ARMORS))
                     .add(Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS);
         }
@@ -137,24 +137,10 @@ public class RPGSeriesContent {
             }
             // spellVolatilityTag.addTag(RPGSeriesItemTags.ArmorType.get(RPGSeriesItemTags.ArmorMetaType.MAGIC));
 
-            /// Unbreaking enchantables
-            var unbreakingTypes = Equipment.WeaponType.values();
-            var unbreakingTag = getOrCreateTagBuilder(ItemTags.DURABILITY_ENCHANTABLE);
-            for (var type: unbreakingTypes) {
-                unbreakingTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
-
-            /// Sharpness enchantables
-            var sharpWeaponTypes = List.of(
-                    Equipment.WeaponType.SWORD, Equipment.WeaponType.SPEAR,
-                    Equipment.WeaponType.CLAYMORE, Equipment.WeaponType.MACE, Equipment.WeaponType.HAMMER,
-                    Equipment.WeaponType.DAGGER, Equipment.WeaponType.SICKLE, Equipment.WeaponType.DOUBLE_AXE,
-                    Equipment.WeaponType.GLAIVE, Equipment.WeaponType.SPELL_BLADE, Equipment.WeaponType.SPELL_SCYTHE
-            );
-            var sharpTag = getOrCreateTagBuilder(ItemTags.SHARP_WEAPON_ENCHANTABLE);
-            for (var type: sharpWeaponTypes) {
-                sharpTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
+            // 1.20.1: no `minecraft:enchantable/*` item tags. Unbreaking (`EnchantmentTarget.BREAKABLE`),
+            // Sharpness (`EnchantmentTarget.WEAPON` + `DamageEnchantment.isAcceptableItem`), Bow and
+            // Crossbow enchantability are decided by the item class hierarchy instead, so the
+            // `durability` / `sharp_weapon` / `bow` / `crossbow` enchantable tags are not generated.
 
             /// Melee enchantables
             var meleeWeaponTypes = List.of(
@@ -165,18 +151,6 @@ public class RPGSeriesContent {
             var meleeTag = getOrCreateTagBuilder(ItemTags.SWORDS);
             for (var type: meleeWeaponTypes) {
                 meleeTag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
-
-            /// Ranged enchantables
-            var bowTypes = List.of(Equipment.WeaponType.SHORT_BOW, Equipment.WeaponType.LONG_BOW);
-            for (var type: bowTypes) {
-                var tag = getOrCreateTagBuilder(ItemTags.BOW_ENCHANTABLE);
-                tag.addTag(RPGSeriesItemTags.WeaponType.get(type));
-            }
-            var crossbowTypes = List.of(Equipment.WeaponType.RAPID_CROSSBOW, Equipment.WeaponType.HEAVY_CROSSBOW);
-            for (var type: crossbowTypes) {
-                var tag = getOrCreateTagBuilder(ItemTags.CROSSBOW_ENCHANTABLE);
-                tag.addTag(RPGSeriesItemTags.WeaponType.get(type));
             }
         }
     }
@@ -200,7 +174,7 @@ public class RPGSeriesContent {
         }
 
         @Override
-        public void generateTranslations(RegistryWrapper.WrapperLookup wrapperLookup, TranslationBuilder translationBuilder) {
+        public void generateTranslations(TranslationBuilder translationBuilder) {
             WeaponSkills.entries.forEach(entry -> {
                 var id = entry.id();
                 translationBuilder.add("spell." + id.getNamespace() + "." + id.getPath() + ".name" , entry.title());

@@ -1,0 +1,21 @@
+{
+  "values": [
+    { "id": "#minecraft:hoes", "required": false },
+    { "id": "#minecraft:pickaxes", "required": false },
+    { "id": "#minecraft:shovels", "required": false },
+    { "id": "#c:hoes", "required": false },
+    { "id": "#c:pickaxes", "required": false },
+    { "id": "#c:shovels", "required": false },
+    { "id": "#c:shears", "required": false },
+    { "id": "#forge:tools/hoes", "required": false },
+    { "id": "#forge:tools/pickaxes", "required": false },
+    { "id": "#forge:tools/shovels", "required": false },
+    { "id": "#forge:tools/shears", "required": false },
+    { "id": "#forge:tools/fishing_rods", "required": false },
+    { "id": "#forge:tools/brushes", "required": false },
+    "minecraft:brush",
+    "minecraft:fishing_rod",
+    "minecraft:flint_and_steel",
+    "minecraft:shears"
+  ]
+}
