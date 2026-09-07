@@ -122,7 +122,7 @@ Spell containers can be assigned to an item in multiple ways. These methods have
 
 Assigning a spell container to an item, using a game command:
 ```
-/give @p minecraft:wooden_sword[spell_engine:spell_container={access:MAGIC, spell_ids: ["wizards:fireball"] }]
+/give @p minecraft:wooden_sword{spell_engine:{spell_container:{access:"MAGIC", spell_ids:["wizards:fireball"]}}}
 ```
 
 #### Assignment with Item default component
@@ -180,7 +180,7 @@ Equipment sets require a two-way association:
   - Referring all items part of the set (alongside the bonuses)
   - Example path: `resources/data/NAMESPACE/equipment_set/SET_NAME.json`
 - Assign the set to items, using an item component
-  - Example item with an equipment set: `/give @p minecraft:iron_boots[spell_engine:equipment_set="NAMESPACE:SET_NAME"]`
+  - Example item with an equipment set: `/give @p minecraft:iron_boots{spell_engine:{equipment_set:"NAMESPACE:SET_NAME"}}`
 
 ### Extra inventory slots
 
