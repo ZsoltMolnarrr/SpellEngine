@@ -18,6 +18,16 @@ public class PlayerEquipmentSetMixin implements EquipmentSet.Owner {
         return activeEquipmentSets;
     }
 
+    /// Set bonuses are re-applied on every spell-container update, so both loops must be able to take a
+    /// modifier back off the attribute.
+    ///
+    /// **Use `removeModifier(UUID)`, never `tryRemoveModifier(UUID)`.** They are not variants of one
+    /// another on 1.20.1: `tryRemoveModifier` removes only modifiers that are in `persistentModifiers`
+    /// and is a silent no-op for everything else. Set bonuses are added with `addTemporaryModifier`, so
+    /// `tryRemoveModifier` never removed one — the second update after a bonus became active then hit
+    /// vanilla's "Modifier is already applied on this attribute!" guard in `addModifier`, killing the
+    /// player tick every tick. (The 1.21.1 original calls `removeModifier(Identifier)`, which is
+    /// unconditional; `removeModifier(UUID)` is its 1.20.1 counterpart.)
     @Override
     public void setActiveEquipmentSets(List<EquipmentSet.Result> results) {
         /// Remove attribute bonuses of previous sets from player
@@ -29,7 +39,7 @@ public class PlayerEquipmentSetMixin implements EquipmentSet.Owner {
                 if (attribute == null) { continue; } // Attribute not registered on this runtime (optional mod)
                 EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(attribute);
                 if (entityAttributeInstance != null) {
-                    entityAttributeInstance.tryRemoveModifier(modifier.modifier().getId());
+                    entityAttributeInstance.removeModifier(modifier.modifier().getId());
                 }
             }
         }
@@ -41,7 +51,7 @@ public class PlayerEquipmentSetMixin implements EquipmentSet.Owner {
                 if (attribute == null) { continue; } // Attribute not registered on this runtime (optional mod)
                 EntityAttributeInstance entityAttributeInstance = attributeContainer.getCustomInstance(attribute);
                 if (entityAttributeInstance != null) {
-                    entityAttributeInstance.tryRemoveModifier(modifier.modifier().getId());
+                    entityAttributeInstance.removeModifier(modifier.modifier().getId());
                     entityAttributeInstance.addTemporaryModifier(modifier.modifier());
                 }
             }
