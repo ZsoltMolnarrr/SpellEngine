@@ -102,7 +102,7 @@ dependencies {
     // ── Groups ────────────────────────────────────────────────────────────────────────────────────────
     if (flags.rpg_series_classes) {
         modLocalRuntime("net.rpg_series:wizards-fabric:3.1.2.005+1.20.1") { transitive = false }
-        modLocalRuntime("net.rpg_series:paladins-fabric:3.1.1.004+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:paladins-fabric:3.1.1.006+1.20.1") { transitive = false }
         modLocalRuntime("net.rpg_series:rogues-fabric:3.1.1.003+1.20.1") { transitive = false }
         modLocalRuntime("net.rpg_series:archers-fabric:3.1.1.002+1.20.1") { transitive = false }
     }
