@@ -100,7 +100,7 @@ public abstract class SpellHotbarMinecraftClient implements MinecraftClientExten
     @Inject(method = "tick", at = @At("HEAD"))
     private void tick_HEAD_SpellHotbar(CallbackInfo ci) {
         if (player == null || options == null) { return; }
-        if (currentScreen != null || CombatRollCompat.isRolling(player, this)) {
+        if (currentScreen != null || CombatRollCompat.isRolling.apply(player)) {
             ((SpellCaster.Client)player).cancelSpellCast();
         }
     }
