@@ -253,6 +253,11 @@ public class BeamRenderer extends RenderLayer {
                 .texture(u, v)
                 .overlay(OverlayTexture.DEFAULT_UV)
                 .light(LightmapTextureManager.MAX_LIGHT_COORDINATE)
-                .normal(matrix.getNormalMatrix(), 0.0F, 1.0F, 0.0F);
+                .normal(matrix.getNormalMatrix(), 0.0F, 1.0F, 0.0F)
+                // 1.20.1: a vertex is only committed by `next()`. Without it `BufferBuilder.vertexCount`
+                // stays 0, every vertex overwrites the previous one's slot, and the layer draws an empty
+                // buffer — silently, with no exception. 1.21 dropped `next()` (vertices auto-commit), which
+                // is why the call vanished in the backport and the beam rendered nothing at all.
+                .next();
     }
 }
