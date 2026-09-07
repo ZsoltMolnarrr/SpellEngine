@@ -7,12 +7,15 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.spell_engine.entity.SpellCloud;
 import net.spell_engine.entity.SpellProjectile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.ToIntFunction;
 
 public class DynamicLightsCompatibility implements DynamicLightsInitializer {
+    private static final Logger LOGGER = LoggerFactory.getLogger("SpellEngine/DynamicLightsCompat");
 
     /// One entity type paired with the light level it emits, read from the entity's client-visible state.
     /// Deliberately carries a plain {@link ToIntFunction} rather than LambDynLights'
@@ -39,11 +42,22 @@ public class DynamicLightsCompatibility implements DynamicLightsInitializer {
         return list;
     }
 
-    /// LambDynamicLights 2.3.x (1.20.1) entrypoint `dynamiclights` — no-arg (the `ItemLightSourceManager`
-    /// argument is a 2.5+/1.21.4 shape).
+    /// LambDynamicLights entrypoint — declared under the `dynamiclights` key in `fabric.mod.json`.
+    ///
+    /// Compiled against LambDynamicLights `2.3.2+1.20.1`, whose `DynamicLightsInitializer` declares this
+    /// method with **no** argument (the `ItemLightSourceManager` / `DynamicLightsContext` overloads are
+    /// later shapes). This is also the newest 1.20.1 release whose Modrinth jar carries the API classes at
+    /// the top level: LDL 4.4.0+1.20.1 moves them into a nested `lambdynamiclights-api` jar that Loom does
+    /// not put on the compile classpath. That costs nothing — LDL 4.4.0 keeps the no-arg method abstract,
+    /// keeps `DynamicLightHandlers.registerDynamicLightHandler(EntityType, DynamicLightHandler)` and
+    /// `DynamicLightHandler#getLuminance` byte-compatible, and invokes **both** the `lambdynlights:initializer`
+    /// and the `dynamiclights` entrypoint keys — so this single key initialises on 2.3.x and 4.x alike, and
+    /// declaring the second key too would only double-register on 4.x.
     @Override
     public void onInitializeDynamicLights() {
-        for (var registration : registrations()) {
+        var registrations = registrations();
+        LOGGER.info("LambDynamicLights detected, registering {} entity light source(s)", registrations.size());
+        for (var registration : registrations) {
             register(registration);
         }
     }

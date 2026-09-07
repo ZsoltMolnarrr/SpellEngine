@@ -56,7 +56,14 @@ repositories {
             includeGroup 'maven.modrinth'
         }
     }
-    // TODO 1.20.1: FTB maven dropped together with the FTB Teams/Library deps (no 1.20.1 pin yet).
+    // FTB Teams / FTB Library (compile-only, `FTBTeamsCompat`). 1.20.1 = the `2001.x` line.
+    maven {
+        name = 'FTB'
+        url = 'https://maven.ftb.dev/releases'
+        content {
+            includeGroup 'dev.ftb.mods'
+        }
+    }
 
     // For Curios
     maven { url 'https://maven.theillusivec4.top/' }
@@ -104,9 +111,9 @@ dependencies {
     modCompileOnly("maven.modrinth:shoulder-surfing-reloaded:${rootProject.shoulder_surfing_version}+${platform}")
     modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-${platform}")
     modCompileOnly("maven.modrinth:combat-roll:${rootProject.combat_roll_version}-${platform}")
-    // TODO 1.20.1: FTB Teams / FTB Library dropped (no 1.20.1 pin on the legacy branch).
-//    modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${rootProject.ftb_teams_version}")
-//    modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${rootProject.ftb_library_version}")
+    // FTB Teams 2001.x (1.20.1), compile-only — optional at runtime (`FTBTeamsCompat` is `isModLoaded`-gated).
+    modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${rootProject.ftb_teams_version}") { transitive = false }
+    modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${rootProject.ftb_library_version}") { transitive = false }
     modCompileOnly("maven.modrinth:iris:${rootProject.iris_version}")
 
     // Forge specific
