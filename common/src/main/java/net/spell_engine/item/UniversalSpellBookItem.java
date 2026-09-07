@@ -3,10 +3,7 @@ package net.spell_engine.item;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.TagKey;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Language;
-import net.minecraft.util.Rarity;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.item.SpellItemData;
@@ -30,17 +27,8 @@ public class UniversalSpellBookItem extends Item {
         return false;
     }
 
-    @Override
-    public Text getName(ItemStack stack) {
-        var nameKey = SpellItemData.getItemNameKey(stack);
-        return nameKey != null ? Text.translatable(nameKey) : super.getName(stack);
-    }
-
-    @Override
-    public Rarity getRarity(ItemStack stack) {
-        var rarity = SpellItemData.getRarity(stack);
-        return rarity != null ? rarity : super.getRarity(stack);
-    }
+    // Name and rarity overrides are applied stack-side by `ItemStackNameMixin`, not here: with Trinkets /
+    // Curios present the registered spell book is a slot-mod subclass, not this class.
 
     /**
      * Apply spell book configuration to an ItemStack based on a tag.
@@ -80,11 +68,10 @@ public class UniversalSpellBookItem extends Item {
         var modelId = modelIdForPool(tag.id());
         SpellItemData.setItemModel(itemStack, modelId);
 
-        // Set custom name if translation exists
-        var key = translationKeyForPool(tag.id());
-        if (Language.getInstance().hasTranslation(key)) {
-            SpellItemData.setItemNameKey(itemStack, key);
-        }
+        // Set custom name. Written unconditionally — this also runs on the logical server (spell binding
+        // table, loot), where client resource-pack translations are not visible; whether the key actually
+        // resolves is checked at display time in `ItemStackNameMixin`.
+        SpellItemData.setItemNameKey(itemStack, translationKeyForPool(tag.id()));
     }
 
     /**

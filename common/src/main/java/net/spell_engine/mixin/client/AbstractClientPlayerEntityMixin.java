@@ -9,7 +9,6 @@ import dev.kosmx.playerAnim.core.data.KeyframeAnimation;
 import dev.kosmx.playerAnim.core.util.Ease;
 import dev.kosmx.playerAnim.core.util.Vec3f;
 import dev.kosmx.playerAnim.impl.IAnimatedPlayer;
-import dev.kosmx.playerAnim.minecraftApi.PlayerAnimationRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
@@ -179,8 +178,13 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             var stack = spellAnimationStackFor(type);
             // System.out.println("Player animation, type: " + type + ", name: " + name + ", speed: " + speed);
             if (name != null && !name.isEmpty()) {
-                var id = new Identifier(name);
-                var animation = (KeyframeAnimation) PlayerAnimationRegistry.getAnimation(id);
+                // Spell Engine's own registry, not `PlayerAnimationRegistry`: PlayerAnimator 1.x reads the
+                // singular `player_animation` folder and keys by the name inside the JSON, so it never
+                // resolves the ecosystem's `player_animations/<name>.json` assets. See AnimationRegistry.
+                var animation = AnimationRegistry.getOrWarn(name);
+                if (animation == null) {
+                    return;
+                }
                 var copy = animation.mutableCopy();
                 updateAnimationByCurrentActivity_SpellEngine(copy);
                 copy.torso.fullyEnablePart(true);

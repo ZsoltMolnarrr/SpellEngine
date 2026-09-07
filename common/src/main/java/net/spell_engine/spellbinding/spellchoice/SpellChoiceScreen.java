@@ -117,6 +117,10 @@ public class SpellChoiceScreen extends HandledScreen<SpellChoiceScreenHandler> {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        // 1.20.1's `HandledScreen#render` does not draw a background (1.21+ blurs the world behind every
+        // screen by default), so the world would otherwise show through unfaded. Same call as
+        // `SpellBindingScreen`, drawing the vanilla dark gradient overlay.
+        this.renderBackground(context);
         super.render(context, mouseX, mouseY, delta);
 
         // Draw text

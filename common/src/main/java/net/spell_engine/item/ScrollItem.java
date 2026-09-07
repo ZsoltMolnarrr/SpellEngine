@@ -9,7 +9,6 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Language;
 import net.minecraft.util.Rarity;
 import net.minecraft.world.World;
 import net.spell_engine.SpellEngineMod;
@@ -35,17 +34,8 @@ public class ScrollItem extends Item {
         return false;
     }
 
-    @Override
-    public Text getName(ItemStack stack) {
-        var nameKey = SpellItemData.getItemNameKey(stack);
-        return nameKey != null ? Text.translatable(nameKey) : super.getName(stack);
-    }
-
-    @Override
-    public Rarity getRarity(ItemStack stack) {
-        var rarity = SpellItemData.getRarity(stack);
-        return rarity != null ? rarity : super.getRarity(stack);
-    }
+    // Name and rarity overrides are applied stack-side by `ItemStackNameMixin`, not here: with Trinkets /
+    // Curios present the registered scroll is a slot-mod subclass, not this class.
 
     public static void applySpell(ItemStack itemStack, RegistryEntry<Spell> spellEntry, @Nullable TagKey<Spell> pool) {
         SpellItemData.setSpellContainer(itemStack, SpellContainers.forScroll(spellEntry));
@@ -73,11 +63,10 @@ public class ScrollItem extends Item {
             SpellItemData.setItemModel(itemStack, modelId);
 
             // Set custom name
-            // - Example: "paladins:spell_scroll/paladin" -> "item.paladins.paladin_spell_scroll"
-            var key = translationKeyForPool(pool.id());
-            if (Language.getInstance().hasTranslation(key)) {
-                SpellItemData.setItemNameKey(itemStack, key);
-            }
+            // - Example: "paladins:spell_scroll/paladin" -> "item.paladins.spell_scroll/paladin"
+            // Written unconditionally; whether the key resolves is checked at display time in
+            // `ItemStackNameMixin` (this also runs server-side, where client translations are not visible).
+            SpellItemData.setItemNameKey(itemStack, translationKeyForPool(pool.id()));
         }
     }
 
