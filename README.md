@@ -55,7 +55,7 @@ Developer & Mod Integration
 - 🎯 Entity predicate system for complex targeting conditions
 - 🔧 Performance optimizations: batching, scheduling, client-side prediction
 - 📝 Data generation framework for programmatic spell creation and validation
-- 🌐 Multi-platform support (Fabric & NeoForge) with unified API
+- 🌐 Multi-platform support (Fabric & Forge) with unified API
 
 
 ## ⌨️ Game technical features
