@@ -88,3 +88,26 @@ dependencies {
         modLocalRuntime("net.rpg_series:village_taverns-fabric:1.3.0.001+1.20.1") { transitive = false }
     }
 }
+
+// ── Sodium / Iris compatibility: pin LWJGL to Minecraft 1.20.1's own 3.3.1 ─────────────────────────────
+// Loom puts `org.lwjgl:*:3.3.2` DIRECTLY on runtimeClasspath (its macOS-arm64 workaround), so Gradle's
+// conflict resolution picks 3.3.2 over the 3.3.1 that the 1.20.1 version manifest asks for. Sodium 0.5.x
+// aborts at pre-launch unless the running LWJGL is EXACTLY 3.3.1 — the version is hardcoded in
+// `PreLaunchChecks` and there is no bypass system property. Vanilla 1.20.1 ships 3.3.1, so forcing it
+// back here just makes the dev runtime match production.
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.lwjgl') {
+            details.useVersion '3.3.1'
+            details.because 'Sodium 0.5.x requires exactly LWJGL 3.3.1 (the Minecraft 1.20.1 manifest version)'
+        }
+    }
+}
+
+// Launch the dev client/server on Java 17 (what Minecraft 1.20.1 ships with) while Gradle itself keeps
+// running on JDK 21 (required by Loom 1.17's `unpick`). Without this, LWJGL 3.3.1's natives log
+// "[ThreadLocalUtil] Unsupported JNI version detected, this may result in a crash" under a 21 launcher.
+def java17 = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(17) }
+tasks.matching { it.name in ['runClient', 'runServer'] }.configureEach {
+    javaLauncher = java17
+}

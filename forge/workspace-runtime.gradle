@@ -58,3 +58,21 @@ dependencies {
         modLocalRuntime("net.rpg_series:village_taverns-forge:1.3.0.001+1.20.1") { transitive = false }
     }
 }
+
+// ── Sodium/Embeddium compatibility + JNI: mirror the Fabric runtime ────────────────────────────────────
+// Loom puts `org.lwjgl:*:3.3.2` directly on runtimeClasspath (macOS-arm64 workaround) and Gradle picks it
+// over the 3.3.1 the 1.20.1 manifest asks for. Sodium-family mods abort at pre-launch unless LWJGL is
+// EXACTLY 3.3.1 (hardcoded, no bypass property). Forcing 3.3.1 matches production; launching the game on
+// Java 17 (Minecraft 1.20.1's own JDK) avoids LWJGL 3.3.1's "Unsupported JNI version" warning under 21.
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.lwjgl') {
+            details.useVersion '3.3.1'
+            details.because 'Sodium-family mods require exactly LWJGL 3.3.1 (the Minecraft 1.20.1 manifest version)'
+        }
+    }
+}
+def java17 = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(17) }
+tasks.matching { it.name in ['runClient', 'runServer'] }.configureEach {
+    javaLauncher = java17
+}
