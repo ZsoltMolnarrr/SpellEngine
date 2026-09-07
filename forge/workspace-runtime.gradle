@@ -58,16 +58,16 @@ dependencies {
     if (flags.rpg_series_classes) {
         modLocalRuntime("net.rpg_series:wizards-forge:3.1.2.005+1.20.1") { transitive = false }
         modLocalRuntime("net.rpg_series:paladins-forge:3.1.1.006+1.20.1") { transitive = false }
-        modLocalRuntime("net.rpg_series:rogues-forge:3.1.1.003+1.20.1") { transitive = false }
-        modLocalRuntime("net.rpg_series:archers-forge:3.1.1.002+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:rogues-forge:3.1.1.004+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:archers-forge:3.1.1.003+1.20.1") { transitive = false }
     }
     if (flags.rpg_series_gear) {
         modLocalRuntime("net.arsenal:arsenal-forge:1.5.0.001+1.20.1") { transitive = false }
-        modLocalRuntime("net.rpg_series:armory-forge:1.5.2.002+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:armory-forge:1.5.2.003+1.20.1") { transitive = false }
         modLocalRuntime("net.rpg_series:runes-forge:1.3.2.001+1.20.1") { transitive = false }
     }
     if (accessories) {
-        modLocalRuntime("net.rpg_series:jewelry-forge:2.4.0.002+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:jewelry-forge:2.4.0.003+1.20.1") { transitive = false }
         modLocalRuntime("net.rpg_series:relics-forge:1.4.0.002+1.20.1") { transitive = false }
     }
     if (flags.rpg_series_skills) {
