@@ -570,8 +570,20 @@ public abstract class SummonedEntity extends GolemEntity implements SpellSummone
     /// Builds the default attribute container for a summoned entity type from its config entry: the four
     /// common attributes plus any custom (e.g. spell-power school) attributes. Shared by all summon entity
     /// types — registered via `SummonedEntities.registerAttributes` rather than a per-entity method.
+    ///
+    /// Base builder is `MobEntity.createMobAttributes()`, **not** `LivingEntity.createLivingAttributes()`.
+    /// On 1.20.1 `createLivingAttributes()` registers only MAX_HEALTH / KNOCKBACK_RESISTANCE /
+    /// MOVEMENT_SPEED / ARMOR / ARMOR_TOUGHNESS — it does *not* include `GENERIC_ATTACK_KNOCKBACK`
+    /// (which 1.21+ folded into it). Vanilla `MobEntity#tryAttack` reads ATTACK_KNOCKBACK
+    /// unconditionally, and `DefaultAttributeContainer.require` *throws* for an unregistered
+    /// attribute, so a summon built from the living builder crashed the server on its first melee
+    /// swing. `createMobAttributes()` = createLivingAttributes() + FOLLOW_RANGE(16) + ATTACK_KNOCKBACK,
+    /// which matches this class's actual superclass (GolemEntity → PathAwareEntity → MobEntity).
+    /// The explicit `.add` calls below overwrite the builder's FOLLOW_RANGE default (Builder#add is a
+    /// map put), so the configured values still win and ATTACK_KNOCKBACK keeps its vanilla default of
+    /// 0 — exactly the values the 1.21.1 line produces.
     public static DefaultAttributeContainer.Builder createAttributes(SummonedEntityConfig.Entry entry) {
-        var builder = LivingEntity.createLivingAttributes()
+        var builder = MobEntity.createMobAttributes()
                 .add(EntityAttributes.GENERIC_FOLLOW_RANGE, entry.common.follow_range)
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, entry.common.max_health)
                 .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, entry.common.movement_speed)
