@@ -19,8 +19,14 @@ repositories {
             includeGroup 'maven.modrinth'
         }
     }
-    // TODO 1.20.1: FTB Teams / FTB Library dropped (no 1.20.1 pin on the legacy branch); the FTB maven and
-    // the `dev.ftb.mods:*` compile-only deps go back in here once a 1.20.1 pin is chosen (2001.x line).
+    // FTB Teams / FTB Library (compile-only, `FTBTeamsCompat`). 1.20.1 = the `2001.x` line.
+    maven {
+        name = 'FTB'
+        url = 'https://maven.ftb.dev/releases'
+        content {
+            includeGroup 'dev.ftb.mods'
+        }
+    }
 
     mavenLocal()
 }
@@ -55,9 +61,10 @@ dependencies {
     modCompileOnly("maven.modrinth:shoulder-surfing-reloaded:${rootProject.shoulder_surfing_version}+${platform}")
     modCompileOnly("maven.modrinth:better-combat:${rootProject.better_combat_version}-${platform}")
     modCompileOnly("maven.modrinth:combat-roll:${rootProject.combat_roll_version}-${platform}")
-    // TODO 1.20.1: FTB Teams / FTB Library dropped — `compat/FTBTeamsCompat.java` surfaces as compile errors.
-//    modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${rootProject.ftb_teams_version}")
-//    modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${rootProject.ftb_library_version}")
+    // FTB Teams 2001.x (1.20.1). FTB Library is needed on the compile classpath only because `Team` /
+    // `TeamRank` mention `dev.ftb.mods.ftblibrary.{icon.Color4I,config.NameMap}` in their signatures.
+    modCompileOnly("dev.ftb.mods:ftb-teams-${platform}:${rootProject.ftb_teams_version}") { transitive = false }
+    modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${rootProject.ftb_library_version}") { transitive = false }
     modCompileOnly("maven.modrinth:iris:${rootProject.iris_version}")
 
 }
