@@ -32,6 +32,27 @@
 // version here AND in forge/workspace-runtime.gradle. Versions are deliberately hardcoded (not read from
 // gradle.properties) so the whole tested set is visible in one place — see
 // docs/version-adoption-1.20.1/TESTING.md for the table this file must stay in sync with.
+//
+// ── Why Spell Engine itself is pinned onto the remap classpath ─────────────────────────────────────────
+// `transitive = false` has a sharp edge that only shows up at runtime, as a NoSuchMethodError.
+// Loom builds tiny-remapper's classpath from the Minecraft jars plus the files of EVERY remap
+// configuration, then remaps the pinned jars against it. An *inherited* member is resolved by walking the
+// owner's class hierarchy, so `hydra.isAlive()` — javac emits it as
+// `invokevirtual net/wizards/entity/FireHydraEntity.method_5805()`, owner = the static receiver type —
+// is only remappable if the walk `FireHydraEntity -> net.spell_engine.entity.SummonedEntity ->
+// net.minecraft.class_1427` can complete. It cannot: `transitive = false` strips `spell_engine` from
+// every pin, and the Spell Engine *in this workspace* is the source project, already in the dev
+// namespace, so it cannot terminate an intermediary-namespace walk either. tiny-remapper silently leaves
+// the call unmapped and the first Fire Hydra to render kills the client with
+// `NoSuchMethodError: net.wizards.entity.FireHydraEntity.method_5805()`. Wizards, Paladins, Rogues and
+// SkillTree all had such call sites; Forge had the identical damage with SRG names (`m_6084_`).
+//
+// The cure is to hand tiny-remapper the *production* (intermediary/SRG) Spell Engine jar through a remap
+// configuration that is on NO classpath — it reaches the remapper, its own remapped output lands in a
+// sink configuration nothing reads, and it never becomes a second `spell_engine` mod in the run.
+// The pin below only has to be recent enough to carry the class hierarchy the pinned content mods
+// extend; bump it if a content mod starts extending a Spell Engine type this build predates. After
+// changing it (or any pin), delete `.gradle/loom-cache/remapped_mods` so half-remapped jars are rebuilt.
 
 def flags = rootProject.ext.rpgSeriesWorkspace
 def accessories = flags.rpg_series_gear || flags.rpg_series_accessories
@@ -43,7 +64,24 @@ repositories {
     mavenLocal()
 }
 
+// Remap-classpath-only configuration: `onCompileClasspath`/`onRuntimeClasspath` false keeps both the
+// pinned jar and its remapped output off every classpath; only Loom's remapper ever reads it. The
+// remapped output is parked in an inert sink configuration, and `publishingMode` defaults to NONE, so
+// nothing here can leak into SpellEngine's own published POM.
+configurations.maybeCreate('remapClasspathOnlySink')
+loom.addRemapConfiguration('modRemapClasspathOnly') {
+    sourceSet = sourceSets.main
+    targetConfigurationName = 'remapClasspathOnlySink'
+    onCompileClasspath = false
+    onRuntimeClasspath = false
+}
+
 dependencies {
+    // ── Remap classpath only (never loaded) ───────────────────────────────────────────────────────────
+    // See the header: without this the pinned mods' calls to members they inherit from Spell Engine
+    // classes stay in the production namespace and blow up as NoSuchMethodError at render time.
+    modRemapClasspathOnly("net.spell_engine:spell_engine-fabric:1.10.5.009+1.20.1") { transitive = false }
+
     // ── Shared RPG Series libraries (all groups) ───────────────────────────────────────────────────────
     // ArmorModelAPI renders the class-mod / Armory armor sets; without it those sets fall back to the
     // vanilla layer and the port's armor rendering is untested.

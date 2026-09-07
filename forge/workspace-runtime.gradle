@@ -11,6 +11,11 @@
 //     its refmaps) into the dev namespace. Pinning the Yarn-named `dev-shadow` classifier instead makes
 //     FML's `EventSubclassTransformer` fail with `NoClassDefFoundError: net/minecraft/world/item/Item`
 //     and kills item registration for the whole run.
+//   • `modRemapClasspathOnly` below mirrors the Fabric script one-for-one — read that file's
+//     "Why Spell Engine itself is pinned onto the remap classpath" section. Forge suffers the identical
+//     defect in SRG: without it `FireHydraRenderer` keeps calling
+//     `net/wizards/entity/FireHydraEntity.m_6084_()` (`isAlive`) and the client dies the moment a Fire
+//     Hydra renders.
 
 def flags = rootProject.ext.rpgSeriesWorkspace
 def accessories = flags.rpg_series_gear || flags.rpg_series_accessories
@@ -22,7 +27,24 @@ repositories {
     mavenLocal()
 }
 
+// Remap-classpath-only configuration: `onCompileClasspath`/`onRuntimeClasspath` false keeps both the
+// pinned jar and its remapped output off every classpath; only Loom's remapper ever reads it. The
+// remapped output is parked in an inert sink configuration, and `publishingMode` defaults to NONE, so
+// nothing here can leak into SpellEngine's own published POM.
+configurations.maybeCreate('remapClasspathOnlySink')
+loom.addRemapConfiguration('modRemapClasspathOnly') {
+    sourceSet = sourceSets.main
+    targetConfigurationName = 'remapClasspathOnlySink'
+    onCompileClasspath = false
+    onRuntimeClasspath = false
+}
+
 dependencies {
+    // ── Remap classpath only (never loaded) ───────────────────────────────────────────────────────────
+    // See the header: without this the pinned mods' calls to members they inherit from Spell Engine
+    // classes stay in the production namespace and blow up as NoSuchMethodError at render time.
+    modRemapClasspathOnly("net.spell_engine:spell_engine-forge:1.10.5.009+1.20.1") { transitive = false }
+
     // ── Shared RPG Series libraries (all groups) ───────────────────────────────────────────────────────
     modLocalRuntime("net.rpg_foundation:armor_model_api-forge:1.0.0.001+1.20.1") { transitive = false }
     // `modCompileOnly` in SpellEngine's own build.gradle, hence absent from the run classpath by default.
