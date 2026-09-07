@@ -29,7 +29,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public class SpellBindingBlock extends BlockWithEntity {
-    public static SpellBindingBlock INSTANCE = new SpellBindingBlock(AbstractBlock.Settings.create().hardness(4F).nonOpaque());
+    // Luminance matches vanilla `Blocks.ENCHANTING_TABLE` (`.luminance(state -> 7)`)
+    public static SpellBindingBlock INSTANCE = new SpellBindingBlock(AbstractBlock.Settings.create().hardness(4F).nonOpaque().luminance(state -> 7));
     public static final BlockItem ITEM = new BlockItem(INSTANCE, new Item.Settings());
 
     protected static final VoxelShape SHAPE = Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
