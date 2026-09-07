@@ -49,7 +49,7 @@ Changes:
 
 ## API Changes
 
-- `spell_choice` gains `apply_on_choice`: chosen spell id → data-component changes applied to the item (e.g. `custom_model_data`/`custom_name`), so the choice can drive the item's appearance
+- `spell_choice` gained `apply_on_choice` (chosen spell id → data-component changes applied to the item). This was a data-component feature and is **not part of the 1.20.1 build** — `spell_choice` here carries `pool` only.
 
 Completely reworked particle effect system:
 - `ParticleBatch` replaced by `ParticleGroup`: `id` + `appearance` (one particle) + `batch` (how many, where, what velocity)

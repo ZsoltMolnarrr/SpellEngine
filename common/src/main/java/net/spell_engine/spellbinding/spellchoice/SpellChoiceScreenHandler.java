@@ -147,9 +147,6 @@ public class SpellChoiceScreenHandler extends ScreenHandler {
                 // Bind spell to the item's spell container
                 SpellContainerHelper.addSpell(world, selectedSpellId, itemStack);
 
-                // 1.20.1: `apply_on_choice` component patches are dropped from this version entirely
-                // (no data components); nothing to apply here.
-
                 // Remove the spell choice data (1.20.1: NBT-backed, cleared through the `SpellChoices` funnel)
                 SpellChoices.clear(itemStack);
 
