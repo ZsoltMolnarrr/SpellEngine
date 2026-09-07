@@ -99,7 +99,7 @@ Data type: `SpellChoice` object (see [Spell Choice](common/src/main/java/net/spe
 
 Assigning a spell choice with a spell container to an item, using a game command:
 ```
-/give @p minecraft:wooden_sword[spell_engine:spell_choice={"pool":"wizards:weapon/wizard_staff"}, spell_engine:spell_container={access:MAGIC, spell_ids: [] }]
+/give @p minecraft:wooden_sword{spell_engine:{spell_choice:{pool:"wizards:weapon/wizard_staff"}, spell_container:{access:"MAGIC", spell_ids:[]}}}
 ```
 
 #### Equipment Set
