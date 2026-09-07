@@ -90,21 +90,21 @@ dependencies {
     // build.gradle (optional at runtime), so they are absent from the run classpath unless pinned here.
     modLocalRuntime("com.github.TheRedBrain:bundle-api-fabric:1.1.0.001") { transitive = false }
     modLocalRuntime("net.critical_strike:critical_strike-fabric:1.0.4.002") { transitive = false }
-    modLocalRuntime("net.foundation:ranged_weapon_api-fabric:2.3.4.001+1.20.1") { transitive = false }
+    modLocalRuntime("net.foundation:ranged_weapon_api-fabric:2.3.4.002+1.20.1") { transitive = false }
     // ShieldAPI is JiJ'd by Paladins/Arsenal in production; Loom does not unpack nested jars of
     // classpath mods, so the dev runtime needs it explicitly.
     modLocalRuntime("net.fabric_extras:shield_api-fabric:2.2.0.001") { transitive = false }
-    // StructurePoolAPI is a *hard* dependency of the four class mods, Jewelry, Gazebo and Taverns on
-    // Fabric (village piece injection). Legacy Fabric-only Modrinth artifact; there is no Forge build,
-    // which is why forge/workspace-runtime.gradle has no counterpart line.
-    modLocalRuntime("maven.modrinth:structure-pool-api:1.0+1.20.1") { transitive = false }
+    // StructurePoolAPI is a *hard* dependency of the four class mods, Jewelry, Gazebo and Taverns
+    // (vanilla-village piece injection). Since 1.2.1.001 it has a Forge artifact too, so
+    // forge/workspace-runtime.gradle now carries the matching pin.
+    modLocalRuntime("net.foundation:structure_pool_api-fabric:1.2.1.001+1.20.1") { transitive = false }
 
     // ── Groups ────────────────────────────────────────────────────────────────────────────────────────
     if (flags.rpg_series_classes) {
-        modLocalRuntime("net.rpg_series:wizards-fabric:3.1.2.006+1.20.1") { transitive = false }
-        modLocalRuntime("net.rpg_series:paladins-fabric:3.1.1.007+1.20.1") { transitive = false }
-        modLocalRuntime("net.rpg_series:rogues-fabric:3.1.1.005+1.20.1") { transitive = false }
-        modLocalRuntime("net.rpg_series:archers-fabric:3.1.1.004+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:wizards-fabric:3.1.2.007+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:paladins-fabric:3.1.1.008+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:rogues-fabric:3.1.1.007+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:archers-fabric:3.1.1.006+1.20.1") { transitive = false }
     }
     if (flags.rpg_series_gear) {
         modLocalRuntime("net.arsenal:arsenal-fabric:1.5.0.001+1.20.1") { transitive = false }
@@ -113,7 +113,7 @@ dependencies {
         modLocalRuntime("net.rpg_series:runes-fabric:1.3.2.001+1.20.1") { transitive = false }
     }
     if (accessories) {
-        modLocalRuntime("net.rpg_series:jewelry-fabric:2.4.0.003+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:jewelry-fabric:2.4.0.004+1.20.1") { transitive = false }
         modLocalRuntime("net.rpg_series:relics-fabric:1.4.0.002+1.20.1") { transitive = false }
     }
     if (flags.rpg_series_skills) {
@@ -122,8 +122,8 @@ dependencies {
         modLocalRuntime("net.puffish:skillsmod:0.16.7+1.20:fabric")
     }
     if (flags.rpg_series_structures) {
-        modLocalRuntime("net.rpg_series:gazebo-fabric:2.2.0.002+1.20.1") { transitive = false }
-        modLocalRuntime("net.rpg_series:village_taverns-fabric:1.3.0.001+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:gazebo-fabric:2.2.0.003+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:village_taverns-fabric:1.3.0.003+1.20.1") { transitive = false }
     }
 }
 

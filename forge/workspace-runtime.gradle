@@ -3,8 +3,6 @@
 // `dev-shadow` rationale and the `transitive = false` rule; only the Forge-specific deltas are noted here.
 //
 // Deltas vs. the Fabric list:
-//   • No StructurePoolAPI — the legacy `maven.modrinth:structure-pool-api` artifact is Fabric-only, so
-//     Gazebo/Taverns village injection does not happen on Forge (see TESTING.md "known gaps").
 //   • Trinkets/Cardinal Components are replaced by Curios, which SpellEngine's forge/build.gradle
 //     already puts on the runtime classpath as a `modImplementation`.
 //   • Every jar here is SRG-named production output; `modLocalRuntime` is what makes Loom remap it (and
@@ -50,16 +48,21 @@ dependencies {
     // `modCompileOnly` in SpellEngine's own build.gradle, hence absent from the run classpath by default.
     modLocalRuntime("com.github.TheRedBrain:bundle-api-forge:1.1.0.001") { transitive = false }
     modLocalRuntime("net.critical_strike:critical_strike-forge:1.0.4.002") { transitive = false }
-    modLocalRuntime("net.foundation:ranged_weapon_api-forge:2.3.4.001+1.20.1") { transitive = false }
+    modLocalRuntime("net.foundation:ranged_weapon_api-forge:2.3.4.002+1.20.1") { transitive = false }
     // JiJ'd by Paladins/Arsenal in production; nested jars of classpath mods are not loaded in dev.
     modLocalRuntime("net.fabric_extras:shield_api-forge:2.2.0.001") { transitive = false }
+    // StructurePoolAPI is a *hard* dependency of the four class mods, Jewelry, Gazebo and Taverns on
+    // both loaders since 1.2.1.001 — the first 1.20.1 build with a Forge artifact. Its own MixinExtras
+    // is JiJ'd and therefore not loaded in dev, but SpellEngine's forge/build.gradle already puts
+    // mixinextras-forge on this runtime classpath, so the library's @WrapOperation mixins still apply.
+    modLocalRuntime("net.foundation:structure_pool_api-forge:1.2.1.001+1.20.1") { transitive = false }
 
     // ── Groups ────────────────────────────────────────────────────────────────────────────────────────
     if (flags.rpg_series_classes) {
-        modLocalRuntime("net.rpg_series:wizards-forge:3.1.2.006+1.20.1") { transitive = false }
-        modLocalRuntime("net.rpg_series:paladins-forge:3.1.1.007+1.20.1") { transitive = false }
-        modLocalRuntime("net.rpg_series:rogues-forge:3.1.1.005+1.20.1") { transitive = false }
-        modLocalRuntime("net.rpg_series:archers-forge:3.1.1.004+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:wizards-forge:3.1.2.007+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:paladins-forge:3.1.1.008+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:rogues-forge:3.1.1.007+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:archers-forge:3.1.1.006+1.20.1") { transitive = false }
     }
     if (flags.rpg_series_gear) {
         modLocalRuntime("net.arsenal:arsenal-forge:1.5.0.001+1.20.1") { transitive = false }
@@ -67,7 +70,7 @@ dependencies {
         modLocalRuntime("net.rpg_series:runes-forge:1.3.2.001+1.20.1") { transitive = false }
     }
     if (accessories) {
-        modLocalRuntime("net.rpg_series:jewelry-forge:2.4.0.003+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:jewelry-forge:2.4.0.004+1.20.1") { transitive = false }
         modLocalRuntime("net.rpg_series:relics-forge:1.4.0.002+1.20.1") { transitive = false }
     }
     if (flags.rpg_series_skills) {
@@ -76,8 +79,8 @@ dependencies {
         modLocalRuntime("net.puffish:skillsmod:0.16.7+1.20:forge")
     }
     if (flags.rpg_series_structures) {
-        modLocalRuntime("net.rpg_series:gazebo-forge:2.2.0.002+1.20.1") { transitive = false }
-        modLocalRuntime("net.rpg_series:village_taverns-forge:1.3.0.001+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:gazebo-forge:2.2.0.003+1.20.1") { transitive = false }
+        modLocalRuntime("net.rpg_series:village_taverns-forge:1.3.0.003+1.20.1") { transitive = false }
     }
 }
 
