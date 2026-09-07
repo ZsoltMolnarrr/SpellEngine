@@ -6,6 +6,7 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryBuilder;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.spell_engine.api.item.set.EquipmentSetRegistry;
@@ -81,6 +82,14 @@ public class RPGSeriesDataGen {
             for (var armor: armors) {
                 // 1.20.1: no `minecraft:head_armor` / `chest_armor` / `leg_armor` / `foot_armor` item tags;
                 // armor enchantability comes from `ArmorItem` (`EnchantmentTarget.ARMOR_*`) instead.
+                // Those tags feed `#minecraft:trimmable_armor` on 1.20.5+, which is what made RPG armor
+                // trimmable implicitly there. On 1.20.1 `#minecraft:trimmable_armor` is an explicit list,
+                // so armor must opt in directly - both `SmithingTrimRecipe`'s base ingredient and
+                // `ArmorTrim.apply` gate on it.
+                var trimmableTag = getOrCreateTagBuilder(ItemTags.TRIMMABLE_ARMOR);
+                for (var id: armor.armorSet().pieceIds()) {
+                    trimmableTag.addOptional((Identifier) id);
+                }
 
                 var tier = armor.lootProperties().tier();
                 if (options.allowLootTierTags && tier >= 0) {
