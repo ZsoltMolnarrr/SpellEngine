@@ -158,7 +158,10 @@ publishMods {
             : me.modmuss50.mpp.ReleaseType.BETA
     version = "${project.version}-${platform}"   // per-loader suffix → unique Modrinth version
     displayName = "${project.version}"
+    // NeoForge 1.20.1 is a fork of Forge 47.1 that kept the Forge packages and FML,
+    // so the same jar loads there; both loaders are tagged.
     modLoaders.add("forge")
+    modLoaders.add("neoforge")
 
     curseforge {
         projectId = providers.environmentVariable("CURSEFORGE_PROJECT_ID")   // numeric id
