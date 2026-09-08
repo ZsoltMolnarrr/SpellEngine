@@ -373,7 +373,15 @@ public class SpellExecution {
                                 ? livingEntity.getAttributeValue(attribute)
                                 : 0;
                     } else {
-                        value = caster.getAttributeValue(attribute);
+                        // Same guard as the target branch above: `impact.attribute` is an arbitrary id
+                        // from spell JSON and `caster` is any LivingEntity, while
+                        // `AttributeContainer#getValue` *throws* for an attribute the caster's type never
+                        // registered. GENERIC_ATTACK_DAMAGE (used by Arsenal's weapon skills) is
+                        // registered only by `HostileEntity`, so a villager, snow golem or animal caster
+                        // would have crashed the server here.
+                        value = caster.getAttributes().hasAttribute(attribute)
+                                ? caster.getAttributeValue(attribute)
+                                : 0;
                     }
                     power = new SpellPower.Result(power.school(), value, power.criticalChance(), power.criticalDamage());
                 }

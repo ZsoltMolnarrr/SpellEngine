@@ -14,13 +14,31 @@ import net.spell_power.api.SpellSchool;
 import net.spell_power.api.SpellSchools;
 
 public class ExternalSpellSchools {
+    /// Null-safe read of `GENERIC_ATTACK_DAMAGE`.
+    ///
+    /// That attribute is registered by `HostileEntity.createHostileAttributes()` — **not** by
+    /// `createLivingAttributes()` or `createMobAttributes()` — while these school sources take an
+    /// arbitrary `LivingEntity` (a spell's caster, or an arrow's owner via `SpellImpacts.arrowImpact`).
+    /// `LivingEntity#getAttributeValue` *throws* for an unregistered attribute, so a villager, snow
+    /// golem or any animal casting a PHYSICAL_MELEE-school spell crashes the server (hostiles and iron
+    /// golems are fine — they add the attribute themselves). Absent ⇒ contributes no melee power,
+    /// which is the correct neutral for an entity that has no attack-damage attribute at all.
+    private static double attackDamageOf(LivingEntity entity) {
+        return entity.getAttributes().hasAttribute(EntityAttributes.GENERIC_ATTACK_DAMAGE)
+                ? entity.getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE)
+                : 0;
+    }
+
     /// The off-hand weapon's flat attack damage bonus, scaled by the wielder's multiplicative attack
     /// damage modifiers. Held item modifiers are only contributed to the attribute container by the
     /// main hand, so an off-hand weapon is invisible to `GENERIC_ATTACK_DAMAGE` and its bonus has to
     /// be read off the stack, then scaled the same way the attribute would have scaled it.
     private static double offHandAttackDamage(LivingEntity entity) {
         var offHandStack = entity.getOffHandStack();
-        var weaponDamage = entity.getAttributeBaseValue(EntityAttributes.GENERIC_ATTACK_DAMAGE)
+        var base = entity.getAttributes().hasAttribute(EntityAttributes.GENERIC_ATTACK_DAMAGE)
+                ? entity.getAttributeBaseValue(EntityAttributes.GENERIC_ATTACK_DAMAGE)
+                : 0;
+        var weaponDamage = base
                 + AttributeModifierUtil.flatBonusFrom(offHandStack, EntityAttributes.GENERIC_ATTACK_DAMAGE);
         if (weaponDamage == 0) {
             return 0;
@@ -73,7 +91,7 @@ public class ExternalSpellSchools {
         // Probably several other mods perform this operation, but its no problem.
         EntityAttributes.GENERIC_ATTACK_DAMAGE.value().setTracked(true);
         PHYSICAL_MELEE.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {
-            return query.entity().getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
+            return attackDamageOf(query.entity());
         });
         PHYSICAL_MELEE.addSource(SpellSchool.Trait.HASTE, SpellSchool.Apply.ADD, query -> {
             return AttributeModifierUtil.multipliersOf(EntityAttributes.GENERIC_ATTACK_SPEED, query.entity()) - 1.0;
@@ -84,7 +102,7 @@ public class ExternalSpellSchools {
         // Same power as PHYSICAL_MELEE, plus the off-hand weapon. The attack damage attribute only
         // accounts for the main hand, since vanilla weapons declare their modifiers for MAINHAND.
         PHYSICAL_MELEE_DUAL.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {
-            return query.entity().getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE);
+            return attackDamageOf(query.entity());
         });
         PHYSICAL_MELEE_DUAL.addSource(SpellSchool.Trait.POWER, SpellSchool.Apply.ADD, query -> {
             return offHandAttackDamage(query.entity());

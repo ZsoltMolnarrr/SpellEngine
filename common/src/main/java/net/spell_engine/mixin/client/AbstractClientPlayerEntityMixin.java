@@ -41,6 +41,11 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
         super(world, pos, yaw, gameProfile);
     }
 
+    private static final org.slf4j.Logger LOGGER_SpellEngine = com.mojang.logging.LogUtils.getLogger();
+    /// Unknown animation ids already logged, so a bad id warns once instead of once per tick.
+    private static final java.util.Set<String> WARNED_ANIMATION_IDS_SpellEngine =
+            java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     private final AnimationSubStack castingAnimation = new AnimationSubStack(createPitchAdjustment_SpellEngine());
     private final AnimationSubStack releaseAnimation = new AnimationSubStack(createPitchAdjustment_SpellEngine());
     private final AnimationSubStack miscAnimation = new AnimationSubStack(createPitchAdjustment_SpellEngine());
@@ -181,6 +186,15 @@ public abstract class AbstractClientPlayerEntityMixin extends PlayerEntity imple
             if (name != null && !name.isEmpty()) {
                 var id = Identifier.of(name);
                 var animation = (KeyframeAnimation) PlayerAnimationRegistry.getAnimation(id);
+                if (animation == null) {
+                    // `PlayerAnimationRegistry` returns null for an id no resource pack provides (a typo in
+                    // spell JSON, or a data pack referencing an asset that is not installed). Without this
+                    // the NPE below was thrown — and caught — once per tick for the whole cast.
+                    if (WARNED_ANIMATION_IDS_SpellEngine.add(name)) {
+                        LOGGER_SpellEngine.warn("No player animation registered for `{}`", name);
+                    }
+                    return;
+                }
                 var copy = animation.mutableCopy();
                 updateAnimationByCurrentActivity_SpellEngine(copy);
                 copy.torso.fullyEnablePart(true);
