@@ -7,6 +7,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
+import net.minecraft.world.LightType;
 import net.minecraft.world.World;
 
 // Copied from EnchantingTableBlockEntity
@@ -26,8 +27,29 @@ public class SpellBindingBlockEntity extends BlockEntity {
     public float targetBookRotation;
     private static final Random RANDOM = Random.create();
 
+    /// Whether {@link #serverTick} has already had its one look at the block light here.
+    private boolean blockLightChecked = false;
+
     public SpellBindingBlockEntity(BlockPos pos, BlockState state) {
         super(ENTITY_TYPE, pos, state);
+    }
+
+    /// Server side, and a one-shot: everything after the first tick returns on the first line.
+    ///
+    /// Block light is baked into the saved chunk. The light engine only revisits a position when a block
+    /// change tells it to (`WorldChunk#setBlockState` compares the old and new luminance) — a block whose
+    /// luminance changes in *code* invalidates nothing, so every table placed before the block emitted
+    /// light keeps the dark light values its chunk was saved with, for as long as the world lives.
+    /// Nudge the light engine once per table per load; it settles into a no-op after the first fix,
+    /// because by then the stored light already matches.
+    public static void serverTick(World world, BlockPos pos, BlockState state, SpellBindingBlockEntity blockEntity) {
+        if (blockEntity.blockLightChecked) {
+            return;
+        }
+        blockEntity.blockLightChecked = true;
+        if (world.getLightLevel(LightType.BLOCK, pos) < state.getLuminance()) {
+            world.getChunkManager().getLightingProvider().checkBlock(pos);
+        }
     }
 
     public static void tick(World world, BlockPos pos, BlockState state, SpellBindingBlockEntity blockEntity) {

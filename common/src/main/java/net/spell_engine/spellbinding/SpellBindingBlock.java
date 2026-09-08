@@ -76,7 +76,10 @@ public class SpellBindingBlock extends BlockWithEntity {
     @Override
     @Nullable
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return world.isClient ? checkType(type, SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntity::tick) : null;
+        // Client: the book animation. Server: a one-shot block-light check (see SpellBindingBlockEntity#serverTick).
+        return world.isClient
+                ? checkType(type, SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntity::tick)
+                : checkType(type, SpellBindingBlockEntity.ENTITY_TYPE, SpellBindingBlockEntity::serverTick);
     }
 
     @Override
