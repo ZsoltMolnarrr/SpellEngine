@@ -83,7 +83,9 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
     }
 
     private boolean arrowPerksAlreadyApplied(RegistryEntry<Spell> spell) {
-        var id = spell.getKey().get().getValue().toString();
+        // `spellIds` holds `Identifier`s — comparing against the string form made this guard
+        // always-false (a `List<Identifier>` never `contains` a `String`).
+        var id = spell.getKey().get().getValue();
         return spellIds.contains(id);
     }
 
