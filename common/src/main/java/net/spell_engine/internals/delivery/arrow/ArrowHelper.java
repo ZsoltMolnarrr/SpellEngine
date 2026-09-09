@@ -8,10 +8,16 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.*;
+import net.fabric_extras.ranged_weapon.api.BowMechanics;
+import net.fabric_extras.ranged_weapon.api.CustomRangedWeapon;
+import net.fabric_extras.ranged_weapon.api.EntityAttributes_RangedWeapon;
+import net.fabric_extras.ranged_weapon.internal.ScalingUtil;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.spell_engine.Platform;
 import net.spell_engine.api.spell.Spell;
@@ -80,8 +86,25 @@ public class ArrowHelper {
                 return;
             }
             var look = shooter.getRotationVec(1.0F);
-            projectile.setVelocity(look.x, look.y, look.z, shoot_arrow.launch_properties.velocity, divergence);
+            // RangedWeaponAPI parity: on 1.21.1 the spell path runs through `RangedWeaponItem.shootAll`,
+            // where RWA's mixin scales velocity by the shooter's `ranged_weapon:velocity` attribute and
+            // damage by `ranged_weapon:damage` against the weapon's baseline. The hand-rolled launch here
+            // bypasses every RWA hook (they wrap `BowItem.onStoppedUsing` / `CrossbowItem.shoot` /
+            // `ProjectileUtil.createArrowProjectile`), so the same scaling is applied explicitly.
+            var velocityMultiplier = rangedWeaponApiLoaded()
+                    ? RangedWeaponApiBridge.velocityMultiplier(shooter, weaponStack)
+                    : 1.0;
+            var velocity = (float)(shoot_arrow.launch_properties.velocity * velocityMultiplier);
+            projectile.setVelocity(look.x, look.y, look.z, velocity, divergence);
             serverWorld.spawnEntity(projectile);
+            if (rangedWeaponApiLoaded()) {
+                RangedWeaponApiBridge.applyDamageScaling(projectile, shooter, weaponStack, velocityMultiplier);
+            }
+            // Vanilla plays the launch sound inside `CrossbowItem.shoot` (both 1.20.1 and 1.21.1), which
+            // this hand-rolled launch replaces — so it is played here, with vanilla's pitch sequencing.
+            serverWorld.playSound(null, shooter.getX(), shooter.getY(), shooter.getZ(),
+                    SoundEvents.ITEM_CROSSBOW_SHOOT, SoundCategory.PLAYERS, 1.0F,
+                    shootSoundPitch(shooter.getRandom(), sequenceIndex));
             // Arrow perks applied via the shoot context (same path as the bow/crossbow mixins)
             onArrowSpawned(projectile, shooter, null);
 
@@ -138,6 +161,70 @@ public class ArrowHelper {
             return ammo.copyWithCount(1);
         }
         return null;
+    }
+
+    /// Copy of `CrossbowItem.getSoundPitch` (1.21.1): the first projectile of a volley fires at pitch 1,
+    /// follow-ups alternate around two slightly detuned pitches, like vanilla multishot.
+    private static float shootSoundPitch(Random random, int index) {
+        if (index == 0) {
+            return 1.0F;
+        }
+        var base = ((index & 1) == 1) ? 0.63F : 0.43F;
+        return 1.0F / (random.nextFloat() * 0.5F + 1.8F) + base;
+    }
+
+    // MARK: RangedWeaponAPI bridge
+    //
+    // RangedWeaponAPI (2.3.4.x+1.20.1) is compile-only and optional at runtime (same arrangement as
+    // `ExternalSpellSchools`). Its classes are only touched behind `isModLoaded("ranged_weapon_api")`,
+    // inside the nested holder below, so a runtime without RWA never resolves them.
+
+    private static final String RANGED_WEAPON_API_MOD_ID = "ranged_weapon_api";
+
+    private static boolean rangedWeaponApiLoaded() {
+        return Platform.util().isModLoaded(RANGED_WEAPON_API_MOD_ID);
+    }
+
+    /// The only place RWA types are dereferenced. Never load this class unless {@link #rangedWeaponApiLoaded()}.
+    ///
+    /// Mirrors what a normal shot receives from RWA's own hooks (`BowItemMixin` on 1.20.1, the
+    /// `shootAll` wrap on 1.21.1): velocity scaled by the `ranged_weapon:velocity` bonus over the weapon
+    /// type's baseline, damage scaled by `ranged_weapon:damage` over the weapon's baseline (velocity
+    /// boost counteracted, since vanilla hit damage multiplies by arrow speed), and percentage-based
+    /// Power — which on 1.21.1 rides the `ranged_weapon:damage` attribute, but on 1.20.1 is applied at
+    /// the (bypassed) vanilla Power site. A weapon that is not a `CustomRangedWeapon` gets no scaling,
+    /// exactly like its normal shots.
+    private static final class RangedWeaponApiBridge {
+        static double velocityMultiplier(LivingEntity shooter, ItemStack weaponStack) {
+            if (!(weaponStack.getItem() instanceof CustomRangedWeapon)) {
+                return 1.0;
+            }
+            var bonusVelocity = shooter.getAttributeValue(EntityAttributes_RangedWeapon.VELOCITY.attribute);
+            return ScalingUtil.arrowVelocityMultiplier(weaponStack.getItem(), bonusVelocity);
+        }
+
+        static void applyDamageScaling(PersistentProjectileEntity projectile, LivingEntity shooter,
+                                       ItemStack weaponStack, double velocityMultiplier) {
+            if (!(weaponStack.getItem() instanceof CustomRangedWeapon rangedWeapon)) {
+                return;
+            }
+            var arrow = (net.fabric_extras.ranged_weapon.internal.ArrowExtension) projectile;
+            if (arrow.rwa_isModified()) {
+                return;
+            }
+            var baselineDamage = rangedWeapon.getTypeBaseline().damage();
+            if (baselineDamage <= 0) {
+                return;
+            }
+            var rangedDamage = shooter.getAttributeValue(EntityAttributes_RangedWeapon.DAMAGE.attribute);
+            if (rangedDamage <= 0) {
+                return;
+            }
+            var multiplier = ScalingUtil.arrowDamageMultiplier(baselineDamage, rangedDamage, velocityMultiplier)
+                    * BowMechanics.Power.damageMultiplier(weaponStack);
+            projectile.setDamage(projectile.getDamage() * multiplier);
+            arrow.rwa_markModified(true);
+        }
     }
 
     /// Copy of `CrossbowItem.createArrow` (private static on 1.20.1) with the spell's own crit flag.
