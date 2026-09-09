@@ -12,7 +12,9 @@ import net.spell_engine.api.spell.fx.ParticleGroup.Render;
 import net.spell_engine.client.util.Color;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 /// Registry of every Spell Engine particle.
@@ -262,9 +264,17 @@ public class SpellEngineParticles {
 
     /// Idempotent. Fabric: call from mod init; Forge: call from the `PARTICLE_TYPE` `RegisterEvent`.
     public static void register() {
+        particlesToRegister().forEach((id, type) -> Registry.register(Registries.PARTICLE_TYPE, id, type));
+    }
+
+    /// Every particle type that still needs registering, keyed by the id it registers under. Creation only —
+    /// nothing is written here, so a loader that registers particles itself (Forge) iterates this instead.
+    public static Map<Identifier, ParticleGroupType> particlesToRegister() {
+        var particles = new LinkedHashMap<Identifier, ParticleGroupType>();
         for (var entry: entries) {
             if (Registries.PARTICLE_TYPE.containsId(entry.id())) { continue; }
-            Registry.register(Registries.PARTICLE_TYPE, entry.id(), entry.type());
+            particles.put(entry.id(), entry.type());
         }
+        return particles;
     }
 }

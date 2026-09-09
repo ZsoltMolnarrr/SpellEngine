@@ -2,13 +2,17 @@ package net.spell_engine.fx;
 
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SpellEngineSounds {
     public static final class Entry {
@@ -59,6 +63,16 @@ public class SpellEngineSounds {
             if (entry == null) {
                 entry = Registry.registerReference(Registries.SOUND_EVENT, id(), soundEvent());
             }
+        }
+
+        /// Reads {@link #entry} back out of the registry, for a loader that registered the sound itself
+        /// (Forge's `RegisterEvent` helper returns void where `Registry.registerReference` returns the entry).
+        /// Idempotent; throws naming the id if the sound never reached the registry.
+        public void link() {
+            if (entry != null) { return; }
+            entry = Registries.SOUND_EVENT.getEntry(RegistryKey.of(RegistryKeys.SOUND_EVENT, id))
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Sound event " + id + " is not in the registry — register it first"));
         }
     }
     public static final List<Entry> entries = new ArrayList<>();
@@ -155,5 +169,39 @@ public class SpellEngineSounds {
         for (var entry: entries) {
             entry.register();
         }
+    }
+
+    // MARK: Registration
+
+    /// Every sound of `entries` that still needs registering, keyed by the id it registers under.
+    /// Creation only — nothing is written here, so a loader that registers sounds itself (Forge) iterates
+    /// this instead of calling `Entry#register()`. Follow it with {@link #linkEntries(List)}: several
+    /// consumers read `Entry#entry()` (armor and shield equip sounds), which only the register-reference
+    /// path fills in.
+    public static Map<Identifier, SoundEvent> soundsToRegister(List<Entry> entries) {
+        var sounds = new LinkedHashMap<Identifier, SoundEvent>();
+        for (var entry : entries) {
+            if (entry.entry != null || Registries.SOUND_EVENT.containsId(entry.id())) { continue; }
+            sounds.put(entry.id(), entry.soundEvent());
+        }
+        return sounds;
+    }
+
+    /// Populates every `entry` field from the registry. Call right after registering `entries` through a
+    /// loader-specific helper; on Fabric `Entry#register()` already sets them.
+    public static void linkEntries(List<Entry> entries) {
+        for (var entry : entries) {
+            entry.link();
+        }
+    }
+
+    /// Spell Engine's own sounds, for a loader that registers them itself.
+    public static Map<Identifier, SoundEvent> soundsToRegister() {
+        return soundsToRegister(entries);
+    }
+
+    /// Links Spell Engine's own sound entries. See {@link #linkEntries(List)}.
+    public static void linkEntries() {
+        linkEntries(entries);
     }
 }

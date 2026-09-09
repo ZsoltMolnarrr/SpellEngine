@@ -23,6 +23,7 @@ import net.spell_engine.api.spell.container.SpellContainer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -227,6 +228,21 @@ public class Shield {
             RegistryKey<ItemGroup> itemGroupKey,
             ShieldFactory factory
     ) {
+        itemsToRegister(configs, entries, itemGroupKey, factory)
+                .forEach((id, item) -> Registry.register(Registries.ITEM, id, item));
+    }
+
+    /// Creates and configures every shield item of `entries` and returns them keyed by the id they register
+    /// under; also installs the item-group contents callback. Creation only — nothing is written into the
+    /// ITEM registry here, so a loader that registers items itself (Forge) iterates this instead of calling
+    /// {@link #register}. **Must run inside the ITEM registration window.**
+    public static Map<Identifier, Item> itemsToRegister(
+            Map<String, ShieldConfig> configs,
+            List<Entry> entries,
+            RegistryKey<ItemGroup> itemGroupKey,
+            ShieldFactory factory
+    ) {
+        var items = new LinkedHashMap<Identifier, Item>();
         ArrayList<Item> shields = new ArrayList<>();
 
         for (var entry : entries) {
@@ -256,7 +272,7 @@ public class Shield {
                         .spellChoice(entry.spellChoice)
                         .spellContainer(entry.spellContainer);
             }
-            Registry.register(Registries.ITEM, entry.id, shield);
+            items.put(entry.id, shield);
             entry.registeredItem = shield;
             shields.add(shield);
         }
@@ -267,5 +283,6 @@ public class Shield {
                 content.add(shield);
             }
         });
+        return items;
     }
 }

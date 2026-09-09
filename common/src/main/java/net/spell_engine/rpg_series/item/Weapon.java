@@ -24,6 +24,7 @@ import net.spell_engine.api.spell.container.SpellContainer;
 import net.spell_engine.utils.AttributeModifierUtil;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -211,6 +212,17 @@ public class Weapon {
     // MARK: Registration
 
     public static void register(Map<String, WeaponConfig> configs, List<Entry> entries, RegistryKey<ItemGroup> itemGroupKey) {
+        itemsToRegister(configs, entries, itemGroupKey)
+                .forEach((id, item) -> Registry.register(Registries.ITEM, id, item));
+    }
+
+    /// Creates and configures every weapon item of `entries` and returns them keyed by the id they register
+    /// under; also installs the item-group contents callback. Creation only — nothing is written into the
+    /// ITEM registry here, so a loader that registers items itself (Forge) iterates this instead of calling
+    /// {@link #register}. **Must run inside the ITEM registration window** (item constructors create
+    /// intrusive registry holders).
+    public static Map<Identifier, Item> itemsToRegister(Map<String, WeaponConfig> configs, List<Entry> entries, RegistryKey<ItemGroup> itemGroupKey) {
+        var items = new LinkedHashMap<Identifier, Item>();
         for(var entry: entries) {
             var config = configs.get(entry.name);
             if (config == null) {
@@ -236,13 +248,14 @@ public class Weapon {
                         .spellChoice(entry.spellChoice)
                         .spellContainer(entry.spellContainer);
             }
-            Registry.register(Registries.ITEM, entry.id(), item);
+            items.put(entry.id(), item);
         }
         PlatformEvents.onItemGroupModify(itemGroupKey, (content, context) -> {
             for(var entry: entries) {
                 content.add(entry.item());
             }
         });
+        return items;
     }
 
     public static ItemAttributeModifiers attributesFrom(WeaponConfig config) {

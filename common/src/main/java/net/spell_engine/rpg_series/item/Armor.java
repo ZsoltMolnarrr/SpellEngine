@@ -208,14 +208,22 @@ public class Armor {
         }
 
         public void register(RegistryKey<ItemGroup> itemGroupKey) {
+            itemsToRegister(itemGroupKey).forEach((id, item) -> Registry.register(Registries.ITEM, id, item));
+        }
+
+        /// This set's pieces keyed by the id they register under, plus the item-group contents callback.
+        /// Creation only — see `Armor#itemsToRegister`.
+        public Map<Identifier, Item> itemsToRegister(RegistryKey<ItemGroup> itemGroupKey) {
+            var items = new LinkedHashMap<Identifier, Item>();
             for (var piece: pieces()) {
-                Registry.register(Registries.ITEM, idOf(piece), piece);
+                items.put(idOf(piece), piece);
             }
             PlatformEvents.onItemGroupModify(itemGroupKey, (content, context) -> {
                 for(var piece: pieces()) {
                     content.add(piece);
                 }
             });
+            return items;
         }
 
         public interface ItemFactory<T extends ArmorItem> {
@@ -302,6 +310,17 @@ public class Armor {
     // MARK: Registration
 
     public static void register(Map<String, ArmorSetConfig> configs, List<Entry> entries, RegistryKey<ItemGroup> itemGroupKey) {
+        itemsToRegister(configs, entries, itemGroupKey)
+                .forEach((id, item) -> Registry.register(Registries.ITEM, id, item));
+    }
+
+    /// Configures every armor piece of `entries` and returns them keyed by the id they register under; also
+    /// installs the item-group contents callback. Creation only — nothing is written into the ITEM registry
+    /// here, so a loader that registers items itself (Forge) iterates this instead of calling
+    /// {@link #register}. **Must run inside the ITEM registration window.**
+    @SuppressWarnings("unchecked")
+    public static Map<Identifier, Item> itemsToRegister(Map<String, ArmorSetConfig> configs, List<Entry> entries, RegistryKey<ItemGroup> itemGroupKey) {
+        var items = new LinkedHashMap<Identifier, Item>();
         for(var entry: entries) {
             var config = configs.get(entry.name());
             if (config == null) {
@@ -312,8 +331,9 @@ public class Armor {
                 var armorPiece = (ArmorItem) piece;
                 AttributeModifierUtil.setItemModifiers(armorPiece, attributesFrom(config, armorPiece.getType()));
             }
-            entry.armorSet().register(itemGroupKey);
+            items.putAll(entry.armorSet().itemsToRegister(itemGroupKey));
         }
+        return items;
     }
 
     /// Vanilla's per-slot armor modifier UUIDs (`ArmorItem.MODIFIERS`, private in 1.20.1), so custom armor stacks

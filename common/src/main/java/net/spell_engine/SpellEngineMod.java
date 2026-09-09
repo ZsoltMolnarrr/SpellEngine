@@ -50,7 +50,9 @@ import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
 import net.spell_engine.utils.StatusEffectUtil;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SpellEngineMod {
     public static final String ID = "spell_engine";
@@ -208,40 +210,44 @@ public class SpellEngineMod {
     }
 
     public static void registerEntityTypes() {
-        if (SpellProjectile.ENTITY_TYPE != null) { return; }
+        entityTypesToRegister().forEach((id, type) -> Registry.register(Registries.ENTITY_TYPE, id, type));
+    }
+
+    /// Builds Spell Engine's entity types, assigns the `ENTITY_TYPE` static fields, and returns them keyed by
+    /// the id they register under. Creation only — nothing is written here, so a loader that registers entity
+    /// types itself (Forge) iterates this instead.
+    ///
+    /// **Must run inside the `ENTITY_TYPE` registration window**: `EntityType.Builder#build` constructs an
+    /// intrusive registry holder, which throws `Registry is already frozen` outside it.
+    public static Map<Identifier, EntityType<?>> entityTypesToRegister() {
+        if (SpellProjectile.ENTITY_TYPE != null) { return Map.of(); }
         // Vanilla EntityType.Builder (loader-neutral) replaces FabricEntityTypeBuilder.
         // Note: vanilla `setDimensions(w, h)` produces "changing" dimensions; the former `fixed(...)`
         // is a no-op difference for these never-scaled entities.
-        SpellProjectile.ENTITY_TYPE = Registry.register(
-                Registries.ENTITY_TYPE,
-                new Identifier(SpellEngineMod.ID, "spell_projectile"),
-                EntityType.Builder.<SpellProjectile>create(SpellProjectile::new, SpawnGroup.MISC)
-                        .setDimensions(0.25F, 0.25F) // dimensions in Minecraft units of the render
-                        .makeFireImmune()
-                        .maxTrackingRange(128)
-                        .trackingTickInterval(2)
-                        .build("spell_projectile")
-        );
-        SpellCloud.ENTITY_TYPE = Registry.register(
-                Registries.ENTITY_TYPE,
-                new Identifier(SpellEngineMod.ID, "spell_area_effect"),
-                EntityType.Builder.<SpellCloud>create(SpellCloud::new, SpawnGroup.MISC)
-                        .setDimensions(6F, 0.5F) // dimensions in Minecraft units of the render
-                        .makeFireImmune()
-                        .maxTrackingRange(128)
-                        .trackingTickInterval(20)
-                        .build("spell_area_effect")
-        );
-        SpellModelEffect.ENTITY_TYPE = Registry.register(
-                Registries.ENTITY_TYPE,
-                new Identifier(SpellEngineMod.ID, "spell_model_effect"),
-                EntityType.Builder.<SpellModelEffect>create(SpellModelEffect::new, SpawnGroup.MISC)
-                        .setDimensions(0.5F, 0.5F)
-                        .makeFireImmune()
-                        .maxTrackingRange(128)
-                        .trackingTickInterval(20)
-                        .build("spell_model_effect")
-        );
+        SpellProjectile.ENTITY_TYPE = EntityType.Builder.<SpellProjectile>create(SpellProjectile::new, SpawnGroup.MISC)
+                .setDimensions(0.25F, 0.25F) // dimensions in Minecraft units of the render
+                .makeFireImmune()
+                .maxTrackingRange(128)
+                .trackingTickInterval(2)
+                .build("spell_projectile");
+        SpellCloud.ENTITY_TYPE = EntityType.Builder.<SpellCloud>create(SpellCloud::new, SpawnGroup.MISC)
+                .setDimensions(6F, 0.5F) // dimensions in Minecraft units of the render
+                .makeFireImmune()
+                .maxTrackingRange(128)
+                .trackingTickInterval(20)
+                .build("spell_area_effect");
+        SpellModelEffect.ENTITY_TYPE = EntityType.Builder.<SpellModelEffect>create(SpellModelEffect::new, SpawnGroup.MISC)
+                .setDimensions(0.5F, 0.5F)
+                .makeFireImmune()
+                .maxTrackingRange(128)
+                .trackingTickInterval(20)
+                .build("spell_model_effect");
+
+        var types = new LinkedHashMap<Identifier, EntityType<?>>();
+        types.put(new Identifier(SpellEngineMod.ID, "spell_projectile"), SpellProjectile.ENTITY_TYPE);
+        types.put(new Identifier(SpellEngineMod.ID, "spell_area_effect"), SpellCloud.ENTITY_TYPE);
+        types.put(new Identifier(SpellEngineMod.ID, "spell_model_effect"), SpellModelEffect.ENTITY_TYPE);
+        return types;
     }
 
     private static boolean criteriaRegistered = false;

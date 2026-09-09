@@ -1,6 +1,7 @@
 package net.spell_engine.api.effect;
 
 import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.util.Identifier;
 import net.spell_engine.SpellEngineMod;
@@ -11,6 +12,7 @@ import net.spell_engine.client.util.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SpellEngineEffects {
     public static final List<Effects.Entry> entries = new ArrayList<>();
@@ -59,6 +61,23 @@ public class SpellEngineEffects {
 
     /// Idempotent. Fabric: call from mod init; Forge: call from the `STATUS_EFFECT` `RegisterEvent`.
     public static void register() {
+        Effects.register(effectsToRegisterSource(), new HashMap<>());
+    }
+
+    /// Attaches Spell Engine's own effect behaviour (action impairing, glow, sync) and returns the effects
+    /// that still need registering. Creation only — for a loader that registers status effects itself.
+    /// Follow it with {@link #linkEntries()}.
+    public static Map<Identifier, StatusEffect> effectsToRegister() {
+        return Effects.effectsToRegister(effectsToRegisterSource(), new HashMap<>());
+    }
+
+    /// Links Spell Engine's own effect entries. See `Effects#linkEntries`.
+    public static void linkEntries() {
+        Effects.linkEntries(entries);
+    }
+
+    /// Creation half: everything `register()` did apart from the registry writes.
+    private static List<Effects.Entry> effectsToRegisterSource() {
         if (!configured) {
             configured = true;
             ActionImpairing.configure(STUN.effect, EntityActionsAllowed.STUN);
@@ -72,7 +91,7 @@ public class SpellEngineEffects {
                 Synchronized.configure(entry.effect, true);
             }
         }
-        Effects.register(entries, new HashMap<>());
+        return entries;
     }
 }
 

@@ -38,10 +38,20 @@ public class SpellEngineEnchantments {
 
     /// Idempotent. Fabric: call from mod init; Forge: call from the `ENCHANTMENT` `RegisterEvent`.
     public static void register() {
+        enchantmentsToRegister().forEach((id, enchantment) ->
+                Registry.register(Registries.ENCHANTMENT, id, enchantment));
+    }
+
+    /// Refreshes the config and returns every enchantment that still needs registering, keyed by the id it
+    /// registers under. Creation only — nothing is written here, so a loader that registers enchantments
+    /// itself (Forge) iterates this instead.
+    public static Map<Identifier, Enchantment> enchantmentsToRegister() {
         config.refresh();
+        var enchantments = new LinkedHashMap<Identifier, Enchantment>();
         for (var entry : all.entrySet()) {
             if (Registries.ENCHANTMENT.containsId(entry.getKey())) { continue; }
-            Registry.register(Registries.ENCHANTMENT, entry.getKey(), entry.getValue());
+            enchantments.put(entry.getKey(), entry.getValue());
         }
+        return enchantments;
     }
 }

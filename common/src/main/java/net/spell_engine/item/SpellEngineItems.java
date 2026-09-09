@@ -20,6 +20,8 @@ import net.spell_engine.spellbinding.SpellBinding;
 import net.spell_engine.spellbinding.SpellBindingBlock;
 
 import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class SpellEngineItems {
     public static class Group {
@@ -53,10 +55,26 @@ public class SpellEngineItems {
     });
 
     public static void register() {
+        registerItemGroup();
+        itemsToRegister().forEach((id, item) -> Registry.register(Registries.ITEM, id, item));
+    }
+
+    /// Registers the `spell_engine:generic` item group. Kept apart from {@link #itemsToRegister()} because
+    /// `creative_mode_tab` has its own registration window (event 65) far after `item` (event 7).
+    public static void registerItemGroup() {
+        if (Registries.ITEM_GROUP.containsId(Group.ID)) { return; }
         Registry.register(Registries.ITEM_GROUP, Group.KEY, Group.SPELLS);
-        Registry.register(Registries.ITEM, SpellBinding.ID, SpellBindingBlock.ITEM);
-        Registry.register(Registries.ITEM, ScrollItem.ID, SCROLL.get());
-        Registry.register(Registries.ITEM, UniversalSpellBookItem.ID, SPELL_BOOK.get());
+    }
+
+    /// Spell Engine's own items, keyed by the id they register under, plus the item-group contents callback.
+    /// Creation only — nothing is written into the ITEM registry here, so a loader that registers items
+    /// itself (Forge) iterates this instead. **Must run inside the ITEM registration window**: the item
+    /// constructors create intrusive registry holders, and slot-mod item factories are awoken here.
+    public static Map<Identifier, Item> itemsToRegister() {
+        var items = new LinkedHashMap<Identifier, Item>();
+        items.put(SpellBinding.ID, SpellBindingBlock.ITEM);
+        items.put(ScrollItem.ID, SCROLL.get());
+        items.put(UniversalSpellBookItem.ID, SPELL_BOOK.get());
         PlatformEvents.onItemGroupModify(Group.KEY, (content, context) -> {
             content.add(SpellBindingBlock.ITEM);
 
@@ -95,5 +113,6 @@ public class SpellEngineItems {
                         });
             }
         });
+        return items;
     }
 }
