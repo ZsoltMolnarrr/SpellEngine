@@ -37,7 +37,10 @@ side = "BOTH"
 [[dependencies.spell_engine]]
 modId = "playeranimator"
 mandatory = true
-versionRange = "[1.0.2,)"
+# Any version. Modrinth publishes exactly one PlayerAnimator build for MC 1.20.1 --
+# `1.0.2-rc1+1.20` -- and `1.0.2-rc1` sorts BELOW `1.0.2` under Maven ordering, so the
+# previous `[1.0.2,)` excluded the only artifact a player can actually install.
+versionRange = "[1.0.0,)"
 ordering = "NONE"
 side = "BOTH"
 
