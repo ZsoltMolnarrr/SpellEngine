@@ -10,6 +10,7 @@ import net.spell_engine.api.item.SpellItemData;
 import net.spell_engine.api.spell.*;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.internals.container.SpellAssignments;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,16 +19,62 @@ public class SpellContainerHelper {
 
     // Read helpers
 
+    /// Resolves the spell container of a stack, in order:
+    /// 1. the container stored on the **stack itself** (NBT)
+    /// 2. the **datapack assignment** (`data/<namespace>/spell_assignments/<item_path>.json`)
+    /// 3. the item's own **default** container (declared in Java at item construction)
+    /// 4. the last-resort map: spell book assignments and the weapon fallback config
+    ///
+    /// Tier 2 outranking tier 3 is what lets a datapack retune a weapon shipped by a content mod.
     public static SpellContainer containerFromItemStack(ItemStack itemStack) {
         if (itemStack.isEmpty()) {
             return null;
         }
-        var stored = SpellItemData.getSpellContainer(itemStack);
+        var stored = SpellItemData.get(itemStack, SpellItemData.SPELL_CONTAINER, SpellContainer.CODEC);
         if (stored != null) {
             return stored;
         }
         var id = Registries.ITEM.getId(itemStack.getItem());
-        return SpellAssignments.containerForItem(id);
+        var assignment = SpellAssignments.assignment(id);
+        if (assignment != null && assignment.container() != null) {
+            return assignment.container();
+        }
+        var itemDefault = SpellItemData.defaultSpellContainer(itemStack.getItem());
+        if (itemDefault != null) {
+            return itemDefault;
+        }
+        return SpellAssignments.fallbackContainerForItem(id);
+    }
+
+    /// The spell choice of a stack, resolved along the same chain as the container:
+    /// stack-stored (NBT), then the datapack assignment, then the item default.
+    ///
+    /// One coupling: an assignment that provides a **container** suppresses the item's default **choice**.
+    /// `withSpellChoices(pool)` sets an item's container pool and its choice together, so leaving the default
+    /// choice standing under a datapack-replaced container would offer a pool the container no longer has.
+    /// An assignment that provides only a choice leaves the item's default container alone.
+    @Nullable
+    public static SpellChoice choiceFromItemStack(ItemStack itemStack) {
+        if (itemStack.isEmpty()) {
+            return null;
+        }
+        // Present even as `SpellChoice.EMPTY` (how a resolved choice is cleared): the stack has the final say
+        var stored = SpellItemData.get(itemStack, SpellItemData.SPELL_CHOICE, SpellChoice.CODEC);
+        if (stored != null) {
+            return stored;
+        }
+        var id = Registries.ITEM.getId(itemStack.getItem());
+        var assignment = SpellAssignments.assignment(id);
+        if (assignment != null) {
+            if (assignment.choice() != null) {
+                return assignment.choice();
+            }
+            if (assignment.container() != null) {
+                // The datapack redefined the container; the item's default choice no longer matches it
+                return null;
+            }
+        }
+        return SpellItemData.defaultSpellChoice(itemStack.getItem());
     }
 
     public static Identifier getPoolId(SpellContainer container) {

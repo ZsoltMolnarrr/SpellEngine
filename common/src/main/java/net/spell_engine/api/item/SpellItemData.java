@@ -123,7 +123,9 @@ public class SpellItemData {
     // MARK: Spell container
 
     /// Container stored on the stack, else the item-level default, else `null`.
-    /// (Datapack spell assignments are layered on top by `SpellContainerHelper.containerFromItemStack`.)
+    ///
+    /// This skips the datapack assignment tier, which sits *between* the two - use
+    /// `SpellContainerHelper.containerFromItemStack` for the full resolution.
     @Nullable
     public static SpellContainer getSpellContainer(ItemStack stack) {
         var stored = get(stack, SPELL_CONTAINER, SpellContainer.CODEC);
@@ -147,6 +149,10 @@ public class SpellItemData {
 
     // MARK: Spell choice
 
+    /// Choice stored on the stack, else the item-level default, else `null`.
+    ///
+    /// This skips the datapack assignment tier - use `SpellContainerHelper.choiceFromItemStack`
+    /// (or the `SpellChoices` funnel) for the full resolution.
     @Nullable
     public static SpellChoice getSpellChoice(ItemStack stack) {
         var stored = get(stack, SPELL_CHOICE, SpellChoice.CODEC);
@@ -349,6 +355,19 @@ public class SpellItemData {
         if (pending.spellChoice != null) { target.spellChoice = pending.spellChoice; }
         if (pending.equipmentSet != null) { target.equipmentSet = pending.equipmentSet; }
         if (pending.itemModel != null) { target.itemModel = pending.itemModel; }
+    }
+
+    /// The item-level default container, ignoring any stack. `SpellContainerHelper#containerFromItemStack`
+    /// layers the stack and the datapack assignment on top of this.
+    @Nullable
+    public static SpellContainer defaultSpellContainer(Item item) {
+        return defaultsOrNull(item, defaults -> defaults.spellContainer);
+    }
+
+    /// The item-level default spell choice, ignoring any stack.
+    @Nullable
+    public static SpellChoice defaultSpellChoice(Item item) {
+        return defaultsOrNull(item, defaults -> defaults.spellChoice);
     }
 
     private interface DefaultsReader<T> {

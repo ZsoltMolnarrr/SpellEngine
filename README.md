@@ -70,7 +70,7 @@ Primary types:
 - Modifier - non-interactable spells, modifying existing spells in pre-defined ways
 
 Fully data driven, (stored in a DynamicRegistry).
-- Data file example path: `resources/data/MOD_ID/spells/SPELL_ID.json`
+- Data file example path: `resources/data/MOD_ID/spell/SPELL_ID.json`
 - Assigned to items using Spell Assignments type (see below)
 
 Data type: `Spell` object (see [Spell](common/src/main/java/net/spell_engine/api/spell/Spell.java) for details)
@@ -114,9 +114,23 @@ Data type: `Identifier` (points to equipment set id)
 
 Spell containers can be assigned to an item in multiple ways. These methods have a priority order, Spell Engine will resolve the spell container from the highest priority method available.
 1. ItemStack (meta data) component
-2. Item default component
-3. Spell Assignment data file
+2. Spell Assignment data file
+3. Item default component
 4. Automatic (fallback) container assignment done by Spell Engine
+
+> **Data files outrank item defaults.** A `spell_assignments` file wins over the default the item was built
+> with, so a datapack can retune *any* weapon - including one shipped by a content mod - without that mod
+> having to ship an assignment file of its own. (Before this, a data file only ever reached items that had no
+> default of their own.)
+>
+> The automatic fallback stays at the bottom on purpose: it matches on vanilla item classes, which content
+> mod weapons extend, so promoting it would let the fallback config silently overwrite their built-in spells.
+
+The **spell choice** of an item resolves along the same chain, with one coupling: a data file that provides a
+`spell_container` also suppresses the item's default `spell_choice`. Setting a container pool and a choice go
+together when an item is built, so a data-file container that replaced the item's own would otherwise be left
+offering a pool it no longer has. A data file that provides only a `spell_choice` leaves the item's default
+container alone.
 
 #### Assignment with ItemStack (meta data) component
 
@@ -145,17 +159,49 @@ Some third party tools offer ways to override this, in a data driven way.
 - [Default Components mod](https://modrinth.com/mod/default-components) (Fabric)
 - [Defaulted mod](https://modrinth.com/mod/defaulted/) (Fabric & NeoForge)
 
-#### Assignment with Spell Assignment Data File (Legacy)
+#### Assignment with Spell Assignment Data File
 
-Assigning a spell container to an item, using a data file.
+Assigning a spell container and/or a spell choice to an item, using a data file located at
+`data/NAMESPACE/spell_assignments/ITEM_NAME.json`.
 
-Example data file, located at `data/NAMESPACE/spell_assignments/ITEM_NAME.json`
+```json
+{
+  "spell_container": {
+    "access": "MAGIC",
+    "spell_ids": [ "wizards:fireball" ]
+  },
+  "spell_choice": {
+    "pool": "wizards:weapon/wizard_staff"
+  }
+}
+```
+
+Both members are optional:
+- only `spell_container` - replaces the item's container, and suppresses its default spell choice
+- only `spell_choice` - replaces the item's spell choice, leaving its default container in place
+- both - replaces both
+- neither (or nothing readable in either) - the file is skipped with a console warning
+
+`spell_container` is a `SpellContainer` object and `spell_choice` a `SpellChoice` object, spelled exactly the
+same way as the matching item data.
+
+**Legacy format.** The original form of this file was a bare `SpellContainer` object, with no wrapper:
+
 ```json
 {
   "access": "MAGIC",
   "spell_ids": [ "wizards:fireball" ]
 }
 ```
+
+It still loads, and is read as a `spell_container` with no `spell_choice`, so existing datapacks and mods keep
+working unchanged. The two forms are told apart by whether the file has a `spell_container` or a `spell_choice`
+key at the top level - not by trial and error - so a wrapper file whose members are all defaulted is never
+mistaken for a legacy container.
+
+**Malformed files are skipped, not fatal.** A file that is empty, is not a JSON object, or whose contents fail
+to read is logged to the console (`Spell Engine: Skipping spell_assignment: ... | Reason: ...`) and ignored;
+every other assignment still loads.
 
 #### Fallback assignment
 
@@ -373,57 +419,83 @@ Visit the Fallback Assignment section above for details.
 
 Spell Engine is primarily data-driven, to specify what spells an item can cast, create a JSON file at: `data/MOD_ID/spell_assignments/ITEM_NAME.json`. (For example: `data/minecraft/spell_assignments/golden_axe.json`)
 
+The file holds a `spell_container` and/or a `spell_choice`, both optional. It **outranks the item's built-in
+default**, so this works on any item - a vanilla one, another mod's, or a weapon shipped by an RPG Series
+content mod. The only thing above it is a container stored on the individual ItemStack.
+
 Example: enable "Allows spell casting" for a specific item 
-```
+```json
 {
-  "access": "MAGIC"
+  "spell_container": { "access": "MAGIC" }
 }
 ```
 
 For ranged weapons (bows and crossbows):
-```
+```json
 {
-  "access": "ARCHERY"
+  "spell_container": { "access": "ARCHERY" }
 }
 ```
 
 Example: pre-bind spells to a specific item
-```
+```json
 {
-  "access": "MAGIC"
-  "spell_ids": [ "wizards:fireball" ]
+  "spell_container": {
+    "access": "MAGIC",
+    "spell_ids": [ "wizards:fireball" ]
+  }
 }
 ```
 
 Example: allow spell binding from a specific spell pool to a specific item 
-```
+```json
 {
-  "pool": "wizards:fire"
+  "spell_container": { "pool": "wizards:fire" }
+}
+```
+
+Example: offer the player a one-off pick between the spells of a pool, the way a class weapon does
+```json
+{
+  "spell_choice": { "pool": "wizards:fire" }
 }
 ```
 
 Any combination of these features above can be made.
 
 For example: an item that allows casting from the equipped Spell Book, has Frostbolt and Frost Nova spell pre-bound, and arcane spells can be bound to it 
-```
+```json
 {
-  "access": "MAGIC",
-  "spell_ids": [ "wizards:frostbolt", "wizards:frost_nova" ],
-  "pool": "wizards:arcane"
+  "spell_container": {
+    "access": "MAGIC",
+    "spell_ids": [ "wizards:frostbolt", "wizards:frost_nova" ],
+    "pool": "wizards:arcane"
+  }
 }
 ```
 
+The bare-`SpellContainer` form these examples used to be written in (the object's fields at the top level, with
+no `spell_container` wrapper) still loads - existing packs need no migration.
+
+If a file cannot be read, Spell Engine writes a `Spell Engine: Skipping spell_assignment: ...` line to the
+console and carries on with the rest; a broken file never stops the others from loading.
+
 ### 🚫 Disabling spell casting capability for weapons
 
-Spell casting for weapons can be disabled, with an empty data file.
+Spell casting for weapons can be disabled, with an empty container.
 
 Example - Disabling spell casting for Stone Sword:
 `data/minecraft/spell_assignments/stone_sword.json`
-```
-{ }
+```json
+{
+  "spell_container": { }
+}
 ```
 
 In this case even automatic compatibility won't be able to assign any spell casting capability to the item.
+Because assignments outrank item defaults, this also strips a weapon that ships with a built-in spell.
+
+The legacy spelling of the same thing - a file containing only `{ }` - keeps working.
 
 ### ✨ Adding spell power attributes for items
 
