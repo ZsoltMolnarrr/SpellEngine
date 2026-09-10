@@ -12,4 +12,31 @@ accessible    method    net/minecraft/client/render/RenderLayer    of    (Ljava/
 # on Forge only this file does.
 accessible    method    net/minecraft/client/render/RenderLayer    of    (Ljava/lang/String;Lnet/minecraft/client/render/VertexFormat;Lnet/minecraft/client/render/VertexFormat$DrawMode;ILnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;)Lnet/minecraft/client/render/RenderLayer$MultiPhase;
 accessible    method    net/minecraft/client/render/block/entity/BlockEntityRendererFactories    register    (Lnet/minecraft/block/entity/BlockEntityType;Lnet/minecraft/client/render/block/entity/BlockEntityRendererFactory;)V
+
+# RenderPhase state-shard constants, for consumers building layers through `CustomLayers.create`.
+#
+# These are `protected static` on `RenderPhase`. SpellEngine's own `CustomLayers` reaches them legally
+# (it extends RenderLayer extends RenderPhase), but a *consumer* class that merely passes them as
+# arguments -- e.g. Paladins' `BarrierEntityRenderer$Config` -- does not, and the JVM throws
+# IllegalAccessError when that class initializes.
+#
+# It compiles, and runs on Fabric, only because Fabric API's `fabric-transitive-access-wideners-v1`
+# module widens all of them. Loom applies that transitive AW to the compile-time jar on BOTH platforms,
+# and on Fabric the module is present at runtime so the widening also holds in production. The 1.20.1
+# Forge build ships no Forgified Fabric API, so nothing widens them there and the access is real.
+# Hence they must be widened here: SpellEngine's AW is converted to a Forge AT by Loom
+# (`forge/build.gradle` -> `remapJar { atAccessWideners }`), which patches the game for every consumer,
+# so no content mod needs an AT of its own.
+#
+# Exactly the members the ecosystem uses -- keep this list minimal, and extend it when a consumer
+# needs another shard rather than widening the class wholesale.
+accessible    field    net/minecraft/client/render/RenderPhase    TRANSLUCENT_TRANSPARENCY    Lnet/minecraft/client/render/RenderPhase$Transparency;
+accessible    field    net/minecraft/client/render/RenderPhase    LIGHTNING_TRANSPARENCY    Lnet/minecraft/client/render/RenderPhase$Transparency;
+accessible    field    net/minecraft/client/render/RenderPhase    BEACON_BEAM_PROGRAM    Lnet/minecraft/client/render/RenderPhase$ShaderProgram;
+accessible    field    net/minecraft/client/render/RenderPhase    LIGHTNING_PROGRAM    Lnet/minecraft/client/render/RenderPhase$ShaderProgram;
+accessible    field    net/minecraft/client/render/RenderPhase    DISABLE_CULLING    Lnet/minecraft/client/render/RenderPhase$Cull;
+accessible    field    net/minecraft/client/render/RenderPhase    COLOR_MASK    Lnet/minecraft/client/render/RenderPhase$WriteMaskState;
+accessible    field    net/minecraft/client/render/RenderPhase    ENABLE_OVERLAY_COLOR    Lnet/minecraft/client/render/RenderPhase$Overlay;
+accessible    field    net/minecraft/client/render/RenderPhase    MAIN_TARGET    Lnet/minecraft/client/render/RenderPhase$Target;
+
 # Loot pool/table field access goes through accessor mixins (common `loot.LootPoolAccessor`, forge `LootTableAccessor`).
