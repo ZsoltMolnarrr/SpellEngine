@@ -75,7 +75,7 @@ Fully data driven, (stored in a DynamicRegistry).
 
 Data type: `Spell` object (see [Spell](common/src/main/java/net/spell_engine/api/spell/Spell.java) for details)
 
-### Item Components
+### Item Data
 
 #### Spell Container
 
@@ -89,9 +89,9 @@ Data type: `SpellContainer` object (see [Spell Container](common/src/main/java/n
 
 #### Spell Choice
 
-The spell choice component defines a set of spells available for the item. 
+The spell choice defines a set of spells available for the item. 
 
-Upon first use, player can choose one of the spells from the set to be bound to the item. The chosen spell will be bound to the item, removing the spell choice component from the item, and adding the chosen spell to the spell container of the item. Note: this means items also need to have a valid spell container assigned (otherwise the chosen has nowhere to be placed).
+Upon first use, player can choose one of the spells from the set to be bound to the item. The chosen spell will be bound to the item, removing the spell choice from the item, and adding the chosen spell to the spell container of the item. Note: this means items also need to have a valid spell container assigned (otherwise the chosen has nowhere to be placed).
 
 Designed for weapons, meant to be used by multiple classes. For example: Wizard Staff that can be used by any of the Wizard specializations.
 
@@ -113,18 +113,10 @@ Data type: `Identifier` (points to equipment set id)
 ### Spell assignments
 
 Spell containers can be assigned to an item in multiple ways. These methods have a priority order, Spell Engine will resolve the spell container from the highest priority method available.
-1. ItemStack (meta data) component
+1. ItemStack (NBT) data
 2. Spell Assignment data file
-3. Item default component
+3. Item-level default
 4. Automatic (fallback) container assignment done by Spell Engine
-
-> **Data files outrank item defaults.** A `spell_assignments` file wins over the default the item was built
-> with, so a datapack can retune *any* weapon - including one shipped by a content mod - without that mod
-> having to ship an assignment file of its own. (Before this, a data file only ever reached items that had no
-> default of their own.)
->
-> The automatic fallback stays at the bottom on purpose: it matches on vanilla item classes, which content
-> mod weapons extend, so promoting it would let the fallback config silently overwrite their built-in spells.
 
 The **spell choice** of an item resolves along the same chain, with one coupling: a data file that provides a
 `spell_container` also suppresses the item's default `spell_choice`. Setting a container pool and a choice go
@@ -132,20 +124,24 @@ together when an item is built, so a data-file container that replaced the item'
 offering a pool it no longer has. A data file that provides only a `spell_choice` leaves the item's default
 container alone.
 
-#### Assignment with ItemStack (meta data) component
+#### Assignment with ItemStack (NBT) data
 
 Assigning a spell container to an item, using a game command:
 ```
 /give @p minecraft:wooden_sword{spell_engine:{spell_container:{access:"MAGIC", spell_ids:["wizards:fireball"]}}}
 ```
 
-#### Assignment with Item default component
+#### Assignment with item-level defaults
 
 Most items are assigned their default spell container using this method.
 
 This method is primarily meant for mod developers, to hard-code the default spell container to their custom items.
 
-Example item definition with hard-coded default component (java code):
+Item-level defaults are registered per `Item` (`SpellItemData.defaults(item)`, see
+[SpellItemData](common/src/main/java/net/spell_engine/api/item/SpellItemData.java)) and are read by any stack
+of that item that carries no `spell_engine` NBT of its own.
+
+Example item definition with a hard-coded default spell container (java code):
 ```java
 public static final Weapon.Entry noviceWand = add(Weapons.damageWand(
                 NAMESPACE, "wand_novice",
@@ -154,10 +150,6 @@ public static final Weapon.Entry noviceWand = add(Weapons.damageWand(
         .spellContainer(SpellContainers.forMagicWeapon().withSpell("wizards:scorch"))
 );
 ```
-
-Some third party tools offer ways to override this, in a data driven way.
-- [Default Components mod](https://modrinth.com/mod/default-components) (Fabric)
-- [Defaulted mod](https://modrinth.com/mod/defaulted/) (Fabric & NeoForge)
 
 #### Assignment with Spell Assignment Data File
 
@@ -225,7 +217,7 @@ Equipment sets require a two-way association:
 - Define the set with a data file
   - Referring all items part of the set (alongside the bonuses)
   - Example path: `resources/data/NAMESPACE/equipment_set/SET_NAME.json`
-- Assign the set to items, using an item component
+- Assign the set to items, using item data
   - Example item with an equipment set: `/give @p minecraft:iron_boots{spell_engine:{equipment_set:"NAMESPACE:SET_NAME"}}`
 
 ### Extra inventory slots
