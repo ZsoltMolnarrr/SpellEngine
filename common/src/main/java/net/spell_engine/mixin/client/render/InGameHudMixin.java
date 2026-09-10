@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 /// 1.20.1: the Spell Engine HUD itself is drawn from the loader HUD events (Fabric `HudRenderCallback`,
-/// Forge `RegisterGuiOverlaysEvent` above the hotbar) — there is no `renderMainHud` to hook. Only the
+/// Forge `RegisterGuiOverlaysEvent` below `CHAT_PANEL`) — there is no `renderMainHud` to hook. Only the
 /// offhand-slot suppression lives here; `renderHotbar(float tickDelta, DrawContext)` is the 1.20.1 name
 /// of the vanilla hotbar pass (Forge 47 makes it public, the descriptor is unchanged).
 @Mixin(InGameHud.class)

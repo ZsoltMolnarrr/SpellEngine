@@ -48,7 +48,7 @@ import net.minecraft.client.gui.screen.ingame.HandledScreens;
 ///
 /// Integrator wiring (in `ForgeMod`'s constructor, behind `FMLEnvironment.dist == Dist.CLIENT`):
 /// `ForgeClientMod.register(FMLJavaModLoadingContext.get().getModEventBus());` — that single call installs the
-/// client-setup, HUD overlay (`registerGuiOverlays` → `RegisterGuiOverlaysEvent.registerAbove(HOTBAR)`),
+/// client-setup, HUD overlay (`registerGuiOverlays` → `RegisterGuiOverlaysEvent.registerBelow(CHAT_PANEL)`),
 /// key mapping, particle provider, entity renderer and additional-model listeners.
 public final class ForgeClientMod {
     public static void register(IEventBus modBus) {
@@ -84,8 +84,19 @@ public final class ForgeClientMod {
     }
 
     public static final Identifier SPELL_HUD_LAYER_ID = new Identifier(SpellEngineMod.ID, "spell_hud");
+    /// Anchor the spell HUD **below `CHAT_PANEL`**, matching the NeoForge line's
+    /// `registerBelow(VanillaGuiLayers.CHAT, …)`.
+    ///
+    /// `VanillaGuiOverlay` declares its constants "in the order that they render"
+    /// (`GuiOverlayManager.preRegisterVanillaOverlays` seeds the list in `values()` order and
+    /// `ForgeGui.render` iterates it), and `RegisterGuiOverlaysEvent.register` inserts at
+    /// `indexOf(other) + (BEFORE ? 0 : 1)`. `HOTBAR` is index 5 of 26, so the previous
+    /// `registerAbove(HOTBAR)` landed the cast bar at index 6 — *underneath* `PLAYER_HEALTH`,
+    /// `ARMOR_LEVEL`, `FOOD_LEVEL`, `AIR_LEVEL` and `EXPERIENCE_BAR`. `CHAT_PANEL` is index 24,
+    /// so registering below it draws the HUD after every survival element but still beneath
+    /// chat and the player list.
     private static void registerGuiOverlays(RegisterGuiOverlaysEvent event) {
-        event.registerAbove(VanillaGuiOverlay.HOTBAR.id(), SPELL_HUD_LAYER_ID.getPath(), (gui, graphics, partialTick, screenWidth, screenHeight) -> {
+        event.registerBelow(VanillaGuiOverlay.CHAT_PANEL.id(), SPELL_HUD_LAYER_ID.getPath(), (gui, graphics, partialTick, screenWidth, screenHeight) -> {
             if (MinecraftClient.getInstance().options.hudHidden) { return; }
             HudRenderHelper.render(graphics, partialTick);
         });
