@@ -7,9 +7,9 @@ on:
         type: boolean
         description: 'Loader: Fabric'
         default: true
-      neoforge:
+      forge:
         type: boolean
-        description: 'Loader: NeoForge'
+        description: 'Loader: Forge'
         default: true
       release_type:
         type: choice
@@ -50,7 +50,7 @@ jobs:
 
           loaders=""
           if [ "${{ inputs.fabric }}"   = "true" ]; then loaders="$loaders fabric";   fi
-          if [ "${{ inputs.neoforge }}" = "true" ]; then loaders="$loaders neoforge"; fi
+          if [ "${{ inputs.forge }}" = "true" ]; then loaders="$loaders forge"; fi
 
           destinations=""
           if [ "${{ inputs.curseforge }}" = "true" ]; then destinations="$destinations publishCurseforge"; fi
@@ -61,7 +61,7 @@ jobs:
           destinations="${destinations# }"
 
           if [ -z "$loaders" ]; then
-            echo "::error::No loader selected - tick at least one of Fabric / NeoForge."
+            echo "::error::No loader selected - tick at least one of Fabric / Forge."
             exit 1
           fi
           if [ -z "$destinations" ]; then
