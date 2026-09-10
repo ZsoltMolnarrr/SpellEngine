@@ -11,6 +11,7 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.registry.Registries;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.spell_engine.api.effect.EntityTints;
 import net.spell_engine.api.effect.Synchronized;
@@ -130,6 +131,19 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
 
     // MARK: Status effect sync — helpers
 
+    /// Entry separator of the encoded effect list. Neither this nor {@link #SPELL_ENGINE_FIELD_SEPARATOR}
+    /// may occur in an {@link net.minecraft.util.Identifier} — its legal characters are
+    /// `[a-z0-9._-]` for the namespace, plus `/` for the path and `:` between the two — so both
+    /// stay unambiguous no matter what an effect is registered as.
+    @Unique
+    private static final String SPELL_ENGINE_ENTRY_SEPARATOR = ";";
+    @Unique
+    private static final String SPELL_ENGINE_FIELD_SEPARATOR = "|";
+
+    /// Encodes as `<effect id>|<amplifier>|<appliedAtWorldTime>`, entries joined by `;`.
+    /// The effect is keyed by its **namespaced registry id**, never by its raw id: raw ids are
+    /// assignment-order integers, and the assignment order of modded status effects varies between
+    /// launches (mod init order) and between a client and a server that do not run the same mod set.
     @Unique
     private String SpellEngine_encodedStatusEffects() {
         StringBuilder builder = new StringBuilder();
@@ -137,13 +151,16 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
         for (var entry : activeStatusEffects.entrySet()) {
             var effect = entry.getKey();
             if (((Synchronized)effect).shouldSynchronize()) {
-                int id = Registries.STATUS_EFFECT.getRawId(effect);
+                var id = Registries.STATUS_EFFECT.getId(effect);
+                if (id == null) { continue; }
                 int amplifier = entry.getValue().getAmplifier();
                 long appliedAtWorldTime = SpellEngine_appliedAtWorldTimeFor(effect);
                 if (i > 0) {
-                    builder.append("-");
+                    builder.append(SPELL_ENGINE_ENTRY_SEPARATOR);
                 }
-                builder.append(id).append(":").append(amplifier).append(":").append(appliedAtWorldTime);
+                builder.append(id)
+                        .append(SPELL_ENGINE_FIELD_SEPARATOR).append(amplifier)
+                        .append(SPELL_ENGINE_FIELD_SEPARATOR).append(appliedAtWorldTime);
                 i += 1;
             }
         }
@@ -167,21 +184,27 @@ public abstract class LivingEntityStatusEffectSync extends Entity implements Syn
         return getWorld().getTime();
     }
 
+    /// Inverse of {@link #SpellEngine_encodedStatusEffects}. Every failure mode — a foreign payload in
+    /// an id-desynced slot, a peer encoding an older format, an effect this side does not have
+    /// registered — drops the entry (or the whole string) instead of throwing on the network thread.
     @Unique
     private List<Synchronized.Effect> SpellEngine_decodeStatusEffects() {
         var string = dataTracker.get(SPELL_ENGINE_SYNCED_EFFECTS);
         var effects = new ArrayList<Synchronized.Effect>();
-        // Guard against a foreign payload in an id-desynced slot: bail on the whole thing.
         try {
-            for (var effect : string.split("-")) {
-                var components = effect.split(":");
+            for (var effect : string.split(SPELL_ENGINE_ENTRY_SEPARATOR)) {
+                // `split` takes a regex, and `|` is alternation there — quote it.
+                var components = effect.split(java.util.regex.Pattern.quote(SPELL_ENGINE_FIELD_SEPARATOR));
                 if (components.length != 3) {
                     continue;
                 }
-                int rawId = Integer.valueOf(components[0]);
-                int amplifier = Integer.valueOf(components[1]);
-                long appliedAtWorldTime = Long.valueOf(components[2]);
-                var statusEffect = Registries.STATUS_EFFECT.get(rawId);
+                var id = Identifier.tryParse(components[0]);
+                if (id == null) {
+                    continue;
+                }
+                int amplifier = Integer.parseInt(components[1]);
+                long appliedAtWorldTime = Long.parseLong(components[2]);
+                var statusEffect = Registries.STATUS_EFFECT.get(id);
                 if (statusEffect != null) {
                     effects.add(new Synchronized.Effect(statusEffect, amplifier, appliedAtWorldTime));
                 }
