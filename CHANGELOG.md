@@ -2,7 +2,7 @@
 
 Functional changes:
 - Spell assignment data files (`data/NAMESPACE/spell_assignments/ITEM_NAME.json`) now outrank an item's built-in default spell container, so a datapack can retune any weapon - including ones shipped by content mods. Order is now: ItemStack data, spell assignment file, item default, automatic fallback
-- Spell assignment files gained a wrapper format carrying an optional `spell_container` and an optional `spell_choice`; the legacy bare-`SpellContainer` form still loads
+- Spell assignment files now use a wrapper format carrying an optional `spell_container` and an optional `spell_choice`; a file with neither key is skipped with a console warning. Note the way to strip an item of spell casting is now `{ "spell_container": { } }`
 - An unreadable spell assignment file is now skipped with a console warning instead of loading as an empty container
 - Fixed NeoForge loot table injection #209
 - Fixed entity ting feature breaking armor trim rendering #210

@@ -177,19 +177,10 @@ Both members are optional:
 `spell_container` is a `SpellContainer` object and `spell_choice` a `SpellChoice` object, spelled exactly the
 same way as the matching item data.
 
-**Legacy format.** The original form of this file was a bare `SpellContainer` object, with no wrapper:
-
-```json
-{
-  "access": "MAGIC",
-  "spell_ids": [ "wizards:fireball" ]
-}
-```
-
-It still loads, and is read as a `spell_container` with no `spell_choice`, so existing datapacks and mods keep
-working unchanged. The two forms are told apart by whether the file has a `spell_container` or a `spell_choice`
-key at the top level - not by trial and error - so a wrapper file whose members are all defaulted is never
-mistaken for a legacy container.
+**The wrapper is required.** A file with neither key at the top level is invalid, and is skipped with a console
+warning naming the file. Every field of both objects is optional, so an unwrapped file would otherwise decode
+into an all-defaults container - and since the data file outranks the item's default, that would silently strip
+the item it names of its spells.
 
 **Malformed files are skipped, not fatal.** A file that is empty, is not a JSON object, or whose contents fail
 to read is logged to the console (`Spell Engine: Skipping spell_assignment: ... | Reason: ...`) and ignored;
@@ -466,8 +457,8 @@ For example: an item that allows casting from the equipped Spell Book, has Frost
 }
 ```
 
-The bare-`SpellContainer` form these examples used to be written in (the object's fields at the top level, with
-no `spell_container` wrapper) still loads - existing packs need no migration.
+The `spell_container` / `spell_choice` wrapper is required: a file that has neither key at the top level is
+skipped with a console warning.
 
 If a file cannot be read, Spell Engine writes a `Spell Engine: Skipping spell_assignment: ...` line to the
 console and carries on with the rest; a broken file never stops the others from loading.
@@ -487,7 +478,8 @@ Example - Disabling spell casting for Stone Sword:
 In this case even automatic compatibility won't be able to assign any spell casting capability to the item.
 Because assignments outrank item defaults, this also strips a weapon that ships with a built-in spell.
 
-The legacy spelling of the same thing - a file containing only `{ }` - keeps working.
+Note the `spell_container` wrapper is needed even here - a file containing only `{ }` is invalid, and is skipped
+rather than disabling anything.
 
 ### ✨ Adding spell power attributes for items
 

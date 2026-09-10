@@ -31,9 +31,6 @@ public class SpellAssignments {
     /// ```json
     /// { "spell_container": { ... }, "spell_choice": { ... } }
     /// ```
-    ///
-    /// The bare-`SpellContainer` form the format started out as still loads, and is read as
-    /// `Assignment(container, null)` - see [#parseAssignment].
     public record Assignment(@Nullable SpellContainer container, @Nullable SpellChoice choice) {
         public static final String CONTAINER_KEY = "spell_container";
         public static final String CHOICE_KEY = "spell_choice";
@@ -104,9 +101,10 @@ public class SpellAssignments {
     /// Reads one assignment file, best effort: `null` (plus a console warning) whenever the file carries
     /// nothing usable, never an exception, so one bad file cannot abort the rest of the load.
     ///
-    /// Legacy detection is by **explicit key presence**, not by try-parse-and-fallback: every field of both
-    /// `SpellContainer.CODEC` and `SpellChoice.CODEC` is optional, so a new-format file would decode
-    /// *successfully* as a bare container - into an all-defaults one, silently losing its content.
+    /// The wrapper is required, and its presence is tested by **explicit key presence**: every field of both
+    /// `SpellContainer.CODEC` and `SpellChoice.CODEC` is optional, so an unwrapped file would decode
+    /// *successfully* as a bare container - into an all-defaults one. Since assignments outrank item defaults,
+    /// accepting that would silently strip the named item of its spells, so it is rejected loudly instead.
     @Nullable
     private static Assignment parseAssignment(Identifier fileId, @Nullable JsonElement root) {
         if (root == null || root.isJsonNull()) {
@@ -119,15 +117,19 @@ public class SpellAssignments {
         }
         JsonObject object = root.getAsJsonObject();
 
-        // Neither key present => the legacy bare-container form.
-        // Note the all-defaults container `{ }` decodes to an invalid (unusable) container on purpose:
-        // that is the documented way to strip an item of spell casting, and now - since assignments outrank
-        // item defaults - it strips first-party weapons too. So container validity is deliberately not checked.
         if (!object.has(Assignment.CONTAINER_KEY) && !object.has(Assignment.CHOICE_KEY)) {
-            var container = decode(fileId, Assignment.CONTAINER_KEY, object, SpellContainer.CODEC);
-            return container != null ? new Assignment(container, null) : null;
+            warn(fileId, "missing both '" + Assignment.CONTAINER_KEY + "' and '" + Assignment.CHOICE_KEY
+                    + "' - the wrapper format is required: { \"" + Assignment.CONTAINER_KEY + "\": { ... }, \""
+                    + Assignment.CHOICE_KEY + "\": { ... } } (both members optional). A file holding a bare"
+                    + " SpellContainer object is no longer supported: wrap its contents in '"
+                    + Assignment.CONTAINER_KEY + "'.");
+            return null;
         }
 
+        // Note the all-defaults container `{ "spell_container": { } }` decodes to an invalid (unusable)
+        // container on purpose: that is the documented way to strip an item of spell casting, and now - since
+        // assignments outrank item defaults - it strips first-party weapons too. So container validity is
+        // deliberately not checked.
         var container = member(fileId, object, Assignment.CONTAINER_KEY, SpellContainer.CODEC);
         var choice = member(fileId, object, Assignment.CHOICE_KEY, SpellChoice.CODEC);
         var assignment = new Assignment(container, choice);
