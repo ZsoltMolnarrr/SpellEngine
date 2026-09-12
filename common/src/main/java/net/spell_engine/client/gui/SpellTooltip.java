@@ -138,7 +138,11 @@ public class SpellTooltip {
             }
         }
         if (found <= 0) {
-            if (addSectionDivider > 0) {
+            // Same guard as the advanced-tooltip branch below: only add a section divider if the line the
+            // spell block lands after is not already blank. Without it a contributor that leaves a trailing
+            // empty line (RangedWeaponAPI used to, after merging the main-hand/off-hand attribute blocks)
+            // stacks with this one and the seam renders as two blank lines.
+            if (addSectionDivider > 0 && !endsWithBlankLine(lines)) {
                 spellTextLines.add(0, Text.literal(""));
             }
             lines.addAll(spellTextLines);
@@ -155,6 +159,10 @@ public class SpellTooltip {
             }
             lines.addAll(found, spellTextLines);
         }
+    }
+
+    private static boolean endsWithBlankLine(List<Text> lines) {
+        return !lines.isEmpty() && lines.get(lines.size() - 1).getString().isBlank();
     }
 
     public static @NotNull SpellTooltip.SpellInfo getSpellInfoExpandedWithKey(
