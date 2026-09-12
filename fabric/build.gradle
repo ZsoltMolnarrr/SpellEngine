@@ -90,8 +90,8 @@ dependencies {
     modImplementation("dev.kosmx.player-anim:player-animation-lib-${platform}:${rootProject.player_anim_version}")
     modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${rootProject.cloth_config_version}")
 
-    // Ecosystem libraries from mavenLocal (published by their 1.20.1-modern ports).
-    include(modImplementation("net.tiny_config:tiny_config-${platform}:${rootProject.tiny_config_version}"))
+    // Ecosystem libraries: the Modrinth maven for the released ones, mavenLocal for the 1.20.1-modern ports.
+    include(modImplementation("maven.modrinth:tiny-config:${rootProject.tiny_config_version}-${platform}"))
     modImplementation("net.spell_power:spell_power-${platform}:${rootProject.spell_power_version}")
     modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${rootProject.bundle_api_version}")
     modCompileOnly("net.critical_strike:critical_strike-${platform}:${rootProject.critical_strike_version}")
