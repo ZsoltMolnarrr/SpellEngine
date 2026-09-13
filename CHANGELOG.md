@@ -1,3 +1,10 @@
+# 1.10.6
+
+Functional changes:
+- Fixed dangling `#c:` tag references in the `handheld` item tag on NeoForge (now uses `#c:tools/shield` and `#c:tools/ranged_weapon`) #211
+- Fixed crash when a non-hostile entity (villager, animal, snow golem) casts a melee-scaled spell (missing attack damage attribute)
+- Unknown player animation ids now warn once instead of spamming the log every tick
+
 # 1.10.5
 
 Functional changes:
