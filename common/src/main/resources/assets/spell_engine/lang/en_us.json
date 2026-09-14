@@ -176,6 +176,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip" : "Spell casting player animations to be shown. Only recommended to change if custom camera mods in use.",
 
   "gui.spell_engine.spell_binding" : "Spell Binding",
+  "emi.category.spell_engine.spell_binding" : "Spell Binding",
   "gui.spell_engine.spell_binding.title" : "Bind Spells",
   "block.spell_engine.spell_binding": "Spell Binding Table",
   "block.spell_engine.spell_binding.description": "Use it to create and fill Spell Books.",

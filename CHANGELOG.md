@@ -1,5 +1,8 @@
 # 1.10.7
 
+Functional changes:
+- Added EMI integration: a Spell Binding category showing spell book creation from a plain book, and every spell bindable into each spell book (via lapis or a Spell Scroll)
+
 API changes:
 - Added `SpellBindingEvents.SPELL_BOUND` event, fired on the server after a spell has been bound at the Spell Binding Table
 

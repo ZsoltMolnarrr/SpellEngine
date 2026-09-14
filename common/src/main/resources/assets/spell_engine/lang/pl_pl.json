@@ -165,6 +165,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "Animacje gracza w pierwszej osobie",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "Określa, czy pokazywać animacje rzucania zaklęć przez gracza. Zalecana zmiana tylko przy używaniu modów zmieniających kamerę.",
   "gui.spell_engine.spell_binding": "Wiązanie Zaklęć",
+  "emi.category.spell_engine.spell_binding": "Wiąż Zaklęcia",
   "gui.spell_engine.spell_binding.title": "Wiąż Zaklęcia",
   "block.spell_engine.spell_binding": "Stół Wiązania Zaklęć",
   "block.spell_engine.spell_binding.description": "Użyj go, aby tworzyć i uzupełniać Księgi Zaklęć.",

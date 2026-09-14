@@ -30,6 +30,9 @@
     "modmenu": [
       "net.spell_engine.fabric.client.compat.ModMenuCompatibility"
     ],
+    "emi": [
+      "net.spell_engine.compat.emi.SpellEngineEmiPlugin"
+    ],
     "dynamiclights": [
       "net.spell_engine.fabric.client.compat.DynamicLightsCompatibility"
     ],
