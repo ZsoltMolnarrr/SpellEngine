@@ -1,3 +1,8 @@
+# 1.10.7
+
+API changes:
+- Added `SpellBindingEvents.SPELL_BOUND` event, fired on the server after a spell has been bound at the Spell Binding Table
+
 # 1.10.6
 
 Functional changes:
