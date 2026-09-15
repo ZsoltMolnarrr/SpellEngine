@@ -1,3 +1,37 @@
+# 1.10.5+1.20.1
+
+> ### ⚠️ Read this before updating
+>
+> This release is a **major technical overhaul and is not backwards compatible.**
+>
+> - **The APIs have been reworked, not removed.** Everything still exists, under new
+>   interfaces — but mods built against Spell Engine **0.9.x** will not work with this
+>   version. They need updating and rebuilding against the current API.
+> - **Update the whole set together.** Spell Engine and every RPG Series mod must be on
+>   matching versions. Mixing in an older add-on will break at startup or misbehave in play.
+> - **Spell books must be re-obtained.** Spell books from an older world no longer carry valid
+>   spell data. Re-craft them, or re-bind their spells at the Spell Binding Table.
+>
+> **Back up your world before updating.**
+
+Minecraft 1.20.1 port of Spell Engine 1.10.5 (Fabric + Forge 47). Same content and spell format as 1.10.5; the differences below come from what 1.20.1 itself lacks.
+
+Requires Spell Power 1.6.0+1.20.1. RangedWeaponAPI 2.3.4+1.20.1 and Critical Strike 1.0.4+1.20.1 are optional.
+
+Not available on this game version:
+- Entity size scaling (no `generic.scale` attribute): summon scaling, tint renderers and projectile sizes ignore entity scale
+- Jump-lock modifiers on status effects (no jump-strength attribute on living entities); the lock-out is carried by `ActionImpairing` alone
+- Melee reach is a fixed 3 blocks (no `entity_interaction_range` attribute)
+- `spell_choice.apply_on_choice` (data-component patching); `spell_choice` carries `pool` only
+- Mace item tags; Better Combat's glowing swing-trail override (the held item still tints)
+- Configuration-phase networking: spell registry and config sync happen at join time instead
+
+Integration notes:
+- Item data lives in NBT (`net.spell_engine.api.item.SpellItemData`) instead of data components; attribute modifiers use `ItemAttributeModifiers` with UUIDs derived from the modern identifiers
+- Datapack folders use the 1.20.1 plural names (`advancements/`, `recipes/`, `loot_tables/`, `tags/items/`); spells stay at `data/<namespace>/spell/`
+- Spell Infinity is a Java enchantment again (`config/spell_engine/enchantments.json`)
+- Forge: MixinExtras is embedded; content mods register from `RegisterEvent` windows
+
 # 1.10.5
 
 Functional changes:

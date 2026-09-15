@@ -106,16 +106,16 @@ dependencies {
     modImplementation("dev.kosmx.player-anim:player-animation-lib-forge:${rootProject.player_anim_version}")
     modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${rootProject.cloth_config_version}")
 
-    // Ecosystem libraries: the Modrinth maven for the released ones, mavenLocal for the 1.20.1-modern ports.
+    // Ecosystem libraries from the Modrinth maven; Bundle API is vendored under libs/maven.
     include(modImplementation("maven.modrinth:tiny-config:${rootProject.tiny_config_version}-${platform}"))
-    modImplementation("net.spell_power:spell_power-${platform}:${rootProject.spell_power_version}")
+    modImplementation("maven.modrinth:spell-power:${rootProject.spell_power_version}-${platform}")
     modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${rootProject.bundle_api_version}")
-    modCompileOnly("net.critical_strike:critical_strike-${platform}:${rootProject.critical_strike_version}")
-    // RangedWeaponAPI 2.3.4.001+1.20.1 (mavenLocal; first RWA build with a Forge artifact). Compile-only: optional at
+    modCompileOnly("maven.modrinth:critical-strike:${rootProject.critical_strike_version}-${platform}")
+    // RangedWeaponAPI 2.3.4+1.20.1 (Modrinth; first RWA line with a Forge artifact). Compile-only: optional at
     // runtime, not in the published POM; Spell Engine boots without it. To exercise the RWA path in the dev runtime
     // use the Yarn-named dev-shadow jar (the production jar's SRG mixin targets are skipped in the dev env):
-    //   localRuntime("net.foundation:ranged_weapon_api-forge:${rootProject.ranged_weapon_api_version}:dev-shadow")
-    modCompileOnly("net.foundation:ranged_weapon_api-${platform}:${rootProject.ranged_weapon_api_version}")
+    //   localRuntime("net.foundation:ranged_weapon_api-forge:<mavenLocal dev version>:dev-shadow")
+    modCompileOnly("maven.modrinth:ranged-weapon-api:${rootProject.ranged_weapon_api_version}-${platform}")
 
     // Compatibility
 

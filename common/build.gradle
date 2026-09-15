@@ -57,15 +57,15 @@ dependencies {
     modImplementation("dev.kosmx.player-anim:player-animation-lib-${platform}:${rootProject.player_anim_version}")
     modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${rootProject.cloth_config_version}")
 
-    // Ecosystem libraries: the Modrinth maven for the released ones, mavenLocal for the 1.20.1-modern ports.
+    // Ecosystem libraries from the Modrinth maven; Bundle API is vendored under libs/maven.
     modImplementation("maven.modrinth:tiny-config:${rootProject.tiny_config_version}-${platform}")
-    modImplementation("net.spell_power:spell_power-${platform}:${rootProject.spell_power_version}")
+    modImplementation("maven.modrinth:spell-power:${rootProject.spell_power_version}-${platform}")
     modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${rootProject.bundle_api_version}")
-    modCompileOnly("net.critical_strike:critical_strike-${platform}:${rootProject.critical_strike_version}")
-    // RangedWeaponAPI 2.3.4.001+1.20.1 (mavenLocal, Fabric + Forge). Compile-only: RWA is an *optional* runtime
+    modCompileOnly("maven.modrinth:critical-strike:${rootProject.critical_strike_version}-${platform}")
+    // RangedWeaponAPI 2.3.4+1.20.1 (Modrinth, Fabric + Forge). Compile-only: RWA is an *optional* runtime
     // dependency — `RangedWeapon(s)` only touch RWA classes when a content mod registers ranged weapons, and
     // `ExternalSpellSchools` gates its RWA bridge on `isModLoaded("ranged_weapon_api")`.
-    modCompileOnly("net.foundation:ranged_weapon_api-${platform}:${rootProject.ranged_weapon_api_version}")
+    modCompileOnly("maven.modrinth:ranged-weapon-api:${rootProject.ranged_weapon_api_version}-${platform}")
 
     // Compatibility
 

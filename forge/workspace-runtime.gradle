@@ -44,11 +44,11 @@ dependencies {
     modRemapClasspathOnly("net.spell_engine:spell_engine-forge:1.10.5.013+1.20.1") { transitive = false }
 
     // ── Shared RPG Series libraries (all groups) ───────────────────────────────────────────────────────
-    modLocalRuntime("net.rpg_foundation:armor_model_api-forge:1.0.0.001+1.20.1") { transitive = false }
+    modLocalRuntime("maven.modrinth:armor-model-api:1.0.0+1.20.1-forge") { transitive = false }
     // `modCompileOnly` in SpellEngine's own build.gradle, hence absent from the run classpath by default.
     modLocalRuntime("com.github.TheRedBrain:bundle-api-forge:1.1.0+1.20.1") { transitive = false }
-    modLocalRuntime("net.critical_strike:critical_strike-forge:1.0.4.002") { transitive = false }
-    modLocalRuntime("net.foundation:ranged_weapon_api-forge:2.3.4.009+1.20.1") { transitive = false }
+    modLocalRuntime("maven.modrinth:critical-strike:1.0.4+1.20.1-forge") { transitive = false }
+    modLocalRuntime("maven.modrinth:ranged-weapon-api:2.3.4+1.20.1-forge") { transitive = false }
     // JiJ'd by Paladins/Arsenal in production; nested jars of classpath mods are not loaded in dev.
     modLocalRuntime("maven.modrinth:shield-api:2.2.0+1.20.1-forge") { transitive = false }
     // StructurePoolAPI is a *hard* dependency of the four class mods, Jewelry, Gazebo and Taverns on
