@@ -131,7 +131,7 @@ public class SpellEngineEmiPlugin implements EmiPlugin {
 
     /** Synthetic (non data-driven) recipe ids, in the same shape EMI uses for its own generated recipes. */
     private static Identifier syntheticId(String type, String name) {
-        return new Identifier(SpellEngineMod.ID, SpellBinding.name + "/" + type + "/" + name);
+        return new Identifier(SpellEngineMod.ID, "/" + SpellBinding.name + "/" + type + "/" + name);
     }
 
     private static String subId(Identifier id) {
