@@ -136,3 +136,6 @@ common/src/main/generated/.cache
 
 # RPG Series local dev-workspace switch (see workspace.properties.example)
 /workspace.properties
+
+# Vendored Bundle API maven repository (see libs/maven/README.md) — jars must be committed
+!libs/maven/**/*.jar

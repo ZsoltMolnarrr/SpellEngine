@@ -46,7 +46,7 @@ dependencies {
     // ── Shared RPG Series libraries (all groups) ───────────────────────────────────────────────────────
     modLocalRuntime("net.rpg_foundation:armor_model_api-forge:1.0.0.001+1.20.1") { transitive = false }
     // `modCompileOnly` in SpellEngine's own build.gradle, hence absent from the run classpath by default.
-    modLocalRuntime("com.github.TheRedBrain:bundle-api-forge:1.1.0.001") { transitive = false }
+    modLocalRuntime("com.github.TheRedBrain:bundle-api-forge:1.1.0+1.20.1") { transitive = false }
     modLocalRuntime("net.critical_strike:critical_strike-forge:1.0.4.002") { transitive = false }
     modLocalRuntime("net.foundation:ranged_weapon_api-forge:2.3.4.009+1.20.1") { transitive = false }
     // JiJ'd by Paladins/Arsenal in production; nested jars of classpath mods are not loaded in dev.
