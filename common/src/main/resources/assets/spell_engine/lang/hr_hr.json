@@ -165,6 +165,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "Animacije igrača iz prvog lica",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "Animacije igrača prilikom bacanja čarolija koje će se prikazivati. Preporučuje se mijenjati samo ako se koriste modovi za prilagođenu kameru.",
   "gui.spell_engine.spell_binding": "Vezivanje čarolija",
+  "emi.category.spell_engine.spell_binding": "Veži čarolije",
   "gui.spell_engine.spell_binding.title": "Veži čarolije",
   "block.spell_engine.spell_binding": "Stol za vezivanje čarolija",
   "block.spell_engine.spell_binding.description": "Koristi ga za izradu i punjenje Knjiga čarolija.",

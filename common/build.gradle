@@ -13,6 +13,10 @@ repositories {
     maven { url 'https://maven.kosmx.dev/' }
     maven { url 'https://maven.shedaniel.me/' }
     maven {
+        name = 'TerraformersMC'
+        url = 'https://maven.terraformersmc.com/releases'
+    }
+    maven {
         name = 'Modrinth'
         url = 'https://api.modrinth.com/maven'
         content {
@@ -67,4 +71,8 @@ dependencies {
     modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${rootProject.ftb_library_version}") { transitive = false }
     modCompileOnly("maven.modrinth:iris:${rootProject.iris_version}")
 
+    // EMI (optional integration) — the `xplat-intermediary` `api` artifact is the loader-neutral
+    // subset EMI publishes for Architectury common modules. Compile-only: `net.spell_engine.compat.emi`
+    // is only ever class-loaded by EMI itself, so the mod runs fine without EMI present.
+    modCompileOnly("dev.emi:emi-xplat-intermediary:${rootProject.emi_version}:api")
 }

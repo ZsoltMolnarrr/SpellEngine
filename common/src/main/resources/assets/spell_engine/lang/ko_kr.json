@@ -107,6 +107,7 @@
   "text.autoconfig.spell_engine.option.client.shoulderSurfingAdaptiveWhileUse": "주문 시 어깨 서핑 적응형 커서",
   "text.autoconfig.spell_engine.option.client.shoulderSurfingAdaptiveWhileUse.@Tooltip": "주문 시전 아이템에 대해 주문 시전 중에만 어깨 서핑 적응형 커서를 허용합니다.",
   "gui.spell_engine.spell_binding": "주문 부여",
+  "emi.category.spell_engine.spell_binding": "주문 부여",
   "gui.spell_engine.spell_binding.title": "주문 부여",
   "block.spell_engine.spell_binding": "주문 부여대",
   "block.spell_engine.spell_binding.description": "주문서를 만들고 채우기 위해 사용됩니다.",

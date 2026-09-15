@@ -50,6 +50,10 @@ repositories {
     maven { url 'https://maven.kosmx.dev/' }
     maven { url 'https://maven.shedaniel.me/' }
     maven {
+        name = 'TerraformersMC'
+        url = 'https://maven.terraformersmc.com/releases'
+    }
+    maven {
         name = 'Modrinth'
         url = 'https://api.modrinth.com/maven'
         content {
@@ -119,6 +123,9 @@ dependencies {
     // Forge specific
     // - Curios 5.x (1.20.1) - https://docs.illusivesoulworks.com/category/curios
     modImplementation("top.theillusivec4.curios:curios-forge:${rootProject.curios_version}")
+
+    // EMI on the dev run classpath only, to verify the recipe viewer integration in `runClient`
+    modLocalRuntime("dev.emi:emi-${platform}:${rootProject.emi_version}")
 }
 
 processResources {

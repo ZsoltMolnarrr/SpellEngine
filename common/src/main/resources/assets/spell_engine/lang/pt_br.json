@@ -159,6 +159,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "Animações do jogador em primeira pessoa",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "Animações do jogador ao lançar feitiços a serem exibidas. Só é recomendado alterar se estiver usando mods de câmera personalizada.",
   "gui.spell_engine.spell_binding": "Vinculação de feitiços",
+  "emi.category.spell_engine.spell_binding": "Vincular feitiços",
   "gui.spell_engine.spell_binding.title": "Vincular feitiços",
   "block.spell_engine.spell_binding": "Mesa de vinculação de feitiços",
   "block.spell_engine.spell_binding.description": "Use para criar e preencher livros de feitiços.",

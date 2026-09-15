@@ -165,6 +165,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "一人称視点のプレイヤーアニメーション",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "呪文詠唱時のプレイヤーアニメーションを表示する。カスタムカメラMODを使用している場合のみ変更を推奨。",
   "gui.spell_engine.spell_binding": "呪文結合",
+  "emi.category.spell_engine.spell_binding": "呪文の結合",
   "gui.spell_engine.spell_binding.title": "呪文の結合",
   "block.spell_engine.spell_binding": "呪文結合台",
   "block.spell_engine.spell_binding.description": "呪文の書を作成し、呪文を追加するために使用する。",

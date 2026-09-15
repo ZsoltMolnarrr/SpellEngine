@@ -155,6 +155,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "第一人称动画",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "显示施法动作（仅在自定义镜头模组冲突时建议调整）",
   "gui.spell_engine.spell_binding": "法术绑定",
+  "emi.category.spell_engine.spell_binding": "绑定法术",
   "gui.spell_engine.spell_binding.title": "绑定法术",
   "block.spell_engine.spell_binding": "法术绑定台",
   "block.spell_engine.spell_binding.description": "用于创建和填充法术书",

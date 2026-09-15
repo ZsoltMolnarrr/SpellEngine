@@ -165,6 +165,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "Spieleranimationen in der Ich-Perspektive",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "Zeigt Spieleranimationen beim Zauberwirken. Änderung nur empfohlen, wenn benutzerdefinierte Kamera-Mods verwendet werden.",
   "gui.spell_engine.spell_binding": "Zauberbindung",
+  "emi.category.spell_engine.spell_binding": "Zauber binden",
   "gui.spell_engine.spell_binding.title": "Zauber binden",
   "block.spell_engine.spell_binding": "Zauberbindetisch",
   "block.spell_engine.spell_binding.description": "Damit lassen sich Zauberbücher erstellen und befüllen.",
