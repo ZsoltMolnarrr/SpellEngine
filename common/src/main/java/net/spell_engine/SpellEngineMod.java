@@ -88,7 +88,7 @@ public class SpellEngineMod {
         weaknessConfig.refresh();
         fallbackConfig.refresh();
 
-        Platform.util().registerSyncedDataRegistry(SpellRegistry.KEY, SpellRegistry.LOCAL_CODEC, SpellRegistry.NETWORK_CODEC_V2);
+        Platform.util().registerSyncedDataRegistry(SpellRegistry.KEY, SpellRegistry.CODEC, SpellRegistry.CODEC);
 
         SpellAssignments.init();
 

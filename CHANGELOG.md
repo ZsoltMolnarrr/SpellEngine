@@ -7,6 +7,10 @@ Functional changes:
 - Fixed NeoForge loot table injection #209
 - Fixed entity ting feature breaking armor trim rendering #210
 - Fixed entity placements (Bear Trap and Battle Banner should no longer levitate above carpets)
+- Spell registry sync entries are now sent with a compound root (parity with the 1.21+ fix for #183)
+
+API changes:
+- `SpellRegistry.LOCAL_CODEC` and `NETWORK_CODEC(_V2)` replaced by a single ops-aware `SpellRegistry.CODEC` (plain JSON over JSON ops, opaque bytes otherwise)
 
 # 1.10.4
 
