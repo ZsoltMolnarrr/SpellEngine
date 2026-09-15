@@ -55,8 +55,7 @@
     "loot.LootTableBuilderAccessor",
     "registry.DataComponentTypesMixin",
     "registry.EntityAttributesMixin",
-    "registry.LivingEntityAttributesMixin",
-    "registry.RegistryLoaderMixin"
+    "registry.LivingEntityAttributesMixin"
   ],
   "client": [
     "client.AbstractClientPlayerEntityMixin",
