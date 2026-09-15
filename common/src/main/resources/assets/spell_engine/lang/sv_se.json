@@ -165,6 +165,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "Förstapersonsanimationer för spelaren",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "Spelarens animationer vid kastande av besvärjelser ska visas. Rekommenderas endast att ändra vid användning av anpassade kameramoddar.",
   "gui.spell_engine.spell_binding": "Besvärjelsebindning",
+  "emi.category.spell_engine.spell_binding": "Bind besvärjelser",
   "gui.spell_engine.spell_binding.title": "Bind besvärjelser",
   "block.spell_engine.spell_binding": "Besvärjelsebindningsbord",
   "block.spell_engine.spell_binding.description": "Använd det för att skapa och fylla besvärjelseböcker.",

@@ -22,6 +22,7 @@ import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.tags.SpellEngineItemTags;
 import net.spell_engine.api.spell.registry.SpellRegistry;
 import net.spell_engine.api.spell.container.SpellContainerHelper;
+import net.spell_engine.api.spell.event.SpellBindingEvents;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.item.SpellEngineItems;
 import net.spell_engine.item.UniversalSpellBookItem;
@@ -270,18 +271,18 @@ public class SpellBindingScreenHandler extends AbstractContainerMenu {
                         this.inventory.setChanged();
                         this.slotsChanged(this.inventory);
                         world.playSound(null, pos, SpellEngineSounds.BIND_SPELL.soundEvent(), SoundSource.BLOCKS, 1.0f, world.getRandom().nextFloat() * 0.1f + 0.9f);
-                        if (player instanceof ServerPlayer serverPlayer) {
-                            var container = SpellContainerHelper.containerFromItemStack(mainStack);
-                            var poolId = SpellContainerHelper.getPoolId(container);
-                            if (poolId != null) {
-                                var pool = SpellRegistry.entries(world, container.pool());
-                                var isComplete = container.spell_ids().size() == SpellContainerHelper.poolTierSize(pool);
-                                SpellBindingCriteria.INSTANCE.trigger(serverPlayer, poolId, isComplete);
-                                // System.out.println("Triggering advancement SpellBindingCriteria.INSTANCE spell_pool: " + poolId + " isComplete: " + isComplete);
-                            } else {
-                                SpellBindingCriteria.INSTANCE.trigger(serverPlayer, null, false);
-                            }
+                        var container = SpellContainerHelper.containerFromItemStack(mainStack);
+                        var poolId = SpellContainerHelper.getPoolId(container);
+                        var isComplete = false;
+                        if (poolId != null) {
+                            var pool = SpellRegistry.entries(world, container.pool());
+                            isComplete = container.spell_ids().size() == SpellContainerHelper.poolTierSize(pool);
                         }
+                        if (player instanceof ServerPlayer serverPlayer) {
+                            SpellBindingCriteria.INSTANCE.trigger(serverPlayer, poolId, isComplete);
+                        }
+                        var eventArgs = new SpellBindingEvents.SpellBound.Args(player, spellEntry.get(), mainStack, poolId, isComplete, world, pos);
+                        SpellBindingEvents.SPELL_BOUND.invoke(listener -> listener.onSpellBound(eventArgs));
                     });
                 }
                 case BOOK -> {

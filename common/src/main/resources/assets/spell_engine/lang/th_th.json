@@ -165,6 +165,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "แอนิเมชันผู้เล่นมุมมองบุคคลที่หนึ่ง",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "แสดงแอนิเมชันการร่ายเวทมนตร์ของผู้เล่น แนะนำให้เปลี่ยนเฉพาะเมื่อใช้งานม็อดกล้องแบบกำหนดเองเท่านั้น",
   "gui.spell_engine.spell_binding": "การผูกเวทมนตร์",
+  "emi.category.spell_engine.spell_binding": "ผูกเวทมนตร์",
   "gui.spell_engine.spell_binding.title": "ผูกเวทมนตร์",
   "block.spell_engine.spell_binding": "โต๊ะผูกเวทมนตร์",
   "block.spell_engine.spell_binding.description": "ใช้สร้างและเติมเวทมนตร์ลงในหนังสือเวทมนตร์",

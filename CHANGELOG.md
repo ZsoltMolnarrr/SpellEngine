@@ -1,3 +1,22 @@
+# 1.10.7
+
+Functional changes:
+- Added REI integration: a Spell Binding category showing spell book creation from a plain book, and every spell bindable into each spell book (via lapis or a Spell Scroll)
+  - (1.21.1 ships this as an EMI integration; EMI has no builds for newer game versions)
+- Fixed Replay Mod crashing while saving a replay: spell registry sync entries are now sent with a compound root #183
+  - Network format change: client and server must run the same Spell Engine version
+
+API changes:
+- Added `SpellBindingEvents.SPELL_BOUND` event, fired on the server after a spell has been bound at the Spell Binding Table
+- `SpellRegistry.LOCAL_CODEC` and `NETWORK_CODEC(_V2)` replaced by a single ops-aware `SpellRegistry.CODEC` (plain JSON over JSON ops, opaque bytes otherwise); `RegistryLoaderMixin` removed
+
+# 1.10.6
+
+Functional changes:
+- Fixed dangling `#c:` tag references in the `handheld` item tag on NeoForge (now uses `#c:tools/shield` and `#c:tools/ranged_weapon`) #211
+- Fixed crash when a non-hostile entity (villager, animal, snow golem) casts a melee-scaled spell (missing attack damage attribute)
+- Unknown player animation ids now warn once instead of spamming the log every tick
+
 # 1.10.5
 
 Ported to Minecraft 26.1.2 (Fabric + NeoForge, Java 25).

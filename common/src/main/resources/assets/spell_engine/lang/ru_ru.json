@@ -109,6 +109,7 @@
   "text.autoconfig.spell_engine.option.client.shoulderSurfingAdaptiveWhileUse": "Поведение, похожее на натягивание лука при просмотре через плечо",
   "text.autoconfig.spell_engine.option.client.shoulderSurfingAdaptiveWhileUse.@Tooltip": "Разрешить адаптивный курсор при смотрении через плечо для магического оружия, только во время применения заклинаний",
   "gui.spell_engine.spell_binding": "Стол привязки заклинаний",
+  "emi.category.spell_engine.spell_binding": "Приязать заклинание",
   "gui.spell_engine.spell_binding.title": "Приязать заклинание",
   "block.spell_engine.spell_binding": "Стол привязки заклинаний",
   "block.spell_engine.spell_binding.description": "Используйте это для создания и заполнения Книги заклинаний.",

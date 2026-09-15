@@ -165,6 +165,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "Első személyű játékos animációk",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "Megjeleníti a varázslás közbeni játékos-animációkat. Csak akkor ajánlott módosítani, ha egyéni kameramodot használsz.",
   "gui.spell_engine.spell_binding": "Varázskötés",
+  "emi.category.spell_engine.spell_binding": "Varázslatok kötése",
   "gui.spell_engine.spell_binding.title": "Varázslatok kötése",
   "block.spell_engine.spell_binding": "Varázskötő Asztal",
   "block.spell_engine.spell_binding.description": "Varázskönyvek létrehozására és feltöltésére használható.",

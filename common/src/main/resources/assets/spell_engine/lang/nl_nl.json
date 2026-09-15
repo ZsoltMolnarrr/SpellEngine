@@ -165,6 +165,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "Eerstepersoonsanimaties van de speler",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "Bepaalt of speleranimaties bij het casten van spreuken worden getoond. Alleen aanbevolen om te wijzigen bij gebruik van aangepaste cameramods.",
   "gui.spell_engine.spell_binding": "Spreukbinding",
+  "emi.category.spell_engine.spell_binding": "Spreuken binden",
   "gui.spell_engine.spell_binding.title": "Spreuken binden",
   "block.spell_engine.spell_binding": "Spreukbindtafel",
   "block.spell_engine.spell_binding.description": "Gebruik dit om Spreukboeken te maken en te vullen.",
