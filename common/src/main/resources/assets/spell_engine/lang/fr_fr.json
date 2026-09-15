@@ -151,6 +151,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "Animations à la première personne",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "Animations de lancement de sort (modifier si utilisation de mods caméra).",
   "gui.spell_engine.spell_binding": "Liaison de Sorts",
+  "emi.category.spell_engine.spell_binding": "Lier des Sorts",
   "gui.spell_engine.spell_binding.title": "Lier des Sorts",
   "block.spell_engine.spell_binding": "Table de Liaison",
   "block.spell_engine.spell_binding.description": "Utilisez-la pour créer et remplir des Livres de Sorts.",

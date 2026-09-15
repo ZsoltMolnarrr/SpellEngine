@@ -113,6 +113,11 @@ dependencies {
     // NeoForge specific
     // - Curios - https://docs.illusivesoulworks.com/category/curios
     implementation("top.theillusivec4.curios:curios-neoforge:${project.curios_version}")
+
+    // REI (recipe viewer) — the plugin classes live in `common`; this module only adds the two
+    // annotated stubs REI's NeoForge annotation scan looks for, so it needs the NeoForge API jar.
+    compileOnly("me.shedaniel:RoughlyEnoughItems-api-neoforge:${project.rei_version}")
+    localRuntime("me.shedaniel:RoughlyEnoughItems-neoforge:${project.rei_version}")
 }
 
 processResources {

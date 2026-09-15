@@ -181,6 +181,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip" : "Mostrar animaciones del jugador al lanzar hechizos. Se recomienda cambiar solo si se usan mods personalizados de cámara",
 
   "gui.spell_engine.spell_binding" : "Unión de Hechizos",
+  "emi.category.spell_engine.spell_binding" : "Unir Hechizos",
   "gui.spell_engine.spell_binding.title" : "Unir Hechizos",
   "block.spell_engine.spell_binding": "Mesa de Unión de Hechizos",
   "block.spell_engine.spell_binding.description": "Usala para crear y llenar Libros de Hechizos.",

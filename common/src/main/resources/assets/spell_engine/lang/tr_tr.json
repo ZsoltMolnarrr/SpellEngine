@@ -165,6 +165,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "Birinci şahıs oyuncu animasyonları",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "Büyü atma sırasında gösterilecek oyuncu animasyonları. Yalnızca özel kamera modları kullanılıyorsa değiştirilmesi önerilir.",
   "gui.spell_engine.spell_binding": "Büyü Bağlama",
+  "emi.category.spell_engine.spell_binding": "Büyüleri Bağla",
   "gui.spell_engine.spell_binding.title": "Büyüleri Bağla",
   "block.spell_engine.spell_binding": "Büyü Bağlama Masası",
   "block.spell_engine.spell_binding.description": "Büyü Kitapları oluşturmak ve doldurmak için kullanılır.",

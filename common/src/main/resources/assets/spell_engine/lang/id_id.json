@@ -165,6 +165,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "Animasi pemain sudut pandang orang pertama",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "Animasi pemain saat merapal mantra yang ditampilkan. Hanya disarankan diubah jika menggunakan mod kamera kustom.",
   "gui.spell_engine.spell_binding": "Pengikatan Mantra",
+  "emi.category.spell_engine.spell_binding": "Ikat Mantra",
   "gui.spell_engine.spell_binding.title": "Ikat Mantra",
   "block.spell_engine.spell_binding": "Meja Pengikat Mantra",
   "block.spell_engine.spell_binding.description": "Gunakan untuk membuat dan mengisi Buku Mantra.",

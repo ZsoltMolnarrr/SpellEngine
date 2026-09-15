@@ -133,6 +133,10 @@ dependencies {
     implementation("maven.modrinth:trinkets-updated:${project.trinkets_version}")
 
     compileOnly("dev.lambdaurora.lambdynamiclights:lambdynamiclights-api:${project.lamb_dynamic_lights_version}")
+
+    // REI (recipe viewer) — dev runtime only, so `runClient` can verify the plugin. NOT bundled and
+    // NOT a declared dependency: the plugin lives in `common` and is compile-only there.
+    localRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
 }
 
 processResources {

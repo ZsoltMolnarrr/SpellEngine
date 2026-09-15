@@ -180,6 +180,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip" : "Показувати анімації гравця, що застосовує закляття. Рекомендується змінювати лише за наявності модів на користувацьку камеру.",
 
   "gui.spell_engine.spell_binding" : "Прив'язка заклять",
+  "emi.category.spell_engine.spell_binding" : "Прив'язка заклять",
   "gui.spell_engine.spell_binding.title" : "Прив'язка заклять",
   "block.spell_engine.spell_binding": "Стіл прив'язки заклять",
   "block.spell_engine.spell_binding.description": "Використовуйте його для створення та наповнення книг заклинань.",
