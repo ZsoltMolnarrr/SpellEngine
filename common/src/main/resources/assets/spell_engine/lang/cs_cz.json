@@ -165,6 +165,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "Animace hráče v pohledu z první osoby",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "Zobrazí animace hráče při sesílání kouzel. Doporučeno měnit pouze při použití modů s vlastní kamerou.",
   "gui.spell_engine.spell_binding": "Vázání kouzel",
+  "emi.category.spell_engine.spell_binding": "Svázat kouzla",
   "gui.spell_engine.spell_binding.title": "Svázat kouzla",
   "block.spell_engine.spell_binding": "Stůl pro vázání kouzel",
   "block.spell_engine.spell_binding.description": "Slouží k vytváření a plnění Knih kouzel.",

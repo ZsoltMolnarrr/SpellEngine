@@ -135,6 +135,10 @@ dependencies {
     modImplementation("org.ladysnake.cardinal-components-api:cardinal-components-entity:${project.cardinal_components_version}")
 
     modCompileOnly("dev.lambdaurora.lambdynamiclights:lambdynamiclights-api:${project.lamb_dynamic_lights_version}")
+
+    // REI (recipe viewer) — dev runtime only, so `runClient` can verify the plugin. NOT bundled and
+    // NOT a declared dependency: the plugin lives in `common` and is compile-only there.
+    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
 }
 
 processResources {

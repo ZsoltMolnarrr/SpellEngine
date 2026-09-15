@@ -165,6 +165,7 @@
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations": "Hoạt Ảnh Người Chơi Góc Nhìn Thứ Nhất",
   "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "Hoạt ảnh người chơi khi thi triển phép thuật. Chỉ nên thay đổi nếu đang dùng mod camera tùy chỉnh",
   "gui.spell_engine.spell_binding": "Ràng Buộc Phép Thuật",
+  "emi.category.spell_engine.spell_binding": "Ràng Buộc Phép Thuật",
   "gui.spell_engine.spell_binding.title": "Ràng Buộc Phép Thuật",
   "block.spell_engine.spell_binding": "Bàn Ràng Buộc Phép Thuật",
   "block.spell_engine.spell_binding.description": "Dùng để tạo và nạp phép thuật vào Sách Phép Thuật.",

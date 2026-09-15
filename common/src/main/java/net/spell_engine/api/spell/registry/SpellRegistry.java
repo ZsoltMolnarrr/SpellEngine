@@ -1,6 +1,7 @@
 package net.spell_engine.api.spell.registry;
 
 import com.google.gson.*;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
@@ -14,7 +15,7 @@ import net.spell_engine.api.spell.Spell;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.ByteBuffer;
-import java.util.Base64;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -33,43 +34,49 @@ public class SpellRegistry {
     }
     
     private static final Gson gson = new GsonBuilder().create();
-    public static final Codec<Spell> LOCAL_CODEC = Codecs.JSON_ELEMENT.xmap(
-            json -> {
-                return gson.fromJson(json, Spell.class);
-            },
-            spell -> {
-                JsonElement jsonElement = gson.toJsonTree(spell);
-                return jsonElement;
-            }
+
+    /// Spell JSON as-is, handed to GSON. Only lossless over JSON-shaped ops:
+    /// NBT has no boolean type and no mixed-type lists, so a JSON→NBT→JSON round trip breaks spells.
+    private static final Codec<Spell> JSON_CODEC = Codecs.JSON_ELEMENT.xmap(
+            json -> gson.fromJson(json, Spell.class),
+            spell -> gson.toJsonTree(spell)
     );
 
-    public static final Codec<Spell> NETWORK_CODEC_V2 = Codec.BYTE_BUFFER.comapFlatMap(
+    /// Spell JSON as opaque bytes, wrapped in a map so the serialized root is a compound.
+    /// (Packet inspecting tools, such as Replay Mod, assume compound roots in the registry sync packet.)
+    private static final Codec<Spell> BYTES_CODEC = Codec.BYTE_BUFFER.comapFlatMap(
             encoded -> {
-                var bytes = encoded.array();
-                var json = new String(bytes);
-                var spell = gson.fromJson(json, Spell.class);
-                return DataResult.success(spell);
+                var json = new String(encoded.array(), StandardCharsets.UTF_8);
+                return DataResult.success(gson.fromJson(json, Spell.class));
             },
-            spell -> {
-                var json = gson.toJson(spell);
-                var bytes = json.getBytes();
-                return ByteBuffer.wrap(bytes);
-            }
-    );
+            spell -> ByteBuffer.wrap(gson.toJson(spell).getBytes(StandardCharsets.UTF_8))
+    ).fieldOf("data").codec();
 
-    public static final Codec<Spell> NETWORK_CODEC = Codec.STRING.comapFlatMap(
-            encoded -> {
-                var bytes = encoded.getBytes();
-                var json = new String(Base64.getDecoder().decode(bytes));
-                var spell = gson.fromJson(json, Spell.class);
-                return DataResult.success(spell);
-            },
-            spell -> {
-                var json = gson.toJson(spell);
-                var bytes = json.getBytes();
-                return Base64.getEncoder().encodeToString(bytes);
-            }
-    );
+    /// Single codec for data pack loading and network sync.
+    /// Picks the shape by the ops it is handed: plain spell JSON for JSON ops (data pack files, datagen,
+    /// and the client parsing its local files for entries the server omits as "known pack" data),
+    /// opaque bytes for anything else (NBT in the registry sync packet).
+    public static final Codec<Spell> CODEC = new Codec<>() {
+        @Override
+        public <T> DataResult<Pair<Spell, T>> decode(DynamicOps<T> ops, T input) {
+            return delegate(ops).decode(ops, input);
+        }
+
+        @Override
+        public <T> DataResult<T> encode(Spell input, DynamicOps<T> ops, T prefix) {
+            return delegate(ops).encode(input, ops, prefix);
+        }
+
+        private static Codec<Spell> delegate(DynamicOps<?> ops) {
+            // RegistryOps delegates `empty()`, so this sees through the wrapper
+            return ops.empty() instanceof JsonElement ? JSON_CODEC : BYTES_CODEC;
+        }
+
+        @Override
+        public String toString() {
+            return "SpellRegistry.CODEC";
+        }
+    };
 
     public static RegistryEntryList.Named<Spell> find(World world, Identifier tagId) {
         var manager = world.getRegistryManager();

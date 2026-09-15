@@ -83,4 +83,9 @@ dependencies {
     modCompileOnly("dev.ftb.mods:ftb-library-${platform}:${project.ftb_library_version}")
     modCompileOnly("maven.modrinth:iris:${project.iris_version}-${platform}")
 
+    // REI (recipe viewer) — the loader-neutral `RoughlyEnoughItems-api` artifact is intermediary-mapped,
+    // so it must go through Loom (`modCompileOnly`) to be remapped into this module's Yarn namespace.
+    // Compile-only: `net.spell_engine.compat.rei` is only ever class-loaded by REI, so the mod runs fine without it.
+    modCompileOnly("me.shedaniel:RoughlyEnoughItems-api:${project.rei_version}")
+
 }

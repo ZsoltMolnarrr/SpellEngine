@@ -193,6 +193,7 @@
     "text.autoconfig.spell_engine.option.client.firstPersonAnimations.@Tooltip": "Animaciones de jugador en primera persona durante el lanzamiento de hechizos. Cambiar solo si usas mods de cámara personalizados.",
 
     "gui.spell_engine.spell_binding": "Vinculación de Hechizos",
+    "emi.category.spell_engine.spell_binding": "Vincular Hechizos",
     "gui.spell_engine.spell_binding.title": "Vincular Hechizos",
     "block.spell_engine.spell_binding": "Mesa de Vinculación de Hechizos",
     "block.spell_engine.spell_binding.description": "Úsalo para crear y llenar Libros de Hechizos.",
