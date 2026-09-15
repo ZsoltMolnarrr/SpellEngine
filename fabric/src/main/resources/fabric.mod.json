@@ -47,7 +47,7 @@
     "fabricloader": ">=0.15.0",
     "fabric-api": ">=0.92.0",
     "cloth-config": ">=11.1.106",
-    "player-animator": ">=1.0.2",
+    "player-animator": "*",
     "spell_power": ">=1.6.0"
   },
   "recommends": {
