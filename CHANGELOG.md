@@ -1,3 +1,22 @@
+# 1.10.6+1.20.1
+
+> ### ⚠️ Read this before updating
+>
+> This release is a **major technical overhaul and is not backwards compatible.**
+>
+> - **The APIs have been reworked, not removed.** Everything still exists, under new
+    >   interfaces — but mods built against Spell Engine **0.9.x** will not work with this
+    >   version. They need updating and rebuilding against the current API.
+> - **Update the whole set together.** Spell Engine and every RPG Series mod must be on
+    >   matching versions. Mixing in an older add-on will break at startup or misbehave in play.
+> - **Spell books must be re-obtained.** Spell books from an older world no longer carry valid
+    >   spell data. Re-craft them, or re-bind their spells at the Spell Binding Table.
+>
+> **Back up your world before updating.**
+
+Functional changes:
+- Fix some raycasting (collision detection) crash
+
 # 1.10.5+1.20.1
 
 > ### ⚠️ Read this before updating

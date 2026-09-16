@@ -55,7 +55,8 @@
     "loot.ItemEntryAccessor",
     "loot.LeafEntryAccessor",
     "loot.LootPoolAccessor",
-    "loot.UniformLootNumberProviderAccessor"
+    "loot.UniformLootNumberProviderAccessor",
+    "world.RaycastContextNullEntity"
   ],
   "client": [
     "client.AbstractClientPlayerEntityMixin",
