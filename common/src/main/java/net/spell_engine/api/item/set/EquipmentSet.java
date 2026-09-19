@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
-import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.registries.codec.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -56,7 +56,7 @@ public class EquipmentSet {
     ) {
         public static final Codec<Definition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
                 Codec.STRING.fieldOf("name").forGetter(Definition::name),
-                RegistryCodecs.homogeneousList(Registries.ITEM).fieldOf("items").forGetter(Definition::items),
+                RegistryCodecs.holderSet(Registries.ITEM).fieldOf("items").forGetter(Definition::items),
                 Bonus.CODEC.listOf().fieldOf("bonuses").forGetter(Definition::bonuses)
         ).apply(instance, Definition::new));
     }

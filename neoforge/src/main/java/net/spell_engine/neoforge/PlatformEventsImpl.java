@@ -1,7 +1,7 @@
 package net.spell_engine.neoforge;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -148,18 +148,18 @@ public class PlatformEventsImpl {
     }
 
     private static final class NeoForgeLootContext implements PlatformEvents.LootTableModifyContext {
-        private final HolderLookup.Provider registries;
+        private final HolderGetter.Provider registries;
         private final Identifier tableId;
         private final List<LootPool> existingPools;
         private final List<LootPool> pools = new ArrayList<>();
 
-        private NeoForgeLootContext(HolderLookup.Provider registries, Identifier tableId, List<LootPool> existingPools) {
+        private NeoForgeLootContext(HolderGetter.Provider registries, Identifier tableId, List<LootPool> existingPools) {
             this.registries = registries;
             this.tableId = tableId;
             this.existingPools = existingPools;
         }
 
-        @Override public HolderLookup.Provider registries() { return registries; }
+        @Override public HolderGetter.Provider registries() { return registries; }
         @Override public Identifier tableId() { return tableId; }
         @Override public List<LootPool> existingPools() { return existingPools; }
         @Override public void addPool(LootPool pool) { pools.add(pool); }

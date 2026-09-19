@@ -209,7 +209,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
             return result;
         } else {
             int iFrameToRestore = 0;
-            var originalIFrame = entity.invulnerableTime;
+            var originalIFrame = entity.getInvulnerableTime();
             float knockbackMultiplier = 1.0F;
 
             for (var spellEnrty : spellEntries) {
@@ -220,10 +220,10 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
                         knockbackMultiplier *= arrowPerks.knockback;
                     }
                     if (arrowPerks.bypass_iframes) {
-                        if (entity.invulnerableTime == originalIFrame) {
-                            iFrameToRestore = entity.invulnerableTime;
+                        if (entity.getInvulnerableTime() == originalIFrame) {
+                            iFrameToRestore = entity.getInvulnerableTime();
                         }
-                        entity.invulnerableTime = 0;
+                        entity.setInvulnerableTime(0);
                     }
                     if (arrowPerks.iframe_to_set > 0) {
                         iFrameToRestore = arrowPerks.iframe_to_set;
@@ -251,7 +251,7 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
                 ((ConfigurableKnockback) entity).popKnockbackMultiplier_SpellEngine();
             }
             if (iFrameToRestore != 0) {
-                entity.invulnerableTime = iFrameToRestore;
+                entity.setInvulnerableTime(iFrameToRestore);
             }
             return result;
         }

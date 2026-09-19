@@ -49,7 +49,9 @@
     "loot.EnchantWithLevelsLootFunctionAccessor",
     "loot.ItemEntryAccessor",
     "loot.LeafEntryAccessor",
+    "loot.LootPoolEntryContainerAccessor",
     "loot.LootTableBuilderAccessor",
+    "loot.SequenceFunctionAccessor",
     "registry.DataComponentTypesMixin",
     "registry.EntityAttributesMixin",
     "registry.LivingEntityAttributesMixin"

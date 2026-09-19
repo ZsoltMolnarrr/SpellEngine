@@ -4,7 +4,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.item.AxeItem;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.MaceItem;
 import net.minecraft.world.item.ProjectileWeaponItem;
@@ -28,7 +28,7 @@ public class WeaponCompatibility {
 
             // Try melee weapons group
             if (config.melee_weapons.enabled &&
-                    (item.components().get(DataComponents.WEAPON) != null /* not contains(): Yarn/NeoForge name mismatch */ || item instanceof TridentItem || item instanceof MaceItem || item instanceof AxeItem) ) {
+                    (item.components().get(DataComponents.WEAPON) != null /* not contains(): Yarn/NeoForge name mismatch */ || item instanceof TridentItem || item instanceof MaceItem || itemEntry.is(ItemTags.AXES) /* 26.3: AxeItem is gone (block transformers) */) ) {
                 SpellContainer container = processCompatGroup(
                         itemEntry,
                         config.melee_weapons

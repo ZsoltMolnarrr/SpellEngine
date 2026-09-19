@@ -10,8 +10,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 import net.spell_engine.SpellEngineMod;
 import net.spell_engine.api.spell.Spell;
 import net.spell_engine.api.spell.SpellDataComponents;
@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public class SpellBindRandomlyLootFunction extends LootItemConditionalFunction {
@@ -33,22 +34,22 @@ public class SpellBindRandomlyLootFunction extends LootItemConditionalFunction {
 
     public static final MapCodec<SpellBindRandomlyLootFunction> CODEC = RecordCodecBuilder.mapCodec(
             instance -> commonFields(instance)
-                    .<String, NumberProvider, NumberProvider>and(
+                    .<String, Holder<ContextIntProvider>, Holder<ContextIntProvider>>and(
                             instance.group(
                                     Codec.STRING.fieldOf("pool").orElse(null).forGetter(function -> function.pool),
-                                    NumberProviders.CODEC.fieldOf("tier").forGetter(function -> function.tier),
-                                    NumberProviders.CODEC.fieldOf("count").forGetter(function -> function.count)
+                                    ContextIntProviders.CODEC.fieldOf("tier").forGetter(function -> function.tier),
+                                    ContextIntProviders.CODEC.fieldOf("count").forGetter(function -> function.count)
                             )
                     )
                     .apply(instance, SpellBindRandomlyLootFunction::new)
     );
 
-    private final NumberProvider tier;
+    private final Holder<ContextIntProvider> tier;
     @Nullable private final String pool;
-    @Nullable private final NumberProvider count;
+    @Nullable private final Holder<ContextIntProvider> count;
 
-    private SpellBindRandomlyLootFunction(List<LootItemCondition> conditions, String pool, NumberProvider tier, NumberProvider count) {
-        super(conditions);
+    private SpellBindRandomlyLootFunction(Optional<Holder<LootItemCondition>> condition, String pool, Holder<ContextIntProvider> tier, Holder<ContextIntProvider> count) {
+        super(condition);
         this.pool = pool;
         this.tier = tier;
         this.count = count;
@@ -76,7 +77,7 @@ public class SpellBindRandomlyLootFunction extends LootItemConditionalFunction {
     @Override
     public ItemStack run(ItemStack stack, LootContext context) {
         @Nullable final var spellTag = getSpellTag();
-        final var selectedTier = this.tier != null ? this.tier.getInt(context) : -1;
+        final var selectedTier = this.tier != null ? this.tier.value().getInt(context) : -1;
         @Nullable var existingContainer = SpellContainerHelper.containerFromItemStack(stack);
         final List<Identifier> alreadyPresentSpells = existingContainer != null
                 ? existingContainer.spell_ids().stream().map(Identifier::parse).toList()
@@ -93,7 +94,7 @@ public class SpellBindRandomlyLootFunction extends LootItemConditionalFunction {
 
         ArrayList<Holder<Spell>> selectedSpells = new ArrayList<>();
         if (!spells.isEmpty()) {
-            var selectedCount = this.count != null ? this.count.getInt(context) : 1;
+            var selectedCount = this.count != null ? this.count.value().getInt(context) : 1;
             var retryAttempts = 3;
             for (int i = 0; i < selectedCount; i++) {
                 var entry = spells.get(context.getRandom().nextInt(spells.size()));
@@ -139,8 +140,10 @@ public class SpellBindRandomlyLootFunction extends LootItemConditionalFunction {
 //        return builder(conditions -> new SpellBindRandomlyLootFunction(conditions, tier, null));
 //    }
 
-    public static LootItemConditionalFunction.Builder<?> builder(String pool, NumberProvider tier, NumberProvider count) {
-        return simpleBuilder(conditions -> new SpellBindRandomlyLootFunction(conditions, pool, tier, count));
+    /// 26.3: loot number providers are `Holder<ContextIntProvider>` (`ContextIntProviders.exactly(n)`, or a direct
+    /// holder of `ints.UniformGenerator`); the conditions of the function are one optional condition holder.
+    public static LootItemConditionalFunction.Builder<?> builder(String pool, Holder<ContextIntProvider> tier, Holder<ContextIntProvider> count) {
+        return simpleBuilder(condition -> new SpellBindRandomlyLootFunction(condition, pool, tier, count));
     }
 }
 

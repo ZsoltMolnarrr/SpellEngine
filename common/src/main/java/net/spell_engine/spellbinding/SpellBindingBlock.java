@@ -1,6 +1,5 @@
 package net.spell_engine.spellbinding;
 
-import com.mojang.serialization.MapCodec;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -54,11 +53,6 @@ public class SpellBindingBlock extends BaseEntityBlock {
 
     protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 12.0, 16.0);
     public static final List<BlockPos> BOOKSHELF_OFFSETS = BlockPos.betweenClosedStream(-2, 0, -2, 2, 1, 2).filter(pos -> Math.abs(pos.getX()) == 2 || Math.abs(pos.getZ()) == 2).map(BlockPos::immutable).toList();
-
-    public static final MapCodec<SpellBindingBlock> CODEC = simpleCodec(SpellBindingBlock::new);
-    public MapCodec<SpellBindingBlock> codec() {
-        return CODEC;
-    }
 
     public SpellBindingBlock(BlockBehaviour.Properties settings) {
         super(settings);

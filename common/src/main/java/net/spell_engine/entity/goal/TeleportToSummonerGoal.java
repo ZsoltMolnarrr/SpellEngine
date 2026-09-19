@@ -38,7 +38,8 @@ public class TeleportToSummonerGoal extends Goal {
     public void start() {
         LivingEntity owner = entity.getOwner();
         if (owner == null) return;
-        entity.randomTeleport(owner.getX(), owner.getY(), owner.getZ(), false);
+        // 26.3: the 4-arg overload is gone; `state -> false` = no avoidance predicate, like the old one
+        entity.randomTeleport(owner.getX(), owner.getY(), owner.getZ(), false, state -> false);
         entity.setTarget(null);
         entity.getNavigation().stop();
     }

@@ -112,16 +112,13 @@ public class RPGSeriesAdvancements extends FabricAdvancementProvider {
                                                boolean showToast, boolean announceToChat, boolean hidden) {
         // The original data-pack advancements did not send telemetry events (vanilla default is off),
         // so keep them untelemetered rather than using the telemetered Advancement.Builder.create().
-        return Advancement.Builder.recipeAdvancement()
-                .display(
-                        icon,
-                        Component.translatable(translationKey(id, "title")),
-                        Component.translatable(translationKey(id, "description")),
-                        background,
-                        frame,
-                        showToast,
-                        announceToChat,
-                        hidden);
+        var title = Component.translatable(translationKey(id, "title"));
+        var description = Component.translatable(translationKey(id, "description"));
+        var builder = Advancement.Builder.recipeAdvancement();
+        // 26.3: the background variant is `rootDisplay(...)`; `display(...)` lost the nullable background parameter
+        return background != null
+                ? builder.rootDisplay(icon, title, description, background, frame, showToast, announceToChat, hidden)
+                : builder.display(icon, title, description, frame, showToast, announceToChat, hidden);
     }
 
     static String translationKey(Identifier id, String suffix) {

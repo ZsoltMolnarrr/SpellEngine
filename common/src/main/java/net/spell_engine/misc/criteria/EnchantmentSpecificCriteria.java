@@ -2,9 +2,9 @@ package net.spell_engine.misc.criteria;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.advancements.predicates.ContextAwarePredicate;
-import net.minecraft.advancements.predicates.entity.EntityPredicate;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.advancements.triggers.SimpleCriterionTrigger;
+import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.spell_engine.SpellEngineMod;
@@ -26,9 +26,9 @@ public class EnchantmentSpecificCriteria extends SimpleCriterionTrigger<Enchantm
         });
     }
 
-    public record Condition(Optional<ContextAwarePredicate> player, Optional<String> enchant_id) implements SimpleCriterionTrigger.SimpleInstance {
+    public record Condition(Optional<Holder<LootItemCondition>> player, Optional<String> enchant_id) implements SimpleCriterionTrigger.SimpleInstance {
         public static final Codec<EnchantmentSpecificCriteria.Condition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-                                EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(EnchantmentSpecificCriteria.Condition::player),
+                                LootItemCondition.CODEC.optionalFieldOf("player").forGetter(EnchantmentSpecificCriteria.Condition::player),
                                 Codec.optionalField("enchant_id", Codec.STRING, true).forGetter(EnchantmentSpecificCriteria.Condition::enchant_id)
                         )
                         .apply(instance, EnchantmentSpecificCriteria.Condition::new)
@@ -42,7 +42,7 @@ public class EnchantmentSpecificCriteria extends SimpleCriterionTrigger<Enchantm
             return poolMatches;
         }
 
-        public Optional<ContextAwarePredicate> player() {
+        public Optional<Holder<LootItemCondition>> player() {
             return this.player;
         }
 

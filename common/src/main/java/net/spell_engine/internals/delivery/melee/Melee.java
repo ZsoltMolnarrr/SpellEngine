@@ -380,8 +380,8 @@ public class Melee {
                         continue;
                     }
 
-                    var timeUntilRegen = target.invulnerableTime;
-                    target.invulnerableTime = 0;
+                    var timeUntilRegen = target.getInvulnerableTime();
+                    target.setInvulnerableTime(0);
                     ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(100);
                     player.attack(target);
                     if (impactSound != null && impactSoundLimit > 0) {
@@ -389,7 +389,7 @@ public class Melee {
                         impactSoundLimit -= 1;
                     }
                     targets.add(target);
-                    target.invulnerableTime = timeUntilRegen;
+                    target.setInvulnerableTime(timeUntilRegen);
                 }
             }
 

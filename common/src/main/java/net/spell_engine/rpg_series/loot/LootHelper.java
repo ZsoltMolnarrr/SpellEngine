@@ -1,27 +1,34 @@
 package net.spell_engine.rpg_series.loot;
 
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.CompositeEntryBase;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
-import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
+import net.minecraft.world.level.storage.loot.entries.UniformContainerBase;
 import net.minecraft.world.level.storage.loot.functions.EnchantRandomlyFunction;
 import net.minecraft.world.level.storage.loot.functions.EnchantWithLevelsFunction;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
+import net.minecraft.world.level.storage.loot.functions.SequenceFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemKilledByPlayerCondition;
-import net.minecraft.world.level.storage.loot.providers.number.BinomialDistributionGenerator;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.UniformGenerator;
 import net.spell_engine.mixin.loot.CombinedEntryAccessor;
 import net.spell_engine.mixin.loot.EnchantWithLevelsLootFunctionAccessor;
 import net.spell_engine.mixin.loot.ItemEntryAccessor;
 import net.spell_engine.mixin.loot.LeafEntryAccessor;
+import net.spell_engine.mixin.loot.LootPoolEntryContainerAccessor;
+import net.spell_engine.mixin.loot.SequenceFunctionAccessor;
 import net.spell_engine.rpg_series.RPGSeriesCore;
 import net.spell_engine.rpg_series.tags.RPGSeriesItemTags;
 import net.spell_engine.spellbinding.SpellBindRandomlyLootFunction;
@@ -138,7 +145,7 @@ public class LootHelper {
 
     // MARK: Injection
 
-    public static void configure(HolderLookup.Provider registries, Identifier lootTableId,
+    public static void configure(HolderGetter.Provider registries, Identifier lootTableId,
                                  Supplier<List<LootPool>> existingPools, Consumer<LootPool> poolSink,
                                  LootConfig config, String configName) {
         boolean isEntityLootTable = lootTableId.getPath().startsWith("entities");
@@ -165,7 +172,7 @@ public class LootHelper {
         configureFallback(registries, tableId, existingPools, poolSink, config, configName, isEntityLootTable);
     }
 
-    private static void configureFallback(HolderLookup.Provider registries, String tableId,
+    private static void configureFallback(HolderGetter.Provider registries, String tableId,
                                           Supplier<List<LootPool>> existingPools, Consumer<LootPool> poolSink,
                                           LootConfig config, String configName, boolean isEntityLootTable) {
         var fallback = config.fallback;
@@ -278,7 +285,7 @@ public class LootHelper {
             }
             return;
         }
-        if (!(entry instanceof LootPoolSingletonContainer)) { return; }
+        if (!(entry instanceof UniformContainerBase)) { return; }
         var leaf = (LeafEntryAccessor) entry;
         var weight = leaf.spellEngine_getWeight();
         total[0] += weight;
@@ -287,17 +294,17 @@ public class LootHelper {
             var itemId = BuiltInRegistries.ITEM.getKey(item).toString();
             var occurrence = items.computeIfAbsent(itemId, k -> new ItemOccurrence());
             boolean enchanted = false;
-            for (var function: leaf.spellEngine_getFunctions()) {
+            for (var function: functionsOf(entry)) {
                 if (function instanceof EnchantWithLevelsFunction) {
                     enchanted = true;
-                    var levels = ((EnchantWithLevelsLootFunctionAccessor) function).spellEngine_getLevels();
+                    var levels = ((EnchantWithLevelsLootFunctionAccessor) function).spellEngine_getLevels().value();
                     Float min = null, max = null;
                     if (levels instanceof ConstantValue constant) {
-                        min = constant.value(); max = constant.value();
+                        min = (float) constant.value(); max = (float) constant.value();
                     } else if (levels instanceof UniformGenerator uniform
-                            && uniform.min() instanceof ConstantValue lo
-                            && uniform.max() instanceof ConstantValue hi) {
-                        min = lo.value(); max = hi.value();
+                            && uniform.min().value() instanceof ConstantValue lo
+                            && uniform.max().value() instanceof ConstantValue hi) {
+                        min = (float) lo.value(); max = (float) hi.value();
                     }
                     if (min != null) {
                         occurrence.minLevel = occurrence.minLevel == null ? min : Math.min(occurrence.minLevel, min);
@@ -314,6 +321,20 @@ public class LootHelper {
             }
         }
         // Table references and tag entries are not resolved (referenced tables may not be parsed yet).
+    }
+
+    /// The functions of a loot entry. 26.3 collapsed the `functions` list into a single optional `modifier`
+    /// holder; several functions arrive as one `SequenceFunction` (`minecraft:sequence`), which is unwrapped here.
+    private static List<LootItemFunction> functionsOf(LootPoolEntryContainer entry) {
+        var modifier = ((LootPoolEntryContainerAccessor) entry).spellEngine_getModifier();
+        if (modifier.isEmpty() || !modifier.get().isBound()) { return List.of(); }
+        var function = modifier.get().value();
+        if (function instanceof SequenceFunction sequence) {
+            var functions = ((SequenceFunctionAccessor) sequence).spellEngine_getFunctions();
+            if (!functions.isBound()) { return List.of(); }
+            return functions.stream().filter(Holder::isBound).map(Holder::value).toList();
+        }
+        return List.of(function);
     }
 
     /// Mirrors the enchanted/plain mix of the matched reference gear onto the injected entries:
@@ -333,7 +354,7 @@ public class LootHelper {
 
     // MARK: Pool building
 
-    private static LootPool buildPool(HolderLookup.Provider registries, List<LootConfig.Pool.Entry> entries,
+    private static LootPool buildPool(HolderGetter.Provider registries, List<LootConfig.Pool.Entry> entries,
                                       float rolls, float bonusRolls, boolean killedByPlayerOnly, @Nullable EnchantMix mix) {
         LootPool.Builder lootPoolBuilder = LootPool.lootPool();
         if (killedByPlayerOnly) {
@@ -343,8 +364,9 @@ public class LootHelper {
         rolls = rolls > 0 ? rolls : 1F;
         var attempts = Math.ceil(rolls);
         var chance = rolls / attempts;
-        lootPoolBuilder.setRolls(BinomialDistributionGenerator.binomial((int) attempts, (float) chance));
-        lootPoolBuilder.setBonusRolls(ConstantValue.exactly(bonusRolls));
+        lootPoolBuilder.setRolls(ContextIntProviders.binomial((int) attempts, (float) chance));
+        lootPoolBuilder.setBonusRolls(ContextFloatProviders.exactly(bonusRolls));
+        var enchantments = registries.lookupOrThrow(Registries.ENCHANTMENT);
         for (var entry: entries) {
             var entryId = entry.id;
             var weight = entry.weight;
@@ -392,13 +414,13 @@ public class LootHelper {
                     if (mix.enchantedWeight() > 0) {
                         var levels = mix.levels(enchant);
                         lootPoolBuilder.add(LootItem.lootTableItem(item).setWeight(weight * mix.enchantedWeight())
-                                .apply(EnchantWithLevelsFunction.enchantWithLevels(registries, numberProvider(levels.min_power, levels.max_power))));
+                                .apply(EnchantWithLevelsFunction.enchantWithLevels(enchantments, numberProvider(levels.min_power, levels.max_power))));
                     }
                     continue;
                 }
 
                 if (enchant != null && enchant.isValid()) {
-                    var enchantFunction = EnchantWithLevelsFunction.enchantWithLevels(registries, numberProvider(enchant.min_power, enchant.max_power));
+                    var enchantFunction = EnchantWithLevelsFunction.enchantWithLevels(enchantments, numberProvider(enchant.min_power, enchant.max_power));
                     lootEntry.apply(enchantFunction);
                 }
                 if (spellBind != null && spellBind.isValid()) {
@@ -455,11 +477,13 @@ public class LootHelper {
         return (tier == null || tier < 0) ? -1 : tier;
     }
 
-    private static NumberProvider numberProvider(float min, float max) {
+    /// 26.3: loot number providers are int/float typed holders. Levels, tiers and counts are ints; the float
+    /// bounds of the config are floored the way the old `NumberProvider#getInt` floored `UniformGenerator`.
+    private static Holder<ContextIntProvider> numberProvider(float min, float max) {
         if (max <= min) {
-            return ConstantValue.exactly(min);
+            return ContextIntProviders.exactly(Mth.floor(min));
         } else {
-            return UniformGenerator.between(min, max);
+            return Holder.direct(new UniformGenerator(ContextIntProviders.exactly(Mth.floor(min)), ContextIntProviders.exactly(Mth.floor(max))));
         }
     }
 }

@@ -32,15 +32,20 @@ public abstract class NamespacedLangGenerator extends FabricLanguageProvider {
         TreeMap<String, String> translationEntries = new TreeMap<>();
 
         return this.registryLookup.thenCompose(lookup -> {
-            generateTranslations(lookup, (String key, String value) -> {
-                Objects.requireNonNull(key);
-                Objects.requireNonNull(value);
-
-                if (translationEntries.containsKey(key)) {
-                    throw new RuntimeException("Existing translation key found - " + key + " - Duplicate will be ignored.");
+            // Fabric API 0.160 (26.3): `TranslationBuilder` is `has` + `overwrite`; the default `add` does the duplicate check
+            generateTranslations(lookup, new TranslationBuilder() {
+                @Override
+                public boolean has(String translationKey) {
+                    Objects.requireNonNull(translationKey, "translationKey");
+                    return translationEntries.containsKey(translationKey);
                 }
 
-                translationEntries.put(key, value);
+                @Override
+                public String overwrite(String translationKey, String value) {
+                    Objects.requireNonNull(translationKey, "translationKey");
+                    Objects.requireNonNull(value, "value");
+                    return translationEntries.put(translationKey, value);
+                }
             });
 
             JsonObject langEntryJson = new JsonObject();

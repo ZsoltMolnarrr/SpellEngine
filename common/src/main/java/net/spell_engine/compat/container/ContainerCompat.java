@@ -64,7 +64,7 @@ public class ContainerCompat {
 
         @Override
         public Adapter createNewWithContents(List<ItemStack> contents) {
-            var newBundle = new BundleContents.Mutable(component).clearItems();
+            var newBundle = new BundleContents.Mutable(); // 26.3: `Mutable(BundleContents)` is gone; `component.asMutable().clearItems()` is the same empty container
             for (var stackToAdd : contents) { // Reversed as putting items manually results reversed order
                 newBundle.tryInsert(stackToAdd);
             }
