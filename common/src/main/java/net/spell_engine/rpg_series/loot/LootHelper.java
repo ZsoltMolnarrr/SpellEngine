@@ -60,7 +60,7 @@ public class LootHelper {
 
     private static final String LOOT_TIER_TAG_PREFIX = RPGSeriesCore.NAMESPACE + ":" + RPGSeriesItemTags.LootTiers.FOLDER + "/";
     /// Items of any cached `loot_tier` tag. Tables already dropping these are skipped by the fallback.
-    @Nullable private static Set<String> rpgTierItems = null;
+    @Nullable private static volatile Set<String> rpgTierItems = null; // volatile: read from parallel loot-modify callbacks (26.3)
 
     public static void updateTagCache(LootConfig lootConfig) {
         var updatedTags = new HashSet<String>();
@@ -106,16 +106,17 @@ public class LootHelper {
     }
 
     private static Set<String> rpgTierItems() {
-        if (rpgTierItems == null) {
+        var cached = rpgTierItems;
+        if (cached == null) {
             var items = new HashSet<String>();
             for (var entry: TAG_CACHE.value.cache.entrySet()) {
                 if (entry.getKey().startsWith(LOOT_TIER_TAG_PREFIX)) {
                     items.addAll(entry.getValue());
                 }
             }
-            rpgTierItems = items;
+            rpgTierItems = cached = items;
         }
-        return rpgTierItems;
+        return cached;
     }
 
     // MARK: Fallback report
@@ -135,12 +136,17 @@ public class LootHelper {
         public LinkedHashMap<String, String> skipped = new LinkedHashMap<>();
     }
 
+    /// 26.3: loot tables are a datapack registry loaded in parallel (`ParallelMapTransform`), so the loot-modify
+    /// callback runs on several worker threads at once — everything it mutates below is guarded.
+    private static final Object REPORT_LOCK = new Object();
     private static FallbackReport pendingReport = new FallbackReport();
 
     public static void saveFallbackReport() {
-        FALLBACK_REPORT.value = pendingReport;
-        FALLBACK_REPORT.save();
-        pendingReport = new FallbackReport();
+        synchronized (REPORT_LOCK) {
+            FALLBACK_REPORT.value = pendingReport;
+            FALLBACK_REPORT.save();
+            pendingReport = new FallbackReport();
+        }
     }
 
     // MARK: Injection
@@ -197,7 +203,9 @@ public class LootHelper {
         for (var pool: contents) {
             for (var itemId: pool.items.keySet()) {
                 if (rpgItems.contains(itemId)) {
-                    pendingReport.skipped.put(tableId, "already drops RPG Series loot: " + itemId);
+                    synchronized (REPORT_LOCK) {
+                        pendingReport.skipped.put(tableId, "already drops RPG Series loot: " + itemId);
+                    }
                     return;
                 }
             }
@@ -241,10 +249,12 @@ public class LootHelper {
             if (enchantedWeight > 0 && minLevel != null) {
                 enchantInfo += String.format(Locale.ROOT, " (levels %.0f-%.0f)", minLevel, maxLevel);
             }
-            pendingReport.injected
-                    .computeIfAbsent(tableId, k -> new LinkedHashMap<>())
-                    .put(configName + "/" + reference, String.format(Locale.ROOT,
-                            "matched %s, share %.2f, rolls %.2f, %s", matchedItem, share, rolls, enchantInfo));
+            synchronized (REPORT_LOCK) {
+                pendingReport.injected
+                        .computeIfAbsent(tableId, k -> new LinkedHashMap<>())
+                        .put(configName + "/" + reference, String.format(Locale.ROOT,
+                                "matched %s, share %.2f, rolls %.2f, %s", matchedItem, share, rolls, enchantInfo));
+            }
         }
     }
 
@@ -438,7 +448,8 @@ public class LootHelper {
 
     // MARK: Pattern matching (tag-cache backed, since tags are not loaded yet)
 
-    private static final HashMap<String, Pattern> REGEX_CACHE = new HashMap<>();
+    // Concurrent: the loot-modify callback runs on parallel registry-load workers since 26.3
+    private static final java.util.concurrent.ConcurrentHashMap<String, Pattern> REGEX_CACHE = new java.util.concurrent.ConcurrentHashMap<>();
 
     private static boolean regexMatches(String subject, String regex) {
         var pattern = REGEX_CACHE.computeIfAbsent(regex, r -> Pattern.compile(r, Pattern.CASE_INSENSITIVE));
