@@ -105,14 +105,18 @@ dependencies {
 
     include(implementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}"))
 //    implementation("net.tiny_config:tiny_config-${platform}:${project.tiny_config_version}")
-    implementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
-//    implementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
-    implementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
-//    implementation("net.rpg_foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
-    compileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
-//    compileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}")
+    // TODO 26.3: RPG Series upstreams from mavenLocal (no 26.3 Modrinth releases yet); back to maven.modrinth once released.
+//    implementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
+    implementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
+//    implementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
+    // From mavenLocal. `transitive = false`: the mavenLocal artifact carries a POM whose dependencies resolve from
+    // repositories we do not declare; compiling against its API needs the classes, not the graph behind them.
+    implementation("net.rpg_foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}") { transitive = false }
+//    compileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
+    compileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}") { transitive = false }
     if (rootProject.enable_critical_strike.toBoolean()) {
-        compileOnly("maven.modrinth:critical-strike:${project.critical_strike_version}-${platform}")
+//        compileOnly("maven.modrinth:critical-strike:${project.critical_strike_version}-${platform}")
+        compileOnly("net.critical_strike:critical_strike-${platform}:${project.critical_strike_version}") { transitive = false }
     }
 
     // Compatibility
@@ -136,7 +140,10 @@ dependencies {
 
     // REI (recipe viewer) — dev runtime only, so `runClient` can verify the plugin. NOT bundled and
     // NOT a declared dependency: the plugin lives in `common` and is compile-only there.
-    localRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
+    // Gated via enable_rei (see gradle.properties).
+    if (rootProject.enable_rei.toBoolean()) {
+        localRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
+    }
 }
 
 processResources {

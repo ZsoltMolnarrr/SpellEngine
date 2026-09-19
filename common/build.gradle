@@ -59,14 +59,18 @@ dependencies {
 
     implementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}")
 //    implementation("net.tiny_config:tiny_config-${platform}:${project.tiny_config_version}")
-    implementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
-//    implementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
-    implementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
-//    implementation("net.rpg_foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
-    compileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
-//    compileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}")
+    // TODO 26.3: RPG Series upstreams from mavenLocal (no 26.3 Modrinth releases yet); back to maven.modrinth once released.
+//    implementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
+    implementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
+//    implementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
+    // From mavenLocal. `transitive = false`: the mavenLocal artifact carries a POM whose dependencies resolve from
+    // repositories we do not declare; compiling against its API needs the classes, not the graph behind them.
+    implementation("net.rpg_foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}") { transitive = false }
+//    compileOnly("maven.modrinth:bundle-api:${project.bundle_api_version}-${platform}")
+    compileOnly("com.github.TheRedBrain:bundle-api-${platform}:${project.bundle_api_version}") { transitive = false }
     if (rootProject.enable_critical_strike.toBoolean()) {
-        compileOnly("maven.modrinth:critical-strike:${project.critical_strike_version}-${platform}")
+//        compileOnly("maven.modrinth:critical-strike:${project.critical_strike_version}-${platform}")
+        compileOnly("net.critical_strike:critical_strike-${platform}:${project.critical_strike_version}") { transitive = false }
     }
 
     // Compatibility
@@ -84,7 +88,16 @@ dependencies {
 
     // REI (recipe viewer) — `RoughlyEnoughItems-api` is the loader-neutral API, Mojmap-named on 26.x,
     // so it needs no Loom remap. Compile-only: `net.spell_engine.compat.rei` is only ever class-loaded
-    // by REI, so the mod runs fine without it.
-    compileOnly("me.shedaniel:RoughlyEnoughItems-api:${project.rei_version}")
+    // by REI, so the mod runs fine without it. Gated via enable_rei (see gradle.properties).
+    if (rootProject.enable_rei.toBoolean()) {
+        compileOnly("me.shedaniel:RoughlyEnoughItems-api:${project.rei_version}")
+    }
 
+}
+
+sourceSets.main.java {
+    // REI plugin stays in-tree, but out of the compile while REI is gated off (see gradle.properties).
+    if (!rootProject.enable_rei.toBoolean()) {
+        exclude 'net/spell_engine/compat/rei/**'
+    }
 }

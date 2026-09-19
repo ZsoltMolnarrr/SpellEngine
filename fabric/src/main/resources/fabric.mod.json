@@ -30,12 +30,6 @@
     "modmenu": [
       "net.spell_engine.fabric.client.compat.ModMenuCompatibility"
     ],
-    "rei_common": [
-      "net.spell_engine.compat.rei.SpellEngineReiCommonPlugin"
-    ],
-    "rei_client": [
-      "net.spell_engine.compat.rei.SpellEngineReiClientPlugin"
-    ],
     "dynamiclights": [
       "net.spell_engine.fabric.client.compat.DynamicLightsCompatibility"
     ],

@@ -16,7 +16,7 @@ iconFile = "icon.png"
 [[dependencies.spell_engine]]
 modId = "neoforge"
 type = "required"
-versionRange = "[26.2,)"
+versionRange = "[26.3.0,)"
 ordering = "NONE"
 side = "BOTH"
 
