@@ -113,9 +113,17 @@ public class CustomLayers {
     /// Dropping those halves the beam. Every Spell Engine beam layer up to 1.9.x was built with Yarn's
     /// `DISABLE_CULLING`; the 1.21.11 pipeline port mapped the no-cull branch onto the vanilla pipelines above
     /// and silently lost it. These restore it.
+    ///
+    /// 26.3: the colour target must be spelled out. `RenderPipeline.Builder#build` used to default a pipeline with
+    /// no `withColorTargetState` call to `{ColorTargetState.DEFAULT}`; since 26.3 it builds **zero** colour targets
+    /// instead, and `FrontendRenderPass#setPipeline` throws `Render pass color attachment count must match pipeline
+    /// color target state count` the first time such a pipeline is drawn into the main pass (one attachment). The
+    /// snippet carries no target (vanilla `BEACON_BEAM_OPAQUE` adds `ColorTargetState.DEFAULT` itself), so this is
+    /// the same explicit `DEFAULT`. Every other pipeline in this class already names its target.
     private static final RenderPipeline BEACON_BEAM_OPAQUE_NO_CULL = RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET)
             .withLocation(pipelineId("beacon_beam_opaque_no_cull"))
             .withCull(false)
+            .withColorTargetState(ColorTargetState.DEFAULT)
             .build();
     /// No depth write — this is the *spell object* variant, matching 1.21.1 `spellObject(..., translucent=true)`,
     /// which was built with `COLOR_MASK`. Used by translucent GLOW spell models (e.g. the Fire Hydra body).

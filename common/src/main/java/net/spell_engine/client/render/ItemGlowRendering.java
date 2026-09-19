@@ -87,8 +87,12 @@ public final class ItemGlowRendering {
 
     /// Submits a glow pass: through the routed path (`translucentCustomGeometry`, after `solid`) normally, straight
     /// into the `solid` phase while *Improved Transparency* is on (see the class comment).
+    ///
+    /// The `queue` an item/entity renderer receives is the `SubmitNodeStorage` (a `SubmitNodeCollector`), never a
+    /// `SubmitNodeCollection` (an `OrderedSubmitNodeCollector`) — so the phase is reached through `order(0)`, the
+    /// same collection the storage routed the item's own `submitItem` to (as `BeamRenderer.submitShell` does).
     private static void submit(SubmitNodeCollector queue, PoseStack matrices, RenderType layer, SubmitNodeCollector.CustomGeometryRenderer geometry) {
-        if (Minecraft.getInstance().gameRenderer.useImprovedTransparency() && queue instanceof SubmitNodeCollection collection) {
+        if (Minecraft.getInstance().gameRenderer.useImprovedTransparency() && queue.order(0) instanceof SubmitNodeCollection collection) {
             collection.solid.submit(new CustomFeatureRenderer.Submit(matrices.last().copy(), layer, geometry));
         } else {
             queue.submitCustomGeometry(matrices, layer, geometry);
