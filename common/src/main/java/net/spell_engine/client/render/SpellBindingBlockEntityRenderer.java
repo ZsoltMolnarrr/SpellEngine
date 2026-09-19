@@ -63,14 +63,19 @@ public class SpellBindingBlockEntityRenderer implements BlockEntityRenderer<Spel
         matrices.pushPose();
         matrices.translate(0.5F, 0.75F, 0.5F);
         matrices.translate(0.0F, 0.1F + Mth.sin(state.ticks * 0.1F) * 0.01F, 0.0F);
-        matrices.mulPose(Axis.YP.rotation(-state.bookRotationDegrees));
-        matrices.mulPose(Axis.ZP.rotationDegrees(80.0F));
+        matrices.rotate(Axis.YP.rotation(-state.bookRotationDegrees));
+        matrices.rotate(Axis.ZP.rotationDegrees(80.0F));
         float m = Mth.frac(state.pageAngle + 0.25F) * 1.6F - 0.3F;
         float n = Mth.frac(state.pageAngle + 0.75F) * 1.6F - 0.3F;
         var bookState = BookModel.State.forAnimation(state.ticks, Mth.clamp(m, 0.0F, 1.0F), Mth.clamp(n, 0.0F, 1.0F), state.pageTurningSpeed);
         // The book model's own layer is `entitySolid` (as vanilla's enchanting table)
         queue.submitModel(this.book, bookState, matrices, state.lightCoords, OverlayTexture.NO_OVERLAY, -1,
-                BOOK_TEXTURE, this.sprites, 0, state.breakProgress);
+                BOOK_TEXTURE, this.sprites, 0);
+        // 26.3: the crumbling overlay is a separate submit (vanilla `EnchantTableRenderer`)
+        if (state.breakProgress != null) {
+            queue.order(1).submitCrumblingOverlay(this.book, bookState, matrices, BOOK_TEXTURE.renderType(this.book.renderType()),
+                    state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
+        }
         matrices.popPose();
     }
 }

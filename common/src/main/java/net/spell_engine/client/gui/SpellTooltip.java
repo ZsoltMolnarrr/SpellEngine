@@ -357,8 +357,7 @@ public class SpellTooltip {
         // Checking execution on render thread
         // some loaders like to call these concurrently
         if (client.isSameThread()) {
-            return InputConstants.isKeyDown(client.getWindow(),
-                    ((KeybindingAccessor) keybinding).spellEngine_getBoundKey().getValue());
+            return InputConstants.isKeyDown(((KeybindingAccessor) keybinding).spellEngine_getBoundKey().getValue());
         }
         return false;
     }

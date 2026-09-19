@@ -1,5 +1,6 @@
 package net.spell_engine.spellbinding.spellchoice;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -138,7 +139,7 @@ public class SpellChoiceScreen extends AbstractContainerScreen<SpellChoiceScreen
     public boolean mouseClicked(MouseButtonEvent click, boolean doubled) {
         double mouseX = click.x(), mouseY = click.y();
         int button = click.button();
-        if (button == 0) {  // Left click
+        if (button == InputConstants.MOUSE_BUTTON_LEFT) {  // Left click (26.3: SDL mouse buttons are 1-based)
             for (var icon : spellIcons) {
                 if (icon.mouseOver((int) mouseX, (int) mouseY)) {
                     // Send selection to server

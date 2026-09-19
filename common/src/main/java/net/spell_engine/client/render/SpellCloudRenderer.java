@@ -54,7 +54,7 @@ public class SpellCloudRenderer<T extends SpellCloud> extends EntityRenderer<T, 
     private void renderModelFx(SpellCloud entity, Spell.Delivery.Cloud.ClientData clientData, float tickDelta,
                                PoseStack matrixStack, SubmitNodeCollector queue, int light) {
         matrixStack.pushPose();
-        matrixStack.mulPose(Axis.YP.rotationDegrees(-1F * entity.getYRot() + 180F));
+        matrixStack.rotate(Axis.YP.rotationDegrees(-1F * entity.getYRot() + 180F));
         // Grow the model with the cloud's radius, applied about the ground origin (before the 0.5 lift)
         float renderScale = entity.getRenderScale(tickDelta);
         if (renderScale != 1F) {

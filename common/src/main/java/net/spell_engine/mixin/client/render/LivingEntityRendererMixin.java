@@ -53,7 +53,7 @@ public abstract class LivingEntityRendererMixin {
                     var spin = spell.active.cast.animation_spin;
                     var turn = spin / (process.channelInterval(livingEntity) / 20F);
                     var degress = turn * ticks + delta * turn;
-                    matrixStack.mulPose(Axis.YP.rotationDegrees(degress));
+                    matrixStack.rotate(Axis.YP.rotationDegrees(degress));
                 }
             }
         }
@@ -143,7 +143,7 @@ public abstract class LivingEntityRendererMixin {
     private void getRenderLayer_RETURN_SpellEngine_Tint(LivingEntityRenderState state, boolean showBody, boolean translucent, boolean showOutline, CallbackInfoReturnable<RenderType> cir) {
         if (((EntityRenderStateExtension) state).spellEngine_hasTranslucentTint() && showBody && !translucent && cir.getReturnValue() != null) {
             var texture = ((LivingEntityRenderer) (Object) this).getTextureLocation(state);
-            cir.setReturnValue(RenderTypes.entityTranslucentCullItemTarget(texture));
+            cir.setReturnValue(RenderTypes.entityTranslucentCull(texture)); // 26.3: the item-entity output target is gone
         }
     }
 

@@ -104,7 +104,7 @@ public class ModelFxEffectRenderer implements CustomModelStatusEffect.Renderer {
 
         if (followYaw) {
             float yaw = livingEntity.getViewYRot(delta);
-            matrixStack.mulPose(Axis.YN.rotationDegrees(yaw));
+            matrixStack.rotate(Axis.YN.rotationDegrees(yaw));
         }
 
         if (entityScaling != null) {

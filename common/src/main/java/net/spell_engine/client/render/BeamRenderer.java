@@ -183,11 +183,11 @@ public class BeamRenderer {
         beamVector = beamVector.normalize();
         float n = (float)Math.acos(beamVector.y);
         float o = (float)Math.atan2(beamVector.z, beamVector.x);
-        matrixStack.mulPose(Axis.YP.rotationDegrees((1.5707964F - o) * 57.295776F));
-        matrixStack.mulPose(Axis.XP.rotationDegrees(n * 57.295776F));
+        matrixStack.rotate(Axis.YP.rotationDegrees((1.5707964F - o) * 57.295776F));
+        matrixStack.rotate(Axis.XP.rotationDegrees(n * 57.295776F));
         matrixStack.translate(0, offset.z, 0); // At this point everything is so rotated, we need to translate along y to move along z
 
-        matrixStack.mulPose(Axis.YP.rotationDegrees(absoluteTime * 2.25F - 45.0F));
+        matrixStack.rotate(Axis.YP.rotationDegrees(absoluteTime * 2.25F - 45.0F));
 
         var texture = Identifier.parse(beam.texture_id);
         var outerColor = Color.IntFormat.fromLongRGBA(beam.color_rgba);

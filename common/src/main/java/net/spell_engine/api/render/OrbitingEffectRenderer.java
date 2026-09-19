@@ -48,7 +48,7 @@ public class OrbitingEffectRenderer implements CustomModelStatusEffect.Renderer 
                                SubmitNodeCollector queue, int light, LivingEntity livingEntity) {
         matrixStack.pushPose();
 
-        matrixStack.mulPose(Axis.YP.rotationDegrees(rotation));
+        matrixStack.rotate(Axis.YP.rotationDegrees(rotation));
         matrixStack.translate(0, verticalOffset, -horizontalOffset);
         matrixStack.scale(scale, scale, scale);
 

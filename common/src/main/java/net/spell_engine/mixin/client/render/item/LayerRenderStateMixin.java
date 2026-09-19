@@ -3,6 +3,7 @@ package net.spell_engine.mixin.client.render.item;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.resources.model.geometry.ItemQuads;
 import net.spell_engine.client.render.ItemGlowRendering;
 import net.spell_engine.client.render.extension.ItemRenderStateExtension;
 import org.spongepowered.asm.mixin.Final;
@@ -16,17 +17,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /// top of the item. Hooking the call site (rather than looping the layers from `ItemStackRenderState.submit`)
 /// gets the pose stack exactly as vanilla positioned the layer - display transform *and* the 26.1
 /// `localTransform` - and skips special-model layers (heads, shields, ...) for free: those never reach
-/// `submitItem`. No private layer state is read; the quads come from the public `prepareQuadList()`.
+/// `submitItem`. 26.3: the quads are an `ItemQuads` split into solid/translucent lists (`prepareQuadList()` is gone,
+/// the field has no getter, so it is shadowed).
 @Mixin(ItemStackRenderState.LayerRenderState.class)
 public abstract class LayerRenderStateMixin {
     /// Synthetic outer-instance reference of the inner class (the glow is parked on the outer state)
     @Shadow @Final private ItemStackRenderState this$0;
+    @Shadow private ItemQuads quads;
 
     @Inject(
             method = "submit",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitItem(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/world/item/ItemDisplayContext;III[ILjava/util/List;Lnet/minecraft/client/renderer/item/ItemStackRenderState$FoilType;)V",
+                    target = "Lnet/minecraft/client/renderer/SubmitNodeCollector;submitItem(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/world/item/ItemDisplayContext;III[ILnet/minecraft/client/resources/model/geometry/ItemQuads;Lnet/minecraft/client/renderer/item/ItemStackRenderState$FoilType;)V",
                     shift = At.Shift.AFTER
             )
     )
@@ -35,7 +38,6 @@ public abstract class LayerRenderStateMixin {
         if (glow == null) {
             return;
         }
-        var quads = ((ItemStackRenderState.LayerRenderState) (Object) this).prepareQuadList();
-        ItemGlowRendering.submitGlow(glow, quads, matrices, queue, light, overlay);
+        ItemGlowRendering.submitGlow(glow, this.quads, matrices, queue, light, overlay);
     }
 }

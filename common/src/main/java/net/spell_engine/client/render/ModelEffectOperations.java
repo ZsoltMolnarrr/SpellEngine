@@ -33,9 +33,9 @@ public class ModelEffectOperations {
             matrices.translate(progress * t.x, progress * t.y, progress * t.z);
         });
         register("rotate", (matrices, progress, t) -> {
-            if (t.x != 0) matrices.mulPose(Axis.XP.rotationDegrees(progress * t.x));
-            if (t.y != 0) matrices.mulPose(Axis.YP.rotationDegrees(progress * t.y));
-            if (t.z != 0) matrices.mulPose(Axis.ZP.rotationDegrees(progress * t.z));
+            if (t.x != 0) matrices.rotate(Axis.XP.rotationDegrees(progress * t.x));
+            if (t.y != 0) matrices.rotate(Axis.YP.rotationDegrees(progress * t.y));
+            if (t.z != 0) matrices.rotate(Axis.ZP.rotationDegrees(progress * t.z));
         });
     }
 

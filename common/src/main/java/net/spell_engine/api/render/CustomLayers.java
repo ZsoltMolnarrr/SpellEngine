@@ -3,19 +3,20 @@ package net.spell_engine.api.render;
 import com.google.common.base.Suppliers;
 import org.jetbrains.annotations.Nullable;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.textures.AddressMode;
-import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.textures.AddressMode;
+import com.mojang.renderpearl.api.textures.FilterMode;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.platform.BlendFactor;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.BlendFactor;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.oit.OitPipelineSet;
 import net.minecraft.client.renderer.rendertype.RenderSetup;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.TextureTransform;
@@ -44,6 +45,13 @@ import java.util.function.Supplier;
 /// is `withVertexBinding` + `withPrimitiveTopology`, per-layer `bufferSize` is gone, and the depth buffer is
 /// **reverse-Z**: every depth compare copied from a vanilla pipeline must be re-read from the 26.2 constant
 /// (`LESS_THAN_OR_EQUAL` became `GREATER_THAN_OR_EQUAL`; `DepthStencilState.DEFAULT` flipped with it).
+///
+/// 26.3: the GPU types moved to `com.mojang.renderpearl.api`, and **order-independent transparency** ("Improved
+/// Transparency" video option) merges every translucent feature phase into one `oitTranslucent` phase whose draw
+/// path (`PreparedRenderType#drawFromBufferOit`) throws for a blending layer without {@link OitPipelineSet}s.
+/// Every blending layer below therefore carries `setOitPipelines(...)`, derived the way vanilla derives
+/// `OIT_ENTITY_EMISSIVE` from `ENTITY_TRANSLUCENT_EMISSIVE`; the exception is the item glow (the glint shader is not
+/// OIT-aware), which `ItemGlowRendering` submits straight into the solid phase while the option is on.
 public class CustomLayers {
 
     private static Identifier pipelineId(String name) {
@@ -151,6 +159,25 @@ public class CustomLayers {
             .withDepthStencilState(new DepthStencilState(CompareOp.GREATER_THAN_OR_EQUAL, true))
             .build();
 
+    // MARK: OIT pipeline sets (26.3 "Improved Transparency")
+
+    /// Vanilla `OIT_BEACON_BEAM` with backface culling off, for the no-cull beam / GLOW spell-object layers.
+    /// Depth writes and the blend function are irrelevant under OIT (the stages own both), so the depth-write and
+    /// no-depth-write beacon-beam variants share this set.
+    private static final OitPipelineSet OIT_BEACON_BEAM_NO_CULL = OitPipelineSet.builder("spell_engine_beacon_beam_no_cull",
+            RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET).withCull(false)).build();
+    /// Additive beacon beam under OIT: `OIT_ADDITIVE` is how vanilla derives `OIT_LIGHTNING` from `LIGHTNING`
+    /// (the surface contributes nothing to transmittance, the colour is accumulated).
+    private static final OitPipelineSet OIT_BEACON_BEAM_ADDITIVE = OitPipelineSet.builder("spell_engine_beacon_beam_additive",
+            RenderPipeline.builder(RenderPipelines.BEACON_BEAM_SNIPPET).withCull(false).withShaderDefine("OIT_ADDITIVE")).build();
+    /// Vanilla `OIT_ENTITY` with the `ARMOR_CUTOUT_NO_CULL` defines (no overlay, per-face lighting, lightmap only).
+    private static final OitPipelineSet OIT_ARMOR_CUTOUT_NO_CULL_TRANSLUCENT = OitPipelineSet.builder("spell_engine_armor_cutout_no_cull_translucent",
+            RenderPipeline.builder(RenderPipelines.OIT_ENTITY_SNIPPET).withCull(false))
+            .withAccumulateModifier(accumulate -> accumulate.withShaderDefine("NO_OVERLAY")
+                    .withShaderDefine("PER_FACE_LIGHTING")
+                    .withBindGroupLayout(BindGroupLayouts.SAMPLER2))
+            .build();
+
 
     // MARK: Beams
 
@@ -174,16 +201,24 @@ public class CustomLayers {
     ///
     /// Blend is SE's 1.21.1 `BEAM_TRANSPARENCY` (non-separate `SRC_ALPHA, ONE_MINUS_SRC_ALPHA`), not vanilla's
     /// separate `TRANSLUCENT`; the two write a different destination alpha, which shader packs read.
-    private static final BiFunction<Identifier, Boolean, RenderType> BEAM_CULL = Util.memoize((texture, transparent) ->
-            RenderType.create("spell_beam", RenderSetup.builder(transparent ? BEACON_BEAM_TRANSLUCENT_DEPTH_WRITE : RenderPipelines.BEACON_BEAM_OPAQUE)
-                    .withTexture("Sampler0", texture)
-                    .sortOnUpload()
-                    .createRenderSetup()));
-    private static final BiFunction<Identifier, Boolean, RenderType> BEAM_NO_CULL = Util.memoize((texture, transparent) ->
-            RenderType.create("spell_beam", RenderSetup.builder(transparent ? BEACON_BEAM_TRANSLUCENT_NO_CULL_DEPTH_WRITE : BEACON_BEAM_OPAQUE_NO_CULL)
-                    .withTexture("Sampler0", texture)
-                    .sortOnUpload()
-                    .createRenderSetup()));
+    private static final BiFunction<Identifier, Boolean, RenderType> BEAM_CULL = Util.memoize((texture, transparent) -> {
+        var setup = RenderSetup.builder(transparent ? BEACON_BEAM_TRANSLUCENT_DEPTH_WRITE : RenderPipelines.BEACON_BEAM_OPAQUE)
+                .withTexture("Sampler0", texture)
+                .sortOnUpload();
+        if (transparent) {
+            setup.setOitPipelines(RenderPipelines.OIT_BEACON_BEAM);
+        }
+        return RenderType.create("spell_beam", setup.createRenderSetup());
+    });
+    private static final BiFunction<Identifier, Boolean, RenderType> BEAM_NO_CULL = Util.memoize((texture, transparent) -> {
+        var setup = RenderSetup.builder(transparent ? BEACON_BEAM_TRANSLUCENT_NO_CULL_DEPTH_WRITE : BEACON_BEAM_OPAQUE_NO_CULL)
+                .withTexture("Sampler0", texture)
+                .sortOnUpload();
+        if (transparent) {
+            setup.setOitPipelines(OIT_BEACON_BEAM_NO_CULL);
+        }
+        return RenderType.create("spell_beam", setup.createRenderSetup());
+    });
 
     /// `transparent = false`: opaque beacon-beam program, depth write (the beam core).
     /// `transparent = true`: `BEAM_TRANSPARENCY` blend **and** depth write (the beam shells), see above.
@@ -222,14 +257,14 @@ public class CustomLayers {
         return SPELL_OBJECT_CULL.apply(TextureAtlas.LOCATION_BLOCKS);
     }
 
-    /// The [LightEmission#NONE] layer: vanilla `entityTranslucentCullItemTarget` semantics (26.1 folded the former
-    /// `item_entity_translucent_cull` shader into `ENTITY_TRANSLUCENT_CULL` + the item-entity output target), but
-    /// never part of the entity outline (a spell model riding on a glowing entity is a decorative overlay, not
-    /// its body) and not crumbling-affected.
+    /// The [LightEmission#NONE] layer: vanilla `entityTranslucentCull` semantics (26.1 folded the former
+    /// `item_entity_translucent_cull` shader into `ENTITY_TRANSLUCENT_CULL`; 26.3 removed the item-entity output
+    /// target altogether), but never part of the entity outline (a spell model riding on a glowing entity is a
+    /// decorative overlay, not its body) and not crumbling-affected.
     private static final Function<Identifier, RenderType> SPELL_OBJECT_CULL = Util.memoize(texture ->
             RenderType.create("spell_object_cull", RenderSetup.builder(RenderPipelines.ENTITY_TRANSLUCENT_CULL)
+                    .setOitPipelines(RenderPipelines.OIT_ENTITY_CULL)
                     .withTexture("Sampler0", texture)
-                    .setOutputTarget(net.minecraft.client.renderer.rendertype.OutputTarget.ITEM_ENTITY_TARGET)
                     .useLightmap()
                     .useOverlay()
                     .sortOnUpload()
@@ -250,6 +285,14 @@ public class CustomLayers {
                 .withTexture("Sampler0", key.texture)
                 .sortOnUpload()
                 .setOutline(RenderSetup.OutlineProperty.NONE);
+        // Only the translucent variants blend; the `*_DEPTH_WRITE` / opaque pipelines draw in the solid phase.
+        if (key.translucent) {
+            setup.setOitPipelines(switch (key.lightEmission) {
+                case RADIATE, GLOW_TRANSLUCENT -> RenderPipelines.OIT_ENTITY_EMISSIVE;
+                case GLOW -> OIT_BEACON_BEAM_NO_CULL;
+                case NONE -> RenderPipelines.OIT_ENTITY;
+            });
+        }
         if (key.lightEmission != LightEmission.GLOW) {
             // The beacon beam vertex format carries no overlay
             setup.useOverlay();
@@ -273,6 +316,7 @@ public class CustomLayers {
 
     private static final Function<Identifier, RenderType> SPELL_OBJECT_ADDITIVE = Util.memoize(texture ->
             RenderType.create("spell_object_additive", RenderSetup.builder(BEACON_BEAM_ADDITIVE)
+                    .setOitPipelines(OIT_BEACON_BEAM_ADDITIVE)
                     .withTexture("Sampler0", texture)
                     .sortOnUpload()
                     .setOutline(RenderSetup.OutlineProperty.NONE)
@@ -292,6 +336,7 @@ public class CustomLayers {
 
     private static final Function<Identifier, RenderType> ARMOR_TRANSLUCENT = Util.memoize(texture ->
             RenderType.create("spell_engine_armor_cutout_no_cull_translucent", RenderSetup.builder(ARMOR_CUTOUT_NO_CULL_TRANSLUCENT)
+                    .setOitPipelines(OIT_ARMOR_CUTOUT_NO_CULL_TRANSLUCENT)
                     .withTexture("Sampler0", texture)
                     .useLightmap()
                     .useOverlay()
@@ -311,6 +356,7 @@ public class CustomLayers {
     /// which is what keeps it from blooming out. Texture/overlay/light/normal writes are dropped by the format.
     private static final Supplier<RenderType> SPELL_OBJECT_LIGHTNING = Suppliers.memoize(() ->
             RenderType.create("spell_object_lightning", RenderSetup.builder(RenderPipelines.LIGHTNING)
+                    .setOitPipelines(RenderPipelines.OIT_LIGHTNING)
                     .sortOnUpload()
                     .setOutline(RenderSetup.OutlineProperty.NONE)
                     .createRenderSetup()));
@@ -327,7 +373,9 @@ public class CustomLayers {
         return SPELL_OBJECT.apply(new SpellObjectKey(texture, lightEmission, translucent));
     }
 
-    /// Escape hatch for consumers building their own layers on the 1.21.11 API
+    /// Escape hatch for consumers building their own layers on the 1.21.11 API.
+    /// 26.3: a blending setup must carry `setOitPipelines(...)` (or, for model submits, `withForcedSolidModelPhase()`),
+    /// or it throws the first time it is drawn with *Improved Transparency* on.
     public static RenderType create(String name, RenderSetup setup) {
         return RenderType.create(name, setup);
     }
@@ -421,9 +469,11 @@ public class CustomLayers {
     /// `EQUAL` depth test is the mask: it confines the streaks to the pixels the item wrote, so the pass
     /// must be drawn after the item (see `ItemGlowRendering`: since 26.2 the feature-render phases order it,
     /// blending custom geometry runs after the solid item pass). Do not relax it to `GEQUAL`. Direction-neutral
-    /// under reverse-Z. Layout mirrors vanilla 26.2 `RenderPipelines.GLINT`.
+    /// under reverse-Z. Layout mirrors vanilla 26.3 `RenderPipelines.GLINT`. No OIT set: `core/glint` is not
+    /// OIT-aware, so `ItemGlowRendering` keeps the glow out of the OIT phase.
     private static final RenderPipeline ITEM_GLOW_GLINT_PIPELINE = RenderPipeline.builder(RenderPipelines.GLOBALS_SNIPPET)
-            .withBindGroupLayout(BindGroupLayouts.MATRICES_PROJECTION)
+            .withBindGroupLayout(BindGroupLayouts.PROJECTION)
+            .withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS)
             .withBindGroupLayout(BindGroupLayouts.FOG)
             .withLocation(pipelineId("item_glow_glint"))
             .withVertexShader("core/glint")
@@ -436,7 +486,7 @@ public class CustomLayers {
             .withPrimitiveTopology(PrimitiveTopology.QUADS)
             .build();
 
-    private static Supplier<com.mojang.blaze3d.textures.GpuSampler> itemGlowSampler(boolean smooth) {
+    private static Supplier<com.mojang.renderpearl.api.textures.GpuSampler> itemGlowSampler(boolean smooth) {
         // Bilinear (the 1.21.1 `blur = true` texture flag) or nearest, per the `weaponGlowSmooth` client config.
         // REPEAT is essential: the scroll offset cycles through [0, 1) and wraps, which is only seamless when the
         // texture tiles. `SamplerCache.get(FilterMode)` is the clamped overlay/lightmap sampler — with it the item

@@ -131,7 +131,7 @@ public class SpellProjectileRenderer<T extends Entity & ItemSupplier> extends En
             applyCompositeOrientation(model.orientation, cameraState, entity, previousVelocity, tickDelta, matrices);
             // Continuous spin (disabled e.g. while an arrow is stuck in the ground).
             if (allowSpin && (model.rotate_degrees_per_tick != 0 || model.rotate_degrees_offset != 0)) {
-                matrices.mulPose(Axis.ZP.rotationDegrees(
+                matrices.rotate(Axis.ZP.rotationDegrees(
                         model.rotate_degrees_offset + age * model.rotate_degrees_per_tick));
             }
             // modelFX animation (initial + animated transforms + fx.scale).
@@ -158,8 +158,8 @@ public class SpellProjectileRenderer<T extends Entity & ItemSupplier> extends En
                                                   Entity entity, @Nullable Vec3 previousVelocity, float tickDelta, PoseStack matrices) {
         switch (orientation) {
             case TOWARDS_CAMERA -> {
-                matrices.mulPose(cameraState.orientation);
-                matrices.mulPose(Axis.YP.rotationDegrees(180.0F));
+                matrices.rotate(cameraState.orientation);
+                matrices.rotate(Axis.YP.rotationDegrees(180.0F));
             }
             case TOWARDS_MOTION, ALONG_MOTION -> {
                 var velocity = entity.getDeltaMovement();
@@ -169,12 +169,12 @@ public class SpellProjectileRenderer<T extends Entity & ItemSupplier> extends En
                 velocity = velocity.normalize();
                 var directionBasedYaw = Math.toDegrees(Math.atan2(velocity.x, velocity.z)) + 180F;
                 var directionBasedPitch = Math.toDegrees(Math.asin(velocity.y));
-                matrices.mulPose(Axis.YP.rotationDegrees((float) directionBasedYaw));
-                matrices.mulPose(Axis.XP.rotationDegrees((float) directionBasedPitch));
+                matrices.rotate(Axis.YP.rotationDegrees((float) directionBasedYaw));
+                matrices.rotate(Axis.XP.rotationDegrees((float) directionBasedPitch));
                 if (orientation == Spell.ProjectileModelComposite.Orientation.ALONG_MOTION) {
                     // ALONG_MOTION models lie along their local X axis; convert the X length into the +Z
                     // "forward" that the yaw/pitch above already orient, applied innermost (last).
-                    matrices.mulPose(Axis.YP.rotationDegrees(90F));
+                    matrices.rotate(Axis.YP.rotationDegrees(90F));
                 }
             }
         }

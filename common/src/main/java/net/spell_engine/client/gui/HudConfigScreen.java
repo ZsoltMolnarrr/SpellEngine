@@ -1,5 +1,6 @@
 package net.spell_engine.client.gui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -297,7 +298,7 @@ public class HudConfigScreen extends Screen {
     public boolean mouseDragged(MouseButtonEvent click, double deltaX, double deltaY) {
         var result = super.mouseDragged(click, deltaX, deltaY);
         int button = click.button();
-        if (!this.isDragging() && button == 0 && dragged != null) {
+        if (!this.isDragging() && button == InputConstants.MOUSE_BUTTON_LEFT && dragged != null) { // 26.3: SDL mouse buttons are 1-based
             var config = SpellEngineClient.hudConfig.value;
             switch (dragged) {
                 case CAST_BAR -> {

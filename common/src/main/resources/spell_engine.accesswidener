@@ -17,9 +17,12 @@ accessible	field	net/minecraft/world/level/storage/loot/LootPool	entries	Ljava/u
 accessible	method	net/minecraft/world/level/block/entity/BlockEntityType	<init>	(Lnet/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier;Ljava/util/Set;)V
 accessible	class	net/minecraft/world/level/block/entity/BlockEntityType$BlockEntitySupplier
 # Pipeline snippets to derive Spell Engine render pipelines from (blend/depth/cull variants of vanilla ones)
-accessible	field	net/minecraft/client/renderer/RenderPipelines	ENTITY_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
-accessible	field	net/minecraft/client/renderer/RenderPipelines	ENTITY_EMISSIVE_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
-accessible	field	net/minecraft/client/renderer/RenderPipelines	BEACON_BEAM_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+# (26.3: `RenderPipeline` lives in `com.mojang.renderpearl.api.pipeline`)
+accessible	field	net/minecraft/client/renderer/RenderPipelines	ENTITY_SNIPPET	Lcom/mojang/renderpearl/api/pipeline/RenderPipeline$Snippet;
+accessible	field	net/minecraft/client/renderer/RenderPipelines	ENTITY_EMISSIVE_SNIPPET	Lcom/mojang/renderpearl/api/pipeline/RenderPipeline$Snippet;
+accessible	field	net/minecraft/client/renderer/RenderPipelines	BEACON_BEAM_SNIPPET	Lcom/mojang/renderpearl/api/pipeline/RenderPipeline$Snippet;
+# 26.3 OIT ("Improved Transparency"): base snippet of the vanilla OIT entity pipeline sets, to derive the tinted-armor set
+accessible	field	net/minecraft/client/renderer/RenderPipelines	OIT_ENTITY_SNIPPET	Lcom/mojang/renderpearl/api/pipeline/RenderPipeline$Snippet;
 # Item glow: the glint program pipeline (core/glint) is rebuilt with additive blending (26.2: the matrices/fog
 # snippets became public `BindGroupLayouts` constants; only GLOBALS_SNIPPET is still private)
-accessible	field	net/minecraft/client/renderer/RenderPipelines	GLOBALS_SNIPPET	Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;
+accessible	field	net/minecraft/client/renderer/RenderPipelines	GLOBALS_SNIPPET	Lcom/mojang/renderpearl/api/pipeline/RenderPipeline$Snippet;

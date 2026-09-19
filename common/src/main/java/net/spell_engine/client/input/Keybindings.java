@@ -27,7 +27,7 @@ public class Keybindings {
     private static KeyMapping hotbarKey(int number) {
         var key = new KeyMapping(
                 "keybindings." + SpellEngineMod.ID + ".spell_hotbar_" + number,
-                InputConstants.Type.KEYSYM,
+                InputConstants.Type.KEYBOARD,
                 InputConstants.UNKNOWN.getValue(),
                 CATEGORY);
         add(key);
@@ -41,13 +41,13 @@ public class Keybindings {
      */
     public static KeyMapping tooltip_details = add(new KeyMapping(
             "keybindings." + SpellEngineMod.ID + ".tooltip_details",
-            InputConstants.Type.KEYSYM,
+            InputConstants.Type.KEYBOARD,
             InputConstants.UNKNOWN.getValue(),
             CATEGORY));
 
     public static KeyMapping bypass_spell_hotbar = add(new KeyMapping(
             "keybindings." + SpellEngineMod.ID + ".bypass_spell_hotbar",
-            InputConstants.Type.KEYSYM,
+            InputConstants.Type.KEYBOARD,
             InputConstants.KEY_LALT,
             CATEGORY));
 
