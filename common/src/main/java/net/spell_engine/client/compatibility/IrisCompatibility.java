@@ -47,6 +47,32 @@ public class IrisCompatibility {
                 }
             }
             LOGGER.info("Registered {} custom pipelines with Iris", CustomLayers.customPipelines().size());
+            assignShadows(api);
+        }
+
+        /// Iris 1.11.6+ (26.3) keeps a second override list for its shadow pass; a pipeline missing from it logs
+        /// "Missing program … in override list" with a stack trace on every shadow-pass draw. Iris maps the vanilla
+        /// pipelines ours derive from (`ENTITY_TRANSLUCENT`, `ARMOR_CUTOUT_NO_CULL`, `ENTITY_TRANSLUCENT_EMISSIVE`,
+        /// `BEACON_BEAM_*`, `GLINT`) to its entity / block shadow programs, so the same coarse split is used here.
+        /// Older Iris (the NeoForge 26.2 jar) has no `assignPipelineShadow`; the first `NoSuchMethodError` ends the loop.
+        private static void assignShadows(net.irisshaders.iris.api.v0.IrisApi api) {
+            int assigned = 0;
+            for (var entry : CustomLayers.customPipelines().entrySet()) {
+                var program = switch (entry.getValue()) {
+                    case ENTITY_TRANSLUCENT, ENTITY_EMISSIVE, GLINT -> net.irisshaders.iris.api.v0.IrisShadowProgram.SHADOW_ENTITIES;
+                    case BEACON_BEAM -> net.irisshaders.iris.api.v0.IrisShadowProgram.SHADOW_BLOCK;
+                };
+                try {
+                    api.assignPipelineShadow(entry.getKey(), program);
+                    assigned++;
+                } catch (NoSuchMethodError | NoClassDefFoundError e) {
+                    LOGGER.info("Iris shadow pipeline assignment unavailable ({}), skipping", e.toString());
+                    return;
+                } catch (Throwable e) {
+                    LOGGER.warn("Failed to assign shadow pipeline {} to Iris: {}", entry.getKey().getLocation(), e.toString());
+                }
+            }
+            LOGGER.info("Registered {} custom pipelines with Iris for the shadow pass", assigned);
         }
     }
 }
