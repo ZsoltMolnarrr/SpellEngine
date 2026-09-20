@@ -4,6 +4,7 @@ Functional changes:
 - Added EMI integration: a Spell Binding category showing spell book creation from a plain book, and every spell bindable into each spell book (via lapis or a Spell Scroll)
 - Fixed Replay Mod crashing while saving a replay: spell registry sync entries are now sent with a compound root #183
   - Network format change: client and server must run the same Spell Engine version
+- Fixed kills landed by summoned entities not counting as player kills (no boss loot, no experience, no kill advancement for the summoner)
 
 API changes:
 - Added `SpellBindingEvents.SPELL_BOUND` event, fired on the server after a spell has been bound at the Spell Binding Table
