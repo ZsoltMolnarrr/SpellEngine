@@ -3,4 +3,5 @@
 rpg_series_classes=true
 rpg_series_gear=true
 rpg_series_accessories=true
+rpg_series_structures=true
 rpg_series_skills=true
