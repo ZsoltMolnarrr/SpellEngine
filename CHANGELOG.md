@@ -5,6 +5,7 @@ Functional changes:
 - Fixed Replay Mod crashing while saving a replay: spell registry sync entries are now sent with a compound root #183
   - Network format change: client and server must run the same Spell Engine version
 - Fixed kills landed by summoned entities not counting as player kills (no boss loot, no experience, no kill advancement for the summoner)
+- Loot defaults: every boss injector now offers both a tier-5 weapon and a tier-5 armor (previously each had only one of the two)
 
 API changes:
 - Added `SpellBindingEvents.SPELL_BOUND` event, fired on the server after a spell has been bound at the Spell Binding Table

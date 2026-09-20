@@ -327,6 +327,7 @@ public class LootDefaults {
                 .add(X3)
                 .add(R3)
                 .add(W5)
+                .add(A5)
         );
 
         items.put("minecraft:entities/warden", new LootConfig.Pool()
@@ -335,6 +336,7 @@ public class LootDefaults {
                 .add(A2, true)
                 .add(X4).weight(2)
                 .add(R2).weight(2)
+                .add(W5)
                 .add(A5)
         );
 
@@ -344,6 +346,7 @@ public class LootDefaults {
                 .rolls(2)
                 .add(A3)
                 .add(A4)
+                .add(W5)
                 .add(A5)
         );
 
@@ -352,6 +355,7 @@ public class LootDefaults {
                 .add(W4)
                 .add(W5)
                 .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
+                .add(A5)
         );
 
         items.put("minecells:chests/common/general_treasure", new LootConfig.Pool()
@@ -373,6 +377,7 @@ public class LootDefaults {
                 .add(X2).weight(2)
                 .add(R2)
                 .add(W5)
+                .add(A5)
         );
 
         items.put("bosses_of_mass_destruction:entities/void_blossom", new LootConfig.Pool()
@@ -382,6 +387,7 @@ public class LootDefaults {
                 .add(X2).weight(2)
                 .add(R2)
                 .add(W5)
+                .add(A5)
         );
 
         items.put("bosses_of_mass_destruction:chests/gauntlet", new LootConfig.Pool()
@@ -1860,11 +1866,13 @@ public class LootDefaults {
                 .add(W3).enchant()
                 .add(W4).enchant()
                 .add(W5).enchant()
+                .add(A5).enchant()
         );
         items.put("fdbosses:entities/malkuth", new LootConfig.Pool()
                 .rolls(1)
                 .add(A3).enchant()
                 .add(A4).enchant()
+                .add(W5).enchant()
                 .add(A5).enchant()
         );
 
@@ -1899,6 +1907,7 @@ public class LootDefaults {
                 .add(X3).weight(2)
                 .add(R2)
                 .add(A4)
+                .add(W5)
                 .add(A5)
         );
         items.put("cataclysm:entities/ignis", new LootConfig.Pool()
@@ -1907,6 +1916,7 @@ public class LootDefaults {
                 .add(W4, true).weight(4)
                 .add(X4)
                 .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
+                .add(A5)
         );
         items.put("cataclysm:entities/the_harbinger", new LootConfig.Pool()
                 .rolls(2)
@@ -1914,6 +1924,7 @@ public class LootDefaults {
                 .add(A4, true)
                 .add(X4).weight(2)
                 .add(R4).weight(2)
+                .add(W5)
                 .add(A5)
         );
 
@@ -1932,6 +1943,7 @@ public class LootDefaults {
                 .add(X2).weight(2)
                 .add(R2)
                 .add(W5)
+                .add(A5)
         );
         //frostmaw
         items.put("mowziesmobs:entities/frostmaw", new LootConfig.Pool()
@@ -1939,6 +1951,7 @@ public class LootDefaults {
                 .add(W2, true).weight(4)
                 .add(A2, true).weight(3)
                 .add(R2)
+                .add(W5)
                 .add(A5)
         );
         //grottol
@@ -1966,6 +1979,7 @@ public class LootDefaults {
                 .add(X2).weight(2)
                 .add(R2)
                 .add(W5)
+                .add(A5)
         );
         //lich
         items.put("twilightforest:entities/lich", new LootConfig.Pool()
@@ -1974,6 +1988,7 @@ public class LootDefaults {
                 .add(A2, true).weight(3)
                 .add(X2).weight(2)
                 .add(R2)
+                .add(W5)
                 .add(A5)
         );
         //minotaur
@@ -2000,6 +2015,7 @@ public class LootDefaults {
                 .add(X3)
                 .add(R3)
                 .add(W5)
+                .add(A5)
         );
         //ur_ghast
         items.put("twilightforest:entities/ur_ghast", new LootConfig.Pool()
@@ -2008,6 +2024,7 @@ public class LootDefaults {
                 .add(A3, true).weight(3)
                 .add(X3).weight(2)
                 .add(R3)
+                .add(W5)
                 .add(A5)
         );
         //alpha_yeti
@@ -2018,6 +2035,7 @@ public class LootDefaults {
                 .add(X4).weight(2)
                 .add(R3)
                 .add(W5)
+                .add(A5)
         );
         //snow_queen
         items.put("twilightforest:entities/snow_queen", new LootConfig.Pool()
@@ -2027,6 +2045,7 @@ public class LootDefaults {
                 .add(X3).weight(2)
                 .add(X4).weight(2)
                 .add(R4)
+                .add(W5)
                 .add(A5)
         );
     }
