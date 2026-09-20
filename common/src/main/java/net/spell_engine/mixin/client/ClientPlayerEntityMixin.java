@@ -135,8 +135,11 @@ public abstract class ClientPlayerEntityMixin implements SpellCaster.Client {
         var player = player();
         castController.tick();
         if (isBeaming()) {
-            PlatformClient.util().sendVanillaPacket_C2S(player, new ServerboundMovePlayerPacket.PosRot(
-                    player.getX(), player.getY(), player.getZ(),
+            // Keeps the server's view of the look direction current on every tick of a beam.
+            // Rotation only: since 26.3 the server disconnects a client that sends more than one
+            // position-bearing move packet per client tick (`receivedPositionThisTick`), and vanilla's
+            // own `sendPosition` sends a `Pos`/`PosRot` whenever the player moves or every 20 ticks.
+            PlatformClient.util().sendVanillaPacket_C2S(player, new ServerboundMovePlayerPacket.Rot(
                     player.getYRot(), player.getXRot(),
                     player.onGround(), player.horizontalCollision)
             );
