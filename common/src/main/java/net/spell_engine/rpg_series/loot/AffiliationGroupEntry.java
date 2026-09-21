@@ -1,0 +1,198 @@
+package net.spell_engine.rpg_series.loot;
+
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.loot.LootChoice;
+import net.minecraft.loot.LootTableReporter;
+import net.minecraft.loot.condition.LootCondition;
+import net.minecraft.loot.context.LootContext;
+import net.minecraft.loot.entry.ItemEntry;
+import net.minecraft.loot.entry.LootPoolEntry;
+import net.minecraft.loot.entry.LootPoolEntryType;
+import net.minecraft.registry.tag.TagKey;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
+import net.spell_engine.SpellEngineMod;
+import net.spell_engine.mixin.loot.ItemEntryAccessor;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.function.Consumer;
+
+/// Offers all of its children (like vanilla `group`), but shifts weight towards the item entries
+/// affiliated with the class of the looting player, see {@link ClassAffiliation}.
+///
+/// The total weight of the group is preserved, so its share within the pool stays the same.
+/// When affiliated, weights are multiplied by {@link #WEIGHT_SCALE} for precision. The affiliation
+/// depends on the loot context only, so every group of a pool scales (or not) together -
+/// a pool using this entry type should consist of this entry type only.
+public class AffiliationGroupEntry extends LootPoolEntry {
+    public static final Identifier ID = new Identifier(SpellEngineMod.ID, "affiliation_group");
+    public static final int WEIGHT_SCALE = 100;
+    public static final LootPoolEntryType TYPE = new LootPoolEntryType(new Serializer());
+
+    private final List<LootPoolEntry> children;
+    private final float extraWeight;
+    private final LootConfig.Behavior.WeightOperation operation;
+    private final boolean includeTeam;
+
+    private AffiliationGroupEntry(List<LootPoolEntry> children, float extraWeight, LootConfig.Behavior.WeightOperation operation,
+                                  boolean includeTeam, LootCondition[] conditions) {
+        super(conditions);
+        this.children = children;
+        this.extraWeight = Math.max(extraWeight, 0);
+        this.operation = operation;
+        this.includeTeam = includeTeam;
+    }
+
+    public List<LootPoolEntry> children() {
+        return children;
+    }
+
+    @Override
+    public LootPoolEntryType getType() {
+        return TYPE;
+    }
+
+    @Override
+    public void validate(LootTableReporter reporter) {
+        super.validate(reporter);
+        if (this.children.isEmpty()) {
+            reporter.report("Empty children list");
+        }
+        for (int i = 0; i < this.children.size(); i++) {
+            this.children.get(i).validate(reporter.makeChild(".entry[" + i + "]"));
+        }
+    }
+
+    @Override
+    public boolean expand(LootContext context, Consumer<LootChoice> choiceConsumer) {
+        if (!this.test(context)) {
+            return false;
+        }
+        var affiliation = ClassAffiliation.resolve(context, includeTeam);
+        if (affiliation.isEmpty()) {
+            // Affiliation cannot be determined, configured weights as is
+            for (var child: children) {
+                child.expand(context, choiceConsumer);
+            }
+            return true;
+        }
+
+        var luck = context.getLuck();
+        var choices = new ArrayList<WeightedChoice>();
+        float plainTotal = 0;
+        float shiftedTotal = 0;
+        for (var child: children) {
+            var affiliated = isAffiliated(child, affiliation);
+            var start = choices.size();
+            child.expand(context, choice -> {
+                float weight = choice.getWeight(luck);
+                var shifted = (affiliated && weight > 0) ? operation.apply(weight, extraWeight) : weight;
+                choices.add(new WeightedChoice(choice, weight, shifted));
+            });
+            for (int i = start; i < choices.size(); i++) {
+                var choice = choices.get(i);
+                plainTotal += choice.plainWeight;
+                shiftedTotal += choice.weight;
+            }
+        }
+        if (shiftedTotal <= 0) {
+            return true;
+        }
+        var normalize = (plainTotal / shiftedTotal) * WEIGHT_SCALE;
+        for (var choice: choices) {
+            if (choice.weight <= 0) { continue; }
+            var weight = Math.max(1, Math.round(choice.weight * normalize));
+            choiceConsumer.accept(new LootChoice() {
+                @Override
+                public int getWeight(float luck) {
+                    return weight;
+                }
+                @Override
+                public void generateLoot(Consumer<ItemStack> lootConsumer, LootContext context) {
+                    choice.choice.generateLoot(lootConsumer, context);
+                }
+            });
+        }
+        return true;
+    }
+
+    private record WeightedChoice(LootChoice choice, float plainWeight, float weight) { }
+
+    private static boolean isAffiliated(LootPoolEntry entry, Set<TagKey<Item>> affiliation) {
+        if (entry instanceof ItemEntry) {
+            var item = ((ItemEntryAccessor) entry).spellEngine_getItem();
+            for (var tag: affiliation) {
+                if (item.getRegistryEntry().isIn(tag)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /// 1.20.1: GSON serializer (in place of the 1.21 `MapCodec`), same JSON fields
+    public static class Serializer extends LootPoolEntry.Serializer<AffiliationGroupEntry> {
+        @Override
+        public void addEntryFields(JsonObject json, AffiliationGroupEntry entry, JsonSerializationContext context) {
+            json.add("children", context.serialize(entry.children.toArray(new LootPoolEntry[0])));
+            json.addProperty("extra_weight", entry.extraWeight);
+            json.addProperty("operation", entry.operation.name().toLowerCase(Locale.ROOT));
+            json.addProperty("include_team", entry.includeTeam);
+        }
+
+        @Override
+        public AffiliationGroupEntry fromJson(JsonObject json, JsonDeserializationContext context, LootCondition[] conditions) {
+            var children = json.has("children")
+                    ? List.of(JsonHelper.<LootPoolEntry[]>deserialize(json, "children", context, LootPoolEntry[].class))
+                    : List.<LootPoolEntry>of();
+            var extraWeight = JsonHelper.getFloat(json, "extra_weight", 1F);
+            var operation = LootConfig.Behavior.WeightOperation.valueOf(
+                    JsonHelper.getString(json, "operation", "multiply").toUpperCase(Locale.ROOT));
+            var includeTeam = JsonHelper.getBoolean(json, "include_team", true);
+            return new AffiliationGroupEntry(children, extraWeight, operation, includeTeam, conditions);
+        }
+    }
+
+    public static Builder builder(float extraWeight, LootConfig.Behavior.WeightOperation operation, boolean includeTeam) {
+        return new Builder(extraWeight, operation, includeTeam);
+    }
+
+    public static class Builder extends LootPoolEntry.Builder<Builder> {
+        private final List<LootPoolEntry> children = new ArrayList<>();
+        private final float extraWeight;
+        private final LootConfig.Behavior.WeightOperation operation;
+        private final boolean includeTeam;
+
+        private Builder(float extraWeight, LootConfig.Behavior.WeightOperation operation, boolean includeTeam) {
+            this.extraWeight = extraWeight;
+            this.operation = operation;
+            this.includeTeam = includeTeam;
+        }
+
+        public Builder with(LootPoolEntry.Builder<?> child) {
+            this.children.add(child.build());
+            return this;
+        }
+
+        public boolean isEmpty() {
+            return children.isEmpty();
+        }
+
+        @Override
+        protected Builder getThisBuilder() {
+            return this;
+        }
+
+        @Override
+        public LootPoolEntry build() {
+            return new AffiliationGroupEntry(List.copyOf(children), extraWeight, operation, includeTeam, this.getConditions());
+        }
+    }
+}

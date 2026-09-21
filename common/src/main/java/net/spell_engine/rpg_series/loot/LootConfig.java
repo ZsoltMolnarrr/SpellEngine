@@ -17,10 +17,41 @@ import java.util.function.Function;
 /// 3. `fallback` — the table's own contents are inspected; every fallback entry whose `reference`
 ///    matches an item the table drops gets injected (all of them, independently)
 public class LootConfig {
+    /// Overarching behavior of the injected loot. Absent -> none of these mechanics apply.
+    @Nullable public Behavior behavior = null;
     public LinkedHashMap<String, Pool> injectors = new LinkedHashMap<>();
     public LinkedHashMap<String, Pool> regex_injectors = new LinkedHashMap<>();
     /// Missing from the file (older configs) -> filled with defaults.
     @Nullable public Fallback fallback = null;
+
+    public static class Behavior {
+        /// Class affiliation: items relevant for the looting player's class drop more often.
+        /// The class is determined by the equipped spell book(s): a book of the spell pool
+        /// `<namespace>:spell_book/<name>` makes the items of the item tag
+        /// `<namespace>:loot_affiliation/<name>` affiliated.
+        /// Without a (known) spell book, loot is rolled with the configured weights as is.
+        public boolean class_affiliation_enabled = true;
+        /// Extra weight of affiliated items, applied as `class_affiliation_weight_operation` tells.
+        /// Weight is redistributed within each injected entry, so the ratio of item categories
+        /// (weapons / armors / accessories...) and the amount of loot stays the same.
+        public float class_affiliation_extra_weight = 3F;
+        /// How the extra weight is applied onto the configured weight of an affiliated item:
+        /// - `MULTIPLY`: `weight * (1 + extra)` (`3.0` -> 4 times as likely as a non-affiliated item of the same weight)
+        /// - `ADD`: `weight + extra`
+        public WeightOperation class_affiliation_weight_operation = WeightOperation.MULTIPLY;
+        public enum WeightOperation {
+            MULTIPLY, ADD;
+            public float apply(float weight, float extra) {
+                return this == ADD ? weight + extra : weight * (1F + extra);
+            }
+        }
+        /// Also consider the spell books of the online (scoreboard) team members of the looting player.
+        public boolean class_affiliation_include_team = true;
+
+        public boolean classAffiliationActive() {
+            return class_affiliation_enabled && class_affiliation_extra_weight > 0;
+        }
+    }
 
     public static class Fallback {
         public static final String DEFAULT_TABLES = "~:chests/";
@@ -233,6 +264,19 @@ public class LootConfig {
     }
 
     public static LootConfig constrainValues(LootConfig config, LootConfig defaults) {
+        if (defaults.behavior == null) {
+            config.behavior = null; // Not supported by this config (for example: scrolls)
+        } else if (config.behavior == null) {
+            config.behavior = new Behavior();
+        }
+        if (config.behavior != null) {
+            if (config.behavior.class_affiliation_extra_weight < 0) {
+                config.behavior.class_affiliation_extra_weight = 0;
+            }
+            if (config.behavior.class_affiliation_weight_operation == null) { // Missing or unknown value
+                config.behavior.class_affiliation_weight_operation = Behavior.WeightOperation.MULTIPLY;
+            }
+        }
         if (config.injectors == null) { config.injectors = new LinkedHashMap<>(); }
         if (config.regex_injectors == null) { config.regex_injectors = new LinkedHashMap<>(); }
         if (config.fallback == null) {

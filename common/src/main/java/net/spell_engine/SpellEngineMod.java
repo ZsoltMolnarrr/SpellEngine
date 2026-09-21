@@ -44,6 +44,7 @@ import net.spell_engine.misc.criteria.SpellCastCriteria;
 import net.spell_engine.internals.delivery.SpellStashHelper;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.rpg_series.RPGSeriesCore;
+import net.spell_engine.rpg_series.loot.AffiliationGroupEntry;
 import net.spell_engine.spellbinding.*;
 import net.spell_engine.spellbinding.spellchoice.SpellChoiceFeature;
 import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
@@ -143,7 +144,8 @@ public class SpellEngineMod {
     //   ATTRIBUTE → registerAttributes(); ENTITY_TYPE → registerEntityTypes(); SOUND_EVENT → registerSounds();
     //   PARTICLE_TYPE → registerParticles(); STATUS_EFFECT → registerStatusEffects(); ENCHANTMENT → registerEnchantments();
     //   BLOCK → registerSpellBindingBlock(); BLOCK_ENTITY_TYPE → registerSpellBindingBlockEntity();
-    //   SCREEN_HANDLER → registerScreenHandlers(); LOOT_FUNCTION_TYPE → registerLootFunctionTypes(); ITEM → SpellEngineItems.register();
+    //   SCREEN_HANDLER → registerScreenHandlers(); LOOT_FUNCTION_TYPE → registerLootFunctionTypes();
+    //   LOOT_POOL_ENTRY_TYPE → registerLootPoolEntryTypes(); ITEM → SpellEngineItems.register();
     //   plus `EntityAttributeModificationEvent` → `attributesToAttach()` on every living type; `registerCriteria()` from the
     //   mod constructor (vanilla `Criteria` is a plain static map on 1.20.1, not a Forge registry).
 
@@ -175,14 +177,15 @@ public class SpellEngineMod {
         SpellEngineEnchantments.register();
     }
 
-    /// Fabric convenience: the spell-binding block, its block entity, the screen handlers and the loot function
-    /// type in one go. Forge must call the per-registry functions below from their own `RegisterEvent` windows
+    /// Fabric convenience: the spell-binding block, its block entity, the screen handlers, the loot function
+    /// type and the loot pool entry type in one go. Forge must call the per-registry functions below from their own `RegisterEvent` windows
     /// (registering into any other registry from a window throws "Can not register to a locked registry").
     public static void registerSpellBinding() {
         registerSpellBindingBlock();
         registerSpellBindingBlockEntity();
         registerScreenHandlers();
         registerLootFunctionTypes();
+        registerLootPoolEntryTypes();
     }
 
     public static void registerSpellBindingBlock() {
@@ -207,6 +210,11 @@ public class SpellEngineMod {
     public static void registerLootFunctionTypes() {
         if (Registries.LOOT_FUNCTION_TYPE.containsId(SpellBindRandomlyLootFunction.ID)) { return; }
         Registry.register(Registries.LOOT_FUNCTION_TYPE, SpellBindRandomlyLootFunction.ID, SpellBindRandomlyLootFunction.TYPE);
+    }
+
+    public static void registerLootPoolEntryTypes() {
+        if (Registries.LOOT_POOL_ENTRY_TYPE.containsId(AffiliationGroupEntry.ID)) { return; }
+        Registry.register(Registries.LOOT_POOL_ENTRY_TYPE, AffiliationGroupEntry.ID, AffiliationGroupEntry.TYPE);
     }
 
     public static void registerEntityTypes() {

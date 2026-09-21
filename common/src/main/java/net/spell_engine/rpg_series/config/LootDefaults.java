@@ -68,6 +68,7 @@ public class LootDefaults {
         var R4 = relics(4);
 
         itemLootConfig = new LootConfig();
+        itemLootConfig.behavior = new LootConfig.Behavior();
         var items = itemLootConfig.injectors;
         var items_regex = itemLootConfig.regex_injectors;
 
