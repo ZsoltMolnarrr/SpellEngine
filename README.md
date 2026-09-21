@@ -341,6 +341,78 @@ Built-in, class-agnostic melee weapon skills in the `rpg_series` namespace, read
 | <img src="common/src/main/resources/assets/rpg_series/textures/spell/thrust.png" width="32"> | Thrust | `rpg_series:thrust` | Charged — lunge forward, striking every enemy along your path.<br>*Typically assigned to: glaives.* |
 | <img src="common/src/main/resources/assets/rpg_series/textures/spell/swipe.png" width="32"> | Swipe | `rpg_series:swipe` | Instant — slide forward, striking every enemy along your path.<br>*Typically assigned to: sickles.* |
 
+## 🏰 RPG Series Core
+
+Spell Engine also hosts the shared foundation of the RPG Series content mods (Wizards, Paladins, Archers, Rogues, Arsenal, Armory, Jewelry, Relics...), under the `rpg_series` namespace ([`net.spell_engine.rpg_series`](common/src/main/java/net/spell_engine/rpg_series) package). Third party content can join in purely with data (item tags), or by using the API.
+
+### Item tags
+
+Defined in [`RPGSeriesItemTags`](common/src/main/java/net/spell_engine/rpg_series/tags/RPGSeriesItemTags.java).
+
+| Tag | Purpose |
+|---|---|
+| `rpg_series:weapon_type/<type>` | Weapon category: `damage_staff`, `damage_wand`, `healing_staff`, `healing_wand`, `short_bow`, `long_bow`, `rapid_crossbow`, `heavy_crossbow`, `sword`, `claymore`, `mace`, `hammer`, `spear`, `dagger`, `sickle`, `double_axe`, `glaive`, `spell_blade`, `spell_scythe`, `shield` |
+| `rpg_series:archetype/<role>_weapon` | Combat role, composed of the weapon type tags: `melee_damage`, `ranged_damage`, `magic_damage`, `defense`, `healing` |
+| `rpg_series:armor_type/<type>` | Armor category: `melee`, `magic`, `archery` |
+| `rpg_series:loot_tier/tier_<N>_<category>` | Items offered by loot injection. Category: `weapons`, `armors`, `accessories`, `relics`. Tier by quality: `0` wooden / stone, `1` iron, `2` diamond, `3` netherite, `4`+ end game and boss loot |
+| `rpg_series:loot_theme/<theme>` | Themed loot, for matching structures: `golden_weapon`, `aether`, `dragon` |
+| `rpg_series:loot_reference/<name>` | Vanilla gear and valuables (`tier_<N>_weapons`, `tier_<N>_armors`, `tier_<N>_treasures`, `golden_weapons`), used to recognize what an unknown loot table is worth. Extend these with third party gear of matching quality |
+| `<namespace>:loot_affiliation/<book>` | Items relevant for the class of the spell book `<namespace>:spell_book/<book>`, see [class affiliation](#class-affiliation) |
+
+### Loot injection
+
+Equipment and spell scrolls are injected into loot tables, based on the tags above. Add an item to a `loot_tier` tag, and it shows up in the world.
+
+Config files (server side, in `config/rpg_series/`): `loot_equipment_v3.json`, `loot_scrolls_v2.json`. A loot table is handled by the first match of:
+1. `injectors` - exact loot table id
+2. `regex_injectors` - regex matched loot table id
+3. `fallback` - for any other (for example: third party) loot table. The content of the table is inspected, and for every `loot_reference` gear it drops, the matching `loot_tier` items are injected. Rolls are scaled by the share of the reference gear within its pool, enchanting mirrors the source table. Tables already dropping RPG Series loot are skipped. Knobs: `rolls_multiplier` (`0` disables), `tables`, `blacklist`.
+
+Injected pool format:
+```json
+{
+  "rolls": 0.5, "bonus_rolls": 0.2,
+  "entries": [
+    { "id": "#rpg_series:loot_tier/tier_1_weapons", "weight": 4, "enchant": { "min_power": 1, "max_power": 30 } },
+    { "id": "#rpg_series:loot_tier/tier_1_weapons", "filters": [ "#rpg_series:archetype/melee_damage_weapon" ],
+      "spell_bind": { "pool": "#arsenal:melee", "count_min": 0, "count_max": 1 } },
+    { "id": "spell_engine:spell_scroll", "spell_bind": { "pool": "spell_engine:treasure", "tier_min": 1, "tier_max": 2 } }
+  ]
+}
+```
+- `id` is an item id or item `#tag` (every item of the tag gets `weight` on its own), `filters` narrow a tag by other tags (combined with OR, unless `filters_lenient` is `false`)
+- Fractional `rolls` act as chance, `bonus_rolls` scale with luck. Entity loot tables only drop when killed by a player (unless `skip_conditions`)
+
+Generated helper files: `loot_fallback_report.json` (what the fallback did to which table, and why), `tag_cache.json` (loot tables load before item tags, so tags are resolved from this cache - new tag content takes effect after a restart).
+
+#### Class affiliation
+
+The more class mods are installed, the less likely a drop is useful for a given player. To counter this, injected equipment affiliated with the class of the looting player drops more often.
+- The class is determined by the equipped spell book: `<namespace>:spell_book/<book>` makes the items of the tag `<namespace>:loot_affiliation/<book>` affiliated (for example: `wizards:loot_affiliation/fire`)
+- With scoreboard teams, the spell books of all online team members are considered
+- Without a (known) spell book, loot is rolled as configured. Amount of loot, and the ratio of item categories is never changed
+- Not applied to spell scrolls
+
+Configured in the `behavior` section of `loot_equipment_v3.json`:
+```json
+"behavior": {
+  "class_affiliation_enabled": true,
+  "class_affiliation_extra_weight": 3.0,
+  "class_affiliation_weight_operation": "MULTIPLY",
+  "class_affiliation_include_team": true
+}
+```
+Weight operation: `MULTIPLY` = `weight * (1 + extra)`, `ADD` = `weight + extra`.
+
+Data pack authors can use the underlying loot pool entry type directly: `spell_engine:affiliation_group` (fields: `children`, `extra_weight`, `operation`, `include_team`). A pool using it should consist of this entry type only.
+
+### Equipment API
+
+For mod developers, in [`rpg_series.item`](common/src/main/java/net/spell_engine/rpg_series/item):
+- `Weapons`, `RangedWeapons`, `Shields`, `Armor` - factories for equipment with player configurable attributes (`ConfigurableAttributes`, config models in [`rpg_series.config`](common/src/main/java/net/spell_engine/rpg_series/config)), and loot properties (`Equipment.LootProperties`: tier + theme)
+- [`RPGSeriesDataGen`](fabric/src/main/java/net/spell_engine/rpg_series/datagen/RPGSeriesDataGen.java) - data generator helpers, producing all the tags above from the equipment entries
+- Class-agnostic [weapon skills](#weapon-skills), and the root of the RPG Series advancement tree
+
 ## 🔧 Configuration
 
 Client side:
