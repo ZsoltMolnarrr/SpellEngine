@@ -15,6 +15,7 @@ Functional changes:
 
 API changes:
 - Added `spell_engine:affiliation_group` loot pool entry type (`AffiliationGroupEntry`), and `RPGSeriesItemTags.LootAffiliation`
+- Added `ClassAffiliation.resolver`, replaceable logic determining the loot affiliation tags of a player (default: based on the equipped spell book)
 
 # 1.10.7
 

@@ -414,6 +414,15 @@ Configured in the `behavior` section of `loot_equipment_v3.json`:
 ```
 Weight operation: `MULTIPLY` = `weight * (1 + extra)`, `ADD` = `weight + extra`.
 
+Mod developers can determine the affiliation of players on a completely different basis, by replacing the resolver:
+```java
+ClassAffiliation.resolver = player -> {
+    // Any logic (class system of another mod, attributes...), returning item tags of any id
+    return List.of(TagKey.of(RegistryKeys.ITEM, Identifier.of("my_mod", "loot_affiliation/my_class")));
+    // To extend the default logic, include: ClassAffiliation.SPELL_BOOK_RESOLVER.resolve(player)
+};
+```
+
 Data pack authors can use the underlying loot pool entry type directly: `spell_engine:affiliation_group` (fields: `children`, `extra_weight`, `operation`, `include_team`). A pool using it should consist of this entry type only.
 
 ### Equipment API
