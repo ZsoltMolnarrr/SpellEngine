@@ -9,6 +9,9 @@ public class LootDefaults {
 
     public final static LootConfig itemLootConfig;
     public final static LootConfig scrollLootConfig;
+    /// Miscellaneous injections (materials, gems, anything not equipment or scroll), empty by default.
+    /// Processed on its own, so its pools never compete with equipment for rolls.
+    public final static LootConfig miscLootConfig;
 
     private static String armors(int tier) {
         return "#" + RPGSeriesItemTags.LootTiers.id(tier, RPGSeriesItemTags.LootCategory.ARMORS).toString();
@@ -73,6 +76,11 @@ public class LootDefaults {
         var items_regex = itemLootConfig.regex_injectors;
 
         scrollLootConfig = new LootConfig();
+
+        miscLootConfig = new LootConfig();
+        miscLootConfig.fallback = new LootConfig.Fallback();
+        // Keyed on plain vanilla items (for example: diamond), RPG Series gear in the table is irrelevant
+        miscLootConfig.fallback.skip_tables_with_rpg_loot = false;
         var scrolls = scrollLootConfig.injectors;
         var scrolls_regex = scrollLootConfig.regex_injectors;
 
