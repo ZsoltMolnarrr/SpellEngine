@@ -158,7 +158,7 @@ public class LootHelper {
         if (pool != null) {
             boolean skipConditions = pool.skip_conditions != null && pool.skip_conditions;
             poolSink.accept(buildPool(registries, pool.entries, pool.rolls, pool.bonus_rolls,
-                    isEntityLootTable && !skipConditions, null));
+                    isEntityLootTable && !skipConditions, null, config.behavior));
             return;
         }
         // 3. Fallback, based on what the table already drops
@@ -227,7 +227,7 @@ public class LootHelper {
             var bonusRolls = entry.bonus_rolls * scale;
             if (rolls <= 0) { continue; }
             var mix = new EnchantMix(plainWeight, enchantedWeight, minLevel, maxLevel);
-            poolSink.accept(buildPool(registries, entry.items, rolls, bonusRolls, isEntityLootTable, mix));
+            poolSink.accept(buildPool(registries, entry.items, rolls, bonusRolls, isEntityLootTable, mix, config.behavior));
 
             var enchantInfo = enchantedWeight == 0 ? "plain" : plainWeight == 0 ? "enchanted" :
                     String.format(Locale.ROOT, "%.0f%% enchanted", 100F * enchantedWeight / (plainWeight + enchantedWeight));
@@ -274,6 +274,12 @@ public class LootHelper {
     private static void collect(LootPoolEntry entry, LinkedHashMap<String, ItemOccurrence> items, int[] total) {
         if (entry instanceof CombinedEntry) {
             for (var child: ((CombinedEntryAccessor) entry).spellEngine_getChildren()) {
+                collect(child, items, total);
+            }
+            return;
+        }
+        if (entry instanceof AffiliationGroupEntry group) {
+            for (var child: group.children()) {
                 collect(child, items, total);
             }
             return;
@@ -334,8 +340,10 @@ public class LootHelper {
     // MARK: Pool building
 
     private static LootPool buildPool(RegistryWrapper.WrapperLookup registries, List<LootConfig.Pool.Entry> entries,
-                                      float rolls, float bonusRolls, boolean killedByPlayerOnly, @Nullable EnchantMix mix) {
+                                      float rolls, float bonusRolls, boolean killedByPlayerOnly, @Nullable EnchantMix mix,
+                                      @Nullable LootConfig.Behavior behavior) {
         LootPool.Builder lootPoolBuilder = LootPool.builder();
+        boolean classAffiliation = behavior != null && behavior.classAffiliationActive();
         if (killedByPlayerOnly) {
             lootPoolBuilder.conditionally(KilledByPlayerLootCondition.builder());
         }
@@ -364,6 +372,14 @@ public class LootHelper {
                 continue;
             }
 
+            // With class affiliation, the items of a config entry are rolled as one group,
+            // redistributing weight within towards the items relevant for the looting player
+            var group = classAffiliation
+                    ? AffiliationGroupEntry.builder(behavior.class_affiliation_extra_weight,
+                            behavior.class_affiliation_weight_operation, behavior.class_affiliation_include_team)
+                    : null;
+            Consumer<LootPoolEntry.Builder<?>> entrySink = group != null ? group::with : lootPoolBuilder::with;
+
             for (var itemId: itemList) {
                 var item = Registries.ITEM.get(Identifier.of(itemId));
                 if (item == null) { continue; }
@@ -387,11 +403,11 @@ public class LootHelper {
                 if (mix != null && spellBind == null) {
                     // Mirror the source: a plain and an enchanted copy, weighted like the reference gear
                     if (mix.plainWeight() > 0) {
-                        lootPoolBuilder.with(ItemEntry.builder(item).weight(weight * mix.plainWeight()));
+                        entrySink.accept(ItemEntry.builder(item).weight(weight * mix.plainWeight()));
                     }
                     if (mix.enchantedWeight() > 0) {
                         var levels = mix.levels(enchant);
-                        lootPoolBuilder.with(ItemEntry.builder(item).weight(weight * mix.enchantedWeight())
+                        entrySink.accept(ItemEntry.builder(item).weight(weight * mix.enchantedWeight())
                                 .apply(EnchantWithLevelsLootFunction.builder(registries, numberProvider(levels.min_power, levels.max_power))));
                     }
                     continue;
@@ -408,7 +424,10 @@ public class LootHelper {
                             numberProvider(spellBind.count_min, spellBind.count_max));
                     lootEntry.apply(function);
                 }
-                lootPoolBuilder.with(lootEntry);
+                entrySink.accept(lootEntry);
+            }
+            if (group != null && !group.isEmpty()) {
+                lootPoolBuilder.with(group);
             }
         }
         return lootPoolBuilder.build();

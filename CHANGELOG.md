@@ -3,6 +3,14 @@
 Functional changes:
 - Fixed kills landed by summoned entities not counting as player kills (no boss loot, no experience, no kill advancement for the summoner)
 - Loot defaults: every boss injector now offers both a tier-5 weapon and a tier-5 armor (previously each had only one of the two)
+- Added class affiliated loot: injected equipment relevant for the looting player's class drops more often, keeping loot useful with many class mods installed
+  - The class is determined by the equipped spell book (`<namespace>:spell_book/<name>`), affiliated items are listed by the item tag `<namespace>:loot_affiliation/<name>`
+  - With scoreboard teams, the spell books of all online team members are considered
+  - Without a (known) spell book, loot works as before. Amount of loot and ratio of item categories is unchanged
+  - Configurable under the new `behavior` section of the equipment loot config (bumped: `config/rpg_series/loot_equipment_v3.json`), not applied to scrolls
+
+API changes:
+- Added `spell_engine:affiliation_group` loot pool entry type (`AffiliationGroupEntry`), and `RPGSeriesItemTags.LootAffiliation`
 
 # 1.10.7
 
