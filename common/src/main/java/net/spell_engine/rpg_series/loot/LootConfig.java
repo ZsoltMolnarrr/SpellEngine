@@ -62,6 +62,9 @@ public class LootConfig {
         public String tables = DEFAULT_TABLES;
         /// Loot tables excluded from fallback injection (`~regex` or exact id).
         public List<String> blacklist = new ArrayList<>();
+        /// Leave loot tables alone those already drop RPG Series loot (any `loot_tier` item),
+        /// so tables stocked by their author (or a data pack) are not stacked further.
+        public boolean skip_tables_with_rpg_loot = true;
         public List<Entry> entries = new ArrayList<>();
 
         public static class Entry {

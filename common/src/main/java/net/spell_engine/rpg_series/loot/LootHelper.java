@@ -1,6 +1,7 @@
 package net.spell_engine.rpg_series.loot;
 
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.condition.KilledByPlayerLootCondition;
 import net.minecraft.loot.entry.CombinedEntry;
@@ -31,7 +32,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public class LootHelper {
@@ -139,7 +139,7 @@ public class LootHelper {
     // MARK: Injection
 
     public static void configure(RegistryWrapper.WrapperLookup registries, Identifier lootTableId,
-                                 Supplier<List<LootPool>> existingPools, Consumer<LootPool> poolSink,
+                                 List<LootPool> existingPools, Consumer<LootPool> poolSink,
                                  LootConfig config, String configName) {
         boolean isEntityLootTable = lootTableId.getPath().startsWith("entities");
         var tableId = lootTableId.toString();
@@ -157,8 +157,11 @@ public class LootHelper {
         }
         if (pool != null) {
             boolean skipConditions = pool.skip_conditions != null && pool.skip_conditions;
-            poolSink.accept(buildPool(registries, pool.entries, pool.rolls, pool.bonus_rolls,
-                    isEntityLootTable && !skipConditions, null, config.behavior));
+            var lootPool = buildPool(registries, pool.entries, pool.rolls, pool.bonus_rolls,
+                    isEntityLootTable && !skipConditions, null, config.behavior);
+            if (lootPool != null) {
+                poolSink.accept(lootPool);
+            }
             return;
         }
         // 3. Fallback, based on what the table already drops
@@ -166,7 +169,7 @@ public class LootHelper {
     }
 
     private static void configureFallback(RegistryWrapper.WrapperLookup registries, String tableId,
-                                          Supplier<List<LootPool>> existingPools, Consumer<LootPool> poolSink,
+                                          List<LootPool> existingPools, Consumer<LootPool> poolSink,
                                           LootConfig config, String configName, boolean isEntityLootTable) {
         var fallback = config.fallback;
         if (fallback == null || fallback.entries.isEmpty() || fallback.rolls_multiplier <= 0) { return; }
@@ -183,15 +186,17 @@ public class LootHelper {
         }
         if (applicable.isEmpty()) { return; }
 
-        var contents = inspect(existingPools.get());
+        var contents = inspect(existingPools);
         if (contents.isEmpty()) { return; }
 
-        var rpgItems = rpgTierItems();
-        for (var pool: contents) {
-            for (var itemId: pool.items.keySet()) {
-                if (rpgItems.contains(itemId)) {
-                    pendingReport.skipped.put(tableId, "already drops RPG Series loot: " + itemId);
-                    return;
+        if (fallback.skip_tables_with_rpg_loot) {
+            var rpgItems = rpgTierItems();
+            for (var pool: contents) {
+                for (var itemId: pool.items.keySet()) {
+                    if (rpgItems.contains(itemId)) {
+                        pendingReport.skipped.put(tableId, "already drops RPG Series loot: " + itemId);
+                        return;
+                    }
                 }
             }
         }
@@ -227,7 +232,9 @@ public class LootHelper {
             var bonusRolls = entry.bonus_rolls * scale;
             if (rolls <= 0) { continue; }
             var mix = new EnchantMix(plainWeight, enchantedWeight, minLevel, maxLevel);
-            poolSink.accept(buildPool(registries, entry.items, rolls, bonusRolls, isEntityLootTable, mix, config.behavior));
+            var lootPool = buildPool(registries, entry.items, rolls, bonusRolls, isEntityLootTable, mix, config.behavior);
+            if (lootPool == null) { continue; }
+            poolSink.accept(lootPool);
 
             var enchantInfo = enchantedWeight == 0 ? "plain" : plainWeight == 0 ? "enchanted" :
                     String.format(Locale.ROOT, "%.0f%% enchanted", 100F * enchantedWeight / (plainWeight + enchantedWeight));
@@ -339,11 +346,13 @@ public class LootHelper {
 
     // MARK: Pool building
 
-    private static LootPool buildPool(RegistryWrapper.WrapperLookup registries, List<LootConfig.Pool.Entry> entries,
+    /// Null when none of the entries resolve to an item (for example: tag of a mod not installed).
+    @Nullable private static LootPool buildPool(RegistryWrapper.WrapperLookup registries, List<LootConfig.Pool.Entry> entries,
                                       float rolls, float bonusRolls, boolean killedByPlayerOnly, @Nullable EnchantMix mix,
                                       @Nullable LootConfig.Behavior behavior) {
         LootPool.Builder lootPoolBuilder = LootPool.builder();
         boolean classAffiliation = behavior != null && behavior.classAffiliationActive();
+        int[] entryCount = { 0 };
         if (killedByPlayerOnly) {
             lootPoolBuilder.conditionally(KilledByPlayerLootCondition.builder());
         }
@@ -378,11 +387,14 @@ public class LootHelper {
                     ? AffiliationGroupEntry.builder(behavior.class_affiliation_extra_weight,
                             behavior.class_affiliation_weight_operation, behavior.class_affiliation_include_team)
                     : null;
-            Consumer<LootPoolEntry.Builder<?>> entrySink = group != null ? group::with : lootPoolBuilder::with;
+            Consumer<LootPoolEntry.Builder<?>> entrySink = lootEntry -> {
+                if (group != null) { group.with(lootEntry); } else { lootPoolBuilder.with(lootEntry); }
+                entryCount[0] += 1;
+            };
 
             for (var itemId: itemList) {
                 var item = Registries.ITEM.get(Identifier.of(itemId));
-                if (item == null) { continue; }
+                if (item == null || item == Items.AIR) { continue; } // Unknown id resolves to air
                 var lootEntry = ItemEntry.builder(item)
                         .weight(weight);
                 var lenient = entry.filtersLenient();
@@ -430,7 +442,7 @@ public class LootHelper {
                 lootPoolBuilder.with(group);
             }
         }
-        return lootPoolBuilder.build();
+        return entryCount[0] > 0 ? lootPoolBuilder.build() : null;
     }
 
     // MARK: Pattern matching (tag-cache backed, since tags are not loaded yet)
