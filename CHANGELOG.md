@@ -1,3 +1,8 @@
+# 1.10.7+1.20.1
+
+Functional changes:
+- Fixed kills landed by summoned entities not counting as player kills (no boss loot, no experience, no kill advancement for the summoner)
+
 # 1.10.6+1.20.1
 
 > ### ⚠️ Read this before updating
