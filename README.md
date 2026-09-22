@@ -147,19 +147,22 @@ Some third party tools offer ways to override this, in a data driven way.
 
 #### Assignment with Spell Assignment Data File (Legacy)
 
-Assigning a spell container to an item, using a data file.
+Assigning a spell container to an item, using a data file. Fields are the same as the [Spell Container](#spell-container) component.
 
-Example data file, located at `data/NAMESPACE/spell_assignments/ITEM_NAME.json`
+Example data file, located at `data/NAMESPACE/spell_assignments/ITEM_NAME.json`, allows casting from the equipped spell book (use `ARCHERY` for ranged weapons), has Frostbolt pre-bound, and arcane spells can be bound to it:
 ```json
 {
   "access": "MAGIC",
-  "spell_ids": [ "wizards:fireball" ]
+  "spell_ids": [ "wizards:frostbolt" ],
+  "pool": "wizards:arcane"
 }
 ```
 
+An empty data file (`{ }`) disables spell casting for the item, also preventing fallback assignment.
+
 #### Fallback assignment
 
-This is a configurable feature of Spell Engine. Tries to detect weapon type of items (such as: sword, axe, bow, etc.) using tags or regex, in order to automatically assign a relevant spell container. 
+Configurable feature, automatically assigns spell containers to melee (sword, axe, mace, trident) and ranged (bow, crossbow) items, without any other assignment. Melee weapons receive their [weapon skill](#weapon-skills) based on weapon type tags `rpg_series:weapon_type/<type>`, or item name patterns (e.g. `greatsword`). Items tagged `#spell_engine:non_combat_tools` are skipped.
 
 Config file: `config/spell_engine/weapon_fallback.json`
 
@@ -237,7 +240,7 @@ This mod is primarily a library for developers, but it comes with few generic co
 
 #### Spell Book
 
-ID: `spell_engine:book`
+ID: `spell_engine:spell_book`
 
 Spell books are items that can hold multiple spells. They are the primary source of spells for players.
 
@@ -246,15 +249,15 @@ Spell book variants are automatically generated (use the same underlying item), 
 - the Spell Engine Creative Tab
 
 Fully data driven Spell Books
-- Automatically generated for all spell books listed under tags located in `spell_book/` folder (`<NAMESPACE>:spell_book/<TAG_NAME>`)
+- Automatically generated for all spell tags located in the `tags/spell/spell_book/` folder (`<NAMESPACE>:spell_book/<TAG_NAME>`)
 - Automatically assigned item model based on tag id: `<NAMESPACE>:models/item/spell_book/<TAG_NAME>.json`
-- Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_book/<TAG_NAME>
+- Automatically assigned custom name based on tag id, translation key: `item.<NAMESPACE>.spell_book/<TAG_NAME>`
 
 **Creating spell books**
-1. Create your spell book tag, by creating a JSON file at: `data/NAMESPACE/tags/spell_book/BOOK_NAME.json`.
+1. Create your spell book tag, by creating a JSON file at: `data/NAMESPACE/tags/spell/spell_book/BOOK_NAME.json`.
 2. Add language resources the spell book:
   - `item.NAMESPACE.spell_book/BOOK_NAME`: "My Spell Book"
-  - `item.NAMESPACE.spell_book/BOOK_NAME.description`: "A powerful spell book containing many spells."
+  - `item.NAMESPACE.spell_book/BOOK_NAME.spell_binding.description`: "A powerful spell book containing many spells." (shown in the Spell Binding Table)
 3. Add custom item model for the spell book:
   - `assets/NAMESPACE/models/item/spell_book/BOOK_NAME.json`
 
@@ -280,6 +283,20 @@ Example - mixed Wizard spell book:
 Result: 
 
 ![custom_spell_book.png](.github/images/custom_spell_book.png)
+
+**Giving spell books with commands**
+
+A spell book variant is the `spell_engine:spell_book` item with a spell container whose `pool` is the spell book tag id (without `#`).
+The model and name components are optional, without them the book uses the generic model and name.
+
+```
+/give @p spell_engine:spell_book[spell_engine:spell_container={pool:"wizards:spell_book/fire"},spell_engine:item_model="wizards:item/spell_book/fire",item_name='{"translate":"item.wizards.spell_book/fire"}']
+```
+
+Minimal form:
+```
+/give @p spell_engine:spell_book[spell_engine:spell_container={pool:"wizards:spell_book/fire"}]
+```
 
 **Disabling spell books**
 1. Create a datapack, with an empty spell book tag for the spell book you want to disable.
@@ -455,94 +472,18 @@ Server side:
 
 ## 🤝 Compatibility for third party content
 
-### 🤖 Automatic compatibility
+Quick guide, for making third party items work with Spell Engine:
 
-Some weapon types automatically get spell casting capability.
-Visit the Fallback Assignment section above for details.
-
-### 🗡️ Adding spell casting capability for weapons
-
-Spell Engine is primarily data-driven, to specify what spells an item can cast, create a JSON file at: `data/MOD_ID/spell_assignments/ITEM_NAME.json`. (For example: `data/minecraft/spell_assignments/golden_axe.json`)
-
-Example: enable "Allows spell casting" for a specific item 
-```
-{
-  "access": "MAGIC"
-}
-```
-
-For ranged weapons (bows and crossbows):
-```
-{
-  "access": "ARCHERY"
-}
-```
-
-Example: pre-bind spells to a specific item
-```
-{
-  "access": "MAGIC"
-  "spell_ids": [ "wizards:fireball" ]
-}
-```
-
-Example: allow spell binding from a specific spell pool to a specific item 
-```
-{
-  "pool": "wizards:fire"
-}
-```
-
-Any combination of these features above can be made.
-
-For example: an item that allows casting from the equipped Spell Book, has Frostbolt and Frost Nova spell pre-bound, and arcane spells can be bound to it 
-```
-{
-  "access": "MAGIC",
-  "spell_ids": [ "wizards:frostbolt", "wizards:frost_nova" ],
-  "pool": "wizards:arcane"
-}
-```
-
-### 🚫 Disabling spell casting capability for weapons
-
-Spell casting for weapons can be disabled, with an empty data file.
-
-Example - Disabling spell casting for Stone Sword:
-`data/minecraft/spell_assignments/stone_sword.json`
-```
-{ }
-```
-
-In this case even automatic compatibility won't be able to assign any spell casting capability to the item.
-
-### ✨ Adding spell power attributes for items
-
-Install [Spell Power Attributes](https://github.com/ZsoltMolnarrr/SpellPower), use its Java API.
-
-Example:
-```
-// You will not a mutable attribute modifier multimap
-ImmutableMultimap.Builder<EntityAttribute, EntityAttributeModifier> builder = ImmutableMultimap.builder();
-
-// +3  Fire Spell Power
-builder.put(EntityAttributes_SpellPower.POWER.get(SpellSchool.FIRE),
-                        new EntityAttributeModifier(
-                                "Modifier name",
-                                3,
-                                EntityAttributeModifier.Operation.ADDITION));
-
-// +5% Spell Critical Chance
-builder.put(EntityAttributes_SpellPower.CRITICAL_CHANCE,
-                        new EntityAttributeModifier(
-                                "Modifier name",
-                                0.05,
-                                EntityAttributeModifier.Operation.MULTIPLY_BASE));
-```
+| Goal | How |
+|---|---|
+| Weapon casts from the spell book, with a matching weapon skill | Tag it `rpg_series:weapon_type/<type>`, see [Fallback assignment](#fallback-assignment) |
+| Custom spells or binding pool on an item | Set its [Spell Container](#spell-container), see [Spell assignments](#spell-assignments) |
+| Weapon offering a spell choice | Add a [Spell Choice](#spell-choice) component |
+| Disable spell casting for an item | Empty [spell assignment data file](#assignment-with-spell-assignment-data-file-legacy) |
+| New spell book | See [Spell Book](#spell-book) |
+| Spell power stats on items | [Spell Power Attributes](https://github.com/ZsoltMolnarrr/SpellPower) attributes (e.g. `spell_power:fire`) via the vanilla `attribute_modifiers` component |
 
 # 🔨 Using Spell Engine as mod developer
-
-❗️ API IS NOT FINALIZED, MAY INTRODUCE BREAKING CHANGE AT ANY POINT.
 
 ## 📖 Spell Creation Guide
 
@@ -574,7 +515,6 @@ Install dependencies:
 - [Spell Power](https://github.com/ZsoltMolnarrr/SpellPower)
 - [Player Animator](https://github.com/KosmX/minecraftPlayerAnimator)
 - [Cloth Config](https://github.com/shedaniel/cloth-config)
-- [Mixin Extras](https://github.com/LlamaLad7/MixinExtras) (no need to include in your mod, just have it present in the development environment)
   
 (Can be done locally by putting release jars into `/run/fabric/mods`, or can be resolved from maven and like Spell Engine.)
 
