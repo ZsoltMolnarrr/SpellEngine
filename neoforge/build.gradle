@@ -117,7 +117,7 @@ dependencies {
 
     // NeoForge specific
     // - Curios - https://docs.illusivesoulworks.com/category/curios
-    // Gated via enable_curios (see gradle.properties, TODO 26.3 (Curios)).
+    // Gated via enable_curios (see gradle.properties).
     if (rootProject.enable_curios.toBoolean()) {
         implementation("top.theillusivec4.curios:curios-neoforge:${project.curios_version}")
     }

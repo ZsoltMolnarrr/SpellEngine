@@ -3,9 +3,9 @@ package net.spell_engine.neoforge.compat;
 import org.jetbrains.annotations.Nullable;
 
 public class NeoForgeCompatFeatures {
-    /// TODO 26.3 (Curios): the Curios integration (`compat/curios/**`) is excluded from the compile while
-    /// `enable_curios=false` (see gradle.properties), so it is reached reflectively instead of by a direct
-    /// reference. With the gate restored the class is present again and this resolves it as before.
+    /// The Curios integration (`compat/curios/**`) is excluded from the compile when `enable_curios=false`
+    /// (see gradle.properties — the kill switch for game versions Curios has no build for yet), so it is
+    /// reached reflectively rather than by a direct reference; with the flag on this resolves the real class.
     private static final String CURIOS_COMPAT = "net.spell_engine.neoforge.compat.curios.CuriosCompat";
     private static final String CURIOS_MOD_ID = "curios";
 
