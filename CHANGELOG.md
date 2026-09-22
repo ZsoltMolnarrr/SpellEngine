@@ -12,6 +12,7 @@ Functional changes:
 - Loot fallback: added `skip_tables_with_rpg_loot` option (on by default, as before)
 - Fixed loot fallback of scrolls being skipped for loot tables with an explicit equipment injector (the freshly injected equipment counted as "already drops RPG Series loot")
 - Fixed loot entries of unknown items (for example: mod not installed) taking up weight as empty drops
+- Attempt to fix crashing alongside externally added concurrent `PersistentProjectileEntity` trackers
 
 API changes:
 - Added `spell_engine:affiliation_group` loot pool entry type (`AffiliationGroupEntry`), and `RPGSeriesItemTags.LootAffiliation`

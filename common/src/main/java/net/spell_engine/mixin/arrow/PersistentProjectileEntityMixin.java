@@ -39,7 +39,7 @@ import java.util.List;
 import net.spell_engine.internals.SpellExecution;
 import net.spell_engine.internals.impact.SpellImpacts;
 
-@Mixin(PersistentProjectileEntity.class)
+@Mixin(value = PersistentProjectileEntity.class, priority = 555)
 public abstract class PersistentProjectileEntityMixin implements ArrowExtension {
     @Shadow protected boolean inGround;
 
