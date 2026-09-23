@@ -356,12 +356,14 @@ public class SpellImpacts {
 
                     var knockbackMultiplier = Math.max(0F, damageData.knockback * context.total(spellEntry) * extraKnockback);
                     var vulnerability = SpellPower.Vulnerability.none;
-                    var timeUntilRegen = target.getInvulnerableTime();
+                    // 26.3: the damage cooldown is `LivingEntity#damageCooldownTime`; `Entity#invulnerableTime` is the
+                    // temporary-invulnerability timer now and must not be touched
+                    var timeUntilRegen = target instanceof LivingEntity living ? living.damageCooldownTime : 0;
                     if (target instanceof LivingEntity livingEntity) {
                         ((ConfigurableKnockback) livingEntity).pushKnockbackMultiplier_SpellEngine(context.hasOffset() ? 0 : knockbackMultiplier);
                         isKnockbackPushed = true;
                         if (damageData.bypass_iframes && SpellEngineMod.config.bypass_iframes) {
-                            target.setInvulnerableTime(0);
+                            livingEntity.damageCooldownTime = 0;
                         }
                         vulnerability = SpellPower.getVulnerability(livingEntity, school);
                     }
@@ -389,7 +391,7 @@ public class SpellImpacts {
                     if (target instanceof LivingEntity livingEntity) {
                         ((ConfigurableKnockback)livingEntity).popKnockbackMultiplier_SpellEngine();
                         isKnockbackPushed = false;
-                        target.setInvulnerableTime(timeUntilRegen);
+                        livingEntity.damageCooldownTime = timeUntilRegen;
                         if (context.hasOffset()) {
                             var direction = context.knockbackDirection(livingEntity.position()).reverse(); // Negate for smart Vanilla API :)
                             // 26.2: knockback carries the damage source and amount (used by overrides such as the Creaking)

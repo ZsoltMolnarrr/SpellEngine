@@ -123,6 +123,13 @@ Fires a standard Minecraft arrow carrying the spell's impacts. The arrow behaves
 
 Use the top-level `arrow_perks` block to modify arrow damage, velocity, pierce, or override its visual model.
 
+Two perks control the target's damage cooldown ("i-frames") for arrows carrying this spell:
+
+- `bypass_iframes` (default `false`): the arrow's own hit ignores the target's damage cooldown, so a burst of arrows (`extra_launch`) all land instead of the later ones bouncing off. The cooldown is put back afterwards, so ordinary hits keep vanilla behaviour.
+- `iframe_to_set` (default `0`): after the hit, set the target's damage cooldown to this many ticks instead of restoring the previous value.
+
+Only arrows spawned by the spell carry these perks. Extra arrows added by a Multishot crossbow are plain arrows and follow vanilla cooldown rules.
+
 ## AFFECT_ARROW
 
 Does not fire an arrow. Instead, registers the spell on the caster's next natural bow/crossbow shot. When that arrow lands, the spell's impacts fire on the hit entity in addition to normal arrow damage.

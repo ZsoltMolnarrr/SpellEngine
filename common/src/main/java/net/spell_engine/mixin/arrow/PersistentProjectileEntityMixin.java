@@ -209,7 +209,11 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
             return result;
         } else {
             int iFrameToRestore = 0;
-            var originalIFrame = entity.getInvulnerableTime();
+            // 26.3: the damage cooldown ("i-frames", the `> 10 ticks` / `lastHurt` gate in `LivingEntity#hurtServer`)
+            // lives on `LivingEntity#damageCooldownTime`. `Entity#invulnerableTime` is a different thing now: the
+            // total temporary-invulnerability timer (`isTemporarilyInvulnerable`), which must not be touched.
+            var livingTarget = entity instanceof LivingEntity living ? living : null;
+            var originalIFrame = livingTarget != null ? livingTarget.damageCooldownTime : 0;
             float knockbackMultiplier = 1.0F;
 
             for (var spellEnrty : spellEntries) {
@@ -219,11 +223,11 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
                     if (arrowPerks.knockback != 1.0F) {
                         knockbackMultiplier *= arrowPerks.knockback;
                     }
-                    if (arrowPerks.bypass_iframes) {
-                        if (entity.getInvulnerableTime() == originalIFrame) {
-                            iFrameToRestore = entity.getInvulnerableTime();
+                    if (arrowPerks.bypass_iframes && livingTarget != null) {
+                        if (livingTarget.damageCooldownTime == originalIFrame) {
+                            iFrameToRestore = livingTarget.damageCooldownTime;
                         }
-                        entity.setInvulnerableTime(0);
+                        livingTarget.damageCooldownTime = 0;
                     }
                     if (arrowPerks.iframe_to_set > 0) {
                         iFrameToRestore = arrowPerks.iframe_to_set;
@@ -250,8 +254,8 @@ public abstract class PersistentProjectileEntityMixin implements ArrowExtension 
             if (pushedKnockback) {
                 ((ConfigurableKnockback) entity).popKnockbackMultiplier_SpellEngine();
             }
-            if (iFrameToRestore != 0) {
-                entity.setInvulnerableTime(iFrameToRestore);
+            if (iFrameToRestore != 0 && livingTarget != null) {
+                livingTarget.damageCooldownTime = iFrameToRestore;
             }
             return result;
         }

@@ -4,6 +4,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
@@ -380,8 +381,13 @@ public class Melee {
                         continue;
                     }
 
-                    var timeUntilRegen = target.getInvulnerableTime();
-                    target.setInvulnerableTime(0);
+                    // 26.3: the damage cooldown is `LivingEntity#damageCooldownTime`; `Entity#invulnerableTime` is the
+                    // temporary-invulnerability timer now and must not be touched
+                    var livingTarget = target instanceof LivingEntity living ? living : null;
+                    var timeUntilRegen = livingTarget != null ? livingTarget.damageCooldownTime : 0;
+                    if (livingTarget != null) {
+                        livingTarget.damageCooldownTime = 0;
+                    }
                     ((LivingEntityAccessor)player).spellEngine_setLastAttackedTicks(100);
                     player.attack(target);
                     if (impactSound != null && impactSoundLimit > 0) {
@@ -389,7 +395,9 @@ public class Melee {
                         impactSoundLimit -= 1;
                     }
                     targets.add(target);
-                    target.setInvulnerableTime(timeUntilRegen);
+                    if (livingTarget != null) {
+                        livingTarget.damageCooldownTime = timeUntilRegen;
+                    }
                 }
             }
 
