@@ -57,7 +57,7 @@ dependencies {
     localRuntime("net.rpg_series:village_taverns-fabric:1.3.0.001+26.3") { transitive = false }
     }
     if (flags.rpg_series_skills) {
-    localRuntime("net.rpg_series:skill_tree-fabric:1.6.1.001+26.3") { transitive = false }
+    localRuntime("net.rpg_series:skill_tree-fabric:1.6.1.002+26.3") { transitive = false }
         // TODO 26.3: back to net.puffish:skillsmod:0.19.1+26.3:fabric once maven.puffish.net has it
         //localRuntime("net.puffish:skillsmod:0.18.3+26.2:fabric")
         localRuntime("maven.modrinth:skills:BciLrdpV") // Pufferfish Skills 0.19.1+26.3 (fabric), pinned by Modrinth version id
