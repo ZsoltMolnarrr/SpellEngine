@@ -88,10 +88,13 @@ public class RangedWeapon {
             }
         }
 
-        /// Durability and repair (`minecraft:repairable`) are applied to `settings` here, before the factory runs.
+        /// Durability, enchantability and repair (`minecraft:repairable`) are applied to `settings` here, before the factory runs.
+        /// Enchantability follows the tier's vanilla material; without the `minecraft:enchantable` component
+        /// the enchanting table offers nothing (vanilla bows/crossbows hardcode 1 since 1.21.2).
         /// `repairable(TagKey)` requires an unfrozen ITEM registry — always true while items are registered at mod init.
         public Item create(Item.Settings settings, RangedConfig config) {
             settings.maxDamage(durability());
+            settings.enchantable(tier.getVanillaMaterial().enchantmentValue());
             if (repairItems != null) {
                 settings.repairable(repairItems);
             }
