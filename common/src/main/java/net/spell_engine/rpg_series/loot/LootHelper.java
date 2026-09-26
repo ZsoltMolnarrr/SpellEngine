@@ -3,11 +3,13 @@ package net.spell_engine.rpg_series.loot;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.loot.LootPool;
+import net.minecraft.loot.LootTable;
 import net.minecraft.loot.condition.KilledByPlayerLootCondition;
 import net.minecraft.loot.entry.CombinedEntry;
 import net.minecraft.loot.entry.ItemEntry;
 import net.minecraft.loot.entry.LeafEntry;
 import net.minecraft.loot.entry.LootPoolEntry;
+import net.minecraft.loot.entry.LootTableEntry;
 import net.minecraft.loot.function.EnchantRandomlyLootFunction;
 import net.minecraft.loot.function.EnchantWithLevelsLootFunction;
 import net.minecraft.loot.provider.number.BinomialLootNumberProvider;
@@ -160,7 +162,7 @@ public class LootHelper {
             var lootPool = buildPool(registries, pool.entries, pool.rolls, pool.bonus_rolls,
                     isEntityLootTable && !skipConditions, null, config.behavior);
             if (lootPool != null) {
-                poolSink.accept(lootPool);
+                poolSink.accept(lootPool.build());
             }
             return;
         }
@@ -201,6 +203,10 @@ public class LootHelper {
             }
         }
 
+        // Every applicable entry becomes a part of a single injected pool, so the total injected
+        // loot is bounded by `max_rolls`, no matter how many references the table matches
+        var parts = new ArrayList<FallbackPart>();
+        var reportLines = new LinkedHashMap<String, String>();
         for (var entry: applicable) {
             var reference = entry.reference;
             float share = 0;
@@ -232,20 +238,58 @@ public class LootHelper {
             var bonusRolls = entry.bonus_rolls * scale;
             if (rolls <= 0) { continue; }
             var mix = new EnchantMix(plainWeight, enchantedWeight, minLevel, maxLevel);
-            var lootPool = buildPool(registries, entry.items, rolls, bonusRolls, isEntityLootTable, mix, config.behavior);
-            if (lootPool == null) { continue; }
-            poolSink.accept(lootPool);
+            // A single roll, the combined pool decides how many times a part is rolled
+            var partPool = buildPool(registries, entry.items, 1F, 0F, false, mix, config.behavior);
+            if (partPool == null) { continue; }
+            parts.add(new FallbackPart(partPool, rolls, bonusRolls));
 
             var enchantInfo = enchantedWeight == 0 ? "plain" : plainWeight == 0 ? "enchanted" :
                     String.format(Locale.ROOT, "%.0f%% enchanted", 100F * enchantedWeight / (plainWeight + enchantedWeight));
             if (enchantedWeight > 0 && minLevel != null) {
                 enchantInfo += String.format(Locale.ROOT, " (levels %.0f-%.0f)", minLevel, maxLevel);
             }
-            pendingReport.injected
-                    .computeIfAbsent(tableId, k -> new LinkedHashMap<>())
-                    .put(configName + "/" + reference, String.format(Locale.ROOT,
-                            "matched %s, share %.2f, rolls %.2f, %s", matchedItem, share, rolls, enchantInfo));
+            // The same reference may drive multiple entries (for example: gear and accessories)
+            reportLines.put(configName + "/" + reference + " -> " + describe(entry.items), String.format(Locale.ROOT,
+                    "matched %s, share %.2f, rolls %.2f, %s", matchedItem, share, rolls, enchantInfo));
         }
+        if (parts.isEmpty()) { return; }
+
+        float totalRolls = 0, totalBonusRolls = 0;
+        for (var part: parts) {
+            totalRolls += part.rolls();
+            totalBonusRolls += part.bonusRolls();
+        }
+        var rolls = fallback.max_rolls > 0 ? Math.min(totalRolls, fallback.max_rolls) : totalRolls;
+        var bonusRolls = totalBonusRolls * (rolls / totalRolls);
+
+        LootPool.Builder lootPoolBuilder = LootPool.builder();
+        if (isEntityLootTable) {
+            lootPoolBuilder.conditionally(KilledByPlayerLootCondition.builder());
+        }
+        applyRolls(lootPoolBuilder, rolls, bonusRolls);
+        for (var part: parts) {
+            // Parts are picked proportionally to their own rolls, each an inline table keeping its item weights intact
+            var weight = Math.max(1, Math.round(FALLBACK_PART_WEIGHT_SCALE * part.rolls() / totalRolls));
+            lootPoolBuilder.with(LootTableEntry.builder(LootTable.builder().pool(part.pool()).build()).weight(weight));
+        }
+        poolSink.accept(lootPoolBuilder.build());
+
+        var tableReport = pendingReport.injected.computeIfAbsent(tableId, k -> new LinkedHashMap<>());
+        tableReport.putAll(reportLines);
+        tableReport.put(configName + " (total)", String.format(Locale.ROOT,
+                "rolls %.2f, injected %.2f", totalRolls, rolls));
+    }
+
+    private static final int FALLBACK_PART_WEIGHT_SCALE = 1000;
+
+    private record FallbackPart(LootPool.Builder pool, float rolls, float bonusRolls) { }
+
+    private static String describe(List<LootConfig.Pool.Entry> entries) {
+        var ids = new ArrayList<String>();
+        for (var entry: entries) {
+            if (entry.id != null) { ids.add(entry.id); }
+        }
+        return String.join(", ", ids);
     }
 
     // MARK: Table inspection
@@ -347,7 +391,7 @@ public class LootHelper {
     // MARK: Pool building
 
     /// Null when none of the entries resolve to an item (for example: tag of a mod not installed).
-    @Nullable private static LootPool buildPool(RegistryWrapper.WrapperLookup registries, List<LootConfig.Pool.Entry> entries,
+    @Nullable private static LootPool.Builder buildPool(RegistryWrapper.WrapperLookup registries, List<LootConfig.Pool.Entry> entries,
                                       float rolls, float bonusRolls, boolean killedByPlayerOnly, @Nullable EnchantMix mix,
                                       @Nullable LootConfig.Behavior behavior) {
         LootPool.Builder lootPoolBuilder = LootPool.builder();
@@ -357,11 +401,7 @@ public class LootHelper {
             lootPoolBuilder.conditionally(KilledByPlayerLootCondition.builder());
         }
 
-        rolls = rolls > 0 ? rolls : 1F;
-        var attempts = Math.ceil(rolls);
-        var chance = rolls / attempts;
-        lootPoolBuilder.rolls(BinomialLootNumberProvider.create((int) attempts, (float) chance));
-        lootPoolBuilder.bonusRolls(ConstantLootNumberProvider.create(bonusRolls));
+        applyRolls(lootPoolBuilder, rolls, bonusRolls);
         for (var entry: entries) {
             var entryId = entry.id;
             var weight = entry.weight;
@@ -442,7 +482,16 @@ public class LootHelper {
                 lootPoolBuilder.with(group);
             }
         }
-        return entryCount[0] > 0 ? lootPoolBuilder.build() : null;
+        return entryCount[0] > 0 ? lootPoolBuilder : null;
+    }
+
+    /// Fractional rolls are rolled as a binomial distribution, with an expected value of `rolls`.
+    private static void applyRolls(LootPool.Builder lootPoolBuilder, float rolls, float bonusRolls) {
+        rolls = rolls > 0 ? rolls : 1F;
+        var attempts = Math.ceil(rolls);
+        var chance = rolls / attempts;
+        lootPoolBuilder.rolls(BinomialLootNumberProvider.create((int) attempts, (float) chance));
+        lootPoolBuilder.bonusRolls(ConstantLootNumberProvider.create(bonusRolls));
     }
 
     // MARK: Pattern matching (tag-cache backed, since tags are not loaded yet)

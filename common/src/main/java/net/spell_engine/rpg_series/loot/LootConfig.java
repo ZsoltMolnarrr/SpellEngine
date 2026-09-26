@@ -15,7 +15,7 @@ import java.util.function.Function;
 /// 1. `injectors` — exact loot table id
 /// 2. `regex_injectors` — regex matched loot table id
 /// 3. `fallback` — the table's own contents are inspected; every fallback entry whose `reference`
-///    matches an item the table drops gets injected (all of them, independently)
+///    matches an item the table drops gets injected, combined into a single pool (see `Fallback.max_rolls`)
 public class LootConfig {
     /// Overarching behavior of the injected loot. Absent -> none of these mechanics apply.
     @Nullable public Behavior behavior = null;
@@ -55,9 +55,13 @@ public class LootConfig {
 
     public static class Fallback {
         public static final String DEFAULT_TABLES = "~:chests/";
-        /// Global knob: every fallback injected pool's rolls (and bonus rolls) are multiplied by this.
+        /// Global knob: the rolls (and bonus rolls) of every fallback entry are multiplied by this.
         /// `0` disables fallback injection.
-        public float rolls_multiplier = 1F;
+        public float rolls_multiplier = 0.5F;
+        /// Upper limit of the total rolls injected into a single loot table.
+        /// Matching entries are combined into one pool, rolled `min(sum of entry rolls, max_rolls)` times,
+        /// picking each entry proportionally to its own rolls. `0` means no limit.
+        public float max_rolls = 1F;
         /// Which loot tables fallback injection may apply to (`~regex` or exact id).
         public String tables = DEFAULT_TABLES;
         /// Loot tables excluded from fallback injection (`~regex` or exact id).
@@ -72,8 +76,8 @@ public class LootConfig {
             public String reference = "";
             /// Optional per-entry override of `Fallback.tables`.
             @Nullable public String tables = null;
-            /// Rolls of the injected pool when the reference gear fills the source pool entirely.
-            /// Scaled by the reference's weight share of the source pool: `rolls * share`.
+            /// Rolls of this entry when the reference gear fills the source pool entirely.
+            /// Scaled by the reference's weight share of the source pool: `rolls * share * rolls_multiplier`.
             public float rolls = 1F;
             /// Luck scaling, same semantics as `Pool.bonus_rolls`, scaled like `rolls`.
             public float bonus_rolls = 0.2F;
@@ -287,6 +291,7 @@ public class LootConfig {
         }
         var fallback = config.fallback;
         if (fallback.rolls_multiplier < 0) { fallback.rolls_multiplier = 0; }
+        if (fallback.max_rolls < 0) { fallback.max_rolls = 0; }
         if (fallback.tables == null || fallback.tables.isEmpty()) { fallback.tables = Fallback.DEFAULT_TABLES; }
         if (fallback.blacklist == null) { fallback.blacklist = new ArrayList<>(); }
         if (fallback.entries == null) { fallback.entries = new ArrayList<>(); }

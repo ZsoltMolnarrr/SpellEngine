@@ -86,10 +86,10 @@ public class LootDefaults {
 
         // Fallback injection: for loot tables without an explicit entry above, inspect what the
         // table drops and inject matching RPG Series loot. Every entry whose reference matches
-        // is injected as its own pool, with `rolls` scaled by the reference gear's weight share
-        // of the source pool. Enchanting is mirrored from the source table (plain/enchanted copies
+        // becomes part of a single injected pool, with `rolls` scaled by the reference gear's weight
+        // share of the source pool, the total capped by `fallback.max_rolls`. Enchanting is mirrored from the source table (plain/enchanted copies
         // weighted like the reference gear), an item's `enchant` only overrides the level range
-        // of the enchanted copy. Global knob: `fallback.rolls_multiplier`. See `LootConfig.Fallback`.
+        // of the enchanted copy. Global knobs: `fallback.rolls_multiplier`, `fallback.max_rolls`. See `LootConfig.Fallback`.
 
         var GOLDEN_WEAPONS = RPGSeriesItemTags.LootReference.tagString(RPGSeriesItemTags.LootReference.GOLDEN_WEAPONS);
         var fallback = new LootConfig.Fallback();
@@ -121,6 +121,7 @@ public class LootDefaults {
         fallback.add(new LootConfig.Fallback.Entry(referenceTreasures(3)).rolls(0.25).with(pool -> pool.add(R3)));
 
         var scroll_fallback = new LootConfig.Fallback();
+        scroll_fallback.max_rolls = 0.35F;
         scrollLootConfig.fallback = scroll_fallback;
         for (int tier = 1; tier <= 3; tier++) {
             var min = tier;

@@ -380,10 +380,10 @@ Defined in [`RPGSeriesItemTags`](common/src/main/java/net/spell_engine/rpg_serie
 
 Equipment and spell scrolls are injected into loot tables, based on the tags above. Add an item to a `loot_tier` tag, and it shows up in the world.
 
-Config files (server side, in `config/rpg_series/`): `loot_equipment_v3.json`, `loot_scrolls_v2.json`, `loot_misc.json`. Each config is processed on its own (adding its own pools, never taking rolls from the others), a loot table is handled by the first match of:
+Config files (server side, in `config/rpg_series/`): `loot_equipment_v2.json`, `loot_scrolls_v2.json`, `loot_misc.json`. Each config is processed on its own (adding its own pools, never taking rolls from the others), a loot table is handled by the first match of:
 1. `injectors` - exact loot table id
 2. `regex_injectors` - regex matched loot table id
-3. `fallback` - for any other (for example: third party) loot table. The content of the table is inspected, and for every `loot_reference` gear it drops, the matching `loot_tier` items are injected. Rolls are scaled by the share of the reference gear within its pool, enchanting mirrors the source table. Tables already dropping RPG Series loot are skipped. Knobs: `rolls_multiplier` (`0` disables), `tables`, `blacklist`, `skip_tables_with_rpg_loot`.
+3. `fallback` - for any other (for example: third party) loot table. The content of the table is inspected, and for every `loot_reference` gear it drops, the matching `loot_tier` items are injected. Rolls are scaled by the share of the reference gear within its pool, enchanting mirrors the source table. All matching entries are combined into a single pool, its total rolls capped by `max_rolls`. Tables already dropping RPG Series loot are skipped. Knobs: `rolls_multiplier` (`0` disables), `max_rolls` (`0` for no limit), `tables`, `blacklist`, `skip_tables_with_rpg_loot`.
 
 `loot_misc.json` is empty by default, made for anything other than equipment or scrolls. For example, gems for every chest that holds diamonds:
 ```json
@@ -420,7 +420,7 @@ The more class mods are installed, the less likely a drop is useful for a given 
 - Without a (known) spell book, loot is rolled as configured. Amount of loot, and the ratio of item categories is never changed
 - Not applied to spell scrolls
 
-Configured in the `behavior` section of `loot_equipment_v3.json`:
+Configured in the `behavior` section of `loot_equipment_v2.json`:
 ```json
 "behavior": {
   "class_affiliation_enabled": true,

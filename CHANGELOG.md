@@ -7,9 +7,10 @@ Functional changes:
   - The class is determined by the equipped spell book (`<namespace>:spell_book/<name>`), affiliated items are listed by the item tag `<namespace>:loot_affiliation/<name>`
   - With scoreboard teams, the spell books of all online team members are considered
   - Without a (known) spell book, loot works as before. Amount of loot and ratio of item categories is unchanged
-  - Configurable under the new `behavior` section of the equipment loot config (bumped: `config/rpg_series/loot_equipment_v3.json`), not applied to scrolls
+  - Configurable under the new `behavior` section of the equipment loot config (`config/rpg_series/loot_equipment_v2.json`), not applied to scrolls
 - Added miscellaneous loot config `config/rpg_series/loot_misc.json` (empty by default), for injecting anything other than equipment or scrolls (for example: gems into every loot table that drops diamonds), without competing with equipment for rolls
 - Loot fallback: added `skip_tables_with_rpg_loot` option (on by default, as before)
+- Loot fallback: fixed excessive loot, injection is now capped per table (`max_rolls`) and default rate halved
 - Fixed loot fallback of scrolls being skipped for loot tables with an explicit equipment injector (the freshly injected equipment counted as "already drops RPG Series loot")
 - Fixed loot entries of unknown items (for example: mod not installed) taking up weight as empty drops
 - Attempt to fix crashing alongside externally added concurrent `PersistentProjectileEntity` trackers
