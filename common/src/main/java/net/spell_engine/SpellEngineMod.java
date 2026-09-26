@@ -45,6 +45,7 @@ import net.spell_engine.internals.delivery.SpellStashHelper;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.rpg_series.RPGSeriesCore;
 import net.spell_engine.rpg_series.loot.AffiliationGroupEntry;
+import net.spell_engine.rpg_series.loot.InlinePoolEntry;
 import net.spell_engine.spellbinding.*;
 import net.spell_engine.spellbinding.spellchoice.SpellChoiceFeature;
 import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
@@ -213,8 +214,12 @@ public class SpellEngineMod {
     }
 
     public static void registerLootPoolEntryTypes() {
-        if (Registries.LOOT_POOL_ENTRY_TYPE.containsId(AffiliationGroupEntry.ID)) { return; }
-        Registry.register(Registries.LOOT_POOL_ENTRY_TYPE, AffiliationGroupEntry.ID, AffiliationGroupEntry.TYPE);
+        if (!Registries.LOOT_POOL_ENTRY_TYPE.containsId(AffiliationGroupEntry.ID)) {
+            Registry.register(Registries.LOOT_POOL_ENTRY_TYPE, AffiliationGroupEntry.ID, AffiliationGroupEntry.TYPE);
+        }
+        if (!Registries.LOOT_POOL_ENTRY_TYPE.containsId(InlinePoolEntry.ID)) {
+            Registry.register(Registries.LOOT_POOL_ENTRY_TYPE, InlinePoolEntry.ID, InlinePoolEntry.TYPE);
+        }
     }
 
     public static void registerEntityTypes() {

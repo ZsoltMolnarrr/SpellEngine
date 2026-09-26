@@ -24,6 +24,7 @@ import net.spell_engine.fx.SpellEngineParticles;
 import net.spell_engine.fx.SpellEngineSounds;
 import net.spell_engine.item.SpellEngineItems;
 import net.spell_engine.rpg_series.loot.AffiliationGroupEntry;
+import net.spell_engine.rpg_series.loot.InlinePoolEntry;
 import net.spell_engine.spellbinding.SpellBindRandomlyLootFunction;
 import net.spell_engine.spellbinding.SpellBinding;
 import net.spell_engine.spellbinding.SpellBindingBlock;
@@ -144,8 +145,10 @@ public final class ForgeMod {
         });
         event.register(RegistryKeys.LOOT_FUNCTION_TYPE, helper ->
                 helper.register(SpellBindRandomlyLootFunction.ID, SpellBindRandomlyLootFunction.TYPE));
-        event.register(RegistryKeys.LOOT_POOL_ENTRY_TYPE, helper ->
-                helper.register(AffiliationGroupEntry.ID, AffiliationGroupEntry.TYPE));
+        event.register(RegistryKeys.LOOT_POOL_ENTRY_TYPE, helper -> {
+            helper.register(AffiliationGroupEntry.ID, AffiliationGroupEntry.TYPE);
+            helper.register(InlinePoolEntry.ID, InlinePoolEntry.TYPE);
+        });
         event.register(RegistryKeys.ENCHANTMENT, helper ->
                 SpellEngineEnchantments.enchantmentsToRegister().forEach(helper::register));
     }
