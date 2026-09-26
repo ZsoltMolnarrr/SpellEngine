@@ -1,3 +1,37 @@
+# 1.10.8+1.20.1
+
+> ### ⚠️ Read this before updating
+>
+> This release is a **major technical overhaul and is not backwards compatible.**
+>
+> - **The APIs have been reworked, not removed.** Everything still exists, under new
+    >   interfaces — but mods built against Spell Engine **0.9.x** will not work with this
+    >   version. They need updating and rebuilding against the current API.
+> - **Update the whole set together.** Spell Engine and every RPG Series mod must be on
+    >   matching versions. Mixing in an older add-on will break at startup or misbehave in play.
+> - **Spell books must be re-obtained.** Spell books from an older world no longer carry valid
+    >   spell data. Re-craft them, or re-bind their spells at the Spell Binding Table.
+>
+> **Back up your world before updating.**
+
+Functional changes:
+- Added class affiliated loot: injected equipment relevant for the looting player's class drops more often, keeping loot useful with many class mods installed
+  - The class is determined by the equipped spell book (`<namespace>:spell_book/<name>`), affiliated items are listed by the item tag `<namespace>:loot_affiliation/<name>`
+  - With scoreboard teams, the spell books of all online team members are considered
+  - Without a (known) spell book, loot works as before. Amount of loot and ratio of item categories is unchanged
+  - Configurable under the new `behavior` section of the equipment loot config (`config/rpg_series/loot_equipment_v2.json`), not applied to scrolls
+- Added miscellaneous loot config `config/rpg_series/loot_misc.json` (empty by default), for injecting anything other than equipment or scrolls (for example: gems into every loot table that drops diamonds), without competing with equipment for rolls
+- Loot fallback: added `skip_tables_with_rpg_loot` option (on by default, as before)
+- Loot fallback: fixed excessive loot, injection is now capped per table (`max_rolls`) and default rate halved
+- Fixed loot fallback of scrolls being skipped for loot tables with an explicit equipment injector (the freshly injected equipment counted as "already drops RPG Series loot")
+- Fixed loot entries of unknown items (for example: mod not installed) taking up weight as empty drops
+- Attempt to fix crashing alongside externally added concurrent `PersistentProjectileEntity` trackers
+
+API changes:
+- Added `spell_engine:affiliation_group` loot pool entry type (`AffiliationGroupEntry`), and `RPGSeriesItemTags.LootAffiliation`
+- Added `ClassAffiliation.resolver`, replaceable logic determining the loot affiliation tags of a player (default: based on the equipped spell book)
+- Added `spell_engine:inline_pool` loot pool entry type (`InlinePoolEntry`, 1.20.1 only), used by the loot fallback
+
 # 1.10.7+1.20.1
 
 > ### ⚠️ Read this before updating

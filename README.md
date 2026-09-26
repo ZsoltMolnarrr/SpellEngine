@@ -447,7 +447,7 @@ Mod developers can determine the affiliation of players on a completely differen
 ```java
 ClassAffiliation.resolver = player -> {
     // Any logic (class system of another mod, attributes...), returning item tags of any id
-    return List.of(TagKey.of(RegistryKeys.ITEM, Identifier.of("my_mod", "loot_affiliation/my_class")));
+    return List.of(TagKey.of(RegistryKeys.ITEM, new Identifier("my_mod", "loot_affiliation/my_class")));
     // To extend the default logic, include: ClassAffiliation.SPELL_BOOK_RESOLVER.resolve(player)
 };
 ```
