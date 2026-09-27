@@ -88,7 +88,7 @@ dependencies {
     modLocalRuntime("maven.modrinth:armor-model-api:1.0.0+1.20.1-fabric") { transitive = false }
     // BundleAPI, Critical Strike and RangedWeaponAPI are `modCompileOnly` in SpellEngine's own
     // build.gradle (optional at runtime), so they are absent from the run classpath unless pinned here.
-    modLocalRuntime("com.github.TheRedBrain:bundle-api-fabric:1.1.0+1.20.1") { transitive = false }
+    modLocalRuntime("maven.modrinth:bundle-api:1.2.0+1.20.1-fabric") { transitive = false }
     modLocalRuntime("maven.modrinth:critical-strike:1.0.4+1.20.1-fabric") { transitive = false }
     modLocalRuntime("maven.modrinth:ranged-weapon-api:2.3.4+1.20.1-fabric") { transitive = false }
     // ShieldAPI is JiJ'd by Paladins/Arsenal in production; Loom does not unpack nested jars of

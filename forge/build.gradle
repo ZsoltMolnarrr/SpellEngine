@@ -47,13 +47,6 @@ configurations {
 }
 
 repositories {
-    // Bundle API for 1.20.1 is vendored from the ZsoltMolnarrr/bundle-api fork (branch `1.20.1-modern`)
-    // until upstream publishes a 1.20.1 build to Modrinth. See libs/maven/README.md for the exit path.
-    maven {
-        name = 'VendoredBundleApi'
-        url = uri("${rootProject.projectDir}/libs/maven")
-        content { includeGroup 'com.github.TheRedBrain' }
-    }
     maven { url 'https://maven.kosmx.dev/' }
     maven { url 'https://maven.shedaniel.me/' }
     maven {
@@ -106,10 +99,10 @@ dependencies {
     modImplementation("dev.kosmx.player-anim:player-animation-lib-forge:${rootProject.player_anim_version}")
     modImplementation("me.shedaniel.cloth:cloth-config-${platform}:${rootProject.cloth_config_version}")
 
-    // Ecosystem libraries from the Modrinth maven; Bundle API is vendored under libs/maven.
+    // Ecosystem libraries from the Modrinth maven.
     include(modImplementation("maven.modrinth:tiny-config:${rootProject.tiny_config_version}-${platform}"))
     modImplementation("maven.modrinth:spell-power:${rootProject.spell_power_version}-${platform}")
-    modCompileOnly("com.github.TheRedBrain:bundle-api-${platform}:${rootProject.bundle_api_version}")
+    modCompileOnly("maven.modrinth:bundle-api:${rootProject.bundle_api_version}-${platform}")
     modCompileOnly("maven.modrinth:critical-strike:${rootProject.critical_strike_version}-${platform}")
     // RangedWeaponAPI 2.3.4+1.20.1 (Modrinth; first RWA line with a Forge artifact). Compile-only: optional at
     // runtime, not in the published POM; Spell Engine boots without it. To exercise the RWA path in the dev runtime
