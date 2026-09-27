@@ -93,7 +93,7 @@ dependencies {
     modLocalRuntime("maven.modrinth:ranged-weapon-api:2.3.4+1.20.1-fabric") { transitive = false }
     // ShieldAPI is JiJ'd by Paladins/Arsenal in production; Loom does not unpack nested jars of
     // classpath mods, so the dev runtime needs it explicitly.
-    modLocalRuntime("maven.modrinth:shield-api:1.1.0+1.20.1-fabric") { transitive = false }
+    modLocalRuntime("maven.modrinth:shield-api:2.2.0+1.20.1-fabric") { transitive = false }
     // StructurePoolAPI is a *hard* dependency of the four class mods, Jewelry, Gazebo and Taverns
     // (vanilla-village piece injection). Since 1.2.1.001 it has a Forge artifact too, so
     // forge/workspace-runtime.gradle now carries the matching pin.
