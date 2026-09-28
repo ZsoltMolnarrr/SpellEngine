@@ -1,0 +1,117 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.github.TheRedBrain",
+    "module": "bundle-api-fabric",
+    "version": "1.1.0+1.20.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.5.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "bundle-api-fabric-1.1.0+1.20.1.jar",
+          "url": "bundle-api-fabric-1.1.0+1.20.1.jar",
+          "size": 87045,
+          "sha512": "73198209fb76560907d2a928993ee06f5941daf9bc98937052bdf521e3ab6e649c8b777e943114bcc2a7fb3e65caeac236f7dfbf1d9a7194f0cba2daf0a06d87",
+          "sha256": "e7eba29f9ca45a9cb73bce6b79ffc4fa904868278db11f9e63b73b2f4f8c31f1",
+          "sha1": "500bf8ba17a2fc5132356f514dd8c836ebad8562",
+          "md5": "b2e04dee3ec70b65d53d91c724947dc6"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "net.fabricmc",
+          "module": "fabric-loader",
+          "version": {
+            "requires": "0.19.5"
+          }
+        },
+        {
+          "group": "net.fabricmc.fabric-api",
+          "module": "fabric-api",
+          "version": {
+            "requires": "0.92.12+1.20.1"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "bundle-api-fabric-1.1.0+1.20.1.jar",
+          "url": "bundle-api-fabric-1.1.0+1.20.1.jar",
+          "size": 87045,
+          "sha512": "73198209fb76560907d2a928993ee06f5941daf9bc98937052bdf521e3ab6e649c8b777e943114bcc2a7fb3e65caeac236f7dfbf1d9a7194f0cba2daf0a06d87",
+          "sha256": "e7eba29f9ca45a9cb73bce6b79ffc4fa904868278db11f9e63b73b2f4f8c31f1",
+          "sha1": "500bf8ba17a2fc5132356f514dd8c836ebad8562",
+          "md5": "b2e04dee3ec70b65d53d91c724947dc6"
+        }
+      ]
+    },
+    {
+      "name": "sourcesElements",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "bundle-api-fabric-1.1.0+1.20.1-sources.jar",
+          "url": "bundle-api-fabric-1.1.0+1.20.1-sources.jar",
+          "size": 2377,
+          "sha512": "0ade81ded984af443011bf58a1818efba106e873a8bfb5c47fe678a87648bdcb76919b1e64ab5fd18a8b005b9adfae0a5eacff18808bbc0c7b0fa1124b52f09e",
+          "sha256": "0998d333d22cf635dec375826de73a35e2d502eff6831c591095a861fe979104",
+          "sha1": "0b47a1f7d58abc082a286d5e778a7a805e5bdaec",
+          "md5": "9a0bcc0bc6f14a77b341b93eb36b66f9"
+        }
+      ]
+    },
+    {
+      "name": "shadowRuntimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "shadowed",
+        "org.gradle.jvm.version": 17,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "bundle-api-fabric-1.1.0+1.20.1-dev-shadow.jar",
+          "url": "bundle-api-fabric-1.1.0+1.20.1-dev-shadow.jar",
+          "size": 86928,
+          "sha512": "60933e74e0fb48e7502ac55c760ba6ab3bb2a15f49e433dfe85aadd7fe83280a159dc32b442b691578e9bfa73d951c9556150508efdafeaeb526f070a4c1888d",
+          "sha256": "abfdac809bbd38bd6ee509d920b465083b00c7a0305759f8e28a2745bdbcfbeb",
+          "sha1": "a65141158b2b3440228eecc954995c9029bfa116",
+          "md5": "4d82444e9d4cb35b6ca966987a0beca8"
+        }
+      ]
+    }
+  ]
+}
