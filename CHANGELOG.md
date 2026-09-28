@@ -13,7 +13,7 @@
 >
 > **Back up your world before updating.**
 
-- Built against Bundle API 1.1.0 again (Bundle API 1.2.0 for Minecraft 1.20.1 is broken in production)
+- Built against a working Bundle API build versioned 1.3.0 (Bundle API 1.2.0 for Minecraft 1.20.1 is broken in production)
 
 # 1.10.8+1.20.1
 

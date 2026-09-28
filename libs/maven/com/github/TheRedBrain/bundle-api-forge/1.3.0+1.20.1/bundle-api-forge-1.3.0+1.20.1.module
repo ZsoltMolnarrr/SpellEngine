@@ -3,7 +3,7 @@
   "component": {
     "group": "com.github.TheRedBrain",
     "module": "bundle-api-forge",
-    "version": "1.1.0+1.20.1",
+    "version": "1.3.0+1.20.1",
     "attributes": {
       "org.gradle.status": "release"
     }
@@ -25,13 +25,13 @@
       },
       "files": [
         {
-          "name": "bundle-api-forge-1.1.0+1.20.1.jar",
-          "url": "bundle-api-forge-1.1.0+1.20.1.jar",
-          "size": 87437,
-          "sha512": "4b2428d52b56c2c2dc827c413c5ebb4370dca92024c6a19c6d4eda7c180d3d78f801280811a9c78887746b3843a5ea3fec0206ce3e7510e2ad7634c2c85ce6cb",
-          "sha256": "6c58b1ac7244078c021d5a9d94136443b1fb69b5ee4f105722c05da9e69ffad4",
-          "sha1": "a52a5830c185102adf58d83cee65790a780f5cce",
-          "md5": "254a4a588bf67ab083ef6b0bcad2cd59"
+          "name": "bundle-api-forge-1.3.0+1.20.1.jar",
+          "url": "bundle-api-forge-1.3.0+1.20.1.jar",
+          "size": 87439,
+          "sha512": "5faa8e37c4f32cb9ed6a5b3b34044735460bd385cd29bedec1aad192125f488d494598662e58d8f564e7bfb7ef902e8b90206d45f290b80b734308618f7ce5dc",
+          "sha256": "090e66ee05c49f4d30583b06c2988e51dc43d3676dd5ab7da44aec94f4a79634",
+          "sha1": "1dbdbe40c9304983a6ac16da9b1f0b968b2490d7",
+          "md5": "345506dffd922507d032f5b1f0ebbc3c"
         }
       ]
     },
@@ -46,13 +46,13 @@
       },
       "files": [
         {
-          "name": "bundle-api-forge-1.1.0+1.20.1.jar",
-          "url": "bundle-api-forge-1.1.0+1.20.1.jar",
-          "size": 87437,
-          "sha512": "4b2428d52b56c2c2dc827c413c5ebb4370dca92024c6a19c6d4eda7c180d3d78f801280811a9c78887746b3843a5ea3fec0206ce3e7510e2ad7634c2c85ce6cb",
-          "sha256": "6c58b1ac7244078c021d5a9d94136443b1fb69b5ee4f105722c05da9e69ffad4",
-          "sha1": "a52a5830c185102adf58d83cee65790a780f5cce",
-          "md5": "254a4a588bf67ab083ef6b0bcad2cd59"
+          "name": "bundle-api-forge-1.3.0+1.20.1.jar",
+          "url": "bundle-api-forge-1.3.0+1.20.1.jar",
+          "size": 87439,
+          "sha512": "5faa8e37c4f32cb9ed6a5b3b34044735460bd385cd29bedec1aad192125f488d494598662e58d8f564e7bfb7ef902e8b90206d45f290b80b734308618f7ce5dc",
+          "sha256": "090e66ee05c49f4d30583b06c2988e51dc43d3676dd5ab7da44aec94f4a79634",
+          "sha1": "1dbdbe40c9304983a6ac16da9b1f0b968b2490d7",
+          "md5": "345506dffd922507d032f5b1f0ebbc3c"
         }
       ]
     },
@@ -66,8 +66,8 @@
       },
       "files": [
         {
-          "name": "bundle-api-forge-1.1.0+1.20.1-sources.jar",
-          "url": "bundle-api-forge-1.1.0+1.20.1-sources.jar",
+          "name": "bundle-api-forge-1.3.0+1.20.1-sources.jar",
+          "url": "bundle-api-forge-1.3.0+1.20.1-sources.jar",
           "size": 2156,
           "sha512": "b7a777cc8a7c710a3093bd69423a0cf1c6fec518b017fe02559fee6859ab7b2af515b9d7a607c541123fa2bf436dae63b4172d70440e7e5d7f2621b9611cb607",
           "sha256": "cbf1a295c77fc143fc1d9c36cc40c034c54fb1d47798bf2657b490508e7bd2c8",
@@ -87,13 +87,13 @@
       },
       "files": [
         {
-          "name": "bundle-api-forge-1.1.0+1.20.1-dev-shadow.jar",
-          "url": "bundle-api-forge-1.1.0+1.20.1-dev-shadow.jar",
-          "size": 87133,
-          "sha512": "2b91c26fce18d7c1a0c7d98c23e871af8cf7fa26e307fd5ba429124a3d7c53207e541d36ec0202355730f7f535c50cccc972a52a3fac7fe8e495e654694c78ea",
-          "sha256": "0d12caa4550d24668afc6ef2aea369ccf18f47e733021abea7f47edcbeafa19d",
-          "sha1": "4f818285422659b85040b81f033e1d413b3be3e5",
-          "md5": "ac2eab731f3a550bc707a10d0ba9b5d0"
+          "name": "bundle-api-forge-1.3.0+1.20.1-dev-shadow.jar",
+          "url": "bundle-api-forge-1.3.0+1.20.1-dev-shadow.jar",
+          "size": 87135,
+          "sha512": "1f174215c9a16d8f66047b6a8f4bad7cdad3d5c03a1e1591266a59e5b33f5dde342302756252668945dc1f9afa8fbf65dee477015f48eae6dd1b8d7facd8b59c",
+          "sha256": "8d52bc847a923c7a20fd669994ef4c496ed7658fe972bb1009487a4c1f959c26",
+          "sha1": "4cd02dfb12b0524c6f5a7b7299af1679f0dc31ad",
+          "md5": "4071849370cab58939c4566846e3900d"
         }
       ]
     }
