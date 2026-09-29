@@ -1,3 +1,9 @@
+# 1.10.9
+
+API changes:
+- Armor sets can now come with built-in gem sockets (`Sockets`, when Jewelry is installed)
+- Added `Sockets.apply` for giving any item built-in sockets
+
 # 1.10.8
 
 Functional changes:
