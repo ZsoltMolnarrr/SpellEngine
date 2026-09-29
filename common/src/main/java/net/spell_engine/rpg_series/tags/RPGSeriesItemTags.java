@@ -1,11 +1,14 @@
 package net.spell_engine.rpg_series.tags;
 
-import net.spell_engine.rpg_series.item.Equipment;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.spell_engine.api.tags.SpellTags;
+import net.spell_engine.rpg_series.item.Equipment;
 import net.spell_engine.rpg_series.RPGSeriesCore;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -166,6 +169,26 @@ public class RPGSeriesItemTags {
         }
         public static String tagString(String theme) {
             return "#" + id(theme);
+        }
+    }
+
+    /// Items relevant for a playable class, identified by its spell book:
+    /// spell pool `<namespace>:spell_book/<name>` -> item tag `<namespace>:loot_affiliation/<name>`.
+    /// Injected loot of these items drops more often for players wearing that spell book.
+    public static class LootAffiliation {
+        public static final String FOLDER = "loot_affiliation";
+        /// Null if the given spell pool is not a spell book pool.
+        @Nullable public static Identifier id(Identifier spellBookPool) {
+            var path = spellBookPool.getPath();
+            if (!path.startsWith(SpellTags.SPELL_BOOK_PREFIX)) {
+                return null;
+            }
+            var name = path.substring(SpellTags.SPELL_BOOK_PREFIX.length());
+            return Identifier.fromNamespaceAndPath(spellBookPool.getNamespace(), FOLDER + "/" + name);
+        }
+        @Nullable public static TagKey<Item> get(Identifier spellBookPool) {
+            var id = id(spellBookPool);
+            return id != null ? TagKey.create(Registries.ITEM, id) : null;
         }
     }
 

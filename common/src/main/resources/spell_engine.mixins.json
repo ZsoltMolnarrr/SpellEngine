@@ -34,6 +34,7 @@
     "entity.LivingEntityKnockback",
     "entity.LivingEntityMovementMixin",
     "entity.LivingEntityProtectionEffectMixin",
+    "entity.LivingEntitySummonKillCredit",
     "entity.PlayerEntityEvents",
     "entity.PlayerEntityMixin",
     "entity.PlayerEntitySpellBatching",
