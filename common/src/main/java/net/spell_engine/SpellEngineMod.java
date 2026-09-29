@@ -43,6 +43,7 @@ import net.spell_engine.misc.criteria.SpellCastCriteria;
 import net.spell_engine.internals.delivery.SpellStashHelper;
 import net.spell_engine.network.ServerNetwork;
 import net.spell_engine.rpg_series.RPGSeriesCore;
+import net.spell_engine.rpg_series.loot.AffiliationGroupEntry;
 import net.spell_engine.spellbinding.*;
 import net.spell_engine.spellbinding.spellchoice.SpellChoiceFeature;
 import net.spell_engine.spellbinding.spellchoice.SpellChoiceScreenHandler;
@@ -141,6 +142,7 @@ public class SpellEngineMod {
         Registry.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, SpellBinding.ID, SpellBindingBlockEntity.ENTITY_TYPE);
         Registry.register(BuiltInRegistries.MENU, SpellBinding.ID, SpellBindingScreenHandler.HANDLER_TYPE);
         Registry.register(BuiltInRegistries.LOOT_FUNCTION_TYPE, SpellBindRandomlyLootFunction.ID, SpellBindRandomlyLootFunction.CODEC);
+        Registry.register(BuiltInRegistries.LOOT_POOL_ENTRY_TYPE, AffiliationGroupEntry.ID, AffiliationGroupEntry.CODEC);
         Registry.register(BuiltInRegistries.MENU, SpellChoiceFeature.ID, SpellChoiceScreenHandler.HANDLER_TYPE);
     }
 

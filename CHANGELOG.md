@@ -1,3 +1,30 @@
+# 1.10.9
+
+API changes:
+- Armor sets can now come with built-in gem sockets (`Sockets`, when Jewelry is installed)
+- Added `Sockets.apply` for giving any item built-in sockets
+
+# 1.10.8
+
+Functional changes:
+- Fixed kills landed by summoned entities not counting as player kills (no boss loot, no experience, no kill advancement for the summoner)
+- Loot defaults: every boss injector now offers both a tier-5 weapon and a tier-5 armor (previously each had only one of the two)
+- Added class affiliated loot: injected equipment relevant for the looting player's class drops more often, keeping loot useful with many class mods installed
+  - The class is determined by the equipped spell book (`<namespace>:spell_book/<name>`), affiliated items are listed by the item tag `<namespace>:loot_affiliation/<name>`
+  - With scoreboard teams, the spell books of all online team members are considered
+  - Without a (known) spell book, loot works as before. Amount of loot and ratio of item categories is unchanged
+  - Configurable under the new `behavior` section of the equipment loot config (`config/rpg_series/loot_equipment_v2.json`), not applied to scrolls
+- Added miscellaneous loot config `config/rpg_series/loot_misc.json` (empty by default), for injecting anything other than equipment or scrolls (for example: gems into every loot table that drops diamonds), without competing with equipment for rolls
+- Loot fallback: added `skip_tables_with_rpg_loot` option (on by default, as before)
+- Loot fallback: fixed excessive loot, injection is now capped per table (`max_rolls`) and default rate halved
+- Fixed loot fallback of scrolls being skipped for loot tables with an explicit equipment injector (the freshly injected equipment counted as "already drops RPG Series loot")
+- Fixed loot entries of unknown items (for example: mod not installed) taking up weight as empty drops
+- Attempt to fix crashing alongside externally added concurrent `PersistentProjectileEntity` trackers
+
+API changes:
+- Added `spell_engine:affiliation_group` loot pool entry type (`AffiliationGroupEntry`), and `RPGSeriesItemTags.LootAffiliation`
+- Added `ClassAffiliation.resolver`, replaceable logic determining the loot affiliation tags of a player (default: based on the equipped spell book)
+
 # 1.10.7
 
 Functional changes:
