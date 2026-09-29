@@ -69,7 +69,7 @@ public class Platform {
 
         /// Register a synced datapack registry, replacing Fabric API's `DynamicRegistries.registerSynced`.
         /// Fabric registers imperatively during init; NeoForge buffers it for its
-        /// `DataPackRegistryEvent.NewRegistry`. A non-null `networkCodec` makes the registry client-synced.
+        /// `NewDatapackRegistryEvent`. A non-null `networkCodec` makes the registry client-synced.
         <T> void registerSyncedDataRegistry(ResourceKey<Registry<T>> key, Codec<T> localCodec, Codec<T> networkCodec);
 
         /// Creates a synced per-entity attachment, see `SyncedEntityData.create`. Fabric registers

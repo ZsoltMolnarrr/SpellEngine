@@ -78,7 +78,7 @@ public class PlatformImpl {
 
         @Override
         public <T> void registerSyncedDataRegistry(ResourceKey<Registry<T>> key, Codec<T> localCodec, Codec<T> networkCodec) {
-            // Buffered until DataPackRegistryEvent.NewRegistry — NeoForge can't register these imperatively.
+            // Buffered until NewDatapackRegistryEvent — NeoForge can't register these imperatively.
             SyncedDataRegistrar.buffer(key, localCodec, networkCodec);
         }
 
