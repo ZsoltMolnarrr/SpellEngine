@@ -1,5 +1,7 @@
 # 1.10.9
 
+Ported to Minecraft 26.3 (Fabric + NeoForge, NeoForge 26.3.0.20-beta or newer).
+
 API changes:
 - Armor sets can now come with built-in gem sockets (`Sockets`, when Jewelry is installed)
 - Added `Sockets.apply` for giving any item built-in sockets
