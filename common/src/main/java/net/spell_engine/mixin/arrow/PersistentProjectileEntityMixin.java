@@ -34,7 +34,7 @@ import java.util.Objects;
 import net.spell_engine.internals.SpellExecution;
 import net.spell_engine.internals.impact.SpellImpacts;
 
-@Mixin(AbstractArrow.class)
+@Mixin(value = AbstractArrow.class, priority = 555)
 public abstract class PersistentProjectileEntityMixin implements ArrowExtension {
     @Shadow public abstract boolean isInGround(); // 1.21.11: tracked-data backed, no field
 
