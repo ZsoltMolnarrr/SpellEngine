@@ -9,6 +9,9 @@ public class LootDefaults {
 
     public final static LootConfig itemLootConfig;
     public final static LootConfig scrollLootConfig;
+    /// Miscellaneous injections (materials, gems, anything not equipment or scroll), empty by default.
+    /// Processed on its own, so its pools never compete with equipment for rolls.
+    public final static LootConfig miscLootConfig;
 
     private static String armors(int tier) {
         return "#" + RPGSeriesItemTags.LootTiers.id(tier, RPGSeriesItemTags.LootCategory.ARMORS).toString();
@@ -68,19 +71,25 @@ public class LootDefaults {
         var R4 = relics(4);
 
         itemLootConfig = new LootConfig();
+        itemLootConfig.behavior = new LootConfig.Behavior();
         var items = itemLootConfig.injectors;
         var items_regex = itemLootConfig.regex_injectors;
 
         scrollLootConfig = new LootConfig();
+
+        miscLootConfig = new LootConfig();
+        miscLootConfig.fallback = new LootConfig.Fallback();
+        // Keyed on plain vanilla items (for example: diamond), RPG Series gear in the table is irrelevant
+        miscLootConfig.fallback.skip_tables_with_rpg_loot = false;
         var scrolls = scrollLootConfig.injectors;
         var scrolls_regex = scrollLootConfig.regex_injectors;
 
         // Fallback injection: for loot tables without an explicit entry above, inspect what the
         // table drops and inject matching RPG Series loot. Every entry whose reference matches
-        // is injected as its own pool, with `rolls` scaled by the reference gear's weight share
-        // of the source pool. Enchanting is mirrored from the source table (plain/enchanted copies
+        // becomes part of a single injected pool, with `rolls` scaled by the reference gear's weight
+        // share of the source pool, the total capped by `fallback.max_rolls`. Enchanting is mirrored from the source table (plain/enchanted copies
         // weighted like the reference gear), an item's `enchant` only overrides the level range
-        // of the enchanted copy. Global knob: `fallback.rolls_multiplier`. See `LootConfig.Fallback`.
+        // of the enchanted copy. Global knobs: `fallback.rolls_multiplier`, `fallback.max_rolls`. See `LootConfig.Fallback`.
 
         var GOLDEN_WEAPONS = RPGSeriesItemTags.LootReference.tagString(RPGSeriesItemTags.LootReference.GOLDEN_WEAPONS);
         var fallback = new LootConfig.Fallback();
@@ -112,6 +121,7 @@ public class LootDefaults {
         fallback.add(new LootConfig.Fallback.Entry(referenceTreasures(3)).rolls(0.25).with(pool -> pool.add(R3)));
 
         var scroll_fallback = new LootConfig.Fallback();
+        scroll_fallback.max_rolls = 0.35F;
         scrollLootConfig.fallback = scroll_fallback;
         for (int tier = 1; tier <= 3; tier++) {
             var min = tier;
@@ -327,6 +337,7 @@ public class LootDefaults {
                 .add(X3)
                 .add(R3)
                 .add(W5)
+                .add(A5)
         );
 
         items.put("minecraft:entities/warden", new LootConfig.Pool()
@@ -335,6 +346,7 @@ public class LootDefaults {
                 .add(A2, true)
                 .add(X4).weight(2)
                 .add(R2).weight(2)
+                .add(W5)
                 .add(A5)
         );
 
@@ -344,6 +356,7 @@ public class LootDefaults {
                 .rolls(2)
                 .add(A3)
                 .add(A4)
+                .add(W5)
                 .add(A5)
         );
 
@@ -352,6 +365,7 @@ public class LootDefaults {
                 .add(W4)
                 .add(W5)
                 .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
+                .add(A5)
         );
 
         items.put("minecells:chests/common/general_treasure", new LootConfig.Pool()
@@ -373,6 +387,7 @@ public class LootDefaults {
                 .add(X2).weight(2)
                 .add(R2)
                 .add(W5)
+                .add(A5)
         );
 
         items.put("bosses_of_mass_destruction:entities/void_blossom", new LootConfig.Pool()
@@ -382,6 +397,7 @@ public class LootDefaults {
                 .add(X2).weight(2)
                 .add(R2)
                 .add(W5)
+                .add(A5)
         );
 
         items.put("bosses_of_mass_destruction:chests/gauntlet", new LootConfig.Pool()
@@ -1860,11 +1876,13 @@ public class LootDefaults {
                 .add(W3).enchant()
                 .add(W4).enchant()
                 .add(W5).enchant()
+                .add(A5).enchant()
         );
         items.put("fdbosses:entities/malkuth", new LootConfig.Pool()
                 .rolls(1)
                 .add(A3).enchant()
                 .add(A4).enchant()
+                .add(W5).enchant()
                 .add(A5).enchant()
         );
 
@@ -1899,6 +1917,7 @@ public class LootDefaults {
                 .add(X3).weight(2)
                 .add(R2)
                 .add(A4)
+                .add(W5)
                 .add(A5)
         );
         items.put("cataclysm:entities/ignis", new LootConfig.Pool()
@@ -1907,6 +1926,7 @@ public class LootDefaults {
                 .add(W4, true).weight(4)
                 .add(X4)
                 .modify(pool -> addWithArsenalSpellBinding(pool, W5, 1))
+                .add(A5)
         );
         items.put("cataclysm:entities/the_harbinger", new LootConfig.Pool()
                 .rolls(2)
@@ -1914,6 +1934,7 @@ public class LootDefaults {
                 .add(A4, true)
                 .add(X4).weight(2)
                 .add(R4).weight(2)
+                .add(W5)
                 .add(A5)
         );
 
@@ -1932,6 +1953,7 @@ public class LootDefaults {
                 .add(X2).weight(2)
                 .add(R2)
                 .add(W5)
+                .add(A5)
         );
         //frostmaw
         items.put("mowziesmobs:entities/frostmaw", new LootConfig.Pool()
@@ -1939,6 +1961,7 @@ public class LootDefaults {
                 .add(W2, true).weight(4)
                 .add(A2, true).weight(3)
                 .add(R2)
+                .add(W5)
                 .add(A5)
         );
         //grottol
@@ -1966,6 +1989,7 @@ public class LootDefaults {
                 .add(X2).weight(2)
                 .add(R2)
                 .add(W5)
+                .add(A5)
         );
         //lich
         items.put("twilightforest:entities/lich", new LootConfig.Pool()
@@ -1974,6 +1998,7 @@ public class LootDefaults {
                 .add(A2, true).weight(3)
                 .add(X2).weight(2)
                 .add(R2)
+                .add(W5)
                 .add(A5)
         );
         //minotaur
@@ -2000,6 +2025,7 @@ public class LootDefaults {
                 .add(X3)
                 .add(R3)
                 .add(W5)
+                .add(A5)
         );
         //ur_ghast
         items.put("twilightforest:entities/ur_ghast", new LootConfig.Pool()
@@ -2008,6 +2034,7 @@ public class LootDefaults {
                 .add(A3, true).weight(3)
                 .add(X3).weight(2)
                 .add(R3)
+                .add(W5)
                 .add(A5)
         );
         //alpha_yeti
@@ -2018,6 +2045,7 @@ public class LootDefaults {
                 .add(X4).weight(2)
                 .add(R3)
                 .add(W5)
+                .add(A5)
         );
         //snow_queen
         items.put("twilightforest:entities/snow_queen", new LootConfig.Pool()
@@ -2027,6 +2055,7 @@ public class LootDefaults {
                 .add(X3).weight(2)
                 .add(X4).weight(2)
                 .add(R4)
+                .add(W5)
                 .add(A5)
         );
     }

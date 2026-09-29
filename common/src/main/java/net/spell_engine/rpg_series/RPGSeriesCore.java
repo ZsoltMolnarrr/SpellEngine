@@ -1,6 +1,5 @@
 package net.spell_engine.rpg_series;
 
-import com.google.common.base.Suppliers;
 import net.minecraft.enchantment.Enchantments;
 import net.spell_engine.PlatformEvents;
 import net.spell_engine.api.item.weapon.StaffItem;
@@ -10,6 +9,7 @@ import net.spell_engine.rpg_series.loot.LootHelper;
 import net.spell_engine.rpg_series.config.LootDefaults;
 import net.tiny_config.ConfigManager;
 
+import java.util.List;
 import java.util.Set;
 
 public class RPGSeriesCore {
@@ -31,24 +31,37 @@ public class RPGSeriesCore {
             .constrain(config -> LootConfig.constrainValues(config, LootDefaults.scrollLootConfig))
             .build();
 
+    public static ConfigManager<LootConfig> lootMiscConfig = new ConfigManager<>
+            ("loot_misc", LootDefaults.miscLootConfig)
+            .builder()
+            .setDirectory(NAMESPACE)
+            .sanitize(true)
+            .constrain(config -> LootConfig.constrainValues(config, LootDefaults.miscLootConfig))
+            .build();
+
+    private static List<ConfigManager<LootConfig>> lootConfigs() {
+        return List.of(lootEquipmentConfig, lootScrollsConfig, lootMiscConfig);
+    }
+
     public static void init() {
         lootEquipmentConfig.refresh();
         lootScrollsConfig.refresh();
+        lootMiscConfig.refresh();
         LootHelper.TAG_CACHE.refresh();
         PlatformEvents.onLootTableModify(context -> {
-            // Snapshot the table's existing pools lazily, only if a fallback needs to inspect them
-            var existingPools = Suppliers.memoize(context::existingPools);
+            // Snapshot the table's pools before injecting anything, so the fallback of each config
+            // inspects the original content (not the pools added by a config processed earlier)
+            var existingPools = context.existingPools();
             LootHelper.configure(context.registries(), context.tableId(), existingPools, context::addPool, lootEquipmentConfig.value, "equipment");
             LootHelper.configure(context.registries(), context.tableId(), existingPools, context::addPool, lootScrollsConfig.value, "scrolls");
+            LootHelper.configure(context.registries(), context.tableId(), existingPools, context::addPool, lootMiscConfig.value, "misc");
         });
         PlatformEvents.onServerStarted((server) -> {
-            LootHelper.updateTagCache(lootEquipmentConfig.value);
-            LootHelper.updateTagCache(lootScrollsConfig.value);
+            lootConfigs().forEach(config -> LootHelper.updateTagCache(config.value));
             LootHelper.saveFallbackReport();
         });
         PlatformEvents.onDataPackReloadComplete(() -> {
-            LootHelper.updateTagCache(lootEquipmentConfig.value);
-            LootHelper.updateTagCache(lootScrollsConfig.value);
+            lootConfigs().forEach(config -> LootHelper.updateTagCache(config.value));
             LootHelper.saveFallbackReport();
         });
 

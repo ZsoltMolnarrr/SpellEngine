@@ -15,22 +15,60 @@ import java.util.function.Function;
 /// 1. `injectors` — exact loot table id
 /// 2. `regex_injectors` — regex matched loot table id
 /// 3. `fallback` — the table's own contents are inspected; every fallback entry whose `reference`
-///    matches an item the table drops gets injected (all of them, independently)
+///    matches an item the table drops gets injected, combined into a single pool (see `Fallback.max_rolls`)
 public class LootConfig {
+    /// Overarching behavior of the injected loot. Absent -> none of these mechanics apply.
+    @Nullable public Behavior behavior = null;
     public LinkedHashMap<String, Pool> injectors = new LinkedHashMap<>();
     public LinkedHashMap<String, Pool> regex_injectors = new LinkedHashMap<>();
     /// Missing from the file (older configs) -> filled with defaults.
     @Nullable public Fallback fallback = null;
 
+    public static class Behavior {
+        /// Class affiliation: items relevant for the looting player's class drop more often.
+        /// The class is determined by the equipped spell book(s): a book of the spell pool
+        /// `<namespace>:spell_book/<name>` makes the items of the item tag
+        /// `<namespace>:loot_affiliation/<name>` affiliated.
+        /// Without a (known) spell book, loot is rolled with the configured weights as is.
+        public boolean class_affiliation_enabled = true;
+        /// Extra weight of affiliated items, applied as `class_affiliation_weight_operation` tells.
+        /// Weight is redistributed within each injected entry, so the ratio of item categories
+        /// (weapons / armors / accessories...) and the amount of loot stays the same.
+        public float class_affiliation_extra_weight = 3F;
+        /// How the extra weight is applied onto the configured weight of an affiliated item:
+        /// - `MULTIPLY`: `weight * (1 + extra)` (`3.0` -> 4 times as likely as a non-affiliated item of the same weight)
+        /// - `ADD`: `weight + extra`
+        public WeightOperation class_affiliation_weight_operation = WeightOperation.MULTIPLY;
+        public enum WeightOperation {
+            MULTIPLY, ADD;
+            public float apply(float weight, float extra) {
+                return this == ADD ? weight + extra : weight * (1F + extra);
+            }
+        }
+        /// Also consider the spell books of the online (scoreboard) team members of the looting player.
+        public boolean class_affiliation_include_team = true;
+
+        public boolean classAffiliationActive() {
+            return class_affiliation_enabled && class_affiliation_extra_weight > 0;
+        }
+    }
+
     public static class Fallback {
         public static final String DEFAULT_TABLES = "~:chests/";
-        /// Global knob: every fallback injected pool's rolls (and bonus rolls) are multiplied by this.
+        /// Global knob: the rolls (and bonus rolls) of every fallback entry are multiplied by this.
         /// `0` disables fallback injection.
-        public float rolls_multiplier = 1F;
+        public float rolls_multiplier = 0.5F;
+        /// Upper limit of the total rolls injected into a single loot table.
+        /// Matching entries are combined into one pool, rolled `min(sum of entry rolls, max_rolls)` times,
+        /// picking each entry proportionally to its own rolls. `0` means no limit.
+        public float max_rolls = 1F;
         /// Which loot tables fallback injection may apply to (`~regex` or exact id).
         public String tables = DEFAULT_TABLES;
         /// Loot tables excluded from fallback injection (`~regex` or exact id).
         public List<String> blacklist = new ArrayList<>();
+        /// Leave loot tables alone those already drop RPG Series loot (any `loot_tier` item),
+        /// so tables stocked by their author (or a data pack) are not stacked further.
+        public boolean skip_tables_with_rpg_loot = true;
         public List<Entry> entries = new ArrayList<>();
 
         public static class Entry {
@@ -38,8 +76,8 @@ public class LootConfig {
             public String reference = "";
             /// Optional per-entry override of `Fallback.tables`.
             @Nullable public String tables = null;
-            /// Rolls of the injected pool when the reference gear fills the source pool entirely.
-            /// Scaled by the reference's weight share of the source pool: `rolls * share`.
+            /// Rolls of this entry when the reference gear fills the source pool entirely.
+            /// Scaled by the reference's weight share of the source pool: `rolls * share * rolls_multiplier`.
             public float rolls = 1F;
             /// Luck scaling, same semantics as `Pool.bonus_rolls`, scaled like `rolls`.
             public float bonus_rolls = 0.2F;
@@ -233,6 +271,19 @@ public class LootConfig {
     }
 
     public static LootConfig constrainValues(LootConfig config, LootConfig defaults) {
+        if (defaults.behavior == null) {
+            config.behavior = null; // Not supported by this config (for example: scrolls)
+        } else if (config.behavior == null) {
+            config.behavior = new Behavior();
+        }
+        if (config.behavior != null) {
+            if (config.behavior.class_affiliation_extra_weight < 0) {
+                config.behavior.class_affiliation_extra_weight = 0;
+            }
+            if (config.behavior.class_affiliation_weight_operation == null) { // Missing or unknown value
+                config.behavior.class_affiliation_weight_operation = Behavior.WeightOperation.MULTIPLY;
+            }
+        }
         if (config.injectors == null) { config.injectors = new LinkedHashMap<>(); }
         if (config.regex_injectors == null) { config.regex_injectors = new LinkedHashMap<>(); }
         if (config.fallback == null) {
@@ -240,6 +291,7 @@ public class LootConfig {
         }
         var fallback = config.fallback;
         if (fallback.rolls_multiplier < 0) { fallback.rolls_multiplier = 0; }
+        if (fallback.max_rolls < 0) { fallback.max_rolls = 0; }
         if (fallback.tables == null || fallback.tables.isEmpty()) { fallback.tables = Fallback.DEFAULT_TABLES; }
         if (fallback.blacklist == null) { fallback.blacklist = new ArrayList<>(); }
         if (fallback.entries == null) { fallback.entries = new ArrayList<>(); }

@@ -141,6 +141,11 @@ public class Armor {
         }
         public static Entry create(ArmorMaterial material, Identifier id, int durability, Set.ItemFactory factory, ArmorSetConfig defaults,
                                    Equipment.LootProperties lootProperties, @Nullable ItemSettingsTweaker settingsTweaker) {
+            return create(material, id, durability, factory, defaults, lootProperties, settingsTweaker, null);
+        }
+        /// `sockets`: built-in gem sockets per piece (Jewelry's `jewelry:sockets`), ignored when Jewelry is absent
+        public static Entry create(ArmorMaterial material, Identifier id, int durability, Set.ItemFactory factory, ArmorSetConfig defaults,
+                                   Equipment.LootProperties lootProperties, @Nullable ItemSettingsTweaker settingsTweaker, @Nullable Sockets sockets) {
 
             var helmetSettings = new Item.Settings()
                     .registryKey(RegistryKey.of(RegistryKeys.ITEM, id.withSuffixedPath("_" + EquipmentType.HELMET.getEquipmentSlot().getName())))
@@ -159,6 +164,13 @@ public class Armor {
                 settingsTweaker.chestplate.accept(chestplateSettings);
                 settingsTweaker.leggings.accept(leggingsSettings);
                 settingsTweaker.boots.accept(bootsSettings);
+            }
+
+            if (sockets != null) {
+                Sockets.apply(helmetSettings, sockets.head(), sockets.type());
+                Sockets.apply(chestplateSettings, sockets.chest(), sockets.type());
+                Sockets.apply(leggingsSettings, sockets.legs(), sockets.type());
+                Sockets.apply(bootsSettings, sockets.feet(), sockets.type());
             }
 
             var tier = lootProperties.tier();
