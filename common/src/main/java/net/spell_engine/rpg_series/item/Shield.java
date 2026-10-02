@@ -22,6 +22,7 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
+import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.equipment.Equippable;
@@ -37,8 +38,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-/// Shield entries + registration. Shields are built purely from vanilla data components (no library, no
-/// `Item` subclass) — see {@link #createVanilla} / {@link #DEFAULT_FACTORY}:
+/// Shield entries + registration. Shields are built purely from vanilla data components (no library; the item
+/// is a plain vanilla `ShieldItem`) — see {@link #createVanilla} / {@link #DEFAULT_FACTORY}:
 ///
 /// - **blocking** — `minecraft:blocks_attacks` ({@link #VANILLA_SHIELD_BLOCKING}, the values of `Items.SHIELD`)
 /// - **off-hand slot + equip sound** — `minecraft:equippable` (unswappable, like the vanilla shield)
@@ -91,17 +92,19 @@ public class Shield {
         return VANILLA_SHIELD_BLOCKING.create(registries);
     }
 
-    /// The built-in {@link ShieldFactory}: a plain `Item` assembled from vanilla components.
+    /// The built-in {@link ShieldFactory}: a vanilla `ShieldItem` assembled from vanilla components.
     public static final ShieldFactory DEFAULT_FACTORY = Shield::createVanilla;
 
-    /// {@link ShieldFactory} implementation producing a plain `new Item(settings)` with the vanilla shield
+    /// {@link ShieldFactory} implementation producing a `new ShieldItem(settings)` with the vanilla shield
     /// components applied. Durability and repair are expected to be on `settings` already (see {@link Entry#create}).
+    /// `ShieldItem` (not plain `Item`) matters client-side: `ItemInHandRenderer` applies the sword-blocking
+    /// pose to every non-`ShieldItem` `BLOCK` use animation, which spins the shield out of first-person view.
     public static Item createVanilla(
             @Nullable Holder<SoundEvent> equipSound,
             List<AttributeEntry> attributes,
             Item.Properties settings
     ) {
-        return new Item(applyVanillaComponents(settings, equipSound, attributes));
+        return new ShieldItem(applyVanillaComponents(settings, equipSound, attributes));
     }
 
     /// Applies `blocks_attacks`, `equippable` (offhand, unswappable, equip sound), `break_sound` and
