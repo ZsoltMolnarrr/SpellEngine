@@ -1,3 +1,8 @@
+# 1.10.10
+
+Functional changes:
+- Fixed shields being rotated out of view in first person while blocking (only the handle visible)
+
 # 1.10.9
 
 API changes:
