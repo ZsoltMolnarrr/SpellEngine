@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public class LootHelper {
@@ -170,6 +171,14 @@ public class LootHelper {
         }
         // 3. Fallback, based on what the table already drops
         configureFallback(tableId, existingPools, poolSink, config, configName, isEntityLootTable);
+    }
+
+    /// Legacy signature (until 1.10.7), kept for binary compatibility with already compiled consumers.
+    @Deprecated
+    public static void configure(Identifier lootTableId,
+                                 Supplier<List<LootPool>> existingPools, Consumer<LootPool> poolSink,
+                                 LootConfig config, String configName) {
+        configure(lootTableId, existingPools.get(), poolSink, config, configName);
     }
 
     private static void configureFallback(String tableId,
