@@ -1,3 +1,8 @@
+# 1.10.10
+
+Functional changes:
+- Fixed shields being rotated out of view in first person while blocking (only the handle visible)
+
 # 1.10.9
 
 Ported to Minecraft 26.3 (Fabric + NeoForge, NeoForge 26.3.0.20-beta or newer).
